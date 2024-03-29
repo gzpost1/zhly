@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.ShopDao">
+
+    <select id="selectCommercialComplexShopList" resultType="cn.cuiot.dmp.system.infrastructure.entity.po.HousePo">
+      select
+        h.id ,
+        h.pk_org_id,
+        h.community_id,
+        h.self_dept_id,
+        building_id,
+        (SELECT department_name from department where id = h.community_id and `d_group` = 3) as communityName,
+        (SELECT department_name from department where id = h.building_id and `d_group` = 4) as buildingName,
+        (SELECT department_name from department where id = h.floor_id and `d_group` = 7) as floorName,
+        floor_id,
+        (SELECT department_name from department where id = h.self_dept_id  and `d_group` = 5) as houseName,
+        (SELECT val from department_property WHERE dept_id = building_id AND  property_key = 'floor_num') as buildingFloor,
+        (SELECT val from department_property WHERE dept_id = floor_id AND  property_key = 'current_floor') as currentFloor,
+        h.name ,
+        h.house_area,
+        h.used_area,
+        h.public_area,
+        h.house_attribute,
+        h.description,
+        h.created_on
+      from house h
+        LEFT JOIN org_label ol on h.pk_org_id = ol.org_id
+        LEFT JOIN department d ON d.id = h.self_dept_id
+      where
+        deleted_flag = 0
+        and d.path like concat(#{spaceTreePath}, '%')
+        <if test="keyword != null and keyword != ''">
+            AND d.department_name like concat('%', #{keyword}, '%')  and d.d_group = 5
+        </if>
+        <if test="labelId != null">
+            AND ol.label_id = #{labelId}
+        </if>
+      order by id desc
+    </select>
+
+
+    <select id="detail" resultType="cn.cuiot.dmp.system.infrastructure.entity.po.HousePo">
+       select
+            h.id ,
+            h.pk_org_id,
+            h.self_dept_id ,
+            h.community_id ,
+            h.region_id ,
+            (SELECT parent_id from department where id = h.community_id ) as deptId,
+            (SELECT path from department where id = deptId) as deptTreePath,
+            (SELECT department_name from department where id = deptId) as deptName,
+             building_id,
+            (SELECT code from department where id = h.community_id and `d_group` = 3) as communityCode,
+            (SELECT department_name from department where id = h.community_id and `d_group` = 3) as communityName,
+            (SELECT department_name from department where id = h.building_id and `d_group` = 4) as buildingName,
+            (SELECT department_name from department where id = h.floor_id and `d_group` = 7) as floorName,
+            (SELECT department_name from department where id = h.region_id and `d_group` = 6) as regionName,
+            floor_id,
+            (SELECT department_name from department where id = h.self_dept_id  and `d_group` = 5) as houseName,
+            (SELECT path from department where id = h.self_dept_id  and `d_group` = 5) as deptTreePath,
+            (SELECT val from department_property WHERE dept_id = building_id AND  property_key = 'floor_num') as buildingFloor,
+            (SELECT val from department_property WHERE dept_id = floor_id AND  property_key = 'current_floor') as currentFloor,
+            h.name ,
+            h.house_area,
+            h.used_area,
+            h.public_area,
+            h.house_attribute,
+            h.floor_num,
+            h.room,
+            h.hall,
+            h.bathroom,
+            h.parking_no,
+            h.storage_no,
+            h.orientation,
+            h.delivery_time,
+            h.property_years,
+            h.house_type,
+            h.house_status,
+            h.used_status,
+            h.description,
+            h.created_on
+        from
+            house h
+        LEFT JOIN department d ON d.id = h.self_dept_id
+        where
+            h.id = #{id}
+        and
+            deleted_flag = 0
+        and
+            d.path LIKE CONCAT( #{path}, '%')
+    </select>
+
+    <delete id="batchDelete">
+       UPDATE
+         house
+       SET
+         deleted_flag = 1,
+         deleted_on = NOW(),
+         deleted_by = #{userId}
+       WHERE
+        id
+       IN
+        <foreach collection="ids" open="(" separator="," close=")" item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+</mapper>

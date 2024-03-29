@@ -1,0 +1,18 @@
+package cn.cuiot.dmp.domain.types;
+
+import lombok.Data;
+import lombok.NonNull;
+
+/**
+ * @Author 犬豪
+ * @Date 2023/8/28 11:25
+ * @Version V1.0
+ */
+@Data
+public class Address {
+    public Address(@NonNull String value) {
+        this.value = value;
+    }
+
+    private String value;
+}

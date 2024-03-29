@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.OperationLogDao">
+
+    <insert id="insertOperationLog" useGeneratedKeys="true" keyProperty="id"
+            parameterType="cn.cuiot.dmp.system.infrastructure.entity.OperationLogEntity">
+        INSERT INTO user_operate_log
+        (org_id,
+         request_time,
+         request_ip,
+         operation_code,
+         operation_name,
+         operation_by_id,
+         operation_by_name,
+         operation_target,
+         service_type,
+         log_level,
+         status_code,
+         status_msg,
+         request_params,
+         response_params,
+         file)
+        values (#{orgId},
+                #{requestTime},
+                #{requestIp},
+                #{operationCode},
+                #{operationName},
+                #{operationById},
+                #{operationByName},
+                #{operationTarget},
+                #{serviceType},
+                #{logLevel},
+                #{statusCode},
+                #{statusMsg},
+                #{requestParams},
+                #{responseParams},
+                #{file})
+    </insert>
+
+    <select id="listLogs" parameterType="cn.cuiot.dmp.system.infrastructure.entity.bean.OperationLogBean"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.OperationLogEntity">
+        select uol.org_id as orgId,
+        uol.request_time as requestTime,
+        uol.request_ip as requestIp,
+        uol.operation_code as operationCode,
+        uol.operation_by_name as operationUserId,
+        uol.operation_target as operationTarget,
+        uol.status_code as statusCode,
+        uol.operation_name as operationName
+        from user_operate_log uol
+        left join user_org uo on uo.pk_user_id = uol.operation_by_id
+        left join department d on uo.pk_dept_id = d.id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="orgId != null and orgId != -1 and orgId != ''">
+                and uol.org_id = #{orgId}
+            </if>
+            <if test="userIds != null and userIds.size >0">
+                AND operation_by_id in
+                <foreach collection="userIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="path!=null and path != ''">
+                AND d.path like concat('%', #{path}, '%')
+            </if>
+            and uol.request_time between #{startTime} and #{endTime}
+        </trim>
+        <if test="action!=null">
+            and uol.operation_code = #{action}
+        </if>
+        <if test="operationUserId != null and operationUserId != ''">
+            and uol.operation_by_name = #{operationUserId}
+        </if>
+        <if test="status!=null">
+            and uol.status_code = #{status}
+        </if>
+        <if test="searchType == 3 and searchContent != null and searchContent != ''">
+            and ${searchContent}
+        </if>
+        <if test="operationName!=null and operationName!= ''">
+            and uol.operation_name like  concat('%',#{operationName},'%')
+        </if>
+        order by uol.request_time DESC
+    </select>
+
+    <!--根据Id查询-->
+    <select id="findById" parameterType="integer" resultType="map">
+        select org_id, request_ip, operation_name, request_time, operation_target
+        from user_operate_log
+        where org_id = #{id}
+    </select>
+
+
+</mapper>

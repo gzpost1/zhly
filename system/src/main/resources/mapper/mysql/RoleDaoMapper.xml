@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.RoleDao">
+
+    <sql id="role_column">
+        r.id,
+        r.role_id AS roleId,
+        r.role_name AS roleName,
+        r.role_key AS roleKey,
+        r.description,
+        r.permit,
+        r.role_type AS roleType,
+        CASE r.created_by_type
+        WHEN 1 THEN r.created_by
+        WHEN 2 THEN (SELECT username FROM `user` WHERE id = r.created_by)
+        WHEN 3 THEN r.created_by
+        END createdByName,
+        r.updated_on AS updatedOn,
+        r.updated_by AS updatedBy,
+        CASE r.updated_by_type
+        WHEN 1 THEN r.updated_by
+        WHEN 2 THEN (SELECT username FROM `user` WHERE id = r.updated_by)
+        WHEN 3 THEN r.updated_by
+        END updatedByName,
+        r.created_by_type AS createdByType,
+        r.updated_by_type AS updatedByType,
+        r.created_on AS createdOn,
+        r.created_by AS createdBy
+    </sql>
+
+    <select id="selectRoleListByPage" parameterType="java.util.Map" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO">
+        SELECT DISTINCT
+        <include refid="role_column"/>
+        FROM role r
+        LEFT JOIN org_role o ON r.id = o.pk_role_id
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="orgId !=null and orgId !=-1">
+                <if test="userId != 1">
+                    and o.pk_org_id = #{orgId}
+                </if>
+            </if>
+            <if test="roleName !=null ">
+                and  r.role_name  like concat('%',#{roleName},'%')
+            </if>
+            <if test="roleKey !=null ">
+                and  r.role_key  like concat('%',#{roleKey},'%')
+            </if>
+        </trim>
+        order by r.id
+    </select>
+
+    <select id="selectRoleList" parameterType="java.util.Map" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO">
+        SELECT DISTINCT
+        <include refid="role_column"/>
+        FROM role r
+        LEFT JOIN org_role o ON r.id = o.pk_role_id
+        <trim prefix="WHERE" prefixOverrides="AND">
+            and r.role_key != 'SUPER_ADMIN'
+            <if test="orgId !=null and orgId !=-1">
+                and o.pk_org_id = #{orgId}
+            </if>
+            <if test="roleType !=null ">
+                and  r.role_type = #{roleType}
+            </if>
+        </trim>
+        order by r.id
+    </select>
+
+    <select id="selectUserIdsByRoleIds" resultType="java.util.Map">
+        select
+        pk_user_id AS userId,
+        pk_role_id AS roleId
+        from user_role
+        WHERE pk_org_id = #{orgId}
+        and pk_role_id in
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <insert id="insertOrgRole" parameterType="java.util.Map">
+        INSERT INTO `org_role`
+        (
+            id, pk_role_id, pk_org_id, created_by
+        )
+        VALUES
+            (
+                #{id},
+                #{roleId},
+                #{orgId},
+                #{createdBy}
+            )
+    </insert>
+
+
+    <insert id="insertRole" useGeneratedKeys="true" keyProperty="id" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
+        INSERT INTO `role`
+        (
+            org_id, role_id, role_name, role_key, description, permit, role_type,
+            created_by, created_by_type
+        )
+        VALUES
+        (
+            #{orgId},
+            #{roleId},
+            #{roleName},
+            #{roleKey},
+            #{description},
+            #{permit},
+            #{roleType},
+            #{createdBy},
+            #{createdByType}
+        )
+    </insert>
+
+    <update id="updateRole" parameterType="cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo">
+        UPDATE `role`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="roleName != null and roleName != ''">role_name = #{roleName},</if>
+            <if test="description != null">`description` = #{description},</if>
+            <if test="permit != null">`permit` = #{permit},</if>
+            updated_by = #{updatedBy},
+            updated_by_type = #{updatedByType},
+            role_type = #{roleType}
+        </trim>
+        WHERE id = #{id}
+        and  delete_flag = 0
+    </update>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
+        INSERT INTO `role`
+        (
+            role_id, role_name, role_key, description, permit, role_type,
+            created_by, created_by_type
+        )
+        VALUES
+        (
+            #{roleId},
+            #{roleName},
+            #{roleKey},
+            #{description},
+            #{permit},
+            #{roleType},
+            #{createdBy},
+            #{createdByType}
+        )
+    </insert>
+
+    <update id="update" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
+        update role
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="roleName != null">role_name = #{roleName},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="permit != null">permit = #{permit},</if>
+            <if test="updatedOn != null">updated_on = #{updatedOn},</if>
+            <if test="updatedBy != null">updated_by = #{updatedBy},</if>
+            <if test="updatedByType != null">updated_by_type = #{updatedByType},</if>
+        </trim>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="id != null">AND id = #{id}</if>
+        </trim>
+    </update>
+
+    <delete id="deleteMenuRole" >
+        delete from menu_role
+        where pk_role_id = #{roleId}
+    </delete>
+
+    <update id="deleteRolesByIds">
+        UPDATE role SET delete_flag = 1, delete_time = #{deleteTime}
+        WHERE id IN ( SELECT pk_role_id FROM org_role WHERE pk_org_id = #{orgId} )
+        AND id IN
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="selectRoleByRoleIds" parameterType="java.util.List" resultType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
+        select
+        <include refid="role_column"/>
+        from role r
+        where r.id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <delete id="deleteBatchMenuRole">
+        delete
+        from
+        menu_role
+        where pk_role_id IN
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="selectRoleListByOrgId" parameterType="java.lang.String" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO">
+        SELECT DISTINCT
+        <include refid="role_column"/>
+        FROM role r
+        LEFT JOIN org_role o ON r.id = o.pk_role_id
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="orgId != null">AND o.pk_org_id = #{orgId}</if>
+            AND r.delete_flag = 0
+        </trim>
+        ORDER BY r.created_on DESC
+    </select>
+
+
+    <select id="getOneRole" resultType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
+        SELECT * FROM role WHERE id = #{roleId}
+    </select>
+
+
+    <select id="findMenuPksByRolePk" resultType="string">
+        select pk_menu_id from menu_role where pk_role_id = #{rolePk}
+    </select>
+
+    <insert id="insertMenuRole">
+        insert into menu_role( pk_menu_id,pk_role_id, created_by, created_by_type)
+        values
+        <foreach collection="menuIds" item="menuId" open="(" separator="),(" close=")">
+            #{menuId},#{roleId}, #{createdBy}, #{createdByType}
+        </foreach>
+    </insert>
+
+    <delete id="deleteOrgRole" parameterType="java.util.List">
+        delete from org_role
+        WHERE pk_org_id = #{orgId}
+        and pk_role_id IN
+        <foreach collection="roleIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="selectRoleByUserId" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO">
+        select
+        <include refid="role_column"/>
+        from role r
+        LEFT JOIN user_role ur ON r.id = ur.pk_role_id
+        WHERE ur.pk_user_id = #{userId}
+        and r.delete_flag = 0
+        and ur.pk_org_id = #{orgId} limit 1
+    </select>
+
+    <select id="selectOneRole" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleCreatedDTO">
+        select
+        <include refid="role_column"/>
+        FROM role r,org_role o
+        <trim prefix="WHERE" prefixOverrides="AND">
+            AND o.pk_role_id = r.id
+            <if test="orgId != null and orgId != -1">
+                <if test="userId != 1">
+                    AND o.pk_org_id = #{orgId}
+                </if>
+            </if>
+            <if test="roleId != null">
+                AND r.id = #{roleId}
+            </if>
+            LIMIT 1
+        </trim>
+    </select>
+
+    <select id="getRoleMenu" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.AddMenuDto">
+        select mr.pk_menu_id id,m.menu_id menuId from menu_role mr,menu m where
+            mr.pk_role_id = #{roleId}
+                                                                            and
+            mr.pk_menu_id = m.id
+    </select>
+
+
+    <select id="selectRoleById" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO">
+        select
+        <include refid="role_column"/>
+        from role r
+        LEFT JOIN org_role o ON r.id = o.pk_role_id
+        WHERE r.id = #{id}
+        and r.delete_flag = 0
+        and o.pk_org_id = #{orgId} limit 1
+    </select>
+
+    <insert id="insertMenusRole" parameterType="cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo">
+        INSERT INTO menu_role(pk_menu_id,pk_role_id,created_on,created_by,created_by_type)
+        VALUES
+        <foreach collection="menuIds" item="item" open="(" separator="),(" close=")">
+            #{item}, #{id},#{updatedOn}, #{updatedBy}, #{updatedByType}
+        </foreach>
+    </insert>
+</mapper>

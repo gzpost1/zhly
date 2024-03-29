@@ -1,0 +1,106 @@
+package cn.cuiot.dmp.system.infrastructure.utils;
+
+import static cn.cuiot.dmp.common.constant.ResultCode.KAPTCHA_EXPIRED_ERROR;
+import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_EXPIRED_ERROR;
+
+import cn.cuiot.dmp.common.constant.CacheConst;
+import cn.cuiot.dmp.common.exception.BusinessException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+
+/**
+ * @author jiangze
+ * @classname VerifyUnit
+ * @description 验证工具
+ * @date 2020-06-23
+ */
+@Component
+@Slf4j
+public class VerifyUnit {
+
+    /**
+     * 自动注入stringRedisTemplate
+     */
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    /**
+     * 验证图形验证码
+     *
+     * @param actualText 用户输入到验证码
+     * @param uuid       身份识别id
+     * @return
+     */
+    public boolean checkKaptchaText(String actualText, String uuid) {
+        // 获取redis中的图形验证码文本
+        String expectedText = stringRedisTemplate.opsForValue().get(CacheConst.KAPTCHA_TEXT_REDIS_KEY + uuid);
+        // 判断是否过期
+        if (StringUtils.isEmpty(expectedText)) {
+            // 图形验证码过期
+            throw new BusinessException(KAPTCHA_EXPIRED_ERROR);
+        }
+        // 判断用户输入的验证码是否正确
+        if (!expectedText.equals(actualText)) {
+            stringRedisTemplate.delete(CacheConst.KAPTCHA_TEXT_REDIS_KEY + uuid);
+            // 图形验证码错误
+            return false;
+        }
+        stringRedisTemplate.delete(CacheConst.KAPTCHA_TEXT_REDIS_KEY + uuid);
+        return true;
+    }
+
+
+    /**
+     * 验证短信验证码（通用）
+     *
+     * @param redisKey    redis验证码key值
+     * @param checkedText 要验证的值
+     * @return
+     */
+    public boolean checkSmsCode(String redisKey, String checkedText) {
+        // 获取redis中的短信验证码文本
+        String expectedText = stringRedisTemplate.opsForValue().get(redisKey);
+        // 判断是否过期
+        if (StringUtils.isEmpty(expectedText)) {
+            // 短信验证码过期
+            throw new BusinessException(SMS_CODE_EXPIRED_ERROR);
+        }
+        // 判断用户输入的验证码是否正确
+        return expectedText.equals(checkedText);
+    }
+
+    /**
+     * 验证短信验证码（通用）
+     *
+     * @param redisKey    redis验证码key值
+     * @param checkedText 要验证的值
+     * @return
+     */
+    public boolean checkSmsCodeBeforeLogin(String redisKey, String checkedText) {
+        // 获取redis中的短信验证码文本
+        String expectedText = stringRedisTemplate.opsForValue().get(redisKey);
+        // 判断是否过期
+        if (StringUtils.isEmpty(expectedText)) {
+            // 短信验证码过期
+            return false;
+        }
+        // 判断用户输入的验证码是否正确
+        return expectedText.equals(checkedText);
+    }
+
+    /**
+     * 发送短信验证码
+     *
+     * @param message     短信内容
+     * @param phoneNumber 手机号
+     * @return
+     */
+    public boolean sendSmsCode(String message, String phoneNumber) {
+        return true;
+    }
+
+}

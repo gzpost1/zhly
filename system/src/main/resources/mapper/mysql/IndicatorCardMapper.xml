@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.IndicatorCardDao">
+
+
+    <select id="factoryPark" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.IndicatorCardListPo">
+		select
+			ic.id ,
+			ic.name,
+			(
+				case
+					when ic.name = 'park' then (
+						select
+							count(*)
+						from
+							department d
+								left join org_label ol on d.pk_org_id = ol.org_id
+						where
+							d.path like CONCAT(#{path}, '%') and d.d_group = 3 and ol.label_id = 9 )
+
+					when ic.name = 'region' then (
+						select
+							count(*)
+						from
+							department d
+								left join org_label ol on d.pk_org_id = ol.org_id
+						where
+							d.path like CONCAT(#{path}, '%') and d.d_group = 6 and ol.label_id = 9 )
+
+					when ic.name = 'building'  then (
+						select
+							count(*)
+						from
+							department d
+								left join org_label ol on d.pk_org_id = ol.org_id
+						where
+							d.path like CONCAT(#{path}, '%') and d.d_group = 4 and ol.label_id = 9 )
+
+					when ic.name = 'house'  then (
+						select
+							count(*)
+						from
+							house h
+								left join department d on h.self_dept_id = d.id
+								left join org_label ol on h.pk_org_id = ol.org_id
+						where
+							d.`path` like CONCAT(#{path}, '%')
+							and h.deleted_flag = 0 and ol.label_id = 9 )
+
+					when ic.name = 'floor'  then (
+						select
+							count(*)
+						from
+							department d
+								left join org_label ol on d.pk_org_id = ol.org_id
+						where
+							d.path like CONCAT(#{path}, '%') and d.d_group = 7 and ol.label_id = 9 )
+					else '0' END
+				) as number
+		from
+			indicator_card ic
+		where
+			label_type_id = '9'
+			and deleted = 0
+
+	</select>
+</mapper>

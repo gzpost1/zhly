@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntityMapper">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, org_key, org_id, org_name, org_type_id, status, parent_id, org_owner, email, social_credit_code, company_name,
+        description, created_on, created_by, created_by_type, updated_on, updated_by, updated_by_type, deleted_flag,
+        deleted_on, deleted_by, max_dept_high, source
+    </sql>
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntity">
+        <id column="id" property="id" />
+        <result column="org_key" property="orgKey" />
+        <result column="org_id" property="orgId" />
+        <result column="org_name" property="orgName" />
+        <result column="org_type_id" property="orgTypeId" />
+        <result column="status" property="status" />
+        <result column="parent_id" property="parentId" />
+        <result column="org_owner" property="orgOwner" />
+        <result column="email" property="email" />
+        <result column="social_credit_code" property="socialCreditCode" />
+        <result column="company_name" property="companyName" />
+        <result column="description" property="description" />
+        <result column="created_on" property="createdOn" />
+        <result column="created_by" property="createdBy"/>
+        <result column="created_by_type" property="createdByType" />
+        <result column="updated_on" property="updatedOn" />
+        <result column="updated_by" property="updatedBy" />
+        <result column="updated_by_type" property="updatedByType" />
+        <result column="deleted_flag" property="deletedFlag" />
+        <result column="deleted_on" property="deletedOn" />
+        <result column="deleted_by" property="deletedBy" />
+        <result column="max_dept_high" property="maxDeptHigh" />
+        <result column="source" property="source" />
+    </resultMap>
+
+    <select id="selectListByLogicDel" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from organization
+        <where>
+            <if test="param.deletedFlag != null">
+                deleted_flag = #{param.deletedFlag}
+            </if>
+            <if test="param.deleteStartTime != null and param.deleteEndTime != null">
+                AND deleted_on BETWEEN #{param.deleteStartTime} AND #{param.deleteEndTime}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.UserPropertyDao">
+
+    <select id="getUserProperty" resultType="cn.cuiot.dmp.system.infrastructure.entity.UserPropertyEntity">
+        select
+            org_id, user_id, property_key, val
+        from
+            user_property
+        <where>
+            <if test="orgId != null and orgId != ''">
+                and org_id = #{orgId}
+            </if>
+            <if test="userId != null and userId != ''">
+                and user_id = #{userId}
+            </if>
+            <if test="propertyKey != null and propertyKey != ''">
+                and property_key = #{propertyKey}
+            </if>
+            <if test="val != null and val != ''">
+                and val = #{val}
+            </if>
+        </where>
+        limit 1
+    </select>
+
+</mapper>

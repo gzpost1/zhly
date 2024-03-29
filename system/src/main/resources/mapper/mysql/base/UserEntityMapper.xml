@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntityMapper">
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, user_id, username, password, email, phone_number, avatar, status, last_online_ip, last_online_address, last_online_on, created_on, created_by, created_by_type, updated_on, updated_by, updated_by_type, deleted_flag, deleted_on, deleted_by, user_type, contact_person, contact_address, long_time_login
+    </sql>
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="email" property="email" />
+        <result column="phone_number" property="phoneNumber" />
+        <result column="avatar" property="avatar" />
+        <result column="status" property="status" />
+        <result column="last_online_ip" property="lastOnlineIp" />
+        <result column="last_online_address" property="lastOnlineAddress" />
+        <result column="last_online_on" property="lastOnlineOn" />
+        <result column="created_on" property="createdOn" />
+        <result column="created_by" property="createdBy" />
+        <result column="created_by_type" property="createdByType" />
+        <result column="updated_on" property="updatedOn" />
+        <result column="updated_by" property="updatedBy" />
+        <result column="updated_by_type" property="updatedByType" />
+        <result column="deleted_flag" property="deletedFlag" />
+        <result column="deleted_on" property="deletedOn" />
+        <result column="deleted_by" property="deletedBy" />
+        <result column="user_type" property="userType" />
+        <result column="contact_person" property="contactPerson" />
+        <result column="contact_address" property="contactAddress" />
+        <result column="long_time_login" property="longTimeLogin" />
+    </resultMap>
+
+
+    <select id="findDeletedUser" resultMap="BaseResultMap">
+        select
+            <include refid="Base_Column_List" />
+        from user
+        where id = #{id}
+    </select>
+
+    <select id="getPersonUserByPhoneNumber" resultMap="BaseResultMap">
+        select
+            <include refid="Base_Column_List" />
+        from user u
+        where u.deleted_flag = 0
+        AND u.phone_number = #{phoneNum}
+        and u.user_type = 3
+    </select>
+
+    <select id="getUserInfo" resultType="cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserDepartmentEntity">
+        select u.id, d.path, o.org_name
+        from user u
+        left join user_org uo on u.id = uo.pk_user_id
+        left join department d on d.id = uo.pk_dept_id
+        left join organization o on o.id = uo.pk_org_id
+        where u.deleted_flag = 0
+        AND u.phone_number = #{phoneNum}
+        and u.user_type = 3
+        and o.org_type_id = 12
+    </select>
+
+    <select id="findDeletedUserList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        user
+        WHERE
+        id in
+        <foreach collection="idList" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+
+    <insert id="batchInsertUser" useGeneratedKeys="true" keyProperty="id" parameterType="java.util.List">
+        INSERT INTO user
+        (
+        user_id,
+        username,
+        password,
+        email,
+        phone_number,
+        avatar,
+        status,
+        last_online_ip,
+        last_online_address,
+        last_online_on,
+        created_on,
+        created_by,
+        created_by_type,
+        user_type,
+        contact_person,
+        contact_address,
+        long_time_login
+        )
+        values
+        <foreach collection="list" separator="," item="item">
+            (
+            #{item.userId},
+            #{item.username},
+            #{item.password},
+            #{item.email},
+            #{item.phoneNumber},
+            #{item.avatar},
+            #{item.status},
+            #{item.lastOnlineIp},
+            #{item.lastOnlineAddress},
+            #{item.lastOnlineOn},
+            #{item.createdOn},
+            #{item.createdBy},
+            #{item.createdByType},
+            #{item.userType},
+            #{item.contactPerson},
+            #{item.contactAddress},
+            #{item.longTimeLogin}
+            )
+        </foreach>
+    </insert>
+    <delete id="delUserLabel">
+        delete
+        from
+        user_label
+        where
+        user_id
+        in
+        <foreach collection="idList" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </delete>
+
+    <delete id="delUserRole">
+        delete
+        from
+        user_role
+        where
+        pk_user_id
+        in
+        <foreach collection="idList" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </delete>
+</mapper>

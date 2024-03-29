@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.AreaDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="cn.cuiot.dmp.system.infrastructure.entity.AreaEntity" id="areaMap">
+        <result property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="level" column="level"/>
+        <result property="name" column="name"/>
+        <result property="parentCode" column="parent_code"/>
+        <result property="createdOn" column="created_on"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdByType" column="updated_on_type"/>
+    </resultMap>
+
+    <sql id="column">
+         id,
+         code,
+         `level`,
+         `name`,
+         parent_code,
+         created_on,
+         created_by,
+         created_by_type
+    </sql>
+
+
+
+    <select id="selectByCode" resultType="cn.cuiot.dmp.system.infrastructure.entity.AreaEntity">
+        select
+        <include refid="column"/>
+        from
+        area
+        where code = #{code} limit 1
+    </select>
+
+    <select id="selectByParentCode" resultType="cn.cuiot.dmp.system.infrastructure.entity.AreaEntity">
+        select
+        <include refid="column"/>
+        from
+        area
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="parentCode != null and parentCode != ''">
+                and parent_code = #{parentCode}
+            </if>
+            <if test="parentCode == null or parentCode == ''">
+                and parent_code = 0
+            </if>
+        </trim>
+
+
+    </select>
+
+    <select id="checkProvinceCode" resultType="java.lang.Integer">
+        SELECT
+            count(0)
+        FROM
+            area
+        WHERE
+            code = #{provinceCode}
+        AND
+            `level` = 1
+    </select>
+
+    <select id="getAllOneProvince" resultMap="areaMap">
+        SELECT
+            code,
+            name
+        FROM
+            area
+        WHERE
+            `level` = 1
+    </select>
+</mapper>

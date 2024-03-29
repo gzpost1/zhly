@@ -1,0 +1,77 @@
+server:
+  port: 9112
+spring:
+  application:
+    name: community-system
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  cloud:
+    inetutils:
+      ignored-interfaces: eth0
+    nacos:
+      config:
+        file-extension: yml
+        username: nacos
+        enabled: false
+        password: xxx
+        refresh-enabled: false
+        server-addr: xxx
+        namespace: xxx
+      discovery:
+        enabled: false
+        instance-enabled: false
+  datasource:
+    dynamic:
+      primary: master
+      strict: false
+      datasource:
+        master:
+          url: xxx
+          username: xxx
+          password: xxx
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          type: com.zaxxer.hikari.HikariDataSource
+          hikari:
+            idle-timeout: 180000
+            maximum-pool-size: 5
+            max-lifetime: 1800000
+            connection-timeout: 10000
+            connection-test-query: select 1
+    props:
+      sql:
+        show: false
+  main:
+    allow-bean-definition-overriding: true
+  redis:
+    host: xxx
+    port: 6379
+    timeout: 5000
+    database: 2
+    password: xxx
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+mybatis-plus:
+  mapper-locations: classpath:mapper/mysql/**/*Mapper.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+logging:
+  level:
+    cn.cuiot.dmp.system.dao.*: debug
+
+self.debug: true
+self.smsWord: false
+
+sidPassUserNameList: ''
+smsCodeNumber: 5

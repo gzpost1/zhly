@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDataDao">
+
+    <select id="searchList" parameterType="java.util.Map" resultType="cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity">
+        SELECT uo.pk_org_id,u.* FROM user u
+        left join user_org uo on uo.pk_user_id = u.id
+        left join department d on uo.pk_dept_id = d.id
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="userName != null">
+                AND u.username like CONCAT('%',#{userName},'%')
+            </if>
+            <if test="phone != null">
+                AND u.phone_number = #{phone}
+            </if>
+            <if test="usernameLike != null">
+                AND u.username like CONCAT('%',#{usernameLike},'%')
+            </if>
+            <if test="phoneNumber != null">
+                AND u.phone_number = #{phoneNumber}
+            </if>
+            <if test="orgId != null and orgId != -1">
+                AND uo.pk_org_id = #{orgId}
+            </if>
+            <if test="loginUserId != 1">
+                AND u.id != 1
+            </if>
+            <if test="deptIds != null and deptIds.size >0">
+                AND uo.pk_dept_id in
+                <foreach collection="deptIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="path!=null and path != ''">
+                AND d.path like concat('%', #{path}, '%')
+            </if>
+            <if test="departmentNameLike != null">
+                AND d.department_name like CONCAT('%',#{departmentNameLike},'%')
+            </if>
+            AND u.deleted_flag = 0
+            AND u.user_type=1
+        </trim>
+        order by u.id =1 desc, u.id = (select org_owner from organization where id = #{orgId}) desc,u.id desc
+    </select>
+
+    <select id="searchListByRole" parameterType="java.util.Map" resultType="cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity">
+        SELECT ur.pk_org_id,u.* FROM user u , user_role ur, role r
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="userName != null">
+                AND u.username like CONCAT('%',#{userName},'%')
+            </if>
+            <if test="phone != null">
+                AND u.phone_number = #{phone}
+            </if>
+            <if test="usernameLike != null">
+                AND u.username like CONCAT('%',#{usernameLike},'%')
+            </if>
+            <if test="phoneNumber != null">
+                AND u.phone_number = #{phoneNumber}
+            </if>
+            <if test="orgId != null and orgId != -1">
+                AND ur.pk_org_id = #{orgId}
+            </if>
+            <if test="roleId != null">
+                AND ur.pk_role_id = #{roleId}
+            </if>
+            <if test="loginUserId != 1">
+                AND u.id != 1
+            </if>
+            <if test="roleNameLike != null">
+                AND r.role_name like CONCAT('%',#{roleNameLike},'%')
+            </if>
+            AND ur.pk_user_id = u.id
+            AND ur.pk_role_id = r.id
+            and deleted_flag = 0
+        </trim>
+        order by u.id = (select org_owner from organization where id = #{orgId}) desc,u.id desc
+    </select>
+
+    <delete id="deleteUserOrgByUserPks" parameterType="java.util.List">
+        delete from user_org
+        WHERE pk_user_id IN
+        <foreach collection="ids" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and pk_org_id = #{orgId}
+    </delete>
+
+    <delete id="deleteUserRoleByUserPks" parameterType="java.util.List">
+        delete from user_role
+        WHERE pk_user_id IN
+        <foreach collection="ids" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and pk_org_id = #{orgId}
+    </delete>
+
+    <select id="countUserOrgByDeptId" resultType="java.lang.Integer">
+        select COUNT(0)
+        from user_org
+        where pk_dept_id = #{deptId}
+    </select>
+
+    <resultMap id="labelTypeMap" type="cn.cuiot.dmp.system.infrastructure.entity.dto.LabelTypeDto">
+        <result column="id" property="id" />
+        <result column="label_name" property="labelName" />
+        <result column="label_type" property="labelType" />
+    </resultMap>
+
+    <select id="getLabelTypeList" resultMap="labelTypeMap">
+        select
+            *
+        from
+            label_type
+        where label_type =#{labelType}
+    </select>
+
+    <insert id="insertUserLabel" useGeneratedKeys="true" keyProperty="id"
+      parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.UserLabelDto">
+        INSERT INTO user_label
+        (user_id,
+         label_id,
+         label_name,
+         create_by,
+         create_time
+        )
+        values (#{userId},
+                #{labelId},
+                #{labelName},
+                #{createdBy},
+                #{createTime})
+    </insert>
+
+    <select id="selectLabelIdByName" resultType="integer">
+        SELECT id
+        FROM label_type
+        WHERE label_name = #{labelName}
+        and label_type=0
+    </select>
+
+    <select id="selectLabelNameByOrgId" resultType="String">
+        SELECT label_name
+        FROM label_type
+        WHERE id = #{labelId}
+    </select>
+
+    <select id="checkUserInDeptId" resultType="java.lang.String">
+        SELECT
+            1
+        FROM
+            user u
+                LEFT JOIN user_org uo ON uo.pk_user_id = u.id
+                LEFT JOIN department d ON d.id = uo.pk_dept_id
+        where u.deleted_flag = 0
+          and d.path like (select CONCAT(path,'%') from department where id = #{id})
+            limit 1
+    </select>
+
+    <select id="getDepartmentUser" resultType="cn.cuiot.dmp.system.application.param.dto.DepartmentUserDto">
+        select
+            u.username ,
+            d.`path`
+        from
+            user u
+                left join user_org uo on
+                u.id = uo.pk_user_id
+                left join department d on
+                d.id = uo.pk_dept_id
+        where
+            uo.pk_org_id = #{orgId}
+          and
+            u.deleted_flag = 0
+          and user_type = 1
+          and d.`path` LIKE concat(#{path}, '%')
+    </select>
+</mapper>

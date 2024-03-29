@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao">
+
+    <insert id="insertOrgMenu">
+        INSERT INTO org_menu ( org_id, menu_id, create_time, create_by )
+            VALUE
+            <foreach collection="menuList" item="menu" separator=",">
+                (
+            #{orgId},
+            #{menu},
+            #{now},
+            #{userId}
+                )
+            </foreach>
+    </insert>
+
+    <delete id="deleteByOrgId">
+        delete from org_menu where org_id = #{orgId}
+    </delete>
+
+    <select id="getMenuListByOrgId" resultType="java.lang.String">
+        select menu_id from org_menu where org_id = #{orgId}
+    </select>
+
+    <select id="getBanMenuIdList" resultType="java.lang.String">
+        SELECT
+            menu_id
+        FROM
+            org_type_menu_root
+        WHERE
+            menu_id NOT IN ( SELECT menu_id FROM org_menu WHERE org_id = #{orgId} )
+          AND org_type_id = (
+            SELECT
+                org_type_id
+            FROM
+                organization
+            WHERE
+                id = #{orgId})
+    </select>
+
+</mapper>

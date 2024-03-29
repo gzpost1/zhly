@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.NoticeUserAccessDao">
+    
+    <resultMap type="cn.cuiot.dmp.system.infrastructure.entity.NoticeUserAccess" id="NoticeUserAccessResult">
+        <result property="id"    column="id"    />
+        <result property="noticeId"    column="notice_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="source"    column="source"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="deleted"    column="deleted"    />
+    </resultMap>
+
+    <sql id="selectNoticeUserAccessVo">
+        select id, notice_id, user_id, source, create_by, create_time, deleted from notice_user_access
+    </sql>
+
+    <select id="selectNoticeUserAccessList" parameterType="cn.cuiot.dmp.system.infrastructure.entity.NoticeUserAccess" resultMap="NoticeUserAccessResult">
+        <include refid="selectNoticeUserAccessVo"/>
+        <where>  
+            <if test="noticeId != null "> and notice_id = #{noticeId}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="source != null  and source != ''"> and source = #{source}</if>
+        </where>
+        and deleted = 0
+    </select>
+
+    <insert id="insertNoticeUserAccess" parameterType="cn.cuiot.dmp.system.infrastructure.entity.NoticeUserAccess" useGeneratedKeys="true" keyProperty="id">
+        insert into notice_user_access
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="noticeId != null">notice_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="source != null">source,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="deleted != null">deleted,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="noticeId != null">#{noticeId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="source != null">#{source},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="deleted != null">#{deleted},</if>
+         </trim>
+    </insert>
+
+</mapper>

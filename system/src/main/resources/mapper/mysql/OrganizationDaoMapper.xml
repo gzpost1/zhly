@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.OrganizationDao">
+
+    <sql id="column">
+        id,
+        org_key,
+        org_id,
+        org_name,
+        org_type_id,
+        parent_id,
+        created_on,
+        created_by,
+        updated_on,
+        updated_by,
+        description,
+        created_by_type,
+        updated_by_type,
+        org_owner,
+        status,
+        email,
+        social_credit_code,
+        company_name,
+        max_dept_high
+    </sql>
+
+    <select id="getCommercialOrgList" resultType="cn.cuiot.dmp.system.infrastructure.entity.vo.ListOrganizationVO"
+            parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto">
+        SELECT
+        (SELECT username FROM `user` WHERE id = o.created_by) as created_by,
+        o.id,
+        o.org_id,
+        o.status,
+        o.org_name,
+        o.org_key,
+        o.org_Owner,
+        ug.to_dept_id as dept_id,
+        d.department_name as dept_name,
+        o.org_type_id,
+        ot.name as org_type_name,
+        u.phone_number,
+        u.username,
+        o.created_on,
+        o.company_name,
+        o.social_credit_code,
+        o.created_by_type,
+        o.source
+        FROM organization o join user u on u.id = o.org_owner
+        left join user_grant ug on ug.org_id=o.id
+        left join department d on d.id = ug.to_dept_id
+        left join organization_type ot on o.org_type_id=ot.id
+        <trim prefix="WHERE" prefixOverrides="AND">
+            AND o.org_type_id >= 10
+            and o.deleted_flag = 0
+            and u.deleted_flag = 0
+            <if test="deptIds != null">
+                AND ug.to_dept_id in
+                <foreach collection="deptIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="orgName != null">
+                AND o.org_name like CONCAT('%',#{orgName},'%')
+            </if>
+            <if test="socialCreditCode != null">
+                AND o.social_credit_code like CONCAT('%',#{socialCreditCode},'%')
+            </if>
+            <if test="orgId != null">
+                AND o.id = #{orgId}
+            </if>
+        </trim>
+        ORDER BY o.id DESC
+    </select>
+
+
+    <select id="getLastOnlineUser" resultType="cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity">
+        select * from user where id in (select pk_user_id from user_org where pk_org_id = #{id})
+        order by last_online_on desc limit 1
+    </select>
+
+    <select id="countOrgByDeptId" resultType="java.lang.Integer">
+        select COUNT(0) from organization o, user_grant ug where ug.to_dept_id = #{deptId} and o.id = ug.org_id
+    </select>
+
+    <select id="getUserLabelByOrg" resultType="java.lang.Integer">
+        SELECT
+        	lt.id
+        from
+        	label_type lt
+        where
+        	label_type = 0
+        	and lt.label_name = (
+        	SELECT
+        		lt2.label_name
+        	from
+        		org_label ol
+        	left join label_type lt2 on
+        		ol.label_id = lt2.id
+        	where
+        		ol.org_id = #{orgId} )
+    </select>
+
+    <select id="getLabelByPath" resultType="string">
+        select
+        	ol.label_id
+        from
+        	org_label ol
+        	left join department d on d.pk_org_id = ol.org_id
+        where
+	        d.`path` = #{path}
+    </select>
+
+    <insert id="insertOrgLabel" useGeneratedKeys="true" keyProperty="id"
+            parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.OrgLabelDto">
+        INSERT INTO org_label
+        (org_id,
+         label_id,
+         label_name,
+         create_by,
+         create_time
+        )
+        values (#{orgId},
+                #{labelId},
+                #{labelName},
+                #{createdBy},
+                #{createTime})
+    </insert>
+
+    <update id="updateOrgLabel" parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.OrgLabelDto">
+        UPDATE
+            org_label
+        SET
+            label_id = #{labelId},
+            label_name = #{labelName},
+            update_by= #{updatedBy},
+            update_time= #{updatedOn}
+        WHERE
+            org_id = #{orgId}
+    </update>
+
+    <select id="getOrgIdByUserPhoneNumber" resultType="string">
+      select
+        pk_org_id
+      from
+        user_org
+      where
+          pk_user_id = (select u.id from user u where u.phone_number = #{safePhoneNum} and user_type = 1 and deleted_flag = 0)
+    </select>
+
+
+    <delete id="delOrgLab">
+        delete
+            from org_label
+        where
+            org_id = #{orgId}
+    </delete>
+
+    <delete id="delOrgRole">
+        delete
+            from org_role
+        where
+            pk_org_id = #{orgId}
+    </delete>
+</mapper>

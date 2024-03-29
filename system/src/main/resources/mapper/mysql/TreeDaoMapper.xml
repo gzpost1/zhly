@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.TreeDao">
+
+    <select id="getDeptChildList" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.DeptTreeResDto">
+        select
+            d0.id as deptId,
+            d0.d_group as dGroup,
+            d0.department_name as deptName,
+            d0.parent_id as parentId,
+            d0.level as level,
+            d0.path as deptTreePath,
+            ol.label_id as orgLabel,
+            case
+                when
+                (
+                    (
+                        select
+                            1
+                        from
+                            department d1
+                                left join organization o1 on o1.id = d1.pk_org_id
+                                left join org_label ol1 on d1.pk_org_id = ol1.org_id
+                        where
+                            (d1.parent_id = d0.id
+                                or
+                                (
+                                    d1.parent_id is null and d1.path like concat(d0.path, '%')
+                                )
+                            )
+                            <if test="orgLabelList != null and orgLabelList.size() > 0">
+                                and ol1.label_id in
+                                <foreach collection="orgLabelList" item="item" separator="," open="(" close=")">
+                                    #{item}
+                                </foreach>
+                            </if>
+                            <choose>
+                                <when test="orgTypeList == null or orgTypeList.size() == 0">
+                                    and d1.pk_org_id = #{orgId}
+                                </when>
+                                <otherwise>
+                                    and o1.org_type_id in
+                                    <foreach collection="orgTypeList" item="item" separator="," open="(" close=")">
+                                        #{item}
+                                    </foreach>
+                                </otherwise>
+                            </choose>
+                            <choose>
+                                <when test="dGroup == 1">
+                                    and d1.d_group in (1)
+                                </when>
+                                <when test="dGroup == 2">
+                                    and d1.d_group in (1, 2)
+                                </when>
+                                <when test="dGroup == 3">
+                                    and d1.d_group in (1, 2, 3)
+                                </when>
+                                <when test="dGroup == 6">
+                                    and d1.d_group in (1, 2, 3, 6)
+                                </when>
+                                <when test="dGroup == 4">
+                                    and d1.d_group in (1, 2, 3, 4, 6)
+                                </when>
+                                <when test="dGroup == 7">
+                                    and d1.d_group in (1, 2, 3, 4, 6, 7)
+                                </when>
+                                <when test="dGroup == 5">
+                                    and d1.d_group in (1, 2, 3, 4, 5, 6, 7)
+                                </when>
+                                <otherwise>
+                                </otherwise>
+                            </choose>
+                        limit 1
+                    ) is not null
+                )
+                then '1'
+                else '0'
+            end as hasChild
+        from
+            department d0
+                left join organization o on o.id = d0.pk_org_id
+                left join org_label ol on d0.pk_org_id = ol.org_id
+        where
+            1 = 1
+            <if test="orgLabelList != null and orgLabelList.size() > 0">
+                and ol.label_id in
+                <foreach collection="orgLabelList" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <choose>
+                <when test="orgTypeList == null or orgTypeList.size() == 0">
+                    and d0.pk_org_id = #{orgId}
+                </when>
+                <otherwise>
+                    and o.org_type_id in
+                    <foreach collection="orgTypeList" item="item" separator="," open="(" close=")">
+                        #{item}
+                    </foreach>
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="dGroup == 1">
+                    and d0.d_group in (1)
+                </when>
+                <when test="dGroup == 2">
+                    and d0.d_group in (1, 2)
+                </when>
+                <when test="dGroup == 3">
+                    and d0.d_group in (1, 2, 3)
+                </when>
+                <when test="dGroup == 6">
+                    and d0.d_group in (1, 2, 3, 6)
+                </when>
+                <when test="dGroup == 4">
+                    and d0.d_group in (1, 2, 3, 4, 6)
+                </when>
+                <when test="dGroup == 7">
+                    and d0.d_group in (1, 2, 3, 4, 6, 7)
+                </when>
+                <when test="dGroup == 5">
+                    and d0.d_group in (1, 2, 3, 4, 5, 6, 7)
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+            <choose>
+                <!-- deptName模糊搜索 -->
+                <when test="deptName != null and deptName != ''">
+                    and d0.department_name like concat('%', #{deptName}, '%')
+                    and d0.path like concat(#{deptTreePath}, '%')
+                </when>
+                <!-- deptId精确搜索 -->
+                <otherwise>
+                    <choose>
+                        <when test="init">
+                            and d0.path = #{deptTreePath}
+                        </when>
+                        <otherwise>
+                            and d0.path like concat(#{deptTreePath}, '%')
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>
+        order by d0.id asc
+    </select>
+
+    <select id="getDeptList" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.DeptTreeResDto">
+        select
+            d0.id as deptId,
+            d0.d_group as dGroup,
+            d0.department_name as deptName,
+            d0.parent_id as parentId,
+            d0.level as level,
+            d0.path as deptTreePath,
+            case
+                when
+                (
+                    select
+                        1
+                    from
+                         department d1
+                    where
+                        parent_id = d0.id limit 1
+                ) is not null
+                then '1'
+                else '0'
+            end as hasChild
+        from
+            department d0
+        where
+            d0.path like concat(#{rootDeptTreePath}, '%')
+            and
+            <foreach collection="childDeptTreePathList" item="item" separator="or" open="(" close=")">
+                locate(path, #{item}) > 0
+            </foreach>
+    </select>
+
+</mapper>

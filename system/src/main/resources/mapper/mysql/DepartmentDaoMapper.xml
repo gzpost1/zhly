@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao">
+    <sql id="column">
+
+                id
+                ,
+                d_group,
+                department_name,
+                parent_id,
+                pk_org_id,
+                code,
+                path,
+                description,
+                sort,
+                is_init,
+                `level`,
+                created_on,
+                created_by
+
+    </sql>
+
+    <insert id="insertDepartment" useGeneratedKeys="true" keyProperty="id"
+            parameterType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+
+                INSERT INTO department (d_group,
+                                        department_name,
+                                        parent_id,
+                                        pk_org_id,
+                                        `code`,
+                                        `path`,
+                                        sort,
+                                        `level`,
+                                        created_on,
+                                        created_by,
+                                        description)
+                VALUES (#{dGroup},
+                        #{departmentName},
+                        #{parentId},
+                        #{pkOrgId},
+                        #{code},
+                        #{path},
+                        #{sort},
+                        #{level},
+                        #{createdOn},
+                        #{createdBy},
+                        #{description})
+
+    </insert>
+
+  <update id="updateDepartment" parameterType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+        UPDATE department
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="departmentName != null and departmentName != '' ">
+                department_name = #{departmentName},
+            </if>
+            <if test="parentId != null">
+                parent_id = #{parentId},
+            </if>
+            <if test="path != null and path != '' ">
+                path = #{path},
+            </if>
+            <if test="description != null and description != '' ">
+                description = #{description},
+            </if>
+        </trim>
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertDepartmentPropertyBatch">
+        INSERT INTO
+        department_property
+        (
+        dept_id,
+        property_key,
+        val
+        )
+        VALUE
+        <foreach collection="departmentPropertyDtoList" item="departmentPropertyDto" separator=",">
+            (
+            #{departmentPropertyDto.deptId},
+            #{departmentPropertyDto.key},
+            #{departmentPropertyDto.val}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectByPrimary" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+        select
+        <include refid="column"/>
+        from department where id = #{id}
+    </select>
+
+    <select id="selectByOrgId" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+        SELECT
+        <include refid="column"/>
+        FROM
+        department
+        WHERE
+        pk_org_id = #{orgId}
+        and d_group in (1,2)
+        order by created_on
+    </select>
+
+    <select id="selectRootByOrgId" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+        SELECT
+        <include refid="column"/>
+        FROM
+        department
+        WHERE
+        pk_org_id = #{orgId}
+        and parent_id is null
+    </select>
+
+    <select id="countByDepartmentName" resultType="java.lang.Integer">
+
+                select COUNT(0)
+                from department
+                where department_name = #{departmentName}
+                  and pk_org_id = #{orgId}
+
+    </select>
+
+    <select id="countByDepartmentNameForUpdate" resultType="java.lang.Integer">
+
+                select
+                    COUNT(0)
+                from
+                    department
+                where
+                    department_name = #{departmentName}
+                    and pk_org_id = #{orgId}
+                    and id != #{id}
+
+    </select>
+
+    <select id="countByParentId" resultType="java.lang.Integer">
+
+                select COUNT(0)
+                from department
+                where parent_id = #{parentId}
+
+    </select>
+
+    <select id="countByParentIds" resultType="java.lang.Integer">
+        select
+        COUNT(0)
+        from
+        department
+        where
+        parent_id in
+        <foreach collection="parentIds" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <delete id="deleteByPrimaryKey">
+
+                DELETE
+                from department
+                where id = #{id}
+
+    </delete>
+
+    <delete id="batchDelete" parameterType="java.util.List">
+        delete from department
+        WHERE id IN
+        <foreach collection="ids" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and pk_org_id = #{orgId}
+    </delete>
+
+    <delete id="batchDeleteProperty" parameterType="java.util.List">
+        delete from department_property
+        WHERE dept_id IN
+        <foreach collection="ids" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="getDepartmentListByParentIdAndPath" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+        SELECT
+        <include refid="column"/>
+        FROM department WHERE parent_id = #{parentId} and path like concat(#{path}, '%') order by sort desc
+    </select>
+
+    <select id="getSpaceListByParentId" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.SpaceTreeResDto">
+        SELECT
+            id spaceId,
+            department_name spaceName,
+            path spaceTreePath,
+            d_group dGroup,
+            case
+                when (select EXISTS (select 1 from department where parent_id = d.id limit 1)) > 0 then 1
+            else 0
+            end as hasChild
+        FROM department d
+        WHERE
+            <choose>
+                <when test="dGroup == 1 or dGroup == 2">
+                    d_group = 3
+                    AND  d.path like concat('%', #{path}, '%')
+                </when>
+                <otherwise>
+                  parent_id = #{spaceId}
+                  and d_group in (3,4,5,6,7)
+                </otherwise>
+            </choose>
+        order by sort desc
+    </select>
+
+    <select id="getDepartmentList" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+        SELECT
+        <include refid="column"/>
+        FROM department WHERE id IN
+        <foreach collection="ids" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getMaxSortByParentId" resultType="java.lang.Integer">
+
+                SELECT max(sort) + 1
+                FROM department
+                WHERE parent_id = #{parentId}
+
+    </select>
+
+    <select id="getPathByUser" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto">
+
+                select
+                    d.id, d.path, d.department_name as name, d.d_group
+                from
+                    department d
+                    left join user_org uo on d.id = uo.pk_dept_id
+                where
+                    uo.pk_user_id = #{userId}
+
+    </select>
+
+    <select id="getFullPathById" resultType="java.lang.String">
+
+                select get_full_dept_name(d.path) from department d where d.path = #{tenantDept}
+
+    </select>
+
+    <select id="selectDepartmentName" resultType="java.lang.String">
+
+                SELECT 1
+                FROM department d
+                WHERE d.pk_org_id = #{pkOrgId}
+                  AND d.d_group IN (1, 2)
+                  AND d.department_name = #{departmentName} LIMIT 1
+
+    </select>
+
+    <select id="getPathBySpacePath" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+
+                select
+                    *
+                from
+                    department
+                where
+                    d_group in (1, 2)
+                    and LOCATE(`path` , #{path}) > 0
+                order by
+                    `path` desc
+                limit 1
+
+    </select>
+
+    <select id="getCommunityByPath" resultType="java.lang.Integer">
+
+                SELECT
+                    count(*)
+                FROM
+                    department
+                WHERE
+                    d_group = 3
+                AND
+                    path like CONCAT(#{path},'%')
+
+    </select>
+
+    <update id="updateDepartmentNameById">
+        update department
+        <set>
+            department_name = #{departmentName}
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="getDepartmentById" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+
+                SELECT
+                    id , department_name
+                FROM
+                    department
+                WHERE
+                    id = #{id}
+
+    </select>
+
+    <select id="getAllSpaceTree" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+        SELECT
+        <include refid="column"/>
+        FROM
+        department
+        WHERE
+        path like CONCAT(#{path}, '%')
+        and d_group in (1,2,3,4,6,7)
+        and pk_org_id = #{orgId}
+    </select>
+
+    <select id="getHousePathByHousePrimaryKey" resultType="java.lang.String">
+        SELECT
+            path
+        FROM
+            department d
+        LEFT JOIN house h ON d.id = h.self_dept_id
+        WHERE
+            h.id =#{id}
+    </select>
+
+    <select id="getDgroupByUserIdAndOrgId" resultType="java.util.Map">
+
+                SELECT
+                    d_group dGroup
+                FROM
+                    department
+                WHERE
+                        id IN (
+                        SELECT
+                            pk_dept_id
+                        FROM
+                            user_org
+                        WHERE
+                            pk_org_id = #{orgId}
+                          AND pk_user_id = #{userId})
+
+    </select>
+
+    <select id="getPathByOrgId" resultType="java.lang.String">
+
+                SELECT
+                    path
+                FROM
+                    department
+                WHERE
+                    pk_org_id = #{orgId} and parent_id is null
+
+    </select>
+
+    <select id="getHousePathListByIdList" resultType="java.lang.String">
+        SELECT
+        path
+        FROM
+        department d
+        LEFT JOIN house h ON d.id = h.self_dept_id
+        WHERE
+        h.id IN
+        <foreach collection="idList" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getDeptIdListByHouseIdList" resultType="java.lang.Long">
+        SELECT
+            d.id
+        FROM
+            department d
+        LEFT JOIN house h ON d.id = h.self_dept_id
+        WHERE
+            h.id IN
+        <foreach collection="idList" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getCommunityIdByPath" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+        SELECT
+        <include refid="column"/>
+        FROM
+        department
+        WHERE
+        d_group in (1,2,3)
+        AND LOCATE(
+        `path`, #{path}) > 0
+        ORDER BY
+        `path` DESC
+        LIMIT 1
+    </select>
+
+    <select id="getCommunityPathByPath" resultType="java.lang.String">
+        SELECT
+            path
+        FROM
+            department
+        WHERE
+            d_group in (1,2,3)
+        AND LOCATE(
+            `path`, #{path}) > 0
+        ORDER BY
+            `path` DESC
+        LIMIT 1
+    </select>
+
+  <select id="checkDeptIdList" resultType="java.lang.Long">
+        SELECT
+            id
+        FROM
+            department
+        WHERE
+            id IN <foreach collection="deptIdList" item="deptId" separator="," open="(" close=")">#{deptId}</foreach>
+            AND path LIKE (
+            SELECT
+                CONCAT(path, '%')
+            FROM
+                department
+            WHERE
+                id IN ( SELECT pk_dept_id FROM user_org WHERE pk_user_id = #{userId} AND pk_org_id = #{orgId} ORDER BY id  ))
+    </select>
+
+</mapper>
