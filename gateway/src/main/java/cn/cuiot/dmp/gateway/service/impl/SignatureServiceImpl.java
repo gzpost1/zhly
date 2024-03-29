@@ -24,7 +24,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.rewrite.CachedBodyOutputMessage;
 import org.springframework.cloud.gateway.support.BodyInserterContext;
-import org.springframework.cloud.gateway.support.DefaultServerRequest;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +33,7 @@ import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.server.HandlerStrategies;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
@@ -97,7 +97,8 @@ public class SignatureServiceImpl implements SignatureService {
         }
 
         AtomicBoolean signResult = new AtomicBoolean(false);
-        ServerRequest serverRequest = new DefaultServerRequest(exchange);
+        //ServerRequest serverRequest = new DefaultServerRequest(exchange);
+        ServerRequest serverRequest = ServerRequest.create(exchange, HandlerStrategies.withDefaults().messageReaders());
         Mono<String> modifiedBody = serverRequest.bodyToMono(String.class)
                 .flatMap(body -> {
                     String sign = generatorSign(timestamp, signatureNonce, body, configInfo);

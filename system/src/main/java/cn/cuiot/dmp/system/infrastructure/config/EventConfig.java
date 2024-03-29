@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.config;
 
-import org.apache.tomcat.util.threads.ThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
