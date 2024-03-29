@@ -22,6 +22,7 @@ public interface OrganizationRepository extends Repository<Organization, Organiz
      * @param aggregate
      * @return
      */
+    @Override
     int removeList(@NonNull List<OrganizationId> aggregate);
 
     /**

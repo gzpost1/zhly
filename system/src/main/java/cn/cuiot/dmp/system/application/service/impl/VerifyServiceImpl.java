@@ -19,7 +19,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.KaptchaResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SecretKeyResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.SensitiveDao;
-import cn.cuiot.dmp.system.infrastructure.utils.RedisUtil;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.SensitiveWordEngineUtils;
 import cn.cuiot.dmp.system.infrastructure.utils.SensitiveWordInitUtils;
 import cn.cuiot.dmp.system.infrastructure.utils.VerifyUnit;

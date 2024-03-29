@@ -8,6 +8,7 @@
         <module>common</module>
         <module>domain</module>
         <module>gateway</module>
+        <module>base</module>
     </modules>
 
     <parent>

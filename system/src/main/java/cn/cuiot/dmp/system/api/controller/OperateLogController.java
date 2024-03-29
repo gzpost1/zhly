@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.system.api.controller;
 
 import cn.cuiot.dmp.common.constant.Constant;
-import cn.cuiot.dmp.system.application.enums.LogTypeEnum;
+import cn.cuiot.dmp.base.application.enums.LogTypeEnum;
 import cn.cuiot.dmp.system.application.enums.SearchContentEnum;
 import cn.cuiot.dmp.system.application.service.OperateLogQueryService;
 import cn.cuiot.dmp.system.infrastructure.entity.bean.OperationLogBean;

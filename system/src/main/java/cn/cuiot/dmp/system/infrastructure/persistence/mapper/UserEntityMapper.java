@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.persistence.mapper;
 
+import cn.cuiot.dmp.base.infrastructure.persistence.mapper.IotBaseMapper;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 

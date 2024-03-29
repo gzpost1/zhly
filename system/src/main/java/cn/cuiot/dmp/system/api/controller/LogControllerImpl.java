@@ -4,7 +4,7 @@ import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.StatusCodeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.system.application.enums.LogTypeEnum;
+import cn.cuiot.dmp.base.application.enums.LogTypeEnum;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;

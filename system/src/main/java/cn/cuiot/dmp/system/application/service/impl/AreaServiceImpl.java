@@ -7,7 +7,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.AreaEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.AreaDto;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.SelectCascadeVO;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.AreaDao;
-import cn.cuiot.dmp.system.infrastructure.utils.RedisUtil;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;

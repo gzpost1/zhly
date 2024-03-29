@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
+import cn.cuiot.dmp.base.infrastructure.domain.repository.impl.AbstraceRepositoryImpl;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.Email;
@@ -7,7 +8,7 @@ import cn.cuiot.dmp.domain.types.Password;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
 import cn.cuiot.dmp.domain.types.id.UserId;
-import cn.cuiot.dmp.system.infrastructure.domain.converter.Converter;
+import cn.cuiot.dmp.base.infrastructure.domain.converter.Converter;
 import cn.cuiot.dmp.system.infrastructure.domain.converter.UserConverter;
 import cn.cuiot.dmp.system.infrastructure.persistence.iservice.IUserEntityService;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserDepartmentEntity;
@@ -38,7 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
  * @Version V1.0
  */
 @Repository
-public class UserRepositoryImpl extends AbstraceRepositoryImpl<UserEntity, User, UserId, UserEntityMapper> implements UserRepository {
+public class UserRepositoryImpl extends
+        AbstraceRepositoryImpl<UserEntity, User, UserId, UserEntityMapper> implements UserRepository {
 
     @Autowired
     private UserEntityMapper userEntityMapper;

@@ -24,7 +24,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.ParkUpdateReqDto;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.SpaceDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserPropertyDao;
-import cn.cuiot.dmp.system.infrastructure.utils.RedisUtil;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import java.time.LocalDateTime;

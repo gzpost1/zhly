@@ -14,7 +14,7 @@ import cn.cuiot.dmp.common.utils.RandomCodeWorker;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.application.constant.CurrencyConst;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
-import cn.cuiot.dmp.system.application.enums.OrgTypeEnum;
+import cn.cuiot.dmp.base.application.enums.OrgTypeEnum;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
@@ -33,7 +33,8 @@ import cn.cuiot.dmp.system.infrastructure.persistence.dao.SpaceDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDataDao;
 import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
-import cn.cuiot.dmp.system.infrastructure.utils.RedisUtil;
+import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.system.user_manage.domain.entity.Organization;
 import cn.cuiot.dmp.system.user_manage.repository.OrganizationRepository;
 import com.alibaba.fastjson.JSONObject;
@@ -73,6 +74,8 @@ public class DepartmentServiceImpl implements DepartmentService {
     private DepartmentDao departmentDao;
     @Autowired
     private RedisUtil redisUtil;
+    @Autowired
+    private OrgRedisUtil orgRedisUtil;
     @Autowired
     private RedissonClient redissonClient;
     @Autowired
@@ -202,7 +205,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         entity.setDGroup(parentDept.getDGroup());
         entity.setLevel(++parentDeptLevel);
 
-        redisUtil.doubleDeleteForDbOperation(() -> departmentDao.insertDepartment(entity),
+        orgRedisUtil.doubleDeleteForDbOperation(() -> departmentDao.insertDepartment(entity),
                 String.valueOf(dto.getPkOrgId()));
 
         //获取账户日志操作对象
@@ -258,7 +261,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         entity.setDepartmentName(siteName);
 
         List<Integer> result = new ArrayList<Integer>();
-        redisUtil.doubleDeleteForDbOperation(
+        orgRedisUtil.doubleDeleteForDbOperation(
                 () -> result.add(departmentDao.updateDepartment(entity)),
                 String.valueOf(dto.getPkOrgId()));
         redisUtil.del(DEPT_NAME_KEY_PREFIX + entity.getId());
@@ -540,7 +543,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             throw new BusinessException(ResultCode.ACCOUNT_HAS_COMMUNITY);
         }
 
-        redisUtil.doubleDeleteForDbOperation(() -> departmentDao.deleteByPrimaryKey(id), orgId);
+        orgRedisUtil.doubleDeleteForDbOperation(() -> departmentDao.deleteByPrimaryKey(id), orgId);
     }
 
     /**
@@ -803,6 +806,5 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
     }
-
 
 }
