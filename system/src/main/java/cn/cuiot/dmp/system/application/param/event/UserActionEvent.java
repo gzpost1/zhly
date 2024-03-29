@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.application.param.event;
 
+import cn.cuiot.dmp.base.application.param.event.ActionEvent;
 import cn.cuiot.dmp.common.serialize.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.time.LocalDateTime;

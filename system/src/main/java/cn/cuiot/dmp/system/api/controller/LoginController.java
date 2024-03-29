@@ -20,7 +20,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SmsReqDTO;
-import cn.cuiot.dmp.system.infrastructure.utils.RedisUtil;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.VerifyUnit;
 import cn.cuiot.dmp.system.user_manage.domain.entity.User;
 import cn.hutool.core.lang.Assert;

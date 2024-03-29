@@ -27,9 +27,8 @@ import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
-import cn.cuiot.dmp.system.application.enums.OrgLabelEnum;
-import cn.cuiot.dmp.system.application.enums.OrgStatusEnum;
-import cn.cuiot.dmp.system.application.enums.OrgTypeEnum;
+import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
+import cn.cuiot.dmp.base.application.enums.OrgTypeEnum;
 import cn.cuiot.dmp.system.application.enums.ResetPasswordEnum;
 import cn.cuiot.dmp.system.application.enums.UserSourceTypeEnum;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2EntityAssembler;
@@ -68,11 +67,12 @@ import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrganizationDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.RoleDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDataDao;
-import cn.cuiot.dmp.system.infrastructure.utils.CommonCsvUtil;
+import cn.cuiot.dmp.base.infrastructure.utils.CommonCsvUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.DeptTreePathUtils;
+import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.RandomPwUtils;
-import cn.cuiot.dmp.system.infrastructure.utils.RedisUtil;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.system.user_manage.domain.entity.Organization;
 import cn.cuiot.dmp.system.user_manage.domain.entity.User;
 import cn.cuiot.dmp.system.user_manage.domain.service.UserPhoneNumberDomainService;
@@ -158,6 +158,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private OrgRedisUtil orgRedisUtil;
 
     @Resource
     protected HttpServletResponse response;
@@ -442,7 +445,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         entity.setCreatedBy(dto.getUserId());
         entity.setDGroup(DepartmentGroupEnum.TENANT.getCode());
 
-        redisUtil.doubleDeleteForDbOperation(() -> departmentDao.insertDepartment(entity),
+        orgRedisUtil.doubleDeleteForDbOperation(() -> departmentDao.insertDepartment(entity),
                 String.valueOf(entity.getPkOrgId()));
         return entity;
     }

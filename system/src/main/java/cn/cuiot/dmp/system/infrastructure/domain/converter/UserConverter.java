@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.domain.converter;
 
+import cn.cuiot.dmp.base.infrastructure.domain.converter.Converter;
 import cn.cuiot.dmp.domain.types.Address;
 import cn.cuiot.dmp.domain.types.Email;
 import cn.cuiot.dmp.domain.types.EncryptedValue;
@@ -29,6 +30,7 @@ public class UserConverter implements Converter<User, UserEntity> {
 
     public static final UserConverter INSTANCE = new UserConverter();
 
+    @Override
     public User toDomain(UserEntity userEntity) {
         try {
             if (userEntity == null) {
@@ -83,6 +85,7 @@ public class UserConverter implements Converter<User, UserEntity> {
         }
     }
 
+    @Override
     public UserEntity toEntity(User user) {
         if (user == null) {
             return null;
