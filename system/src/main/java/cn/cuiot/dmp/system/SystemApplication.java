@@ -25,7 +25,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableFeignClients
 @EnableAsync
 public class SystemApplication {
-
     public static void main(String[] args) {
         JSONFactory.setUseJacksonAnnotation(false);
         SpringApplication.run(SystemApplication.class);

@@ -16,7 +16,6 @@ import cn.cuiot.dmp.system.application.constant.CurrencyConst;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
 import cn.cuiot.dmp.system.application.enums.OrgTypeEnum;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
-import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentPropertyDto;
@@ -88,9 +87,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     private SpaceDao spaceDao;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private DepartmentUtil departmentUtil;
 
     public static final String NULL_WORD = "null";
@@ -100,7 +96,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     /**
      * dgroup排序列表
      */
-    private static final List<Integer> SPACE_GROUP_LIST = Lists.newArrayList(7,4,6,3,2,1);
+    private static final List<Integer> SPACE_GROUP_LIST = Lists.newArrayList(7, 4, 6, 3, 2, 1);
 
     @Override
     public Long insertDepartment(InsertDepartmentDto dto) {
@@ -150,17 +146,24 @@ public class DepartmentServiceImpl implements DepartmentService {
         checkAdminUser(dto.getPkOrgId().toString(), dto.getUserId());
         final String departmentName = dto.getDepartmentName();
         final Long parentId = dto.getParentId();
-        DepartmentEntity userDept = departmentDao.selectByPrimary(Long.valueOf(userService.getDeptId(dto.getUserId(), dto.getPkOrgId().toString())));
-        if (!Arrays.asList(DepartmentGroupEnum.TENANT.getCode(), DepartmentGroupEnum.SYSTEM.getCode()).contains(userDept.getDGroup())) {
+        DepartmentEntity userDept = departmentDao.selectByPrimary(
+                Long.valueOf(userDao.getDeptId(dto.getUserId(), dto.getPkOrgId().toString())));
+        if (!Arrays
+                .asList(DepartmentGroupEnum.TENANT.getCode(), DepartmentGroupEnum.SYSTEM.getCode())
+                .contains(userDept.getDGroup())) {
             throw new BusinessException(ResultCode.ONLY_DEPT_USER_CAN_INSERT_DEPT);
         }
         DepartmentEntity parentDept = departmentDao.selectByPrimary(parentId);
         // 租户组织树层级限制
-        Organization organization = organizationRepository.find(new OrganizationId(dto.getPkOrgId()));
+        Organization organization = organizationRepository
+                .find(new OrganizationId(dto.getPkOrgId()));
         int maxDeptHigh = organization != null ? organization.getMaxDeptHigh() : 0;
         //获取租户账户类型
-        Organization tempOrganization = organizationRepository.find(new OrganizationId(dto.getPkOrgId()));
-        Integer orgTypeId = tempOrganization != null ? tempOrganization.getOrgTypeId().getValue().intValue() : null;
+        Organization tempOrganization = organizationRepository
+                .find(new OrganizationId(dto.getPkOrgId()));
+        Integer orgTypeId =
+                tempOrganization != null ? tempOrganization.getOrgTypeId().getValue().intValue()
+                        : null;
 
         if (orgTypeId != null && orgTypeId.equals(OrgTypeEnum.COMMUNITY.getCode())) {
             if (maxDeptHigh < NumberConst.SEVEN) {
@@ -180,7 +183,8 @@ public class DepartmentServiceImpl implements DepartmentService {
             throw new BusinessException(ResultCode.DEPARTMENT_LEVEL_OVERRUN);
         }
         //校验本组织下组织名是否重复
-        String department = departmentDao.selectDepartmentName(dto.getPkOrgId(), dto.getDepartmentName());
+        String department = departmentDao
+                .selectDepartmentName(dto.getPkOrgId(), dto.getDepartmentName());
         if (department != null) {
             throw new BusinessException(ResultCode.DEPARTMENT_NAME_EXIST);
         }
@@ -198,7 +202,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         entity.setDGroup(parentDept.getDGroup());
         entity.setLevel(++parentDeptLevel);
 
-        redisUtil.doubleDeleteForDbOperation(() -> departmentDao.insertDepartment(entity), String.valueOf(dto.getPkOrgId()));
+        redisUtil.doubleDeleteForDbOperation(() -> departmentDao.insertDepartment(entity),
+                String.valueOf(dto.getPkOrgId()));
 
         //获取账户日志操作对象
         String[] operationTarget = new String[1];
@@ -215,7 +220,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public int updateDepartmentProperty(DepartmentPropertyDto dto) {
-        int ret = departmentDao.updateDepartmentProperty(dto.getDeptId(), dto.getKey(), dto.getVal());
+        int ret = departmentDao
+                .updateDepartmentProperty(dto.getDeptId(), dto.getKey(), dto.getVal());
         redisUtil.del(DEPT_CODE_KEY_PREFIX + dto.getDeptId());
         return ret;
     }
@@ -236,7 +242,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         DepartmentEntity entity = new DepartmentEntity();
         // 根节点不存在同级别重名，不校验。不同企业间可以重名。
         if (parentId != null) {
-            int count = departmentDao.countByDepartmentNameForUpdate(siteName, dto.getPkOrgId(), dto.getId());
+            int count = departmentDao
+                    .countByDepartmentNameForUpdate(siteName, dto.getPkOrgId(), dto.getId());
             if (count > 0) {
                 throw new BusinessException(ResultCode.DEPARTMENT_NAME_EXIST);
             }
@@ -251,7 +258,9 @@ public class DepartmentServiceImpl implements DepartmentService {
         entity.setDepartmentName(siteName);
 
         List<Integer> result = new ArrayList<Integer>();
-        redisUtil.doubleDeleteForDbOperation(() -> result.add(departmentDao.updateDepartment(entity)), String.valueOf(dto.getPkOrgId()));
+        redisUtil.doubleDeleteForDbOperation(
+                () -> result.add(departmentDao.updateDepartment(entity)),
+                String.valueOf(dto.getPkOrgId()));
         redisUtil.del(DEPT_NAME_KEY_PREFIX + entity.getId());
         //获取账户日志操作对象
         String[] operationTarget = new String[1];
@@ -284,7 +293,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         // 用户组织
         DepartmentDto userPathDto = departmentDao.getPathByUser(userId);
         // 查询组织下全部组织
-        List<DepartmentEntity> entityList = departmentDao.getAllSpaceTree(userPathDto.getPath(), orgId);
+        List<DepartmentEntity> entityList = departmentDao
+                .getAllSpaceTree(userPathDto.getPath(), orgId);
         List<DepartmentTreeVO> departmentTreeList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(entityList)) {
             DepartmentTreeVO vo;
@@ -297,7 +307,8 @@ public class DepartmentServiceImpl implements DepartmentService {
             // 递归组成树
             for (DepartmentTreeVO departmentTreeVO : departmentTreeListTemp) {
                 if (userPathDto.getId().equals(departmentTreeVO.getId())) {
-                    List<DepartmentTreeVO> childList = buildTree(departmentTreeListTemp, departmentTreeVO.getId());
+                    List<DepartmentTreeVO> childList = buildTree(departmentTreeListTemp,
+                            departmentTreeVO.getId());
                     departmentTreeVO.setChildren(childList);
                     departmentTreeList.add(departmentTreeVO);
                     break;
@@ -309,17 +320,23 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public List<GetDepartmentTreeLazyResDto> manageGetDepartmentTreeLazy(GetDepartmentTreeLazyReqDto dto) {
+    public List<GetDepartmentTreeLazyResDto> manageGetDepartmentTreeLazy(
+            GetDepartmentTreeLazyReqDto dto) {
         final String orgId = dto.getLoginOrgId();
         final String userId = dto.getLoginUserId();
         List<GetDepartmentTreeLazyResDto> result;
         // 只能看到当前租户 所属dept为根,先获取根节点,以用户deptId为主键
         if (INIT.equals(dto.getType())) {
-            Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf).orElse(null);
+            Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
+                    .orElse(null);
             result = spaceDao.getRootDepartmentLazy(orgId, deptId.toString());
-            if (!Arrays.asList(DepartmentGroupEnum.SYSTEM.getCode().toString(), DepartmentGroupEnum.TENANT.getCode().toString()).contains(result.get(0).getDGroup())) {
-                DepartmentEntity pathBySpacePath = departmentDao.getPathBySpacePath(result.get(0).getPath());
-                GetDepartmentTreeLazyResDto getDepartmentTreeLazyResDto = new GetDepartmentTreeLazyResDto(String.valueOf(pathBySpacePath.getId()),
+            if (!Arrays.asList(DepartmentGroupEnum.SYSTEM.getCode().toString(),
+                    DepartmentGroupEnum.TENANT.getCode().toString())
+                    .contains(result.get(0).getDGroup())) {
+                DepartmentEntity pathBySpacePath = departmentDao
+                        .getPathBySpacePath(result.get(0).getPath());
+                GetDepartmentTreeLazyResDto getDepartmentTreeLazyResDto = new GetDepartmentTreeLazyResDto(
+                        String.valueOf(pathBySpacePath.getId()),
                         String.valueOf(pathBySpacePath.getDGroup()),
                         pathBySpacePath.getDepartmentName(),
                         String.valueOf(pathBySpacePath.getParentId()),
@@ -329,38 +346,34 @@ public class DepartmentServiceImpl implements DepartmentService {
                 return Arrays.asList(getDepartmentTreeLazyResDto);
             }
         } else {
-            result = spaceDao.getUserDepartmentLazy(dto.getParentId(), Arrays.asList(DepartmentGroupEnum.SYSTEM.getCode(), DepartmentGroupEnum.TENANT.getCode()));
+            result = spaceDao.getUserDepartmentLazy(dto.getParentId(),
+                    Arrays.asList(DepartmentGroupEnum.SYSTEM.getCode(),
+                            DepartmentGroupEnum.TENANT.getCode()));
         }
         return result;
     }
 
     /**
-     * @param orgId -- 用户所在组织结构的Id
-     *              ==对应数据表organization的id字段
-     *              ==对应site表的pk_org_id
-     *              查询site表中该orgId下所有记录，形成List，存放到redis的CacheConst.ROBOT_ORGANIZATION_REDIS_KEY_orgId中。
-     *              list中元素的格式如下：
-     *              {
-     *              "createdBy":"admin",
-     *              "createdOn":"2021-08-19T15:32:43",
-     *              "id":877938137400082432,
-     *              "parentId":877934713065439232,
-     *              "pkOrgId":1,
-     *              "siteName":"熊猫电子",
-     *              "sort":0
-     *              }
+     * @param orgId -- 用户所在组织结构的Id ==对应数据表organization的id字段 ==对应site表的pk_org_id
+     * 查询site表中该orgId下所有记录，形成List，存放到redis的CacheConst.ROBOT_ORGANIZATION_REDIS_KEY_orgId中。
+     * list中元素的格式如下： { "createdBy":"admin", "createdOn":"2021-08-19T15:32:43",
+     * "id":877938137400082432, "parentId":877934713065439232, "pkOrgId":1, "siteName":"熊猫电子",
+     * "sort":0 }
      */
     @Override
     public List<DepartmentTreeVO> getDepartmentTree(String orgId, String userId, String type) {
         // 这里需要判断 .只能看到当前租户 所属dept为根
-        Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf).orElse(null);
+        Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
+                .orElse(null);
         DepartmentEntity department = departmentDao.selectByPrimary(deptId);
         // 初始化departmentTreeList
         List<DepartmentTreeVO> departmentTreeList = new ArrayList<>();
         // 若为组织懒加载接口且用户所在组织为组织级以下（小区，区域等），则只返回用户所在组织
         if (!StringUtils.isEmpty(type) && type.equals(CurrencyConst.SPACE)) {
-            List<Integer> dgroups = Arrays.asList(DepartmentGroupEnum.COMMUNITY.getCode(), DepartmentGroupEnum.BUILDING.getCode(),
-                    DepartmentGroupEnum.HOUSE.getCode(), DepartmentGroupEnum.REGION.getCode(), DepartmentGroupEnum.FLOOR.getCode());
+            List<Integer> dgroups = Arrays.asList(DepartmentGroupEnum.COMMUNITY.getCode(),
+                    DepartmentGroupEnum.BUILDING.getCode(),
+                    DepartmentGroupEnum.HOUSE.getCode(), DepartmentGroupEnum.REGION.getCode(),
+                    DepartmentGroupEnum.FLOOR.getCode());
             if (dgroups.contains(department.getDGroup())) {
                 DepartmentTreeVO vo = new DepartmentTreeVO();
                 DepartmentEntity entity = departmentDao.getPathBySpacePath(department.getPath());
@@ -369,8 +382,9 @@ public class DepartmentServiceImpl implements DepartmentService {
                 departmentTreeList.add(vo);
                 return departmentTreeList;
             }
-        }else if(department.getDGroup().equals(DepartmentGroupEnum.BUILDING.getCode())||department.getDGroup().equals(DepartmentGroupEnum.FLOOR.getCode())) {
-            List<DepartmentTreeVO> children=new ArrayList();
+        } else if (department.getDGroup().equals(DepartmentGroupEnum.BUILDING.getCode())
+                || department.getDGroup().equals(DepartmentGroupEnum.FLOOR.getCode())) {
+            List<DepartmentTreeVO> children = new ArrayList();
             DepartmentTreeVO vo = new DepartmentTreeVO();
             BeanUtils.copyProperties(department, vo);
             vo.setChildren(children);
@@ -380,10 +394,12 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (department.getDGroup().equals(DepartmentGroupEnum.COMMUNITY.getCode())) {
             deptId = departmentDao.selectByPrimary(department.getParentId()).getId();
         }
-        List<String> robotOrganization = redisUtil.lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
+        List<String> robotOrganization = redisUtil
+                .lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
         if (CollectionUtils.isEmpty(robotOrganization)) {
             syncRedis(orgId);
-            robotOrganization = redisUtil.lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
+            robotOrganization = redisUtil
+                    .lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
         }
         if (!CollectionUtils.isEmpty(robotOrganization)) {
             DepartmentTreeVO vo;
@@ -395,7 +411,8 @@ public class DepartmentServiceImpl implements DepartmentService {
             if (deptId != null) {
                 for (DepartmentTreeVO departmentTreeVO : departmentTreeListTemp) {
                     if (deptId.equals(departmentTreeVO.getId())) {
-                        List<DepartmentTreeVO> childList = buildTree(departmentTreeListTemp, departmentTreeVO.getId());
+                        List<DepartmentTreeVO> childList = buildTree(departmentTreeListTemp,
+                                departmentTreeVO.getId());
                         departmentTreeVO.setChildren(childList);
                         departmentTreeList.add(departmentTreeVO);
                         break;
@@ -403,8 +420,10 @@ public class DepartmentServiceImpl implements DepartmentService {
                 }
             } else {
                 for (DepartmentTreeVO departmentTreeVO : departmentTreeListTemp) {
-                    if (departmentTreeVO.getParentId() == null || departmentTreeVO.getParentId() == 0) {
-                        List<DepartmentTreeVO> childList = buildTree(departmentTreeListTemp, departmentTreeVO.getId());
+                    if (departmentTreeVO.getParentId() == null
+                            || departmentTreeVO.getParentId() == 0) {
+                        List<DepartmentTreeVO> childList = buildTree(departmentTreeListTemp,
+                                departmentTreeVO.getId());
                         departmentTreeVO.setChildren(childList);
                         departmentTreeList.add(departmentTreeVO);
                         break;
@@ -417,12 +436,9 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     /**
      * 递归出组织树
-     *
-     * @param robotOrganization
-     * @param parentId
-     * @return
      */
-    private List<DepartmentTreeVO> buildTree(List<DepartmentTreeVO> robotOrganization, Long parentId) {
+    private List<DepartmentTreeVO> buildTree(List<DepartmentTreeVO> robotOrganization,
+            Long parentId) {
         List<DepartmentTreeVO> trees = new ArrayList<>();
         for (int i = 0; i < robotOrganization.size(); i++) {
             DepartmentTreeVO departmentTreeVO = robotOrganization.get(i);
@@ -444,15 +460,14 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     /**
      * 重建redis中的组织数据
-     *
-     * @param orgId
      */
     private void syncRedis(String orgId) {
         List<DepartmentEntity> siteList = departmentDao.selectByOrgId(orgId);
         if (CollectionUtils.isEmpty(siteList)) {
             return;
         }
-        RLock disLock = redissonClient.getLock("LOCK_" + CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId);
+        RLock disLock = redissonClient
+                .getLock("LOCK_" + CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId);
         boolean isLock;
         try {
             // 尝试获取分布式锁
@@ -461,7 +476,8 @@ public class DepartmentServiceImpl implements DepartmentService {
                 log.debug("syncRedis Lock get success");
                 redisUtil.del(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId);
                 for (DepartmentEntity departmentEntity : siteList) {
-                    redisUtil.lSet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, JSONObject.toJSONString(departmentEntity));
+                    redisUtil.lSet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId,
+                            JSONObject.toJSONString(departmentEntity));
                     log.debug("syncRedis item: {}" + departmentEntity.getDepartmentName());
                 }
             }
@@ -480,7 +496,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         DepartmentEntity departmentEntity = departmentDao.selectByPrimary(id);
         String path = departmentEntity.getPath();
         String orgId = updateDepartmentDto.getOrgId();
-        String loginDeptId = userDao.getDeptId(updateDepartmentDto.getUserId(), updateDepartmentDto.getOrgId());
+        String loginDeptId = userDao
+                .getDeptId(updateDepartmentDto.getUserId(), updateDepartmentDto.getOrgId());
         if (!departmentUtil.checkPrivilege(loginDeptId, String.valueOf(id))) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
@@ -519,7 +536,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         // 获取是否有小区
         Integer communityCount = departmentDao.getCommunityByPath(path);
-        if (communityCount > NumberConst.ZERO){
+        if (communityCount > NumberConst.ZERO) {
             throw new BusinessException(ResultCode.ACCOUNT_HAS_COMMUNITY);
         }
 
@@ -532,14 +549,18 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public List<Long> getChildrenDepartmentIds(String orgId, Long deptId) {
         List<Long> childrenList = Lists.newArrayList();
-        List<String> robotOrganization = redisUtil.lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
+        List<String> robotOrganization = redisUtil
+                .lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
         if (CollectionUtils.isEmpty(robotOrganization)) {
             syncRedis(orgId);
-            robotOrganization = redisUtil.lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
+            robotOrganization = redisUtil
+                    .lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
         }
         if (!CollectionUtils.isEmpty(robotOrganization)) {
             if (deptId == null || deptId.equals(0L)) {
-                return robotOrganization.stream().map(x -> JSONObject.parseObject(x, DepartmentTreeVO.class).getId()).collect(Collectors.toList());
+                return robotOrganization.stream()
+                        .map(x -> JSONObject.parseObject(x, DepartmentTreeVO.class).getId())
+                        .collect(Collectors.toList());
             }
             childrenList.add(deptId);
             List<Long> myChildList = getChildList(robotOrganization, deptId);
@@ -573,13 +594,17 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public GetDepartmentTreeLazyByNameResDto getUserDepartmentTreeLazyByName(GetDepartmentTreeLazyByNameReqDto dto) {
+    public GetDepartmentTreeLazyByNameResDto getUserDepartmentTreeLazyByName(
+            GetDepartmentTreeLazyByNameReqDto dto) {
         String userId = dto.getUserId();
         String orgId = dto.getOrgId();
-        Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf).orElse(null);
-        List<GetDepartmentTreeLazyResDto> rootDepartmentLazyList = spaceDao.getRootDepartmentLazy(orgId, deptId.toString());
+        Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
+                .orElse(null);
+        List<GetDepartmentTreeLazyResDto> rootDepartmentLazyList = spaceDao
+                .getRootDepartmentLazy(orgId, deptId.toString());
         GetDepartmentTreeLazyResDto getDepartmentTreeLazyResDto = rootDepartmentLazyList.get(0);
-        if(SPACE_GROUP_LIST.indexOf(Integer.valueOf(getDepartmentTreeLazyResDto.getDGroup())) > SPACE_GROUP_LIST.indexOf(DepartmentGroupEnum.COMMUNITY.getCode())){
+        if (SPACE_GROUP_LIST.indexOf(Integer.valueOf(getDepartmentTreeLazyResDto.getDGroup()))
+                > SPACE_GROUP_LIST.indexOf(DepartmentGroupEnum.COMMUNITY.getCode())) {
             return getDepartmentTreeByNameForFloor(dto, getDepartmentTreeLazyResDto);
         } else {
             //如果是空间级用户登陆，只能查询到其所在等级的组织
@@ -594,17 +619,22 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     private GetDepartmentTreeLazyByNameResDto getDepartmentTreeByName(
-        GetDepartmentTreeLazyByNameReqDto dto, GetDepartmentTreeLazyResDto getDepartmentTreeLazyResDto) {
+            GetDepartmentTreeLazyByNameReqDto dto,
+            GetDepartmentTreeLazyResDto getDepartmentTreeLazyResDto) {
         String dGroup = getDepartmentTreeLazyResDto.getDGroup();
         String rootId = getDepartmentTreeLazyResDto.getId();
-        List<GetDepartmentTreeLazyByNameResDto> departmentList = spaceDao.getDepartmentByNameAndPathAndDepartmentGroup(getDepartmentTreeLazyResDto.getPath(), dto.getDepartmentName(), Arrays.asList(dGroup));
+        List<GetDepartmentTreeLazyByNameResDto> departmentList = spaceDao
+                .getDepartmentByNameAndPathAndDepartmentGroup(getDepartmentTreeLazyResDto.getPath(),
+                        dto.getDepartmentName(), Arrays.asList(dGroup));
         if (CollectionUtils.isEmpty(departmentList)) {
             throw new BusinessException(ResultCode.DEPT_NOT_EXISTS);
         }
         //map的key为id，值为组织节点
         Map<Long, GetDepartmentTreeLazyByNameResDto> departmentHashMap = new HashMap<>(16);
         //搜索结果可能包含跟节点，去除根节点
-        Optional<GetDepartmentTreeLazyByNameResDto> rootNode = departmentList.stream().filter(o -> o.getId().toString().equals(getDepartmentTreeLazyResDto.getId())).findFirst();
+        Optional<GetDepartmentTreeLazyByNameResDto> rootNode = departmentList.stream()
+                .filter(o -> o.getId().toString().equals(getDepartmentTreeLazyResDto.getId()))
+                .findFirst();
         rootNode.ifPresent(o -> departmentList.remove(o));
         if (CollectionUtils.isEmpty(departmentList)) {
             return null;
@@ -614,7 +644,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         TreeSet<GetDepartmentTreeLazyByNameResDto> childList;
         //根据parentID获得childList
         childList = spaceDao.getChildDepartmentListByParentId(removeDto.getParentId().toString());
-        departmentHashMap.putAll(childList.stream().collect(Collectors.toMap(GetDepartmentTreeLazyByNameResDto::getId, lambdaDto -> lambdaDto)));
+        departmentHashMap.putAll(childList.stream().collect(Collectors
+                .toMap(GetDepartmentTreeLazyByNameResDto::getId, lambdaDto -> lambdaDto)));
         //循环拼主树
         while (true) {
             if (childList.first().getParentId().toString().equals(rootId)) {
@@ -625,12 +656,15 @@ public class DepartmentServiceImpl implements DepartmentService {
                 break;
             }
             //根据parentId获得parent那一层级的结果集
-            Map<Long, GetDepartmentTreeLazyByNameResDto> parentDepartmentMap = spaceDao.getParentDepartmentByParentId(childList.first().getParentId().toString());
+            Map<Long, GetDepartmentTreeLazyByNameResDto> parentDepartmentMap = spaceDao
+                    .getParentDepartmentByParentId(childList.first().getParentId().toString());
             departmentHashMap.putAll(parentDepartmentMap);
             //将childList塞入parent
-            GetDepartmentTreeLazyByNameResDto parentDepartmentDto = parentDepartmentMap.get(childList.first().getParentId());
+            GetDepartmentTreeLazyByNameResDto parentDepartmentDto = parentDepartmentMap
+                    .get(childList.first().getParentId());
             parentDepartmentDto.setChildList(childList);
-            childList = parentDepartmentMap.values().stream().collect(Collectors.toCollection(TreeSet::new));
+            childList = parentDepartmentMap.values().stream()
+                    .collect(Collectors.toCollection(TreeSet::new));
         }
         //拼副树，再拼接到主树
         for (GetDepartmentTreeLazyByNameResDto departmentTreeLazyByNameResDto : departmentList) {
@@ -639,18 +673,23 @@ public class DepartmentServiceImpl implements DepartmentService {
                 continue;
             }
             removeDto = departmentTreeLazyByNameResDto;
-            childList = spaceDao.getChildDepartmentListByParentId(removeDto.getParentId().toString());
+            childList = spaceDao
+                    .getChildDepartmentListByParentId(removeDto.getParentId().toString());
             while (true) {
                 if (departmentHashMap.containsKey(childList.first().getParentId())) {
                     departmentHashMap.get(childList.first().getParentId()).setChildList(childList);
                     break;
                 } else {
-                    Map<Long, GetDepartmentTreeLazyByNameResDto> parentDepartmentMap = spaceDao.getParentDepartmentByParentId(childList.first().getParentId().toString());
+                    Map<Long, GetDepartmentTreeLazyByNameResDto> parentDepartmentMap = spaceDao
+                            .getParentDepartmentByParentId(
+                                    childList.first().getParentId().toString());
                     departmentHashMap.putAll(parentDepartmentMap);
                     //将childList塞入parent
-                    GetDepartmentTreeLazyByNameResDto parentDepartmentDto = parentDepartmentMap.get(childList.first().getParentId());
+                    GetDepartmentTreeLazyByNameResDto parentDepartmentDto = parentDepartmentMap
+                            .get(childList.first().getParentId());
                     parentDepartmentDto.setChildList(childList);
-                    childList = parentDepartmentMap.values().stream().collect(Collectors.toCollection(TreeSet::new));
+                    childList = parentDepartmentMap.values().stream()
+                            .collect(Collectors.toCollection(TreeSet::new));
                 }
             }
         }
@@ -658,36 +697,39 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     /**
-     *
-     * @param dto   搜索条件
-     * @param getDepartmentTreeLazyResDto   用户自身的组织信息
-     * @return
+     * @param dto 搜索条件
+     * @param getDepartmentTreeLazyResDto 用户自身的组织信息
      */
     private GetDepartmentTreeLazyByNameResDto getDepartmentTreeByNameForFloor(
-        GetDepartmentTreeLazyByNameReqDto dto, GetDepartmentTreeLazyResDto getDepartmentTreeLazyResDto) {
+            GetDepartmentTreeLazyByNameReqDto dto,
+            GetDepartmentTreeLazyResDto getDepartmentTreeLazyResDto) {
         String dgroup = getDepartmentTreeLazyResDto.getDGroup();
         String rootId = getDepartmentTreeLazyResDto.getId();
         //如果是dgroup为1，查询1  如果dgroup为2 查询2,3 ，如果小于3，查询自身
         List<String> targetDgroupList;
-        switch (dgroup){
-            case "1" :
+        switch (dgroup) {
+            case "1":
                 targetDgroupList = Arrays.asList("1");
                 break;
-            case "2" :
-                targetDgroupList = Arrays.asList("2","3");
+            case "2":
+                targetDgroupList = Arrays.asList("2", "3");
                 break;
             default:
                 targetDgroupList = Arrays.asList(dgroup);
                 break;
         }
-        List<GetDepartmentTreeLazyByNameResDto> departmentList = spaceDao.getDepartmentByNameAndPathAndDepartmentGroup(getDepartmentTreeLazyResDto.getPath(), dto.getDepartmentName() ,targetDgroupList);
+        List<GetDepartmentTreeLazyByNameResDto> departmentList = spaceDao
+                .getDepartmentByNameAndPathAndDepartmentGroup(getDepartmentTreeLazyResDto.getPath(),
+                        dto.getDepartmentName(), targetDgroupList);
         if (CollectionUtils.isEmpty(departmentList)) {
             throw new BusinessException(ResultCode.DEPT_NOT_EXISTS);
         }
         //map的key为id，值为组织节点
         Map<Long, GetDepartmentTreeLazyByNameResDto> departmentHashMap = new HashMap<>(16);
         //搜索结果可能包含跟节点，去除根节点
-        Optional<GetDepartmentTreeLazyByNameResDto> rootNode = departmentList.stream().filter(o -> o.getId().toString().equals(getDepartmentTreeLazyResDto.getId())).findFirst();
+        Optional<GetDepartmentTreeLazyByNameResDto> rootNode = departmentList.stream()
+                .filter(o -> o.getId().toString().equals(getDepartmentTreeLazyResDto.getId()))
+                .findFirst();
         rootNode.ifPresent(o -> departmentList.remove(o));
         if (CollectionUtils.isEmpty(departmentList)) {
             return null;
@@ -697,7 +739,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         TreeSet<GetDepartmentTreeLazyByNameResDto> childList;
         //根据parentID获得childList
         childList = spaceDao.getChildDepartmentListByParentId(removeDto.getParentId().toString());
-        departmentHashMap.putAll(childList.stream().collect(Collectors.toMap(GetDepartmentTreeLazyByNameResDto::getId, lambdaDto -> lambdaDto)));
+        departmentHashMap.putAll(childList.stream().collect(Collectors
+                .toMap(GetDepartmentTreeLazyByNameResDto::getId, lambdaDto -> lambdaDto)));
         //循环拼主树
         while (true) {
             if (childList.first().getParentId().toString().equals(rootId)) {
@@ -708,12 +751,15 @@ public class DepartmentServiceImpl implements DepartmentService {
                 break;
             }
             //根据parentId获得parent那一层级的结果集
-            Map<Long, GetDepartmentTreeLazyByNameResDto> parentDepartmentMap = spaceDao.getParentDepartmentByParentId(childList.first().getParentId().toString());
+            Map<Long, GetDepartmentTreeLazyByNameResDto> parentDepartmentMap = spaceDao
+                    .getParentDepartmentByParentId(childList.first().getParentId().toString());
             departmentHashMap.putAll(parentDepartmentMap);
             //将childList塞入parent
-            GetDepartmentTreeLazyByNameResDto parentDepartmentDto = parentDepartmentMap.get(childList.first().getParentId());
+            GetDepartmentTreeLazyByNameResDto parentDepartmentDto = parentDepartmentMap
+                    .get(childList.first().getParentId());
             parentDepartmentDto.setChildList(childList);
-            childList = parentDepartmentMap.values().stream().collect(Collectors.toCollection(TreeSet::new));
+            childList = parentDepartmentMap.values().stream()
+                    .collect(Collectors.toCollection(TreeSet::new));
         }
         //拼副树，再拼接到主树
         for (GetDepartmentTreeLazyByNameResDto departmentTreeLazyByNameResDto : departmentList) {
@@ -722,18 +768,23 @@ public class DepartmentServiceImpl implements DepartmentService {
                 continue;
             }
             removeDto = departmentTreeLazyByNameResDto;
-            childList = spaceDao.getChildDepartmentListByParentId(removeDto.getParentId().toString());
+            childList = spaceDao
+                    .getChildDepartmentListByParentId(removeDto.getParentId().toString());
             while (true) {
                 if (departmentHashMap.containsKey(childList.first().getParentId())) {
                     departmentHashMap.get(childList.first().getParentId()).setChildList(childList);
                     break;
                 } else {
-                    Map<Long, GetDepartmentTreeLazyByNameResDto> parentDepartmentMap = spaceDao.getParentDepartmentByParentId(childList.first().getParentId().toString());
+                    Map<Long, GetDepartmentTreeLazyByNameResDto> parentDepartmentMap = spaceDao
+                            .getParentDepartmentByParentId(
+                                    childList.first().getParentId().toString());
                     departmentHashMap.putAll(parentDepartmentMap);
                     //将childList塞入parent
-                    GetDepartmentTreeLazyByNameResDto parentDepartmentDto = parentDepartmentMap.get(childList.first().getParentId());
+                    GetDepartmentTreeLazyByNameResDto parentDepartmentDto = parentDepartmentMap
+                            .get(childList.first().getParentId());
                     parentDepartmentDto.setChildList(childList);
-                    childList = parentDepartmentMap.values().stream().collect(Collectors.toCollection(TreeSet::new));
+                    childList = parentDepartmentMap.values().stream()
+                            .collect(Collectors.toCollection(TreeSet::new));
                 }
             }
         }
@@ -743,11 +794,9 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     /**
      * 检查当前orgId，userId是否为运营侧非admin用户，是就报错
-     * @param orgId
-     * @param userId
      */
-    private void checkAdminUser(String orgId, String userId){
-        DepartmentEntity departmentEntity = getDeptById(userService.getDeptId(userId, orgId));
+    private void checkAdminUser(String orgId, String userId) {
+        DepartmentEntity departmentEntity = getDeptById(userDao.getDeptId(userId, orgId));
         if (Objects.equals(departmentEntity.getDGroup(), DepartmentGroupEnum.SYSTEM.getCode())
                 && !Objects.equals(userId, NumberConst.STR_TWO)) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);

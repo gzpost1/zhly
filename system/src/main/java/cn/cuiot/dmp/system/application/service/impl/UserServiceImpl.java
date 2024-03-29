@@ -46,7 +46,6 @@ import cn.cuiot.dmp.system.application.param.assembler.UserMapper;
 import cn.cuiot.dmp.system.application.param.command.UpdateUserCommand;
 import cn.cuiot.dmp.system.application.param.dto.DepartmentUserDto;
 import cn.cuiot.dmp.system.application.param.dto.UserDTO;
-import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.application.service.VerifyService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
@@ -103,7 +102,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -159,13 +157,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     private VerifyService verifyService;
 
     @Autowired
-    private DepartmentService departmentService;
-
-    @Autowired
     private OrgMenuDao orgMenuDao;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private UserAssembler userAssembler;
@@ -206,19 +198,19 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     @Override
     public int update(UpdateUserCommand updatedUser) {
-        if(updatedUser.getId() == null){
+        if (updatedUser.getId() == null) {
             return 0;
         }
         User user = User.builder().build();
         user.setId(new UserId(updatedUser.getId()));
-        if(updatedUser.getEmail() != null){
+        if (updatedUser.getEmail() != null) {
             user.setEmail(new Email(updatedUser.getEmail()));
         }
         user.setContactPerson(updatedUser.getContactPerson());
-        if(updatedUser.getContactAddress() != null){
+        if (updatedUser.getContactAddress() != null) {
             user.setContactAddress(new Address(updatedUser.getContactAddress()));
         }
-        if(updatedUser.getLastOnlineIp() != null){
+        if (updatedUser.getLastOnlineIp() != null) {
             user.setLastOnlineIp(new IP(updatedUser.getLastOnlineIp()));
         }
         return userRepository.save(user) ? 1 : 0;
@@ -232,7 +224,7 @@ public class UserServiceImpl extends BaseController implements UserService {
             throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST);
         }
         UserResDTO userResDTO = new UserResDTO();
-        copyProperties(userEntity,userResDTO);
+        copyProperties(userEntity, userResDTO);
         userResDTO.setId(userId);
         Long orgId = userDao.getOrgId(Long.parseLong(userId));
         if (orgId != null) {
@@ -245,9 +237,13 @@ public class UserServiceImpl extends BaseController implements UserService {
         userResDTO.setId(userEntity.getId().getStrValue());
         userResDTO.setUserId(userEntity.getUserId());
         userResDTO.setUsername(userEntity.getUsername());
-        userResDTO.setPassword(userEntity.getPassword() != null ? userEntity.getPassword().getHashEncryptValue() : null);
-        userResDTO.setEmail(userEntity.getEmail() != null ? userEntity.getEmail().getEncryptedValue() : null);
-        userResDTO.setPhoneNumber(userEntity.getPhoneNumber() != null ? userEntity.getPhoneNumber().getEncryptedValue() : null);
+        userResDTO.setPassword(
+                userEntity.getPassword() != null ? userEntity.getPassword().getHashEncryptValue()
+                        : null);
+        userResDTO.setEmail(
+                userEntity.getEmail() != null ? userEntity.getEmail().getEncryptedValue() : null);
+        userResDTO.setPhoneNumber(userEntity.getPhoneNumber() != null ? userEntity.getPhoneNumber()
+                .getEncryptedValue() : null);
         userResDTO.setCreatedOn(userEntity.getCreatedOn());
         userResDTO.setAvatar(userEntity.getAvatar());
         userResDTO.setUserType(userEntity.getUserType().getValue());
@@ -256,9 +252,6 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     /**
      * 获取user的orgId
-     *
-     * @param pkUserId
-     * @return
      */
     @Override
     public String getOrgId(Long pkUserId) {
@@ -276,7 +269,7 @@ public class UserServiceImpl extends BaseController implements UserService {
      * 获取user的deptId
      *
      * @param pkUserId String
-     * @param pkOrgId  String
+     * @param pkOrgId String
      * @return String
      */
     @Override
@@ -303,7 +296,8 @@ public class UserServiceImpl extends BaseController implements UserService {
             if (!CollectionUtils.isEmpty(menuIdByParentMenuId)) {
                 menuList.removeIf(o -> menuIdByParentMenuId.contains(o.getMenuId()));
                 menuIdByParentMenuId.forEach(sonMenuId -> {
-                    List<String> sonMenuIdByParentMenuId = menuDao.getMenuIdByParentMenuIdString(sonMenuId);
+                    List<String> sonMenuIdByParentMenuId = menuDao
+                            .getMenuIdByParentMenuIdString(sonMenuId);
                     if (!CollectionUtils.isEmpty(sonMenuIdByParentMenuId)) {
                         menuList.removeIf(o -> sonMenuIdByParentMenuId.contains(o.getMenuId()));
                     }
@@ -351,8 +345,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         return userResDTO;
     }
 
-    private SimpleStringResDTO updatePasswordCommon(ResetPasswordReqDTO resetPasswordReqDTO, User user,
-                                                    UserBo userBo, String uuid) {
+    private SimpleStringResDTO updatePasswordCommon(ResetPasswordReqDTO resetPasswordReqDTO,
+            User user,
+            UserBo userBo, String uuid) {
         // 获取密码
         String password = resetPasswordReqDTO.getPassword();
 
@@ -360,7 +355,6 @@ public class UserServiceImpl extends BaseController implements UserService {
         String[] op = new String[1];
         op[0] = user.getUsername();
         userBo.setOperationTarget(op);
-
 
         user.setPassword(new Password(password));
         user.updatedByPortal();
@@ -387,8 +381,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         User user = userRepository.find(new UserId(userBo.getUserId()));
         String phoneNumber = user.getDecryptedPhoneNumber();
         // 获取redis中的验证码文本
-        String expectedSmsText = stringRedisTemplate.opsForValue().get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P
-                + userBo.getUserId() + phoneNumber);
+        String expectedSmsText = stringRedisTemplate.opsForValue()
+                .get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P
+                        + userBo.getUserId() + phoneNumber);
         if (FALSE.equals(debug) && StringUtils.isEmpty(expectedSmsText)) {
             // 短信验证码过期
             throw new BusinessException(SMS_CODE_EXPIRED_ERROR);
@@ -398,23 +393,20 @@ public class UserServiceImpl extends BaseController implements UserService {
             throw new BusinessException(SMS_CODE_ERROR);
         }
 
-        return updatePasswordCommon(resetPasswordReqDTO, user, userBo, userBo.getUserId() + phoneNumber);
+        return updatePasswordCommon(resetPasswordReqDTO, user, userBo,
+                userBo.getUserId() + phoneNumber);
     }
 
     /**
      * 用户列表筛选-分页
-     *
-     * @param params
-     * @param currentPage
-     * @param pageSize
-     * @param sessionOrgId
-     * @return
      */
     @Override
-    public PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId, int currentPage, int pageSize, String orgId) {
+    public PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId,
+            int currentPage, int pageSize, String orgId) {
         PageInfo<UserDataResDTO> resultPageInfo;
         try {
-            Organization organization = organizationRepository.find(new OrganizationId(sessionOrgId));
+            Organization organization = organizationRepository
+                    .find(new OrganizationId(sessionOrgId));
             String orgOwner = String.valueOf(organization.getOrgOwner().getValue());
             List<UserDataEntity> entities;
             PageHelper.startPage(currentPage, pageSize);
@@ -456,10 +448,12 @@ public class UserServiceImpl extends BaseController implements UserService {
                 userDataResDTO.setDeptId(deptId);
                 // 找到组织名称
                 if (StringUtils.hasLength(deptId)) {
-                    DepartmentEntity departmentEntity = departmentDao.selectByPrimary(Long.parseLong(deptId));
+                    DepartmentEntity departmentEntity = departmentDao
+                            .selectByPrimary(Long.parseLong(deptId));
                     userDataResDTO.setDeptName(departmentEntity.getDepartmentName());
                 }
-                userDataResDTO.setIsOwner(pkUserId.equals(orgOwner) || ROOT_USER_ID.equals(pkUserId));
+                userDataResDTO
+                        .setIsOwner(pkUserId.equals(orgOwner) || ROOT_USER_ID.equals(pkUserId));
             }
         } catch (BusinessException e) {
             log.error("getPage error", e);
@@ -470,13 +464,12 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     /**
      * 修改密码(登录人自行修改)
-     *
-     * @param entity
      */
     @LogRecord(operationCode = "updatePassword", operationName = "修改密码（个人）", serviceType = ServiceTypeConst.SECURITY_SETTING)
     @Override
     public void updatePassword(UserDataEntity entity) {
-        User user = User.builder().id(new UserId(entity.getUserId())).password(new Password(entity.getPassword())).build();
+        User user = User.builder().id(new UserId(entity.getUserId()))
+                .password(new Password(entity.getPassword())).build();
         user.updatedByPortal();
         if (!userRepository.save(user)) {
             throw new BusinessException(ResultCode.UPDATE_PASSWORD_FAIL);
@@ -485,8 +478,6 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     /**
      * 修改手机号
-     *
-     * @param userBo
      */
     @LogRecord(operationCode = "updatePhoneNumber", operationName = "修改手机号", serviceType = ServiceTypeConst.SECURITY_SETTING)
     @Override
@@ -496,7 +487,8 @@ public class UserServiceImpl extends BaseController implements UserService {
         String smsCode = userBo.getSmsCode();
         if (FALSE.equals(debug)) {
             // 获取redis中的短信验证码文本 邮箱验证
-            String expectedText = stringRedisTemplate.opsForValue().get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
+            String expectedText = stringRedisTemplate.opsForValue()
+                    .get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
             // 判断是否过期
             if (StringUtils.isEmpty(expectedText)) {
                 // 短信验证码过期
@@ -505,7 +497,8 @@ public class UserServiceImpl extends BaseController implements UserService {
             // 判断手机号与验证码是否与redis中相同
             if (!expectedText.equals(phoneNumber + smsCode)) {
                 // 安全要求： 短信验证码防暴力破解，关键操作每提交一次请求，应发送新的短信验证码，并且不可继续使用旧的验证码
-                stringRedisTemplate.delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
+                stringRedisTemplate
+                        .delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
                 throw new BusinessException(SMS_TEXT_ERROR);
             }
         }
@@ -517,7 +510,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         userBo.setOperationTarget(op);
 
         // 判断手机号是否存在
-        boolean exists = userPhoneNumberDomainService.judgePhoneNumberAlreadyExists(new PhoneNumber(phoneNumber), UserTypeEnum.USER, UserTypeEnum.NULL);
+        boolean exists = userPhoneNumberDomainService
+                .judgePhoneNumberAlreadyExists(new PhoneNumber(phoneNumber), UserTypeEnum.USER,
+                        UserTypeEnum.NULL);
         if (exists) {
             throw new BusinessException(PHONE_NUMBER_EXIST);
         }
@@ -535,8 +530,6 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     /**
      * 批量删除用户
-     *
-     * @return
      */
     @LogRecord(operationCode = "deleteUsers", operationName = "删除用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
@@ -557,12 +550,14 @@ public class UserServiceImpl extends BaseController implements UserService {
         userBo.setOperationTarget(op);
 
         DepartmentDto departmentDto = departmentDao.getPathByUser(userBo.getUserId());
-        String deptTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath).orElse(null);
+        String deptTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
+                .orElse(null);
         if (StringUtils.isEmpty(deptTreePath)) {
             throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
         }
 
-        Organization sessionOrg = organizationRepository.find(new OrganizationId(Long.valueOf(sessionOrgId)));
+        Organization sessionOrg = organizationRepository
+                .find(new OrganizationId(Long.valueOf(sessionOrgId)));
         for (Long id : ids) {
             // 根据userId查询orgId
             Long orgId = this.userDao.getOrgId(id);
@@ -580,7 +575,8 @@ public class UserServiceImpl extends BaseController implements UserService {
             }
 
             // 组织权限限制
-            String subTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath).orElse(null);
+            String subTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
+                    .orElse(null);
             if (StringUtils.isEmpty(deptTreePath)) {
                 throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
             }
@@ -591,7 +587,8 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         int result = 0;
 
-        result = userRepository.removeList(ids.stream().map(UserId::new).collect(Collectors.toList()));
+        result = userRepository
+                .removeList(ids.stream().map(UserId::new).collect(Collectors.toList()));
 
         // 删除用户后，把用户与当前登录的账号的关联关系删除
         userDataDao.deleteUserOrgByUserPks(ids, sessionOrgId);
@@ -635,7 +632,7 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     private void updateInfosWithoutSms(UserBo userBo) {
         PhoneNumber newPhoneNumber = null;
-        if(StringUtils.hasLength(userBo.getPhoneNumber())){
+        if (StringUtils.hasLength(userBo.getPhoneNumber())) {
             newPhoneNumber = new PhoneNumber(userBo.getPhoneNumber());
         }
         String userId = userBo.getUserId();
@@ -644,7 +641,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         log.info("修改用户，user：" + JSON.toJSONString(user));
 
         if (newPhoneNumber != null && !newPhoneNumber.equals(user.getPhoneNumber())) {
-            boolean exists = userPhoneNumberDomainService.judgePhoneNumberAlreadyExists(newPhoneNumber, UserTypeEnum.USER, UserTypeEnum.NULL);
+            boolean exists = userPhoneNumberDomainService
+                    .judgePhoneNumberAlreadyExists(newPhoneNumber, UserTypeEnum.USER,
+                            UserTypeEnum.NULL);
             if (exists) {
                 // 手机号已注册
                 throw new BusinessException(PHONE_NUMBER_ALREADY_EXIST);
@@ -653,7 +652,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         user.setPhoneNumber(newPhoneNumber);
         user.setEmail(userBo.getEmail() != null ? new Email(userBo.getEmail()) : null);
         user.setContactPerson(userBo.getContactPerson());
-        user.setContactAddress(userBo.getContactAddress() != null ? new Address(userBo.getContactAddress()) : null);
+        user.setContactAddress(
+                userBo.getContactAddress() != null ? new Address(userBo.getContactAddress())
+                        : null);
         user.updatedByPortal();
         userRepository.save(user);
 
@@ -664,10 +665,6 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     /**
      * 查询用户详情
-     *
-     * @param id
-     * @param sessionUserId
-     * @return
      */
     @Override
     public UserDataResDTO getOne(String id, String sessionOrgId, String sessionUserId) {
@@ -675,11 +672,12 @@ public class UserServiceImpl extends BaseController implements UserService {
         if (!sessionOrgId.equals(String.valueOf(orgId))) {
             throw new BusinessException(UNAUTHORIZED_ACCESS);
         }
-        DepartmentEntity deptById = departmentService.getDeptById(userService.getDeptId(id, String.valueOf(orgId)));
+        DepartmentEntity deptById = departmentDao
+                .selectByPrimary(Long.parseLong(userDao.getDeptId(id, String.valueOf(orgId))));
         // 要查询的用户的组织
         String deptId = userDao.getDeptId(id, sessionOrgId);
         // 登陆用户的子组织
-        String sessionDeptId = userDao.getDeptId(sessionUserId, sessionOrgId);
+        //String sessionDeptId = userDao.getDeptId(sessionUserId, sessionOrgId);
         // 因为组织下挂了小区了，小区上又创建了维修工用户，下面的校验会导致无法查看小区的员工信息。
         User entity = userRepository.find(new UserId(id));
         if (entity == null) {
@@ -687,8 +685,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         // 如果创建者是用户id,找到名称
         OperateByTypeEnum createdByType = entity.getCreatedByType();
-        if (createdByType != null && createdByType.equals(OperateByTypeEnum.USER) && !StringUtils.isEmpty(entity.getCreatedBy())
-            && NumberUtils.isParsable(entity.getCreatedBy())) {
+        if (createdByType != null && createdByType.equals(OperateByTypeEnum.USER) && !StringUtils
+                .isEmpty(entity.getCreatedBy())
+                && NumberUtils.isParsable(entity.getCreatedBy())) {
             User creatorEntity = userRepository.find(new UserId(entity.getCreatedBy()));
             if (creatorEntity != null) {
                 String creatorName = creatorEntity.getUsername();
@@ -697,7 +696,8 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         // 如果更新者是用户id,找到名称
         OperateByTypeEnum updatedByType = entity.getUpdatedByType();
-        if (updatedByType != null && updatedByType.equals(OperateByTypeEnum.USER) && !StringUtils.isEmpty(entity.getUpdatedBy())) {
+        if (updatedByType != null && updatedByType.equals(OperateByTypeEnum.USER) && !StringUtils
+                .isEmpty(entity.getUpdatedBy())) {
             User updatorEntity = userRepository.find(new UserId(entity.getUpdatedBy()));
             if (updatorEntity != null) {
                 String updatorName = updatorEntity.getUsername();
@@ -725,7 +725,8 @@ public class UserServiceImpl extends BaseController implements UserService {
         userDataResDTO.setDeptName(departmentEntity.getDepartmentName());
         // 找到租户信息
         userDataResDTO.setOrgId(sessionOrgId);
-        Organization org = organizationRepository.find(new OrganizationId(Long.valueOf(sessionOrgId)));
+        Organization org = organizationRepository
+                .find(new OrganizationId(Long.valueOf(sessionOrgId)));
         userDataResDTO.setOrgName(org.getOrgName());
         String orgDeptId = userDao.getUserGrantDeptId(Long.parseLong(sessionOrgId));
         if (Strings.isNotBlank(orgDeptId)) {
@@ -773,15 +774,15 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     /**
      * 新增用户
-     *
-     * @param userBo
      */
     @LogRecord(operationCode = "insertUserD", operationName = "新增用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Transactional(rollbackFor = Exception.class)
     @Override
     public UserCsvDto insertUser(UserBo userBo) {
-        DepartmentEntity departmentEntity = departmentService.getDeptById(userService.getDeptId(userBo.getUserId(),
-                userBo.getOrgId()));
+        DepartmentEntity departmentEntity = departmentDao
+                .selectByPrimary(
+                        Long.parseLong(userDao.getDeptId(userBo.getUserId(), userBo.getOrgId())));
+
         DepartmentEntity entity = departmentDao.selectByPrimary(Long.parseLong(userBo.getDeptId()));
         // 权限操作
         if (!entity.getPath().startsWith(departmentEntity.getPath())) {
@@ -812,7 +813,8 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
 
         String password = userBo.getPassword();
-        User userDataEntity = userRepository.commonQueryOne(UserCommonQuery.builder().username(userBo.getUserName()).build());
+        User userDataEntity = userRepository
+                .commonQueryOne(UserCommonQuery.builder().username(userBo.getUserName()).build());
         if (userDataEntity != null) {
             throw new BusinessException(ResultCode.USER_USERNAME_ERRER);
         }
@@ -857,7 +859,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         //校验数据库是否已有该手机号 --2021/01/22
         String phoneNumber = userBo.getPhoneNumber();
 
-        if (userPhoneNumberDomainService.judgePhoneNumberAlreadyExists(new PhoneNumber(phoneNumber),UserTypeEnum.USER,UserTypeEnum.NULL)) {
+        if (userPhoneNumberDomainService
+                .judgePhoneNumberAlreadyExists(new PhoneNumber(phoneNumber), UserTypeEnum.USER,
+                        UserTypeEnum.NULL)) {
             // 手机号已注册
             throw new BusinessException(PHONE_NUMBER_ALREADY_EXIST);
         }
@@ -867,9 +871,13 @@ public class UserServiceImpl extends BaseController implements UserService {
             userdataEntity.setCreatedByType(OperateByTypeEnum.USER);
             userdataEntity.setPhoneNumber(new PhoneNumber(phoneNumber));
             userdataEntity.setContactPerson(userBo.getContactPerson());
-            userdataEntity.setContactAddress(userBo.getContactAddress() != null ? new Address(userBo.getContactAddress()) : null);
+            userdataEntity.setContactAddress(
+                    userBo.getContactAddress() != null ? new Address(userBo.getContactAddress())
+                            : null);
             userdataEntity.setUserType(UserTypeEnum.USER);
-            userdataEntity.setLongTimeLogin(userBo.getLongTimeLogin() != null ? Integer.valueOf(userBo.getLongTimeLogin()) : null);
+            userdataEntity.setLongTimeLogin(
+                    userBo.getLongTimeLogin() != null ? Integer.valueOf(userBo.getLongTimeLogin())
+                            : null);
             userRepository.save(userdataEntity);
 
             //新增用户标签表关系
@@ -882,30 +890,31 @@ public class UserServiceImpl extends BaseController implements UserService {
             userDataDao.insertUserLabel(userLabelDto);
 
             userBo.setId(userdataEntity.getId().getValue());
-            Organization organization = organizationRepository.find(new OrganizationId(Long.valueOf(userBo.getOrgId())));
+            Organization organization = organizationRepository
+                    .find(new OrganizationId(Long.valueOf(userBo.getOrgId())));
 
             OrganizationEntity sessionOrg = organization2EntityAssembler.toDTO(organization);
 
             //新增用户账户中间表关系
-            userDao.insertUserOrg(userdataEntity.getId().getValue(), Long.parseLong(userBo.getOrgId()),
+            userDao.insertUserOrg(userdataEntity.getId().getValue(),
+                    Long.parseLong(userBo.getOrgId()),
                     userBo.getDeptId(), userdataEntity.getCreatedBy());
 
             //新增用户角色中间表关系
-            userDao.insertFeferRole(userdataEntity.getId().getValue(), Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
+            userDao.insertFeferRole(userdataEntity.getId().getValue(),
+                    Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
 
             UserCsvDto userCsvDto = new UserCsvDto(userdataEntity.getUsername(), password);
 
             return userCsvDto;
         } catch (Exception e) {
-            log.error("新增用户失败",e);
+            log.error("新增用户失败", e);
             throw new BusinessException(ResultCode.SERVER_BUSY);
         }
     }
 
     /**
      * 更改用户对应角色权限
-     *
-     * @param
      */
     @LogRecord(operationCode = "updateUser", operationName = "编辑用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
@@ -958,11 +967,13 @@ public class UserServiceImpl extends BaseController implements UserService {
         //删除中间关联表关系
         userDao.deleteUserRole(uid, orgId);
         //重新添加中间表关联关系
-        userDao.insertUserRole(Long.parseLong(uid), Long.parseLong(roleId), orgId, LocalDateTime.now(), String.valueOf(userId));
+        userDao.insertUserRole(Long.parseLong(uid), Long.parseLong(roleId), orgId,
+                LocalDateTime.now(), String.valueOf(userId));
         //删除中间关联表关系
         userDao.deleteUserOrg(uid, orgId);
         //新增用户账户中间表关系
-        userDao.insertUserOrg(Long.parseLong(uid), Long.parseLong(userBo.getOrgId()), userBo.getDeptId(), String.valueOf(userId));
+        userDao.insertUserOrg(Long.parseLong(uid), Long.parseLong(userBo.getOrgId()),
+                userBo.getDeptId(), String.valueOf(userId));
         redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + uid);
         updateInfosWithoutSms(userBo);
         updatePasswordIfNeed(userBo);
@@ -973,17 +984,19 @@ public class UserServiceImpl extends BaseController implements UserService {
     /**
      * 发送日志记录到kafka
      *
-     * @param isSuccess             操作成功标识
+     * @param isSuccess 操作成功标识
      * @param platformOperateLogDTO 日志记录
      */
     public void saveLog2Db(boolean isSuccess, OperateLogDto platformOperateLogDTO) {
-        platformOperateLogDTO.setRequestTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+        platformOperateLogDTO.setRequestTime(
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
         platformOperateLogDTO.setRequestIp(IpUtil.getIpAddr(request));
         if (isSuccess) {
             // 操作成功
             platformOperateLogDTO.setStatusCode(StatusCodeEnum.SUCCESS.getCode());
             platformOperateLogDTO.setStatusMsg(StatusCodeEnum.SUCCESS.getName());
-            platformOperateLogDTO.setLogLevel(cn.cuiot.dmp.common.enums.LogLevelEnum.INFO.getCode());
+            platformOperateLogDTO
+                    .setLogLevel(cn.cuiot.dmp.common.enums.LogLevelEnum.INFO.getCode());
         } else {
             platformOperateLogDTO.setLogLevel(LogLevelEnum.ERROR.getCode());
             platformOperateLogDTO.setStatusMsg(StatusCodeEnum.FAILED.getName());
@@ -994,17 +1007,22 @@ public class UserServiceImpl extends BaseController implements UserService {
     }
 
     @Override
-    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(GetUserDepartmentTreeLazyReqDto dto) {
+    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
+            GetUserDepartmentTreeLazyReqDto dto) {
         final String orgId = dto.getLoginOrgId();
         final String userId = dto.getLoginUserId();
         List<GetDepartmentTreeLazyResDto> result;
         // 只能看到当前租户 所属dept为根,先获取根节点,以用户deptId为主键
-        Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf).orElse(null);
+        Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
+                .orElse(null);
         //如果是空间用户，需要找到他所在的组织
         if (INIT.equals(dto.getType())) {
             result = spaceDao.getRootDepartmentLazy(orgId, deptId.toString());
         } else {
-            result = spaceDao.getUserDepartmentLazyChange(dto.getParentId(), Arrays.asList(DepartmentGroupEnum.SYSTEM.getCode(), DepartmentGroupEnum.TENANT.getCode(), DepartmentGroupEnum.COMMUNITY.getCode()));
+            result = spaceDao.getUserDepartmentLazyChange(dto.getParentId(),
+                    Arrays.asList(DepartmentGroupEnum.SYSTEM.getCode(),
+                            DepartmentGroupEnum.TENANT.getCode(),
+                            DepartmentGroupEnum.COMMUNITY.getCode()));
         }
         return result;
     }
@@ -1026,7 +1044,9 @@ public class UserServiceImpl extends BaseController implements UserService {
     @Override
     public List<LabelTypeDto> getLabelTypeList(String labelType) {
         List<LabelTypeDto> labelTypeList = userDataDao.getLabelTypeList(labelType);
-        return labelTypeList.stream().filter(dto -> !OrgLabelEnum.UNICOM_ADMIN.getName().equals(dto.getLabelName())).collect(Collectors.toList());
+        return labelTypeList.stream()
+                .filter(dto -> !OrgLabelEnum.UNICOM_ADMIN.getName().equals(dto.getLabelName()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -1038,7 +1058,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     public UserDTO getOneUser(String account, String safeAccount, String password) {
         PhoneNumber phoneNumber = null;
         EncryptedValue encryptedValue = new EncryptedValue(safeAccount);
-        if(PhoneUtil.isPhone(encryptedValue.decrypt())){
+        if (PhoneUtil.isPhone(encryptedValue.decrypt())) {
             phoneNumber = new PhoneNumber(encryptedValue);
         }
         User user = userRepository.queryUserForLogin(account, phoneNumber, password);
@@ -1054,17 +1074,20 @@ public class UserServiceImpl extends BaseController implements UserService {
     public void insertUserD(InsertUserDTO userEntity, String orgId, String loginUserName) {
         log.info(userEntity.getUserName());
 
-        if (StringUtils.isEmpty(userEntity.getUserName()) || StringUtils.isEmpty(userEntity.getPhoneNumber())) {
+        if (StringUtils.isEmpty(userEntity.getUserName()) || StringUtils
+                .isEmpty(userEntity.getPhoneNumber())) {
             throw new BusinessException(ResultCode.REQ_PARAM_ERROR);
         }
 
         //对传入手机号校验 --2020/01/22
         String phoneNumber = userEntity.getPhoneNumber();
         if (StringUtils.hasLength(phoneNumber) || StringUtils.hasLength(userEntity.getEmail())) {
-            if (StringUtils.hasLength(phoneNumber) && !phoneNumber.matches(RegexConst.PHONE_NUMBER_REGEX)) {
+            if (StringUtils.hasLength(phoneNumber) && !phoneNumber
+                    .matches(RegexConst.PHONE_NUMBER_REGEX)) {
                 throw new BusinessException(ResultCode.PHONE_NUMBER_IS_INVALID);
             }
-            if (StringUtils.hasLength(userEntity.getEmail()) && !userEntity.getEmail().matches(RegexConst.EMAIL_REGEX)) {
+            if (StringUtils.hasLength(userEntity.getEmail()) && !userEntity.getEmail()
+                    .matches(RegexConst.EMAIL_REGEX)) {
                 throw new BusinessException(ResultCode.EMAIL_IS_INVALID);
             }
         }
@@ -1093,12 +1116,13 @@ public class UserServiceImpl extends BaseController implements UserService {
         Integer label = organizationDao.getUserLabelByOrg(orgId);
         userBo.setLabel(label);
         userBo.setOtherLabelName(userEntity.getOtherLabelName());
-        if (loginUserName.equals("admin") && Objects.equals(Const.STR_1, userEntity.getLongTimeLogin())) {
+        if (loginUserName.equals("admin") && Objects
+                .equals(Const.STR_1, userEntity.getLongTimeLogin())) {
             userBo.setLongTimeLogin(Const.STR_1);
         } else {
             userBo.setLongTimeLogin(null);
         }
-        UserCsvDto userInfo = userService.insertUser(userBo);
+        UserCsvDto userInfo = insertUser(userBo);
 
         if (userInfo == null) {
             throw new BusinessException(ResultCode.REQ_PARAM_ERROR);

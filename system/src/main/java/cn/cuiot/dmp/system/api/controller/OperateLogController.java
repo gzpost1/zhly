@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @deprecated 操作日志查询接口-LogSearch
+ * 操作日志查询接口-LogSearch
  * @Author 26432
  * @Date 2021/12/8   15:06
  */
