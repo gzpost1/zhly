@@ -32,6 +32,7 @@ build/
 .vscode/
 
 logs/
+log/
 
 *.crt
 *.pem
