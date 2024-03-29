@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @author wangyh
  * @date 2020-08-01
  */
-@FeignClient(value = "system")
+@FeignClient(value = "community-system")
 public interface MenuFeignService {
 
     /**

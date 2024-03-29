@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.domain.converter;
 
+import cn.cuiot.dmp.base.infrastructure.domain.converter.Converter;
 import cn.cuiot.dmp.domain.types.Email;
 import cn.cuiot.dmp.domain.types.EncryptedValue;
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;

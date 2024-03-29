@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.persistence.mapper;
 
+import cn.cuiot.dmp.base.infrastructure.persistence.mapper.BaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;

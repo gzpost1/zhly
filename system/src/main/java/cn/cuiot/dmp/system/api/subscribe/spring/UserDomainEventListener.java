@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.system.api.subscribe.spring;
 
 import cn.cuiot.dmp.common.constant.CacheConst;
-import cn.cuiot.dmp.system.infrastructure.utils.RedisUtil;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.system.user_manage.domain.entity.User;
 import cn.cuiot.dmp.system.user_manage.domain.event.ResetPasswordSuccessEvent;
 import cn.cuiot.dmp.system.user_manage.domain.event.UserUpdateEvent;

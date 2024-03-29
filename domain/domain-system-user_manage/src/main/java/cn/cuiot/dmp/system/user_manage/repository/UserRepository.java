@@ -24,6 +24,7 @@ public interface UserRepository extends Repository<User, UserId> {
      * @param aggregate
      * @return
      */
+    @Override
     int removeList(@NonNull List<UserId> aggregate);
 
     /**
