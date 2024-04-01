@@ -9,6 +9,7 @@
         <module>domain</module>
         <module>gateway</module>
         <module>base</module>
+        <module>upload</module>
     </modules>
 
     <parent>
