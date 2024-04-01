@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.common.constant.Constant;
 import cn.cuiot.dmp.base.application.enums.LogTypeEnum;
 import cn.cuiot.dmp.system.application.enums.SearchContentEnum;

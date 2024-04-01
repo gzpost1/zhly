@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RouteConfig {
 
-    @Bean
+    /*@Bean
     public RouteLocator gatewayLocator(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("community-system",
@@ -24,5 +24,5 @@ public class RouteConfig {
                                         .filters(f -> f.stripPrefix(1))
                                 .uri("lb://community-system")
                 ).build();
-    }
+    }*/
 }

@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.system.application.service.INoticeService;
 import cn.cuiot.dmp.system.infrastructure.entity.Notice;
 import cn.cuiot.dmp.system.infrastructure.entity.NoticeUserAccess;

@@ -18,6 +18,7 @@
     <modules>
         <module>domain-system-user_manage</module>
         <module>domain-common</module>
+        <module>domain-upload</module>
     </modules>
 
     <properties>

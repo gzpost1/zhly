@@ -5,7 +5,6 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.UserLongTimeLoginEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
-import cn.cuiot.dmp.gateway.fegin.MenuFeignService;
 import cn.cuiot.dmp.gateway.service.SignatureService;
 import cn.cuiot.dmp.gateway.utils.JwtUtil;
 import cn.cuiot.dmp.gateway.utils.SecrtUtil;
@@ -19,7 +18,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -48,12 +46,6 @@ import reactor.core.publisher.Mono;
 @Component
 public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
 
-    @Autowired
-    MenuFeignService menuFeignService;
-
-    /**
-     * 自动注入stringRedisTemplate
-     */
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -86,7 +78,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         }
 
         HttpHeaders headers = serverHttpRequest.getHeaders();
-        List<String> list = headers.get("token") ;
+        List<String> list = headers.get("token");
         if (list == null || list.isEmpty()) {
             list = headers.get("Authorization");
         }
@@ -109,7 +101,6 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         String userId = getUserId(jwt);
         String orgId = getOrgId(jwt);
 
-
         String toKick = redisTemplate.opsForValue().get(CacheConst.LOGIN_ORG_TO_KICK);
         if (!StringUtils.isEmpty(toKick)) {
             String[] kickOrgIdArr = toKick.split(",");
@@ -129,23 +120,21 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
             throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
         }
         if (!StringUtils.isEmpty(jwtRedis)) {
-            if (Objects.equals(redisTemplate.opsForValue().get(CacheConst.USER_LONG_TIME_LOGIN + userId), UserLongTimeLoginEnum.OPEN.getCode())) {
-                redisTemplate.expire(CacheConst.LOGIN_USERS_JWT + jwt, Const.USER_LONG_TIME_LOGIN_SESSION_TIME, TimeUnit.SECONDS);
-                redisTemplate.expire(CacheConst.USER_LONG_TIME_LOGIN + userId, Const.USER_LONG_TIME_LOGIN_SESSION_TIME, TimeUnit.SECONDS);
+            if (Objects.equals(redisTemplate.opsForValue()
+                            .get(CacheConst.USER_LONG_TIME_LOGIN + userId),
+                    UserLongTimeLoginEnum.OPEN.getCode())) {
+                redisTemplate.expire(CacheConst.LOGIN_USERS_JWT + jwt,
+                        Const.USER_LONG_TIME_LOGIN_SESSION_TIME, TimeUnit.SECONDS);
+                redisTemplate.expire(CacheConst.USER_LONG_TIME_LOGIN + userId,
+                        Const.USER_LONG_TIME_LOGIN_SESSION_TIME, TimeUnit.SECONDS);
             } else {
-                redisTemplate.expire(CacheConst.LOGIN_USERS_JWT + jwt, Const.SESSION_TIME, TimeUnit.SECONDS);
+                redisTemplate.expire(CacheConst.LOGIN_USERS_JWT + jwt, Const.SESSION_TIME,
+                        TimeUnit.SECONDS);
             }
+        } else if (!StringUtils.isEmpty(jwtRedisWx)) {
+            redisTemplate.expire(CacheConst.LOGIN_USERS_JWT_WX + jwt, Const.WX_SESSION_TIME,
+                    TimeUnit.SECONDS);
         }
-        else if (!StringUtils.isEmpty(jwtRedisWx)) {
-            redisTemplate.expire(CacheConst.LOGIN_USERS_JWT_WX + jwt, Const.WX_SESSION_TIME, TimeUnit.SECONDS);
-        }
-
-        // 异步调用
-        CompletableFuture.supplyAsync(()->
-            //检查用户和账户是否存在
-            menuFeignService.checkUserAndOrg(userId, orgId)
-        );
-
         // 签名校验
         boolean needCheckSignature = signatureService.isNeedCheckSignature(exchange);
         if (needCheckSignature) {
@@ -154,7 +143,6 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
 
         return chain.filter(exchange);
     }
-
 
     private void initConfig() {
         if (SecrtUtil.filterThroughUrl.size() == 0) {
@@ -191,7 +179,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
     protected String getOrgId(String jwt) {
         Claims claims;
         try {
-            claims = Jwts.parser().setSigningKey(cn.cuiot.dmp.common.utils.Const.SECRET).parseClaimsJws(jwt).getBody();
+            claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt).getBody();
         } catch (Exception e) {
             claims = null;
         }
@@ -209,7 +197,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
     protected String getUserId(String jwt) {
         Claims claims;
         try {
-            claims = Jwts.parser().setSigningKey(cn.cuiot.dmp.common.utils.Const.SECRET).parseClaimsJws(jwt).getBody();
+            claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt).getBody();
         } catch (Exception e) {
             claims = null;
         }
@@ -225,9 +213,6 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
 
     /**
      * 验证令牌
-     *
-     * @param token
-     * @return
      */
     public static Boolean validateToken(String token) {
         return !isTokenExpired(token);

@@ -1,9 +1,9 @@
 package cn.cuiot.dmp.system.api.controller;
 
-import cn.cuiot.dmp.common.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.common.controller.BaseController;
-import cn.cuiot.dmp.common.log.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameReqDto;

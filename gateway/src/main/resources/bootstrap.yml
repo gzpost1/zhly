@@ -1,5 +1,8 @@
+logging:
+  config: classpath:log4j2.xml
+
 server:
-  port: 8080
+  port: 9050
   tomcat:
     basedir: /home/temp
 
@@ -38,3 +41,4 @@ spring:
       discovery:
         server-addr: http://nacos-server:8848
         group: DEFAULT_GROUP
+

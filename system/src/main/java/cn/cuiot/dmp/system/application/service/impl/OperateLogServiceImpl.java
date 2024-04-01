@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
-import cn.cuiot.dmp.common.log.service.OperateLogService;
+import cn.cuiot.dmp.base.application.service.OperateLogService;
 import cn.cuiot.dmp.system.infrastructure.entity.OperationLogEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OperationLogDao;
 import lombok.extern.slf4j.Slf4j;
