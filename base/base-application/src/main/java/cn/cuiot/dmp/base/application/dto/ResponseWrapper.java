@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.common.dto;
+package cn.cuiot.dmp.base.application.dto;
 
 
 import java.io.ByteArrayOutputStream;

@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.common.log.service;
+package cn.cuiot.dmp.base.application.service;
 
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
 

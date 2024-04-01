@@ -1,6 +1,7 @@
-package cn.cuiot.dmp.common.interceptor;
+package cn.cuiot.dmp.base.application.config;
 
 
+import cn.cuiot.dmp.base.application.filter.WebLogFilter;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;

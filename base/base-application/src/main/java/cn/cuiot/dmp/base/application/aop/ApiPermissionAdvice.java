@@ -1,9 +1,9 @@
-package cn.cuiot.dmp.common.aop;
+package cn.cuiot.dmp.base.application.aop;
 
 
-import cn.cuiot.dmp.common.annotation.RequiresPermissions;
-import cn.cuiot.dmp.common.controller.BaseController;
-import cn.cuiot.dmp.common.service.ApiPermissionService;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.application.service.ApiPermissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -30,7 +30,7 @@ public class ApiPermissionAdvice extends BaseController {
     @Autowired
     ApiPermissionService permissionService;
 
-    @Pointcut("@annotation(cn.cuiot.dmp.common.annotation.RequiresPermissions)")
+    @Pointcut("@annotation(cn.cuiot.dmp.base.application.annotation.RequiresPermissions)")
     public void apiPermissionControl() {
     }
 
@@ -38,7 +38,8 @@ public class ApiPermissionAdvice extends BaseController {
     public void before(JoinPoint joinPoint) throws Throwable {
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        RequiresPermissions permission = signature.getMethod().getAnnotation(RequiresPermissions.class);
+        RequiresPermissions permission = signature.getMethod()
+                .getAnnotation(RequiresPermissions.class);
         if (permission != null && StringUtils.hasLength(permission.value())) {
             String userId = getUserId();
             String orgId = getOrgId();

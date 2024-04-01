@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.common.utils;
+package cn.cuiot.dmp.base.application.utils;
 
 import java.io.IOException;
 import java.net.URLDecoder;

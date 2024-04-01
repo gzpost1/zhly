@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.config;
 
-import cn.cuiot.dmp.common.interceptor.LogInterceptor;
+import cn.cuiot.dmp.base.application.interceptor.LogInterceptor;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.domain.types.LoginInfo;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -46,6 +48,10 @@ public class WebConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(logInfoInterceptor());
     }
 
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        converters.add(0, new MappingJackson2HttpMessageConverter());
+    }
 
     @Bean
     public HandlerInterceptor logInfoInterceptor() {

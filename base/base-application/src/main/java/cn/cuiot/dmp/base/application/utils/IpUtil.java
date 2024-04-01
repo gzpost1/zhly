@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.common.utils;
+package cn.cuiot.dmp.base.application.utils;
 
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;

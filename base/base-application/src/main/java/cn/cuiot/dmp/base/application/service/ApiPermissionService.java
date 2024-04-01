@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.common.service;
+package cn.cuiot.dmp.base.application.service;
 
 /**
  * @author wensq

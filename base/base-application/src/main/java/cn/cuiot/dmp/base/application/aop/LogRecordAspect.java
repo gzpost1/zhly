@@ -1,16 +1,16 @@
-package cn.cuiot.dmp.common.log.aop;
+package cn.cuiot.dmp.base.application.aop;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.application.dto.ResponseWrapper;
+import cn.cuiot.dmp.base.application.service.OperateLogService;
+import cn.cuiot.dmp.base.application.utils.FileExportUtils;
+import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.common.controller.BaseController;
-import cn.cuiot.dmp.common.dto.ResponseWrapper;
 import cn.cuiot.dmp.common.enums.LogLevelEnum;
 import cn.cuiot.dmp.common.enums.StatusCodeEnum;
-import cn.cuiot.dmp.common.log.annotation.LogRecord;
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
 import cn.cuiot.dmp.common.log.intf.ResourceParam;
-import cn.cuiot.dmp.common.log.service.OperateLogService;
-import cn.cuiot.dmp.common.utils.FileExportUtils;
-import cn.cuiot.dmp.common.utils.IpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import java.io.IOException;
@@ -55,14 +55,15 @@ public class LogRecordAspect extends BaseController {
     @Autowired
     OperateLogService operateLogService;
 
-    @Pointcut("@annotation(cn.cuiot.dmp.common.log.annotation.LogRecord)")
+    @Pointcut("@annotation(cn.cuiot.dmp.base.application.annotation.LogRecord)")
     public void logRecord() {
     }
 
     @Around("logRecord()")
     public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
         // 请求信息
-        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder
+                .getRequestAttributes();
         HttpServletRequest request = servletRequestAttributes.getRequest();
 
         String header = "token";
@@ -85,18 +86,16 @@ public class LogRecordAspect extends BaseController {
 
     /**
      * 方法执行前处理
-     *
-     * @param request
-     * @param joinPoint
-     * @return
      */
-    private OperateLogDto beforeProceed(HttpServletRequest request, ProceedingJoinPoint joinPoint) throws Throwable {
+    private OperateLogDto beforeProceed(HttpServletRequest request, ProceedingJoinPoint joinPoint)
+            throws Throwable {
         //填充数据
         OperateLogDto operateLogDto = new OperateLogDto();
         operateLogDto.setOrgId(getOrgId());
         operateLogDto.setOperationById(getUserId());
         operateLogDto.setOperationByName(getUserName());
-        operateLogDto.setRequestTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+        operateLogDto.setRequestTime(
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
         operateLogDto.setRequestIp(IpUtil.getIpAddr(request));
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -136,13 +135,9 @@ public class LogRecordAspect extends BaseController {
 
     /**
      * 执行方法
-     *
-     * @param joinPoint
-     * @param operateLogDto
-     * @return
-     * @throws Throwable
      */
-    private Object proceed(ProceedingJoinPoint joinPoint, OperateLogDto operateLogDto) throws Throwable {
+    private Object proceed(ProceedingJoinPoint joinPoint, OperateLogDto operateLogDto)
+            throws Throwable {
         //方法执行异常处理
         Object obj = null;
         try {
@@ -176,10 +171,6 @@ public class LogRecordAspect extends BaseController {
 
     /**
      * 获取操作对象
-     *
-     * @param joinPoint
-     * @return
-     * @throws Throwable
      */
     private String getOperationTarget(ProceedingJoinPoint joinPoint) throws Throwable {
         String operationTarget = null;
@@ -210,10 +201,6 @@ public class LogRecordAspect extends BaseController {
 
     /**
      * 获取操作对象信息
-     *
-     * @param joinPoint
-     * @return
-     * @throws Throwable
      */
     private String getOperationTargetInfo(ProceedingJoinPoint joinPoint) throws Throwable {
         String operationTargetInfo = null;
@@ -241,13 +228,15 @@ public class LogRecordAspect extends BaseController {
      * @throws IOException 异常
      */
     private void saveFileInfo(OperateLogDto operateLogDto) throws IOException {
-        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
+        HttpServletRequest request = ((ServletRequestAttributes) Objects
+                .requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         Object fileFlag = request.getAttribute(FileExportUtils.EXPORT_FLAG);
         if (fileFlag == null) {
             return;
         }
 
-        HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
+        HttpServletResponse response = ((ServletRequestAttributes) Objects
+                .requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
         if (response == null || !FileExportUtils.isFileContentType(response)) {
             return;
         }
@@ -263,12 +252,9 @@ public class LogRecordAspect extends BaseController {
 
     /**
      * 执行方法后
-     *
-     * @param joinPoint
-     * @param operateLogDto
-     * @param obj
      */
-    private void afterProceed(ProceedingJoinPoint joinPoint, OperateLogDto operateLogDto, Object obj) throws Throwable {
+    private void afterProceed(ProceedingJoinPoint joinPoint, OperateLogDto operateLogDto,
+            Object obj) throws Throwable {
         //方法执行后
         try {
             // 获取操作对象
@@ -307,7 +293,6 @@ public class LogRecordAspect extends BaseController {
      * 转换request请求参数
      *
      * @param parameterMap request获取的参数数组
-     * @return
      */
     private Map<String, String> convertMap(Map<String, String[]> parameterMap) {
         Map<String, String> map = new HashMap<>(parameterMap.size());
@@ -321,7 +306,6 @@ public class LogRecordAspect extends BaseController {
      * 获取request body中的参数
      *
      * @param request 请求
-     * @return
      */
     public String getParameterByRequest(HttpServletRequest request) throws IOException {
         List<String> lines = null;

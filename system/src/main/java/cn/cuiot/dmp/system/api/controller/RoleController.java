@@ -1,10 +1,10 @@
 package cn.cuiot.dmp.system.api.controller;
 
-import cn.cuiot.dmp.common.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.controller.BaseController;
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
 import cn.cuiot.dmp.system.application.service.RoleService;

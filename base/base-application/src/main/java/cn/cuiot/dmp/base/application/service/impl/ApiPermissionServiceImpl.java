@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.base.application.service.impl;
 
-import cn.cuiot.dmp.common.service.ApiPermissionService;
+import cn.cuiot.dmp.base.application.service.ApiPermissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

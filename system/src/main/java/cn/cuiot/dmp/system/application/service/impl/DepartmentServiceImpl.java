@@ -8,7 +8,7 @@ import cn.cuiot.dmp.common.constant.NumberConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.log.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.RandomCodeWorker;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;

@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.common.aop;
+package cn.cuiot.dmp.base.application.aop;
 
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;

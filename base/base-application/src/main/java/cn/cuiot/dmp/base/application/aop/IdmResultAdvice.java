@@ -1,8 +1,8 @@
-package cn.cuiot.dmp.common.aop;
+package cn.cuiot.dmp.base.application.aop;
 
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.utils.FileExportUtils;
+import cn.cuiot.dmp.base.application.utils.FileExportUtils;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServerHttpRequest;

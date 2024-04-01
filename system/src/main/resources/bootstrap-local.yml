@@ -11,3 +11,4 @@ spring:
         username: nacos
         password: Yjwl@20201688
         namespace: smart-park-local
+

@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.system.api.controller;
 
-import cn.cuiot.dmp.common.controller.BaseController;
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.system.application.service.TreeService;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DeptTreeReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DeptTreeResDto;

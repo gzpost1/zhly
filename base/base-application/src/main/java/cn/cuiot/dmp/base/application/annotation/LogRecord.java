@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.common.log.annotation;
+package cn.cuiot.dmp.base.application.annotation;
 
 
 import java.lang.annotation.Documented;

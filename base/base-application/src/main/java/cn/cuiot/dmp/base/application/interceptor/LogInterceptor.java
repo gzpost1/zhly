@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.common.interceptor;
+package cn.cuiot.dmp.base.application.interceptor;
 
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
