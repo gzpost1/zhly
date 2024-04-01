@@ -17,7 +17,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @date 2021/11/17
  */
 @Configuration
-public class WebConfiguration implements WebMvcConfigurer {
+public class CommonWebConfiguration implements WebMvcConfigurer {
 
     @Autowired
     private LogInterceptor logInterceptor;
