@@ -4,7 +4,7 @@ package cn.cuiot.dmp.system.application.service.impl;
 import cn.cuiot.dmp.common.constant.Constant;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.system.api.controller.BaseController;
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.application.service.OperateLogQueryService;
 import cn.cuiot.dmp.system.application.service.UserService;

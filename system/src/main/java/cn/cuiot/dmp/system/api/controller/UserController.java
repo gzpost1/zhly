@@ -8,7 +8,8 @@ import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_INVALID;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_OLD_INVALID;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_NOT_EXIST;
 
-import cn.cuiot.dmp.common.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -62,7 +63,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Slf4j
-public class UserController extends cn.cuiot.dmp.common.controller.BaseController {
+public class UserController extends BaseController {
 
     /**
      * 最大分页数

@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.api.controller;
 
-import cn.cuiot.dmp.common.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.application.enums.OrgLabelEnum;
 import cn.cuiot.dmp.system.application.service.FactoryPackRegionService;
