@@ -63,7 +63,7 @@ public abstract class FileStorage {
      * 简单上传
      */
     public String putObject(String bucketName, String objectName, InputStream stream,
-            String contextType) throws Exception {
+            String contextType,Boolean privateRead) throws Exception {
         return null;
     }
 

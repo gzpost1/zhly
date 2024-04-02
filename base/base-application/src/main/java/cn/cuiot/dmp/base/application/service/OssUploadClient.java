@@ -22,5 +22,5 @@ public interface OssUploadClient {
     /**
      * 获取对象访问URL
      */
-    public FileObjectResponse getObjectUrl(FileObjectParam param);
+    FileObjectResponse getObjectUrl(FileObjectParam param);
 }

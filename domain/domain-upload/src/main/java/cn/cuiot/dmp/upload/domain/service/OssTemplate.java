@@ -102,9 +102,9 @@ public class OssTemplate {
      * 简单上传
      */
     public String putObject(String bucketName, String objectName, InputStream stream,
-            String contextType) {
+            String contextType,Boolean privateRead) {
         try {
-            return getFileStorage().putObject(bucketName, objectName, stream, contextType);
+            return getFileStorage().putObject(bucketName, objectName, stream, contextType,privateRead);
         } catch (Exception e) {
             log.error("putObject error,bucketName:{},objectName:{},throwable:{}", bucketName,
                     objectName, e);

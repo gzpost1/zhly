@@ -11,6 +11,7 @@ import cn.cuiot.dmp.upload.domain.entity.ChunkUploadResponse;
 import cn.cuiot.dmp.upload.domain.entity.ObjectItem;
 import cn.cuiot.dmp.upload.domain.storage.FileStorage;
 import cn.cuiot.dmp.upload.domain.types.MimeTypeEnum;
+import cn.cuiot.dmp.upload.domain.types.UrlType;
 import cn.cuiot.dmp.upload.infrastructure.cache.OssRedisCache;
 import cn.cuiot.dmp.upload.infrastructure.config.OssProperties;
 import com.alibaba.fastjson.JSON;
@@ -26,6 +27,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AbortMultipartUploadRequest;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.BucketPolicy;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
@@ -39,6 +41,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.SetObjectAclRequest;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.google.common.cache.LoadingCache;
@@ -136,20 +139,28 @@ public class AmazonS3FileStorage extends FileStorage {
 
     @Override
     public String putObject(String bucketName, String objectName, InputStream stream,
-            String contextType) throws Exception {
+            String contextType,Boolean privateRead) throws Exception {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(contextType);
         metadata.setContentLength(stream.available());
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, objectName, stream,
                 metadata);
-        //putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead);
+        /**
+         * 设置文件ACL
+         */
+        if(Boolean.TRUE.equals(privateRead)){
+            putObjectRequest.withCannedAcl(CannedAccessControlList.AuthenticatedRead);
+        }else{
+            putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead);
+        }
         putObjectRequest.getRequestClientOptions().setReadLimit(stream.available() + 1);
         PutObjectResult putObjectResult = ossClient.putObject(putObjectRequest);
         log.info("putObject putObjectResult:{}", JSON.toJSONString(putObjectResult));
         String url = ossClient.getUrl(bucketName, objectName).toString();
-        String replaceUrl = url.replace(ossProperties.getEndpoint(), ossProperties.getDomainUrl());
-        log.info("putObject url:{},replaceUrl:{}", url, replaceUrl);
-        return replaceUrl;
+        log.info("putObject url:{}", url);
+        //String url = url.replace(ossProperties.getEndpoint(), ossProperties.getDomainUrl());
+        //log.info("putObject replaceUrl:{}", url);
+        return url;
     }
 
     @Override
@@ -162,11 +173,11 @@ public class AmazonS3FileStorage extends FileStorage {
     public String getObjectUrl(String bucketName, String objectName, String urlType,
             Integer expires) throws Exception {
         String url;
-        if ("2".equals(urlType)) {
+        if (UrlType.PRESIGNED_URL.equals(urlType)) {
             url = getPresignedObjectUrl(bucketName, objectName, expires);
         } else {
             url = ossClient.getUrl(bucketName, objectName).toString();
-            url = url.replace(ossProperties.getEndpoint(), ossProperties.getDomainUrl());
+            //url = url.replace(ossProperties.getEndpoint(), ossProperties.getDomainUrl());
         }
         log.info("getObjectUrl url:{}", url);
         return url;
@@ -202,8 +213,8 @@ public class AmazonS3FileStorage extends FileStorage {
                         .withExpiration(expiration));
         String url = urlResult.toString();
         log.info("getPresignedObjectUrl url:{}", url);
-        url = url.replace(ossProperties.getEndpoint(), ossProperties.getDomainUrl());
-        log.info("getPresignedObjectUrl replaced url:{}", url);
+        //url = url.replace(ossProperties.getEndpoint(), ossProperties.getDomainUrl());
+        //log.info("getPresignedObjectUrl replaced url:{}", url);
         return url;
     }
 
@@ -279,6 +290,14 @@ public class AmazonS3FileStorage extends FileStorage {
                 CompleteMultipartUploadRequest completeMultipartUploadRequest = new CompleteMultipartUploadRequest(bucketName, objectName, chunkContext.getUploadId(), partETags);
                 CompleteMultipartUploadResult completeMultipartUploadResult = ossClient
                         .completeMultipartUpload(completeMultipartUploadRequest);
+                /**
+                 * 设置文件ACL
+                 */
+                if(Boolean.TRUE.equals(param.getPrivateRead())){
+                    ossClient.setObjectAcl(new SetObjectAclRequest(bucketName, objectName, CannedAccessControlList.AuthenticatedRead));
+                }else{
+                    ossClient.setObjectAcl(new SetObjectAclRequest(bucketName, objectName, CannedAccessControlList.PublicRead));
+                }
                 ossRedisCache.invalidateChunkCache(param.getTaskId());
                 String url = getObjectUrl(bucketName, objectName, null, null);
                 return ChunkUploadResponse.builder()

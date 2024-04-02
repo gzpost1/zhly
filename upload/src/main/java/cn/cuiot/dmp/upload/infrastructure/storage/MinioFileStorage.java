@@ -7,6 +7,7 @@ import cn.cuiot.dmp.upload.domain.entity.ChunkUploadResponse;
 import cn.cuiot.dmp.upload.domain.entity.ObjectItem;
 import cn.cuiot.dmp.upload.domain.storage.FileStorage;
 import cn.cuiot.dmp.upload.domain.types.MimeTypeEnum;
+import cn.cuiot.dmp.upload.domain.types.UrlType;
 import cn.cuiot.dmp.upload.infrastructure.config.OssProperties;
 import cn.hutool.core.net.URLEncodeUtil;
 import com.alibaba.fastjson.JSON;
@@ -106,7 +107,7 @@ public class MinioFileStorage extends FileStorage {
 
     @Override
     public String putObject(String bucketName, String objectName, InputStream stream,
-            String contextType) throws Exception {
+            String contextType,Boolean privateRead) throws Exception {
         ObjectWriteResponse response = ossClient
                 .putObject(PutObjectArgs.builder().bucket(bucketName).object(objectName)
                         .stream(stream, stream.available(), -1)
@@ -129,7 +130,7 @@ public class MinioFileStorage extends FileStorage {
     public String getObjectUrl(String bucketName, String objectName, String urlType,
             Integer expires) throws Exception {
         String url;
-        if ("2".equals(urlType)) {
+        if (UrlType.PRESIGNED_URL.equals(urlType)) {
             url = getPresignedObjectUrl(bucketName, objectName, expires);
         } else {
             url = ossProperties.getDomainUrl() + "/" + bucketName + "/" + objectName;
@@ -235,7 +236,7 @@ public class MinioFileStorage extends FileStorage {
         String contentType = MimeTypeEnum.getContentType(suffix);
         //上传分片文件
         String chunkUrl = putObject(bucketName, chunkObjectName, param.getInputStream(),
-                contentType);
+                contentType,param.getPrivateRead());
         if ((param.getChunk() + 1) >= param.getChunkTotal()) {
             //合并文件
             List<ObjectItem> objectItems = getObjectsByPrefix(bucketName, chunkDir + "/",
