@@ -33,4 +33,9 @@ public class MultipartFileParam implements Serializable {
      * 预签URL有效期（秒）
      */
     private Integer expires;
+
+    /**
+     * 是否私有读
+     */
+    private Boolean privateRead;
 }

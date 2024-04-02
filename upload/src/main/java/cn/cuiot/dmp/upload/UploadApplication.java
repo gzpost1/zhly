@@ -22,7 +22,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableDiscoveryClient
 @ComponentScan(basePackages = {"cn.cuiot.dmp"})
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
-@EnableFeignClients
+@EnableFeignClients(basePackages = {"cn.cuiot.dmp"})
 @EnableAsync
 public class UploadApplication {
     public static void main(String[] args) {

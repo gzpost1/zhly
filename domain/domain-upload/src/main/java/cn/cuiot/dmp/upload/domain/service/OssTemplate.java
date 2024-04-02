@@ -1,10 +1,12 @@
 package cn.cuiot.dmp.upload.domain.service;
 
+import cn.cuiot.dmp.upload.domain.entity.BucketItem;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadRequest;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadResponse;
 import cn.cuiot.dmp.upload.domain.entity.ObjectItem;
 import cn.cuiot.dmp.upload.domain.exception.OssException;
 import cn.cuiot.dmp.upload.domain.storage.FileStorage;
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -33,6 +35,19 @@ public class OssTemplate {
             throw new RuntimeException("getFileStorage empty");
         }
         return fileStorageList.get(0);
+    }
+
+    /**
+     * 获取桶列表
+     */
+    public List<BucketItem> listBuckets() throws Exception {
+        try {
+            List<BucketItem> bucketItems = getFileStorage().listBuckets();
+            return bucketItems;
+        } catch (Exception e) {
+            log.error("listBuckets error,throwable:{}",e);
+            throw new OssException("获取桶列表失败");
+        }
     }
 
     /**
@@ -87,9 +102,9 @@ public class OssTemplate {
      * 简单上传
      */
     public String putObject(String bucketName, String objectName, InputStream stream,
-            String contextType) {
+            String contextType,Boolean privateRead) {
         try {
-            return getFileStorage().putObject(bucketName, objectName, stream, contextType);
+            return getFileStorage().putObject(bucketName, objectName, stream, contextType,privateRead);
         } catch (Exception e) {
             log.error("putObject error,bucketName:{},objectName:{},throwable:{}", bucketName,
                     objectName, e);

@@ -39,4 +39,9 @@ public class UploadParam implements Serializable {
      * 是否压缩图片 1 是 0否
      */
     private Byte compressImg;
+
+    /**
+     * 是否私有读
+     */
+    private Boolean privateRead;
 }

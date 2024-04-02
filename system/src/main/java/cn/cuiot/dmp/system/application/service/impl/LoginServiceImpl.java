@@ -11,7 +11,7 @@ import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.enums.UserLongTimeLoginEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
-import cn.cuiot.dmp.base.application.service.OperateLogService;
+import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorker;

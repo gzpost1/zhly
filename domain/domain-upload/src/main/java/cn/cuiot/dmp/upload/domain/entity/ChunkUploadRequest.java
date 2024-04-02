@@ -49,4 +49,9 @@ public class ChunkUploadRequest implements Serializable {
      * 分片总数
      */
     private Integer chunkTotal;
+
+    /**
+     * 是否私有读
+     */
+    private Boolean privateRead;
 }
