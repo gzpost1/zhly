@@ -69,6 +69,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-datasource-nacos</artifactId>
+        </dependency>
         <!-- pageHelper 分页-->
         <dependency>
             <groupId>com.github.pagehelper</groupId>
