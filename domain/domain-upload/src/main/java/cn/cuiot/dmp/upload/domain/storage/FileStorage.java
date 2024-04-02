@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.upload.domain.storage;
 
+import cn.cuiot.dmp.upload.domain.entity.BucketItem;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadRequest;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadResponse;
 import cn.cuiot.dmp.upload.domain.entity.ObjectItem;
@@ -13,6 +14,23 @@ import java.util.List;
  * @date: 2024/4/1 19:38
  */
 public abstract class FileStorage {
+
+    /**
+     * 状态值 300-未完成
+     */
+    protected static String UN_FINISH="300";
+
+    /**
+     * 状态值 200-已完成
+     */
+    protected static String FINISH="200";
+
+    /**
+     * 获取桶列表
+     */
+    public List<BucketItem> listBuckets() throws Exception {
+        return Lists.newArrayList();
+    }
 
     /**
      * 创建桶
@@ -45,7 +63,7 @@ public abstract class FileStorage {
      * 简单上传
      */
     public String putObject(String bucketName, String objectName, InputStream stream,
-            String contextType) throws Exception {
+            String contextType,Boolean privateRead) throws Exception {
         return null;
     }
 

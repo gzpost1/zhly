@@ -2,7 +2,7 @@ package cn.cuiot.dmp.base.application.service;
 
 /**
  * @author wensq
- * @classname OperateLogService
+ * @classname ApiPermissionService
  * @description 日志保存接口
  * @date 2021/12/3
  */

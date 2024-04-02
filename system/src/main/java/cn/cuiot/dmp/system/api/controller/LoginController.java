@@ -7,7 +7,7 @@ import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.base.application.service.OperateLogService;
+import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.domain.types.Aes;

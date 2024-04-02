@@ -56,5 +56,8 @@ public class ChunkFileParam implements Serializable {
      */
     private Integer chunkTotal;
 
-
+    /**
+     * 是否私有读
+     */
+    private Boolean privateRead;
 }

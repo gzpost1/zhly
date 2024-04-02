@@ -3,7 +3,6 @@ package cn.cuiot.dmp.base.application.aop;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.application.dto.ResponseWrapper;
-import cn.cuiot.dmp.base.application.service.OperateLogService;
 import cn.cuiot.dmp.base.application.utils.FileExportUtils;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -51,9 +50,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Aspect
 @Component
 public class LogRecordAspect extends BaseController {
-
-    @Autowired
-    OperateLogService operateLogService;
 
     @Pointcut("@annotation(cn.cuiot.dmp.base.application.annotation.LogRecord)")
     public void logRecord() {
@@ -160,8 +156,7 @@ public class LogRecordAspect extends BaseController {
             operateLogDto.setStatusCode(StatusCodeEnum.FAILED.getCode());
             operateLogDto.setStatusMsg(StatusCodeEnum.FAILED.getName());
             //记录日志
-            // 发生异常时写日志
-            operateLogService.saveDb(operateLogDto);
+            //operateLogService.saveDb(operateLogDto);
 
             throw e;
         }
@@ -281,8 +276,7 @@ public class LogRecordAspect extends BaseController {
             operateLogDto.setLogLevel(LogLevelEnum.INFO.getCode());
 
             // 记录日志
-            // 正常处理时写日志
-            operateLogService.saveDb(operateLogDto);
+           // operateLogService.saveDb(operateLogDto);
 
         } catch (Exception e) {
             log.error("LogRecordAspect joinPoint.afterProceed error", e);

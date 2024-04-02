@@ -49,7 +49,11 @@ public class OssUploadClientImpl implements OssUploadClient {
                     .equals(uploadResult.getCode())) {
                 return uploadResult.getData();
             }
-            throw new RuntimeException("上传文件失败");
+            String message = null;
+            if (Objects.nonNull(uploadResult)){
+                message = uploadResult.getMessage();
+            }
+            throw new RuntimeException(message);
         } catch (Exception ex) {
             log.info("OssUploadClient==upload==fail", ex);
             throw new RuntimeException("上传文件失败");
@@ -70,7 +74,11 @@ public class OssUploadClientImpl implements OssUploadClient {
                     .equals(uploadResult.getCode())) {
                 return uploadResult.getData();
             }
-            throw new RuntimeException("获取对象URL失败");
+            String message = null;
+            if (Objects.nonNull(uploadResult)){
+                message = uploadResult.getMessage();
+            }
+            throw new RuntimeException(message);
         } catch (Exception ex) {
             log.info("OssUploadClient==getObjectUrl==fail", ex);
             throw new RuntimeException("获取对象URL失败");

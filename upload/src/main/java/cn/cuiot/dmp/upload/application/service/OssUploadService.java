@@ -17,6 +17,7 @@ import cn.cuiot.dmp.upload.domain.entity.ChunkUploadRequest;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadResponse;
 import cn.cuiot.dmp.upload.domain.service.OssTemplate;
 import cn.cuiot.dmp.upload.domain.types.MimeTypeEnum;
+import cn.cuiot.dmp.upload.domain.types.UrlType;
 import cn.cuiot.dmp.upload.infrastructure.config.OssProperties;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSON;
@@ -112,7 +113,8 @@ public class OssUploadService {
                     String scaleFilePath = entry.getValue();
                     ossTemplate.putObject(bucketName, scaleObjectName,
                             FileUtil.getInputStream(scaleFilePath),
-                            MimeTypeEnum.getContentType(suffix));
+                            MimeTypeEnum.getContentType(suffix),
+                            param.getPrivateRead());
                     File scaleFile = new File(scaleFilePath);
                     if (scaleFile.exists()) {
                         scaleFile.delete();
@@ -120,7 +122,7 @@ public class OssUploadService {
                 }
                 url = ossTemplate
                         .putObject(bucketName, objectName, FileUtil.getInputStream(localFile),
-                                MimeTypeEnum.getContentType(suffix));
+                                MimeTypeEnum.getContentType(suffix),param.getPrivateRead());
                 File file = new File(localFilePath);
                 if (file.exists()) {
                     file.delete();
@@ -131,10 +133,10 @@ public class OssUploadService {
             }
         } else {
             url = ossTemplate.putObject(bucketName, objectName, multipartFile.getInputStream(),
-                    MimeTypeEnum.getContentType(suffix));
+                    MimeTypeEnum.getContentType(suffix),param.getPrivateRead());
         }
         String presignedObjectUrl = ossTemplate
-                .getObjectUrl(bucketName, objectName, "2", param.getExpires());
+                .getObjectUrl(bucketName, objectName, UrlType.PRESIGNED_URL, param.getExpires());
         return UploadResponse.builder()
                 .status("200")
                 .bucketName(bucketName)
@@ -167,9 +169,9 @@ public class OssUploadService {
         }
         String objectName = param.getDir() + "/" + originalFilename;
         String url = ossTemplate.putObject(bucketName, objectName, multipartFile.getInputStream(),
-                MimeTypeEnum.getContentType(suffix));
+                MimeTypeEnum.getContentType(suffix),param.getPrivateRead());
         String presignedObjectUrl = ossTemplate
-                .getObjectUrl(bucketName, objectName, "2", param.getExpires());
+                .getObjectUrl(bucketName, objectName, UrlType.PRESIGNED_URL, param.getExpires());
         return UploadResponse.builder()
                 .status("200")
                 .bucketName(bucketName)
@@ -204,6 +206,7 @@ public class OssUploadService {
             uploadParam.setDir(param.getDir());
             uploadParam.setFile(multipartFile);
             uploadParam.setExpires(param.getExpires());
+            uploadParam.setPrivateRead(param.getPrivateRead());
             UploadResponse uploadResponse = this.upload(uploadParam);
             resultList.add(uploadResponse);
         }
@@ -236,9 +239,10 @@ public class OssUploadService {
         request.setTaskId(param.getTaskId());
         request.setChunk(param.getChunk());
         request.setChunkTotal(param.getChunkTotal());
+        request.setPrivateRead(param.getPrivateRead());
         ChunkUploadResponse chunkUploadResponse = ossTemplate.chunkUpload(request);
         String presignedObjectUrl = ossTemplate.getObjectUrl(chunkUploadResponse.getBucketName(),
-                chunkUploadResponse.getObjectName(), "2", param.getExpires());
+                chunkUploadResponse.getObjectName(), UrlType.PRESIGNED_URL, param.getExpires());
         return UploadResponse.builder()
                 .status(chunkUploadResponse.getStatus())
                 .bucketName(chunkUploadResponse.getBucketName())
@@ -255,7 +259,7 @@ public class OssUploadService {
         String url = ossTemplate.getObjectUrl(param.getBucketName(),
                 param.getObjectName(), null, null);
         String presignedObjectUrl = ossTemplate.getObjectUrl(param.getBucketName(),
-                param.getObjectName(), "2", param.getExpires());
+                param.getObjectName(), UrlType.PRESIGNED_URL, param.getExpires());
         return ObjectResponse.builder()
                 .bucketName(param.getBucketName())
                 .objectName(param.getObjectName())

@@ -10,6 +10,8 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import java.util.List;
 import javax.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -19,37 +21,38 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @author: wuyongchong
  * @date: 2024/4/1 20:46
  */
-@FeignClient(value = "upload")
+@Component
+@FeignClient(value = "community-upload")
 public interface OssUploadFeignService {
 
     /**
      * 普通上传
      */
-    @PostMapping("/upload")
+    @PostMapping(value = "/oss/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     IdmResDTO<FileUploadResponse> upload(@Valid FileUploadParam param);
 
     /**
      * 原名上传
      */
-    @PostMapping("/originUpload")
+    @PostMapping(value = "/oss/originUpload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     IdmResDTO<FileUploadResponse> originUpload(@Valid FileUploadParam param);
 
     /**
      * 大文件分片上传
      */
-    @PostMapping("chunkUpload")
+    @PostMapping(value = "/oss/chunkUpload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     IdmResDTO<FileUploadResponse> chunkUpload(@Valid FileChunkFileParam param);
 
     /**
      * 获取对象URL
      */
-    @PostMapping("getObjectUrl")
+    @PostMapping("/oss/getObjectUrl")
     IdmResDTO<FileObjectResponse> getObjectUrl(@RequestBody @Valid FileObjectParam param);
 
     /**
      * 批量获取对象URL
      */
-    @PostMapping("getObjectUrlList")
+    @PostMapping("/oss/getObjectUrlList")
     IdmResDTO<List<FileObjectResponse>> getObjectUrlList(
             @RequestBody @Valid FileObjectListParam query);
 
