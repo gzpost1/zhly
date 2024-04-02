@@ -52,7 +52,7 @@
         <disruptor.version>3.4.2</disruptor.version>
         <hutool.version>5.8.21</hutool.version>
         <debezimu.version>1.9.5.Final</debezimu.version>
-        <sentinel.version>1.7.1</sentinel.version>
+        <sentinel.version>1.8.6</sentinel.version>
         <lombok.version>1.18.8</lombok.version>
         <nacos-client.version>2.2.4</nacos-client.version>
         <redisson.version>3.18.0</redisson.version>
