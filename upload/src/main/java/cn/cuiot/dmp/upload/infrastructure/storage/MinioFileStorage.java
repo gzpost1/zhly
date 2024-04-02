@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.upload.infrastructure.storage;
 
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.upload.domain.entity.BucketItem;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadRequest;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadResponse;
 import cn.cuiot.dmp.upload.domain.entity.ObjectItem;
@@ -30,6 +31,7 @@ import io.minio.Result;
 import io.minio.StatObjectArgs;
 import io.minio.StatObjectResponse;
 import io.minio.http.Method;
+import io.minio.messages.Bucket;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
@@ -67,6 +69,17 @@ public class MinioFileStorage extends FileStorage {
         this.ossClient = MinioClient.builder()
                 .endpoint(ossProperties.getEndpoint())
                 .credentials(ossProperties.getAccessKey(), ossProperties.getSecretKey()).build();
+    }
+
+    @Override
+    public List<BucketItem> listBuckets() throws Exception {
+        List<Bucket> buckets = ossClient.listBuckets();
+        return Optional.ofNullable(buckets).orElse(Lists.newArrayList()).stream().map(item->{
+            BucketItem bucketItem = new BucketItem();
+            bucketItem.setBucketName(item.name());
+            bucketItem.setCreationDate(Objects.isNull(item.creationDate())?null:Date.from(item.creationDate().toInstant()));
+            return bucketItem;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -259,7 +272,7 @@ public class MinioFileStorage extends FileStorage {
                 String url = URLEncodeUtil
                         .encode(ossProperties.getDomainUrl() + "/" + bucketName + "/" + objectName);
                 return ChunkUploadResponse.builder()
-                        .status("200")
+                        .status(FINISH)
                         .url(url)
                         .bucketName(bucketName)
                         .objectName(objectName)
@@ -267,7 +280,7 @@ public class MinioFileStorage extends FileStorage {
             }
         }
         return ChunkUploadResponse.builder()
-                .status("300")
+                .status(UN_FINISH)
                 .url(chunkUrl)
                 .bucketName(bucketName)
                 .objectName(chunkObjectName)

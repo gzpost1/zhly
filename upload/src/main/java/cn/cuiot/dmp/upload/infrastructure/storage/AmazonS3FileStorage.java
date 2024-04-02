@@ -3,6 +3,7 @@ package cn.cuiot.dmp.upload.infrastructure.storage;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.upload.domain.entity.BucketItem;
 import cn.cuiot.dmp.upload.domain.entity.ChunkContext;
 import cn.cuiot.dmp.upload.domain.entity.ChunkPartETag;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadRequest;
@@ -10,6 +11,7 @@ import cn.cuiot.dmp.upload.domain.entity.ChunkUploadResponse;
 import cn.cuiot.dmp.upload.domain.entity.ObjectItem;
 import cn.cuiot.dmp.upload.domain.storage.FileStorage;
 import cn.cuiot.dmp.upload.domain.types.MimeTypeEnum;
+import cn.cuiot.dmp.upload.infrastructure.cache.OssRedisCache;
 import cn.cuiot.dmp.upload.infrastructure.config.OssProperties;
 import com.alibaba.fastjson.JSON;
 import com.amazonaws.ClientConfiguration;
@@ -22,6 +24,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AbortMultipartUploadRequest;
+import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
@@ -47,6 +50,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +58,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -66,7 +71,7 @@ import org.springframework.stereotype.Service;
 public class AmazonS3FileStorage extends FileStorage {
 
     @Autowired
-    private LoadingCache<String, ChunkContext> ossLoadingCache;
+    private OssRedisCache ossRedisCache;
 
     private final OssProperties ossProperties;
 
@@ -90,6 +95,17 @@ public class AmazonS3FileStorage extends FileStorage {
         clientBuilder.setCredentials(acrep);
         clientBuilder.setEndpointConfiguration(econfig);
         this.ossClient = clientBuilder.build();
+    }
+
+    @Override
+    public List<BucketItem> listBuckets() throws Exception {
+        List<Bucket> buckets = ossClient.listBuckets();
+        return Optional.ofNullable(buckets).orElse(Lists.newArrayList()).stream().map(item->{
+            BucketItem bucketItem = new BucketItem();
+            bucketItem.setBucketName(item.getName());
+            bucketItem.setCreationDate(item.getCreationDate());
+            return bucketItem;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -235,9 +251,9 @@ public class AmazonS3FileStorage extends FileStorage {
             ChunkContext chunkContext = new ChunkContext();
             chunkContext.setUploadId(initiateResult.getUploadId());
             chunkContext.setPartETags(Lists.newArrayList());
-            ossLoadingCache.put(param.getTaskId(),chunkContext);
+            ossRedisCache.putChunkCache(param.getTaskId(),chunkContext);
         }
-        ChunkContext chunkContext = ossLoadingCache.get(param.getTaskId());
+        ChunkContext chunkContext = ossRedisCache.getChunkCache(param.getTaskId());
         if (Objects.isNull(chunkContext)) {
             log.error("chunkUpload error get chunkContext null");
             throw new BusinessException(ResultCode.INNER_ERROR, "系统异常，文件上传失败");
@@ -255,7 +271,7 @@ public class AmazonS3FileStorage extends FileStorage {
             partRequest.setRequesterPays(Boolean.TRUE);
             UploadPartResult uploadResult = ossClient.uploadPart(partRequest);
             chunkContext.getPartETags().add(new ChunkPartETag(uploadResult.getPartETag().getPartNumber(),uploadResult.getPartETag().getETag()));
-            ossLoadingCache.put(param.getTaskId(),chunkContext);
+            ossRedisCache.putChunkCache(param.getTaskId(),chunkContext);
             if((chunkIndex + 1)>=chunkTotal) {
                 List<PartETag> partETags = chunkContext.getPartETags().stream().map(ite->new PartETag(ite.getPartNumber(),ite.geteTag())).sorted(
                         Comparator.comparingInt(PartETag::getPartNumber)).collect(
@@ -263,17 +279,17 @@ public class AmazonS3FileStorage extends FileStorage {
                 CompleteMultipartUploadRequest completeMultipartUploadRequest = new CompleteMultipartUploadRequest(bucketName, objectName, chunkContext.getUploadId(), partETags);
                 CompleteMultipartUploadResult completeMultipartUploadResult = ossClient
                         .completeMultipartUpload(completeMultipartUploadRequest);
-                ossLoadingCache.invalidate(param.getTaskId());
+                ossRedisCache.invalidateChunkCache(param.getTaskId());
                 String url = getObjectUrl(bucketName, objectName, null, null);
                 return ChunkUploadResponse.builder()
-                        .status("200")
+                        .status(FINISH)
                         .url(url)
                         .bucketName(bucketName)
                         .objectName(objectName)
                         .build();
             }
             return ChunkUploadResponse.builder()
-                    .status("300")
+                    .status(UN_FINISH)
                     .url(objectName)
                     .bucketName(bucketName)
                     .objectName(objectName)
