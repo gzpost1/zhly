@@ -4,7 +4,6 @@ import cn.cuiot.dmp.upload.UploadApplication;
 import cn.cuiot.dmp.upload.domain.entity.BucketItem;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadRequest;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadResponse;
-import cn.cuiot.dmp.upload.domain.types.UrlType;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import java.io.File;
@@ -15,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.compress.utils.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -56,10 +54,9 @@ public class OssTemplateTest {
      */
     @Test
     void bucketExists() throws Exception {
-        String bucketName = "demo-bucket";
-        ossTemplate.createBucket(bucketName);
+        String bucketName = "zhlypt";
         boolean bucketExists = ossTemplate.bucketExists(bucketName);
-        Assertions.assertTrue(bucketExists,"桶不存在");
+        Assertions.assertTrue(bucketExists, "桶不存在");
     }
 
     /**
@@ -67,7 +64,7 @@ public class OssTemplateTest {
      */
     @Test
     void getBucketPolicy() throws Exception {
-        String bucketName = "demo-bucket";
+        String bucketName = "zhlypt";
         String bucketPolicy = ossTemplate.getBucketPolicy(bucketName);
         log.info("bucketPolicy:{}", bucketPolicy);
     }
@@ -77,13 +74,13 @@ public class OssTemplateTest {
      */
     @Test
     void putObject() {
-        String bucketName = "demo-bucket";
+        String bucketName = "zhlypt";
         File file = new File("D:\\minio-cli\\tmp\\124662E02BEA429692AAABECDCBFF39ADCF697DA.jpg");
         try {
             String contentType = Files.probeContentType(Paths.get(file.getName()));
             FileInputStream inputStream = new FileInputStream(file);
             String url = ossTemplate
-                    .putObject(bucketName, "img/test.jpg", inputStream, contentType,true);
+                    .putObject(bucketName, "img/test.jpg", inputStream, contentType, true);
             log.info("url:{}", url);
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,9 +91,9 @@ public class OssTemplateTest {
      * 获取文件流
      */
     @Test
-    void getObject(){
-        String bucketName="demo-bucket";
-        String objectName="img/test.jpg";
+    void getObject() {
+        String bucketName = "zhlypt";
+        String objectName = "img/test.jpg";
         try (InputStream inputStream = ossTemplate.getObject(bucketName, objectName)) {
             IOUtils.copy(inputStream, new FileOutputStream("D:\\minio-cli\\tmp\\download.jpg"));
         } catch (Exception e) {
@@ -108,9 +105,9 @@ public class OssTemplateTest {
      * 获取文件URL
      */
     @Test
-    void getObjectUrl(){
-        String bucketName="demo-bucket";
-        String objectName="img/test.jpg";
+    void getObjectUrl() {
+        String bucketName = "zhlypt";
+        String objectName = "img/test.jpg";
         String objectUrl = ossTemplate.getObjectUrl(bucketName, objectName, null, null);
         log.info("objectUrl:{}", objectUrl);
     }
@@ -120,10 +117,10 @@ public class OssTemplateTest {
      */
     @Test
     void objectExists() {
-        String bucketName="demo-bucket";
-        String objectName="img/test.jpg";
+        String bucketName = "zhlypt";
+        String objectName = "img/test.jpg";
         boolean objectExists = ossTemplate.objectExists(bucketName, objectName);
-        Assertions.assertTrue(objectExists,"object不存在");
+        Assertions.assertTrue(objectExists, "object不存在");
     }
 
     /**
@@ -131,9 +128,9 @@ public class OssTemplateTest {
      */
     @Test
     void getPresignedObjectUrl() {
-        String bucketName="demo-bucket";
-        String objectName="img/test.jpg";
-        String presignedObjectUrl = ossTemplate.getPresignedObjectUrl(bucketName, objectName, 20);
+        String bucketName = "zhlypt";
+        String objectName = "img/test.jpg";
+        String presignedObjectUrl = ossTemplate.getPresignedObjectUrl(bucketName, objectName, 60);
         log.info("presignedObjectUrl:{}", presignedObjectUrl);
     }
 
@@ -141,19 +138,20 @@ public class OssTemplateTest {
      * 文件分片上传
      */
     @Test
-    void chunkUpload(){
+    void chunkUpload() {
         String taskId = IdWorker.getIdStr();
-        String bucketName="demo-bucket";
-        String dir="video";
-        String fileName="test.mp4";
+        String bucketName = "zhlypt";
+        String dir = "video";
+        String fileName = "test.mp4";
         Integer chunkTotal = 4;
         try {
-            for(int i=0;i<4;i++){
+            for (int i = 0; i < 4; i++) {
                 ChunkUploadRequest request = new ChunkUploadRequest();
                 request.setBucketName(bucketName);
                 request.setDir(dir);
                 request.setFileName(fileName);
-                request.setInputStream(new FileInputStream(new File("D:\\vedio\\chunk\\"+i+".mp4")));
+                request.setInputStream(
+                        new FileInputStream(new File("D:\\vedio\\chunk\\" + i + ".mp4")));
                 request.setExpires(null);
                 request.setTaskId(taskId);
                 request.setChunk(i);
@@ -161,8 +159,8 @@ public class OssTemplateTest {
                 ChunkUploadResponse chunkUploadResponse = ossTemplate.chunkUpload(request);
                 log.info("chunkUploadResponse:{}", JSON.toJSONString(chunkUploadResponse));
             }
-        }catch (Exception ex){
-            log.error("chunkUpload error",ex);
+        } catch (Exception ex) {
+            log.error("chunkUpload error", ex);
         }
     }
 
