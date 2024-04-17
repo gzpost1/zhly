@@ -87,6 +87,18 @@ public class OssTemplate {
     }
 
     /**
+     * 设置Bucket的策略
+     */
+    public void setBucketPolicy(String bucketName,String policy) {
+        try {
+            getFileStorage().setBucketPolicy(bucketName,policy);
+        } catch (Exception e) {
+            log.error("setBucketPolicy error,bucketName:{},throwable:{}", bucketName, e);
+            throw new OssException("设置Bucket策略失败");
+        }
+    }
+
+    /**
      * 获得Bucket的策略
      */
     public String getBucketPolicy(String bucketName) {

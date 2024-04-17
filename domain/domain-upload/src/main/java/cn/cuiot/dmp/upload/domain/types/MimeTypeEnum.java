@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.upload.domain.types;
 
+import com.google.common.collect.Lists;
+import java.util.List;
 import lombok.Getter;
 import org.springframework.util.StringUtils;
 
@@ -211,7 +213,39 @@ public enum MimeTypeEnum {
         if (mimeTypeEnum != null) {
             return mimeTypeEnum.getMimeType();
         }
-        return "application/octet-stream";
+        return MimeTypeEnum.BIN.getMimeType();
+    }
+
+    /**
+     * 获得图片扩展名列表
+     */
+    public static List<String> getImageExtensions(){
+        List<String> imageExtensions = Lists.newArrayList();
+        imageExtensions.add(MimeTypeEnum.BMP.getExtension());
+        imageExtensions.add(MimeTypeEnum.JPEG.getExtension());
+        imageExtensions.add(MimeTypeEnum.JPG.getExtension());
+        imageExtensions.add(MimeTypeEnum.PNG.getExtension());
+        imageExtensions.add(MimeTypeEnum.GIF.getExtension());
+        imageExtensions.add(MimeTypeEnum.TIF.getExtension());
+        imageExtensions.add(MimeTypeEnum.TIFF.getExtension());
+        imageExtensions.add(MimeTypeEnum.SVG.getExtension());
+        return imageExtensions;
+    }
+
+    /**
+     * 获得图片mimeType列表
+     */
+    public static List<String> getImageMimeTypes(){
+        List<String> imageExtensions = Lists.newArrayList();
+        imageExtensions.add(MimeTypeEnum.BMP.getMimeType());
+        imageExtensions.add(MimeTypeEnum.JPEG.getMimeType());
+        imageExtensions.add(MimeTypeEnum.JPG.getMimeType());
+        imageExtensions.add(MimeTypeEnum.PNG.getMimeType());
+        imageExtensions.add(MimeTypeEnum.GIF.getMimeType());
+        imageExtensions.add(MimeTypeEnum.TIF.getMimeType());
+        imageExtensions.add(MimeTypeEnum.TIFF.getMimeType());
+        imageExtensions.add(MimeTypeEnum.SVG.getMimeType());
+        return imageExtensions;
     }
  
 }

@@ -10,20 +10,11 @@ import java.util.List;
 
 /**
  * 文件操作基类
+ *
  * @author: wuyongchong
  * @date: 2024/4/1 19:38
  */
 public abstract class FileStorage {
-
-    /**
-     * 状态值 300-未完成
-     */
-    protected static String UN_FINISH="300";
-
-    /**
-     * 状态值 200-已完成
-     */
-    protected static String FINISH="200";
 
     /**
      * 获取桶列表
@@ -53,6 +44,12 @@ public abstract class FileStorage {
     }
 
     /**
+     * 设置Bucket的策略
+     */
+    public void setBucketPolicy(String bucketName,String policy) throws Exception {
+    }
+
+    /**
      * 获得Bucket的策略
      */
     public String getBucketPolicy(String bucketName) throws Exception {
@@ -63,7 +60,7 @@ public abstract class FileStorage {
      * 简单上传
      */
     public String putObject(String bucketName, String objectName, InputStream stream,
-            String contextType,Boolean privateRead) throws Exception {
+            String contextType, Boolean privateRead) throws Exception {
         return null;
     }
 
