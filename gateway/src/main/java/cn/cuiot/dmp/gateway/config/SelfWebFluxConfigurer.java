@@ -17,11 +17,6 @@ import org.springframework.web.reactive.config.WebFluxConfigurer;
 public class SelfWebFluxConfigurer implements WebFluxConfigurer {
 
     @Bean
-    public CorsResponseHeaderFilter corsResponseHeaderFilter() {
-        return new CorsResponseHeaderFilter();
-    }
-
-    @Bean
     public CorsWebFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
