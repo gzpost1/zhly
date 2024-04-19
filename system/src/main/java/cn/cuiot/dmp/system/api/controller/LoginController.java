@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.Objects;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -100,28 +100,36 @@ public class LoginController extends BaseController {
     public LoginResDTO loginDmp(@RequestBody LoginReqDTO loginReqDTO) {
         log.info("pc用户登录信息 {}", loginReqDTO.getUserAccount());
         // 用户账号参数校验
-        if (loginReqDTO == null || StringUtils.isEmpty(loginReqDTO.getUserAccount())) {
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getUserAccount())) {
             // 账号或密码为空
             throw new BusinessException(ResultCode.USER_ACCOUNT_IS_EMPTY);
         }
         // 用户密码参数校验
-        if (loginReqDTO == null || StringUtils.isEmpty(loginReqDTO.getPassword())) {
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getPassword())) {
             // 账号或密码为空
             throw new BusinessException(ResultCode.PASSWORD_IS_EMPTY);
         }
         // 验证码参数校验
-        if (loginReqDTO == null || StringUtils.isEmpty(loginReqDTO.getKaptchaText())) {
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getKaptchaText())) {
             // 图形验证码为空
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY);
         }
         // 验证码参数校验
-        if (loginReqDTO == null || StringUtils.isEmpty(loginReqDTO.getSid())) {
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getSid())) {
             // 图形验证码为空
             throw new BusinessException(ResultCode.ACCESS_ERROR);
         }
-        if (loginReqDTO == null || StringUtils.isEmpty(loginReqDTO.getKid())) {
-            // 图形验证码为空
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getKid())) {
+            // 临时Aes密钥ID为空
             throw new BusinessException(ResultCode.KID_IS_EMPTY);
+        }
+        // 必须要阅读用户协议
+        if (!PRIVACY_AGREE.equals(loginReqDTO.getPrivacyAgreement())) {
+            throw new BusinessException(ResultCode.PRIVACY_AGREEMENT_ERROR);
+        }
+        // 图形验证码校验
+        if (!TRUE_WORD.equals(smsWord)) {
+            verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid());
         }
         String jsonObject = stringRedisTemplate.opsForValue().get(SECRET_INFO_KEY + loginReqDTO.getKid());
         stringRedisTemplate.delete(SECRET_INFO_KEY + loginReqDTO.getKid());
@@ -147,12 +155,7 @@ public class LoginController extends BaseController {
                     throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR);
                 }
             }
-            // 必须要阅读用户协议
-            if (!PRIVACY_AGREE.equals(loginReqDTO.getPrivacyAgreement())) {
-                throw new BusinessException(ResultCode.PRIVACY_AGREEMENT_ERROR);
-            }
         }
-
         return loginService.loginIdentity(validateUser, request);
     }
 
@@ -187,12 +190,12 @@ public class LoginController extends BaseController {
             // 图形验证码为空
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY);
         }
-        // 手机验证码参数校验
+        // 图形验证码sid参数校验
         if (smsReqDTO == null || StringUtils.isEmpty(smsReqDTO.getSid())) {
-            // 手机验证码为空
+            // 图形验证码sid为空
             throw new BusinessException(ResultCode.ACCESS_ERROR);
         }
-        boolean kaptchaVerified = true;
+        boolean kaptchaVerified = false;
         // 图形验证码校验
         if (TRUE_WORD.equals(smsWord)) {
             kaptchaVerified = verifyUnit.checkKaptchaText(smsReqDTO.getKaptchaText(), smsReqDTO.getSid());
