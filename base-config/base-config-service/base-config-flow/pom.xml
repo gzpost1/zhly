@@ -5,12 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>cn.cuiot.dmp</groupId>
-        <artifactId>base-config-domain</artifactId>
+        <artifactId>base-config-service</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>base-config-custommenu</artifactId>
+    <artifactId>base-config-flow</artifactId>
 
-    <description>自定义菜单</description>
-
+    <description>任务中心</description>
 </project>
