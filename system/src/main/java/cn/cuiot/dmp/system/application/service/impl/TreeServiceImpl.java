@@ -79,7 +79,7 @@ public class TreeServiceImpl implements TreeService {
         // 组织名称搜索，多层查询
         else if (!StringUtils.isEmpty(deptTreeReqDto.getDeptName())) {
             // 下级组织
-            List<DeptTreeResDto> deptChildList = treeDao.getDeptChildList(deptTreeReqDto.getDGroup(), deptTreeReqDto.getInit(),
+            List<DeptTreeResDto> deptChildList = treeDao.getDeptChildList(deptTreeReqDto.getDGroup(), deptTreeReqDto.getInit(),deptTreeReqDto.getDeptId(),
                     deptTreeReqDto.getDeptName(), rootDeptTreePath, deptTreeReqDto.getOrgId(), deptTreeReqDto.getOrgTypeList(), deptTreeReqDto.getOrgLabelList());
             List<String> deptTreePathList = deptChildList.stream().map(DeptTreeResDto::getDeptTreePath).collect(Collectors.toList());
             return packageDeptTreeList(rootDeptTreePath, deptTreePathList);
@@ -87,7 +87,7 @@ public class TreeServiceImpl implements TreeService {
         // 无搜索条件，仅查询下一级
         else {
             // 下级组织
-            List<DeptTreeResDto> deptChildList = treeDao.getDeptChildList(deptTreeReqDto.getDGroup(), deptTreeReqDto.getInit(),
+            List<DeptTreeResDto> deptChildList = treeDao.getDeptChildList(deptTreeReqDto.getDGroup(), deptTreeReqDto.getInit(),deptTreeReqDto.getDeptId(),
                     deptTreeReqDto.getDeptName(), rootDeptTreePath, deptTreeReqDto.getOrgId(), deptTreeReqDto.getOrgTypeList(), deptTreeReqDto.getOrgLabelList());
             return deptChildList;
         }

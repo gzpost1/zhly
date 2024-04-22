@@ -39,12 +39,12 @@
 
     <Loggers>
         <!-- root是默认的logger，也就是公共的logger，供记录一些不常打印的系统参数或者其他组件参数 -->
-        <AsyncRoot level="INFO" includeLocation="true">
+        <AsyncRoot level="DEBUG" includeLocation="true">
             <AppenderRef ref="APPINFO_APPENDER"/>
             <AppenderRef ref="CONSOLE"/>
         </AsyncRoot>
         <!-- 常打印的应用日志，建议独立配置，并采用异步模式。name根据实际的包名修改，生产环境中additivity建议设置为false以避免在root logger中重复打印 -->
-        <AsyncLogger name="com.cuiot" level="INFO" includeLocation="false" additivity="false">
+        <AsyncLogger name="com.cuiot" level="DEBUG" includeLocation="false" additivity="false">
             <AppenderRef ref="APPINFO_APPENDER"/>
             <AppenderRef ref="CONSOLE"/>
         </AsyncLogger>

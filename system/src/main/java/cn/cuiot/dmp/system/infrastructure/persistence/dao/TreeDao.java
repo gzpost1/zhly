@@ -17,6 +17,7 @@ public interface TreeDao {
     /**
      * 子组织树列表查询
      * @param dGroup 组织类型
+     * @param deptId 组织ID
      * @param deptName 组织名称（模糊查询）
      * @param deptTreePath 组织树
      * @param orgId 租户id
@@ -26,6 +27,7 @@ public interface TreeDao {
      */
     List<DeptTreeResDto> getDeptChildList(@Param("dGroup") String dGroup,
                                           @Param("init") Boolean init,
+                                          @Param("deptId") String deptId,
                                           @Param("deptName") String deptName,
                                           @Param("deptTreePath") String deptTreePath,
                                           @Param("orgId") String orgId,
