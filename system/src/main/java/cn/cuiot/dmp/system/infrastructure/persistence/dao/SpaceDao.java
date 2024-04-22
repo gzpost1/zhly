@@ -31,7 +31,7 @@ public interface SpaceDao {
      * @param group
      * @return
      */
-    List<DepartmentDto> getDeptListByPathAndGroupFloor(String path, String floorName, Integer labelId, Integer group);
+    List<DepartmentDto> getDeptListByPathAndGroupFloor(@Param("path") String path,@Param("floorName") String floorName, @Param("labelId") Integer labelId, @Param("group") Integer group);
 
     /**
      * 获得根节点

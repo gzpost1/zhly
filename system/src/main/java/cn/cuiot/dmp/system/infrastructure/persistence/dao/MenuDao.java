@@ -111,7 +111,7 @@ public interface MenuDao {
 	 * @param menuType
 	 * @return
 	 */
-	int countMenuName(String menuName, Integer menuType);
+	int countMenuName(@Param("menuName") String menuName,@Param("menuType") Integer menuType);
 
 	/**
 	 * 菜单描述
@@ -120,7 +120,7 @@ public interface MenuDao {
 	 * @param menuType
 	 * @return
 	 */
-	int countDescription(String description, Integer menuType);
+	int countDescription(@Param("description") String description, @Param("menuType") Integer menuType);
 
 	/**
 	 * 父级菜单
@@ -145,7 +145,7 @@ public interface MenuDao {
 	 * @param menuType
 	 * @return
 	 */
-	int countParentMenuId(Integer parentMenuId, Integer menuType);
+	int countParentMenuId(@Param("parentMenuId") Integer parentMenuId, @Param("menuType") Integer menuType);
 
 	/**
 	 * 查询用户在某账户下的切换账户菜单

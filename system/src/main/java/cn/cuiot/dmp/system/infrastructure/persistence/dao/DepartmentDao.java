@@ -91,7 +91,7 @@ public interface DepartmentDao {
      * @param orgId
      * @return
      */
-    int countByDepartmentName(String departmentName, Long orgId);
+    int countByDepartmentName(@Param("departmentName") String departmentName, @Param("orgId") Long orgId);
 
     /**
      * 查询
@@ -100,7 +100,7 @@ public interface DepartmentDao {
      * @param id
      * @return
      */
-    int countByDepartmentNameForUpdate(String departmentName, Long orgId, Long id);
+    int countByDepartmentNameForUpdate(@Param("departmentName") String departmentName,@Param("orgId")  Long orgId,@Param("id")  Long id);
 
     /**
      * 根据条件查询
@@ -109,7 +109,7 @@ public interface DepartmentDao {
      * @return
      */
     @Select("select 1 from department where department_name = #{departmentName} and parent_id = #{parentId} limit 1")
-    Integer selectByNameAndPatentId(String departmentName, Long parentId);
+    Integer selectByNameAndPatentId(@Param("departmentName") String departmentName,@Param("parentId") Long parentId);
 
     /**
      * 根据条件查询
@@ -119,7 +119,7 @@ public interface DepartmentDao {
      */
     @Select("select 1 from department d left join department_property dp on d.id = dp.dept_id \n" +
             "where dp.property_key = 'current_floor' and dp.val = #{currentFloor}  and d.parent_id = #{parentId} limit 1")
-    Integer selectByPropertyAndPatentId(String currentFloor, Long parentId);
+    Integer selectByPropertyAndPatentId(@Param("currentFloor") String currentFloor,@Param("parentId") Long parentId);
 
     /**
      * 根据条件查询
@@ -130,7 +130,7 @@ public interface DepartmentDao {
      */
     @Select("select 1 from department d left join department_property dp on d.id = dp.dept_id \n" +
             "where dp.property_key = 'current_floor' and dp.val = #{currentFloor} and d.parent_id = #{parentId} and d.id != #{id} limit 1")
-    Integer selectByPropertyAndPatentIdForUpdate(String currentFloor, Long parentId, Long id);
+    Integer selectByPropertyAndPatentIdForUpdate(@Param("currentFloor") String currentFloor,@Param("parentId")  Long parentId,@Param("id")  Long id);
 
     /**
      * 根据条件查询组织
@@ -140,7 +140,7 @@ public interface DepartmentDao {
      * @return
      */
     @Select("select 1 from department where department_name = #{departmentName} and parent_id = #{parentId} and id != #{id} limit 1")
-    Integer selectByNameAndPatentIdForUpdate(String departmentName, Long parentId, Long id);
+    Integer selectByNameAndPatentIdForUpdate(@Param("departmentName") String departmentName, @Param("parentId") Long parentId,@Param("id")  Long id);
 
     /**
      * 根据parentId查询
@@ -167,7 +167,7 @@ public interface DepartmentDao {
      * @param ids
      * @param orgId
      */
-    void batchDelete(List<Long> ids, String orgId);
+    void batchDelete(@Param("ids") List<Long> ids,@Param("orgId") String orgId);
 
     /**
      * 根据主键id删除
