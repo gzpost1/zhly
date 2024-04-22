@@ -10,6 +10,7 @@
         <module>gateway</module>
         <module>base</module>
         <module>upload</module>
+        <module>base-config</module>
     </modules>
 
     <parent>

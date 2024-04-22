@@ -1,0 +1,45 @@
+logging:
+  config: classpath:log4j2.xml
+
+server:
+  port: 8080
+  tomcat:
+    basedir: /home/temp
+
+spring:
+  application:
+    name: community-system
+  profiles:
+    active: local
+  main:
+    allow-bean-definition-overriding: true
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  cloud:
+    nacos:
+      config:
+        import-check:
+          enabled: false
+        server-addr: http://nacos-server:8848
+        contextPath: /nacos
+        group: DEFAULT_GROUP
+        refresh-enabled: true
+        file-extension: yaml
+        shared-configs:
+          - dataId: sentinel.properties
+            refresh: true
+          - dataId: community-common.properties
+            refresh: true
+        extension-configs:
+          - dataId: community-base-config.yaml
+            refresh: true
+      discovery:
+        server-addr: http://nacos-server:8848
+        group: DEFAULT_GROUP
