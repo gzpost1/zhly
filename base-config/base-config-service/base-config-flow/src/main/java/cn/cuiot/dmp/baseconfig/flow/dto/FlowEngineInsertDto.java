@@ -30,7 +30,7 @@ public class FlowEngineInsertDto {
      * 所属组织
      */
     @NotNull(message = "所属组织不能为空")
-    private Integer orgId;
+    private Long orgId;
 
     /**
      * 流程定义json

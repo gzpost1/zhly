@@ -51,6 +51,9 @@ public class Properties {
 
   private Map<String,Object> refuse;
 
+  /**
+   * 表单内容
+   */
   private List<FormOperates> formPerms;
 
 

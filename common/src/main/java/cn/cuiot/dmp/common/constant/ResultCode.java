@@ -216,6 +216,9 @@ public enum ResultCode {
     OTHER_LABEL_NAME_NOT_NULL("7000001","其它商企标签名称为空"),
     ACCOUNT_LABEL_NOT_EXIST("7000002","所选账户标签不存在"),
 
+    /**
+     *
+     */
     ;
 
 

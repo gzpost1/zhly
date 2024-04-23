@@ -12,7 +12,10 @@
     <result column="logo" jdbcType="VARCHAR" property="logo" />
     <result column="notify_setting" jdbcType="LONGVARCHAR" property="notifySetting" />
     <result column="remark" jdbcType="VARCHAR" property="remark" />
-    <result column="common_config_dto" jdbcType="VARCHAR" property="commonConfigDto" />
+    <result column="common_config_dto" jdbcType="VARCHAR" property="commonConfigDto"
+            javaType="cn.cuiot.dmp.baseconfig.flow.dto.CommonConfigDto"
+            typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"
+    />
     <result column="status" jdbcType="TINYINT" property="status" />
     <result column="company_id" jdbcType="BIGINT" property="companyId" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
@@ -26,4 +29,24 @@
     id, `name`, business_type_id, org_id, `process`, logo, notify_setting, remark, common_config_dto, 
     `status`, company_id, update_time, update_user, create_time, create_user, deleted
   </sql>
+
+  <select id="queryForPage" resultType="cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto">
+    select
+    id, `name`, business_type_id, org_id, remark,`status`, create_time, create_user
+    from tb_flow_config
+    <where>
+      <if test="query.name != null and query.name != ''">
+        and name like concat('%', #{query.name}, '%')
+      </if>
+      <if test="query.orgId != null">
+        and org_id = #{query.orgId}
+      </if>
+      <if test="query.status != null">
+        and status = #{query.status}
+      </if>
+      <if test="query.companyId != null">
+        and company_id = #{query.companyId}
+      </if>
+    </where>
+  </select>
 </mapper>

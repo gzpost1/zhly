@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.dto;
 
+import cn.cuiot.dmp.query.PageQuery;
 import lombok.Data;
 
 /**
@@ -8,7 +9,7 @@ import lombok.Data;
  * @Created by libo
  */
 @Data
-public class TbFlowConfigQuery {
+public class TbFlowConfigQuery extends PageQuery {
     /**
      * 流程名称
      */

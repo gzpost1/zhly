@@ -1,5 +1,8 @@
 package cn.cuiot.dmp.baseconfig.flow.entity;
 
+import cn.cuiot.dmp.base.infrastructure.dto.BaseEntity;
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
+import cn.cuiot.dmp.baseconfig.flow.dto.CommonConfigDto;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -11,8 +14,8 @@ import lombok.Data;
  * 系统配置-流程配置
  */
 @Data
-@TableName(value = "tb_flow_config")
-public class TbFlowConfig {
+@TableName(value = "tb_flow_config",autoResultMap = true)
+public class TbFlowConfig extends BaseEntity {
     /**
      * id
      */
@@ -64,8 +67,8 @@ public class TbFlowConfig {
     /**
      * 通用配置
      */
-    @TableField(value = "common_config_dto")
-    private String commonConfigDto;
+    @TableField(value = "common_config_dto",typeHandler = JsonTypeHandler.class)
+    private CommonConfigDto commonConfigDto;
 
     /**
      * 状态 0停用 1启用
@@ -108,4 +111,14 @@ public class TbFlowConfig {
      */
     @TableField(value = "deleted")
     private Byte deleted;
+
+    /**
+     * 发起人配置 0用户 1部门 2角色
+     */
+    private Byte assignedUserType;
+
+    /**
+     * 发起人配置id
+     */
+    private String assignedUserId;
 }

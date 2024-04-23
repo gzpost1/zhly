@@ -67,6 +67,13 @@
             <version>${flowable.version}</version>
             <scope>compile</scope>
         </dependency>
+        <!--activiti modeler 5.22 end-->
+        <!-- 自动布局jar 包-->
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-bpmn-layout</artifactId>
+            <version>${flowable.version}</version>
+        </dependency>
     </dependencies>
 
 

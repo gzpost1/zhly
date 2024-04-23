@@ -3,11 +3,14 @@ package cn.cuiot.dmp.baseconfig.controller.flow;
 import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.baseconfig.flow.dto.FlowEngineInsertDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowConfigQuery;
+import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto;
 import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
 import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigService;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.PageResult;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,9 +41,8 @@ public class BaseConfigFlowController {
      * @return
      */
     @PostMapping("/queryForPage")
-    public IdmResDTO<IPage<TbFlowConfig>> queryForPage(@RequestBody TbFlowConfigQuery query) {
-        return null;
-//        return IdmResDTO.success().body(tbFlowConfigService.queryForPage(query));
+    public IdmResDTO<IPage<TbFlowPageDto>> queryForPage(@RequestBody TbFlowConfigQuery query) {
+        return IdmResDTO.success().body(tbFlowConfigService.queryForPage(query));
     }
 
 
@@ -63,11 +65,9 @@ public class BaseConfigFlowController {
      * @return
      */
     @PostMapping("/create")
-    public IdmResDTO create(@RequestBody @Valid TbFlowConfig createDto) {
+    public IdmResDTO create(@RequestBody @Valid FlowEngineInsertDto createDto) {
 
-        createDto.setStatus(EntityConstants.DISABLED);
-
-        tbFlowConfigService.save(createDto);
+        tbFlowConfigService.saveFlow(createDto);
 
         return IdmResDTO.success();
     }
