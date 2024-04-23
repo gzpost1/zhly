@@ -2,6 +2,7 @@ package cn.cuiot.dmp.baseconfig.flow.dto;
 
 import lombok.Data;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -38,6 +39,12 @@ public class FlowEngineInsertDto {
     private String process;
 
     /**
+     * logo
+     */
+    @NotNull(message = "logo不能为空")
+    private String logo;
+
+    /**
      * 流程说明
      */
     private String remark;
@@ -45,5 +52,12 @@ public class FlowEngineInsertDto {
     /**
      * 消息通知设置
      */
-    private String settings;
+    private String notifySetting;
+
+    /**
+     * 通用配置
+     */
+    @Valid
+    @NotNull(message = "通用配置不能为空")
+    private CommonConfigDto commonConfigDto;
 }
