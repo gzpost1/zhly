@@ -4,7 +4,6 @@ package cn.cuiot.dmp.baseconfig.flow.utils;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.hutool.core.collection.CollUtil;
-import com.dingding.mid.exception.WorkFlowException;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.Process;

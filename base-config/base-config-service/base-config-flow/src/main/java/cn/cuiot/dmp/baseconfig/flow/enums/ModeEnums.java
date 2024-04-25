@@ -8,7 +8,9 @@ package cn.cuiot.dmp.baseconfig.flow.enums;
 public enum ModeEnums {
   AND("AND"),
   OR("OR"),
-  NEXT("NEXT");
+  NEXT("NEXT"),
+  OR_RATE("OR_RATE"),
+  ;
 
   private String typeName;
 

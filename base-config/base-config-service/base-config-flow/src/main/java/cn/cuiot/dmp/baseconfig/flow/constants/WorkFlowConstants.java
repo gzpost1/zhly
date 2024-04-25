@@ -24,8 +24,57 @@ public interface WorkFlowConstants {
 
     String TO_ADMIN_ACTION="TO_ADMIN";
     String TO_USER_ACTION="TO_USER";
+    /**
+     * 审批通过
+     */
     String OPINION_COMMENT="opinion";
     String OPTION_COMMENT="option";
     String SIGN_COMMENT="sign";
+    /**
+     * 评论
+     */
     String COMMENTS_COMMENT="comments";
+
+    /**
+     * 督办
+     */
+    String BUSINESS_SUPERVISION="supervision";
+
+    /**
+     * 启动流程
+     */
+    String START_PROCESS = "startProcess";
+
+
+    /**
+     * 转办
+     */
+    String BUSINESS_TRANSFER="businessTransfer";
+
+    /**
+     * 驳回
+     */
+    String BUSINESS_REFUSE = "businessRefuse";
+
+    /**
+     *回退
+     */
+    String BUSINESS_BACK = "businessBack";
+
+    /**
+     * 挂起
+     */
+    String BUSINESS_PENDING = "businessPending";
+
+    /**
+     * 评论
+     */
+    Integer BUSINESS_TYPE_COMMENT = 0;
+
+    /**
+     * 督办
+     */
+    Integer BUSINESS_TYPE_SUPER = 1;
+
+
 }

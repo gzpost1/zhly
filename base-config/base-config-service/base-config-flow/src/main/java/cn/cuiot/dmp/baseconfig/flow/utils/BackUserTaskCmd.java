@@ -5,7 +5,7 @@ package cn.cuiot.dmp.baseconfig.flow.utils;
  * @since 2024/3/25
  */
 
-import com.dingding.mid.exception.WorkFlowException;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.FlowNode;
@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static cn.cuiot.dmp.common.constant.ResultCode.PARAM_NOT_COMPLIANT;
+
 @Slf4j
 public class BackUserTaskCmd implements Command<String>, Serializable {
 
@@ -46,11 +48,11 @@ public class BackUserTaskCmd implements Command<String>, Serializable {
     @Override
     public String execute(CommandContext commandContext) {
         if (targetActivityId == null || targetActivityId.length() == 0) {
-            throw new WorkFlowException("目标节点ID不允许为空");
+            throw new BusinessException(PARAM_NOT_COMPLIANT,"目标节点ID不允许为空");
         }
         TaskEntity task = CommandContextUtil.getTaskService().getTask(taskId);
         if (task == null) {
-            throw new WorkFlowException("服务器异常");
+            throw new BusinessException(PARAM_NOT_COMPLIANT,"服务器异常");
         }
         String sourceActivityId = task.getTaskDefinitionKey();
         String processInstanceId = task.getProcessInstanceId();
@@ -59,12 +61,12 @@ public class BackUserTaskCmd implements Command<String>, Serializable {
         FlowNode sourceFlowElement = (FlowNode) process.getFlowElement(sourceActivityId, true);
         /* 只支持从用户任务退回 */
         if (!(sourceFlowElement instanceof UserTask)) {
-            throw new WorkFlowException("该节点不是用户节点，无法执行退回!");
+            throw new BusinessException(PARAM_NOT_COMPLIANT,"该节点不是用户节点，无法执行退回!");
         }
         FlowNode targetFlowElement = (FlowNode) process.getFlowElement(targetActivityId, true);
         /* 退回节点到当前节点不可达到，不允许退回 */
         if (!FlowableUtils.isReachable(process, targetFlowElement, sourceFlowElement)) {
-            throw new WorkFlowException("退回的目标节点不能到达!");
+            throw new BusinessException(PARAM_NOT_COMPLIANT,"退回的目标节点不能到达!");
         }
         /* ps:目标节点如果相对当前节点是在子流程内部，则无法直接退回，目前处理是只能退回到子流程开始节点 */
         String[] sourceAndTargetRealActivityId = FlowableUtils.getSourceAndTargetRealActivityId(sourceFlowElement,

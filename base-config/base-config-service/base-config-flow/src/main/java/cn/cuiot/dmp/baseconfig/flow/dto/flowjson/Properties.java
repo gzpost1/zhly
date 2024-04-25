@@ -27,6 +27,11 @@ import java.util.Map;
 @Data
 public class Properties {
   private String subprocessId;
+  /**
+   * ASSIGN_USER指定审批人 SELF发起人自己 SELF_SELECT发起人自己选择 LEADER_TOP连续主管 LEADER指定主管审批 ROLE系统角色 FORM_USER表单人员
+   * role 系统角色 dept 系统部门 complete_select 完成人自己选择
+   * @see cn.cuiot.dmp.baseconfig.flow.enums.AssigneeTypeEnums
+   */
   private String assignedType;
   private List<UserInfo> assignedUser;
   //发起人自旋  multiple true false
@@ -43,7 +48,18 @@ public class Properties {
 
   //审批人为空的规则  hander 和 assignedUser
   private Map<String,Object> nobody;
+  /**
+   * 会签 （按选择顺序办理，每个人必须同意）->NEXT
+   * 会签（可同时办理，每个人必须同意） -> AND
+   * 或签（有一人同意即可） -> OR
+   * 或签 按比例ton过 -> OR_RATE
+   */
   private String mode;
+
+  /**
+   * 会签比例
+   */
+  private Integer modeRate;
 
   private Boolean sign;
   //审批超时
@@ -73,4 +89,9 @@ public class Properties {
   //
   private HttpInfo http;
   private EmailInfo email;
+
+  /**
+   * 节点按钮配置
+   */
+  private List<NodeButton> buttons;
 }
