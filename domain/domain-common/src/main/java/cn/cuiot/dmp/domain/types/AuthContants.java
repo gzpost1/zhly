@@ -61,4 +61,9 @@ public class AuthContants {
      */
     public static final String POST_ID = "postId";
 
+    /**
+     * 用户类型
+     */
+    public static final String USER_TYPE = "userType";
+
 }

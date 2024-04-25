@@ -54,6 +54,12 @@ public class LoginInfo implements Serializable {
      */
     private Long postId;
 
+
+    /**
+     * 用户类型
+     */
+    private Integer userType;
+
     /**
      * 操作信息
      */

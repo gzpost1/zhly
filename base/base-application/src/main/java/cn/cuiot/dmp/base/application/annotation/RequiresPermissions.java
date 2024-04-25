@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * @description 日志记录注解
  * @date 2020-09-07 16:51:30
  */
-@Target(ElementType.METHOD)
+@Target(value = {ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface RequiresPermissions {

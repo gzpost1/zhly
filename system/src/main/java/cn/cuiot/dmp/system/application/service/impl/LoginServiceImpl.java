@@ -222,6 +222,7 @@ public class LoginServiceImpl implements LoginService {
             claims.put(AuthContants.NAME, validateUser.getName());
             claims.put(AuthContants.DEPT_ID, pkDeptId);
             claims.put(AuthContants.POST_ID, validateUser.getPostId());
+            claims.put(AuthContants.USER_TYPE, validateUser.getUserType().getValue());
 
             String jwt = Jwts.builder().setClaims(claims).setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, Const.SECRET).compact();
 
@@ -279,6 +280,7 @@ public class LoginServiceImpl implements LoginService {
             loginResDTO.setOrgTypeId(organization.getOrgTypeId());
             loginResDTO.setPostId(validateUser.getPostId());
             loginResDTO.setAvatar(validateUser.getAvatar());
+            loginResDTO.setUserType(validateUser.getUserType().getValue());
 
             return loginResDTO;
 

@@ -85,4 +85,8 @@ public class LoginResDTO {
      */
     private String avatar;
 
+    /**
+     * 用户类型
+     */
+    private Integer userType;
 }

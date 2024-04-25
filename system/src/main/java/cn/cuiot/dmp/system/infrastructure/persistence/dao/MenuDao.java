@@ -2,7 +2,7 @@ package cn.cuiot.dmp.system.infrastructure.persistence.dao;
 
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetMenuRootByOrgTypeIdResDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

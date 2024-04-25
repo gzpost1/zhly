@@ -27,4 +27,13 @@ public interface MenuService {
      * @return
      */
     List<GetMenuRootByOrgTypeIdResDto> getMenuRootByOrgTypeId(String orgTypeId);
+
+    /**
+     * 获得权限信息
+     * @param userId
+     * @param orgId
+     * @param changeOrgPermisstionCode
+     * @return
+     */
+    MenuEntity getChangeOrgMenu(String userId,String orgId,String changeOrgPermisstionCode);
 }

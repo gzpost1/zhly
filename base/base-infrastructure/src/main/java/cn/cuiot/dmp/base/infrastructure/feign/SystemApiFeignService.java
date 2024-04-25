@@ -3,6 +3,7 @@ package cn.cuiot.dmp.base.infrastructure.feign;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.FileUploadParam;
 import cn.cuiot.dmp.base.infrastructure.dto.FileUploadResponse;
+import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import javax.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -31,5 +32,14 @@ public interface SystemApiFeignService {
             @RequestParam(value = "userId", required = false) Long userId,
             @RequestParam(value = "orgId", required = false) Long orgId);
 
+
+    /**
+     * 获取权限信息
+     */
+    @GetMapping(value = "/api/lookUpPermission", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<MenuDTO> lookUpPermission(
+            @RequestParam(value = "userId", required = false) String userId,
+            @RequestParam(value = "orgId", required = false) String orgId,
+            @RequestParam(value = "permissionCode", required = false) String permissionCode);
 
 }

@@ -1,10 +1,14 @@
 package cn.cuiot.dmp.system.api.controller;
 
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
+import cn.cuiot.dmp.system.application.param.assembler.MenuConverter;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
+import cn.cuiot.dmp.system.application.service.MenuService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
+import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.collections.CollectionUtils;
@@ -32,6 +36,12 @@ public class ApiController {
     @Autowired
     private DepartmentConverter departmentConverter;
 
+    @Autowired
+    private MenuService menuService;
+
+    @Autowired
+    private MenuConverter menuConverter;
+
     /**
      * 获取部门信息
      */
@@ -57,6 +67,22 @@ public class ApiController {
             }
         }
         return IdmResDTO.success(departmentDto);
+    }
+
+    /**
+     * 获取权限信息
+     */
+    @GetMapping(value = "/lookUpPermission", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<MenuDTO> lookUpPermission(
+            @RequestParam(value = "userId", required = false) String userId,
+            @RequestParam(value = "orgId", required = false) String orgId,
+            @RequestParam(value = "permissionCode", required = false) String permissionCode) {
+        MenuDTO menuDTO = null;
+        MenuEntity menuEntity = menuService.getChangeOrgMenu(userId, orgId, permissionCode);
+        if (Objects.nonNull(menuEntity)) {
+            menuDTO = menuConverter.entityToDTO(menuEntity);
+        }
+        return IdmResDTO.success(menuDTO);
     }
 
 }

@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.system.infrastructure.entity.dto;
+package cn.cuiot.dmp.base.infrastructure.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;

@@ -115,4 +115,17 @@ public class MenuServiceImpl implements MenuService {
         return menuDao.getMenuRootByOrgTypeId(orgTypeId);
     }
 
+	/**
+	 * 获得权限信息
+	 * @param userId
+	 * @param orgId
+	 * @param changeOrgPermisstionCode
+	 * @return
+	 */
+	@Override
+	public MenuEntity getChangeOrgMenu(String userId, String orgId,
+			String changeOrgPermisstionCode) {
+		return menuDao.getChangeOrgMenu(userId,orgId,changeOrgPermisstionCode);
+	}
+
 }

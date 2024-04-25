@@ -28,7 +28,7 @@
         order by m.sort desc
     </select>
 
-    <select id="getListReadAllMenu" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.MenuDTO">
+    <select id="getListReadAllMenu" resultType="cn.cuiot.dmp.base.infrastructure.dto.MenuDTO">
         SELECT * from menu where menu_type = #{type}
     </select>
 
@@ -151,7 +151,7 @@
         limit 1
     </select>
 
-    <select id="getSuperMenuOne" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.MenuDTO">
+    <select id="getSuperMenuOne" resultType="cn.cuiot.dmp.base.infrastructure.dto.MenuDTO">
         SELECT id,menu_id,menu_name,module_type,description
         FROM menu
         WHERE parent_menu_id = #{parentMenuId}
@@ -160,7 +160,7 @@
 
 
 
-    <select id="selectAllWebUrl" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.MenuDTO">
+    <select id="selectAllWebUrl" resultType="cn.cuiot.dmp.base.infrastructure.dto.MenuDTO">
         select distinct menu_id as menuId,api_url as apiUrl from menu where api_url is not null and trim(api_url)!=''
     </select>
     <select id="getMenuRootByOrgTypeId"

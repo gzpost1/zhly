@@ -38,6 +38,7 @@ public class BaseAuthInterceptor implements HandlerInterceptor {
                 loginInfo.setOrgTypeId(claims.get(AuthContants.USERORG_TYPE_ID) != null ? Integer.valueOf(claims.get(AuthContants.USERORG_TYPE_ID).toString()) : null);
                 loginInfo.setDeptId(claims.get(AuthContants.DEPT_ID) != null ? Long.valueOf(claims.get(AuthContants.DEPT_ID).toString()) : null);
                 loginInfo.setPostId(claims.get(AuthContants.POST_ID) != null ? Long.valueOf(claims.get(AuthContants.POST_ID).toString()) : null);
+                loginInfo.setUserType(claims.get(AuthContants.USER_TYPE) != null ? Integer.valueOf(claims.get(AuthContants.USER_TYPE).toString()) : null);
                 LoginInfoHolder.setLocalLoginInfo(loginInfo);
             } catch (Exception e) {
                 log.warn("BaseAuthInterceptor parse token error",e);

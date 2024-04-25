@@ -76,6 +76,13 @@ public class LoginInfoHolder {
         return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getPostId() : null;
     }
 
+    /**
+     * 用户类型
+     */
+    public static Integer getCurrentUserType() {
+        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getUserType() : null;
+    }
+
     public static OperateInfo getCurrentLoginOperateInfo() {
         return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getOperateInfo() : null;
     }

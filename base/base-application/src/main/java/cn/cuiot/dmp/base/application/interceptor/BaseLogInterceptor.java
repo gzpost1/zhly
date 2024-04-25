@@ -16,7 +16,7 @@ import org.springframework.web.servlet.ModelAndView;
  * @date 2021-07-30
  */
 @Component
-public class LogInterceptor implements HandlerInterceptor {
+public class BaseLogInterceptor implements HandlerInterceptor {
 
     private static final String TRACE_ID = "traceId";
 
