@@ -2,10 +2,7 @@ package cn.cuiot.dmp.domain.types;
 
 
 /**
- * @Description 当前登录信息持有者
- * @Author 犬豪
- * @Date 2023/9/25 09:47
- * @Version V1.0
+ * 当前登录信息持有者
  */
 public class LoginInfoHolder {
 
