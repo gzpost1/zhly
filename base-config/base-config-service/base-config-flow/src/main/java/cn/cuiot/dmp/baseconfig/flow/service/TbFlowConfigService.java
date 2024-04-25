@@ -26,7 +26,6 @@ import org.flowable.engine.delegate.ExecutionListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
-import org.flowable.bpmn.BpmnAutoLayout;
 
 import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
@@ -149,7 +148,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         flowableListener.setImplementation("${processListener}");
         executionListeners.add(flowableListener);
         process.setExecutionListeners(executionListeners);
-        new BpmnAutoLayout(bpmnModel).execute();
+//        new BpmnAutoLayout(bpmnModel).execute();
         return bpmnModel;
     }
 }
