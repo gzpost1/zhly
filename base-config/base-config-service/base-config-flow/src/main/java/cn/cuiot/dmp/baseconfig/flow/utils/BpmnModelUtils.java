@@ -1002,8 +1002,17 @@ public class BpmnModelUtils {
                 //连续多级主管需要是顺序会签可以达到效果
                 else if (ModeEnums.NEXT.getTypeName().equals(mode) || AssigneeTypeEnums.LEADER_TOP.getTypeName().equalsIgnoreCase(props.getAssignedType())) {
                     multiInstanceLoopCharacteristics.setSequential(true);
+                }else if(ModeEnums.OR_RATE.getTypeName().equals(mode) ){
+                    //会签比例
+                    Integer modeRate = props.getModeRate();
+                    if(modeRate==null){
+                        modeRate=100;
+                    }
+                    double passRate = modeRate / 100.0;
+                    multiInstanceLoopCharacteristics.setCompletionCondition(String.format("${nrOfCompletedInstances/nrOfInstances >= %f}", passRate));
                 }
 
+                //审批超时设置，将计时器事件定义添加到边界事件中。
                 JSONObject timeLimit = props.getTimeLimit();
                 if (timeLimit != null && !timeLimit.isEmpty()) {
                     JSONObject timeout = timeLimit.getJSONObject("timeout");

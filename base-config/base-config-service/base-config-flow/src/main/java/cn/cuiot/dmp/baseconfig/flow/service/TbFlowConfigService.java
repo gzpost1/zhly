@@ -11,6 +11,7 @@ import cn.cuiot.dmp.baseconfig.flow.mapper.TbFlowConfigMapper;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -73,6 +74,8 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         ChildNode childNode = JSONObject.parseObject(processJson, new TypeReference<ChildNode>(){});
         //获取发起人配置信息
         UserInfo userInfo = childNode.getProps().getAssignedUser().get(0);
+        AssertUtil.notNull(userInfo,"发起人配置信息不能为空");
+
         Byte flowTypeCode = AssignedUserType.getFlowTypeCode(userInfo.getType());
         if (flowTypeCode == null) {
             throw new BusinessException(ResultCode.PARAM_CANNOT_NULL, "发起人类型不能为空");
