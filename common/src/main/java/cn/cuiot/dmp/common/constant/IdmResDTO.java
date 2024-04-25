@@ -72,4 +72,17 @@ public class IdmResDTO<T> {
     public static <T> IdmResDTO<T> body(T data){
         return success(data);
     }
+
+    public static <T> IdmResDTO<T> error(String code, String message) {
+        return new IdmResDTO<T>(code, message);
+    }
+
+    public static <T> IdmResDTO<T> error(ErrorCode errorCode) {
+        return new IdmResDTO<T>(errorCode.getCode(), errorCode.getMessage());
+    }
+
+    public static <T> IdmResDTO<T> error(String message) {
+        return new IdmResDTO<T>(ErrorCode.UNKNOWN.getCode(), message);
+    }
+
 }
