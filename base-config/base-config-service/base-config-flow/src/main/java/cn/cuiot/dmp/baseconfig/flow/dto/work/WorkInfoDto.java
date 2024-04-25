@@ -1,29 +1,21 @@
-package cn.cuiot.dmp.baseconfig.flow.entity;
+package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import cn.cuiot.dmp.query.PageQuery;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
  * @author pengjian
- * @since 2024-04-23
+ * @create 2024/4/25 15:53
  */
 @Data
-@TableName("tb_work_info")
-public class WorkInfoEntity implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class WorkInfoDto extends PageQuery {
 
     /**
-     * 主键id
+     * 工单id
      */
-    @TableId(value = "id",type = IdType.INPUT)
     private Long id;
-
 
     /**
      * 业务类型
@@ -70,4 +62,5 @@ public class WorkInfoEntity implements Serializable {
      * 流程实例id
      */
     private String procInstId;
+
 }

@@ -7,26 +7,32 @@ import cn.cuiot.dmp.baseconfig.flow.dto.HandleDataDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.QueryApprovalInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.FormOperates;
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.FirstFormDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
 import cn.cuiot.dmp.baseconfig.flow.entity.UserEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
-import cn.cuiot.dmp.baseconfig.flow.enums.RefuseEnums;
+import cn.cuiot.dmp.baseconfig.flow.enums.AssigneeTypeEnums;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkInfoMapper;
 import cn.cuiot.dmp.baseconfig.flow.vo.HistoryProcessInstanceVO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sun.xml.internal.bind.v2.TODO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.bpmn.model.Process;
-import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
@@ -50,12 +56,14 @@ import java.util.stream.Collectors;
 import static cn.cuiot.dmp.baseconfig.flow.constants.CommonConstants.*;
 import static cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants.*;
 import static cn.cuiot.dmp.baseconfig.flow.utils.BpmnModelUtils.getChildNode;
+import static cn.cuiot.dmp.baseconfig.flow.utils.BpmnModelUtils.getChildNodeByNodeId;
 
 /**
  * @author pengjian
  * @since 2024-04-23
  */
 @Service
+@Slf4j
 public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>{
 
     @Autowired
@@ -76,77 +84,74 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
 
     public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO,String userId) {
-
-
-            JSONObject formData = startProcessInstanceDTO.getFormData();
-            UserInfo startUserInfo = startProcessInstanceDTO.getStartUserInfo();
-            Authentication.setAuthenticatedUserId(startUserInfo.getId());
-            Map<String,Object> processVariables= new HashMap<>();
-            processVariables.put(WorkOrderConstants.FORM_VAR,formData);
-            processVariables.put(WorkOrderConstants.PROCESS_STATUS,WorkOrderConstants.BUSINESS_STATUS_1);
-            processVariables.put(WorkOrderConstants.START_USER_INFO,JSONObject.toJSONString(startUserInfo));
-            processVariables.put(WorkOrderConstants.INITIATOR_ID,startUserInfo.getId());
-            ArrayList<UserInfo> userInfos = CollUtil.newArrayList(startUserInfo);
-            processVariables.put(WorkOrderConstants.USER_ROOT,JSONObject.toJSONString(userInfos));
-            Map<String, List<UserInfo>> processUsers = startProcessInstanceDTO.getProcessUsers();
-            if(CollUtil.isNotEmpty(processUsers)){
-                Set<String> strings = processUsers.keySet();
-                for (String string : strings) {
-                    List<UserInfo> selectUserInfo = processUsers.get(string);
-                    List<String> users=new ArrayList<>();
-                    for (UserInfo userInfo : selectUserInfo) {
-                        users.add(userInfo.getId());
-                    }
-                    processVariables.put(string,users);
+        JSONObject formData = startProcessInstanceDTO.getFormData();
+        UserInfo startUserInfo = startProcessInstanceDTO.getStartUserInfo();
+        Authentication.setAuthenticatedUserId(startUserInfo.getId());
+        Map<String,Object> processVariables= new HashMap<>();
+        processVariables.put(WorkOrderConstants.FORM_VAR,formData);
+        processVariables.put(WorkOrderConstants.PROCESS_STATUS,WorkOrderConstants.BUSINESS_STATUS_1);
+        processVariables.put(WorkOrderConstants.START_USER_INFO,JSONObject.toJSONString(startUserInfo));
+        processVariables.put(WorkOrderConstants.INITIATOR_ID,startUserInfo.getId());
+        ArrayList<UserInfo> userInfos = CollUtil.newArrayList(startUserInfo);
+        processVariables.put(WorkOrderConstants.USER_ROOT,JSONObject.toJSONString(userInfos));
+        Map<String, List<UserInfo>> processUsers = startProcessInstanceDTO.getProcessUsers();
+        if(CollUtil.isNotEmpty(processUsers)){
+            Set<String> strings = processUsers.keySet();
+            for (String string : strings) {
+                List<UserInfo> selectUserInfo = processUsers.get(string);
+                List<String> users=new ArrayList<>();
+                for (UserInfo userInfo : selectUserInfo) {
+                    users.add(userInfo.getId());
                 }
+                processVariables.put(string,users);
             }
+        }
 
-            Map formValue = JSONObject.parseObject(formData.toJSONString(), new TypeReference<Map>() {
-            });
-            processVariables.putAll(formValue);
+        Map formValue = JSONObject.parseObject(formData.toJSONString(), new TypeReference<Map>() {
+        });
+        processVariables.putAll(formValue);
 
-         String taskId = startProcessInstanceDTO.getTaskId();
-         //再次发起
-         if(StringUtils.isNotBlank(startProcessInstanceDTO.getTaskId())){
-                Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-                 runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
-             taskService.complete(task.getId());
-             taskService.addComment(task.getId(),task.getProcessInstanceId(), START_PROCESS,"启动流程");
-            }else{
-             //新建
-             ProcessInstanceBuilder processInstanceBuilder = runtimeService.createProcessInstanceBuilder();
-             ProcessInstance processInstance = processInstanceBuilder
-                     .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
-                     .variables(processVariables)
-                     .businessStatus(WorkOrderConstants.BUSINESS_STATUS_1)
-                     .start();
-
-             //手动完成第一个任务
-             Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
-             if(task!=null){
-                 taskService.complete(task.getId());
-             }
-             taskService.addComment(task.getId(),task.getProcessInstanceId(), START_PROCESS,"启动流程");
-
-             //保存工单信息
-             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
-                     .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
-                     .singleResult();
-             String flowableKey = processDefinition.getKey().replaceAll("[a-zA-Z]", "");
-             TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
-                     orElseThrow(()->new RuntimeException("流程配置为空"));
-             //保存工单信息
-             WorkInfoEntity entity = new WorkInfoEntity();
-             entity.setId(IdWorker.getId());
-             entity.setBusinessType(flowConfig.getBusinessTypeId());
-             entity.setOrg(flowConfig.getOrgId());
-             entity.setCreateTime(new Date());
-             entity.setWorkName(flowConfig.getName());
-             entity.setWorkSouce(startProcessInstanceDTO.getWorkSource());
-             entity.setCreateUser(userId);
-             this.save(entity);
-         }
-            return IdmResDTO.success();
+        String taskId = startProcessInstanceDTO.getTaskId();
+        Task task =null;
+        //再次发起
+        if(StringUtils.isNotBlank(startProcessInstanceDTO.getTaskId())){
+            task = taskService.createTaskQuery().taskId(taskId).singleResult();
+            runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
+            taskService.complete(task.getId());
+        }else{
+            //新建
+            ProcessInstanceBuilder processInstanceBuilder = runtimeService.createProcessInstanceBuilder();
+            ProcessInstance processInstance = processInstanceBuilder
+                    .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
+                    .variables(processVariables)
+                    .businessStatus(WorkOrderConstants.BUSINESS_STATUS_1)
+                    .start();
+            //手动完成第一个任务
+            task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
+            if(task!=null){
+                taskService.complete(task.getId());
+            }
+            //保存工单信息
+            ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
+                    .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
+                    .singleResult();
+            String flowableKey = processDefinition.getKey().replaceAll("[a-zA-Z]", "");
+            TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
+                    orElseThrow(()->new RuntimeException("流程配置为空"));
+            //保存工单信息
+            WorkInfoEntity entity = new WorkInfoEntity();
+            entity.setId(IdWorker.getId());
+            entity.setBusinessType(flowConfig.getBusinessTypeId());
+            entity.setOrg(flowConfig.getOrgId());
+            entity.setCreateTime(new Date());
+            entity.setWorkName(flowConfig.getName());
+            entity.setWorkSouce(startProcessInstanceDTO.getWorkSource());
+            entity.setCreateUser(userId);
+            entity.setProcInstId(task.getProcessInstanceId());
+            this.save(entity);
+        }
+        taskService.addComment(task.getId(),task.getProcessInstanceId(), START_PROCESS,"启动流程");
+        return IdmResDTO.success();
     }
 
 
@@ -169,9 +174,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         Map<Long, UserEntity> collect=new HashMap<>();
         if(CollUtil.isNotEmpty(applyUserIds)){
             LambdaQueryWrapper<UserEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.in(UserInfo::getId,applyUserIds);
-            List<UserEntity> list = userService.list(lambdaQueryWrapper);
-            collect = list.stream().collect(Collectors.toMap(UserEntity::getUserId, Function.identity()));
+//            lambdaQueryWrapper.in(UserInfo::getId,applyUserIds);
+//            List<UserEntity> list = userService.list(lambdaQueryWrapper);
+//            collect = list.stream().collect(Collectors.toMap(UserEntity::getUserId, Function.identity()));
         }
 
         List<HistoryProcessInstanceVO> historyProcessInstanceVOS= new ArrayList<>();
@@ -186,7 +191,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             historyProcessInstanceVO.setStartTime(historicProcessInstance.getStartTime());
             historyProcessInstanceVO.setEndTime(historicProcessInstance.getEndTime());
             Boolean flag= historicProcessInstance.getEndTime() != null;
-            historyProcessInstanceVO.setCurrentActivityName(getCurrentName(historicProcessInstance.getId(),flag,historicProcessInstance.getProcessDefinitionId()));
+//            historyProcessInstanceVO.setCurrentActivityName(getCurrentName(historicProcessInstance.getId(),flag,historicProcessInstance.getProcessDefinitionId()));
             historyProcessInstanceVO.setBusinessStatus(MapUtil.getStr(processVariables,PROCESS_STATUS));
 
 
@@ -204,8 +209,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             historyProcessInstanceVOS.add(historyProcessInstanceVO);
         }
         page.setRecords(historyProcessInstanceVOS);
-        page.setCurrent(applyDTO.getPageNo());
-        page.setSize(applyDTO.getPageSize());
+//        page.setCurrent(applyDTO.getPageNo());
+//        page.setSize(applyDTO.getPageSize());
         page.setTotal(count);
         return null;
     }
@@ -367,11 +372,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             }
         }
 
-        if(StringUtils.isNotBlank(handleDataDTO.getSignInfo())){
-            taskService.addComment(task.getId(),task.getProcessInstanceId(),SIGN_COMMENT,handleDataDTO.getSignInfo());
-        }
-
-        runtimeService.deleteProcessInstance(task.getProcessInstanceId(),"拒绝");
+//        runtimeService.deleteProcessInstance(task.getProcessInstanceId(),"拒绝");
+        taskService.complete(task.getId());
 
         return IdmResDTO.success();
     }
@@ -471,5 +473,53 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         taskService.addComment(handleDataDTO.getTaskId(),handleDataDTO.getProcessInstanceId(),BUSINESS_PENDING,handleDataDTO.getComments());
 
         return IdmResDTO.success();
+    }
+
+    /**
+     * 查询节点属性数据,并判断是否有权限发起该流程
+     * @return
+     */
+    public IdmResDTO<Properties> queryFirstFormInfo(FirstFormDto dto, String userId) {
+        ChildNode childNodeByNodeId = getChildNodeByNodeId(dto.getProcessDefinitionId(), dto.getTaskDefinitionKey());
+        Properties props = childNodeByNodeId.getProps();
+
+        List<String> ids = props.getAssignedUser().stream().map(UserInfo::getId).collect(Collectors.toList());
+        log.info("指定类型"+props.getAssignedType());
+        //指定人员
+        if(StringUtils.equals(props.getAssignedType(), AssigneeTypeEnums.ASSIGN_USER.getTypeName())){
+            AssertUtil.isTrue(ids.contains(userId),"没有权限发起该流程");
+        }
+
+        //TODO 根据userId获取部门信息
+        if(StringUtils.equals(props.getAssignedType(),AssigneeTypeEnums.DEPT.getTypeName())){
+            AssertUtil.isTrue(ids.contains(userId),"没有权限发起该流程");
+        }
+        //TODO 根据userId获取角色信息
+        if(StringUtils.equals(props.getAssignedType(),AssigneeTypeEnums.ROLE.getTypeName())){
+            AssertUtil.isTrue(ids.contains(userId),"没有权限发起该流程");
+        }
+
+        return IdmResDTO.success(props);
+    }
+
+    public IdmResDTO<IPage<WorkInfoEntity>> queryWorkOrderInfo(WorkInfoDto dto) {
+        //TODO 根据组织id获取本组织与子组织信息
+        List<Long> orgIds = new ArrayList<>();
+        LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
+        baseMapper.selectPage(new Page<>(dto.getCurrentPage(),dto.getPageSize()),lw);
+        return null;
+    }
+
+    public LambdaQueryWrapper<?> workOrderCondition(WorkInfoDto dto,List<Long> orgIds){
+        LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.like(Objects.nonNull(dto.getId()),WorkInfoEntity::getId,dto.getId())
+                .in(CollectionUtils.isNotEmpty(orgIds),WorkInfoEntity::getOrg,orgIds)
+                .eq(Objects.nonNull(dto.getBusinessType()),WorkInfoEntity::getBusinessType,dto.getBusinessType())
+                .like(Objects.nonNull(dto.getWorkName()),WorkInfoEntity::getWorkName,dto.getWorkName())
+                .eq(Objects.nonNull(dto.getStatus()),WorkInfoEntity::getStatus,dto.getStatus())
+                .eq(Objects.nonNull(dto.getCreateUser()),WorkInfoEntity::getCreateUser,dto.getCreateUser())
+                .eq(Objects.nonNull(dto.getWorkSouce()),WorkInfoEntity::getWorkSouce,dto.getWorkSouce());
+
+        return lw;
     }
 }

@@ -28,7 +28,7 @@ public class BaseApprovalCenterController extends BaseController {
     private WorkInfoService workInfoService;
 
     /**
-     * 启动工单数据
+     * 启动流程
      * @param startProcessInstanceDTO
      * @return
      */
@@ -114,6 +114,7 @@ public class BaseApprovalCenterController extends BaseController {
      * @param handleDataDTO
      * @return
      */
+    @PostMapping("businessPending")
     public IdmResDTO businessPending(@RequestBody HandleDataDTO handleDataDTO){
         return workInfoService.businessPending(handleDataDTO);
     }
