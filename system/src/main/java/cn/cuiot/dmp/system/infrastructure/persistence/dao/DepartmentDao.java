@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.persistence.dao;
 
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentPropertyDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SpaceTreeResDto;
 import java.util.List;

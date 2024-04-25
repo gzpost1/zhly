@@ -198,7 +198,7 @@
     </select>
 
     <select id="getDeptListByPathAndGroupFloor"
-            resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto">
+            resultType="cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto">
         SELECT
             d.id,
             d_group,

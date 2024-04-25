@@ -17,7 +17,7 @@ import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
 import cn.cuiot.dmp.base.application.enums.OrgTypeEnum;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentPropertyDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameResDto;
@@ -280,7 +280,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public DepartmentEntity getDeptById(String id) {
-        if (id.equals(NULL_WORD)) {
+        if (StringUtils.isBlank(id)) {
             return null;
         }
         return departmentDao.selectByPrimary(Long.parseLong(id));

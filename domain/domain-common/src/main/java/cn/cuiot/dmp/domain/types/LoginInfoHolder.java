@@ -8,6 +8,7 @@ package cn.cuiot.dmp.domain.types;
  * @Version V1.0
  */
 public class LoginInfoHolder {
+
     private static final ThreadLocal<LoginInfo> LOCAL_OPERATOR_IDENTITY = new ThreadLocal<>();
 
     public static void setLocalLoginInfo(LoginInfo loginInfo) {
@@ -22,53 +23,60 @@ public class LoginInfoHolder {
         return LOCAL_OPERATOR_IDENTITY.get();
     }
 
-
-    public static <T> T executeWithLoginInfo(Function function, LoginInfo loginInfo) {
-        setLocalLoginInfo(loginInfo);
-        try {
-            return (T) function.execute();
-        } finally {
-            clearLoginInfo();
-        }
-    }
-
-    public interface Function {
-        Object execute();
-    }
-
-
-    public static String getCurrentLoginUserPath() {
-        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getUserPath() : null;
-    }
-
-    public static String getCurrentLoginOrgPath() {
-        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getOrgPath() : null;
-    }
-
-    public static Long getCurrentLoginOrgId() {
-        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getOrgId() : null;
-    }
-
+    /**
+     * 用户id
+     */
     public static Long getCurrentUserId() {
         return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getUserId() : null;
     }
 
-    public static String getCurrentUserIdStr() {
-        if (LOCAL_OPERATOR_IDENTITY.get() != null && LOCAL_OPERATOR_IDENTITY.get().getUserId() != null) {
-            return LOCAL_OPERATOR_IDENTITY.get().getUserId().toString();
-        }
-        return null;
+    /**
+     * 用户名
+     */
+    public static String getCurrentUsername() {
+        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getUsername() : null;
     }
 
+    /**
+     * 用户的手机号
+     */
+    public static String getCurrentPhoneNumber() {
+        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getPhoneNumber() : null;
+    }
+
+    /**
+     * 姓名
+     */
+    public static String getCurrentName() {
+        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getName() : null;
+    }
+
+    /**
+     * 账户ID
+     */
     public static Long getCurrentOrgId() {
         return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getOrgId() : null;
     }
 
-    public static String getCurrentOrgIdStr() {
-        if (LOCAL_OPERATOR_IDENTITY.get() != null && LOCAL_OPERATOR_IDENTITY.get().getOrgId() != null) {
-            return LOCAL_OPERATOR_IDENTITY.get().getOrgId().toString();
-        }
-        return null;
+    /**
+     * 账户类型
+     */
+    public static Integer getCurrentOrgTypeId() {
+        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getOrgTypeId() : null;
+    }
+
+    /**
+     * 部门ID
+     */
+    public static Long getCurrentDeptId() {
+        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getDeptId() : null;
+    }
+
+    /**
+     * 岗位ID
+     */
+    public static Long getCurrentPostId() {
+        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getPostId() : null;
     }
 
     public static OperateInfo getCurrentLoginOperateInfo() {

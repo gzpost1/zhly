@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.persistence.dao;
 
-import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.FactoryParkBuildingListResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.FactoryParkParkListResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameResDto;

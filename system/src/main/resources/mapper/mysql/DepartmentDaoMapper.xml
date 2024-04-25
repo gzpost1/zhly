@@ -227,10 +227,11 @@
 
     </select>
 
-    <select id="getPathByUser" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto">
+    <select id="getPathByUser" resultType="cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto">
 
                 select
-                    d.id, d.path, d.department_name as name, d.d_group
+                    d.id, d.path, d.department_name as name, d.d_group, d.parent_id, d.pk_org_id, d.pk_org_id as org_id,
+                   d.code,d.level
                 from
                     department d
                     left join user_org uo on d.id = uo.pk_dept_id

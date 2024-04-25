@@ -64,6 +64,10 @@ public class UserConverter implements Converter<User, UserEntity> {
                 user.setLastOnlineAddress(new Address(userEntity.getLastOnlineAddress()));
             }
 
+            user.setName(userEntity.getName());
+            user.setPostId(userEntity.getPostId());
+            user.setRemark(userEntity.getRemark());
+
             user.setLastOnlineOn(userEntity.getLastOnlineOn());
             user.setCreatedOn(userEntity.getCreatedOn());
             user.setCreatedBy(userEntity.getCreatedBy());
@@ -113,6 +117,11 @@ public class UserConverter implements Converter<User, UserEntity> {
         entity.setContactPerson(user.getContactPerson());
         entity.setContactAddress(user.getContactAddressStr());
         entity.setLongTimeLogin(user.getLongTimeLogin());
+
+        entity.setName(user.getName());
+        entity.setPostId(user.getPostId());
+        entity.setRemark(user.getRemark());
+
         return entity;
     }
 }

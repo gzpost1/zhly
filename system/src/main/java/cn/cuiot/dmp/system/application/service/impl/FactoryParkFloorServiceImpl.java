@@ -14,7 +14,7 @@ import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.BuildingFloorDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CommunityListQryDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentPropertyDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.FactoryParkFloorAddDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.FactoryParkFloorBatchDelDto;

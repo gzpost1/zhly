@@ -24,6 +24,9 @@ import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.VerifyUnit;
 import cn.cuiot.dmp.system.user_manage.domain.entity.User;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.lang.Validator;
+import cn.hutool.core.util.PhoneUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -98,43 +101,45 @@ public class LoginController extends BaseController {
      */
     @PostMapping(value = "/session", produces = "application/json;charset=UTF-8")
     public LoginResDTO loginDmp(@RequestBody LoginReqDTO loginReqDTO) {
-        log.info("pc用户登录信息 {}", loginReqDTO.getUserAccount());
-        // 用户账号参数校验
+        /**
+         * 手机号校验
+         */
         if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getUserAccount())) {
-            // 账号或密码为空
-            throw new BusinessException(ResultCode.USER_ACCOUNT_IS_EMPTY);
+            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_EMPTY,"请输入手机号");
         }
-        // 用户密码参数校验
+        if(!PhoneUtil.isPhone(loginReqDTO.getUserAccount())){
+            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_NOT_VALID,"请输入11位手机号码");
+        }
+        // 密码参数校验
         if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getPassword())) {
-            // 账号或密码为空
-            throw new BusinessException(ResultCode.PASSWORD_IS_EMPTY);
+            throw new BusinessException(ResultCode.PASSWORD_IS_EMPTY,"请输入密码");
+        }
+        //临时Aes密钥ID参数校验
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getKid())) {
+            throw new BusinessException(ResultCode.KID_IS_EMPTY,"密钥ID为空");
+        }
+        // 必须要阅读用户协议
+        /*if (!PRIVACY_AGREE.equals(loginReqDTO.getPrivacyAgreement())) {
+            throw new BusinessException(ResultCode.PRIVACY_AGREEMENT_ERROR);
+        }*/
+        // 验证码ID参数校验
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getSid())) {
+            throw new BusinessException(ResultCode.ACCESS_ERROR,"验证码ID参数为空");
         }
         // 验证码参数校验
         if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getKaptchaText())) {
-            // 图形验证码为空
-            throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY);
+            throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY,"请输入验证码");
         }
-        // 验证码参数校验
-        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getSid())) {
-            // 图形验证码为空
-            throw new BusinessException(ResultCode.ACCESS_ERROR);
-        }
-        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getKid())) {
-            // 临时Aes密钥ID为空
-            throw new BusinessException(ResultCode.KID_IS_EMPTY);
-        }
-        // 必须要阅读用户协议
-        if (!PRIVACY_AGREE.equals(loginReqDTO.getPrivacyAgreement())) {
-            throw new BusinessException(ResultCode.PRIVACY_AGREEMENT_ERROR);
-        }
-        // 图形验证码校验
-        if (!TRUE_WORD.equals(smsWord)) {
-            verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid());
-        }
+        //图形验证码校验
+        verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid());
+
+        /**
+         * 获取AES密钥信息
+         */
         String jsonObject = stringRedisTemplate.opsForValue().get(SECRET_INFO_KEY + loginReqDTO.getKid());
         stringRedisTemplate.delete(SECRET_INFO_KEY + loginReqDTO.getKid());
         if (StringUtils.isEmpty(jsonObject)) {
-            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR);
+            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR,"密钥ID已过期，请重新获取");
         }
         Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
         // 密码解密
@@ -142,7 +147,7 @@ public class LoginController extends BaseController {
         // 账号密码校验
         User validateUser = loginService.authDmp(loginReqDTO);
         // 短信验证码验证
-        if (TRUE_WORD.equals(smsWord)) {
+        /*if (TRUE_WORD.equals(smsWord)) {
             List<String> userNameList = Arrays.asList(sidPassUserNameList.split(","));
             if (!userNameList.contains(loginReqDTO.getUserAccount())) {
                 // 手机号验证码参数校验
@@ -155,7 +160,7 @@ public class LoginController extends BaseController {
                     throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR);
                 }
             }
-        }
+        }*/
         return loginService.loginIdentity(validateUser, request);
     }
 

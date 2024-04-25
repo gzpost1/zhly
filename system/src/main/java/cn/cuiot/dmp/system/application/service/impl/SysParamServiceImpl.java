@@ -4,7 +4,7 @@ import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.application.service.SysParamService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.SysParamEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetSysParamResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SysParamDto;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;

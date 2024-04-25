@@ -7,7 +7,7 @@ import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
 import cn.cuiot.dmp.system.application.enums.HasChildrenEnum;
 import cn.cuiot.dmp.system.application.service.TreeService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DeptTreeReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DeptTreeResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SpaceTreeReqDto;

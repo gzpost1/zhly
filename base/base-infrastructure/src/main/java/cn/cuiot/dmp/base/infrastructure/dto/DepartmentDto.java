@@ -1,17 +1,14 @@
-package cn.cuiot.dmp.system.infrastructure.entity.dto;
+package cn.cuiot.dmp.base.infrastructure.dto;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import lombok.Data;
 
 /**
- * @param
- * @Author xieSH
- * @Description 组织实体
- * @Date 2021/8/17 9:32
- * @return
- **/
+ * 组织部门DTO
+ */
 @Data
-public class DepartmentDto {
+public class DepartmentDto implements Serializable {
 
     /**
      * 组织id
@@ -52,6 +49,11 @@ public class DepartmentDto {
      * 排序
      */
     private Integer sort;
+
+    /**
+     * level
+     */
+    private Integer level;
 
     /**
      * 创建时间

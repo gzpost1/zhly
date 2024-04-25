@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.entity.dto;
 
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import lombok.Data;
 
 /**

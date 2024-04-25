@@ -6,7 +6,7 @@ import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.application.service.INoticeService;
 import cn.cuiot.dmp.system.infrastructure.entity.Notice;
 import cn.cuiot.dmp.system.infrastructure.entity.NoticeUserAccess;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.NoticeDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.NoticeUserAccessDto;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;

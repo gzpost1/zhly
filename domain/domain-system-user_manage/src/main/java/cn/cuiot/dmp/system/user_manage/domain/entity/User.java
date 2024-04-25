@@ -38,6 +38,11 @@ public class User extends AbstractAggregate<UserId> {
     private String username;
 
     /**
+     * 姓名
+     */
+    private String name;
+
+    /**
      * 密码（加密）
      */
     private Password password;
@@ -131,6 +136,17 @@ public class User extends AbstractAggregate<UserId> {
      * 长时间登录
      */
     private Integer longTimeLogin;
+
+
+    /**
+     * 岗位ID
+     */
+    private Long postId;
+
+    /**
+     * 备注
+     */
+    private String remark;
 
     /**
      * 自己更新自己

@@ -2,6 +2,7 @@ package cn.cuiot.dmp.system.application.service.impl;
 
 import static cn.cuiot.dmp.common.constant.ResultCode.INNER_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_LOCKED_ERROR;
+import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_OR_PASSWORD_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR;
 
 import cn.cuiot.dmp.common.constant.CacheConst;
@@ -11,6 +12,7 @@ import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.enums.UserLongTimeLoginEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
+import cn.cuiot.dmp.domain.types.AuthContants;
 import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
@@ -80,38 +82,12 @@ public class LoginServiceImpl implements LoginService {
     private OrganizationService organizationService;
 
     @Autowired
-    OperateLogService operateLogService;
-
-    /**
-     * 请求头
-     */
-    private static final String TOKEN = "token";
+    private OperateLogService operateLogService;
 
     /**
      * 雪花算法生成器
      */
     private SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
-
-    /**
-     * 用户名称
-     */
-    private static final String USERNAME = Claims.SUBJECT;
-
-    /**
-     * 用户组织
-     */
-    private static final String USERORG = "org";
-
-    /**
-     * 用户Id
-     */
-    private static final String USERID = "userId";
-
-    /**
-     * 创建时间
-     */
-    private static final String CREATED = "created";
-
 
 
     @Override
@@ -127,8 +103,6 @@ public class LoginServiceImpl implements LoginService {
         if(PhoneUtil.isPhone(userAccount)){
             phoneNumber = new PhoneNumber(userAccount);
         }
-        // 获取密码
-        Password password = new Password(loginReqDTO.getPassword());
         // 查询用户
         User userEntity = userRepository.queryByUserNameOrPhoneNumberOrEmail(userAccount, phoneNumber, email);
         // 账号不存在
@@ -142,7 +116,7 @@ public class LoginServiceImpl implements LoginService {
         if (!userEntity.getPassword().verifyPassword(loginReqDTO.getPassword())) {
             //记录登录失败次数
             recordLoginFailedCountWhenUserExist(loginFailedUsersRedisKey);
-            throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR);
+            throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
         }
         // 登录成功
         else {
@@ -179,7 +153,7 @@ public class LoginServiceImpl implements LoginService {
         stringRedisTemplate.expire(loginFailedUsersRedisKey, SecurityConst.LOGIN_FAILED_FREEZE_TIME, TimeUnit.MINUTES);
         // 登录失败次数未到上限
         if (failedCounts < SecurityConst.LOGIN_FAILED_MAX_COUNTS) {
-            throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR);
+            throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
         }
         // 登录失败次数达到上限，账号冻结
         else {
@@ -195,7 +169,7 @@ public class LoginServiceImpl implements LoginService {
         stringRedisTemplate.expire(loginFailedNonExistUsersRedisKey, SecurityConst.LOGIN_FAILED_FREEZE_TIME, TimeUnit.MINUTES);
         // 登录失败次数未到上限
         if (failedCounts < SecurityConst.LOGIN_FAILED_MAX_COUNTS) {
-            throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR);
+            throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
         }
         // 登录失败次数达到上限，账号冻结
         else {
@@ -205,41 +179,51 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public LoginResDTO loginIdentity(User validateUser, HttpServletRequest request) {
-        IStrategy strategyPhone = new StrategyPhone();
-        // 获取用户自增id
-        Long pkUserId = Optional.ofNullable(validateUser).map(u -> u.getId().getValue()).orElse(null);
-        // 用户请求ip
-        String ipAddr = IpUtil.getIpAddr(request);
-        // 脱敏手机号
-        String phoneNumberStr = validateUser.getDecryptedPhoneNumber();
-        String safePhoneNumber = (String) strategyPhone.des(phoneNumberStr, null);
-        // 获取org自增id
-        String pkOrgId = userService.getOrgId(pkUserId);
-        // 获取账户信息
-        OrganizationResDTO organization = organizationService.getOneById(pkOrgId);
-        checkOrgStatus(validateUser, organization);
-        String orgId = organization.getOrgId();
-        boolean isSuccess = false;
-        // 填充日志数据
+
+        // 登录日志数据
         OperateLogDto platformOperateLogDTO = new OperateLogDto();
-        JSONObject jsonObject = new JSONObject(1);
-        jsonObject.put("用户名", validateUser.getUsername());
-        platformOperateLogDTO.setRequestParams(jsonObject.toJSONString());
+        JSONObject requestParamJsonObject = new JSONObject(1);
+        requestParamJsonObject.put("用户名", validateUser.getUsername());
+        platformOperateLogDTO.setRequestParams(requestParamJsonObject.toJSONString());
         platformOperateLogDTO.setOperationCode("session");
         platformOperateLogDTO.setOperationName("登录");
         platformOperateLogDTO.setOperationTarget(validateUser.getUsername());
         platformOperateLogDTO.setServiceType(ServiceTypeConst.AUDIT_MANAGEMENT);
-        // 认证成功
-        if (pkUserId != null) {
+
+        // 获取用户自增id
+        Long pkUserId = Optional.ofNullable(validateUser).map(u -> u.getId().getValue()).orElse(null);
+
+        boolean isSuccess = false;
+
+        if(Objects.nonNull(pkUserId)){
+            // 用户请求ip
+            String ipAddr = IpUtil.getIpAddr(request);
+            // 脱敏手机号
+            //String safePhoneNumber = (String) new StrategyPhone().des(validateUser.getDecryptedPhoneNumber(), null);
+            String decryptedPhoneNumber = validateUser.getDecryptedPhoneNumber();
+            // 获取org主键id
+            String pkOrgId = userService.getOrgId(pkUserId);
+            // 获取dept主键id
+            String pkDeptId = userService.getDeptId(pkUserId.toString(),pkOrgId);
+            // 获取账户信息
+            OrganizationResDTO organization = organizationService.getOneById(pkOrgId);
+            //校验账户状态
+            checkOrgStatus(validateUser, organization);
+            String orgId = organization.getOrgId();
+
             Date expirationDate = DateUtil.date(System.currentTimeMillis() + Const.SESSION_TIME  * 20 * 1000);
             Map<String, Object> claims = new HashMap<>(5);
-            claims.put(USERNAME, validateUser.getUsername());
-            claims.put(CREATED, new Date());
-            claims.put(USERORG, pkOrgId);
-            claims.put(USERID, pkUserId);
+            claims.put(AuthContants.USERNAME, validateUser.getUsername());
+            claims.put(AuthContants.CREATED, new Date());
+            claims.put(AuthContants.USERORG, pkOrgId);
+            claims.put(AuthContants.USERORG_TYPE_ID, organization.getOrgTypeId());
+            claims.put(AuthContants.USERID, pkUserId);
+            claims.put(AuthContants.USER_PHONE, decryptedPhoneNumber);
+            claims.put(AuthContants.NAME, validateUser.getName());
+            claims.put(AuthContants.DEPT_ID, pkDeptId);
+            claims.put(AuthContants.POST_ID, validateUser.getPostId());
 
             String jwt = Jwts.builder().setClaims(claims).setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, Const.SECRET).compact();
-            log.info("登陆jwt:" + jwt + "过期时间：" + expirationDate.toString());
 
             String refreshCode = String.valueOf(idWorker.nextId());
             if (Objects.equals(validateUser.getLongTimeLogin(), UserLongTimeLoginEnum.OPEN.getCode())) {
@@ -254,23 +238,14 @@ public class LoginServiceImpl implements LoginService {
                 redisUtil.set(CacheConst.LOGIN_USERS_JWT + jwt, String.valueOf(pkUserId), Const.SESSION_TIME);
             }
 
-            // 登录成功，发送登录日志
+            //保存登录成功日志
+            isSuccess = true;
             platformOperateLogDTO.setOrgId(pkOrgId);
             platformOperateLogDTO.setOperationById(String.valueOf(pkUserId));
             platformOperateLogDTO.setOperationByName(validateUser.getUsername());
-
-            // 发送日志至kafka
-            isSuccess = true;
             saveLog2Db(isSuccess, platformOperateLogDTO, request);
-            // 初始化返回对象
-            LoginResDTO loginResDTO = new LoginResDTO();
-            // 用户是否重置密码
-            loginResDTO.setOrganizationId(orgId);
-            loginResDTO.setPhoneNumber(safePhoneNumber);
-            loginResDTO.setRefreshCode(refreshCode);
-            loginResDTO.setToken(jwt);
-            loginResDTO.setUserId(String.valueOf(pkUserId));
-            // redis记录当前登录账号
+
+            //redis记录当前登录账号
             List<String> orgInfoList = redisUtil.lGet(CacheConst.USER_ORG_CURRENT_KEY + pkUserId, 0, -1);
             // 如果集合中存在该值,删除之前的记录
             for (String orgInfo : orgInfoList) {
@@ -284,19 +259,32 @@ public class LoginServiceImpl implements LoginService {
                 redisUtil.lPopForList(CacheConst.USER_ORG_CURRENT_KEY + pkUserId);
             }
             redisUtil.lSet(CacheConst.USER_ORG_CURRENT_KEY + pkUserId, pkOrgId);
+
             // 更新最近登录ip和城市
             UpdateUserCommand updateUserParams = new UpdateUserCommand();
             updateUserParams.setId(validateUser.getId().getValue());
             updateUserParams.setLastOnlineIp(ipAddr);
             userService.update(updateUserParams);
-            return loginResDTO;
-        }
-        // 认证失败
-        else {
-            // 用户名或密码错误
-            this.saveLog2Db(isSuccess, platformOperateLogDTO, request);
 
-            throw new BusinessException(ResultCode.USER_ACCOUNT_OR_PASSWORD_ERROR);
+            // 初始化返回对象
+            LoginResDTO loginResDTO = new LoginResDTO();
+            loginResDTO.setPhoneNumber(decryptedPhoneNumber);
+            loginResDTO.setName(validateUser.getName());
+            loginResDTO.setRefreshCode(refreshCode);
+            loginResDTO.setToken(jwt);
+            loginResDTO.setUserId(String.valueOf(pkUserId));
+            loginResDTO.setOrgId(pkOrgId);
+            loginResDTO.setOrganizationId(orgId);
+            loginResDTO.setOrgName(organization.getOrgName());
+            loginResDTO.setOrgTypeId(organization.getOrgTypeId());
+            loginResDTO.setPostId(validateUser.getPostId());
+            loginResDTO.setAvatar(validateUser.getAvatar());
+
+            return loginResDTO;
+
+        }else {
+            this.saveLog2Db(isSuccess, platformOperateLogDTO, request);
+            throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
         }
     }
 
@@ -307,7 +295,7 @@ public class LoginServiceImpl implements LoginService {
         }
         if (DeletedFlagEnum.DELETED.getCode().equals(organization.getDeletedFlag())
                 || DeletedFlagEnum.DELETED.getCode().equals(validateUser.getDeletedFlag())) {
-            throw new BusinessException(ResultCode.USER_ACCOUNT_OR_PASSWORD_ERROR);
+            throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
         }
     }
 
@@ -324,7 +312,7 @@ public class LoginServiceImpl implements LoginService {
         platformOperateLogDTO.setOperationName("注销");
         platformOperateLogDTO.setServiceType(ServiceTypeConst.AUDIT_MANAGEMENT);
         try {
-            String jwt = request.getHeader(TOKEN);
+            String jwt = request.getHeader(AuthContants.TOKEN);
             redisUtil.del(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt);
             redisUtil.del(CacheConst.LOGIN_USERS_JWT + jwt);
 

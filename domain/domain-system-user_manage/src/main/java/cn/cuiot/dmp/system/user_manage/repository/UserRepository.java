@@ -75,7 +75,7 @@ public interface UserRepository extends Repository<User, UserId> {
     /**
      * 查询用户信息（门禁人员）
      */
-    List<UserDepartmentInfo> getUserInfo(String phoneNumber);
+    List<UserDepartmentInfo> getUserDepartmentInfo(String phoneNumber);
 
 
     void removeUserRelate(List<Long> idList);

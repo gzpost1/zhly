@@ -3,7 +3,7 @@ package cn.cuiot.dmp.system.application.service.impl;
 import cn.cuiot.dmp.system.application.constant.CurrencyConst;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
 import cn.cuiot.dmp.system.application.service.IndicatorCardService;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.IndicatorCardListPo;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.IndicatorCardDao;

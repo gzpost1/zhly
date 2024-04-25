@@ -227,8 +227,8 @@ public class UserRepositoryImpl extends
     }
 
     @Override
-    public List<UserDepartmentInfo> getUserInfo(String phoneNumber) {
-        List<UserDepartmentEntity> userEntityList = userEntityMapper.getUserInfo(phoneNumber);
+    public List<UserDepartmentInfo> getUserDepartmentInfo(String phoneNumber) {
+        List<UserDepartmentEntity> userEntityList = userEntityMapper.getUserDepartmentInfo(phoneNumber);
         List<UserDepartmentInfo> infoList = new ArrayList<>();
         for (UserDepartmentEntity entity : userEntityList) {
             UserDepartmentInfo info = new UserDepartmentInfo();
