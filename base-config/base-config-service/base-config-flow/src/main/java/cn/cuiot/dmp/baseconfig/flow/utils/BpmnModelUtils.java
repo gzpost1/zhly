@@ -1012,6 +1012,7 @@ public class BpmnModelUtils {
                     multiInstanceLoopCharacteristics.setCompletionCondition(String.format("${nrOfCompletedInstances/nrOfInstances >= %f}", passRate));
                 }
 
+                //审批超时设置，将计时器事件定义添加到边界事件中。
                 JSONObject timeLimit = props.getTimeLimit();
                 if (timeLimit != null && !timeLimit.isEmpty()) {
                     JSONObject timeout = timeLimit.getJSONObject("timeout");

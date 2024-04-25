@@ -29,6 +29,8 @@ public class Properties {
   private String subprocessId;
   /**
    * ASSIGN_USER指定审批人 SELF发起人自己 SELF_SELECT发起人自己选择 LEADER_TOP连续主管 LEADER指定主管审批 ROLE系统角色 FORM_USER表单人员
+   * role 系统角色 dept 系统部门 complete_select 完成人自己选择
+   * @see cn.cuiot.dmp.baseconfig.flow.enums.AssigneeTypeEnums
    */
   private String assignedType;
   private List<UserInfo> assignedUser;

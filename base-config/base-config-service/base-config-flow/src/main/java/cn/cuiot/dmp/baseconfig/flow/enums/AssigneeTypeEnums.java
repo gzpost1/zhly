@@ -12,8 +12,11 @@ public enum  AssigneeTypeEnums {
   LEADER_TOP("LEADER_TOP","连续主管"),
   LEADER("LEADER","指定主管审批"),
   ROLE("ROLE","系统角色"),
+  DEPT("dept","系统部门"),
   SELF("SELF","发起人自己"),
-  FORM_USER("FORM_USER","表单人员"),;
+  FORM_USER("FORM_USER","表单人员"),
+  COMPLETE_SELECT("complete_select","完成人自己选择"),
+  ;
 
   private String typeName;
 

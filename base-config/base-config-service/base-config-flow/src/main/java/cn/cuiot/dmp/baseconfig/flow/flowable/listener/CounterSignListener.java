@@ -70,6 +70,14 @@ public class CounterSignListener implements ExecutionListener {
                 }
             }
             else if(AssigneeTypeEnums.SELF_SELECT.getTypeName().equals(assignedType)){
+                //发起人自己选择
+                List<String> assigneeUsers = (List<String>) execution.getVariable(currentActivityId);
+                if(assigneeUsers!=null){
+                    assigneeList.addAll(assigneeUsers);
+                }
+            }
+            else if(AssigneeTypeEnums.COMPLETE_SELECT.getTypeName().equals(assignedType)){
+                //完成人自己选择
                 List<String> assigneeUsers = (List<String>) execution.getVariable(currentActivityId);
                 if(assigneeUsers!=null){
                     assigneeList.addAll(assigneeUsers);
@@ -114,14 +122,12 @@ public class CounterSignListener implements ExecutionListener {
 //                }
             }
             else if(AssigneeTypeEnums.ROLE.getTypeName().equals(assignedType)){
-                throw new BusinessException(ResultCode.PARAM_CANNOT_NULL,"前端现在角色选择器有问题,等待联调");
-//                LambdaQueryWrapper<Users> lambdaQueryWrapper=new LambdaQueryWrapper<>();
-//                lambdaQueryWrapper.in(Users::getDepartmentIds,roleIds);
-//                UserService userService = SpringContextHolder.getBean(UserService.class);
-//                List<Users> list = userService.list(lambdaQueryWrapper);
-//                for (Users users : list) {
-//                    flwHisTaskActors.add(FlwTaskActor.ofUser(users.getUserId()+"",users.getUserName()));
-//                }
+                //指定角色
+                //todo 等待接口
+            }
+            else if(AssigneeTypeEnums.DEPT.getTypeName().equals(assignedType)){
+                //指定部门
+                //todo 等待接口
             }
             else if(AssigneeTypeEnums.SELF.getTypeName().equals(assignedType)){
                 String startUserJson = execution.getVariable(START_USER_INFO, String.class);
