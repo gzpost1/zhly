@@ -4,6 +4,7 @@ import cn.cuiot.dmp.query.PageQuery;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author pengjian
@@ -59,8 +60,26 @@ public class WorkInfoDto extends PageQuery {
     private String createUser;
 
     /**
+     * 创建人名称
+     */
+    private String userName;
+
+    /**
      * 流程实例id
      */
     private String procInstId;
+    /**
+     * 超时 0未超时 1超时
+     */
+    private  Byte timeOut;
 
+    /**
+     * 组织id信息
+     */
+    private List<Long> orgIds;
+
+    /**
+     * 工单耗时
+     */
+    private String workTime;
 }

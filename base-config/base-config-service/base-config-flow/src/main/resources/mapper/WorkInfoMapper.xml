@@ -8,10 +8,10 @@
         <result column="create_time" property="createTime" />
         <result column="create_user" property="createUser" />
         <result column="business_type" property="businessType" />
-        <result column="org" property="org" />
+        <result column="org_id" property="orgId" />
         <result column="work_name" property="workName" />
         <result column="work_souce" property="workSouce" />
-        <result column="user_id" property="userId" />
+        <result column="create_user" property="createUser" />
         <result column="status" property="status" />
     </resultMap>
 
@@ -21,5 +21,44 @@
         create_user,
         id, business_type, org, work_name, work_souce, user_id, status
     </sql>
-
+    <sql id="queryWorkOrderInfoSql">
+        t1.id ,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,
+               t1.time_out,t2.user_name
+    </sql>
+    <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
+        select  <include refid="queryWorkOrderInfoSql"/>
+            from tb_work_info t1 left join users t2
+                                                                                                                                                                                            on t1.create_user = t2.user_id
+    </select>
+    <sql id="queryWorkOrderInfoCondition">
+        <where>
+            <if test="query.id !=null">
+                and t1.id like concat('%',#{query.id},'%')
+            </if>
+            <if test="query.businessType !=null">
+                and t1.business_type = #{query.businessType}
+            </if>
+            <if test="query.status !=null">
+                and t1.status = #{query.status}
+            </if>
+            <if test="query.createUser !=null">
+                and t1.create_user =#{createUser}
+            </if>
+            <if test="query.workSouce !=null ">
+                and t1.work_souce =#{query.workSouce}
+            </if>
+            <if test="query.timeOut !=null">
+                and t1.time_out =#{query.timeOut}
+            </if>
+            <if test="query.workName !=null">
+                and t1.work_name like concat('%',#{query.workName},'%')
+            </if>
+            <if test="query.orgIds !=null">
+                and t1.org_id in
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </sql>
 </mapper>

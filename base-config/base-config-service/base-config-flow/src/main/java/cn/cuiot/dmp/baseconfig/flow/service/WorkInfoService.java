@@ -20,6 +20,7 @@ import cn.cuiot.dmp.baseconfig.flow.mapper.WorkInfoMapper;
 import cn.cuiot.dmp.baseconfig.flow.vo.HistoryProcessInstanceVO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -83,7 +84,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     private UserService userService;
 
 
-    public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO,String userId) {
+    public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO) {
         JSONObject formData = startProcessInstanceDTO.getFormData();
         UserInfo startUserInfo = startProcessInstanceDTO.getStartUserInfo();
         Authentication.setAuthenticatedUserId(startUserInfo.getId());
@@ -142,11 +143,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             WorkInfoEntity entity = new WorkInfoEntity();
             entity.setId(IdWorker.getId());
             entity.setBusinessType(flowConfig.getBusinessTypeId());
-            entity.setOrg(flowConfig.getOrgId());
+            entity.setOrgId(flowConfig.getOrgId());
             entity.setCreateTime(new Date());
             entity.setWorkName(flowConfig.getName());
             entity.setWorkSouce(startProcessInstanceDTO.getWorkSource());
-            entity.setCreateUser(userId);
+            entity.setCreateUser(LoginInfoHolder.getCurrentUserId());
             entity.setProcInstId(task.getProcessInstanceId());
             this.save(entity);
         }
@@ -502,24 +503,14 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(props);
     }
 
-    public IdmResDTO<IPage<WorkInfoEntity>> queryWorkOrderInfo(WorkInfoDto dto) {
+    public IdmResDTO<IPage<WorkInfoDto>> queryWorkOrderInfo(WorkInfoDto dto) {
         //TODO 根据组织id获取本组织与子组织信息
         List<Long> orgIds = new ArrayList<>();
-        LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
-        baseMapper.selectPage(new Page<>(dto.getCurrentPage(),dto.getPageSize()),lw);
-        return null;
+        dto.setOrgIds(orgIds);
+        Page<WorkInfoDto> workInfoEntityPage = getBaseMapper().queryWorkOrderInfo(new Page<WorkInfoDto>(dto.getCurrentPage(),dto.getPageSize()),dto);
+        //TODO 填充组织名称与业务类型后返回分页数据
+
+        return IdmResDTO.success(workInfoEntityPage);
     }
 
-    public LambdaQueryWrapper<?> workOrderCondition(WorkInfoDto dto,List<Long> orgIds){
-        LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
-        lw.like(Objects.nonNull(dto.getId()),WorkInfoEntity::getId,dto.getId())
-                .in(CollectionUtils.isNotEmpty(orgIds),WorkInfoEntity::getOrg,orgIds)
-                .eq(Objects.nonNull(dto.getBusinessType()),WorkInfoEntity::getBusinessType,dto.getBusinessType())
-                .like(Objects.nonNull(dto.getWorkName()),WorkInfoEntity::getWorkName,dto.getWorkName())
-                .eq(Objects.nonNull(dto.getStatus()),WorkInfoEntity::getStatus,dto.getStatus())
-                .eq(Objects.nonNull(dto.getCreateUser()),WorkInfoEntity::getCreateUser,dto.getCreateUser())
-                .eq(Objects.nonNull(dto.getWorkSouce()),WorkInfoEntity::getWorkSouce,dto.getWorkSouce());
-
-        return lw;
-    }
 }

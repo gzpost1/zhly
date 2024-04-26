@@ -35,11 +35,11 @@ public class BaseApprovalCenterController extends BaseController {
     @PostMapping("start")
     public IdmResDTO start(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
 
-        return workInfoService.start(startProcessInstanceDTO,getUserId());
+        return workInfoService.start(startProcessInstanceDTO);
     }
 
     /**
-     * 工单列表
+     *
      * @param dto
      * @return
      */
