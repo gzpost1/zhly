@@ -9,6 +9,6 @@ import cn.cuiot.dmp.common.utils.Sm4;
 public class Sm4Test {
 
     public static void main(String[] args) {
-        System.out.println(Sm4.encryption("18386460351"));
+        System.out.println(Sm4.encryption("18685190663"));
     }
 }

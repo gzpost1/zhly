@@ -597,38 +597,49 @@ public class OrganizationServiceImpl implements OrganizationService {
      * 查询子账户详细信息
      */
     @Override
-    public GetOrganizationVO findOne(String orgId, String sessionUserId, String sessionOrgId) {
-        //当前登陆者的组织
+    public GetOrganizationVO findOne(String pkOrgId, String sessionUserId, String sessionOrgId) {
+
+        //查看数据权限判断
         String loginDeptId = userService.getDeptId(sessionUserId, sessionOrgId);
-        // 查看目标租户的组织
-        String findDeptId = userDao.getUserGrantDeptId(Long.parseLong(orgId));
-        if (!departmentUtil.checkPrivilege(loginDeptId, findDeptId)) {
+        String grantDeptId = userDao.getUserGrantDeptId(Long.parseLong(pkOrgId));
+        if (!departmentUtil.checkPrivilege(loginDeptId, grantDeptId)) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
 
-        Organization organization = organizationRepository.find(new OrganizationId(orgId));
-        OrgLabelDto orgLabelDto = organizationDao
-                .getOrgLabelById(organization.getId().getStrValue());
-        GetOrganizationVO vo = organization2GetOrganizationVoAssembler.toDTO(organization);
-        vo.setLabel(orgLabelDto.getLabelId());
-        vo.setOtherLabelName(orgLabelDto.getLabelName());
+        Organization organization = organizationRepository.find(new OrganizationId(pkOrgId));
 
-        //查询账户所有者登录名，手机号码
+        GetOrganizationVO vo = organization2GetOrganizationVoAssembler.toDTO(organization);
+
+        /*OrgLabelDto orgLabelDto = organizationDao
+                .getOrgLabelById(organization.getId().getStrValue());
+        vo.setLabel(orgLabelDto.getLabelId());
+        vo.setOtherLabelName(orgLabelDto.getLabelName());*/
+
+        /**
+         * 查询账户所有者姓名、登录名、手机号码
+         */
         User userById = userRepository.find(new UserId(organization.getOrgOwner().getValue()));
         Optional.ofNullable(userById).ifPresent(e -> {
+            vo.setAdminName(e.getName());
             vo.setUsername(e.getUsername());
             vo.setPhoneNumber(e.getDecryptedPhoneNumber());
         });
-        String deptId = userDao.getUserGrantDeptId(Long.valueOf(orgId));
-        if (deptId != null) {
+        /**
+         * 设置所属组织信息
+         */
+        if (grantDeptId != null) {
             DepartmentEntity departmentEntity = departmentDao
-                    .selectByPrimary(Long.parseLong(deptId));
-            vo.setDeptId(Long.parseLong(deptId));
+                    .selectByPrimary(Long.parseLong(grantDeptId));
+            vo.setDeptId(Long.parseLong(grantDeptId));
             vo.setDeptName(departmentEntity.getDepartmentName());
         }
+        //设置组织类型
         OrgTypeDto orgTypeDto = organizationDao.getOrgType(vo.getOrgTypeId());
         vo.setOrgTypeName(orgTypeDto.getName());
-        vo.setMenuRootList(orgMenuDao.getMenuListByOrgId(orgId));
+
+        //设置已勾选配置的菜单权限
+        vo.setMenuRootList(orgMenuDao.getMenuListByOrgId(pkOrgId));
+
         return vo;
     }
 

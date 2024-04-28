@@ -42,9 +42,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author guoying
- * @className LogControllerImpl
- * @description 账户管理
+ * 企业与账号管理
+ * @author wuyongchong
  * @date 2020-10-23 10:00:07
  */
 @RestController
@@ -68,7 +67,7 @@ public class OrganizationController extends BaseController {
     private static final String SUP_ORGID = "1";
 
     /**
-     * 新增账户
+     * 新增企业与账号
      * @param dto
      */
     @RequiresPermissions("system:account:add")
@@ -83,7 +82,7 @@ public class OrganizationController extends BaseController {
     }
 
     /**
-     * 编辑账户
+     * 编辑企业与账号
      * @param dto
      */
     @RequiresPermissions("system:account:edit")
@@ -99,7 +98,7 @@ public class OrganizationController extends BaseController {
 
 
     /**
-     * 账户详情
+     * 企业与账号详情
      * @param id
      * @return
      */
@@ -109,8 +108,8 @@ public class OrganizationController extends BaseController {
         if (StringUtils.isBlank(id)) {
             throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
         }
-        String sessionUserId = getUserId();
-        String sessionOrgId = getOrgId();
+        String sessionUserId =LoginInfoHolder.getCurrentUserId().toString();
+        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
         return organizationService.findOne(id, sessionUserId, sessionOrgId);
     }
 
