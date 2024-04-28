@@ -49,7 +49,7 @@ public interface OrganizationService {
      * @param dto
      * @return
      */
-    Long updateOrganization(UpdateOrganizationDto dto);
+    void updateOrganization(UpdateOrganizationDto dto);
 
     /**
      * 账户重置密码

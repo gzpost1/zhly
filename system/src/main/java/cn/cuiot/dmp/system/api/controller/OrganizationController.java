@@ -10,6 +10,7 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.service.OrganizationService;
 import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CompanyReqDto;
@@ -26,6 +27,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.GetOrganizationVO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.ListOrganizationVO;
+import cn.hutool.core.util.PhoneUtil;
 import java.util.List;
 import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
@@ -72,19 +74,11 @@ public class OrganizationController extends BaseController {
     @RequiresPermissions("system:account:add")
     @PostMapping(value = "/insertOrganization", produces = MediaType.APPLICATION_JSON_VALUE)
     public void insertSonOrganization(@RequestBody @Valid InsertOrganizationDto dto) {
-        // 用户层面相关校验
-        if (!dto.getUsername().matches(RegexConst.USERNAME_REGEX)) {
-            throw new BusinessException(ResultCode.USERNAME_IS_INVALID);
+        if (!PhoneUtil.isPhone(dto.getPhoneNumber())) {
+            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_NOT_VALID,"请输入正确的11位手机号");
         }
-        if (!dto.getPhoneNumber().matches(RegexConst.PHONE_NUMBER_REGEX)) {
-            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_NOT_VALID);
-        }
-        // 获取当前账户id为子账户的父级账户id
-        String orgId = getOrgId();
-        // 获取当前登陆用户的id
-        String userId = getUserId();
-        dto.setLoginOrgId(orgId);
-        dto.setUserId(userId);
+        dto.setSessionOrgId(LoginInfoHolder.getCurrentOrgId());
+        dto.setSessionUserId(LoginInfoHolder.getCurrentUserId());
         organizationService.insertOrganization(dto);
     }
 
@@ -98,11 +92,8 @@ public class OrganizationController extends BaseController {
         if (!getOrgId().equals(SUP_ORGID)) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
-        String userId = getUserId();
-        String orgId = getOrgId();
-
-        dto.setOrgId(orgId);
-        dto.setUserId(userId);
+        dto.setSessionOrgId(LoginInfoHolder.getCurrentOrgId());
+        dto.setSessionUserId(LoginInfoHolder.getCurrentUserId());
         organizationService.updateOrganization(dto);
     }
 

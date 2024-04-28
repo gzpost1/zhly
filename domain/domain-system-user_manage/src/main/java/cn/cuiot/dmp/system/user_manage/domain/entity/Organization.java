@@ -9,6 +9,7 @@ import cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgSourceEnum;
 import cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgStatusEnum;
 import cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgTypeEnum;
 import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -79,6 +80,17 @@ public class Organization extends AbstractAggregate<OrganizationId> {
      * 备注
      */
     private String description;
+
+
+    /**
+     * 企业有效期-开始时间
+     */
+    private Date expStartDate;
+
+    /**
+     * 企业有效期-结束时间
+     */
+    private Date expEndDate;
 
     /**
      * 创建时间
