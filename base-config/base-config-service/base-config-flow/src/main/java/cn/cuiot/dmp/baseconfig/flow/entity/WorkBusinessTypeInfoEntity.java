@@ -40,6 +40,11 @@ public class WorkBusinessTypeInfoEntity implements Serializable {
      */
     private Long userId;
 
+    /**
+     * 更新人的id
+     */
+    private Long closeUserId;
+
 
     /**
      * 操作时间
@@ -60,10 +65,12 @@ public class WorkBusinessTypeInfoEntity implements Serializable {
 
 
     /**
-     * 备用字段
+     * 意见
      */
-    private String ext;
+    private String comments;
 
-
-
+    /**
+     * 节点
+     */
+    private String node;
 }
