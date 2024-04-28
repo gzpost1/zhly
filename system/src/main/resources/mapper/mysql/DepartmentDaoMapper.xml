@@ -292,6 +292,10 @@
         where id = #{id}
     </update>
 
+    <update id="updateDepartmentChildPath">
+        update set path = REPLACE(path,#{oldPath},#{newPath}) where path like CONCAT(#{oldPath}, '%')
+    </update>
+
     <select id="getDepartmentById" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
 
                 SELECT

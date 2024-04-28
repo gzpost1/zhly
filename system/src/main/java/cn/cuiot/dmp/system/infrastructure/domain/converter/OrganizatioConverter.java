@@ -45,6 +45,8 @@ public class OrganizatioConverter implements Converter<Organization, Organizatio
         organization.setSocialCreditCode(organizationEntity.getSocialCreditCode());
         organization.setCompanyName(organizationEntity.getCompanyName());
         organization.setDescription(organizationEntity.getDescription());
+        organization.setExpStartDate(organizationEntity.getExpStartDate());
+        organization.setExpEndDate(organizationEntity.getExpEndDate());
         organization.setCreatedOn(organizationEntity.getCreatedOn());
         organization.setCreatedBy(organizationEntity.getCreatedBy());
         organization.setCreatedByType(OperateByTypeEnum.valueOf(organizationEntity.getCreatedByType()));
@@ -76,6 +78,8 @@ public class OrganizatioConverter implements Converter<Organization, Organizatio
         entity.setSocialCreditCode(organization.getSocialCreditCode());
         entity.setCompanyName(organization.getCompanyName());
         entity.setDescription(organization.getDescription());
+        entity.setExpStartDate(organization.getExpStartDate());
+        entity.setExpEndDate(organization.getExpEndDate());
         entity.setCreatedOn(organization.getCreatedOn());
         entity.setCreatedBy(organization.getCreatedBy());
         entity.setCreatedByType(

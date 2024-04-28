@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -84,6 +85,16 @@ public class OrganizationEntity implements Serializable {
      * 备注
      */
     private String description;
+
+    /**
+     * 企业有效期-开始时间
+     */
+    private Date expStartDate;
+
+    /**
+     * 企业有效期-结束时间
+     */
+    private Date expEndDate;
 
     /**
      * 创建时间
