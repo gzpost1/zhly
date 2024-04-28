@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -34,7 +35,7 @@ public class WorkInfoEntity implements Serializable {
     /**
      * 所属组织
      */
-    private Long org;
+    private Long orgId;
 
 
     /**
@@ -64,10 +65,16 @@ public class WorkInfoEntity implements Serializable {
     /**
      * 创建的用户id
      */
-    private String createUser;
+    private Long createUser;
+
 
     /**
      * 流程实例id
      */
     private String procInstId;
+
+    /**
+     * 超时 0未超时 1超时
+     */
+    private  Byte timeOut;
 }

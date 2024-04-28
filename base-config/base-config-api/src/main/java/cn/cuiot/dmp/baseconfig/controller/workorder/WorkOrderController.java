@@ -35,8 +35,15 @@ public class WorkOrderController extends BaseController {
         return workInfoService.queryFirstFormInfo(dto,getUserId());
     }
 
+    /**
+     * 工单列表分页查询
+     * @param dto
+     * @return
+     */
     @PostMapping("queryWorkOrderInfo")
-    public IdmResDTO<IPage<WorkInfoEntity>> queryWorkOrderInfo(@RequestBody WorkInfoDto dto){
+    public IdmResDTO<IPage<WorkInfoDto>> queryWorkOrderInfo(@RequestBody WorkInfoDto dto){
         return workInfoService.queryWorkOrderInfo(dto);
     }
+
+    
 }

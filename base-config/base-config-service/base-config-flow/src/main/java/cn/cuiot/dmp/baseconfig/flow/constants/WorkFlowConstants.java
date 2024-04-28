@@ -52,7 +52,7 @@ public interface WorkFlowConstants {
     String BUSINESS_TRANSFER="businessTransfer";
 
     /**
-     * 驳回
+     * 拒绝
      */
     String BUSINESS_REFUSE = "businessRefuse";
 
