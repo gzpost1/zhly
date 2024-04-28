@@ -2,9 +2,11 @@ package cn.cuiot.dmp.baseconfig.controller.workorder;
 
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
+import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.FirstFormDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto;
-import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkProcInstDto;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -44,6 +46,24 @@ public class WorkOrderController extends BaseController {
     public IdmResDTO<IPage<WorkInfoDto>> queryWorkOrderInfo(@RequestBody WorkInfoDto dto){
         return workInfoService.queryWorkOrderInfo(dto);
     }
+    /**
+     * 详情基本信息
+     * @param dto
+     * @return
+     */
+    @PostMapping("queryBasicWorkOrderDetailInfo")
+    public IdmResDTO<WorkInfoDto> queryBasicWorkOrderDetailInfo(@RequestBody WorkProcInstDto dto){
+        return workInfoService.queryBasicWorkOrderDetailInfo(dto);
+    }
 
-    
+    /**
+     * 详情流程信息
+     * @param HandleDataDTO
+     * @return
+     */
+    @PostMapping("instanceInfo")
+    public IdmResDTO<HandleDataVO>  instanceInfo(@RequestBody HandleDataDTO HandleDataDTO){
+
+        return workInfoService.instanceInfo(HandleDataDTO);
+    }
 }
