@@ -63,15 +63,37 @@ public class Properties {
 
   private Boolean sign;
   //审批超时
-  private JSONObject timeLimit;
+  private TimeLimit timeLimit;
 
   private Map<String,Object> refuse;
 
+  //------------------------------------表单通过配置
+  //节点保存内容 0表单 1任务
+  private Byte nodeProcessType;
   /**
    * 表单内容
    */
   private List<FormOperates> formPerms;
 
+  /**
+   * 表单需要处理的任务
+   */
+  private Long formTaskId;
+
+  /**
+   * 表单需要处理的任务任务完成规则 0按顺序执行 1随机
+   */
+  private Byte formTaskType;
+
+  /**
+   * ○任务完成比例
+   * ■任务对象完成比例大于等于设置的比例时，才算完成任务；
+   * ■比例值可输入大于0，小于等于100的整数；
+   */
+  private Integer formTaskAccessRate;
+
+  //-----------------抄送配置
+  private CCInfo ccInfo;
 
   //------------------------------------->
   private String groupsType;
@@ -94,4 +116,9 @@ public class Properties {
    * 节点按钮配置
    */
   private List<NodeButton> buttons;
+
+  /**
+   * 撤销配置
+   */
+  private CancelInfo cancelInfo;
 }

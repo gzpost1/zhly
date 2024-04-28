@@ -24,6 +24,7 @@ public interface WorkFlowConstants {
 
     String TO_ADMIN_ACTION="TO_ADMIN";
     String TO_USER_ACTION="TO_USER";
+    String TO_SUSPEND="TO_SUSPEND";
     /**
      * 审批通过
      */
@@ -88,6 +89,10 @@ public interface WorkFlowConstants {
 
     String ATTRIBUTE_NAME_SPACE="http://flowable.org/bpmn";
 
+    /**
+     * 超时处理类型
+     */
+    String TIME_HANDLER_TYPE = "timeHandler";
 
     String ATTRIBUTE_NAME="DingDing";
     /**

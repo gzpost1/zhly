@@ -1013,24 +1013,25 @@ public class BpmnModelUtils {
                 }
 
                 //审批超时设置，将计时器事件定义添加到边界事件中。
-                JSONObject timeLimit = props.getTimeLimit();
-                if (timeLimit != null && !timeLimit.isEmpty()) {
-                    JSONObject timeout = timeLimit.getJSONObject("timeout");
-                    if (timeout != null && !timeout.isEmpty()) {
-                        String unit = timeout.getString("unit");
-                        Integer value = timeout.getInteger("value");
-                        if (value > 0) {
-                            List<BoundaryEvent> boundaryEvents = new ArrayList<>();
-                            BoundaryEvent boundaryEvent = new BoundaryEvent();
+                TimeLimit timeLimit = props.getTimeLimit();
+                if(Objects.nonNull(timeLimit)){
+                    TimeLimit.TimeOut timeout = timeLimit.getTimeout();
+                    if(Objects.nonNull(timeout)){
+                        String unit = timeout.getUnit();
+                        Integer value = timeout.getValue();
+                        if(value>0){
+                            List<BoundaryEvent> boundaryEvents= new ArrayList<>();
+                            BoundaryEvent boundaryEvent= new BoundaryEvent();
                             boundaryEvent.setId(id("boundaryEvent"));
                             boundaryEvent.setAttachedToRefId(id);
                             boundaryEvent.setAttachedToRef(userTask);
                             boundaryEvent.setCancelActivity(Boolean.FALSE);
                             TimerEventDefinition timerEventDefinition = new TimerEventDefinition();
-                            if ("D".equals(unit)) {
-                                timerEventDefinition.setTimeDuration("P" + value + unit);
-                            } else {
-                                timerEventDefinition.setTimeDuration("PT" + value + unit);
+                            if("D".equals(unit)){
+                                timerEventDefinition.setTimeDuration("P"+value+unit);
+                            }
+                            else{
+                                timerEventDefinition.setTimeDuration("PT"+value+unit);
                             }
                             timerEventDefinition.setId(id("timerEventDefinition"));
                             boundaryEvent.addEventDefinition(timerEventDefinition);
@@ -1038,7 +1039,7 @@ public class BpmnModelUtils {
                             flowableListener.setEvent(ExecutionListener.EVENTNAME_END);
                             flowableListener.setImplementationType(IMPLEMENTATION_TYPE_DELEGATEEXPRESSION);
                             flowableListener.setImplementation("${timerListener}");
-                            List<FlowableListener> listenerList = new ArrayList<>();
+                            List<FlowableListener> listenerList= new ArrayList<>();
                             listenerList.add(flowableListener);
                             boundaryEvent.setExecutionListeners(listenerList);
                             process.addFlowElement(boundaryEvent);

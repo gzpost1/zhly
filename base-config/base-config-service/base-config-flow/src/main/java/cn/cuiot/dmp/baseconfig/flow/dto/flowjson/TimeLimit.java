@@ -27,7 +27,7 @@ public class TimeLimit {
         /**
          * 时间值
          */
-        private String value;
+        private Integer value;
     }
 
     @Data
