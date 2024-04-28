@@ -1,23 +1,24 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
-import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.system.application.service.LoginService;
 import cn.cuiot.dmp.system.application.service.OrganizationService;
 import cn.cuiot.dmp.system.application.service.UserService;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.CompanyReqDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.CompanyReqDto.CompanyDetailReqDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.CompanyResDto.CompanyDetailResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OperateOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgTypeDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
@@ -43,6 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 企业与账号管理
+ *
  * @author wuyongchong
  * @date 2020-10-23 10:00:07
  */
@@ -56,6 +58,9 @@ public class OrganizationController extends BaseController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private LoginService loginService;
+
     /**
      * 应用id长度常量
      */
@@ -68,13 +73,12 @@ public class OrganizationController extends BaseController {
 
     /**
      * 新增企业与账号
-     * @param dto
      */
     @RequiresPermissions("system:account:add")
     @PostMapping(value = "/insertOrganization", produces = MediaType.APPLICATION_JSON_VALUE)
     public void insertSonOrganization(@RequestBody @Valid InsertOrganizationDto dto) {
         if (!PhoneUtil.isPhone(dto.getPhoneNumber())) {
-            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_NOT_VALID,"请输入正确的11位手机号");
+            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_NOT_VALID, "请输入正确的11位手机号");
         }
         dto.setSessionOrgId(LoginInfoHolder.getCurrentOrgId());
         dto.setSessionUserId(LoginInfoHolder.getCurrentUserId());
@@ -83,7 +87,6 @@ public class OrganizationController extends BaseController {
 
     /**
      * 编辑企业与账号
-     * @param dto
      */
     @RequiresPermissions("system:account:edit")
     @PostMapping(value = "/updateOrganization", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -99,52 +102,45 @@ public class OrganizationController extends BaseController {
 
     /**
      * 企业与账号详情
-     * @param id
-     * @return
      */
-    @RequiresPermissions("system:account:control")
     @GetMapping(value = "/getOrganizationInfo", produces = MediaType.APPLICATION_JSON_VALUE)
     public GetOrganizationVO getOrganizationInfo(@RequestParam("id") String id) {
         if (StringUtils.isBlank(id)) {
             throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
         }
-        String sessionUserId =LoginInfoHolder.getCurrentUserId().toString();
+        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
         String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
         return organizationService.findOne(id, sessionUserId, sessionOrgId);
     }
 
     /**
-     * 账户详情下的用户分页列表
-     * @param userDataReqDTO
-     * @return
+     * 企业账户详情下的用户分页列表
      */
-    @RequiresPermissions("system:account:control")
     @PostMapping(value = "/user/pageList", produces = MediaType.APPLICATION_JSON_VALUE)
-    public PageResult<UserDataResDTO> queryUserPageList(@Validated @RequestBody UserDataReqDTO userDataReqDTO) {
+    public PageResult<UserDataResDTO> queryUserPageList(
+            @Validated @RequestBody UserDataReqDTO userDataReqDTO) {
         userDataReqDTO.init();
-        userDataReqDTO.setSessionOrgId(getOrgId());
-        userDataReqDTO.setSessionUserId(getUserId());
+        userDataReqDTO.setSessionOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        userDataReqDTO.setSessionUserId(LoginInfoHolder.getCurrentUserId().toString());
         return organizationService.queryUserPageList(userDataReqDTO);
     }
 
     /**
-     * 账户详情下的用户,重置密码
-     * @param resetUserPasswordReqDTO
+     * 企业账户详情下的用户,重置密码
      */
     @RequiresPermissions("system:account:control")
     @LogRecord(operationCode = "resetPassword", operationName = "admin重置账户详情下用户的密码", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @PostMapping(value = "/user/resetPassword", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void resetUserPassword(@Validated @RequestBody ResetUserPasswordReqDTO resetUserPasswordReqDTO) {
-        resetUserPasswordReqDTO.setSessionOrgId(getOrgId());
-        resetUserPasswordReqDTO.setSessionUserId(getUserId());
+    public void resetUserPassword(
+            @Validated @RequestBody ResetUserPasswordReqDTO resetUserPasswordReqDTO) {
+        resetUserPasswordReqDTO.setSessionOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        resetUserPasswordReqDTO.setSessionUserId(LoginInfoHolder.getCurrentUserId().toString());
         organizationService.resetUserPassword(resetUserPasswordReqDTO);
     }
 
 
     /**
-     * 账户列表
-     * @param dto
-     * @return
+     * 企业账户列表
      */
     @GetMapping(value = "/listOrganization", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<ListOrganizationVO> listOrganization(ListOrganizationDto dto) {
@@ -160,8 +156,7 @@ public class OrganizationController extends BaseController {
             if (DEPT_ID_ADMIN_ROOT.equals(deptId)) {
                 // 联通物联网总部账号需要看到所有组织，包括组织信息是空的企业账户。设置null才能看到。 超级管理员deptId本身就是空所以也能看到。
                 dto.setDeptId(null);
-            }
-            else {
+            } else {
                 dto.setDeptId(deptId);
             }
         }
@@ -169,9 +164,7 @@ public class OrganizationController extends BaseController {
     }
 
     /**
-     * 启用/禁用账户
-     * @param dto
-     * @return
+     * 启用/禁用企业账户
      */
     @RequiresPermissions("system:account:edit")
     @PostMapping(value = "/operateOrganization", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -182,42 +175,53 @@ public class OrganizationController extends BaseController {
     }
 
     /**
-     * 账户类型列表
-     * @return
+     * 企业账户类型列表
      */
     @GetMapping(value = "/orgTypeList", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<OrgTypeDto> orgTypeList() {
         return organizationService.getOrgTypeList();
     }
 
+    /**
+     * 删除企业账户
+     */
+    @RequiresPermissions("system:account:delete")
     @PostMapping("/deleteAccount")
     public int deleteAccount(@RequestParam("accountId") String accountId) {
         OrganizationResDTO organizationResDto = organizationService.getOneById(accountId);
-        if (null == organizationResDto) return Const.NUMBER_0;
+        if (null == organizationResDto) {
+            return Const.NUMBER_0;
+        }
         int result = organizationService.deleteAccount(accountId);
         return result;
     }
 
     /**
-     * 查询企业详情，仅物业用户可用，账户下用户均可查询
-     * @return
+     * 启停用
      */
-    @PostMapping("/companyDetail")
-    public CompanyDetailResDto companyDetail() {
-        CompanyDetailReqDto companyDetailReqDto = new CompanyDetailReqDto();
-        companyDetailReqDto.setOrgId(getOrgId());
-        return organizationService.companyDetail(companyDetailReqDto);
+    @RequiresPermissions("system:account:edit")
+    @PostMapping("/updateStatus")
+    public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
+        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
+        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+        organizationService.updateStatus(updateStatusParam, sessionUserId, sessionOrgId);
+        return IdmResDTO.success();
     }
 
     /**
-     * 编辑企业详情，只有未编辑过才可以编辑，仅物业用户可用，账户下用户均可编辑
-     * @return
+     * 进入企业
      */
-    @PostMapping("/updateCompany")
-    public void updateCompany(@Valid @RequestBody CompanyReqDto.UpdateCompanyReqDto updateCompanyReqDto) {
-        updateCompanyReqDto.setOrgId(getOrgId());
-        updateCompanyReqDto.setUserId(getUserId());
-        organizationService.updateCompany(updateCompanyReqDto);
+    @RequiresPermissions("system:account:simulateLogin")
+    @PostMapping("/simulateLogin")
+    public LoginResDTO simulateLogin(@RequestBody @Valid IdParam idParam) {
+        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
+        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+        GetOrganizationVO organizationVO = organizationService
+                .findOne(idParam.getId().toString(), sessionUserId, sessionOrgId);
+        LoginResDTO loginResDTO = loginService
+                .simulateLogin(organizationVO.getUsername(), organizationVO.getPhoneNumber(),
+                        request);
+        return loginResDTO;
     }
 
 }

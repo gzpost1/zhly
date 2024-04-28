@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * 验证控制器
  * @Author xieSH
  * @Description 验证控制器
  * @Date 2021/8/9 15:36 

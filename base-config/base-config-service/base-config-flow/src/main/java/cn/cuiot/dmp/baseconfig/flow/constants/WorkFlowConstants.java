@@ -70,16 +70,35 @@ public interface WorkFlowConstants {
     /**
      * 评论
      */
-    Integer BUSINESS_TYPE_COMMENT = 0;
+    Byte BUSINESS_TYPE_COMMENT = 2;
 
     /**
      * 督办
      */
-    Integer BUSINESS_TYPE_SUPER = 1;
+    Byte BUSINESS_TYPE_SUPER = 3;
+
+    /**
+     * 超时
+     */
+    Byte BUSINESS_TYPE_TIME_OUT = 0;
+
+    /**
+     * 挂起
+     */
+    Byte BUSINESS_BYPE_PENDING=1;
+
+    String ATTRIBUTE_NAME_SPACE="http://flowable.org/bpmn";
 
     /**
      * 超时处理类型
      */
     String TIME_HANDLER_TYPE = "timeHandler";
 
+    String ATTRIBUTE_NAME="DingDing";
+    /**
+     * 返回结果
+     */
+    Byte RESULT_1 =1;
+
+    Byte RESULT_0 = 0;
 }

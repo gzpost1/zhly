@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 /**
+ * 登录登出管理
  * @author guoying
  * @className LogControllerImpl
  * @description 登录登出管理
