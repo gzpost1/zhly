@@ -21,6 +21,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OperateOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgTypeDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationChangeDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ResetUserPasswordReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateOrganizationDto;
@@ -222,6 +223,33 @@ public class OrganizationController extends BaseController {
                 .simulateLogin(organizationVO.getUsername(), organizationVO.getPhoneNumber(),
                         request);
         return loginResDTO;
+    }
+
+
+    /**
+     * 查询企业变更记录
+     */
+    @PostMapping("/organizationChangeList")
+    public List<OrganizationChangeDto> organizationChangeList(@RequestBody @Valid IdParam idParam) {
+        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
+        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+        List<OrganizationChangeDto> list = organizationService
+                .selectOrganizationChangeByOrgId(idParam.getId().toString(), sessionUserId,
+                        sessionOrgId);
+        return list;
+    }
+
+    /**
+     * 获得变更详情内容
+     */
+    @PostMapping("/queryOrganizationChangeDetail")
+    public OrganizationChangeDto queryOrganizationChangeDetail(
+            @RequestBody @Valid IdParam idParam) {
+        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
+        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+        OrganizationChangeDto dto = organizationService
+                .getOrganizationChangeById(idParam.getId(), sessionUserId, sessionOrgId);
+        return dto;
     }
 
 }

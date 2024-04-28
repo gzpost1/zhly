@@ -4,6 +4,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgLabelDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgTypeDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationChangeDto;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.ListOrganizationVO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -104,5 +105,10 @@ public interface OrganizationDao {
 
         int delOrgRole(String orgId);
 
+        void saveOrganizationChange(OrganizationChangeDto changeDto);
+
+        List<OrganizationChangeDto> selectOrganizationChangeByOrgId(@Param("orgId") String orgId);
+
+        OrganizationChangeDto getOrganizationChangeById(@Param("id") Long id);
 }
 

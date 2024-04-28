@@ -147,7 +147,6 @@
           pk_user_id = (select u.id from user u where u.phone_number = #{safePhoneNum} and user_type = 1 and deleted_flag = 0)
     </select>
 
-
     <delete id="delOrgLab">
         delete
             from org_label
@@ -161,4 +160,24 @@
         where
             pk_org_id = #{orgId}
     </delete>
+
+    <insert id="saveOrganizationChange">
+      INSERT INTO organization_change ( id, pk_org_id, change_type, change_name, change_date, change_user_id, change_username, change_person, change_data )
+      VALUES (#{id},#{pkOrgId},#{changeType},#{changeName},#{changeDate},#{changeUserId},#{changeUsername},#{changePerson},#{changeData})
+    </insert>
+
+    <select id="selectOrganizationChangeByOrgId"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationChangeDto">
+        select id, pk_org_id, change_type, change_name, change_date, change_user_id, change_username, change_person
+        from organization_change
+        where pk_org_id=#{orgId}
+    </select>
+
+    <select id="getOrganizationChangeById"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationChangeDto">
+        select id, pk_org_id, change_type, change_name, change_date, change_user_id, change_username, change_person
+        from organization_change
+        where id=#{id}
+    </select>
+
 </mapper>

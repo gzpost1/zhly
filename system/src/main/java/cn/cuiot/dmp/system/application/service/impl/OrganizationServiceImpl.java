@@ -15,6 +15,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.RandomCodeWorker;
 import cn.cuiot.dmp.common.utils.RoleConst;
 import cn.cuiot.dmp.common.utils.Sm4;
@@ -30,6 +31,7 @@ import cn.cuiot.dmp.system.application.enums.UserSourceTypeEnum;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2EntityAssembler;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2GetOrganizationVoAssembler;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2OrganizationResDTOAssembler;
+import cn.cuiot.dmp.system.application.param.event.OrganizationActionEvent;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.application.service.OrganizationService;
 import cn.cuiot.dmp.system.application.service.UserService;
@@ -45,6 +47,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OperateOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgTypeDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationChangeDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ResetUserPasswordReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateOrganizationDto;
@@ -85,10 +88,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Resource;
@@ -378,6 +383,10 @@ public class OrganizationServiceImpl implements OrganizationService {
         userDao.insertUserGrant(pkOrgId, null, dto.getSessionOrgId().toString(),
                 dto.getDeptId().toString(), null);
 
+        //发送事件
+        systemEventSendAdapter.sendOrganizationCreateActionEvent(
+                organization2EntityAssembler.toDTO(organization));
+
         // 文件流输出
         createCsvFile(username, password);
 
@@ -543,6 +552,10 @@ public class OrganizationServiceImpl implements OrganizationService {
         dto.setOrgOwnerUsername(ownerUser.getUsername());
         //需要重置密码
         updatePasswordIfNeed(dto);
+
+        //发送事件
+        systemEventSendAdapter.sendOrganizationUpdateActionEvent(
+                organization2EntityAssembler.toDTO(organization));
     }
 
     /**
@@ -941,6 +954,118 @@ public class OrganizationServiceImpl implements OrganizationService {
         } else if (!find.getStatus().getValue().equals(organization.getStatus().getValue())) {
             removeOfflineCommand(pkOrgId);
         }
+
+        if (OrgStatusEnum.DISABLE.getCode().equals(organization.getStatus().getValue())) {
+            //发送事件
+            systemEventSendAdapter.sendOrganizationDisableActionEvent(
+                    organization2EntityAssembler.toDTO(organization));
+        } else {
+            //发送事件
+            systemEventSendAdapter.sendOrganizationEnableActionEvent(
+                    organization2EntityAssembler.toDTO(organization));
+        }
+
+    }
+
+    /**
+     * 记录变更日志
+     */
+    @Override
+    public void recordOrganizationChange(OrganizationActionEvent event) {
+        Long pkOrgId = event.getId();
+        String changeType = event.getAction();
+        String changeName = event.getAction() + "企业";
+
+        Date changeDate = Objects.nonNull(event.getUpdatedOn())
+                ? DateTimeUtil.localDateTimeToDate(event.getUpdatedOn())
+                : (Objects.nonNull(event.getCreatedOn())
+                        ? DateTimeUtil.localDateTimeToDate(event.getCreatedOn())
+                        : new Date());
+
+        String changeUserId = StringUtils.isNotBlank(event.getUpdatedBy()) ? event.getUpdatedBy()
+                : event.getCreatedBy();
+
+        String changeUsername = null;
+        String changePerson = null;
+
+        Organization organization = organizationRepository.find(new OrganizationId(pkOrgId));
+
+        GetOrganizationVO vo = organization2GetOrganizationVoAssembler.toDTO(organization);
+
+        User userById = userRepository.find(new UserId(organization.getOrgOwner().getValue()));
+        Optional.ofNullable(userById).ifPresent(e -> {
+            vo.setAdminName(e.getName());
+            vo.setUsername(e.getUsername());
+            vo.setPhoneNumber(e.getDecryptedPhoneNumber());
+        });
+
+        if (StringUtils.isNotBlank(changeUserId)) {
+            User changeUser = userRepository.find(new UserId(changeUserId));
+            if (Objects.nonNull(changeUser)) {
+                changeUsername = changeUser.getUsername();
+                changePerson = changeUser.getName();
+            }
+        }
+        /**
+         * 设置所属组织信息
+         */
+        String grantDeptId = userDao.getUserGrantDeptId(pkOrgId);
+        if (grantDeptId != null) {
+            DepartmentEntity departmentEntity = departmentDao
+                    .selectByPrimary(Long.parseLong(grantDeptId));
+            vo.setDeptId(Long.parseLong(grantDeptId));
+            vo.setDeptName(departmentEntity.getDepartmentName());
+        }
+        //设置组织类型
+        OrgTypeDto orgTypeDto = organizationDao.getOrgType(vo.getOrgTypeId());
+        vo.setOrgTypeName(orgTypeDto.getName());
+
+        OrganizationChangeDto changeDto = new OrganizationChangeDto();
+        changeDto.setId(idWorker.nextId());
+        changeDto.setPkOrgId(pkOrgId);
+        changeDto.setChangeType(changeType);
+        changeDto.setChangeName(changeName);
+        changeDto.setChangeDate(changeDate);
+        changeDto.setChangeUserId(changeUserId);
+        changeDto.setChangeUsername(changeUsername);
+        changeDto.setChangePerson(changePerson);
+        changeDto.setChangeData(JSONObject.toJSONString(vo));
+
+        organizationDao.saveOrganizationChange(changeDto);
+    }
+
+    /**
+     * 查询企业变更记录
+     */
+    @Override
+    public List<OrganizationChangeDto> selectOrganizationChangeByOrgId(String pkOrgId,
+            String sessionUserId, String sessionOrgId) {
+        //数据权限判断
+        String loginDeptId = userService.getDeptId(sessionUserId, sessionOrgId);
+        String grantDeptId = userDao.getUserGrantDeptId(Long.parseLong(pkOrgId));
+        if (!departmentUtil.checkPrivilege(loginDeptId, grantDeptId)) {
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+        }
+        return organizationDao.selectOrganizationChangeByOrgId(pkOrgId);
+    }
+
+    /**
+     * 获得变更详情内容
+     */
+    @Override
+    public OrganizationChangeDto getOrganizationChangeById(Long id, String sessionUserId,
+            String sessionOrgId) {
+        OrganizationChangeDto organizationChangeDto = organizationDao
+                .getOrganizationChangeById(id);
+        if (Objects.nonNull(organizationChangeDto)) {
+            //数据权限判断
+            String loginDeptId = userService.getDeptId(sessionUserId, sessionOrgId);
+            String grantDeptId = userDao.getUserGrantDeptId(organizationChangeDto.getPkOrgId());
+            if (!departmentUtil.checkPrivilege(loginDeptId, grantDeptId)) {
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            }
+        }
+        return organizationChangeDto;
     }
 
 }
