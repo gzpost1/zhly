@@ -27,8 +27,7 @@
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
-            from tb_work_info t1 left join users t2
-                                                                                                                                                                                            on t1.create_user = t2.user_id
+            from tb_work_info t1 left join users t2 on t1.create_user = t2.user_id                                                                                                                                                                                  on t1.create_user = t2.user_id
     </select>
     <sql id="queryWorkOrderInfoCondition">
         <where>
@@ -61,4 +60,10 @@
             </if>
         </where>
     </sql>
+
+    <select id="queryWorkOrderDetailInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
+        select  <include refid="queryWorkOrderInfoSql"/>
+            from tb_work_info t1 left join users t2 on t1.create_user = t2.user_id
+            where t1.proc_inst_id = #{query.procInstId}
+    </select>
 </mapper>

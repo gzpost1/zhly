@@ -1,7 +1,9 @@
-package cn.cuiot.dmp.baseconfig.flow.dto;
+package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
+import cn.cuiot.dmp.baseconfig.flow.dto.AttachmentDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
 import com.alibaba.fastjson.JSONObject;
+
 import lombok.Data;
 
 import java.util.List;
