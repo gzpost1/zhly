@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.service;
 
 import cn.cuiot.dmp.baseconfig.flow.dto.FlowEngineInsertDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.FlowEngineUpdateDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowConfigQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
@@ -23,6 +24,7 @@ import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.delegate.ExecutionListener;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
@@ -150,5 +152,28 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         process.setExecutionListeners(executionListeners);
 //        new BpmnAutoLayout(bpmnModel).execute();
         return bpmnModel;
+    }
+
+    /**
+     * 更新流程
+     * @param updateDto
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updateFlow(FlowEngineUpdateDto updateDto) {
+        TbFlowConfig config = this.getById(updateDto.getId());
+        AssertUtil.notNull(config,"找不到流程配置信息");
+        BeanUtils.copyProperties(updateDto,config);
+        this.updateById(config);
+
+        ChildNode childNode = JSONObject.parseObject(updateDto.getProcess(), new TypeReference<ChildNode>(){});
+        JSONObject jsonObject=new JSONObject();
+        jsonObject.put("processJson",updateDto.getProcess());
+        BpmnModel bpmnModel = assemBpmnModel(jsonObject, childNode, updateDto.getRemark(), updateDto.getName(), updateDto.getOrgId().toString(),
+                updateDto.getId().toString());
+        repositoryService.createDeployment()
+                .addBpmnModel(updateDto.getName() + ".bpmn", bpmnModel)
+                .name(updateDto.getName())
+                .category(updateDto.getOrgId() + "")
+                .deploy();
     }
 }

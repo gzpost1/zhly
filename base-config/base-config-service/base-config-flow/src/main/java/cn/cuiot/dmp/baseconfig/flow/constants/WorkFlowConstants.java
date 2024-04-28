@@ -24,6 +24,7 @@ public interface WorkFlowConstants {
 
     String TO_ADMIN_ACTION="TO_ADMIN";
     String TO_USER_ACTION="TO_USER";
+    String TO_SUSPEND="TO_SUSPEND";
     /**
      * 审批通过
      */
@@ -76,5 +77,9 @@ public interface WorkFlowConstants {
      */
     Integer BUSINESS_TYPE_SUPER = 1;
 
+    /**
+     * 超时处理类型
+     */
+    String TIME_HANDLER_TYPE = "timeHandler";
 
 }

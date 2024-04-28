@@ -4,6 +4,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.baseconfig.flow.dto.FlowEngineInsertDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.FlowEngineUpdateDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowConfigQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto;
 import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
@@ -79,9 +80,9 @@ public class BaseConfigFlowController {
      * @return
      */
     @PostMapping("/update")
-    public IdmResDTO update(@RequestBody @Valid TbFlowConfig updateDto) {
+    public IdmResDTO update(@RequestBody @Valid FlowEngineUpdateDto updateDto) {
 
-        tbFlowConfigService.updateById(updateDto);
+        tbFlowConfigService.updateFlow(updateDto);
 
         return IdmResDTO.success();
     }
