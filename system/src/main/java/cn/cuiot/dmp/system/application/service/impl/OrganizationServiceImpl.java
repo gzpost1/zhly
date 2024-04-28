@@ -1,6 +1,5 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
-import static cn.cuiot.dmp.common.constant.ResultCode.INNER_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.OBJECT_NOT_EXIST;
 import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_ALREADY_EXIST;
 
@@ -8,9 +7,9 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
 import cn.cuiot.dmp.base.application.enums.OrgTypeEnum;
 import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
-import cn.cuiot.dmp.common.constant.NumberConst;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
@@ -45,7 +44,6 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OperateOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgCsvDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgLabelDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgTypeDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ResetUserPasswordReqDTO;
@@ -82,7 +80,6 @@ import com.github.houbb.sensitive.api.IStrategy;
 import com.github.houbb.sensitive.core.api.strategory.StrategyPhone;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
-import com.google.common.collect.Lists;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -94,7 +91,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -254,7 +250,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         String sessionDeptId = userDao
                 .getDeptId(dto.getSessionUserId().toString(), dto.getSessionOrgId().toString());
         if (!departmentUtil.checkPrivilege(sessionDeptId, dto.getDeptId().toString())) {
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION,"所属组织不可选");
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION, "所属组织不可选");
         }
 
         //判断企业编码是否唯一
@@ -472,7 +468,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         //判断选择的所属组织是否可以选择
         if (!departmentUtil.checkPrivilege(sessionDeptId, dto.getDeptId().toString())) {
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION,"所属组织不可选");
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION, "所属组织不可选");
         }
 
         //获取账户日志操作对象
@@ -519,19 +515,19 @@ public class OrganizationServiceImpl implements OrganizationService {
                 dto.getDeptId().toString(), null);
 
         //修改组织结构
-        if(!dto.getDeptId().toString().equals(grantDeptId)){
+        if (!dto.getDeptId().toString().equals(grantDeptId)) {
             DepartmentEntity parentDept = departmentDao.selectByPrimary(dto.getDeptId());
             List<DepartmentEntity> departmentEntities = departmentDao
                     .selectRootByOrgId(pkOrgId.toString());
             DepartmentEntity departmentEntity = null;
-            if(CollectionUtils.isNotEmpty(departmentEntities)){
+            if (CollectionUtils.isNotEmpty(departmentEntities)) {
                 departmentEntity = departmentEntities.get(0);
                 String oldPath = departmentEntity.getPath();
                 departmentEntity.setDepartmentName(dto.getCompanyName());
                 departmentEntity.setPath(parentDept.getPath() + "-" + departmentEntity.getCode());
                 departmentDao.updateDepartment(departmentEntity);
                 //修改子节点path路径
-                departmentDao.updateDepartmentChildPath(oldPath,departmentEntity.getPath());
+                departmentDao.updateDepartmentChildPath(oldPath, departmentEntity.getPath());
             }
         }
 
@@ -542,15 +538,7 @@ public class OrganizationServiceImpl implements OrganizationService {
             // 账号不存在
             throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST);
         }
-        // 如果禁用，则清除登陆信息，踢下线
-        if (OrgStatusEnum.DISABLE.getCode().equals(organization.getStatus().getValue())
-                && !oldOrganization.getStatus().getValue()
-                .equals(organization.getStatus().getValue())) {
-            offlineByOrgId(pkOrgId);
-        } else if (!oldOrganization.getStatus().getValue()
-                .equals(organization.getStatus().getValue())) {
-            removeOfflineCommand(pkOrgId);
-        }
+
         dto.setOrgOwnerUserId(ownerUser.getUserId());
         dto.setOrgOwnerUsername(ownerUser.getUsername());
         //需要重置密码
@@ -775,29 +763,34 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Transactional(rollbackFor = Exception.class)
     public int deleteAccount(String orgId) {
         String path = departmentDao.getPathByOrgId(orgId);
+
         // 根据账户id获取用户数量
-        Integer userCount = userDao.getUserCount(path);
+        /*Integer userCount = userDao.getUserCount(path);
         if (userCount > NumberConst.ONE) {
             throw new BusinessException(ResultCode.ACCOUNT_HAS_USER);
-        }
+        }*/
+
         // 获取是否有小区
-        Integer communityCount = departmentDao.getCommunityByPath(path);
+        /*Integer communityCount = departmentDao.getCommunityByPath(path);
         if (communityCount > NumberConst.ZERO) {
             throw new BusinessException(ResultCode.ACCOUNT_HAS_COMMUNITY);
-        }
+        }*/
+
         OrganizationEntity needDelete = null;
         try {
             Organization organization = organizationRepository
                     .find(new OrganizationId(Long.valueOf(orgId)));
             needDelete = organization2EntityAssembler.toDTO(organization);
             organizationRepository.remove(organization);
-            List<Long> userList = userDao.getUserId(orgId);
+
+            /*List<Long> userList = userDao.getUserId(orgId);
             userDao.deleteUserOrgByOrgId(orgId);
             if (!CollectionUtils.isEmpty(userList)) {
                 userRepository.removeList(
                         userList.stream().map(UserId::new).collect(Collectors.toList()));
                 userRepository.removeUserRelate(userList);
-            }
+            }*/
+
             DepartmentEntity communityIdByPath = departmentDao.getCommunityIdByPath(path);
             if (!ObjectUtil.isEmpty(communityIdByPath)) {
                 departmentDao.deleteByPrimaryKey(communityIdByPath.getId());
@@ -805,11 +798,11 @@ public class OrganizationServiceImpl implements OrganizationService {
             organizationDao.delOrgLab(orgId);
             organizationDao.delOrgRole(orgId);
             userDao.deleteUserGrant(Long.parseLong(orgId));
+
         } catch (Exception e) {
             log.error("账户删除失败 {}", e.getMessage());
             throw new BusinessException(ResultCode.ACCOUNT_DELETED_ERROR);
         }
-
         //发送事件
         systemEventSendAdapter.sendOrganizationDeleteActionEvent(needDelete);
         return 1;
@@ -918,6 +911,36 @@ public class OrganizationServiceImpl implements OrganizationService {
         UserCsvDto userCsvDto = userService.resetPasswordWithOutSms(userBo);
         // 文件流输出
         createCsvFile(userCsvDto.getUsername(), userCsvDto.getPassword());
+    }
+
+    /**
+     * 启停用
+     */
+    @Override
+    public void updateStatus(UpdateStatusParam updateStatusParam, String sessionUserId,
+            String sessionOrgId) {
+        Long pkOrgId = updateStatusParam.getId();
+        // 获取企业账户信息
+        Organization find = organizationRepository.find(new OrganizationId(pkOrgId));
+        if (find == null) {
+            throw new BusinessException(ResultCode.ORG_IS_NOT_EXIST);
+        }
+        Organization organization = Organization.builder()
+                .id(new OrganizationId(pkOrgId))
+                .status(cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgStatusEnum
+                        .valueOf(updateStatusParam.getStatus().intValue()))
+                .updatedOn(LocalDateTime.now())
+                .updatedBy(sessionUserId)
+                .createdByType(OperateByTypeEnum.valueOf(UserSourceTypeEnum.PORTAL.getCode()))
+                .build();
+        //更改账户信息
+        organizationRepository.save(organization);
+        // 如果禁用，则清除登陆信息，踢下线
+        if (OrgStatusEnum.DISABLE.getCode().equals(organization.getStatus().getValue())) {
+            offlineByOrgId(pkOrgId);
+        } else if (!find.getStatus().getValue().equals(organization.getStatus().getValue())) {
+            removeOfflineCommand(pkOrgId);
+        }
     }
 
 }

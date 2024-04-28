@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CompanyReqDto.CompanyDetailReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CompanyReqDto.UpdateCompanyReqDto;
@@ -128,5 +129,10 @@ public interface OrganizationService {
      * @param resetUserPasswordReqDTO
      */
     void resetUserPassword(ResetUserPasswordReqDTO resetUserPasswordReqDTO);
+
+    /**
+     * 启停用
+     */
+    void updateStatus(UpdateStatusParam updateStatusParam, String sessionUserId, String sessionOrgId);
 
 }

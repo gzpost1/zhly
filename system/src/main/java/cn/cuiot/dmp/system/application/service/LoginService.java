@@ -33,4 +33,12 @@ public interface LoginService {
      * @param request
      */
     void logoutIdentity(HttpServletRequest request, String orgId, String userId, String userName);
+
+    /**
+     * 模拟登录
+     * @param username
+     * @param phoneNumber
+     * @return
+     */
+    LoginResDTO simulateLogin(String username, String phoneNumber, HttpServletRequest request);
 }
