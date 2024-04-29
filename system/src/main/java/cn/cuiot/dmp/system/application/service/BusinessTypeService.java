@@ -2,8 +2,10 @@ package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeUpdateDTO;
+import cn.cuiot.dmp.system.application.param.vo.BusinessTypeTreeNodeVO;
 import cn.cuiot.dmp.system.application.param.vo.BusinessTypeVO;
-import cn.cuiot.dmp.system.domain.aggregate.BusinessType;
+
+import java.util.List;
 
 /**
  * @author caorui
@@ -17,6 +19,11 @@ public interface BusinessTypeService {
     BusinessTypeVO queryForDetail(Long id);
 
     /**
+     * 根据id获取业务类型详情
+     */
+    List<BusinessTypeTreeNodeVO> queryByCompany(Long id);
+
+    /**
      * 保存
      */
     int saveBusinessType(BusinessTypeCreateDTO businessTypeCreateDTO);
@@ -25,5 +32,10 @@ public interface BusinessTypeService {
      * 更新
      */
     int updateBusinessType(BusinessTypeUpdateDTO businessTypeUpdateDTO);
+
+    /**
+     * 删除
+     */
+    int deleteBusinessType(Long id);
 
 }
