@@ -18,7 +18,6 @@ public interface MenuConverter {
 
     @Mappings({
             @Mapping(source = "id", target = "id"),
-            @Mapping(source = "menuId", target = "menuId"),
             @Mapping(source = "menuName", target = "menuName"),
             @Mapping(source = "menuType", target = "menuType")})
     MenuDTO entityToDTO(MenuEntity entity);

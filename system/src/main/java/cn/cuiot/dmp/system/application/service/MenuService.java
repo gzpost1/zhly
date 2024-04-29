@@ -1,7 +1,8 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.GetMenuRootByOrgTypeIdResDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuTreeNode;
 import java.util.List;
 
 /**
@@ -14,26 +15,25 @@ public interface MenuService {
 
     /**
      * 获取所有菜单
-     * @param description
      * @param orgId
      * @param userId
      * @return
      */
-    List<MenuEntity> getAllMenu(String description, String orgId, String userId);
+    List<MenuTreeNode> getAllMenu(String orgId, String userId);
 
     /**
-     * 根据orgTypeId查询菜单根节点
+     * 根据orgTypeId查询菜单
      * @param orgTypeId
      * @return
      */
-    List<GetMenuRootByOrgTypeIdResDto> getMenuRootByOrgTypeId(String orgTypeId);
+    List<MenuByOrgTypeIdResDto> getMenuByOrgTypeId(String orgTypeId);
 
     /**
      * 获得权限信息
      * @param userId
      * @param orgId
-     * @param changeOrgPermisstionCode
+     * @param permisstionCode
      * @return
      */
-    MenuEntity getChangeOrgMenu(String userId,String orgId,String changeOrgPermisstionCode);
+    MenuEntity lookUpPermission(String userId,String orgId,String permisstionCode);
 }

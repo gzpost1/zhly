@@ -37,10 +37,10 @@ public interface OrgMenuDao {
     List<String> getMenuListByOrgId(@Param("orgId") String orgId);
 
     /**
-     * 获得没有应用权限的菜单id集合
+     * 获得org允许的菜单权限
      * @param orgId
      * @return
      */
-    List<String> getBanMenuIdList(@Param("orgId") String orgId);
+    List<String> getAllowMenuIdList(@Param("orgId") String orgId);
 
 }

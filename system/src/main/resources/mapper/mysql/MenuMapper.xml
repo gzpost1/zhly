@@ -5,52 +5,42 @@
     <select id="selectMenuListByRoleId" resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
         SELECT
         m.id,
-        menu_id menuId,
-        menu_name menuName,
-        menu_url menuUrl,
-        component_uri componentUri,
-        description,
-        icon,
-        icon_active,
-        menu_type menuType,
-        permission_code permissionCode,
-        parent_menu_id parentMenuId,
-        sort,
-        hidden,
-        module_type,
-        api_url,
+        m.menu_name,
+        m.menu_url,
+        m.component_uri,
+        m.api_url,
+        m.icon,
+        m.menu_type,
+        m.permission_code,
+        m.parent_id,
+        m.sort,
+        m.hidden,
+        m.description,
+        m.external_link
         catalog
         FROM menu m, menu_role o
         <where>
             m.id = o.pk_menu_id
             and o.pk_role_id = #{roleId}
+            and m.`status`=1
         </where>
         order by m.sort desc
     </select>
 
-    <select id="getListReadAllMenu" resultType="cn.cuiot.dmp.base.infrastructure.dto.MenuDTO">
-        SELECT * from menu where menu_type = #{type}
-    </select>
-
     <select id="getAllRoleMenu" resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
         select
-            *
-        from
-            menu m
-                left join menu_role mr on
-                m.id = mr.pk_menu_id
-        <trim prefix="WHERE" prefixOverrides="AND">
-            and mr.pk_role_id = #{roleId}
-            and m.id = mr.pk_menu_id
-            <if test="orgTypeId !=null and orgTypeId > 10">
-                and (m.org_type_id is null or m.org_type_id = #{orgTypeId})
-            </if>
-        </trim>
+            m.*
+        from menu m
+        left join menu_role mr
+        on m.id = mr.pk_menu_id
+        where m.id = mr.pk_menu_id
+        and mr.pk_role_id = #{roleId}
+        and `status`=1
         order by m.sort
     </select>
 
     <select id="selectMenu" resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
-        select * from `menu` where description like CONCAT('%',#{description},'%')
+        select * from `menu` where menu_name like CONCAT('%',#{menuName},'%')
     </select>
 
     <insert id="insertMenu" useGeneratedKeys="true" keyProperty="id"
@@ -58,87 +48,76 @@
         insert into menu
         (
             id,
-            menu_id,
             menu_name,
             menu_url,
             component_uri,
-            description,
+            api_url,
             icon,
             menu_type,
             permission_code,
-            parent_menu_id,
+            parent_id,
+            description,
+            external_link,
             sort,
             hidden,
+            `status`,
             created_on,
             created_by,
-            created_by_type
+            updated_on,
+            updated_by
         )
         values
         (
             #{id},
-            #{menuId},
             #{menuName},
             #{menuUrl},
             #{componentUri},
-            #{description},
+            #{apiUrl},
             #{icon},
             #{menuType},
             #{permissionCode},
-            #{parentMenuId},
+            #{parentId},
+            #{description},
+            #{externalLink},
             #{sort},
             #{hidden},
+            #{status},
             #{createdOn},
             #{createdBy},
-            #{createdByType}
+            #{updatedOn},
+            #{updatedBy}
         )
     </insert>
 
     <update id="updateMenu" parameterType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
         update menu
         set
-        menu_type = #{menuType},
-        icon = #{icon},
-        menu_name = #{menuName},
-        sort = #{sort},
-        menu_url = #{menuUrl},
-        hidden = #{hidden},
-        update_on = #{updateOn},
-        update_by = #{updateBy},
-        update_by_type = #{updateByType}
-        where id = #{id}
+            menu_name=#{menuName},
+            menu_url=#{menuUrl},
+            component_uri=#{componentUri},
+            api_url=#{apiUrl},
+            icon=#{icon},
+            menu_type=#{menuType},
+            permission_code=#{permissionCode},
+            parent_id=#{parentId},
+            description=#{description},
+            external_link=#{externalLink},
+            sort=#{sort},
+            hidden=#{hidden},
+            `status`=#{status},
+            updated_on= #{updatedOn},
+            updated_by=#{updatedBy}
     </update>
+
     <delete id="deleteMenuById">
         delete from menu where id = #{id}
     </delete>
 
-    <select id="getParentMenu" resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
-        select id,menu_id,description from menu where parent_menu_id = #{parentMenuId} order by sort asc
+    <select id="getMenuIdByParentId" resultType="java.lang.Long">
+        select id from menu where parent_id = #{parentId} order by sort asc
     </select>
 
-    <select id="getMenuIdByParentMenuId" resultType="integer">
-        select menu_id from menu where parent_menu_id = #{parentMenuId} order by parent_menu_id asc
-    </select>
-    <select id="countComponentUri" resultType="java.lang.Integer">
-        select count(0) from menu where component_uri = #{componentUri}
-    </select>
-    <select id="countMenuName" resultType="java.lang.Integer">
-        select count(0) from menu where menu_name = #{menuName} and menu_type = #{menuType}
-    </select>
-    <select id="countDescription" resultType="java.lang.Integer">
-        select count(0) from menu where description = #{description} and menu_type = #{menuType}
-    </select>
-    <select id="countParentMenu" resultType="java.lang.Integer">
-        select count(0) from menu where parent_menu_id = #{parentMenuId}
-    </select>
-    <select id="countMenuId" resultType="java.lang.Integer">
-        select count(0) from menu where menu_id = #{parentMenuId}
-    </select>
-    <select id="countParentMenuId" resultType="java.lang.Integer">
-        select count(0) from menu where parent_menu_id = #{parentMenuId} and menu_type = #{menuType}
-    </select>
-
-
-    <select id="getChangeOrgMenu" resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
+    <select id="lookUpPermission" resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
         SELECT *
         FROM menu m, menu_role o, user_role ur
         <where>
@@ -151,30 +130,16 @@
         limit 1
     </select>
 
-    <select id="getSuperMenuOne" resultType="cn.cuiot.dmp.base.infrastructure.dto.MenuDTO">
-        SELECT id,menu_id,menu_name,module_type,description
-        FROM menu
-        WHERE parent_menu_id = #{parentMenuId}
-        and module_type = #{moduleType}
-    </select>
-
-
-
-    <select id="selectAllWebUrl" resultType="cn.cuiot.dmp.base.infrastructure.dto.MenuDTO">
-        select distinct menu_id as menuId,api_url as apiUrl from menu where api_url is not null and trim(api_url)!=''
-    </select>
-    <select id="getMenuRootByOrgTypeId"
-            resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.GetMenuRootByOrgTypeIdResDto">
+    <select id="getMenuByOrgTypeId"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto">
         SELECT
             omr.menu_id menuRootId,
-            m.description menuRootName
-        FROM
-            `org_type_menu_root` omr
-                LEFT JOIN menu m ON m.menu_id = omr.menu_id
+            m.menu_name menuRootName
+        FROM org_type_menu_root omr
+        JOIN menu m ON m.id = omr.menu_id
         WHERE
             omr.org_type_id = #{orgTypeId}
+            and m.`status`=1
     </select>
-    <select id="getMenuIdByParentMenuIdString" resultType="java.lang.String">
-        select menu_id from menu where parent_menu_id = #{parentMenuId} order by parent_menu_id asc
-    </select>
+
 </mapper>

@@ -9,12 +9,12 @@ import lombok.Data;
  * @date 2022/11/2
  */
 @Data
-public class GetMenuRootByOrgTypeIdResDto {
+public class MenuByOrgTypeIdResDto {
 
     /**
      * 菜单根节点id
      */
-    private String menuRootId;
+    private Long menuRootId;
 
     /**
      * 菜单根节点名

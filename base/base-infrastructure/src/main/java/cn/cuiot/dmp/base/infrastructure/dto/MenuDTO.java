@@ -19,24 +19,9 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MenuDTO {
     /**
-     * 菜单主键id
+     * 菜单主键ID
      */
-    private String id;
-
-    /**
-     * 菜单路径
-     */
-    private String menuUrl;
-
-    /**
-     * api对应的路径
-     */
-    private String apiUrl;
-
-    /**
-     * 菜单menuId
-     */
-    private String menuId;
+    private Long id;
 
     /**
      * 菜单名称
@@ -44,19 +29,65 @@ public class MenuDTO {
     private String menuName;
 
     /**
-     * 备注
+     * 路由地址
      */
-    private String description;
+    private String menuUrl;
 
     /**
-     * 菜单类型
+     * 组件路径
+     */
+    private String componentUri;
+
+    /**
+     * 对应api url
+     */
+    private String apiUrl;
+
+
+    /**
+     * 图标
+     */
+    private String icon;
+
+    /**
+     * 菜单类型:1-菜单 2-功能按钮
      */
     private Integer menuType;
 
     /**
-     * 菜单模块类型
+     * 权限代码
      */
-    private String moduleType;
+    private String permissionCode;
+
+    /**
+     * 父id
+     */
+    private Long parentId;
+
+    /**
+     * 菜单描述
+     */
+    private String description;
+
+    /**
+     * 外链 1 是 0否
+     */
+    private Integer externalLink;
+
+    /**
+     * 排序
+     */
+    private Integer sort;
+
+    /**
+     * 是否隐藏 1:隐藏，0:显示
+     */
+    private Integer hidden;
+
+    /**
+     * 状态 1启用 0停用
+     */
+    private Integer status;
 
     /**
      * 子菜单集合

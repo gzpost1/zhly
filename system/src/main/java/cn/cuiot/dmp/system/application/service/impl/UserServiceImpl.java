@@ -92,6 +92,7 @@ import com.github.houbb.sensitive.api.IStrategy;
 import com.github.houbb.sensitive.core.api.strategory.StrategyPhone;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -288,23 +289,17 @@ public class UserServiceImpl extends BaseController implements UserService {
     public UserResDTO getUserMenuByUserIdAndOrgId(String userId, String orgId) {
         // 获取用户信息
         UserResDTO userResDTO = getUserInfoByUserIdAndOrgId(userId, orgId);
+
+        userResDTO.setMenu(Lists.newArrayList());
+        List<String> allowMenuIdList = orgMenuDao.getAllowMenuIdList(orgId);
         List<MenuEntity> menuList = menuDao.selectMenuListByRoleId(userResDTO.getRoleId());
-        List<String> banMenuIdList = orgMenuDao.getBanMenuIdList(orgId);
-        menuList.removeIf(o -> banMenuIdList.contains(o.getMenuId()));
-        banMenuIdList.forEach(menuId -> {
-            List<String> menuIdByParentMenuId = menuDao.getMenuIdByParentMenuIdString(menuId);
-            if (!CollectionUtils.isEmpty(menuIdByParentMenuId)) {
-                menuList.removeIf(o -> menuIdByParentMenuId.contains(o.getMenuId()));
-                menuIdByParentMenuId.forEach(sonMenuId -> {
-                    List<String> sonMenuIdByParentMenuId = menuDao
-                            .getMenuIdByParentMenuIdString(sonMenuId);
-                    if (!CollectionUtils.isEmpty(sonMenuIdByParentMenuId)) {
-                        menuList.removeIf(o -> sonMenuIdByParentMenuId.contains(o.getMenuId()));
-                    }
-                });
-            }
-        });
-        userResDTO.setMenu(menuList);
+        if(!CollectionUtils.isEmpty(allowMenuIdList)&&!CollectionUtils.isEmpty(menuList)){
+            menuList = menuList.stream()
+                    .filter(item -> allowMenuIdList.contains(item.getId().toString())).collect(
+                            Collectors.toList());
+            userResDTO.setMenu(menuList);
+        }
+
         return userResDTO;
     }
 

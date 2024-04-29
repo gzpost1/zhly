@@ -263,10 +263,11 @@
     </select>
 
     <select id="getRoleMenu" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.AddMenuDto">
-        select mr.pk_menu_id id,m.menu_id menuId from menu_role mr,menu m where
-            mr.pk_role_id = #{roleId}
-                                                                            and
+        select m.*
+        from menu_role mr,menu m
+        where
             mr.pk_menu_id = m.id
+           and mr.pk_role_id = #{roleId}
     </select>
 
 
@@ -283,8 +284,9 @@
     <insert id="insertMenusRole" parameterType="cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo">
         INSERT INTO menu_role(pk_menu_id,pk_role_id,created_on,created_by,created_by_type)
         VALUES
-        <foreach collection="menuIds" item="item" open="(" separator="),(" close=")">
-            #{item}, #{id},#{updatedOn}, #{updatedBy}, #{updatedByType}
+        <foreach collection="menuIds" item="menuId" open="(" separator="),(" close=")">
+            #{menuId}, #{id},#{updatedOn}, #{updatedBy}, #{updatedByType}
         </foreach>
     </insert>
+
 </mapper>

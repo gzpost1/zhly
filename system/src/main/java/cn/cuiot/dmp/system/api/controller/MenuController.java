@@ -1,11 +1,11 @@
 package cn.cuiot.dmp.system.api.controller;
 
-import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.system.application.service.MenuService;
-import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.GetMenuRootByOrgTypeIdResDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuTreeNode;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,34 +26,30 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/menuManagement")
 public class MenuController extends BaseController {
+
     @Autowired
     private MenuService menuService;
 
     /**
      * 获取菜单目录
-     * @param description
-     * @return
      */
     @PostMapping(value = "/getAllMenu", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<MenuEntity> getMenu(@RequestParam(value = "description" ,required = false) String description) {
-        log.info("getMenu, 参数为{}", description);
+    public List<MenuTreeNode> getMenu() {
         String orgId = getOrgId();
         String userId = getUserId();
-        return menuService.getAllMenu(description, orgId, userId);
+        return menuService.getAllMenu(orgId, userId);
     }
 
     /**
      * 根据orgTypeId查询菜单根节点
-     * @param orgTypeId
-     * @return
      */
     @PostMapping(value = "/getMenuRootByOrgTypeId", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<GetMenuRootByOrgTypeIdResDto> getMenuRootByOrgTypeId(@RequestParam("orgTypeId") String orgTypeId) {
-        getOrgId();
+    public List<MenuByOrgTypeIdResDto> getMenuRootByOrgTypeId(
+            @RequestParam("orgTypeId") String orgTypeId) {
         if (StringUtils.isEmpty(orgTypeId)) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL);
         }
-        return menuService.getMenuRootByOrgTypeId(orgTypeId);
+        return menuService.getMenuByOrgTypeId(orgTypeId);
     }
 
 }

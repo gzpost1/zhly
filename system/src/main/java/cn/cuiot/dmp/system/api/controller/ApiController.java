@@ -78,7 +78,7 @@ public class ApiController {
             @RequestParam(value = "orgId", required = false) String orgId,
             @RequestParam(value = "permissionCode", required = false) String permissionCode) {
         MenuDTO menuDTO = null;
-        MenuEntity menuEntity = menuService.getChangeOrgMenu(userId, orgId, permissionCode);
+        MenuEntity menuEntity = menuService.lookUpPermission(userId, orgId, permissionCode);
         if (Objects.nonNull(menuEntity)) {
             menuDTO = menuConverter.entityToDTO(menuEntity);
         }
