@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.AuthorizeParam;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto;
@@ -69,4 +70,9 @@ public interface MenuService {
      * 递归获得子菜单
      */
     List<MenuEntity> getChildList(Long id);
+
+    /**
+     * 初始化授权
+     */
+    void authorize(AuthorizeParam authorizeParam);
 }

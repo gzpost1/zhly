@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.api.controller;
 
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.infrastructure.dto.AuthorizeParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
@@ -117,6 +119,17 @@ public class MenuController extends BaseController {
         String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
         menuService.updateStatus(updateStatusParam.getId(), updateStatusParam.getStatus(),
                 sessionUserId, sessionOrgId);
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 初始化授权
+     */
+    @PostMapping("/authorize")
+    public IdmResDTO authorize(@RequestBody @Valid AuthorizeParam authorizeParam) {
+        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
+        authorizeParam.setSessionUserId(sessionUserId);
+        menuService.authorize(authorizeParam);
         return IdmResDTO.success();
     }
 

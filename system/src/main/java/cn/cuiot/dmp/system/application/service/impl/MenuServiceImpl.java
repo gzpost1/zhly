@@ -1,17 +1,21 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
+import cn.cuiot.dmp.base.infrastructure.dto.AuthorizeParam;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.TreeUtil;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
+import cn.cuiot.dmp.system.application.enums.UserSourceTypeEnum;
 import cn.cuiot.dmp.system.application.service.MenuService;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
+import cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuQuery;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuTreeNode;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.MenuDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao;
+import cn.cuiot.dmp.system.infrastructure.persistence.dao.RoleDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
 import cn.cuiot.dmp.system.user_manage.domain.entity.Organization;
 import cn.cuiot.dmp.system.user_manage.repository.OrganizationRepository;
@@ -44,6 +48,9 @@ public class MenuServiceImpl implements MenuService {
 
     @Resource
     private UserDao userDao;
+
+    @Resource
+    private RoleDao roleDao;
 
     @Resource
     private MenuDao menuDao;
@@ -233,5 +240,15 @@ public class MenuServiceImpl implements MenuService {
         return childList;
     }
 
+    /**
+     * 初始化授权
+     */
+    @Override
+    public void authorize(AuthorizeParam authorizeParam) {
+        roleDao.deleteMenuRole(null,authorizeParam.getRoleId());
+        if(CollectionUtils.isNotEmpty(authorizeParam.getResourceIds())){
+            roleDao.insertMenuRole(authorizeParam.getRoleId(),authorizeParam.getResourceIds(),authorizeParam.getSessionUserId(),UserSourceTypeEnum.SYSTEM.getCode());
+        }
+    }
 
 }
