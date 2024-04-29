@@ -1,59 +1,39 @@
 package cn.cuiot.dmp.system.infrastructure.entity.dto;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
+import org.hibernate.validator.constraints.Length;
 
 /**
  * @Author wen
  * @Description 行政区域entity
  * @Date 2021/12/27 9:31
- * @param
  * @return
  **/
 @Data
 public class SysParamDto {
 
     /**
-     * 账户id
+     * 系统名称
      */
-    private Long orgId;
-
-    /**
-     * 登陆账户id
-     */
-    private Long userId;
-
-    /**
-     * 用户组织
-     */
-    private String updaterPath;
-
-    /**
-     * title
-     */
-    @NotBlank(message = "title不能为空")
+    @NotBlank(message = "系统名称不能为空")
+    @Length(max = 30, message = "系统名称不可超过30字")
     private String title;
 
     /**
-     * 等级
+     * 系统logo
      */
-    @NotNull(message = "logoId不能为空")
-    @Range(min = 1, max = 2, message = "logoId枚举值不合法")
-    private Integer logoId;
+    @NotBlank(message = "系统logo不能为空")
+    private String logoPath;
 
     /**
-     * 组织
+     * 当前登录用户-账户id(前端不用管)
      */
-    @NotBlank(message = "组织不能为空")
-    private String deptTreePath;
+    private Long sessionOrgId;
 
     /**
-     * 是否覆盖（0：覆盖； 1：不覆盖）
+     * 当前登录用户-用户id(前端不用管)
      */
-    @Pattern(regexp = "^0|1$", message = "覆盖状态参数不合法")
-    private String overwrite;
+    private Long sessionUserId;
 
 }

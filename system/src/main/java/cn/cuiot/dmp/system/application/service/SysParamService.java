@@ -23,19 +23,8 @@ public interface SysParamService {
 
     /**
      * 查找系统配置
-     *
-     * @param path
-     * @param userId
      * @return
      */
-    GetSysParamResDto getByPath(String path, String userId);
-
-    /**
-     * 判断组织下系统配置是否需要覆盖
-     *
-     * @param path
-     * @return
-     */
-    Boolean getSysParamWhether(String path);
+    GetSysParamResDto getByPath(Long sessionOrgId);
 
 }
