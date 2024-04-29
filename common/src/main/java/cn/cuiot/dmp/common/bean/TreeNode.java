@@ -1,20 +1,27 @@
 package cn.cuiot.dmp.common.bean;
 
 import com.google.common.collect.Lists;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.List;
 
 /**
- * 树节点
- * @author: wuyongchong
- * @date: 2024/4/29 14:36
+ * @author caorui
+ * @date 2024/4/29
  */
-public class TreeNode<T extends TreeNode> implements Serializable {
+@Data
+public class TreeNode<T extends TreeNode<T>> implements Serializable {
+
+    private static final long serialVersionUID = -5672953422801724945L;
 
     private String id;
     private String parentId;
     private String title;
     private String label;
+    //private boolean selected=false;
+    //private boolean checked=false;
+    //private boolean expand=false;
     private List<T> children = null;
 
     public TreeNode() {
@@ -31,55 +38,6 @@ public class TreeNode<T extends TreeNode> implements Serializable {
         this.parentId = parentId;
         this.title = title;
         this.label = title;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-        this.label = title;
-    }
-
-    public String getLabel() {
-        return this.title;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-        this.title = title;
-    }
-
-    public List<T> getChildren() {
-        return children;
-    }
-
-    public void setChildren(List<T> children) {
-        this.children = children;
-    }
-
-    public boolean hasChildren() {
-        if (null != this.children && this.children.size() > 0) {
-            return true;
-        }
-        return false;
     }
 
     public void addChild(T child) {

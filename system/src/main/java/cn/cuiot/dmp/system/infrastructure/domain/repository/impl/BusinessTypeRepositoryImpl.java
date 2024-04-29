@@ -8,6 +8,8 @@ import cn.cuiot.dmp.system.domain.aggregate.BusinessType;
 import cn.cuiot.dmp.system.domain.repository.BusinessTypeRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.BusinessTypeEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.BusinessTypeMapper;
+import cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntity;
+import cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntityMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author caorui
@@ -29,6 +32,9 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
 
     @Autowired
     private BusinessTypeMapper businessTypeMapper;
+
+    @Autowired
+    private OrganizationEntityMapper organizationEntityMapper;
 
     @Override
     public BusinessType queryForDetail(Long id) {
@@ -53,11 +59,19 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
             businessTypeList.add(businessType);
             return businessTypeList;
         }
-        return null;
+        businessTypeList = businessTypeEntityList.stream()
+                .map(o -> {
+                    BusinessType businessType = new BusinessType();
+                    BeanUtils.copyProperties(o, businessType);
+                    return businessType;
+                })
+                .collect(Collectors.toList());
+        return businessTypeList;
     }
 
     @Override
     public int saveBusinessType(BusinessType businessType) {
+        checkBusinessTypeNode(businessType);
         BusinessTypeEntity businessTypeEntity = new BusinessTypeEntity();
         BeanUtils.copyProperties(businessType, businessTypeEntity);
         return businessTypeMapper.insert(businessTypeEntity);
@@ -65,23 +79,40 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
 
     @Override
     public int updateBusinessType(BusinessType businessType) {
-        AssertUtil.notNull(businessType.getId(), "id不能为空");
+        checkBusinessTypeNode(businessType);
         BusinessTypeEntity businessTypeEntity = Optional.ofNullable(businessTypeMapper.selectById(businessType.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(businessType, businessTypeEntity);
         return businessTypeMapper.updateById(businessTypeEntity);
     }
 
+    @Override
+    public int deleteBusinessType(Long id) {
+        return businessTypeMapper.deleteById(id);
+    }
+
     private BusinessTypeEntity initRootNode(Long companyId) {
         BusinessTypeEntity businessTypeEntity = new BusinessTypeEntity();
         businessTypeEntity.setId(BusinessTypeConstant.ROOT_ID);
         businessTypeEntity.setCompanyId(companyId);
-        // todo 根据企业id获取企业名称
-        businessTypeEntity.setName("企业名称");
+        OrganizationEntity organizationEntity = organizationEntityMapper.selectById(companyId);
+        AssertUtil.notNull(organizationEntity, "企业不存在");
+        businessTypeEntity.setName(organizationEntity.getCompanyName());
         businessTypeEntity.setLevelType(BusinessTypeConstant.ROOT_LEVEL_TYPE);
         businessTypeEntity.setParentId(BusinessTypeConstant.DEFAULT_PARENT_ID);
         businessTypeMapper.insert(businessTypeEntity);
         return businessTypeEntity;
+    }
+
+    private void checkBusinessTypeNode(BusinessType businessType) {
+        LambdaQueryWrapper<BusinessTypeEntity> queryWrapper = new LambdaQueryWrapper<BusinessTypeEntity>()
+                .eq(BusinessTypeEntity::getLevelType, businessType.getLevelType())
+                .eq(BusinessTypeEntity::getParentId, businessType.getParentId());
+        List<BusinessTypeEntity> businessTypeEntityList = businessTypeMapper.selectList(queryWrapper);
+        for (BusinessTypeEntity businessTypeEntity : businessTypeEntityList) {
+            AssertUtil.isFalse(businessTypeEntity.getName().equals(businessType.getName()),
+                    "分类名称已存在");
+        }
     }
 
 }

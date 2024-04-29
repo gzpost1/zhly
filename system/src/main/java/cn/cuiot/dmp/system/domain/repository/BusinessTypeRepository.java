@@ -30,4 +30,9 @@ public interface BusinessTypeRepository {
      */
     int updateBusinessType(BusinessType businessType);
 
+    /**
+     * 删除
+     */
+    int deleteBusinessType(Long id);
+
 }
