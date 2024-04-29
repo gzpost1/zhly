@@ -1,10 +1,14 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
+import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
+import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.TreeUtil;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.application.service.MenuService;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuQuery;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuTreeNode;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.MenuDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao;
@@ -13,6 +17,7 @@ import cn.cuiot.dmp.system.user_manage.domain.entity.Organization;
 import cn.cuiot.dmp.system.user_manage.repository.OrganizationRepository;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -109,5 +114,124 @@ public class MenuServiceImpl implements MenuService {
             String permisstionCode) {
         return menuDao.lookUpPermission(userId, orgId, permisstionCode);
     }
+
+    /**
+     * 获取菜单列表
+     */
+    @Override
+    public List<MenuTreeNode> queryForList(MenuQuery query) {
+
+        List<MenuEntity> selectList = menuDao.queryForList(query);
+
+        List<MenuTreeNode> treeList = Lists.newArrayList();
+
+        if (CollectionUtils.isNotEmpty(selectList)) {
+            treeList = selectList.stream().map(item -> {
+                MenuTreeNode treeNode = new MenuTreeNode(
+                        item.getId().toString(),
+                        StrUtil.toStringOrNull(item.getParentId()),
+                        item.getMenuName(),
+                        item.getMenuUrl(),
+                        item.getComponentUri(),
+                        item.getApiUrl(),
+                        item.getIcon(),
+                        item.getMenuType(),
+                        item.getPermissionCode(),
+                        item.getDescription(),
+                        item.getExternalLink(),
+                        item.getSort(),
+                        item.getHidden(),
+                        item.getStatus());
+                return treeNode;
+            }).collect(Collectors.toList());
+        }
+        return TreeUtil.makeTree(treeList);
+    }
+
+    /**
+     * 创建菜单
+     */
+    @Override
+    public void create(MenuDTO menuDTO) {
+        MenuEntity menuEntity = BeanMapper.map(menuDTO, MenuEntity.class);
+        menuDao.insertMenu(menuEntity);
+    }
+
+    /**
+     * 修改菜单
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void update(MenuDTO menuDTO) {
+        MenuEntity menuEntity = BeanMapper.map(menuDTO, MenuEntity.class);
+        menuDao.updateMenu(menuEntity);
+        if (EntityConstants.DISABLED.equals(menuDTO.getStatus())) {
+            List<MenuEntity> childList = getChildList(menuEntity.getId());
+            if (CollectionUtils.isNotEmpty(childList)) {
+                for (MenuEntity childMenu : childList) {
+                    childMenu.setUpdatedBy(menuDTO.getUpdatedBy());
+                    childMenu.setUpdatedOn(menuDTO.getUpdatedOn());
+                    childMenu.setStatus(menuDTO.getStatus());
+                    menuDao.updateMenu(childMenu);
+                }
+            }
+        }
+    }
+
+    /**
+     * 删除菜单项
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteMenu(Long id) {
+        List<MenuEntity> childList = getChildList(id);
+        if (CollectionUtils.isNotEmpty(childList)) {
+            for (MenuEntity childMenu : childList) {
+                menuDao.deleteMenuById(childMenu.getId());
+            }
+        }
+        menuDao.deleteMenuById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStatus(Long id, Byte status, String sessionUserId, String sessionOrgId) {
+        MenuEntity menuEntity = menuDao.getById(id);
+        menuEntity.setStatus(status.intValue());
+        menuEntity.setUpdatedBy(sessionUserId);
+        menuEntity.setUpdatedOn(LocalDateTime.now());
+        menuDao.updateMenu(menuEntity);
+        if (EntityConstants.DISABLED.equals(status)) {
+            List<MenuEntity> childList = getChildList(menuEntity.getId());
+            if (CollectionUtils.isNotEmpty(childList)) {
+                for (MenuEntity childMenu : childList) {
+                    childMenu.setUpdatedBy(sessionUserId);
+                    childMenu.setUpdatedOn(LocalDateTime.now());
+                    childMenu.setStatus(status.intValue());
+                    menuDao.updateMenu(childMenu);
+                }
+            }
+        }
+    }
+
+    /**
+     * 递归获得子菜单
+     */
+    @Override
+    public List<MenuEntity> getChildList(Long id) {
+        List<MenuEntity> childList = Lists.newArrayList();
+        List<MenuEntity> selectList = menuDao.selectChildList(id);
+        if (CollectionUtils.isNotEmpty(selectList)) {
+            for (MenuEntity menuEntity : selectList) {
+                childList.add(menuEntity);
+                List<MenuEntity> childResources = getChildList(menuEntity.getId());
+                if (CollectionUtils.isNotEmpty(selectList)) {
+                    childList.addAll(childResources);
+                }
+            }
+        }
+        return childList;
+    }
+
 
 }

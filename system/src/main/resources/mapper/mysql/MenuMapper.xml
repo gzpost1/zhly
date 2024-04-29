@@ -142,4 +142,36 @@
             and m.`status`=1
     </select>
 
+    <select id="queryForList"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
+        select
+            m.*
+        from menu m
+        <where>
+            <if test="param.menuName != null and param.menuName != ''">
+                AND m.menu_name like concat('%', #{param.menuName}, '%')
+            </if>
+            <if test="param.status != null">
+                AND m.`status`= #{param.status}
+            </if>
+        </where>
+        order by m.sort asc
+    </select>
+
+    <select id="selectChildList"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
+        select
+        m.*
+        from menu m
+        where m.parent_id=#{parentId}
+        order by m.sort asc
+    </select>
+
+    <select id="getById" resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
+         select
+        m.*
+        from menu m
+        where m.id=#{id}
+    </select>
+
 </mapper>

@@ -1,8 +1,11 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuQuery;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuTreeNode;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -36,4 +39,34 @@ public interface MenuService {
      * @return
      */
     MenuEntity lookUpPermission(String userId,String orgId,String permisstionCode);
+
+    /**
+     * 获取菜单列表
+     */
+    List<MenuTreeNode> queryForList(MenuQuery query);
+
+    /**
+     * 创建菜单
+     */
+    void create(MenuDTO menuDTO);
+
+    /**
+     * 修改菜单
+     */
+    void update(MenuDTO menuDTO);
+
+    /**
+     * 删除菜单项
+     */
+    void deleteMenu(Long id);
+
+    /**
+     * 启停用
+     */
+    void updateStatus(Long id, Byte status,String sessionUserId, String sessionOrgId);
+
+    /**
+     * 递归获得子菜单
+     */
+    List<MenuEntity> getChildList(Long id);
 }

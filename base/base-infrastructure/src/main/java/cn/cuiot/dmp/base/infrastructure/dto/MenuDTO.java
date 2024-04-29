@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.base.infrastructure.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -88,6 +89,27 @@ public class MenuDTO {
      * 状态 1启用 0停用
      */
     private Integer status;
+
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createdOn;
+
+    /**
+     * 创建者
+     */
+    private String createdBy;
+
+    /**
+     * 修改时间
+     */
+    private LocalDateTime updatedOn;
+
+    /**
+     * 修改者
+     */
+    private String updatedBy;
 
     /**
      * 子菜单集合

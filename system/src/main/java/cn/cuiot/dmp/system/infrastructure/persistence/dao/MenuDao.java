@@ -2,6 +2,7 @@ package cn.cuiot.dmp.system.infrastructure.persistence.dao;
 
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuQuery;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -89,5 +90,13 @@ public interface MenuDao {
 	 * @param orgTypeId
 	 * @return
 	 */
-    List<MenuByOrgTypeIdResDto> getMenuByOrgTypeId(@Param("orgTypeId")String orgTypeId);
+    List<MenuByOrgTypeIdResDto> getMenuByOrgTypeId(@Param("orgTypeId") String orgTypeId);
+
+
+	List<MenuEntity> queryForList(@Param("param") MenuQuery query);
+
+
+	List<MenuEntity> selectChildList(@Param("parentId") Long parentId);
+
+	MenuEntity getById(@Param("id") Long id);
 }
