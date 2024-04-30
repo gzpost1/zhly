@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.entity.dto;
 
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.houbb.sensitive.annotation.Sensitive;
@@ -65,7 +66,8 @@ public class UserResDTO {
     /**
      * 注册时间
      */
-    @JsonFormat(pattern = "yyyy年MM月dd日 HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JSONField(format = "yyyy-MM-dd")
     private LocalDateTime createdOn;
 
     /**
@@ -119,6 +121,8 @@ public class UserResDTO {
     /**
      * 最后上线时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JSONField(format = "yyyy-MM-dd")
     private LocalDateTime lastOnlineOn;
 
     /**
