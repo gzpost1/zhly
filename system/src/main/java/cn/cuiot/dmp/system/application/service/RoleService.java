@@ -1,10 +1,8 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.common.constant.PageResult;
-import cn.cuiot.dmp.system.infrastructure.entity.RoleEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CreateRoleDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleCreatedDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +75,7 @@ public interface RoleService {
      * @param userId
      * @return
      */
-    RoleCreatedDTO getRoleAll(String roleId, String orgId, String userId);
+    RoleDTO getRoleAll(String roleId, String orgId, String userId);
 
 
 

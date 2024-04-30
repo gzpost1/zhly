@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.system.infrastructure.entity;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import lombok.Data;
 
 /**
  * @author guoying
@@ -8,16 +10,13 @@ import java.time.LocalDateTime;
  * @description 角色信息实体
  * @date 2020-08-10 16:41:33
  */
-public class RoleEntity {
+@Data
+public class RoleEntity implements Serializable {
 
     /**
      * 主键ID
      */
     private Long id;
-    /**
-     * 角色ID
-     */
-    private String roleId;
 
     /**
      * 租住ID
@@ -72,135 +71,4 @@ public class RoleEntity {
      * 取值：【0：SYSTEM; 1: Portal；2：API】
      */
     private Integer updatedByType;
-
-    public RoleEntity() {
-    }
-
-    public RoleEntity(Long id, String roleId, String roleName, String roleKey, String description, Integer permit, Integer roleType, LocalDateTime createdOn, String createdBy, Integer createdByType, LocalDateTime updatedOn, String updatedBy, Integer updatedByType) {
-        this.id = id;
-        this.roleId = roleId;
-        this.roleName = roleName;
-        this.roleKey = roleKey;
-        this.description = description;
-        this.permit = permit;
-        this.roleType = roleType;
-        this.createdOn = createdOn;
-        this.createdBy = createdBy;
-        this.createdByType = createdByType;
-        this.updatedOn = updatedOn;
-        this.updatedBy = updatedBy;
-        this.updatedByType = updatedByType;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getOrgId() {
-        return orgId;
-    }
-
-    public void setOrgId(String orgId) {
-        this.orgId = orgId;
-    }
-
-    public String getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public String getRoleKey() {
-        return roleKey;
-    }
-
-    public void setRoleKey(String roleKey) {
-        this.roleKey = roleKey;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Integer getPermit() {
-        return permit;
-    }
-
-    public void setPermit(Integer permit) {
-        this.permit = permit;
-    }
-
-    public Integer getRoleType() {
-        return roleType;
-    }
-
-    public void setRoleType(Integer roleType) {
-        this.roleType = roleType;
-    }
-
-    public LocalDateTime getCreatedOn() {
-        return createdOn;
-    }
-
-    public void setCreatedOn(LocalDateTime createdOn) {
-        this.createdOn = createdOn;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public LocalDateTime getUpdatedOn() {
-        return updatedOn;
-    }
-
-    public void setUpdatedOn(LocalDateTime updatedOn) {
-        this.updatedOn = updatedOn;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Integer getCreatedByType() {
-        return createdByType;
-    }
-
-    public void setCreatedByType(Integer createdByType) {
-        this.createdByType = createdByType;
-    }
-
-    public Integer getUpdatedByType() {
-        return updatedByType;
-    }
-
-    public void setUpdatedByType(Integer updatedByType) {
-        this.updatedByType = updatedByType;
-    }
 }

@@ -4,7 +4,6 @@
 
     <sql id="role_column">
         r.id,
-        r.role_id AS roleId,
         r.role_name AS roleName,
         r.role_key AS roleKey,
         r.description,
@@ -35,9 +34,7 @@
         LEFT JOIN org_role o ON r.id = o.pk_role_id
         <trim prefix="WHERE" prefixOverrides="AND">
             <if test="orgId !=null and orgId !=-1">
-                <if test="userId != 1">
-                    and o.pk_org_id = #{orgId}
-                </if>
+                and o.pk_org_id = #{orgId}
             </if>
             <if test="roleName !=null ">
                 and  r.role_name  like concat('%',#{roleName},'%')
@@ -96,13 +93,12 @@
     <insert id="insertRole" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
         INSERT INTO `role`
         (
-            id,org_id, role_id, role_name, role_key, description, permit, role_type,
+            id,org_id,role_name, role_key, description, permit, role_type,
             created_by, created_by_type
         )
         VALUES
         (   #{id},
             #{orgId},
-            #{roleId},
             #{roleName},
             #{roleKey},
             #{description},
@@ -130,12 +126,11 @@
     <insert id="insert" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
         INSERT INTO `role`
         (
-            id,role_id, role_name, role_key, description, permit, role_type,
+            id,role_name, role_key, description, permit, role_type,
             created_by, created_by_type
         )
         VALUES
         (   #{id},
-            #{roleId},
             #{roleName},
             #{roleKey},
             #{description},
@@ -244,7 +239,7 @@
         and ur.pk_org_id = #{orgId} limit 1
     </select>
 
-    <select id="selectOneRole" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleCreatedDTO">
+    <select id="selectOneRole" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO">
         select
         <include refid="role_column"/>
         FROM role r,org_role o

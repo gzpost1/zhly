@@ -246,7 +246,7 @@ public class MenuServiceImpl implements MenuService {
      */
     @Override
     public void authorize(AuthorizeParam authorizeParam) {
-        roleDao.deleteMenuRole(null,authorizeParam.getRoleId());
+        roleDao.deleteMenuRole(authorizeParam.getRoleId());
         if(CollectionUtils.isNotEmpty(authorizeParam.getResourceIds())){
             roleDao.insertMenuRole(authorizeParam.getRoleId(),authorizeParam.getResourceIds(),authorizeParam.getSessionUserId(),UserSourceTypeEnum.SYSTEM.getCode());
         }
