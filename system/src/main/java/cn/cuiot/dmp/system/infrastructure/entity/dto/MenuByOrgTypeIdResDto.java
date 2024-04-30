@@ -3,8 +3,8 @@ package cn.cuiot.dmp.system.infrastructure.entity.dto;
 import lombok.Data;
 
 /**
+ * MenuByOrgTypeIdResDto
  * @author wqd
- * @classname GetMenuRootByOrgTypeIdResDto
  * @description
  * @date 2022/11/2
  */
@@ -12,13 +12,13 @@ import lombok.Data;
 public class MenuByOrgTypeIdResDto {
 
     /**
-     * 菜单根节点id
+     * 菜单id
      */
-    private Long menuRootId;
+    private Long menuId;
 
     /**
-     * 菜单根节点名
+     * 菜单名
      */
-    private String menuRootName;
+    private String menuName;
 
 }

@@ -133,9 +133,9 @@
     <select id="getMenuByOrgTypeId"
             resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto">
         SELECT
-            omr.menu_id menuRootId,
-            m.menu_name menuRootName
-        FROM org_type_menu_root omr
+            omr.menu_id menuId,
+            m.menu_name menuName
+        FROM org_type_menu omr
         JOIN menu m ON m.id = omr.menu_id
         WHERE
             omr.org_type_id = #{orgTypeId}

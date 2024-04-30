@@ -27,7 +27,7 @@
         SELECT
             menu_id
         FROM
-            org_type_menu_root
+            org_type_menu
         WHERE
            org_type_id = (
             SELECT org_type_id

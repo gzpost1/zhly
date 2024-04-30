@@ -53,10 +53,10 @@ public class MenuController extends BaseController {
     }
 
     /**
-     * 根据orgTypeId查询菜单根节点
+     * 根据orgTypeId查询菜单节点
      */
-    @PostMapping(value = "/getMenuRootByOrgTypeId", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<MenuByOrgTypeIdResDto> getMenuRootByOrgTypeId(
+    @PostMapping(value = "/getMenuByOrgTypeId", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<MenuByOrgTypeIdResDto> getMenuByOrgTypeId(
             @RequestParam("orgTypeId") String orgTypeId) {
         if (StringUtils.isEmpty(orgTypeId)) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL);

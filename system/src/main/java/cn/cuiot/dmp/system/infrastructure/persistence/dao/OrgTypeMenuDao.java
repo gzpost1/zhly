@@ -6,12 +6,12 @@ import org.apache.ibatis.annotations.Param;
 
 /**
  * @author wqd
- * @classname OrgTypeMenuRootDao
+ * @classname OrgTypeMenuDao
  * @description
  * @date 2022/11/7
  */
 @Mapper
-public interface OrgTypeMenuRootDao {
+public interface OrgTypeMenuDao {
 
     /**
      * 根据

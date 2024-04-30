@@ -67,7 +67,7 @@ public class UpdateOrganizationDto extends AbstractResourceParam {
      * 企业权限配置
      */
     @NotEmpty(message = "请配置企业权限")
-    private List<String> menuRootList;
+    private List<String> menuList;
 
 
     /**

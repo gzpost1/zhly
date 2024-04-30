@@ -70,7 +70,7 @@ public class GetOrganizationVO {
     /**
      * 菜单跟节点id
      */
-    private List<String> menuRootList;
+    private List<String> menuList;
 
     /**
      *  label    用户标签（1:商务楼宇（写字楼等）,2:厂园区（工业、科技、物流等园区厂区）,3:商业综合体（购物中心、百货市场等）,

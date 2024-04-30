@@ -86,7 +86,7 @@ public class InsertOrganizationDto extends AbstractResourceParam {
      * 企业权限配置
      */
     @NotEmpty(message = "请配置企业权限")
-    private List<String> menuRootList;
+    private List<String> menuList;
 
     /**
      * 当前登录用户-账户id(前端不用管)

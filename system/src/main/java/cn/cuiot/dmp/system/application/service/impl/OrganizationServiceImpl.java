@@ -59,7 +59,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.vo.ListOrganizationVO;
 import cn.cuiot.dmp.system.infrastructure.messaging.spring.SystemEventSendAdapter;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgTypeMenuRootDao;
+import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgTypeMenuDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrganizationDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.RoleDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
@@ -79,7 +79,6 @@ import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.github.houbb.sensitive.api.IStrategy;
 import com.github.houbb.sensitive.core.api.strategory.StrategyPhone;
 import com.github.pagehelper.PageInfo;
@@ -169,7 +168,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     private UserService userService;
 
     @Autowired
-    private OrgTypeMenuRootDao orgTypeMenuRootDao;
+    private OrgTypeMenuDao orgTypeMenuDao;
 
     @Autowired
     private OrgMenuDao orgMenuDao;
@@ -315,17 +314,17 @@ public class OrganizationServiceImpl implements OrganizationService {
          */
         Integer maxDeptHigh = 2;
         Long roleId = RoleConst.DEFAULT_SUPER_OPERATOR_ROLE_PK;
-        List<String> menuList = dto.getMenuRootList();
+        List<String> menuList = dto.getMenuList();
         if (OrgTypeEnum.COMMUNITY.getCode().equals(orgTypeId)) {
             roleId = RoleConst.DEFAULT_COMMUNITY_ADMIN;
             maxDeptHigh = 7;
-            //List<String> menuIdList = orgTypeMenuRootDao.getMenuIdListByOrgType(orgTypeId);
-            //menuList = dto.getMenuRootList().stream().filter(menuIdList::contains).distinct().collect(Collectors.toList());
+            //List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(orgTypeId);
+            //menuList = dto.getMenuList().stream().filter(menuIdList::contains).distinct().collect(Collectors.toList());
         } else if (OrgTypeEnum.COMMON.getCode().equals(orgTypeId)) {
             roleId = RoleConst.DEFAULT_COMMON_ADMIN;
             maxDeptHigh = 7;
-            //List<String> menuIdList = orgTypeMenuRootDao.getMenuIdListByOrgType(orgTypeId);
-            //menuList = dto.getMenuRootList().stream().filter(menuIdList::contains).collect(Collectors.toList());
+            //List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(orgTypeId);
+            //menuList = dto.getMenuList().stream().filter(menuIdList::contains).collect(Collectors.toList());
         }
 
         //账户类型为企业账户
@@ -483,10 +482,10 @@ public class OrganizationServiceImpl implements OrganizationService {
         /**
          * 保存菜单权限
          */
-        /*List<String> menuIdList = orgTypeMenuRootDao.getMenuIdListByOrgType(dto.getOrgTypeId());
-        List<String> menuList = menuIdList.stream().filter(o -> dto.getMenuRootList().contains(o))
+        /*List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(dto.getOrgTypeId());
+        List<String> menuList = menuIdList.stream().filter(o -> dto.getMenuList().contains(o))
                 .collect(Collectors.toList());*/
-        List<String> menuList = dto.getMenuRootList();
+        List<String> menuList = dto.getMenuList();
         orgMenuDao.deleteByOrgId(pkOrgId);
         if (!CollectionUtils.isEmpty(menuList)) {
             orgMenuDao.insertOrgMenu(pkOrgId, menuList, dto.getSessionUserId().toString(),
@@ -634,7 +633,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         vo.setOrgTypeName(orgTypeDto.getName());
 
         //设置已勾选配置的菜单权限
-        vo.setMenuRootList(orgMenuDao.getMenuListByOrgId(pkOrgId));
+        vo.setMenuList(orgMenuDao.getMenuListByOrgId(pkOrgId));
 
         return vo;
     }
