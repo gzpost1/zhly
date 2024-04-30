@@ -31,6 +31,11 @@ public interface BusinessTypeRepository {
     int updateBusinessType(BusinessType businessType);
 
     /**
+     * 删除预校验
+     */
+    void checkDeleteStatus(Long id);
+
+    /**
      * 删除
      */
     int deleteBusinessType(Long id);

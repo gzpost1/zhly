@@ -1,6 +1,5 @@
 package cn.cuiot.dmp.system.domain.repository;
 
-import cn.cuiot.dmp.system.application.param.dto.SystemInfoQueryDTO;
 import cn.cuiot.dmp.system.domain.aggregate.SystemInfo;
 
 /**
@@ -17,7 +16,7 @@ public interface SystemInfoRepository {
     /**
      * 根据来源id和来源类型获取详情
      */
-    SystemInfo queryBySource(SystemInfoQueryDTO systemInfoQueryDTO);
+    SystemInfo queryBySource(SystemInfo systemInfo);
 
     /**
      * 保存
