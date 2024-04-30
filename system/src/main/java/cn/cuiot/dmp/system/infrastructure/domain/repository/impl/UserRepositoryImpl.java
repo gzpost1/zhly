@@ -14,11 +14,11 @@ import cn.cuiot.dmp.system.infrastructure.persistence.iservice.IUserEntityServic
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserDepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntityMapper;
-import cn.cuiot.dmp.system.user_manage.domain.entity.User;
-import cn.cuiot.dmp.system.user_manage.domain.entity.UserDepartmentInfo;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.UserTypeEnum;
-import cn.cuiot.dmp.system.user_manage.query.UserCommonQuery;
-import cn.cuiot.dmp.system.user_manage.repository.UserRepository;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.entity.UserDepartmentInfo;
+import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;

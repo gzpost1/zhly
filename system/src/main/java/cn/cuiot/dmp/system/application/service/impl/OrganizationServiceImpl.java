@@ -68,14 +68,14 @@ import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.DeptTreePathUtils;
 import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.RandomPwUtils;
-import cn.cuiot.dmp.system.user_manage.domain.entity.Organization;
-import cn.cuiot.dmp.system.user_manage.domain.entity.User;
-import cn.cuiot.dmp.system.user_manage.domain.service.UserPhoneNumberDomainService;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgSourceEnum;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.UserTypeEnum;
-import cn.cuiot.dmp.system.user_manage.query.OrganizationCommonQuery;
-import cn.cuiot.dmp.system.user_manage.repository.OrganizationRepository;
-import cn.cuiot.dmp.system.user_manage.repository.UserRepository;
+import cn.cuiot.dmp.system.domain.entity.Organization;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
+import cn.cuiot.dmp.system.domain.types.enums.OrgSourceEnum;
+import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.system.domain.query.OrganizationCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -246,7 +246,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         Organization sessionOrg = organizationRepository
                 .find(new OrganizationId(dto.getSessionOrgId()));
         // 判断只有物联网账户才可以创建账户
-        if (!cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgTypeEnum.PROVINCE.getValue()
+        if (!cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.PROVINCE.getValue()
                 .equals(sessionOrg.getOrgTypeId().getValue())) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
@@ -338,9 +338,9 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .orgKey(dto.getOrgKey())
                 .orgName(dto.getCompanyName())
                 .companyName(dto.getCompanyName())
-                .orgTypeId(cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgTypeEnum
+                .orgTypeId(cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum
                         .valueOf(orgTypeId.longValue()))
-                .status(cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgStatusEnum.ENABLE)
+                .status(cn.cuiot.dmp.system.domain.types.enums.OrgStatusEnum.ENABLE)
                 //账户所有者
                 .orgOwner(userDataEntity.getId())
                 .createdBy(dto.getSessionUserId().toString())
@@ -455,7 +455,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         Organization sessionOrg = organizationRepository
                 .find(new OrganizationId(dto.getSessionOrgId()));
         // 判断只有物联网账户才可以创建账户
-        if (!cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgTypeEnum.PROVINCE.getValue()
+        if (!cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.PROVINCE.getValue()
                 .equals(sessionOrg.getOrgTypeId().getValue())) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
@@ -697,7 +697,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public Integer operateOrganization(OperateOrganizationDto dto) {
         Organization organization = Organization.builder()
                 .id(new OrganizationId(dto.getId()))
-                .status(cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgStatusEnum
+                .status(cn.cuiot.dmp.system.domain.types.enums.OrgStatusEnum
                         .valueOf(dto.getStatus()))
                 .build();
         Integer result = organizationRepository.save(organization) ? 1 : 0;
@@ -828,9 +828,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (organization == null) {
             throw new BusinessException(OBJECT_NOT_EXIST);
         }
-        if (!cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgTypeEnum.COMMUNITY.getValue()
+        if (!cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.COMMUNITY.getValue()
                 .equals(organization.getOrgTypeId().getValue())
-                && !cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgTypeEnum.COMMON.getValue()
+                && !cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.COMMON.getValue()
                 .equals(organization.getOrgTypeId().getValue())) {
             return null;
         }
@@ -847,9 +847,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (organization == null) {
             throw new BusinessException(OBJECT_NOT_EXIST);
         }
-        if (!cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgTypeEnum.COMMUNITY.getValue()
+        if (!cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.COMMUNITY.getValue()
                 .equals(organization.getOrgTypeId().getValue())
-                && !cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgTypeEnum.COMMON.getValue()
+                && !cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.COMMON.getValue()
                 .equals(organization.getOrgTypeId().getValue())) {
             return;
         }
@@ -860,7 +860,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         OrganizationCommonQuery organizationCommonQuery = OrganizationCommonQuery.builder()
                 .id(new OrganizationId(updateCompanyReqDto.getOrgId()))
-                .orgTypeId(cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgTypeEnum.COMMUNITY)
+                .orgTypeId(cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.COMMUNITY)
                 .build();
 
         Organization updateOrganization = Organization.builder()
@@ -940,7 +940,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
         Organization organization = Organization.builder()
                 .id(new OrganizationId(pkOrgId))
-                .status(cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgStatusEnum
+                .status(cn.cuiot.dmp.system.domain.types.enums.OrgStatusEnum
                         .valueOf(updateStatusParam.getStatus().intValue()))
                 .updatedOn(LocalDateTime.now())
                 .updatedBy(sessionUserId)

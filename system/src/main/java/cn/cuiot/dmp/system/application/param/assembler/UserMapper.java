@@ -3,7 +3,7 @@ package cn.cuiot.dmp.system.application.param.assembler;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
-import cn.cuiot.dmp.system.user_manage.domain.entity.User;
+import cn.cuiot.dmp.system.domain.entity.User;
 import com.github.pagehelper.PageInfo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

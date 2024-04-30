@@ -2,7 +2,7 @@ package cn.cuiot.dmp.system.application.param.assembler;
 
 import cn.cuiot.dmp.base.application.param.assembler.Assembler;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
-import cn.cuiot.dmp.system.user_manage.domain.entity.Organization;
+import cn.cuiot.dmp.system.domain.entity.Organization;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;

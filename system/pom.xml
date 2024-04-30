@@ -34,7 +34,7 @@
 		</dependency>
 		<dependency>
 			<groupId>cn.cuiot.dmp</groupId>
-			<artifactId>domain-system-user_manage</artifactId>
+			<artifactId>domain-system</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<!-- kaptcha图形验证码 -->

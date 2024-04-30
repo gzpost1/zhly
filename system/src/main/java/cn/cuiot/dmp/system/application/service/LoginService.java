@@ -2,7 +2,7 @@ package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginResDTO;
-import cn.cuiot.dmp.system.user_manage.domain.entity.User;
+import cn.cuiot.dmp.system.domain.entity.User;
 import javax.servlet.http.HttpServletRequest;
 
 /**

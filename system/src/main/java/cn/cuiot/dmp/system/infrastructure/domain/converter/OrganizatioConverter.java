@@ -7,10 +7,10 @@ import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntity;
-import cn.cuiot.dmp.system.user_manage.domain.entity.Organization;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgSourceEnum;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgStatusEnum;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgTypeEnum;
+import cn.cuiot.dmp.system.domain.entity.Organization;
+import cn.cuiot.dmp.system.domain.types.enums.OrgSourceEnum;
+import cn.cuiot.dmp.system.domain.types.enums.OrgStatusEnum;
+import cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum;
 import org.apache.commons.lang3.StringUtils;
 
 /**
