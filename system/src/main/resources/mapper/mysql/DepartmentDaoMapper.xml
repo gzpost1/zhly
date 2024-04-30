@@ -20,10 +20,9 @@
 
     </sql>
 
-    <insert id="insertDepartment" useGeneratedKeys="true" keyProperty="id"
-            parameterType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+    <insert id="insertDepartment" parameterType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
 
-                INSERT INTO department (d_group,
+                INSERT INTO department (id,d_group,
                                         department_name,
                                         parent_id,
                                         pk_org_id,
@@ -34,7 +33,8 @@
                                         created_on,
                                         created_by,
                                         description)
-                VALUES (#{dGroup},
+                VALUES (#{id},
+                        #{dGroup},
                         #{departmentName},
                         #{parentId},
                         #{pkOrgId},

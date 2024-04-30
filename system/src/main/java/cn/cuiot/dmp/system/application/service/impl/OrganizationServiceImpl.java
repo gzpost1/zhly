@@ -19,7 +19,7 @@ import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.RandomCodeWorker;
 import cn.cuiot.dmp.common.utils.RoleConst;
 import cn.cuiot.dmp.common.utils.Sm4;
-import cn.cuiot.dmp.common.utils.SnowflakeIdWorker;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.Password;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
@@ -79,6 +79,7 @@ import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.github.houbb.sensitive.api.IStrategy;
 import com.github.houbb.sensitive.core.api.strategory.StrategyPhone;
 import com.github.pagehelper.PageInfo;
@@ -192,11 +193,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     public static final int SIXTEEN = 16;
 
     /**
-     * 雪花算法生成器
-     */
-    private SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
-
-    /**
      * 根据用户类型返回
      */
     private String getUsername(String user, Integer userType) {
@@ -295,7 +291,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         String username = dto.getPhoneNumber();
         //随机用户密码
         String password = randomPwUtils.getRandomPassword((int) (8 + Math.random() * (20 - 8 + 1)));
-        userDataEntity.setUserId(String.valueOf(idWorker.nextId()));
+        userDataEntity.setUserId(String.valueOf(SnowflakeIdWorkerUtil.nextId()));
         userDataEntity.setName(dto.getAdminName());
         userDataEntity.setPhoneNumber(new PhoneNumber(dto.getPhoneNumber()));
         userDataEntity.setUsername(username);
@@ -1020,7 +1016,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         vo.setOrgTypeName(orgTypeDto.getName());
 
         OrganizationChangeDto changeDto = new OrganizationChangeDto();
-        changeDto.setId(idWorker.nextId());
+        changeDto.setId(SnowflakeIdWorkerUtil.nextId());
         changeDto.setPkOrgId(pkOrgId);
         changeDto.setChangeType(changeType);
         changeDto.setChangeName(changeName);

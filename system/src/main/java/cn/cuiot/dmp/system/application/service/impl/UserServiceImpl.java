@@ -21,11 +21,11 @@ import cn.cuiot.dmp.common.enums.StatusCodeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
-import cn.cuiot.dmp.common.utils.SnowflakeIdWorker;
 import cn.cuiot.dmp.domain.types.Address;
 import cn.cuiot.dmp.domain.types.Email;
 import cn.cuiot.dmp.domain.types.EncryptedValue;
@@ -169,11 +169,6 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     @Value("${self.debug}")
     private String debug;
-
-    /**
-     * 雪花算法生成器
-     */
-    private final SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
 
     /**
      * 应用id长度常量
@@ -825,7 +820,7 @@ public class UserServiceImpl extends BaseController implements UserService {
             throw new BusinessException(ResultCode.USERNAME_IS_INVALID);
         }
         //雪花算法生成userId
-        String userId = String.valueOf(idWorker.nextId());
+        String userId = String.valueOf(SnowflakeIdWorkerUtil.nextId());
         userdataEntity.setUserId(userId);
         userdataEntity.setUsername(userBo.getUserName());
         userdataEntity.setEmail(userBo.getEmail() != null ? new Email(userBo.getEmail()) : null);

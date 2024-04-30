@@ -11,6 +11,7 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.RandomCodeWorker;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.application.constant.CurrencyConst;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
@@ -204,7 +205,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         entity.setPath(path + "-" + entity.getCode());
         entity.setDGroup(parentDept.getDGroup());
         entity.setLevel(++parentDeptLevel);
-
+        entity.setId(SnowflakeIdWorkerUtil.nextId());
         orgRedisUtil.doubleDeleteForDbOperation(() -> departmentDao.insertDepartment(entity),
                 String.valueOf(dto.getPkOrgId()));
 

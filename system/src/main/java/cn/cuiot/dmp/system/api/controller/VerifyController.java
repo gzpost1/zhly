@@ -10,7 +10,6 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Sm4;
-import cn.cuiot.dmp.common.utils.SnowflakeIdWorker;
 import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.application.service.VerifyService;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.KaptchaResDTO;
@@ -64,11 +63,6 @@ public class VerifyController extends BaseController {
      */
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-
-    /**
-     * 雪花算法生成器
-     */
-    private SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
 
     @Value("${self.debug}")
     private String debug;

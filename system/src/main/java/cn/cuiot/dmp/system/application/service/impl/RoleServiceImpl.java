@@ -5,7 +5,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
-import cn.cuiot.dmp.common.utils.SnowflakeIdWorker;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.application.enums.RolePermitEnum;
 import cn.cuiot.dmp.system.application.enums.RoleTypeEnum;
@@ -85,11 +85,6 @@ public class RoleServiceImpl implements RoleService {
     private static final String ORG_ID = "orgId";
 
     private static final List<Long> DEFAULT_ROLE_ID = Arrays.asList(1L, 2L, 4L, 5L, 2778L, 2779L, 3000L);
-
-    /**
-     * 雪花算法生成器
-     */
-    private SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
 
     @Override
     public PageResult<RoleDTO> getRoleListByPage(Map<String, Object> paramsMap) {
@@ -194,8 +189,8 @@ public class RoleServiceImpl implements RoleService {
         entity.setOrgId(dto.getLoginOrgId());
         entity.setCreatedByType(UserSourceTypeEnum.PORTAL.getCode());
         entity.setCreatedBy(dto.getLoginUserId());
-        entity.setRoleId(String.valueOf(idWorker.nextId()));
-        entity.setRoleKey(String.valueOf(idWorker.nextId()));
+        entity.setRoleId(String.valueOf(SnowflakeIdWorkerUtil.nextId()));
+        entity.setRoleKey(String.valueOf(SnowflakeIdWorkerUtil.nextId()));
         //添加角色类型为自定义
         entity.setRoleType(RoleTypeEnum.CUSTOMIZE.getCode());
         entity.setPermit(RolePermitEnum.CUSTOMIZE.getCode());

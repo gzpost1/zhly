@@ -16,7 +16,7 @@ import cn.cuiot.dmp.common.enums.UserLongTimeLoginEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
 import cn.cuiot.dmp.common.utils.Const;
-import cn.cuiot.dmp.common.utils.SnowflakeIdWorker;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.AuthContants;
 import cn.cuiot.dmp.domain.types.Email;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -80,11 +80,6 @@ public class LoginServiceImpl implements LoginService {
 
     @Autowired
     private OperateLogService operateLogService;
-
-    /**
-     * 雪花算法生成器
-     */
-    private SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
 
 
     @Override
@@ -233,7 +228,7 @@ public class LoginServiceImpl implements LoginService {
             String jwt = Jwts.builder().setClaims(claims).setExpiration(expirationDate)
                     .signWith(SignatureAlgorithm.HS512, Const.SECRET).compact();
 
-            String refreshCode = String.valueOf(idWorker.nextId());
+            String refreshCode = String.valueOf(SnowflakeIdWorkerUtil.nextId());
             if (Objects.equals(validateUser.getLongTimeLogin(),
                     UserLongTimeLoginEnum.OPEN.getCode())) {
                 redisUtil.set(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt, refreshCode,
@@ -430,7 +425,7 @@ public class LoginServiceImpl implements LoginService {
         String jwt = Jwts.builder().setClaims(claims).setExpiration(expirationDate)
                 .signWith(SignatureAlgorithm.HS512, Const.SECRET).compact();
 
-        String refreshCode = String.valueOf(idWorker.nextId());
+        String refreshCode = String.valueOf(SnowflakeIdWorkerUtil.nextId());
         if (Objects.equals(validateUser.getLongTimeLogin(), UserLongTimeLoginEnum.OPEN.getCode())) {
             redisUtil.set(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt, refreshCode,
                     SecurityConst.REFRESH_SESSION_TIME * 18);
