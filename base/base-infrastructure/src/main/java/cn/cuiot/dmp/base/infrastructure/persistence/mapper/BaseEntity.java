@@ -21,7 +21,7 @@ public abstract class BaseEntity implements Serializable {
     /**
      * 自增ID
      */
-    @TableId(value = "id", type = IdType.INPUT)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     /**

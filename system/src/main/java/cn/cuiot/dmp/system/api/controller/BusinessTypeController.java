@@ -49,7 +49,7 @@ public class BusinessTypeController {
     }
 
     /**
-     * 根据企业id获取详情
+     * 根据条件查询企业的业务类型详情
      */
     @RequiresPermissions
     @PostMapping("/queryByCompany")
