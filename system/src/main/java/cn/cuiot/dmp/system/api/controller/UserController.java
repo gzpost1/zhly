@@ -466,10 +466,10 @@ public class UserController extends BaseController {
     @PostMapping(value = "/getLoginUserInfo", produces = "application/json;charset=UTF-8")
     public UserResDTO queryUserById() {
         // 获取session中的userId
-        String userId = getUserId();
-        String orgId = getOrgId();
+        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
+        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
         // 判断是否具有查询权限
-        UserResDTO userResDTO = userService.getUserMenuByUserIdAndOrgId(userId, orgId);
+        UserResDTO userResDTO = userService.getUserMenuByUserIdAndOrgId(sessionUserId, sessionOrgId);
         if (userResDTO == null) {
             // 账号不存在
             throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
@@ -479,9 +479,8 @@ public class UserController extends BaseController {
         if (null != userResDTO.getPhoneNumber()) {
             userResDTO.setPhoneNumber(Sm4.decrypt(userResDTO.getPhoneNumber()));
         }
-        // 2023/04/04 安全考虑去除密码返回
+        //安全考虑去除密码返回
         userResDTO.setPassword(null);
-        //对敏感信息脱敏返回--2020/12/07 新增
         return SensitiveUtil.desCopy(userResDTO);
     }
 

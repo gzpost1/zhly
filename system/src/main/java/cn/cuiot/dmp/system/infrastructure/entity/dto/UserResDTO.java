@@ -2,6 +2,7 @@ package cn.cuiot.dmp.system.infrastructure.entity.dto;
 
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.houbb.sensitive.annotation.Sensitive;
 import com.github.houbb.sensitive.core.api.strategory.StrategyEmail;
 import com.github.houbb.sensitive.core.api.strategory.StrategyPhone;
@@ -38,8 +39,14 @@ public class UserResDTO {
     private String username;
 
     /**
+     * 姓名
+     */
+    private String name;
+
+    /**
      * 密码（加密）
      */
+    @JsonIgnore
     private String password;
 
     /**
@@ -51,9 +58,8 @@ public class UserResDTO {
 
     /**
      * 手机号
-     * 脱敏字段
      */
-    @Sensitive(strategy = StrategyPhone.class)
+    //@Sensitive(strategy = StrategyPhone.class)
     private String phoneNumber;
 
     /**
