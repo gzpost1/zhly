@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 import cn.cuiot.dmp.base.infrastructure.domain.repository.impl.AbstraceRepositoryImpl;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.Email;
 import cn.cuiot.dmp.domain.types.Password;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
@@ -79,7 +80,7 @@ public class UserRepositoryImpl extends
 
     private void fillInsertPropertyValue(User user) {
         //处理id<=0的异常情况
-        user.setId(null);
+        user.setId(new UserId(SnowflakeIdWorkerUtil.nextId()));
         if (user.getCreatedOn() == null) {
             user.setCreatedOn(LocalDateTime.now());
         }

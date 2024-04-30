@@ -4,6 +4,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.AuthorizeParam;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.common.utils.TreeUtil;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.application.enums.UserSourceTypeEnum;
@@ -160,6 +161,7 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public void create(MenuDTO menuDTO) {
         MenuEntity menuEntity = BeanMapper.map(menuDTO, MenuEntity.class);
+        menuEntity.setId(SnowflakeIdWorkerUtil.nextId());
         menuDao.insertMenu(menuEntity);
     }
 

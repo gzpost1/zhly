@@ -78,9 +78,10 @@
         </foreach>
     </select>
 
-    <insert id="batchInsertUser" useGeneratedKeys="true" keyProperty="id" parameterType="java.util.List">
+    <insert id="batchInsertUser" parameterType="java.util.List">
         INSERT INTO user
         (
+        id,
         user_id,
         username,
         `name`,
@@ -105,6 +106,7 @@
         values
         <foreach collection="list" separator="," item="item">
             (
+            #{item.id},
             #{item.userId},
             #{item.username},
             #{item.name},

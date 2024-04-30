@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.system.application.service.SysParamService;
 import cn.cuiot.dmp.system.infrastructure.entity.SysParamEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetSysParamResDto;
@@ -39,6 +40,7 @@ public class SysParamServiceImpl implements SysParamService {
         String userPath = pathByUser.getPath();
         if (Objects.isNull(sysParam)) {
             // 新增配置
+            dto.setId(SnowflakeIdWorkerUtil.nextId());
             sysParamDao.insert(dto);
         } else {
             sysParamDao.update(dto);

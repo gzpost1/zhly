@@ -43,8 +43,7 @@
         select * from `menu` where menu_name like CONCAT('%',#{menuName},'%')
     </select>
 
-    <insert id="insertMenu" useGeneratedKeys="true" keyProperty="id"
-            parameterType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
+    <insert id="insertMenu"  parameterType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
         insert into menu
         (
             id,

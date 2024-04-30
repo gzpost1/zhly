@@ -97,7 +97,7 @@ public class MenuController extends BaseController {
         }
         menuDTO.setUpdatedBy(LoginInfoHolder.getCurrentUserId().toString());
         menuDTO.setUpdatedOn(LocalDateTime.now());
-        menuService.create(menuDTO);
+        menuService.update(menuDTO);
         return IdmResDTO.success(null);
     }
 

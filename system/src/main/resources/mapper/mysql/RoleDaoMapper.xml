@@ -93,14 +93,14 @@
     </insert>
 
 
-    <insert id="insertRole" useGeneratedKeys="true" keyProperty="id" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
+    <insert id="insertRole" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
         INSERT INTO `role`
         (
-            org_id, role_id, role_name, role_key, description, permit, role_type,
+            id,org_id, role_id, role_name, role_key, description, permit, role_type,
             created_by, created_by_type
         )
         VALUES
-        (
+        (   #{id},
             #{orgId},
             #{roleId},
             #{roleName},
@@ -127,14 +127,14 @@
         and  delete_flag = 0
     </update>
 
-    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
+    <insert id="insert" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
         INSERT INTO `role`
         (
-            role_id, role_name, role_key, description, permit, role_type,
+            id,role_id, role_name, role_key, description, permit, role_type,
             created_by, created_by_type
         )
         VALUES
-        (
+        (   #{id},
             #{roleId},
             #{roleName},
             #{roleKey},

@@ -886,12 +886,12 @@ public class UserServiceImpl extends BaseController implements UserService {
             OrganizationEntity sessionOrg = organization2EntityAssembler.toDTO(organization);
 
             //新增用户账户中间表关系
-            userDao.insertUserOrg(userdataEntity.getId().getValue(),
+            userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(),userdataEntity.getId().getValue(),
                     Long.parseLong(userBo.getOrgId()),
                     userBo.getDeptId(), userdataEntity.getCreatedBy());
 
             //新增用户角色中间表关系
-            userDao.insertFeferRole(userdataEntity.getId().getValue(),
+            userDao.insertFeferRole(SnowflakeIdWorkerUtil.nextId(),userdataEntity.getId().getValue(),
                     Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
 
             UserCsvDto userCsvDto = new UserCsvDto(userdataEntity.getUsername(), password);
@@ -957,12 +957,12 @@ public class UserServiceImpl extends BaseController implements UserService {
         //删除中间关联表关系
         userDao.deleteUserRole(uid, orgId);
         //重新添加中间表关联关系
-        userDao.insertUserRole(Long.parseLong(uid), Long.parseLong(roleId), orgId,
+        userDao.insertUserRole(SnowflakeIdWorkerUtil.nextId(),Long.parseLong(uid), Long.parseLong(roleId), orgId,
                 LocalDateTime.now(), String.valueOf(userId));
         //删除中间关联表关系
         userDao.deleteUserOrg(uid, orgId);
         //新增用户账户中间表关系
-        userDao.insertUserOrg(Long.parseLong(uid), Long.parseLong(userBo.getOrgId()),
+        userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(),Long.parseLong(uid), Long.parseLong(userBo.getOrgId()),
                 userBo.getDeptId(), String.valueOf(userId));
         redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + uid);
         updateInfosWithoutSms(userBo);

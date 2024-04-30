@@ -3,10 +3,10 @@
 <mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao">
 
     <insert id="insertOrgMenu">
-        INSERT INTO org_menu ( org_id, menu_id, create_time, create_by )
+        INSERT INTO org_menu (id,org_id, menu_id, create_time, create_by )
             VALUE
             <foreach collection="menuList" item="menu" separator=",">
-                (
+                (#{id},
             #{orgId},
             #{menu},
             #{now},

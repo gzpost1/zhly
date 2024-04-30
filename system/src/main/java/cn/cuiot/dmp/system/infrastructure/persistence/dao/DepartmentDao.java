@@ -208,14 +208,9 @@ public interface DepartmentDao {
 
     /**
      * 添加组织属性数据
-     *
-     * @param did Long
-     * @param key String
-     * @param val String
-     * @return int
      */
-    @Insert("INSERT INTO department_property(dept_id,property_key,val) VALUES (#{did},#{key},#{val})")
-    int insertDepartmentProperty(@Param("did") Long did, @Param("key") String key, @Param("val") String val);
+    @Insert("INSERT INTO department_property(id,dept_id,property_key,val) VALUES (#{id},#{did},#{key},#{val})")
+    int insertDepartmentProperty(@Param("id") Long id, @Param("did") Long did, @Param("key") String key, @Param("val") String val);
 
     /**
      * 修改组织属性数据

@@ -361,20 +361,21 @@ public class OrganizationServiceImpl implements OrganizationService {
         Long pkDeptId = rootDepartment.getId();
 
         // 新建子账户的所有者的角色在该子账户下为默认管理员角色
-        userDao.insertFeferRole(userDataEntity.getId().getValue(), pkOrgId, roleId);
+        userDao.insertFeferRole(SnowflakeIdWorkerUtil.nextId(),userDataEntity.getId().getValue(), pkOrgId, roleId);
         // 将数据库的两个默认角色与新建的账户绑定
         Map<String, Object> adminRoleMap = new HashMap<>(3);
         adminRoleMap.put("roleId", roleId);
         adminRoleMap.put("orgId", pkOrgId);
         adminRoleMap.put("createdBy", dto.getSessionOrgId());
+        adminRoleMap.put("id",SnowflakeIdWorkerUtil.nextId());
         roleDao.insertOrgRole(adminRoleMap);
 
         // 用户与账号绑定
-        userDao.insertUserOrg(userDataEntity.getId().getValue(), pkOrgId, String.valueOf(pkDeptId),
+        userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(),userDataEntity.getId().getValue(), pkOrgId, String.valueOf(pkDeptId),
                 dto.getSessionOrgId().toString());
 
         // 添加租户授权关系
-        userDao.insertUserGrant(pkOrgId, null, dto.getSessionOrgId().toString(),
+        userDao.insertUserGrant(SnowflakeIdWorkerUtil.nextId(),pkOrgId, null, dto.getSessionOrgId().toString(),
                 dto.getDeptId().toString(), null);
 
         //发送事件
@@ -514,7 +515,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         // 修改租户授权关系
         userDao.deleteUserGrant(pkOrgId);
-        userDao.insertUserGrant(pkOrgId, null, dto.getSessionOrgId().toString(),
+        userDao.insertUserGrant(SnowflakeIdWorkerUtil.nextId(),pkOrgId, null, dto.getSessionOrgId().toString(),
                 dto.getDeptId().toString(), null);
 
         //修改组织结构

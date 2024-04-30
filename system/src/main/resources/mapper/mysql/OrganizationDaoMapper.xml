@@ -98,26 +98,17 @@
         		ol.org_id = #{orgId} )
     </select>
 
-    <select id="getLabelByPath" resultType="string">
-        select
-        	ol.label_id
-        from
-        	org_label ol
-        	left join department d on d.pk_org_id = ol.org_id
-        where
-	        d.`path` = #{path}
-    </select>
-
-    <insert id="insertOrgLabel" useGeneratedKeys="true" keyProperty="id"
-            parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.OrgLabelDto">
+    <insert id="insertOrgLabel" parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.OrgLabelDto">
         INSERT INTO org_label
-        (org_id,
+        (id,
+         org_id,
          label_id,
          label_name,
          create_by,
          create_time
         )
-        values (#{orgId},
+        values (#{id},
+                #{orgId},
                 #{labelId},
                 #{labelName},
                 #{createdBy},

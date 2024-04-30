@@ -13,6 +13,8 @@ import org.hibernate.validator.constraints.Length;
 @Data
 public class SysParamDto {
 
+    private Long id;
+
     /**
      * 系统名称
      */

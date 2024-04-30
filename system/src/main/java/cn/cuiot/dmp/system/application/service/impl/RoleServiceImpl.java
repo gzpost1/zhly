@@ -196,6 +196,7 @@ public class RoleServiceImpl implements RoleService {
         entity.setPermit(RolePermitEnum.CUSTOMIZE.getCode());
         entity.setRoleName(dto.getRoleName());
         entity.setDescription(dto.getDescription());
+        entity.setId(SnowflakeIdWorkerUtil.nextId());
         try {
             this.roleDao.insertRole(entity);
         } catch (Exception e) {
@@ -213,6 +214,7 @@ public class RoleServiceImpl implements RoleService {
         paramsMap.put("roleId", rolePk);
         paramsMap.put(ORG_ID, dto.getLoginOrgId());
         paramsMap.put("createdBy", dto.getLoginUserId());
+        paramsMap.put("id",SnowflakeIdWorkerUtil.nextId());
         //插入账户和角色的关系
         this.roleDao.insertOrgRole(paramsMap);
 

@@ -219,7 +219,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public int insertDepartmentProperty(DepartmentPropertyDto dto) {
-        return departmentDao.insertDepartmentProperty(dto.getDeptId(), dto.getKey(), dto.getVal());
+        return departmentDao.insertDepartmentProperty(dto.getId(),dto.getDeptId(), dto.getKey(), dto.getVal());
     }
 
     @Override

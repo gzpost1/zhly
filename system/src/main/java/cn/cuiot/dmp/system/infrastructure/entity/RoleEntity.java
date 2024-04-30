@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class RoleEntity {
 
     /**
-     * 角色自增ID
+     * 主键ID
      */
     private Long id;
     /**

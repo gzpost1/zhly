@@ -115,16 +115,17 @@
         where label_type =#{labelType}
     </select>
 
-    <insert id="insertUserLabel" useGeneratedKeys="true" keyProperty="id"
-      parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.UserLabelDto">
+    <insert id="insertUserLabel" parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.UserLabelDto">
         INSERT INTO user_label
-        (user_id,
+        (id,
+          user_id,
          label_id,
          label_name,
          create_by,
          create_time
         )
-        values (#{userId},
+        values (#{id},
+                #{userId},
                 #{labelId},
                 #{labelName},
                 #{createdBy},

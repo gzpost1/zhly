@@ -31,12 +31,9 @@ public interface SysParamDao {
 
     /**
      * 保存系统参数
-     *
-     * @param dto
-     * @return
      */
-    @Insert("insert into sys_param (org_id, title,logo_path, created_by) values" +
-            " (#{sessionOrgId}, #{title}, #{logoPath}, #{sessionUserId})")
+    @Insert("insert into sys_param (id,org_id, title,logo_path, created_by) values" +
+            " (#{id},#{sessionOrgId}, #{title}, #{logoPath}, #{sessionUserId})")
     int insert(SysParamDto dto);
 
     /**
