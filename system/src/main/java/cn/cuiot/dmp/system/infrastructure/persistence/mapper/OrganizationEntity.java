@@ -28,18 +28,13 @@ public class OrganizationEntity implements Serializable {
     /**
      * 自增id
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
      * 账户key
      */
     private String orgKey;
-
-    /**
-     * 账户id
-     */
-    private String orgId;
 
     /**
      * 账户名称

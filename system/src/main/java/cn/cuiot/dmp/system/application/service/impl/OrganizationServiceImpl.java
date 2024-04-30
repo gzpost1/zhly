@@ -334,7 +334,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         //账户类型为企业账户
         Organization organization = Organization.builder()
-                .orgId(String.valueOf(idWorker.nextId()))
                 .orgKey(dto.getOrgKey())
                 .orgName(dto.getCompanyName())
                 .companyName(dto.getCompanyName())

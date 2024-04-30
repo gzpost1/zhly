@@ -215,7 +215,6 @@ public class LoginServiceImpl implements LoginService {
             OrganizationResDTO organization = organizationService.getOneById(pkOrgId);
             //校验账户状态
             checkOrgStatus(validateUser, organization);
-            String orgId = organization.getOrgId();
 
             Date expirationDate = DateUtil
                     .date(System.currentTimeMillis() + Const.SESSION_TIME * 20 * 1000);
@@ -291,7 +290,6 @@ public class LoginServiceImpl implements LoginService {
             loginResDTO.setToken(jwt);
             loginResDTO.setUserId(String.valueOf(pkUserId));
             loginResDTO.setOrgId(pkOrgId);
-            loginResDTO.setOrganizationId(orgId);
             loginResDTO.setOrgName(organization.getOrgName());
             loginResDTO.setOrgTypeId(organization.getOrgTypeId());
             loginResDTO.setPostId(validateUser.getPostId());
@@ -495,7 +493,6 @@ public class LoginServiceImpl implements LoginService {
         loginResDTO.setToken(jwt);
         loginResDTO.setUserId(String.valueOf(pkUserId));
         loginResDTO.setOrgId(pkOrgId);
-        loginResDTO.setOrganizationId(organization.getOrgId());
         loginResDTO.setOrgName(organization.getOrgName());
         loginResDTO.setOrgTypeId(organization.getOrgTypeId());
         loginResDTO.setPostId(validateUser.getPostId());

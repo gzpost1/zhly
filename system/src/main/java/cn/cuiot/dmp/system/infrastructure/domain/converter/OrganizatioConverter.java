@@ -33,7 +33,6 @@ public class OrganizatioConverter implements Converter<Organization, Organizatio
         Organization organization = Organization.builder().build();
         organization.setId(organizationEntity.getId() != null ? new OrganizationId(organizationEntity.getId()) : null);
         organization.setOrgKey(organizationEntity.getOrgKey());
-        organization.setOrgId(organizationEntity.getOrgId());
         organization.setOrgName(organizationEntity.getOrgName());
         organization.setOrgTypeId(OrgTypeEnum.valueOf(organizationEntity.getOrgTypeId()));
         organization.setStatus(OrgStatusEnum.valueOf(organizationEntity.getStatus()));
@@ -68,7 +67,6 @@ public class OrganizatioConverter implements Converter<Organization, Organizatio
         OrganizationEntity entity = new OrganizationEntity();
         entity.setId(organization.getId() != null ? organization.getId().getValue() : null);
         entity.setOrgKey(organization.getOrgKey());
-        entity.setOrgId(organization.getOrgId());
         entity.setOrgName(organization.getOrgName());
         entity.setOrgTypeId(organization.getOrgTypeId() != null ? organization.getOrgTypeId().getValue() : null);
         entity.setStatus(organization.getStatus() != null ? organization.getStatus().getValue() : null);

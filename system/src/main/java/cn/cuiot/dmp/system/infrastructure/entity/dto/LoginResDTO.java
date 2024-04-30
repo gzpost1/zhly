@@ -36,11 +36,6 @@ public class LoginResDTO {
     private String orgId;
 
     /**
-     * organizationId
-     */
-    private String organizationId;
-
-    /**
      * 账户名称
      */
     private String orgName;

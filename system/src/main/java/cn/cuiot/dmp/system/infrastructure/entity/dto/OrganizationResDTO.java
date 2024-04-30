@@ -20,11 +20,6 @@ public class OrganizationResDTO {
     private Long id;
 
     /**
-     * 账户id
-     */
-    private String orgId;
-
-    /**
      * 账户名称
      */
     private String orgName;

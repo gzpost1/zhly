@@ -99,7 +99,6 @@ public class SystemEventSendAdapter implements ApplicationContextAware {
         OrganizationActionEvent organizationActionEvent) {
         organizationActionEvent.setId(organizationEntity.getId());
         organizationActionEvent.setOrgKey(organizationEntity.getOrgKey());
-        organizationActionEvent.setOrgId(organizationEntity.getOrgId());
         organizationActionEvent.setOrgName(organizationEntity.getOrgName());
         organizationActionEvent.setOrgTypeId(organizationEntity.getOrgTypeId());
         organizationActionEvent.setStatus(organizationEntity.getStatus());

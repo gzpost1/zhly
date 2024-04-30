@@ -5,7 +5,6 @@
     <sql id="column">
         id,
         org_key,
-        org_id,
         org_name,
         org_type_id,
         parent_id,
@@ -29,7 +28,6 @@
         SELECT
         (SELECT username FROM `user` WHERE id = o.created_by) as created_by,
         o.id,
-        o.org_id,
         o.status,
         o.org_name,
         o.org_key,
