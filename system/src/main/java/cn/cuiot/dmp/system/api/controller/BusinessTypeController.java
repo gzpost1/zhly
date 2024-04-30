@@ -40,6 +40,15 @@ public class BusinessTypeController {
     }
 
     /**
+     * 编辑时查询类型列表（排除当前节点）
+     */
+    @RequiresPermissions
+    @PostMapping("/queryExcludeChild")
+    public List<BusinessTypeTreeNodeVO> queryExcludeChild(@RequestBody @Valid BusinessTypeQueryDTO queryDTO) {
+        return businessTypeService.queryExcludeChild(queryDTO);
+    }
+
+    /**
      * 根据企业id获取详情
      */
     @RequiresPermissions
