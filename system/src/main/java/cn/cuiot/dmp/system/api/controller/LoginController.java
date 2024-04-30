@@ -227,7 +227,7 @@ public class LoginController extends BaseController {
                 redisUtil.expire(key, Const.ONE_DAY_SECOND);
                 SimpleStringResDTO simpleStringResDTO;
                 try {
-                    simpleStringResDTO = verifyService.sendSmsCodeWithoutKaptcha(phoneNumber, userDataEntity.getUserId());
+                    simpleStringResDTO = verifyService.sendSmsCodeWithoutKaptcha(phoneNumber, userDataEntity.getId().toString());
                 } catch (Exception e) {
                     redisUtil.decr(key, Const.NUMBER_1);
                     throw e;

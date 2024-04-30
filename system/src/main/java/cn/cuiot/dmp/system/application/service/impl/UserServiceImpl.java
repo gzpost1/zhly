@@ -231,7 +231,6 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     private void copyProperties(User userEntity, UserResDTO userResDTO) {
         userResDTO.setId(userEntity.getId().getStrValue());
-        userResDTO.setUserId(userEntity.getUserId());
         userResDTO.setUsername(userEntity.getUsername());
         userResDTO.setPassword(
                 userEntity.getPassword() != null ? userEntity.getPassword().getHashEncryptValue()
@@ -368,12 +367,12 @@ public class UserServiceImpl extends BaseController implements UserService {
     @Transactional(rollbackFor = Exception.class)
     public SimpleStringResDTO updatePasswordByPhoneWithoutSid(UserBo userBo) {
         ResetPasswordReqDTO resetPasswordReqDTO = userBo.getResetPasswordReqDTO();
-        User user = userRepository.find(new UserId(userBo.getUserId()));
+        User user = userRepository.find(new UserId(userBo.getId()));
         String phoneNumber = user.getDecryptedPhoneNumber();
         // 获取redis中的验证码文本
         String expectedSmsText = stringRedisTemplate.opsForValue()
                 .get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P
-                        + userBo.getUserId() + phoneNumber);
+                        + userBo.getId() + phoneNumber);
         if (FALSE.equals(debug) && StringUtils.isEmpty(expectedSmsText)) {
             // 短信验证码过期
             throw new BusinessException(SMS_CODE_EXPIRED_ERROR);
@@ -384,7 +383,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
 
         return updatePasswordCommon(resetPasswordReqDTO, user, userBo,
-                userBo.getUserId() + phoneNumber);
+                userBo.getId() + phoneNumber);
     }
 
     /**
@@ -458,7 +457,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     @LogRecord(operationCode = "updatePassword", operationName = "修改密码（个人）", serviceType = ServiceTypeConst.SECURITY_SETTING)
     @Override
     public void updatePassword(UserDataEntity entity) {
-        User user = User.builder().id(new UserId(entity.getUserId()))
+        User user = User.builder().id(new UserId(entity.getId()))
                 .password(new Password(entity.getPassword())).build();
         user.updatedByPortal();
         if (!userRepository.save(user)) {
@@ -473,7 +472,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     @Override
     public void updatePhoneNumber(UserBo userBo) {
         String phoneNumber = userBo.getPhoneNumber();
-        String userId = userBo.getUserId();
+        Long userId = userBo.getId();
         String smsCode = userBo.getSmsCode();
         if (FALSE.equals(debug)) {
             // 获取redis中的短信验证码文本 邮箱验证
@@ -515,7 +514,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         stringRedisTemplate.delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId);
         // 设备模块使用了缓存，系统模块姓名或手机号变更需要清除redisKey
-        redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + userBo.getUserId());
+        redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + userId);
     }
 
     /**
@@ -527,7 +526,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     public int deleteUsers(UserBo userBo) {
         String sessionOrgId = userBo.getOrgId();
         List<Long> ids = userBo.getIds();
-        String pkUserId = userBo.getUserId();
+        Long pkUserId = userBo.getId();
         // 查询该账户的账户所有者
         Long orgOwner = userDao.findOrgOwner(sessionOrgId);
 
@@ -539,7 +538,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         userBo.setOperationTarget(op);
 
-        DepartmentDto departmentDto = departmentDao.getPathByUser(userBo.getUserId());
+        DepartmentDto departmentDto = departmentDao.getPathByUser(pkUserId.toString());
         String deptTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
                 .orElse(null);
         if (StringUtils.isEmpty(deptTreePath)) {
@@ -556,7 +555,7 @@ public class UserServiceImpl extends BaseController implements UserService {
             }
 
             // 判断是否是自己
-            if (id.equals(Long.parseLong(pkUserId))) {
+            if (id.equals(pkUserId)) {
                 throw new BusinessException(ResultCode.CANNOT_DELETE_SELF);
             }
             // 判断该用户是不是账户的所有者
@@ -625,9 +624,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         if (StringUtils.hasLength(userBo.getPhoneNumber())) {
             newPhoneNumber = new PhoneNumber(userBo.getPhoneNumber());
         }
-        String userId = userBo.getUserId();
+        Long pkUserId = userBo.getId();
         //获取日志操作对象
-        User user = userRepository.find(new UserId(userId));
+        User user = userRepository.find(new UserId(pkUserId));
         log.info("修改用户，user：" + JSON.toJSONString(user));
 
         if (newPhoneNumber != null && !newPhoneNumber.equals(user.getPhoneNumber())) {
@@ -649,7 +648,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         userRepository.save(user);
 
         // 设备模块使用了缓存，系统模块姓名或手机号变更需要清除redisKey
-        redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + userBo.getUserId());
+        redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + pkUserId);
     }
 
 
@@ -735,7 +734,7 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     @Override
     public UserCsvDto resetPasswordWithOutSms(UserBo userBo) {
-        String userId = userBo.getUserId();
+        Long userId = userBo.getId();
         String password = userBo.getPassword();
         //如果密码为空，则表示自动生成密码
         if (!StringUtils.hasLength(password)) {
@@ -771,7 +770,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     public UserCsvDto insertUser(UserBo userBo) {
         DepartmentEntity departmentEntity = departmentDao
                 .selectByPrimary(
-                        Long.parseLong(userDao.getDeptId(userBo.getUserId(), userBo.getOrgId())));
+                        Long.parseLong(userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId())));
 
         DepartmentEntity entity = departmentDao.selectByPrimary(Long.parseLong(userBo.getDeptId()));
         // 权限操作
@@ -819,9 +818,7 @@ public class UserServiceImpl extends BaseController implements UserService {
             //不符合正则
             throw new BusinessException(ResultCode.USERNAME_IS_INVALID);
         }
-        //雪花算法生成userId
-        String userId = String.valueOf(SnowflakeIdWorkerUtil.nextId());
-        userdataEntity.setUserId(userId);
+
         userdataEntity.setUsername(userBo.getUserName());
         userdataEntity.setEmail(userBo.getEmail() != null ? new Email(userBo.getEmail()) : null);
         //如果密码为空，则表示自动生成密码
@@ -857,7 +854,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
 
         try {
-            userdataEntity.setCreatedBy(userBo.getUserId());
+            userdataEntity.setCreatedBy(userBo.getId().toString());
             userdataEntity.setCreatedByType(OperateByTypeEnum.USER);
             userdataEntity.setPhoneNumber(new PhoneNumber(phoneNumber));
             userdataEntity.setContactPerson(userBo.getContactPerson());
@@ -911,7 +908,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO updatePermit(UserBo userBo) {
         // 被修改的用户
-        String uid = userBo.getUserId();
+        Long uid = userBo.getId();
         // 当前登陆用户
         Long userId = userBo.getId();
         String orgId = userBo.getOrgId();
@@ -924,7 +921,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         userBo.setOperationTarget(op);
 
         // 根据userId查询orgId
-        Long org = this.userDao.getOrgId(Long.valueOf(uid));
+        Long org = this.userDao.getOrgId(uid);
         if (!orgId.equals(String.valueOf(org))) {
             throw new BusinessException(UNAUTHORIZED_ACCESS);
         }
@@ -955,14 +952,14 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         userRepository.save(userDataEntity);
         //删除中间关联表关系
-        userDao.deleteUserRole(uid, orgId);
+        userDao.deleteUserRole(uid.toString(), orgId);
         //重新添加中间表关联关系
-        userDao.insertUserRole(SnowflakeIdWorkerUtil.nextId(),Long.parseLong(uid), Long.parseLong(roleId), orgId,
+        userDao.insertUserRole(SnowflakeIdWorkerUtil.nextId(),uid, Long.parseLong(roleId), orgId,
                 LocalDateTime.now(), String.valueOf(userId));
         //删除中间关联表关系
-        userDao.deleteUserOrg(uid, orgId);
+        userDao.deleteUserOrg(uid.toString(), orgId);
         //新增用户账户中间表关系
-        userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(),Long.parseLong(uid), Long.parseLong(userBo.getOrgId()),
+        userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(),uid, Long.parseLong(userBo.getOrgId()),
                 userBo.getDeptId(), String.valueOf(userId));
         redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + uid);
         updateInfosWithoutSms(userBo);
@@ -1090,8 +1087,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         UserBo userBo = new UserBo();
         userBo.setOrgId(orgId);
         userBo.setFrom(userEntity.getFrom());
-        userBo.setId(Long.valueOf(userEntity.getLoginUserId()));
-        userBo.setUserId(userEntity.getLoginUserId());
+        userBo.setLoginUserId(userEntity.getLoginUserId());
         userBo.setUserName(userEntity.getUserName());
         userBo.setPassword(userEntity.getPassWord());
         userBo.setResetPassword(userEntity.getResetPassword());

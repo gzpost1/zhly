@@ -34,11 +34,6 @@ public class UserBo extends AbstractResourceParam {
     private String avatar;
 
     /**
-     * 用户id
-     */
-    private String userId;
-
-    /**
      * 手机号
      */
     private String phoneNumber;

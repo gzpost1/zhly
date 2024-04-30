@@ -22,7 +22,6 @@ public class UserCommonQuery {
     @Singular("id")
     private List<UserId> idList;
     private Password password;
-    private String userId;
     private String username;
     private PhoneNumber phoneNumber;
     private Email email;

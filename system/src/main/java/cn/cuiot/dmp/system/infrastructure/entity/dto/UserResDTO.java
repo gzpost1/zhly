@@ -28,11 +28,6 @@ public class UserResDTO {
     private String id;
 
     /**
-     * 用户id
-     */
-    private String userId;
-
-    /**
      * 账户id
      */
     private String orgId;

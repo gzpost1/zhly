@@ -52,7 +52,7 @@ public class Organization extends AbstractAggregate<OrganizationId> {
     private OrganizationId parentId;
 
     /**
-     * 账户所有者id(admin_user_id)
+     * 账户所有者id
      */
     private UserId orgOwner;
 

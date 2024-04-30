@@ -27,13 +27,8 @@ public class UserEntity extends BaseEntity implements Serializable {
     /**
      * pk
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
-
-    /**
-     * 用户id
-     */
-    private String userId;
 
     /**
      * 用户名

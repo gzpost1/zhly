@@ -36,10 +36,8 @@ public class UserConverter implements Converter<User, UserEntity> {
             if (userEntity == null) {
                 return null;
             }
-
             User user = User.builder().build();
             user.setId(userEntity.getId() != null ? new UserId(userEntity.getId()) : null);
-            user.setUserId(userEntity.getUserId());
             user.setUsername(userEntity.getUsername());
             if (userEntity.getPassword() != null) {
                 Password password = new Password();
@@ -96,7 +94,6 @@ public class UserConverter implements Converter<User, UserEntity> {
         }
         UserEntity entity = new UserEntity();
         entity.setId(user.getId() != null ? user.getId().getValue() : null);
-        entity.setUserId(user.getUserId());
         entity.setUsername(user.getUsername());
         entity.setPassword(user.getPassword() !=null ? user.getPassword().getHashEncryptValue() : null);
         entity.setEmail(user.getEncryptedEmail());

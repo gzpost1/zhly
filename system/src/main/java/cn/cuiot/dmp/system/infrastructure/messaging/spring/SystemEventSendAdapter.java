@@ -132,7 +132,6 @@ public class SystemEventSendAdapter implements ApplicationContextAware {
 
     private static void setUserActionEventProperties(UserDataEntity userData, UserActionEvent userActionEvent) {
         userActionEvent.setId(userData.getId());
-        userActionEvent.setUserId(userData.getUserId());
         userActionEvent.setUsername(userData.getUsername());
         userActionEvent.setPassword(userData.getPassword());
         userActionEvent.setEmail(userData.getEmail());

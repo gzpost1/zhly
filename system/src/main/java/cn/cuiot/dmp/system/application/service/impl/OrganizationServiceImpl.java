@@ -292,7 +292,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         String username = dto.getPhoneNumber();
         //随机用户密码
         String password = randomPwUtils.getRandomPassword((int) (8 + Math.random() * (20 - 8 + 1)));
-        userDataEntity.setUserId(String.valueOf(SnowflakeIdWorkerUtil.nextId()));
         userDataEntity.setName(dto.getAdminName());
         userDataEntity.setPhoneNumber(new PhoneNumber(dto.getPhoneNumber()));
         userDataEntity.setUsername(username);
@@ -550,7 +549,7 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST);
         }
 
-        dto.setOrgOwnerUserId(ownerUser.getUserId());
+        dto.setOrgOwnerUserId(ownerUser.getId().toString());
         dto.setOrgOwnerUsername(ownerUser.getUsername());
         //需要重置密码
         updatePasswordIfNeed(dto);
@@ -920,7 +919,7 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw new BusinessException(ResultCode.RESET_PASSWORD_ERROR);
         }
         UserBo userBo = new UserBo();
-        userBo.setUserId(userId);
+        userBo.setId(Long.valueOf(userId));
         redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + userId);
         log.info("【账户详情下用户重置密码】，redis，key：{}", CacheConst.USER_CACHE_KEY_PREFIX + userId);
         UserCsvDto userCsvDto = userService.resetPasswordWithOutSms(userBo);

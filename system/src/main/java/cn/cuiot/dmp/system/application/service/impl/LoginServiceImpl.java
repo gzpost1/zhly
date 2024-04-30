@@ -105,7 +105,7 @@ public class LoginServiceImpl implements LoginService {
         }
         // 账号存在
         String loginFailedUsersRedisKey =
-                CacheConst.LOGIN_FAILED_USERS_REDIS_KEY + userEntity.getUserId();
+                CacheConst.LOGIN_FAILED_USERS_REDIS_KEY + userEntity.getId();
         // 登录失败
         if (!userEntity.getPassword().verifyPassword(loginReqDTO.getPassword())) {
             //记录登录失败次数

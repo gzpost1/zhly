@@ -49,7 +49,6 @@ public class UserRepositoryImpl extends
     private IUserEntityService iUserEntityService;
 
     private static final String COLUMN_NAME_PHONE_NUMBER = "phone_number";
-    private static final String COLUMN_NAME_USER_ID = "user_id";
     private static final String COLUMN_NAME_EMAIL = "email";
     private static final String COLUMN_NAME_USER_TYPE = "user_type";
     private static final String COLUMN_NAME_USER_NAME = "username";
@@ -263,11 +262,6 @@ public class UserRepositoryImpl extends
         // 姓名
         if (userQuery.getUsername() != null) {
             queryWrapper.eq(COLUMN_NAME_USER_NAME, userQuery.getUsername());
-        }
-
-        // USER_ID
-        if (userQuery.getUserId() != null) {
-            queryWrapper.eq(COLUMN_NAME_USER_ID, userQuery.getUserId());
         }
 
         // 手机号

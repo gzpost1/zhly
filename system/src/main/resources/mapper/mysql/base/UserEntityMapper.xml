@@ -3,13 +3,12 @@
 <mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntityMapper">
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, user_id, username,`name`,password, email, phone_number, avatar, status, last_online_ip, last_online_address, last_online_on, created_on, created_by, created_by_type, updated_on, updated_by, updated_by_type, deleted_flag, deleted_on, deleted_by, user_type, contact_person, contact_address, long_time_login,post_id,remark
+        id,username,`name`,password, email, phone_number, avatar, status, last_online_ip, last_online_address, last_online_on, created_on, created_by, created_by_type, updated_on, updated_by, updated_by_type, deleted_flag, deleted_on, deleted_by, user_type, contact_person, contact_address, long_time_login,post_id,remark
     </sql>
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity">
         <id column="id" property="id" />
-        <result column="user_id" property="userId" />
         <result column="username" property="username" />
         <result column="name" property="name" />
         <result column="password" property="password" />
@@ -82,7 +81,6 @@
         INSERT INTO user
         (
         id,
-        user_id,
         username,
         `name`,
         password,
@@ -107,7 +105,6 @@
         <foreach collection="list" separator="," item="item">
             (
             #{item.id},
-            #{item.userId},
             #{item.username},
             #{item.name},
             #{item.password},

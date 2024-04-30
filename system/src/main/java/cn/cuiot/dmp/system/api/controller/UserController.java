@@ -19,6 +19,7 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
@@ -114,26 +115,17 @@ public class UserController extends BaseController {
 
     /**
      * 用户列表筛选-分页
-     *
-     * @param userName
-     * @param phoneNumber
-     * @param deptId
-     * @param searchType
-     * @param searchContent
-     * @param currentPage
-     * @param pageSize
-     * @return
      */
     @RequiresPermissions("system:user:control")
     @GetMapping(value = "/user/listUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<UserDataResDTO> getPage(
-        @RequestParam(value = "userName", required = false) String userName,
-        @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
-        @RequestParam(value = "deptId", required = false) Long deptId,
-        @RequestParam(value = "searchType", required = false) Integer searchType,
-        @RequestParam(value = "searchContent", required = false) String searchContent,
-        @RequestParam(value = "currentPage", required = false, defaultValue = "1") int currentPage,
-        @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize) {
+            @RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
+            @RequestParam(value = "deptId", required = false) Long deptId,
+            @RequestParam(value = "searchType", required = false) Integer searchType,
+            @RequestParam(value = "searchContent", required = false) String searchContent,
+            @RequestParam(value = "currentPage", required = false, defaultValue = "1") int currentPage,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize) {
         if (pageSize > MAX_PAGE_SIZE) {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT);
         }
@@ -149,11 +141,13 @@ public class UserController extends BaseController {
 
         // 组织为空则使用当前登陆用户的组织
         if (deptId == null) {
-            deptId = Optional.ofNullable(userService.getDeptId(getUserId(), sessionOrgId)).map(Long::valueOf).orElse(null);
+            deptId = Optional.ofNullable(userService.getDeptId(getUserId(), sessionOrgId))
+                    .map(Long::valueOf).orElse(null);
         }
         // 获取子组织
         if (deptId != null) {
-            DepartmentEntity departmentEntity = departmentService.getDeptById(String.valueOf(deptId));
+            DepartmentEntity departmentEntity = departmentService
+                    .getDeptById(String.valueOf(deptId));
             if (departmentEntity != null) {
                 params.put("path", departmentEntity.getPath());
             }
@@ -178,14 +172,11 @@ public class UserController extends BaseController {
             params.put("phone", decrypt);
         }
         String orgId = getOrgId();
-        return userService.getPage(params, sessionOrgId, currentPage, pageSize,orgId);
+        return userService.getPage(params, sessionOrgId, currentPage, pageSize, orgId);
     }
 
     /**
      * 查询用户详情
-     *
-     * @param id
-     * @return
      */
     @RequiresPermissions("system:user:control")
     @GetMapping(value = "/user/getUser", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -202,27 +193,23 @@ public class UserController extends BaseController {
 
     /**
      * 新增用户（虚拟用户）
-     *
-     * @param userEntity
      */
     @RequiresPermissions("system:user:control")
     @PostMapping(value = "/user/insertUserD", produces = MediaType.APPLICATION_JSON_VALUE)
     public void insertUser(@RequestBody @Valid InsertUserDTO userEntity) {
         String orgId = getOrgId();
-        userEntity.setLoginUserId(getUserId());
+        userEntity.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
         userService.insertUserD(userEntity, orgId, getUserName());
     }
 
     /**
      * 用户管理编辑
-     *
-     * @param userEntity
-     * @return
      */
     @RequiresPermissions("system:user:control")
     @PostMapping(value = "/user/updateUser", produces = MediaType.APPLICATION_JSON_VALUE)
     public IdmResDTO updateUser(@RequestBody @Valid InsertUserDTO userEntity) {
-        if (!StringUtils.hasLength(userEntity.getUserId()) || !StringUtils.hasLength(userEntity.getRoleId())) {
+        if (!StringUtils.hasLength(userEntity.getUserId()) || !StringUtils
+                .hasLength(userEntity.getRoleId())) {
             return new IdmResDTO(ResultCode.PARAM_CANNOT_NULL);
         }
         // 不允许修改自己的信息
@@ -230,18 +217,19 @@ public class UserController extends BaseController {
             return new IdmResDTO(ResultCode.NO_OPERATION_PERMISSION);
         }
         UserBo userBo = new UserBo();
-        userBo.setOrgId(getOrgId());
-        userBo.setUserId(userEntity.getUserId());
+        userBo.setId(Long.valueOf(userEntity.getUserId()));
+        userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
         userBo.setRoleId(userEntity.getRoleId());
         userBo.setId(Long.parseLong(getUserId()));
         userBo.setEmail(userEntity.getEmail());
         userBo.setPhoneNumber(userEntity.getPhoneNumber());
         if (StringUtils.hasLength(userBo.getPhoneNumber())
-            && !userBo.getPhoneNumber().matches(RegexConst.PHONE_NUMBER_REGEX)) {
+                && !userBo.getPhoneNumber().matches(RegexConst.PHONE_NUMBER_REGEX)) {
             return new IdmResDTO(ResultCode.PHONE_NUMBER_IS_INVALID);
         }
         if (StringUtils.hasLength(userBo.getEmail())
-            && !userBo.getEmail().matches(RegexConst.EMAIL_REGEX)) {
+                && !userBo.getEmail().matches(RegexConst.EMAIL_REGEX)) {
             return new IdmResDTO(ResultCode.EMAIL_IS_INVALID);
         }
         userBo.setResetPassword(userEntity.getResetPassword());
@@ -249,7 +237,8 @@ public class UserController extends BaseController {
         userBo.setDeptId(userEntity.getDeptId());
         userBo.setContactPerson(userEntity.getContactPerson());
         userBo.setContactAddress(userEntity.getContactAddress());
-        if (getUserName().equals("admin") && Objects.equals(Const.STR_1, userEntity.getLongTimeLogin())) {
+        if (getUserName().equals("admin") && Objects
+                .equals(Const.STR_1, userEntity.getLongTimeLogin())) {
             userBo.setLongTimeLogin(Const.STR_1);
         } else {
             userBo.setLongTimeLogin(null);
@@ -259,9 +248,6 @@ public class UserController extends BaseController {
 
     /**
      * 批量删除用户
-     *
-     * @param ids
-     * @return
      */
     @PostMapping(value = "/user/deleteUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> deleteUsers(@RequestBody List<Long> ids) {
@@ -269,8 +255,8 @@ public class UserController extends BaseController {
             throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
         }
         // 获取session中的userId
-        String userId = getUserId();
-        if (StringUtils.isEmpty(userId)) {
+        Long userId = LoginInfoHolder.getCurrentUserId();
+        if (Objects.isNull(userId)) {
             throw new BusinessException(ResultCode.USER_ID_NOT_EXIST);
         }
         // 获取session中的orgId
@@ -280,7 +266,7 @@ public class UserController extends BaseController {
         }
         UserBo userBo = new UserBo();
         userBo.setOrgId(sessionOrgId);
-        userBo.setUserId(userId);
+        userBo.setId(userId);
         userBo.setIds(ids);
         Map<String, Object> resultMap = new HashMap<>(1);
         resultMap.put("succeedCount", this.userService.deleteUsers(userBo));
@@ -289,8 +275,6 @@ public class UserController extends BaseController {
 
     /**
      * 修改密码(登录人自行修改)
-     *
-     * @param dto
      */
     @PostMapping(value = "/user/updatePassword", produces = MediaType.APPLICATION_JSON_VALUE)
     public void updatePassword(@RequestBody UpdatePasswordDto dto) {
@@ -305,30 +289,28 @@ public class UserController extends BaseController {
         }
         // 判断密码不符合规则
         if (!newPassword.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
-            || ValidateUtil.checkBoardContinuousChar(password)) {
+                || ValidateUtil.checkBoardContinuousChar(password)) {
             throw new BusinessException(PASSWORD_IS_INVALID);
         }
-        String userId = getUserId();
-        UserResDTO loginUser = userService.getUserById(userId);
+        Long userId = LoginInfoHolder.getCurrentUserId();
+        UserResDTO loginUser = userService.getUserById(userId.toString());
         String oldPassword = Sm4.decrypt(loginUser.getPassword());
         if (!password.equals(oldPassword)) {
             throw new BusinessException(OLD_PASSWORD_IS_ERROR);
         }
         UserDataEntity userDataEntity = new UserDataEntity();
         userDataEntity.setPassword(Sm4.encryption(newPassword));
-        userDataEntity.setUserId(userId);
+        userDataEntity.setId(userId);
         // 更改密码
         userService.updatePassword(userDataEntity);
     }
 
     /**
      * 用户管理组织树（懒加载）
-     *
-     * @param dto
-     * @return
      */
     @GetMapping(value = "/user/getUserDepartmentTreeLazy", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(@Valid GetUserDepartmentTreeLazyReqDto dto) {
+    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
+            @Valid GetUserDepartmentTreeLazyReqDto dto) {
         dto.setLoginUserId(getUserId());
         dto.setLoginOrgId(getOrgId());
         return userService.getUserDepartmentTreeLazy(dto);
@@ -336,12 +318,10 @@ public class UserController extends BaseController {
 
     /**
      * 获取标签类型列表
-     * @param labelType
-     * @return
      */
     @GetMapping(value = "/user/getLabelTypeList", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<LabelTypeDto> getLabelTypeList(@RequestParam("labelType") String labelType) {
-        if (labelType.isEmpty()){
+        if (labelType.isEmpty()) {
             throw new BusinessException(ResultCode.LABEL_TYPE_NOT_EXIST);
         }
         return userService.getLabelTypeList(labelType);
@@ -349,8 +329,6 @@ public class UserController extends BaseController {
 
     /**
      * 修改手机号
-     *
-     * @param dto
      */
     @PostMapping(value = "/user/updatePhoneNumber", produces = MediaType.APPLICATION_JSON_VALUE)
     public void updatePhoneNumber(@RequestBody SmsCodeCheckReqDTO dto) {
@@ -368,13 +346,13 @@ public class UserController extends BaseController {
             throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
         }
         // 获取session中的userId
-        String userId = getUserId();
-        if (StringUtils.isEmpty(userId)) {
+        Long userId = LoginInfoHolder.getCurrentUserId();
+        if (Objects.isNull(userId)) {
             throw new BusinessException(ResultCode.USER_ID_NOT_EXIST);
         }
 
         UserBo userBo = new UserBo();
-        userBo.setUserId(userId);
+        userBo.setId(userId);
         userBo.setSmsCode(smsCode);
         userBo.setPhoneNumber(phoneNumber);
         userBo.setOrgId(getOrgId());
@@ -384,8 +362,6 @@ public class UserController extends BaseController {
 
     /**
      * 修改手机号
-     *
-     * @param dto
      */
     @PostMapping(value = "/user/replacePhoneNumber", produces = MediaType.APPLICATION_JSON_VALUE)
     public void replacePhoneNumber(@RequestBody SmsCodeCheckStrongerReqDTO dto) {
@@ -399,24 +375,28 @@ public class UserController extends BaseController {
         }
 
         // 获取session中的userId
-        String userId = getUserId();
-        if (StringUtils.isEmpty(userId)) {
+        Long userId = LoginInfoHolder.getCurrentUserId();
+        if (Objects.isNull(userId)) {
             throw new BusinessException(ResultCode.USER_ID_NOT_EXIST);
         }
 
         // 加强校验，校验第一步的旧手机号验证
-        String smsCodeOld = Optional.ofNullable(dto).map(SmsCodeCheckStrongerReqDTO::getSmsCodeOld).orElse(null);
+        String smsCodeOld = Optional.ofNullable(dto).map(SmsCodeCheckStrongerReqDTO::getSmsCodeOld)
+                .orElse(null);
         if (StringUtils.isEmpty(smsCodeOld)) {
             // 短信验证码为空
             throw new BusinessException(SMS_TEXT_OLD_INVALID);
         }
         //0.9改动原手机号参数去除，由后端自行获取--2020/12/07
-        String phoneNumberOld = Sm4.decrypt(userService.getUserById(userId).getPhoneNumber());
+        String phoneNumberOld = Sm4
+                .decrypt(userService.getUserById(userId.toString()).getPhoneNumber());
         boolean smsCodeVerified = true;
         if (FALSE.equals(debug)) {
             // 短信验证码验证
             try {
-                smsCodeVerified = verifyUnit.checkSmsCode(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumberOld, phoneNumberOld + smsCodeOld);
+                smsCodeVerified = verifyUnit.checkSmsCode(
+                        CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumberOld,
+                        phoneNumberOld + smsCodeOld);
             } catch (BusinessException e) {
                 log.warn("短信验证码错误");
                 throw new BusinessException(SMS_TEXT_OLD_INVALID);
@@ -434,7 +414,7 @@ public class UserController extends BaseController {
         }
 
         UserBo userBo = new UserBo();
-        userBo.setUserId(userId);
+        userBo.setId(userId);
         userBo.setSmsCode(smsCode);
         userBo.setPhoneNumber(phoneNumber);
         userBo.setOrgId(getOrgId());
@@ -449,9 +429,10 @@ public class UserController extends BaseController {
      * @return SimpleStringResDTO
      */
     @PostMapping(value = "/user/resetPasswordByPhone", produces = MediaType.APPLICATION_JSON_VALUE)
-    public SimpleStringResDTO resetPasswordByPhone(@RequestBody ResetPasswordReqDTO resetPasswordReqDTO) {
+    public SimpleStringResDTO resetPasswordByPhone(
+            @RequestBody ResetPasswordReqDTO resetPasswordReqDTO) {
         if (resetPasswordReqDTO == null || StringUtils.isEmpty(resetPasswordReqDTO.getSmsCode())
-            || StringUtils.isEmpty(resetPasswordReqDTO.getPassword())) {
+                || StringUtils.isEmpty(resetPasswordReqDTO.getPassword())) {
             throw new BusinessException(PARAM_CANNOT_NULL);
         }
         // 获取密码
@@ -469,11 +450,11 @@ public class UserController extends BaseController {
             throw new BusinessException(PASSWORD_IS_INVALID);
         }
         if (!StringUtils.isEmpty(resetPasswordReqDTO.getPasswordAgain())
-            && !password.equals(resetPasswordReqDTO.getPasswordAgain())) {
+                && !password.equals(resetPasswordReqDTO.getPasswordAgain())) {
             throw new BusinessException(PASSWORDS_NOT_EQUALS);
         }
         UserBo userBo = new UserBo();
-        userBo.setUserId(getUserId());
+        userBo.setId(LoginInfoHolder.getCurrentUserId());
         userBo.setResetPasswordReqDTO(resetPasswordReqDTO);
         // 重置密码
         return userService.updatePasswordByPhoneWithoutSid(userBo);
@@ -481,9 +462,6 @@ public class UserController extends BaseController {
 
     /**
      * 查询登录用户信息
-     *
-     * @param
-     * @return
      */
     @PostMapping(value = "/getLoginUserInfo", produces = "application/json;charset=UTF-8")
     public UserResDTO queryUserById() {
