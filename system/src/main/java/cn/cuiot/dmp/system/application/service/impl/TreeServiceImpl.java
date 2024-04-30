@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.common.constant.NumberConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -7,15 +8,11 @@ import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
 import cn.cuiot.dmp.system.application.enums.HasChildrenEnum;
 import cn.cuiot.dmp.system.application.service.TreeService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
-import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DeptTreeReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DeptTreeResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SpaceTreeReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SpaceTreeResDto;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.HouseDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrganizationDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.SpaceDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.TreeDao;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,15 +39,6 @@ public class TreeServiceImpl implements TreeService {
     private DepartmentDao departmentDao;
 
     @Autowired
-    private OrganizationDao organizationDao;
-
-    @Autowired
-    private SpaceDao spaceDao;
-
-    @Autowired
-    private HouseDao houseDao;
-
-    @Autowired
     private TreeDao treeDao;
 
     @Override
@@ -67,7 +55,8 @@ public class TreeServiceImpl implements TreeService {
             deptTreeReqDto.setInit(Boolean.FALSE);
         }
         // 根据入参deptId查询reqPath
-        DepartmentEntity departmentEntity = departmentDao.selectByPrimary(Long.parseLong(deptTreeReqDto.getDeptId()));
+        DepartmentEntity departmentEntity = departmentDao
+                .selectByPrimary(Long.parseLong(deptTreeReqDto.getDeptId()));
         if (departmentEntity == null) {
             throw new BusinessException(ResultCode.DEPT_NOT_EXISTS);
         }
@@ -79,16 +68,25 @@ public class TreeServiceImpl implements TreeService {
         // 组织名称搜索，多层查询
         else if (!StringUtils.isEmpty(deptTreeReqDto.getDeptName())) {
             // 下级组织
-            List<DeptTreeResDto> deptChildList = treeDao.getDeptChildList(deptTreeReqDto.getDGroup(), deptTreeReqDto.getInit(),deptTreeReqDto.getDeptId(),
-                    deptTreeReqDto.getDeptName(), rootDeptTreePath, deptTreeReqDto.getOrgId(), deptTreeReqDto.getOrgTypeList(), deptTreeReqDto.getOrgLabelList());
-            List<String> deptTreePathList = deptChildList.stream().map(DeptTreeResDto::getDeptTreePath).collect(Collectors.toList());
+            List<DeptTreeResDto> deptChildList = treeDao
+                    .getDeptChildList(deptTreeReqDto.getDGroup(), deptTreeReqDto.getInit(),
+                            deptTreeReqDto.getDeptId(),
+                            deptTreeReqDto.getDeptName(), rootDeptTreePath,
+                            deptTreeReqDto.getOrgId(), deptTreeReqDto.getOrgTypeList(),
+                            deptTreeReqDto.getOrgLabelList());
+            List<String> deptTreePathList = deptChildList.stream()
+                    .map(DeptTreeResDto::getDeptTreePath).collect(Collectors.toList());
             return packageDeptTreeList(rootDeptTreePath, deptTreePathList);
         }
         // 无搜索条件，仅查询下一级
         else {
             // 下级组织
-            List<DeptTreeResDto> deptChildList = treeDao.getDeptChildList(deptTreeReqDto.getDGroup(), deptTreeReqDto.getInit(),deptTreeReqDto.getDeptId(),
-                    deptTreeReqDto.getDeptName(), rootDeptTreePath, deptTreeReqDto.getOrgId(), deptTreeReqDto.getOrgTypeList(), deptTreeReqDto.getOrgLabelList());
+            List<DeptTreeResDto> deptChildList = treeDao
+                    .getDeptChildList(deptTreeReqDto.getDGroup(), deptTreeReqDto.getInit(),
+                            deptTreeReqDto.getDeptId(),
+                            deptTreeReqDto.getDeptName(), rootDeptTreePath,
+                            deptTreeReqDto.getOrgId(), deptTreeReqDto.getOrgTypeList(),
+                            deptTreeReqDto.getOrgLabelList());
             return deptChildList;
         }
     }
@@ -102,7 +100,8 @@ public class TreeServiceImpl implements TreeService {
         Integer dGroup = Integer.parseInt(userDeptDto.getDGroup());
         if (StringUtils.isNotEmpty(spaceTreeReqDto.getSpaceId())) {
             // 入参空间组织信息
-            DepartmentEntity deptEntity = departmentDao.selectByPrimary(Long.parseLong(spaceTreeReqDto.getSpaceId()));
+            DepartmentEntity deptEntity = departmentDao
+                    .selectByPrimary(Long.parseLong(spaceTreeReqDto.getSpaceId()));
             reqPath = deptEntity.getPath();
             // 鉴权校验
             if (!reqPath.startsWith(userDeptDto.getPath())) {
@@ -123,14 +122,16 @@ public class TreeServiceImpl implements TreeService {
             SpaceTreeResDto resDto = new SpaceTreeResDto();
             resDto.setSpaceId(userDeptDto.getId().toString());
             resDto.setSpaceName(userDeptDto.getName());
-            resDto.setHasChild(list.size() == 0 ? HasChildrenEnum.DEPT_NO_CHILDREN.getCode() : HasChildrenEnum.DEPT_HAS_CHILDREN.getCode());
+            resDto.setHasChild(list.size() == 0 ? HasChildrenEnum.DEPT_NO_CHILDREN.getCode()
+                    : HasChildrenEnum.DEPT_HAS_CHILDREN.getCode());
             resDto.setDGroup(dGroup);
             resDto.setSpaceTreePath(reqPath);
             spaceList.add(resDto);
         } else {
             // 获取所有下级组织信息
-            spaceList = departmentDao.getSpaceListByParentId(Long.parseLong(spaceTreeReqDto.getSpaceId()),
-                dGroup, reqPath);
+            spaceList = departmentDao
+                    .getSpaceListByParentId(Long.parseLong(spaceTreeReqDto.getSpaceId()),
+                            dGroup, reqPath);
         }
         return spaceList;
     }
@@ -138,16 +139,17 @@ public class TreeServiceImpl implements TreeService {
     /**
      * 拼装DeptTreeReqDto结果集
      *
-     * @param rootDeptTreePath      根组织树
+     * @param rootDeptTreePath 根组织树
      * @param childDeptTreePathList 子组织树列表
-     * @return
      */
-    private List<DeptTreeResDto> packageDeptTreeList(String rootDeptTreePath, List<String> childDeptTreePathList) {
+    private List<DeptTreeResDto> packageDeptTreeList(String rootDeptTreePath,
+            List<String> childDeptTreePathList) {
         if (CollectionUtils.isEmpty(childDeptTreePathList)) {
             return Collections.emptyList();
         }
         // 组织树列表查询
-        List<DeptTreeResDto> deptTreeResDtoList = treeDao.getDeptList(rootDeptTreePath, childDeptTreePathList);
+        List<DeptTreeResDto> deptTreeResDtoList = treeDao
+                .getDeptList(rootDeptTreePath, childDeptTreePathList);
         // 结果转map
         Map<String, DeptTreeResDto> deptTreeResDtoMap = deptTreeResDtoList.stream()
                 .collect(Collectors.toMap(k -> k.getDeptTreePath().replace("_", "-"), v -> v));
@@ -162,11 +164,13 @@ public class TreeServiceImpl implements TreeService {
                 continue;
             }
             // 截取父节点deptTreePath
-            String parentDeptTreePath = childDeptTreePath.substring(0, childDeptTreePath.lastIndexOf("-"));
+            String parentDeptTreePath = childDeptTreePath
+                    .substring(0, childDeptTreePath.lastIndexOf("-"));
             DeptTreeResDto parentDeptTreeResDto = deptTreeResDtoMap.get(parentDeptTreePath);
             if (parentDeptTreeResDto != null) {
                 List<DeptTreeResDto> childDeptTreeTesDtoList = parentDeptTreeResDto.getChildList();
-                childDeptTreeTesDtoList = (childDeptTreeTesDtoList == null ? new ArrayList<>() : childDeptTreeTesDtoList);
+                childDeptTreeTesDtoList = (childDeptTreeTesDtoList == null ? new ArrayList<>()
+                        : childDeptTreeTesDtoList);
                 childDeptTreeTesDtoList.add(deptTreeResDto);
                 parentDeptTreeResDto.setChildList(childDeptTreeTesDtoList);
             }

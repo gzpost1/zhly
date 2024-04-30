@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 /**
+ * 新增用户
  * @author zhh
  * @version 1.0
  * @date 2020/9/7 20:09
- * @deprecated 新增用户
  */
 @Data
 public class InsertUserDTO {

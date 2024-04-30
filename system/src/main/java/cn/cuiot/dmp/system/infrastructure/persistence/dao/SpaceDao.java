@@ -1,12 +1,8 @@
 package cn.cuiot.dmp.system.infrastructure.persistence.dao;
 
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.FactoryParkBuildingListResDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.FactoryParkParkListResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.ParkListResDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.RegionListResDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -82,82 +78,6 @@ public interface SpaceDao {
      */
     @MapKey("id")
     Map<Long, GetDepartmentTreeLazyByNameResDto> getParentDepartmentByParentId(@Param("parentId") String parentId);
-
-    /**
-     * 根据条件查询空间树
-     * @param deptTreePath
-     * @param group
-     * @param startTime
-     * @param endTime
-     * @param keyword
-     * @param labelId
-     * @param parkType
-     * @return
-     */
-    List<FactoryParkParkListResDto> getDeptListByPathAndGroupFactoryPark(@Param("deptTreePath") String deptTreePath, @Param("group") Integer group, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, @Param("keyword") String keyword, @Param("labelId") Integer labelId, @Param("parkType") String parkType);
-
-    /**
-     * 根据条件查询空间树
-     * @param deptTreePath
-     * @param parentId
-     * @param group
-     * @param startTime
-     * @param endTime
-     * @param keyword
-     * @param labelId
-     * @return
-     */
-    List<RegionListResDto> getDeptListByPathAndGroupRegion(@Param("deptTreePath") String deptTreePath, @Param("parentId") Long parentId, @Param("group") Integer group, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, @Param("keyword") String keyword, @Param("labelId") Integer labelId);
-
-    /**
-     * 根据条件查询空间树
-     * @param deptTreePath
-     * @param parentId
-     * @param group
-     * @param startTime
-     * @param endTime
-     * @param keyword
-     * @param labelId
-     * @return
-     */
-    List<FactoryParkBuildingListResDto> getDeptListByPathAndGroupFactoryBuilding(@Param("deptTreePath") String deptTreePath, @Param("parentId") Long parentId, @Param("group") Integer group, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, @Param("keyword") String keyword, @Param("labelId") Integer labelId);
-
-    /**
-     * 查询园区
-     * @param deptId
-     * @param path
-     * @return
-     */
-    ParkListResDto getParkDetail(@Param("deptId") Long deptId, @Param("path") String path);
-
-    /**
-     * 查询区域
-     * @param deptId
-     * @param path
-     * @return
-     */
-    RegionListResDto getRegionDetail(@Param("deptId") Long deptId, @Param("path") String path);
-
-    /**
-     * 查询厂园区楼栋
-     * @param deptId
-     * @param path
-     * @return
-     */
-    FactoryParkBuildingListResDto getFactoryBuildingDetail(@Param("deptId") Long deptId, @Param("path") String path);
-
-    /**
-     * 列表查询
-     * @param deptTreePath
-     * @param group
-     * @param startTime
-     * @param endTime
-     * @param keyword
-     * @param labelId
-     * @param parkType
-     * @return
-     */
-    List<FactoryParkParkListResDto> getDeptListByPathAndGroupFactoryParkForList(@Param("deptTreePath") String deptTreePath, @Param("group") Integer group, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, @Param("keyword") String keyword, @Param("labelId") Integer labelId, @Param("parkType") String parkType);
 
     /**
      * 查询组织下最大单员数
