@@ -1,11 +1,8 @@
 package cn.cuiot.dmp.system.application.param.vo;
 
 import cn.cuiot.dmp.common.bean.TreeNode;
-import cn.cuiot.dmp.system.domain.aggregate.BusinessType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.util.List;
 
 /**
  * @author caorui

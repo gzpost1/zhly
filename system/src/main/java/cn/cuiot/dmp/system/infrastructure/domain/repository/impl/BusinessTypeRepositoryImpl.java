@@ -19,6 +19,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -87,6 +88,11 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
     }
 
     @Override
+    public void checkDeleteStatus(Long id) {
+        checkDelete(id);
+    }
+
+    @Override
     public int deleteBusinessType(Long id) {
         return businessTypeMapper.deleteById(id);
     }
@@ -107,12 +113,21 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
     private void checkBusinessTypeNode(BusinessType businessType) {
         LambdaQueryWrapper<BusinessTypeEntity> queryWrapper = new LambdaQueryWrapper<BusinessTypeEntity>()
                 .eq(BusinessTypeEntity::getLevelType, businessType.getLevelType())
-                .eq(BusinessTypeEntity::getParentId, businessType.getParentId());
+                .eq(BusinessTypeEntity::getParentId, businessType.getParentId())
+                .ne(Objects.nonNull(businessType.getId()), BusinessTypeEntity::getId, businessType.getId());
         List<BusinessTypeEntity> businessTypeEntityList = businessTypeMapper.selectList(queryWrapper);
         for (BusinessTypeEntity businessTypeEntity : businessTypeEntityList) {
             AssertUtil.isFalse(businessTypeEntity.getName().equals(businessType.getName()),
                     "分类名称已存在");
         }
+    }
+
+    private void checkDelete(Long id) {
+        // 该类型存在下级类型，不可删除
+        LambdaQueryWrapper<BusinessTypeEntity> queryWrapper = new LambdaQueryWrapper<BusinessTypeEntity>()
+                .eq(BusinessTypeEntity::getParentId, id);
+        List<BusinessTypeEntity> businessTypeEntityList = businessTypeMapper.selectList(queryWrapper);
+        AssertUtil.isTrue(CollectionUtils.isEmpty(businessTypeEntityList), "该类型存在下级类型，不可删除");
     }
 
 }

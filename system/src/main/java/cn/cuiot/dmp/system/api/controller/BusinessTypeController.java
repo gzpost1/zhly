@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.api.controller;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeCreateDTO;
+import cn.cuiot.dmp.system.application.param.dto.BusinessTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.BusinessTypeTreeNodeVO;
 import cn.cuiot.dmp.system.application.param.vo.BusinessTypeVO;
@@ -17,6 +18,8 @@ import javax.validation.Valid;
 import java.util.List;
 
 /**
+ * 企业账号-系统配置-初始化配置-业务类型
+ *
  * @author caorui
  * @date 2024/4/26
  */
@@ -37,12 +40,12 @@ public class BusinessTypeController {
     }
 
     /**
-     * 根据id获取详情
+     * 根据企业id获取详情
      */
     @RequiresPermissions
     @PostMapping("/queryByCompany")
-    public List<BusinessTypeTreeNodeVO> queryByCompany(@RequestBody @Valid IdParam idParam) {
-        return businessTypeService.queryByCompany(idParam.getId());
+    public List<BusinessTypeTreeNodeVO> queryByCompany(@RequestBody @Valid BusinessTypeQueryDTO queryDTO) {
+        return businessTypeService.queryByCompany(queryDTO);
     }
 
     /**
@@ -64,7 +67,16 @@ public class BusinessTypeController {
     }
 
     /**
-     * 更新
+     * 删除预校验
+     */
+    @RequiresPermissions
+    @PostMapping("/checkBeforeDelete")
+    public void checkBeforeDelete(@RequestBody @Valid IdParam idParam) {
+        businessTypeService.checkDeleteStatus(idParam.getId());
+    }
+
+    /**
+     * 删除
      */
     @RequiresPermissions
     @PostMapping("/delete")

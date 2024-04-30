@@ -34,7 +34,9 @@ public class SystemInfoServiceImpl implements SystemInfoService {
 
     @Override
     public SystemInfoVO queryBySource(SystemInfoQueryDTO systemInfoQueryDTO) {
-        SystemInfo systemInfo = systemInfoRepository.queryBySource(systemInfoQueryDTO);
+        SystemInfo systemInfoReq = new SystemInfo();
+        BeanUtils.copyProperties(systemInfoQueryDTO, systemInfoReq);
+        SystemInfo systemInfo = systemInfoRepository.queryBySource(systemInfoReq);
         if (Objects.isNull(systemInfo.getId())) {
             return new SystemInfoVO();
         }
@@ -45,9 +47,9 @@ public class SystemInfoServiceImpl implements SystemInfoService {
 
     @Override
     public int saveOrUpdateSystemInfo(SystemInfoCreateDTO systemInfoCreateDTO) {
-        SystemInfoQueryDTO systemInfoQueryDTO = new SystemInfoQueryDTO();
-        BeanUtils.copyProperties(systemInfoCreateDTO, systemInfoQueryDTO);
-        SystemInfo systemInfo = systemInfoRepository.queryBySource(systemInfoQueryDTO);
+        SystemInfo systemInfoReq = new SystemInfo();
+        BeanUtils.copyProperties(systemInfoCreateDTO, systemInfoReq);
+        SystemInfo systemInfo = systemInfoRepository.queryBySource(systemInfoReq);
         BeanUtils.copyProperties(systemInfoCreateDTO, systemInfo);
         if (Objects.isNull(systemInfo.getId())) {
             return systemInfoRepository.saveSystemInfo(systemInfo);

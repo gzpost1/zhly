@@ -3,7 +3,6 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
-import cn.cuiot.dmp.system.application.param.dto.SystemInfoQueryDTO;
 import cn.cuiot.dmp.system.domain.aggregate.SystemInfo;
 import cn.cuiot.dmp.system.domain.repository.SystemInfoRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.SystemInfoEntity;
@@ -38,17 +37,17 @@ public class SystemInfoRepositoryImpl implements SystemInfoRepository {
     }
 
     @Override
-    public SystemInfo queryBySource(SystemInfoQueryDTO systemInfoQueryDTO) {
+    public SystemInfo queryBySource(SystemInfo systemInfo) {
         LambdaQueryWrapper<SystemInfoEntity> queryWrapper = new LambdaQueryWrapper<SystemInfoEntity>()
-                .eq(SystemInfoEntity::getSourceId, systemInfoQueryDTO.getSourceId())
-                .eq(SystemInfoEntity::getSourceType, systemInfoQueryDTO.getSourceType());
+                .eq(SystemInfoEntity::getSourceId, systemInfo.getSourceId())
+                .eq(SystemInfoEntity::getSourceType, systemInfo.getSourceType());
         SystemInfoEntity systemInfoEntity = systemInfoMapper.selectOne(queryWrapper);
         if (Objects.isNull(systemInfoEntity)) {
             return new SystemInfo();
         }
-        SystemInfo systemInfo = new SystemInfo();
-        BeanUtils.copyProperties(systemInfoEntity, systemInfo);
-        return systemInfo;
+        SystemInfo systemInfoRsp = new SystemInfo();
+        BeanUtils.copyProperties(systemInfoEntity, systemInfoRsp);
+        return systemInfoRsp;
     }
 
     @Override
