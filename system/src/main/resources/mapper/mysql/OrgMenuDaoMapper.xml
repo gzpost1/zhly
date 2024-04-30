@@ -5,12 +5,12 @@
     <insert id="insertOrgMenu">
         INSERT INTO org_menu (id,org_id, menu_id, create_time, create_by )
             VALUE
-            <foreach collection="menuList" item="menu" separator=",">
-                (#{id},
-            #{orgId},
-            #{menu},
-            #{now},
-            #{userId}
+            <foreach collection="list" item="item" separator=",">
+                (#{item.id},
+            #{item.orgId},
+            #{item.menuId},
+            #{item.createTime},
+            #{item.createBy}
                 )
             </foreach>
     </insert>

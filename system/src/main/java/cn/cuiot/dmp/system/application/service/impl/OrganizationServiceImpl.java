@@ -46,6 +46,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OperateOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgCsvDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgMenuDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgTypeDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationChangeDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
@@ -96,6 +97,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -348,13 +350,16 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .build();
         organizationRepository.save(organization);
 
+        Long pkOrgId = organization.getId().getValue();
+
         //保存菜单权限
         if (!CollectionUtils.isEmpty(menuList)) {
-            orgMenuDao.insertOrgMenu(organization.getId().getValue(), menuList,
-                    dto.getSessionUserId().toString(), LocalDateTime.now());
+            List<OrgMenuDto> menuDtoList = menuList.stream().map(ite -> {
+                return new OrgMenuDto(SnowflakeIdWorkerUtil.nextId(),pkOrgId, Long.valueOf(ite), LocalDateTime.now(),dto.getSessionUserId());
+            }).collect(Collectors.toList());
+            orgMenuDao.insertOrgMenu(menuDtoList);
         }
 
-        Long pkOrgId = organization.getId().getValue();
         // 创建根节点组织
         DepartmentEntity rootDepartment = createRootDepartment(dto, pkOrgId,
                 dto.getDeptId().toString());
@@ -489,8 +494,10 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<String> menuList = dto.getMenuList();
         orgMenuDao.deleteByOrgId(pkOrgId);
         if (!CollectionUtils.isEmpty(menuList)) {
-            orgMenuDao.insertOrgMenu(pkOrgId, menuList, dto.getSessionUserId().toString(),
-                    LocalDateTime.now());
+            List<OrgMenuDto> menuDtoList = menuList.stream().map(ite -> {
+                return new OrgMenuDto(SnowflakeIdWorkerUtil.nextId(),pkOrgId, Long.valueOf(ite), LocalDateTime.now(),dto.getSessionUserId());
+            }).collect(Collectors.toList());
+            orgMenuDao.insertOrgMenu(menuDtoList);
         }
 
         Organization organization = Organization.builder()
