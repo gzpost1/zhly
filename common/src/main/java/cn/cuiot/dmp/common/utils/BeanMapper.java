@@ -1,10 +1,11 @@
 package cn.cuiot.dmp.common.utils;
 
+import com.github.dozermapper.core.DozerBeanMapperBuilder;
+import com.github.dozermapper.core.Mapper;
 import com.google.common.collect.Lists;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import org.dozer.DozerBeanMapper;
 
 /**
  * 通用对象转换
@@ -14,7 +15,7 @@ import org.dozer.DozerBeanMapper;
  */
 public class BeanMapper {
 
-    private static DozerBeanMapper dozer = new DozerBeanMapper();
+    private static Mapper dozer = DozerBeanMapperBuilder.buildDefault();
 
     public BeanMapper() {
     }
