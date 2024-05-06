@@ -75,4 +75,10 @@ public interface MenuService {
      * 初始化授权
      */
     void authorize(AuthorizeParam authorizeParam);
+
+    /**
+     * 查询详情
+     */
+    MenuEntity queryForDetail(Long id);
+
 }

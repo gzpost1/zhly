@@ -261,4 +261,11 @@ public class MenuServiceImpl implements MenuService {
         }
     }
 
+    /**
+     * 查询详情
+     */
+    @Override
+    public MenuEntity queryForDetail(Long id) {
+        return menuDao.getById(id);
+    }
 }
