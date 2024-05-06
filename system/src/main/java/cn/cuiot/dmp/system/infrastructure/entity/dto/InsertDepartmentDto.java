@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.infrastructure.entity.dto;
 import cn.cuiot.dmp.common.log.intf.AbstractResourceParam;
 import javax.validation.constraints.NotBlank;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 /**
  * @author wensq
@@ -17,6 +18,7 @@ public class InsertDepartmentDto extends AbstractResourceParam {
      * 组织名称
      */
     @NotBlank(message = "请输入组织名称")
+    @Length(max = 30,message = "组织名称不可超过30字")
     private String departmentName;
 
     /**

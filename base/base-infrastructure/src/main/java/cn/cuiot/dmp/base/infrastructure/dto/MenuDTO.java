@@ -1,11 +1,13 @@
 package cn.cuiot.dmp.base.infrastructure.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 
 /**
@@ -94,6 +96,8 @@ public class MenuDTO {
     /**
      * 创建时间
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime createdOn;
 
     /**
@@ -104,6 +108,8 @@ public class MenuDTO {
     /**
      * 修改时间
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime updatedOn;
 
     /**

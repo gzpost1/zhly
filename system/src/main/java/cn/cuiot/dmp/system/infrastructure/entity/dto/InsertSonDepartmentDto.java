@@ -4,6 +4,7 @@ import cn.cuiot.dmp.common.log.intf.AbstractResourceParam;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 /**
  * @author wensq
@@ -18,6 +19,7 @@ public class InsertSonDepartmentDto extends AbstractResourceParam {
      * 组织名
      */
     @NotBlank(message = "组织名不能为空")
+    @Length(max = 30,message = "组织名称不可超过30字")
     private String departmentName;
 
     /**
@@ -36,9 +38,9 @@ public class InsertSonDepartmentDto extends AbstractResourceParam {
     private String createBy;
 
     /**
-     * 父级组织id
+     * 上级组织id
      */
-    @NotNull(message = "父级组织id不能为空")
+    @NotNull(message = "上级组织id不能为空")
     private Long parentId;
 
     /**

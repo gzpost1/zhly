@@ -233,37 +233,34 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public int updateDepartment(UpdateDepartmentDto dto) {
         //checkAdminUser(dto.getOrgId(), dto.getUserId());
-        // 重名校验
+
         final Long id = dto.getId();
         final Long pkOrgId = dto.getPkOrgId();
         final String departmentName = dto.getDepartmentName();
         DepartmentEntity byPrimary = departmentDao.selectByPrimary(id);
         final Long parentId = byPrimary.getParentId();
 
-        DepartmentEntity entity = new DepartmentEntity();
-
-        // 根节点不存在同级别重名，不校验。不同企业间可以重名。
+        //同级组织名称不可重复
         if (parentId != null) {
             int count = departmentDao
-                    .countByDepartmentNameForUpdate(departmentName, pkOrgId,parentId, dto.getId());
+                    .countByDepartmentNameForUpdate(departmentName, pkOrgId,parentId, id);
             if (count > 0) {
                 throw new BusinessException(ResultCode.DEPARTMENT_NAME_EXIST);
             }
-            // 切换父组织 , 空间管理需要用到s
-            if (!parentId.equals(dto.getParentId())) {
-                entity.setParentId(dto.getParentId());
-                DepartmentEntity parentDept = departmentDao.selectByPrimary(dto.getParentId());
-                entity.setPath(parentDept.getPath() + "-" + byPrimary.getCode());
-            }
         }
+
+        DepartmentEntity entity = new DepartmentEntity();
         entity.setId(id);
         entity.setDepartmentName(departmentName);
 
         List<Integer> result = new ArrayList<Integer>();
+
         orgRedisUtil.doubleDeleteForDbOperation(
                 () -> result.add(departmentDao.updateDepartment(entity)),
                 String.valueOf(dto.getPkOrgId()));
+
         redisUtil.del(DEPT_NAME_KEY_PREFIX + entity.getId());
+
         //获取账户日志操作对象
         String[] operationTarget = new String[1];
         operationTarget[0] = dto.getDepartmentName();
@@ -493,7 +490,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @LogRecord(operationCode = "deleteDepartment", operationName = "删除子组织", serviceType = ServiceTypeConst.SUPER_ORGANIZATION_MANAGEMENT)
     @Override
     public void deleteDepartment(UpdateDepartmentDto updateDepartmentDto) {
-        checkAdminUser(updateDepartmentDto.getOrgId(), updateDepartmentDto.getUserId());
+        //checkAdminUser(updateDepartmentDto.getOrgId(), updateDepartmentDto.getUserId());
         Long id = updateDepartmentDto.getId();
         DepartmentEntity departmentEntity = departmentDao.selectByPrimary(id);
         String path = departmentEntity.getPath();
@@ -521,15 +518,16 @@ public class DepartmentServiceImpl implements DepartmentService {
             if (e.getParentId() == null) {
                 throw new BusinessException(ResultCode.DEPARTMENT_ROOT_NO_DELETE);
             }
-            if (Const.NUMBER_1 == e.getIsInit()) {
+            /*if (Const.NUMBER_1 == e.getIsInit()) {
                 throw new BusinessException(ResultCode.DEPARTMENT_IS_INIT);
-            }
+            }*/
         });
         // 组织有用户，不可删
         count = userDataDao.countUserOrgByDeptId(id);
         if (count > 0) {
             throw new BusinessException(ResultCode.DEPARTMENT_HAS_USER);
         }
+
         // 组织有关联账户，不可删
         count = organizationDao.countOrgByDeptId(id);
         if (count > 0) {
@@ -537,10 +535,10 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         // 获取是否有小区
-        Integer communityCount = departmentDao.getCommunityByPath(path);
+       /* Integer communityCount = departmentDao.getCommunityByPath(path);
         if (communityCount > NumberConst.ZERO) {
             throw new BusinessException(ResultCode.ACCOUNT_HAS_COMMUNITY);
-        }
+        }*/
 
         orgRedisUtil.doubleDeleteForDbOperation(() -> departmentDao.deleteByPrimaryKey(id), orgId);
     }

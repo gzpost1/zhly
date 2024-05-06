@@ -167,9 +167,9 @@ public enum ResultCode {
      * 组织相关
      */
     DEPARTMENT_NAME_IS_EXIST("150001", "同级别下组织名称已存在"),
-    DEPARTMENT_HAS_CHILDREN("150002", "已存在下级组织,不可删除"),
+    DEPARTMENT_HAS_CHILDREN("150002", "该组织存在下级组织,不可删除！"),
     DEPARTMENT_ROOT_NO_DELETE("150005", "根组织不可删除"),
-    DEPARTMENT_HAS_USER("150006", "已存在用户,不可删除"),
+    DEPARTMENT_HAS_USER("150006", "组织内已有人员,不可删除！"),
     DEPARTMENT_HAS_ORG("150007", "已存在关联账户,不可删除"),
     DEPARTMENT_ULTRA_VIRES("150008", "所选组织没有操作权限"),
     COMMUNITY_NAME_IS_EXIST("150009", "小区名称已存在"),
