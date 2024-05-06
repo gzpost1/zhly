@@ -1,19 +1,18 @@
-package cn.cuiot.dmp.baseconfig.flow.dto;
+package cn.cuiot.dmp.baseconfig.custommenu.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
- * @Description 分页对象
- * @Date 2024/4/23 17:11
+ * @Description 分页dto
+ * @Date 2024/4/28 19:33
  * @Created by libo
  */
 @Data
-public class TbFlowPageDto implements Serializable {
+public class FlowTaskInfoPageDto {
     /**
      * id
      */
@@ -45,7 +44,7 @@ public class TbFlowPageDto implements Serializable {
     private String orgName;
 
     /**
-     * 流程说明
+     * 任务描述
      */
     private String remark;
 

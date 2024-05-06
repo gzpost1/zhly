@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.BatcheOperation;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.baseconfig.flow.dto.FlowEngineInsertDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.FlowEngineUpdateDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowConfigQuery;
@@ -15,6 +17,7 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -31,13 +34,10 @@ import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
 
 import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static cn.cuiot.dmp.baseconfig.flow.utils.BpmnModelUtils.*;
-
+import cn.cuiot.dmp.base.infrastructure.constants.OperationConstant;
 @Service
 public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowConfig> {
     @Resource
@@ -175,5 +175,39 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
                 .name(updateDto.getName())
                 .category(updateDto.getOrgId() + "")
                 .deploy();
+    }
+
+    /**
+     * 更新状态
+     * @param updateStatusParam
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStatus(UpdateStatusParam updateStatusParam) {
+        TbFlowConfig entity = this.getById(updateStatusParam.getId());
+        entity.setStatus(updateStatusParam.getStatus());
+        this.updateById(entity);
+    }
+
+    /**
+     * 批量操作
+     * @param batcheOperation
+     */
+    public void batchedOperation(BatcheOperation batcheOperation) {
+        if(Objects.equals(batcheOperation.getOperaTionType(), OperationConstant.DELETE)){
+            //删除
+            this.removeByIds(batcheOperation.getIds());
+        }else if(Objects.equals(batcheOperation.getOperaTionType(), OperationConstant.STATUS)){
+            //修改状态
+            LambdaUpdateWrapper<TbFlowConfig> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.in(TbFlowConfig::getId, batcheOperation.getIds());
+            updateWrapper.set(TbFlowConfig::getStatus, batcheOperation.getOperaToStatus());
+            this.update(updateWrapper);
+        }else if(Objects.equals(batcheOperation.getOperaTionType(), OperationConstant.MOVE)){
+            //移动业务类型
+            LambdaUpdateWrapper<TbFlowConfig> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.in(TbFlowConfig::getId, batcheOperation.getIds());
+            updateWrapper.set(TbFlowConfig::getBusinessTypeId, batcheOperation.getOperaToStatus());
+            this.update(updateWrapper);
+        }
     }
 }

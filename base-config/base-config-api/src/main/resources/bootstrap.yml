@@ -8,7 +8,7 @@ server:
 
 spring:
   application:
-    name: community-system
+    name: community-config
   profiles:
     active: local
   main:

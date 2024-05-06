@@ -1,18 +1,20 @@
-package cn.cuiot.dmp.baseconfig.controller.flow;
+package cn.cuiot.dmp.baseconfig.controller.taskconfig;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.BatcheOperation;
 import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
-import cn.cuiot.dmp.baseconfig.flow.dto.FlowEngineInsertDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.FlowEngineUpdateDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowConfigQuery;
-import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto;
-import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
-import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigService;
+import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskConfigInsertDto;
+import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskConfigUpdateDto;
+import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskInfoPageDto;
+import cn.cuiot.dmp.baseconfig.custommenu.dto.TbFlowTaskInfoQuery;
+import cn.cuiot.dmp.baseconfig.custommenu.entity.TbFlowTaskInfo;
+import cn.cuiot.dmp.baseconfig.custommenu.service.TbFlowTaskConfigService;
+import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskConfigVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,19 +24,17 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
- * 基础功能-系统配置-初始化配置-流程配置
- *
+ * 基础功能-系统配置-初始化配置-任务配置
  * @Description 任务相关
  * @Date 2024/4/22 20:32
  * @Created by libo
  */
 @RestController
-@RequestMapping("/baseconfig/flow")
-public class BaseConfigFlowController {
-
+@RequestMapping("/tb_flow_task_info")
+public class TbFlowTaskInfoController {
 
     @Autowired
-    private TbFlowConfigService tbFlowConfigService;
+    private TbFlowTaskConfigService flowTaskConfigService;
 
     /**
      * 获取分页
@@ -43,8 +43,8 @@ public class BaseConfigFlowController {
      * @return
      */
     @PostMapping("/queryForPage")
-    public IdmResDTO<IPage<TbFlowPageDto>> queryForPage(@RequestBody TbFlowConfigQuery query) {
-        return IdmResDTO.success().body(tbFlowConfigService.queryForPage(query));
+    public IdmResDTO<IPage<FlowTaskInfoPageDto>> queryForPage(@RequestBody TbFlowTaskInfoQuery query) {
+        return IdmResDTO.success().body(flowTaskConfigService.queryForPage(query));
     }
 
 
@@ -55,8 +55,8 @@ public class BaseConfigFlowController {
      * @return
      */
     @PostMapping("/queryForDetail")
-    public IdmResDTO<TbFlowConfig> queryForDetail(@RequestBody @Valid IdParam idParam) {
-        return IdmResDTO.success().body(tbFlowConfigService.getById(idParam.getId()));
+    public IdmResDTO<FlowTaskConfigVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
+        return IdmResDTO.success().body(flowTaskConfigService.queryForDetail(idParam.getId()));
     }
 
 
@@ -66,12 +66,9 @@ public class BaseConfigFlowController {
      * @param createDto
      * @return
      */
-    @RequiresPermissions
     @PostMapping("/create")
-    public IdmResDTO create(@RequestBody @Valid FlowEngineInsertDto createDto) {
-
-        tbFlowConfigService.saveFlow(createDto);
-
+    public IdmResDTO create(@RequestBody @Valid FlowTaskConfigInsertDto createDto) {
+        flowTaskConfigService.create(createDto);
         return IdmResDTO.success();
     }
 
@@ -81,11 +78,10 @@ public class BaseConfigFlowController {
      * @param updateDto
      * @return
      */
-    @RequiresPermissions
     @PostMapping("/update")
-    public IdmResDTO update(@RequestBody @Valid FlowEngineUpdateDto updateDto) {
+    public IdmResDTO update(@RequestBody @Valid FlowTaskConfigUpdateDto updateDto) {
 
-        tbFlowConfigService.updateFlow(updateDto);
+        flowTaskConfigService.updateData(updateDto);
 
         return IdmResDTO.success();
     }
@@ -96,12 +92,9 @@ public class BaseConfigFlowController {
      * @param deleteParam
      * @return
      */
-    @RequiresPermissions
     @PostMapping("/delete")
     public IdmResDTO delete(@RequestBody @Valid DeleteParam deleteParam) {
-
-        tbFlowConfigService.removeById(deleteParam.getId());
-
+        flowTaskConfigService.delete(Lists.newArrayList(deleteParam.getId()));
         return IdmResDTO.success();
     }
 
@@ -111,10 +104,9 @@ public class BaseConfigFlowController {
      * @param updateStatusParam
      * @return
      */
-    @RequiresPermissions
     @PostMapping("/updateStatus")
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
-        tbFlowConfigService.updateStatus(updateStatusParam);
+        flowTaskConfigService.updateStatus(updateStatusParam);
 
         return IdmResDTO.success();
     }
@@ -125,7 +117,8 @@ public class BaseConfigFlowController {
     @RequiresPermissions
     @PostMapping("/batchedOperation")
     public IdmResDTO batchedOperation(@RequestBody @Valid BatcheOperation batcheOperation) {
-        tbFlowConfigService.batchedOperation(batcheOperation);
+        flowTaskConfigService.batchedOperation(batcheOperation);
         return IdmResDTO.success();
     }
 }
+
