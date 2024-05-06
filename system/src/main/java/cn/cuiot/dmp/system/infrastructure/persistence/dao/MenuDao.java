@@ -45,7 +45,7 @@ public interface MenuDao {
 	 * @param menuEntity
 	 * @return
 	 */
-	int updateMenu(@Param("menuEntity") MenuEntity menuEntity);
+	int updateMenu(MenuEntity menuEntity);
 
 	/**
 	 * 删除菜单
