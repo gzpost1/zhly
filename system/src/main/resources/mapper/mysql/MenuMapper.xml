@@ -106,6 +106,7 @@
             `status`=#{status},
             updated_on= #{updatedOn},
             updated_by=#{updatedBy}
+            where id = #{id}
     </update>
 
     <delete id="deleteMenuById">
