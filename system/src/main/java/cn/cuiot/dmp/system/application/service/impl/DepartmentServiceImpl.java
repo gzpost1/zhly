@@ -147,16 +147,19 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     private Long insertSonDepartmentSafe(InsertSonDepartmentDto dto) {
-        checkAdminUser(dto.getPkOrgId().toString(), dto.getUserId());
+        //checkAdminUser(dto.getPkOrgId().toString(), dto.getUserId());
         final String departmentName = dto.getDepartmentName();
         final Long parentId = dto.getParentId();
+
         DepartmentEntity userDept = departmentDao.selectByPrimary(
                 Long.valueOf(userDao.getDeptId(dto.getUserId(), dto.getPkOrgId().toString())));
+
         if (!Arrays
                 .asList(DepartmentGroupEnum.TENANT.getCode(), DepartmentGroupEnum.SYSTEM.getCode())
                 .contains(userDept.getDGroup())) {
             throw new BusinessException(ResultCode.ONLY_DEPT_USER_CAN_INSERT_DEPT);
         }
+
         DepartmentEntity parentDept = departmentDao.selectByPrimary(parentId);
         // 租户组织树层级限制
         Organization organization = organizationRepository

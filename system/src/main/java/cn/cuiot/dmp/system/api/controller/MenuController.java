@@ -10,6 +10,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.service.MenuService;
+import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuQuery;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuTreeNode;
@@ -72,6 +73,15 @@ public class MenuController extends BaseController {
     public List<MenuTreeNode> queryForList(@RequestBody MenuQuery query) {
         List<MenuTreeNode> treeList = menuService.queryForList(query);
         return treeList;
+    }
+
+    /**
+     * 查询详情
+     */
+    @PostMapping("/queryForDetail")
+    public IdmResDTO<MenuEntity> queryForDetail(@RequestBody @Valid IdParam idParam) {
+        MenuEntity menuEntity = menuService.queryForDetail(idParam.getId());
+        return IdmResDTO.success(menuEntity);
     }
 
     /**
