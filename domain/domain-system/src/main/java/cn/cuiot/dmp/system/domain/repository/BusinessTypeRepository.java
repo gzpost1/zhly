@@ -38,6 +38,6 @@ public interface BusinessTypeRepository {
     /**
      * 删除
      */
-    int deleteBusinessType(Long id);
+    int deleteBusinessType(List<String> idList);
 
 }

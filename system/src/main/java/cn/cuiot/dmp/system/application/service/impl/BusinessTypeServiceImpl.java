@@ -61,8 +61,7 @@ public class BusinessTypeServiceImpl implements BusinessTypeService {
         if (CollectionUtils.isEmpty(hitIds)) {
             return new ArrayList<>();
         }
-        TreeUtil<BusinessTypeTreeNodeVO> treeUtil = new TreeUtil<>();
-        return treeUtil.searchNode(businessTypeTreeNodeList, hitIds);
+        return TreeUtil.searchNode(businessTypeTreeNodeList, hitIds);
     }
 
     @Override
@@ -75,13 +74,15 @@ public class BusinessTypeServiceImpl implements BusinessTypeService {
                         parent.getName(), parent.getLevelType(), parent.getCompanyId()))
                 .collect(Collectors.toList());
         List<BusinessTypeTreeNodeVO> businessTypeTreeNodeList = TreeUtil.makeTree(businessTypeTreeNodeVOList);
+        BusinessTypeTreeNodeVO businessTypeTreeNodeVO = TreeUtil.getTreeNode(businessTypeTreeNodeList,
+                queryDTO.getId().toString());
+        AssertUtil.notNull(businessTypeTreeNodeVO, "当前节点不能为空");
+        List<String> treeIdList = TreeUtil.getTreeIdList(businessTypeTreeNodeVO);
         List<String> hitIds = businessTypeTreeNodeVOList.stream()
-                .filter(o -> o.getId().equals(queryDTO.getId().toString()) ||
-                        o.getParentId().equals(queryDTO.getId().toString()))
                 .map(TreeNode::getId)
+                .filter(id -> !treeIdList.contains(id))
                 .collect(Collectors.toList());
-        TreeUtil<BusinessTypeTreeNodeVO> treeUtil = new TreeUtil<>();
-        return treeUtil.searchNode(businessTypeTreeNodeList, hitIds);
+        return TreeUtil.searchNode(businessTypeTreeNodeList, hitIds);
     }
 
     @Override
@@ -116,8 +117,20 @@ public class BusinessTypeServiceImpl implements BusinessTypeService {
     }
 
     @Override
-    public int deleteBusinessType(Long id) {
-        return businessTypeRepository.deleteBusinessType(id);
+    public int deleteBusinessType(BusinessTypeQueryDTO queryDTO) {
+        AssertUtil.notNull(queryDTO.getId(), "当前节点不能为空");
+        List<BusinessType> businessTypeList = businessTypeRepository.queryByCompany(queryDTO.getCompanyId());
+        List<BusinessTypeTreeNodeVO> businessTypeTreeNodeVOList = businessTypeList.stream()
+                .map(parent -> new BusinessTypeTreeNodeVO(
+                        parent.getId().toString(), parent.getParentId().toString(),
+                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
+                .collect(Collectors.toList());
+        List<BusinessTypeTreeNodeVO> businessTypeTreeNodeList = TreeUtil.makeTree(businessTypeTreeNodeVOList);
+        BusinessTypeTreeNodeVO businessTypeTreeNodeVO = TreeUtil.getTreeNode(businessTypeTreeNodeList,
+                queryDTO.getId().toString());
+        AssertUtil.notNull(businessTypeTreeNodeVO, "当前节点不能为空");
+        List<String> treeIdList = TreeUtil.getTreeIdList(businessTypeTreeNodeVO);
+        return businessTypeRepository.deleteBusinessType(treeIdList);
     }
 
 }

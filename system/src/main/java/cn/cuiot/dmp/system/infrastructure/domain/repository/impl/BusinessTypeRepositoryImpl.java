@@ -93,8 +93,8 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
     }
 
     @Override
-    public int deleteBusinessType(Long id) {
-        return businessTypeMapper.deleteById(id);
+    public int deleteBusinessType(List<String> idList) {
+        return businessTypeMapper.deleteBatchIds(idList);
     }
 
     private BusinessTypeEntity initRootNode(Long companyId) {
