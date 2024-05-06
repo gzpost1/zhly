@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.query;
 
+import java.io.Serializable;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
  * @Version V1.0
  */
 @Data
-public class PageQuery {
+public class PageQuery implements Serializable {
     /**
      * 分页参数，每页数据量
      */

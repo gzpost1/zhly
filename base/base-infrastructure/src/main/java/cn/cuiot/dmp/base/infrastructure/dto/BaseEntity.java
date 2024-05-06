@@ -21,20 +21,18 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BaseEntity implements Serializable {
+
     @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonIgnore
     private Date createTime;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonIgnore
     private Date updateTime;
 
-    @JsonIgnore
     @TableField(fill = FieldFill.INSERT)
     private Long createUser;
-    @JsonIgnore
+
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
 

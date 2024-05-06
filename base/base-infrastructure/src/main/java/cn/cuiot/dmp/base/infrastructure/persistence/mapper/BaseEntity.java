@@ -19,7 +19,7 @@ import lombok.Setter;
 public abstract class BaseEntity implements Serializable {
 
     /**
-     * 自增ID
+     * 主键ID
      */
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
