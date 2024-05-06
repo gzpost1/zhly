@@ -28,10 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 /**
- * @author zjb
- * @classname DepartmentController
- * @description 组织管理
- * @date 2022/4/8
+ * 组织管理
+ * @author wuyongchong
+ * @date 2024/5/6
  */
 @RestController
 @RequestMapping("/department")
@@ -45,7 +44,6 @@ public class DepartmentController extends BaseController {
      *
      * @return
      */
-    @RequiresPermissions("system:org:control")
     @GetMapping(value = "/getDepartmentTree", produces = "application/json;charset=UTF-8")
     public List<DepartmentTreeVO> getDepartmentTree(@RequestParam(value = "type", required = false) String type) {
         String orgId = getOrgId();
@@ -58,7 +56,6 @@ public class DepartmentController extends BaseController {
      *
      * @return
      */
-    @RequiresPermissions("system:org:control")
     @GetMapping(value = "/manage/getDepartmentTreeLazy", produces = "application/json;charset=UTF-8")
     public List<GetDepartmentTreeLazyResDto> manageGetDepartmentTreeLazy(@Valid GetDepartmentTreeLazyReqDto getDepartmentTreeLazyReqDto) {
         getDepartmentTreeLazyReqDto.setLoginUserId(getUserId());
@@ -72,7 +69,7 @@ public class DepartmentController extends BaseController {
      * @param dto
      * @return
      */
-    @RequiresPermissions("system:org:control")
+    @RequiresPermissions
     @Deprecated
     @PostMapping(value = "/insertDepartment", produces = "application/json;charset=UTF-8")
     public Long insertSite(@RequestBody @Valid InsertDepartmentDto dto) {
@@ -82,7 +79,7 @@ public class DepartmentController extends BaseController {
         return departmentService.insertDepartment(dto);
     }
 
-    @RequiresPermissions("system:org:add")
+    @RequiresPermissions
     @LogRecord(operationCode = "insertSonDepartment", operationName = "新增子组织", serviceType = ServiceTypeConst.SUPER_ORGANIZATION_MANAGEMENT)
     @PostMapping(value = "/insertSonDepartment", produces = MediaType.APPLICATION_JSON_VALUE)
     public Long insertSonDepartment(@RequestBody @Valid InsertSonDepartmentDto dto) {
@@ -93,7 +90,7 @@ public class DepartmentController extends BaseController {
         return departmentService.insertSonDepartment(dto);
     }
 
-    @RequiresPermissions("system:org:edit")
+    @RequiresPermissions
     @LogRecord(operationCode = "updateDepartment", operationName = "修改子组织", serviceType = ServiceTypeConst.SUPER_ORGANIZATION_MANAGEMENT)
     @PostMapping(value = "/updateDepartment", produces = MediaType.APPLICATION_JSON_VALUE)
     public int updateDepartment(@RequestBody @Valid UpdateDepartmentDto dto) {
@@ -109,7 +106,7 @@ public class DepartmentController extends BaseController {
      *
      * @param id
      */
-    @RequiresPermissions("system:org:delete")
+    @RequiresPermissions
     @GetMapping(value = "/deleteDepartment", produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteDepartment(Long id) {
         UpdateDepartmentDto updateDepartmentDto = new UpdateDepartmentDto();

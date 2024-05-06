@@ -33,7 +33,7 @@ public class SysParamController extends BaseController {
     @Autowired
     private SysParamService sysParamService;
 
-    @RequiresPermissions("basics:system:control")
+    @RequiresPermissions
     @LogRecord(operationCode = "sysParamSet", operationName = "设置系统参数", serviceType = ServiceTypeConst.SUPER_ORGANIZATION_MANAGEMENT)
     @PostMapping(value = "/sysParamSet", produces = MediaType.APPLICATION_JSON_VALUE)
     public int sysParamSet(@RequestBody @Valid SysParamDto dto) {

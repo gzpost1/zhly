@@ -116,7 +116,7 @@ public class UserController extends BaseController {
     /**
      * 用户列表筛选-分页
      */
-    @RequiresPermissions("system:user:control")
+    @RequiresPermissions
     @GetMapping(value = "/user/listUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<UserDataResDTO> getPage(
             @RequestParam(value = "userName", required = false) String userName,
@@ -178,7 +178,7 @@ public class UserController extends BaseController {
     /**
      * 查询用户详情
      */
-    @RequiresPermissions("system:user:control")
+    @RequiresPermissions
     @GetMapping(value = "/user/getUser", produces = MediaType.APPLICATION_JSON_VALUE)
     public UserDataResDTO getDetail(@RequestParam(value = "id") String id) {
         // 获取session中的orgId
@@ -194,7 +194,7 @@ public class UserController extends BaseController {
     /**
      * 新增用户（虚拟用户）
      */
-    @RequiresPermissions("system:user:control")
+    @RequiresPermissions
     @PostMapping(value = "/user/insertUserD", produces = MediaType.APPLICATION_JSON_VALUE)
     public void insertUser(@RequestBody @Valid InsertUserDTO userEntity) {
         String orgId = getOrgId();
@@ -205,7 +205,7 @@ public class UserController extends BaseController {
     /**
      * 用户管理编辑
      */
-    @RequiresPermissions("system:user:control")
+    @RequiresPermissions
     @PostMapping(value = "/user/updateUser", produces = MediaType.APPLICATION_JSON_VALUE)
     public IdmResDTO updateUser(@RequestBody @Valid InsertUserDTO userEntity) {
         if (!StringUtils.hasLength(userEntity.getUserId()) || !StringUtils

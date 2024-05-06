@@ -40,7 +40,7 @@ public class RoleController extends BaseController {
     /**
      * 角色列表分页查询
      */
-    @RequiresPermissions("system:role:control")
+    @RequiresPermissions
     @GetMapping(value = "/listRoles", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<RoleDTO> getRoleListByPage(
             @RequestParam(value = "currentPage", defaultValue = "1") Integer currentPage,
@@ -82,7 +82,7 @@ public class RoleController extends BaseController {
     /**
      * 新增角色
      */
-    @RequiresPermissions("system:role:add")
+    @RequiresPermissions
     @PostMapping(value = "/createRole", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> createRole(@RequestBody @Valid CreateRoleDto dto) {
         String userId = getUserId();
@@ -97,7 +97,7 @@ public class RoleController extends BaseController {
     /**
      * 删除角色
      */
-    @RequiresPermissions("system:role:edit")
+    @RequiresPermissions
     @PostMapping(value = "deleteRoles", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> deleteRoles(@RequestBody Map<String, List<Long>> paramsMap) {
         List<Long> idList = paramsMap.get("id");
@@ -116,7 +116,7 @@ public class RoleController extends BaseController {
     /**
      * 查询角色详情（系统预置角色）
      */
-    @RequiresPermissions("system:role:detail")
+    @RequiresPermissions
     @GetMapping(value = "/getRoleInfo", produces = MediaType.APPLICATION_JSON_VALUE)
     public RoleDTO getRoleInfo(@RequestParam("id") String id) {
         if (StringUtils.isBlank(id)) {
@@ -156,7 +156,7 @@ public class RoleController extends BaseController {
     /**
      * 编辑角色
      */
-    @RequiresPermissions("system:role:edit")
+    @RequiresPermissions
     @PostMapping(value = "/updateRole", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> updateRole(@RequestBody RoleBo roleBo) {
         if (null == roleBo || StringUtils.isBlank(String.valueOf(roleBo.getId())) || StringUtils
