@@ -100,7 +100,7 @@ public interface DepartmentDao {
      * @param id
      * @return
      */
-    int countByDepartmentNameForUpdate(@Param("departmentName") String departmentName,@Param("orgId")  Long orgId,@Param("id")  Long id);
+    int countByDepartmentNameForUpdate(@Param("departmentName") String departmentName,@Param("orgId")  Long orgId,@Param("parentId") Long parentId,@Param("id")  Long id);
 
     /**
      * 根据条件查询
@@ -262,12 +262,9 @@ public interface DepartmentDao {
 
 
     /**
-     * 统一账户下组织名不能相同
-     * @param pkOrgId
-     * @param departmentName
-     * @return
+     * 同级组织名称不可重复
      */
-    String selectDepartmentName(@Param("pkOrgId") Long pkOrgId, @Param("departmentName") String departmentName);
+    String selectDepartmentName(@Param("pkOrgId") Long pkOrgId, @Param("parentId") Long parentId, @Param("departmentName") String departmentName);
 
     /**
      * 根据id查询组织路径

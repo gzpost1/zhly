@@ -14,9 +14,9 @@ import lombok.Data;
 public class InsertDepartmentDto extends AbstractResourceParam {
 
     /**
-     * 组织名
+     * 组织名称
      */
-    @NotBlank(message = "组织名不能为空")
+    @NotBlank(message = "请输入组织名称")
     private String departmentName;
 
     /**

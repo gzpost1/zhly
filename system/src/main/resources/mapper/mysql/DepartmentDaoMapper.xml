@@ -122,7 +122,6 @@
     </select>
 
     <select id="countByDepartmentNameForUpdate" resultType="java.lang.Integer">
-
                 select
                     COUNT(0)
                 from
@@ -130,8 +129,10 @@
                 where
                     department_name = #{departmentName}
                     and pk_org_id = #{orgId}
+                    <if test="parentId != null">
+                        and parent_id = #{parentId}
+                    </if>
                     and id != #{id}
-
     </select>
 
     <select id="countByParentId" resultType="java.lang.Integer">
@@ -247,13 +248,11 @@
     </select>
 
     <select id="selectDepartmentName" resultType="java.lang.String">
-
                 SELECT 1
                 FROM department d
                 WHERE d.pk_org_id = #{pkOrgId}
-                  AND d.d_group IN (1, 2)
+                  AND d.parent_id = #{parentId}
                   AND d.department_name = #{departmentName} LIMIT 1
-
     </select>
 
     <select id="getPathBySpacePath" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">

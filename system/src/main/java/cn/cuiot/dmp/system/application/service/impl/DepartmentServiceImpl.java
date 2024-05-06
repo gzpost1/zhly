@@ -150,10 +150,12 @@ public class DepartmentServiceImpl implements DepartmentService {
         //checkAdminUser(dto.getPkOrgId().toString(), dto.getUserId());
         final String departmentName = dto.getDepartmentName();
         final Long parentId = dto.getParentId();
+        final Long pkOrgId = dto.getPkOrgId();
+        final String pkUserId = dto.getUserId();
 
+        //只有组织级用户才可添加组织
         DepartmentEntity userDept = departmentDao.selectByPrimary(
-                Long.valueOf(userDao.getDeptId(dto.getUserId(), dto.getPkOrgId().toString())));
-
+                Long.valueOf(userDao.getDeptId(pkUserId,pkOrgId.toString())));
         if (!Arrays
                 .asList(DepartmentGroupEnum.TENANT.getCode(), DepartmentGroupEnum.SYSTEM.getCode())
                 .contains(userDept.getDGroup())) {
@@ -161,46 +163,36 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         DepartmentEntity parentDept = departmentDao.selectByPrimary(parentId);
-        // 租户组织树层级限制
-        Organization organization = organizationRepository
-                .find(new OrganizationId(dto.getPkOrgId()));
-        int maxDeptHigh = organization != null ? organization.getMaxDeptHigh() : 0;
-        //获取租户账户类型
-        Organization tempOrganization = organizationRepository
-                .find(new OrganizationId(dto.getPkOrgId()));
-        Integer orgTypeId =
-                tempOrganization != null ? tempOrganization.getOrgTypeId().getValue().intValue()
-                        : null;
 
-        if (orgTypeId != null && orgTypeId.equals(OrgTypeEnum.COMMUNITY.getCode())) {
-            if (maxDeptHigh < NumberConst.SEVEN) {
-                organizationRepository.save(Organization.builder()
-                        .id(new OrganizationId(dto.getPkOrgId()))
-                        .maxDeptHigh(NumberConst.SEVEN)
-                        .build());
-                organization = organizationRepository.find(new OrganizationId(dto.getPkOrgId()));
-                if (Objects.nonNull(organization)) {
-                    maxDeptHigh = organization.getMaxDeptHigh();
-                }
-                parentDept = departmentDao.selectByPrimary(parentId);
-            }
-        }
+        //获取所属企业账户
+        Organization organization = organizationRepository
+                .find(new OrganizationId(pkOrgId));
+
+        //获取组织树层级限制
+        int maxDeptHigh = organization != null ? organization.getMaxDeptHigh() : 0;
+
+        //获取租户账户类型
+        Integer orgTypeId =organization != null ? organization.getOrgTypeId().getValue().intValue(): null;
+
+        //层级限制判断
         Integer parentDeptLevel = parentDept.getLevel();
         if (parentDeptLevel >= maxDeptHigh) {
             throw new BusinessException(ResultCode.DEPARTMENT_LEVEL_OVERRUN);
         }
-        //校验本组织下组织名是否重复
+
+        //同级组织名称不可重复
         String department = departmentDao
-                .selectDepartmentName(dto.getPkOrgId(), dto.getDepartmentName());
+                .selectDepartmentName(pkOrgId,parentId, dto.getDepartmentName());
         if (department != null) {
             throw new BusinessException(ResultCode.DEPARTMENT_NAME_EXIST);
         }
 
-        DepartmentEntity entity = new DepartmentEntity();
         String path = parentDept.getPath();
+
+        DepartmentEntity entity = new DepartmentEntity();
         entity.setDepartmentName(departmentName);
         entity.setSort(Optional.ofNullable(departmentDao.getMaxSortByParentId(parentId)).orElse(0));
-        entity.setPkOrgId(dto.getPkOrgId());
+        entity.setPkOrgId(pkOrgId);
         entity.setParentId(parentId);
         entity.setCreatedOn(LocalDateTime.now());
         entity.setCreatedBy(dto.getCreateBy());
@@ -240,17 +232,20 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public int updateDepartment(UpdateDepartmentDto dto) {
-        checkAdminUser(dto.getOrgId(), dto.getUserId());
+        //checkAdminUser(dto.getOrgId(), dto.getUserId());
         // 重名校验
         final Long id = dto.getId();
-        final String siteName = dto.getDepartmentName();
+        final Long pkOrgId = dto.getPkOrgId();
+        final String departmentName = dto.getDepartmentName();
         DepartmentEntity byPrimary = departmentDao.selectByPrimary(id);
         final Long parentId = byPrimary.getParentId();
+
         DepartmentEntity entity = new DepartmentEntity();
+
         // 根节点不存在同级别重名，不校验。不同企业间可以重名。
         if (parentId != null) {
             int count = departmentDao
-                    .countByDepartmentNameForUpdate(siteName, dto.getPkOrgId(), dto.getId());
+                    .countByDepartmentNameForUpdate(departmentName, pkOrgId,parentId, dto.getId());
             if (count > 0) {
                 throw new BusinessException(ResultCode.DEPARTMENT_NAME_EXIST);
             }
@@ -262,7 +257,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             }
         }
         entity.setId(id);
-        entity.setDepartmentName(siteName);
+        entity.setDepartmentName(departmentName);
 
         List<Integer> result = new ArrayList<Integer>();
         orgRedisUtil.doubleDeleteForDbOperation(

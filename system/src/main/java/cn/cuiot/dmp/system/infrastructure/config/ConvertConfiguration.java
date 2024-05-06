@@ -14,8 +14,8 @@ import java.util.Objects;
  * @author caorui
  * @date 2024/5/6
  */
-@Configuration
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+/*@Configuration
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)*/
 public class ConvertConfiguration implements WebMvcConfigurer {
 
     @Autowired(required = false)

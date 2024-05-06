@@ -36,11 +36,6 @@ public class BaseWebConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(basePermissionInterceptor());
     }
 
-    @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        converters.add(0, new MappingJackson2HttpMessageConverter());
-    }
-
     @Bean
     public BaseAuthInterceptor baseAuthInterceptor() {
         return new BaseAuthInterceptor();
