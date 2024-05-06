@@ -38,4 +38,9 @@ public class FormConfig implements Serializable {
      */
     private Byte status;
 
+    /**
+     * 表单配置详情
+     */
+    private String formConfigDetail;
+
 }

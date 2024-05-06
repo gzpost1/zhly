@@ -13,4 +13,24 @@ public interface FormConfigRepository {
      */
     FormConfig queryForDetail(Long id);
 
+    /**
+     * 保存
+     */
+    int saveFormConfig(FormConfig formConfig);
+
+    /**
+     * 更新
+     */
+    int updateFormConfig(FormConfig formConfig);
+
+    /**
+     * 更新状态
+     */
+    int updateFormConfigStatus(FormConfig formConfig);
+
+    /**
+     * 删除
+     */
+    int deleteFormConfig(Long id);
+
 }
