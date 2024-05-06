@@ -15,8 +15,11 @@ import lombok.ToString;
 @ToString
 public class AuthorizeParam implements Serializable {
 
-    @NotNull(message = "roleId不能为空")
-    private Long roleId;
+    /**
+     * 类型ID
+     */
+    @NotNull(message = "类型ID不能为空")
+    private Long orgTypeId;
 
     /**
      * 菜单ID列表

@@ -7,18 +7,19 @@ import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.common.utils.TreeUtil;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
-import cn.cuiot.dmp.system.application.enums.UserSourceTypeEnum;
 import cn.cuiot.dmp.system.application.service.MenuService;
+import cn.cuiot.dmp.system.domain.entity.Organization;
+import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuQuery;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuTreeNode;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgTypeMenuDto;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.MenuDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao;
+import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgTypeMenuDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.RoleDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
-import cn.cuiot.dmp.system.domain.entity.Organization;
-import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import java.time.LocalDateTime;
@@ -57,6 +58,9 @@ public class MenuServiceImpl implements MenuService {
 
     @Autowired
     private OrgMenuDao orgMenuDao;
+
+    @Autowired
+    private OrgTypeMenuDao orgTypeMenuDao;
 
     /**
      * 获取菜单
@@ -245,10 +249,15 @@ public class MenuServiceImpl implements MenuService {
      * 初始化授权
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void authorize(AuthorizeParam authorizeParam) {
-        roleDao.deleteMenuRole(authorizeParam.getRoleId());
-        if(CollectionUtils.isNotEmpty(authorizeParam.getResourceIds())){
-            roleDao.insertMenuRole(authorizeParam.getRoleId(),authorizeParam.getResourceIds(),authorizeParam.getSessionUserId(),UserSourceTypeEnum.SYSTEM.getCode());
+        orgTypeMenuDao.deleteMenu(authorizeParam.getOrgTypeId());
+        if (CollectionUtils.isNotEmpty(authorizeParam.getResourceIds())) {
+            List<OrgTypeMenuDto> list = authorizeParam.getResourceIds().stream().map(menuId -> {
+                return new OrgTypeMenuDto(SnowflakeIdWorkerUtil.nextId(), Long.valueOf(menuId),
+                        authorizeParam.getOrgTypeId());
+            }).collect(Collectors.toList());
+            orgTypeMenuDao.insertMenu(list);
         }
     }
 
