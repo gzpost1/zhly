@@ -14,13 +14,13 @@ import java.util.stream.Collectors;
  * @author caorui
  * @date 2024/4/29
  */
-public class TreeUtil<T extends TreeNode<T>> {
+public class TreeUtil {
 
     /**
      * 生成树
      */
     public static <T extends TreeNode<T>> List<T> makeTree(List<T> list) {
-        List<T> tree = new ArrayList<T>();
+        List<T> tree = new ArrayList<>();
         if (null != list) {
             TreeNode<T> parentNode = new TreeNode<>();
             for (T node : list) {
@@ -37,12 +37,52 @@ public class TreeUtil<T extends TreeNode<T>> {
     }
 
     /**
+     * 根据搜索的树列表，获取树的某个节点
+     *
+     * @param list 搜索的树列表
+     * @param id   待获取树节点id
+     */
+    public static <T extends TreeNode<T>> T getTreeNode(List<T> list, String id) {
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        for (T node : list) {
+            if (id.equals(node.getId())) {
+                return node;
+            }
+            if (CollectionUtils.isNotEmpty(node.getChildren())) {
+                T treeNode = getTreeNode(node.getChildren(), id);
+                if (Objects.nonNull(treeNode)) {
+                    return treeNode;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取树的某个节点及其子节点的id列表
+     *
+     * @param treeNode 待获取树节点
+     */
+    public static <T extends TreeNode<T>> List<String> getTreeIdList(T treeNode) {
+        List<String> treeIdList = new ArrayList<>();
+        treeIdList.add(treeNode.getId());
+        if (CollectionUtils.isNotEmpty(treeNode.getChildren())) {
+            for (T child : treeNode.getChildren()) {
+                treeIdList.addAll(getTreeIdList(child));
+            }
+        }
+        return treeIdList;
+    }
+
+    /**
      * 获取树状结构，过滤未匹配的树节点
      *
      * @param treeList 搜索的树列表
      * @param hitIds   命中的ids
      */
-    public List<T> searchNode(List<T> treeList, List<String> hitIds) {
+    public static <T extends TreeNode<T>> List<T> searchNode(List<T> treeList, List<String> hitIds) {
         List<T> filterTree = Lists.newArrayList();
         for (T t : treeList) {
             T node = filterTree(t, hitIds);
@@ -54,10 +94,10 @@ public class TreeUtil<T extends TreeNode<T>> {
     /**
      * 过滤树
      *
-     * @param tree 当前树节点
+     * @param tree   当前树节点
      * @param hitIds 命中的ids
      */
-    private T filterTree(T tree, List<String> hitIds) {
+    private static <T extends TreeNode<T>> T filterTree(T tree, List<String> hitIds) {
         if (isRemoveNode(tree, hitIds)) {
             return null;
         }
@@ -72,10 +112,10 @@ public class TreeUtil<T extends TreeNode<T>> {
     /**
      * 删除节点
      *
-     * @param child 子节点
+     * @param child    子节点
      * @param iterator 迭代器
      */
-    private void deleteNode(T child, Iterator<T> iterator, List<String> hitIds) {
+    private static <T extends TreeNode<T>> void deleteNode(T child, Iterator<T> iterator, List<String> hitIds) {
         if (isRemoveNode(child, hitIds)) {
             iterator.remove();
             return;
@@ -94,11 +134,11 @@ public class TreeUtil<T extends TreeNode<T>> {
     /**
      * 判断该节点是否该删除
      *
-     * @param root 根节点
+     * @param root   根节点
      * @param hitIds 命中的节点
      * @return ture 需要删除  false 不能被删除
      */
-    private boolean isRemoveNode(T root, List<String> hitIds) {
+    private static <T extends TreeNode<T>> boolean isRemoveNode(T root, List<String> hitIds) {
         List<T> children = root.getChildren();
         // 叶子节点
         if (CollectionUtils.isEmpty(children)) {

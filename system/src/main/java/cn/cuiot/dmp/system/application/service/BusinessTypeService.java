@@ -47,6 +47,6 @@ public interface BusinessTypeService {
     /**
      * 删除
      */
-    int deleteBusinessType(Long id);
+    int deleteBusinessType(BusinessTypeQueryDTO queryDTO);
 
 }

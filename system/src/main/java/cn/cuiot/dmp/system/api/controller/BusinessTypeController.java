@@ -89,8 +89,8 @@ public class BusinessTypeController {
      */
     @RequiresPermissions
     @PostMapping("/delete")
-    public int delete(@RequestBody @Valid IdParam idParam) {
-        return businessTypeService.deleteBusinessType(idParam.getId());
+    public int delete(@RequestBody @Valid BusinessTypeQueryDTO queryDTO) {
+        return businessTypeService.deleteBusinessType(queryDTO);
     }
 
 }
