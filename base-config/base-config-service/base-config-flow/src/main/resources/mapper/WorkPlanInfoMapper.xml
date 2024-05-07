@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.baseconfig.flow.mapper.WorkPlanInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.baseconfig.flow.entity.WorkPlanInfoEntity">
+        <id column="id" property="id" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="deleted" property="deleted" />
+        <result column="plan_name" property="planName" />
+        <result column="plan_desc" property="planDesc" />
+        <result column="flow_id" property="flowId" />
+        <result column="flow_key" property="flowKey" />
+        <result column="start_date" property="startDate" />
+        <result column="end_date" property="endDate" />
+        <result column="push_time" property="pushTime" />
+        <result column="execution_strategy" property="executionStrategy" />
+        <result column="strategy_type" property="strategyType" />
+        <result column="specify_day" property="specifyDay" />
+        <result column="specify_week" property="specifyWeek" />
+        <result column="specify_month" property="specifyMonth" />
+        <result column="recurrent_state" property="recurrentState" />
+        <result column="recurrent_hour" property="recurrentHour" />
+        <result column="recurrent_type" property="recurrentType" />
+        <result column="recurrent_over_time" property="recurrentOverTime" />
+        <result column="task_id" property="taskId" />
+        <result column="org_id" property="orgId" />
+        <result column="state" property="state" />
+        <result column="ext" property="ext" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        update_time,
+        update_user,
+        create_time,
+        create_user,
+        deleted,
+        id, plan_name, plan_desc, flow_id, flow_key, start_date, end_date, push_time, execution_strategy, strategy_type, specify_day, specify_week, specify_month, recurrent_state, recurrent_hour, recurrent_type, recurrent_over_time, task_id, org_id, state, ext
+    </sql>
+
+</mapper>
