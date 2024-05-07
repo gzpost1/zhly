@@ -14,7 +14,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>base-config-workorder</module>
         <module>base-config-flow</module>
         <module>base-config-custommenu</module>
     </modules>
