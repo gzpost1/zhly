@@ -73,4 +73,6 @@ public class WorkBusinessTypeInfoEntity implements Serializable {
      * 节点
      */
     private String node;
+
+
 }

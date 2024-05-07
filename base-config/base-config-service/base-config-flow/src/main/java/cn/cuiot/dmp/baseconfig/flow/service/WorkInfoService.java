@@ -337,6 +337,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success();
     }
 
+
+
     /**
      * 批量转办
      * @param handleDataDTO
@@ -512,12 +514,13 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(CollectionUtils.isNotEmpty(records)){
             records.stream().forEach(item->{
                 //获取是否超时
-                BusinessTypeInfoDto build = BusinessTypeInfoDto.builder().businessType(BUSINESS_TYPE_TIME_OUT).
-                        procInstId(Long.parseLong(item.getProcInstId())).build();
-                List<WorkBusinessTypeInfoEntity> workBusinessTypeInfoEntities = queryBusinessTypeInfo(build);
-                if(CollectionUtils.isNotEmpty(workBusinessTypeInfoEntities)){
-                    item.setTimeOut(RESULT_1);
-                }
+//                BusinessTypeInfoDto build = BusinessTypeInfoDto.builder().businessType(BUSINESS_TYPE_TIME_OUT).
+//                        procInstId(Long.parseLong(item.getProcInstId())).build();
+//                List<WorkBusinessTypeInfoEntity> workBusinessTypeInfoEntities = queryBusinessTypeInfo(build);
+//                if(CollectionUtils.isNotEmpty(workBusinessTypeInfoEntities)){
+//                    item.setTimeOut(RESULT_1);
+//                }
+                //TODO 根据userId获取userName
                 //TODO 填充组织名称与业务类型后返回分页数据
             });
         }
@@ -616,115 +619,20 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         handleDataVO.setProcessInstanceId(historicProcessInstance.getId());
         JSONObject jsonObject = (JSONObject) processVariables.get(FORM_VAR);
         handleDataVO.setFormData(jsonObject);
-        ChildNode childNode = JSONObject.parseObject(processJson, new TypeReference<ChildNode>(){});
-        ChildNode currentNode=null;
-        if(StringUtils.isNotBlank(HandleDataDTO.getTaskId())){
-            HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(HandleDataDTO.getTaskId()).singleResult();
-            currentNode = getChildNode(childNode, historicTaskInstance.getTaskDefinitionKey());
-            List<FormOperates> formPerms = currentNode.getProps().getFormPerms();
-            if(CollUtil.isNotEmpty(formPerms)){
-                Iterator<FormOperates> iterator = formPerms.iterator();
-                while (iterator.hasNext()){
-                    FormOperates next = iterator.next();
-                    if("H".equals(next.getPerm())){
-                        if(jsonObject!=null){
-                            jsonObject.remove(next.getId());
-                        }
-                    }
-                }
-            }
-            handleDataVO.setCurrentNode(currentNode);
-            handleDataVO.setTaskId(HandleDataDTO.getTaskId());
+
+        List<HistoricActivityInstance> list = historyService.createHistoricActivityInstanceQuery()
+                .processInstanceId(historicProcessInstance.getId()).orderByHistoricActivityInstanceStartTime().asc().list();
+        if(CollectionUtils.isEmpty(list)){
+            return IdmResDTO.success();
         }
-        List<HistoricActivityInstance> list = historyService.createHistoricActivityInstanceQuery().processInstanceId(historicProcessInstance.getId()).list();
-        Map<String,List<HistoricActivityInstance>> historicActivityInstanceMap =new HashMap<>();
         for (HistoricActivityInstance historicActivityInstance : list) {
-            List<HistoricActivityInstance> historicActivityInstances = historicActivityInstanceMap.get(historicActivityInstance.getActivityId());
-            if(historicActivityInstances==null){
-                historicActivityInstances =new ArrayList<>();
-                historicActivityInstances.add(historicActivityInstance);
-                historicActivityInstanceMap.put(historicActivityInstance.getActivityId(),historicActivityInstances);
-            }
-            else{
-                historicActivityInstances.add(historicActivityInstance);
-                historicActivityInstanceMap.put(historicActivityInstance.getActivityId(),historicActivityInstances);
-            }
+            historicActivityInstance.getActivityType();
         }
-        Process mainProcess = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess();
-        Collection<FlowElement> flowElements = mainProcess.getFlowElements();
 
-        List<String> runningList= new ArrayList<>();
-        handleDataVO.setRunningList(runningList);
-        List<String> endList=new ArrayList<>();
-        handleDataVO.setEndList(endList);
-        List<String> noTakeList=new ArrayList<>();
-        handleDataVO.setNoTakeList(noTakeList);
-        Map<String,List<TaskDetailVO>> deatailMap =new HashMap<>();
-        List<Comment> processInstanceComments = taskService.getProcessInstanceComments(historicProcessInstance.getId());
-        List<Attachment> processInstanceAttachments = taskService.getProcessInstanceAttachments(historicProcessInstance.getId());
 
-        for (FlowElement flowElement : flowElements) {
-            List<TaskDetailVO> detailVOList =new ArrayList<>();
-            List<HistoricActivityInstance> historicActivityInstanceList = historicActivityInstanceMap.get(flowElement.getId());
-            if(CollUtil.isNotEmpty(historicActivityInstanceList)){
-                for (HistoricActivityInstance historicActivityInstance : historicActivityInstanceList) {
-                    if(historicActivityInstance.getEndTime()!=null){
-                        if("startEvent".equalsIgnoreCase(historicActivityInstance.getActivityType()) ||"endEvent".equalsIgnoreCase(historicActivityInstance.getActivityType())){
-                            TaskDetailVO taskDetailVO = new TaskDetailVO();
-                            taskDetailVO.setActivityId(historicActivityInstance.getActivityId());
-                            taskDetailVO.setName(historicActivityInstance.getActivityName());
-                            taskDetailVO.setCreateTime(historicActivityInstance.getStartTime());
-                            taskDetailVO.setEndTime(historicActivityInstance.getEndTime());
-                            detailVOList.add(taskDetailVO);
-                            deatailMap.put(historicActivityInstance.getActivityId(),detailVOList);
-                            endList.add(historicActivityInstance.getActivityId());
-                        }
-                        else if ("userTask".equalsIgnoreCase(historicActivityInstance.getActivityType())){
-                            List<TaskDetailVO> voList = deatailMap.get(historicActivityInstance.getActivityId());
-                            List<HistoricActivityInstance> activityInstanceList = list.stream().filter(h -> h.getActivityId().equals(historicActivityInstance.getActivityId()) &&h.getEndTime()!=null).collect(Collectors.toList());
-                            if(voList!=null){
-//                                collectUserTaskInfo(processInstanceComments, processInstanceAttachments, historicActivityInstance, voList, activityInstanceList);
-                            }else{
-                                voList=new ArrayList<>();
-                                collectUserTaskInfo(processInstanceComments, processInstanceAttachments, historicActivityInstance, voList, activityInstanceList);
-                                deatailMap.put(historicActivityInstance.getActivityId(),voList);
-                                endList.add(historicActivityInstance.getActivityId());
-                            }
 
-                        }else if("serviceTask".equalsIgnoreCase(historicActivityInstance.getActivityType())){
-
-                        }
-                    }else{
-                        if ("userTask".equalsIgnoreCase(historicActivityInstance.getActivityType())){
-                            List<TaskDetailVO> voList = deatailMap.get(historicActivityInstance.getActivityId());
-                            List<HistoricActivityInstance> activityInstanceList = list.stream().filter(h -> h.getActivityId().equals(historicActivityInstance.getActivityId()) &&h.getEndTime()==null).collect(Collectors.toList());
-                            if(voList!=null){
-//                                collectUserTaskInfo(processInstanceComments, processInstanceAttachments, historicActivityInstance, voList, activityInstanceList);
-                            }
-                            else{
-                                voList=new ArrayList<>();
-                                collectUserTaskInfo(processInstanceComments, processInstanceAttachments, historicActivityInstance, voList, activityInstanceList);
-                            }
-                            deatailMap.put(historicActivityInstance.getActivityId(),voList);
-                            if(endList.contains(historicActivityInstance.getActivityId())){
-                                endList.remove(historicActivityInstance.getActivityId());
-                                runningList.add(historicActivityInstance.getActivityId());
-                            }
-                            else{
-                                runningList.add(historicActivityInstance.getActivityId());
-                            }
-                        }
-                        else if("serviceTask".equalsIgnoreCase(historicActivityInstance.getActivityType())){
-
-                        }
-                    }
-                }
-            }else{
-                noTakeList.add(flowElement.getId());
-            }
-        }
         handleDataVO.setProcessTemplates(flowConfig);
-        handleDataVO.setDetailVOList(deatailMap);
+//        handleDataVO.setDetailVOList(deatailMap);
         return IdmResDTO.success(handleDataVO);
     }
 

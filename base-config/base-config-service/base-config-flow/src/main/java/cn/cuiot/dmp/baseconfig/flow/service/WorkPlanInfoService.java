@@ -16,7 +16,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jodd.util.StringUtil;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalTime;
+import java.time.Period;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +48,8 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
      * @return
      */
     public String createCron(WorkPlanInfoDto dto){
+        //将推送时间的天与小时转成分钟
+
         //减去提前推送的时间
         LocalTime localTime = dto.getPlanTime().minusMinutes(dto.getPushTime());
         int hour = localTime.getHour();
@@ -82,7 +86,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             String specifyMinute=String.valueOf(minute);
             //启用循环
             if(dto.getRecurrentState().intValue()==0){
-                specifyMinute=specifyMinute+"/"+String.valueOf(dto.getRecurrentHour());
+                specifyMinute=specifyMinute+"/"+String.valueOf(Math.round(dto.getRecurrentHour()*60));
             }
             String cron =String.format("%d %d %d %d %d ?", second,
                     specifyMinute, hour, dto.getSpecifyDay(),dto.getSpecifyMonth());
@@ -93,6 +97,13 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         return null;
     }
 
+    /**
+     * 将推送时间转成分钟
+     * @param dto
+     */
+    public void getPushTime(WorkPlanInfoDto dto){
+        dto.setPushTime(Math.round(dto.getPushDay()*24*60*60+dto.getRecurrentHour()*60));
+    }
 
     /**
      * 查询计划任务列表

@@ -77,11 +77,20 @@ public class WorkPlanInfoEntity extends BaseEntity {
     private Date endDate;
 
 
-    /**
-     * 工单推送日期，单位分钟
-     */
-    private Integer pushTime;
+//    /**
+//     * 工单推送日期，单位分钟
+//     */
+//    private Integer pushTime;
 
+
+    /**
+     * 推送天
+     */
+    private Integer pushDay;
+    /**
+     * 推送小时
+     */
+    private Double pushHour;
 
     /**
      * 执行策略1按天2按周3按月
@@ -122,7 +131,7 @@ public class WorkPlanInfoEntity extends BaseEntity {
     /**
      * 循环小时
      */
-    private String recurrentHour;
+    private Double recurrentHour;
 
 
     /**
