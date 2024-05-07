@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.domain.entity;
 
+import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.domain.entity.AbstractAggregate;
 import cn.cuiot.dmp.domain.types.Email;
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
@@ -7,7 +8,6 @@ import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.domain.types.enums.OrgSourceEnum;
 import cn.cuiot.dmp.system.domain.types.enums.OrgStatusEnum;
-import cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum;
 import java.time.LocalDateTime;
 import java.util.Date;
 import lombok.Data;
@@ -131,12 +131,4 @@ public class Organization extends AbstractAggregate<OrganizationId> {
      * 来源
      */
     private OrgSourceEnum source;
-
-
-    /**
-     * 是否是省份账户
-     */
-    public boolean isProvinceType(){
-        return OrgTypeEnum.PROVINCE == orgTypeId;
-    }
 }

@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.application.service.impl;
 import cn.cuiot.dmp.base.infrastructure.dto.AuthorizeParam;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.common.utils.TreeUtil;
@@ -14,6 +15,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuQuery;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MenuTreeNode;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgMenuDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgTypeMenuDto;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.MenuDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao;
@@ -73,13 +75,25 @@ public class MenuServiceImpl implements MenuService {
         if (Objects.isNull(organization)) {
             return Lists.newArrayList();
         }
-        String roleId = userDao.getRoleId(userId, orgId);
-
         List<String> allowMenuIdList = orgMenuDao.getAllowMenuIdList(orgId);
         if (CollectionUtils.isEmpty(allowMenuIdList)) {
             return Lists.newArrayList();
         }
-        List<MenuEntity> allMenuList = menuDao.getAllRoleMenu(roleId);
+        List<MenuEntity> allMenuList = Lists.newArrayList();
+        if(organization.getOrgOwner().getStrValue().equals(userId)){
+            //平台管理员
+            if(OrgTypeEnum.PLATFORM.getValue().equals(organization.getOrgTypeId().getValue())){
+                allMenuList = menuDao.selectMenuByOrgTypeId(organization.getOrgTypeId().getValue());
+            }else{
+                //企业管理员
+                allMenuList = menuDao.selectMenuByOrgId(Long.valueOf(orgId));
+
+            }
+        }else{
+            String roleId = userDao.getRoleId(userId, orgId);
+            allMenuList = menuDao.getAllRoleMenu(roleId);
+        }
+
         if (CollectionUtils.isEmpty(allMenuList)) {
             return Lists.newArrayList();
         }
@@ -258,6 +272,16 @@ public class MenuServiceImpl implements MenuService {
                         authorizeParam.getOrgTypeId());
             }).collect(Collectors.toList());
             orgTypeMenuDao.insertMenu(list);
+        }
+        if(OrgTypeEnum.PLATFORM.getValue().equals(authorizeParam.getOrgTypeId())){
+            orgMenuDao.deleteByOrgId(1L);
+            if (CollectionUtils.isNotEmpty(authorizeParam.getResourceIds())) {
+                List<OrgMenuDto> menuDtoList = authorizeParam.getResourceIds().stream().map(ite -> {
+                    return new OrgMenuDto(SnowflakeIdWorkerUtil.nextId(), 1L, Long.valueOf(ite),
+                            LocalDateTime.now(),Long.valueOf(authorizeParam.getSessionUserId()));
+                }).collect(Collectors.toList());
+                orgMenuDao.insertOrgMenu(menuDtoList);
+            }
         }
     }
 

@@ -1,8 +1,8 @@
 package cn.cuiot.dmp.system.domain.query;
 
+import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.domain.types.enums.OrderByTypeEnum;
-import cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;

@@ -15,7 +15,6 @@ import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.application.constant.CurrencyConst;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
-import cn.cuiot.dmp.base.application.enums.OrgTypeEnum;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
@@ -24,7 +23,6 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByName
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertSonDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentTreeVO;

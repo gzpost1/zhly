@@ -32,6 +32,16 @@ public interface MenuDao {
 	List<MenuEntity> getAllRoleMenu(@Param("roleId") String roleId);
 
 	/**
+	 * 查询企业菜单
+	 */
+	List<MenuEntity> selectMenuByOrgId(@Param("orgId") Long orgId);
+
+	/**
+	 * 查询企业类型菜单
+	 */
+	List<MenuEntity> selectMenuByOrgTypeId(@Param("orgTypeId") Long orgTypeId);
+
+	/**
 	 * 查询菜单
 	 *
 	 * @param menuName

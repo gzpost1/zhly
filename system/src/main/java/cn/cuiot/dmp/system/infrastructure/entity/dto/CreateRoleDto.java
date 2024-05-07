@@ -18,7 +18,7 @@ public class CreateRoleDto extends AbstractResourceParam {
     /**
      * 角色名称
      */
-    @NotBlank(message = "角色名称不能为空")
+    @NotBlank(message = "请输入角色名称")
     private String roleName;
 
     /**
@@ -29,7 +29,6 @@ public class CreateRoleDto extends AbstractResourceParam {
     /**
      * 菜单 id集合
      */
-    @NotEmpty(message = "角色权限配置不能为空")
     private List<String> menuIds;
 
     /**

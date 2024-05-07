@@ -39,6 +39,24 @@
         order by m.sort
     </select>
 
+    <select id="selectMenuByOrgId" resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
+        select
+            m.*
+        from menu m
+        where m.id in (select menu_id from org_menu where org_id=#{orgId})
+        and m.`status`=1
+        order by m.sort
+    </select>
+
+    <select id="selectMenuByOrgTypeId" resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
+        select
+            m.*
+        from menu m
+        where m.id in (select menu_id from org_type_menu where org_type_id=#{orgTypeId})
+        and m.`status`=1
+        order by m.sort
+    </select>
+
     <select id="selectMenu" resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
         select * from `menu` where menu_name like CONCAT('%',#{menuName},'%')
     </select>

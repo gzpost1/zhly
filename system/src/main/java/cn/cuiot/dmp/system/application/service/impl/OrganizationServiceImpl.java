@@ -1,11 +1,9 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
-import static cn.cuiot.dmp.common.constant.ResultCode.OBJECT_NOT_EXIST;
 import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_ALREADY_EXIST;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
-import cn.cuiot.dmp.base.application.enums.OrgTypeEnum;
 import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
@@ -13,11 +11,11 @@ import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.RandomCodeWorker;
-import cn.cuiot.dmp.common.utils.RoleConst;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.Password;
@@ -35,13 +33,18 @@ import cn.cuiot.dmp.system.application.param.event.OrganizationActionEvent;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.application.service.OrganizationService;
 import cn.cuiot.dmp.system.application.service.UserService;
+import cn.cuiot.dmp.system.domain.entity.Organization;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.query.OrganizationCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
+import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
+import cn.cuiot.dmp.system.domain.types.enums.OrgSourceEnum;
+import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.OrganizationEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.CompanyReqDto.CompanyDetailReqDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.CompanyReqDto.UpdateCompanyReqDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.CompanyResDto.CompanyDetailResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OperateOrganizationDto;
@@ -53,8 +56,6 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ResetUserPasswordReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataReqDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.GetOrganizationVO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.ListOrganizationVO;
 import cn.cuiot.dmp.system.infrastructure.messaging.spring.SystemEventSendAdapter;
@@ -62,21 +63,13 @@ import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgTypeMenuDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrganizationDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.RoleDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDataDao;
 import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.DeptTreePathUtils;
 import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.RandomPwUtils;
-import cn.cuiot.dmp.system.domain.entity.Organization;
-import cn.cuiot.dmp.system.domain.entity.User;
-import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
-import cn.cuiot.dmp.system.domain.types.enums.OrgSourceEnum;
-import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
-import cn.cuiot.dmp.system.domain.query.OrganizationCommonQuery;
-import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
-import cn.cuiot.dmp.system.domain.repository.UserRepository;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -90,10 +83,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -123,12 +114,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private UserPhoneNumberDomainService userPhoneNumberDomainService;
-
-    @Autowired
-    private RoleDao roleDao;
-
-    @Autowired
-    private UserDataDao userDataDao;
 
     @Autowired
     private OrganizationDao organizationDao;
@@ -181,18 +166,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Autowired
     private DeptTreePathUtils deptTreePathUtils;
 
-    @Autowired
-    private Organization2OrganizationResDTOAssembler assembler;
-
-
-    private static final String THREE_HUNDRED = "300";
-
-    public static final int EIGHT = 8;
-    public static final int NINE = 9;
-    public static final int TEN = 10;
-    public static final int FOURTEEN = 14;
-    public static final int SIXTEEN = 16;
-
     /**
      * 根据用户类型返回
      */
@@ -242,8 +215,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         //获取当前登录用户的账号信息
         Organization sessionOrg = organizationRepository
                 .find(new OrganizationId(dto.getSessionOrgId()));
-        // 判断只有物联网账户才可以创建账户
-        if (!cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.PROVINCE.getValue()
+        // 判断只有平台账户才可以创建账户
+        if (!OrgTypeEnum.PLATFORM.getValue()
                 .equals(sessionOrg.getOrgTypeId().getValue())) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
@@ -308,33 +281,23 @@ public class OrganizationServiceImpl implements OrganizationService {
         operationTarget[0] = dto.getCompanyName();
         dto.setOperationTarget(operationTarget);
 
-        Integer orgTypeId = OrgTypeEnum.COMMUNITY.getCode();
-
+        Long orgTypeId = OrgTypeEnum.ENTERPRISE.getValue();
+        Integer maxDeptHigh = 7;
         /**
          * 权限配置
          */
-        Integer maxDeptHigh = 2;
-        Long roleId = RoleConst.DEFAULT_SUPER_OPERATOR_ROLE_PK;
         List<String> menuList = dto.getMenuList();
-        if (OrgTypeEnum.COMMUNITY.getCode().equals(orgTypeId)) {
-            roleId = RoleConst.DEFAULT_COMMUNITY_ADMIN;
-            maxDeptHigh = 7;
-            //List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(orgTypeId);
-            //menuList = dto.getMenuList().stream().filter(menuIdList::contains).distinct().collect(Collectors.toList());
-        } else if (OrgTypeEnum.COMMON.getCode().equals(orgTypeId)) {
-            roleId = RoleConst.DEFAULT_COMMON_ADMIN;
-            maxDeptHigh = 7;
-            //List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(orgTypeId);
-            //menuList = dto.getMenuList().stream().filter(menuIdList::contains).collect(Collectors.toList());
-        }
+        List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(orgTypeId);
+        menuList = menuList.stream().filter(menuIdList::contains).distinct()
+                .collect(Collectors.toList());
 
         //账户类型为企业账户
         Organization organization = Organization.builder()
                 .orgKey(dto.getOrgKey())
                 .orgName(dto.getCompanyName())
                 .companyName(dto.getCompanyName())
-                .orgTypeId(cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum
-                        .valueOf(orgTypeId.longValue()))
+                .orgTypeId(OrgTypeEnum
+                        .valueOf(orgTypeId))
                 .status(cn.cuiot.dmp.system.domain.types.enums.OrgStatusEnum.ENABLE)
                 //账户所有者
                 .orgOwner(userDataEntity.getId())
@@ -344,7 +307,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .maxDeptHigh(maxDeptHigh)
                 .description(dto.getDescription())
                 .expStartDate(dto.getExpStartDate())
-                .expEndDate(dto.getExpEndDate())
+                .expEndDate(DateUtil.endOfDay(dto.getExpEndDate()))
                 .source(OrgSourceEnum.PRIVATE)
                 .build();
         organizationRepository.save(organization);
@@ -354,7 +317,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         //保存菜单权限
         if (!CollectionUtils.isEmpty(menuList)) {
             List<OrgMenuDto> menuDtoList = menuList.stream().map(ite -> {
-                return new OrgMenuDto(SnowflakeIdWorkerUtil.nextId(),pkOrgId, Long.valueOf(ite), LocalDateTime.now(),dto.getSessionUserId());
+                return new OrgMenuDto(SnowflakeIdWorkerUtil.nextId(), pkOrgId, Long.valueOf(ite),
+                        LocalDateTime.now(), dto.getSessionUserId());
             }).collect(Collectors.toList());
             orgMenuDao.insertOrgMenu(menuDtoList);
         }
@@ -364,22 +328,14 @@ public class OrganizationServiceImpl implements OrganizationService {
                 dto.getDeptId().toString());
         Long pkDeptId = rootDepartment.getId();
 
-        // 新建子账户的所有者的角色在该子账户下为默认管理员角色
-        userDao.insertFeferRole(SnowflakeIdWorkerUtil.nextId(),userDataEntity.getId().getValue(), pkOrgId, roleId);
-        // 将数据库的两个默认角色与新建的账户绑定
-        Map<String, Object> adminRoleMap = new HashMap<>(3);
-        adminRoleMap.put("roleId", roleId);
-        adminRoleMap.put("orgId", pkOrgId);
-        adminRoleMap.put("createdBy", dto.getSessionOrgId());
-        adminRoleMap.put("id",SnowflakeIdWorkerUtil.nextId());
-        roleDao.insertOrgRole(adminRoleMap);
-
         // 用户与账号绑定
-        userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(),userDataEntity.getId().getValue(), pkOrgId, String.valueOf(pkDeptId),
+        userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(), userDataEntity.getId().getValue(),
+                pkOrgId, String.valueOf(pkDeptId),
                 dto.getSessionOrgId().toString());
 
         // 添加租户授权关系
-        userDao.insertUserGrant(SnowflakeIdWorkerUtil.nextId(),pkOrgId, null, dto.getSessionOrgId().toString(),
+        userDao.insertUserGrant(SnowflakeIdWorkerUtil.nextId(), pkOrgId, null,
+                dto.getSessionOrgId().toString(),
                 dto.getDeptId().toString(), null);
 
         //发送事件
@@ -404,6 +360,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         entity.setCode(RandomCodeWorker.generateShortUuid());
         entity.setDepartmentName(dto.getCompanyName());
         entity.setPath(parentEntity.getPath() + "-" + entity.getCode());
+        entity.setPathName(dto.getCompanyName());
         entity.setPkOrgId(pkOrgId);
         entity.setLevel(0);
         entity.setCreatedOn(LocalDateTime.now());
@@ -453,8 +410,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         //获取当前登录用户的账号信息
         Organization sessionOrg = organizationRepository
                 .find(new OrganizationId(dto.getSessionOrgId()));
-        // 判断只有物联网账户才可以创建账户
-        if (!cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.PROVINCE.getValue()
+        // 判断只有平台账户才可以修改账户
+        if (!OrgTypeEnum.PLATFORM.getValue()
                 .equals(sessionOrg.getOrgTypeId().getValue())) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
@@ -494,7 +451,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         orgMenuDao.deleteByOrgId(pkOrgId);
         if (!CollectionUtils.isEmpty(menuList)) {
             List<OrgMenuDto> menuDtoList = menuList.stream().map(ite -> {
-                return new OrgMenuDto(SnowflakeIdWorkerUtil.nextId(),pkOrgId, Long.valueOf(ite), LocalDateTime.now(),dto.getSessionUserId());
+                return new OrgMenuDto(SnowflakeIdWorkerUtil.nextId(), pkOrgId, Long.valueOf(ite),
+                        LocalDateTime.now(), dto.getSessionUserId());
             }).collect(Collectors.toList());
             orgMenuDao.insertOrgMenu(menuDtoList);
         }
@@ -505,7 +463,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .companyName(dto.getCompanyName())
                 .description(dto.getDescription())
                 .expStartDate(dto.getExpStartDate())
-                .expEndDate(dto.getExpEndDate())
+                .expEndDate(DateUtil.endOfDay(dto.getExpEndDate()))
                 .updatedOn(LocalDateTime.now())
                 .updatedBy(dto.getSessionUserId().toString())
                 .createdByType(OperateByTypeEnum.valueOf(UserSourceTypeEnum.PORTAL.getCode()))
@@ -521,7 +479,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         // 修改租户授权关系
         userDao.deleteUserGrant(pkOrgId);
-        userDao.insertUserGrant(SnowflakeIdWorkerUtil.nextId(),pkOrgId, null, dto.getSessionOrgId().toString(),
+        userDao.insertUserGrant(SnowflakeIdWorkerUtil.nextId(), pkOrgId, null,
+                dto.getSessionOrgId().toString(),
                 dto.getDeptId().toString(), null);
 
         //修改组织结构
@@ -536,17 +495,19 @@ public class OrganizationServiceImpl implements OrganizationService {
             DepartmentEntity parentDept = departmentDao.selectByPrimary(dto.getDeptId());
             if (Objects.nonNull(departmentEntity)) {
                 String oldPath = departmentEntity.getPath();
-                String  newPath = parentDept.getPath() + "-" + departmentEntity.getCode();
+                String newPath = parentDept.getPath() + "-" + departmentEntity.getCode();
                 departmentEntity.setPath(newPath);
-                departmentDao.updatePath(oldPath,newPath);
+                departmentDao.updatePath(oldPath, newPath);
             }
         }
         //变更名称,需要变更path name
-        if(!oldOrganization.getCompanyName().equals(dto.getCompanyName())){
+        if (!oldOrganization.getCompanyName().equals(dto.getCompanyName())) {
             if (Objects.nonNull(departmentEntity)) {
                 departmentEntity.setDepartmentName(dto.getCompanyName());
-                departmentDao.updateDepartmentName(departmentEntity.getId(),departmentEntity.getDepartmentName());
-                departmentDao.updatePathNameByPath(departmentEntity.getPath(),oldOrganization.getCompanyName(),dto.getCompanyName());
+                departmentDao.updateDepartmentName(departmentEntity.getId(),
+                        departmentEntity.getDepartmentName());
+                departmentDao.updatePathNameByPath(departmentEntity.getPath(),
+                        oldOrganization.getCompanyName(), dto.getCompanyName());
             }
         }
 
@@ -657,14 +618,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public PageResult<ListOrganizationVO> commercialOrgList(ListOrganizationDto dto) {
-        // 获取子组织
-        if (StringUtils.isNotBlank(dto.getDeptId())) {
-            List deptIds = departmentService
-                    .getChildrenDepartmentIds(String.valueOf(dto.getLoginOrgId()),
-                            Long.valueOf(dto.getDeptId()));
-            dto.setDeptIds(deptIds);
-        }
-
         PageMethod.startPage(dto.getCurrentPage(), dto.getPageSize());
         List<ListOrganizationVO> voList = queryOrgList(dto);
         PageInfo<ListOrganizationVO> pageInfo = new PageInfo<>(voList);
@@ -672,6 +625,13 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     private List<ListOrganizationVO> queryOrgList(ListOrganizationDto dto) {
+        // 获取子组织
+        if (StringUtils.isNotBlank(dto.getDeptId())) {
+            List deptIds = departmentService
+                    .getChildrenDepartmentIds(String.valueOf(dto.getLoginOrgId()),
+                            Long.valueOf(dto.getDeptId()));
+            dto.setDeptIds(deptIds);
+        }
         // 根据手机号查询租户id
         if (!StringUtils.isEmpty(dto.getPhoneNumber())) {
             String orgId = organizationDao
@@ -684,40 +644,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<ListOrganizationVO> voList = organizationDao.getCommercialOrgList(dto);
         for (ListOrganizationVO vo : voList) {
             vo.setPhoneNumber(Sm4.decrypt(vo.getPhoneNumber()));
-            IStrategy iStrategy = new StrategyPhone();
-            // 脱敏
-            vo.setPhoneNumber((String) iStrategy.des(vo.getPhoneNumber(), null));
-            if (OrgSourceEnum.ENTERPRISE.getValue().equals(vo.getSource())) {
-                vo.setCreatedByChannel("物联应用平台");
-                vo.setCreatedBy(null);
-            } else if (OrgSourceEnum.PRIVATE.getValue().equals(vo.getSource())) {
-                vo.setCreatedByChannel("管理员创建");
-                if (StringUtils.isEmpty(vo.getCreatedBy())) {
-                    vo.setCreatedBy(vo.getUsername());
-                }
-            } else if (OrgSourceEnum.SELF_REGISTRATION.getValue().equals(vo.getSource())) {
-                vo.setCreatedByChannel("自注册");
-            }
         }
         return voList;
-    }
-
-    @LogRecord(operationCode = "updateStatus", operationName = "启用/禁用账户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
-    @Override
-    public Integer operateOrganization(OperateOrganizationDto dto) {
-        Organization organization = Organization.builder()
-                .id(new OrganizationId(dto.getId()))
-                .status(cn.cuiot.dmp.system.domain.types.enums.OrgStatusEnum
-                        .valueOf(dto.getStatus()))
-                .build();
-        Integer result = organizationRepository.save(organization) ? 1 : 0;
-        // 如果禁用，则清除登陆信息，踢下线
-        if (OrgStatusEnum.DISABLE.getCode().equals(dto.getStatus())) {
-            offlineByOrgId(dto.getId());
-        } else {
-            removeOfflineCommand(dto.getId());
-        }
-        return result;
     }
 
     private void removeOfflineCommand(Long id) {
@@ -829,89 +757,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         //发送事件
         systemEventSendAdapter.sendOrganizationDeleteActionEvent(needDelete);
         return 1;
-    }
-
-    @Override
-    public CompanyDetailResDto companyDetail(CompanyDetailReqDto companyDetailReqDto) {
-        Organization organization = organizationRepository
-                .find(new OrganizationId(Long.valueOf(companyDetailReqDto.getOrgId())));
-        if (organization == null) {
-            throw new BusinessException(OBJECT_NOT_EXIST);
-        }
-        if (!cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.COMMUNITY.getValue()
-                .equals(organization.getOrgTypeId().getValue())
-                && !cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.COMMON.getValue()
-                .equals(organization.getOrgTypeId().getValue())) {
-            return null;
-        }
-        CompanyDetailResDto companyDetailResDto = new CompanyDetailResDto();
-        companyDetailResDto.setCompanyName(organization.getCompanyName());
-        companyDetailResDto.setSocialCreditCode(organization.getSocialCreditCode());
-        return companyDetailResDto;
-    }
-
-    @Override
-    public void updateCompany(UpdateCompanyReqDto updateCompanyReqDto) {
-        Organization organization = organizationRepository
-                .find(new OrganizationId(Long.valueOf(updateCompanyReqDto.getOrgId())));
-        if (organization == null) {
-            throw new BusinessException(OBJECT_NOT_EXIST);
-        }
-        if (!cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.COMMUNITY.getValue()
-                .equals(organization.getOrgTypeId().getValue())
-                && !cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.COMMON.getValue()
-                .equals(organization.getOrgTypeId().getValue())) {
-            return;
-        }
-        if (!StringUtils.isEmpty(organization.getCompanyName())
-                || !StringUtils.isEmpty(organization.getSocialCreditCode())) {
-            throw new BusinessException(ResultCode.COMPANY_INFO_ALREADY_EXIST);
-        }
-
-        OrganizationCommonQuery organizationCommonQuery = OrganizationCommonQuery.builder()
-                .id(new OrganizationId(updateCompanyReqDto.getOrgId()))
-                .orgTypeId(cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum.COMMUNITY)
-                .build();
-
-        Organization updateOrganization = Organization.builder()
-                .companyName(updateCompanyReqDto.getCompanyName())
-                .socialCreditCode(updateCompanyReqDto.getSocialCreditCode())
-                .updatedBy(updateCompanyReqDto.getUserId())
-                .updatedOn(LocalDateTime.now())
-                .updatedByType(OperateByTypeEnum.USER)
-                .build();
-
-        boolean success = organizationRepository
-                .updateByParams(updateOrganization, organizationCommonQuery);
-
-        if (!success) {
-            throw new BusinessException(ResultCode.INNER_ERROR);
-        }
-    }
-
-    @Override
-    public PageResult<UserDataResDTO> queryUserPageList(UserDataReqDTO userDataReqDTO) {
-        // 当前登陆者的组织
-        String loginDeptId = userService
-                .getDeptId(userDataReqDTO.getSessionUserId(), userDataReqDTO.getSessionOrgId());
-        // 查看目标租户的组织
-        String findDeptId = userDao.getUserGrantDeptId(userDataReqDTO.getOrgId());
-        // 越权校验
-        if (Boolean.FALSE.equals(departmentUtil.checkPrivilege(loginDeptId, findDeptId))) {
-            return new PageResult<>();
-        }
-
-        Map<String, Object> params = new HashMap<>(16);
-        if (!StringUtils.isEmpty(userDataReqDTO.getUsername())) {
-            params.put("userName", userDataReqDTO.getUsername());
-        }
-        if (!StringUtils.isEmpty(userDataReqDTO.getPhoneNumber())) {
-            String decrypt = Sm4.encryption(userDataReqDTO.getPhoneNumber());
-            params.put("phone", decrypt);
-        }
-        params.put("orgId", userDataReqDTO.getOrgId());
-        return userService.getPage(params, String.valueOf(userDataReqDTO.getOrgId()),
-                userDataReqDTO.getCurrentPage(), userDataReqDTO.getPageSize(), null);
     }
 
     @Override
