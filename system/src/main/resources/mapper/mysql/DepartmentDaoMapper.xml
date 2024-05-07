@@ -293,7 +293,7 @@
     </update>
 
     <update id="updatePath">
-        update set path = REPLACE(path,#{oldPath},#{newPath}) where path like CONCAT(#{oldPath}, '%')
+        update department set path = REPLACE(path,#{oldPath},#{newPath}) where path like CONCAT(#{oldPath}, '%')
     </update>
 
     <update id="updateDepartmentName">
@@ -303,7 +303,7 @@
     </update>
 
     <update id="updatePathNameByPath">
-        update set path_name = REPLACE(path_name,#{oldPathName},#{newPathName}) where path like CONCAT(#{path}, '%')
+        update department set path_name = REPLACE(path_name,#{oldPathName},#{newPathName}) where path like CONCAT(#{path}, '%')
     </update>
 
     <select id="getDepartmentById" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
