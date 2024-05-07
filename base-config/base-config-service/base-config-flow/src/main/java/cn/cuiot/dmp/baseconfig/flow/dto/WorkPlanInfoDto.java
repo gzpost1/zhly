@@ -1,6 +1,5 @@
 package cn.cuiot.dmp.baseconfig.flow.dto;
 
-import cn.cuiot.dmp.base.infrastructure.dto.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
