@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 
 /**
  * @author pengjian
@@ -48,15 +50,6 @@ public class BaseApprovalCenterController extends BaseController {
         return workInfoService.processList(dto);
     }
 
-    /**
-     * 委派
-     * @param handleDataDTO
-     * @return
-     */
-    @PostMapping("delegateTask")
-    public IdmResDTO delegateTask(@RequestBody HandleDataDTO handleDataDTO){
-        return workInfoService.delegateTask(handleDataDTO);
-    }
 
     /**
      * 审批同意
@@ -90,12 +83,22 @@ public class BaseApprovalCenterController extends BaseController {
     }
 
     /**
+     * 终止
+     * @param handleDataDTO
+     * @return
+     */
+    @PostMapping("closeFlow")
+    public IdmResDTO closeFlow(@RequestBody List<HandleDataDTO> handleDataDTO){
+        return workInfoService.closeFlow(handleDataDTO);
+    }
+
+    /**
      * 评论和督办
      * @param handleDataDTO
      * @return
      */
     @PostMapping("commentAndSuper")
-    public IdmResDTO commentAndSuper(@RequestBody HandleDataDTO handleDataDTO){
+    public IdmResDTO commentAndSuper(@RequestBody List<HandleDataDTO> handleDataDTO){
         return workInfoService.commentAndSuper(handleDataDTO);
     }
 
@@ -115,7 +118,7 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("businessPending")
-    public IdmResDTO businessPending(@RequestBody HandleDataDTO handleDataDTO){
+    public IdmResDTO businessPending(@RequestBody List<HandleDataDTO> handleDataDTO){
         return workInfoService.businessPending(handleDataDTO);
     }
 

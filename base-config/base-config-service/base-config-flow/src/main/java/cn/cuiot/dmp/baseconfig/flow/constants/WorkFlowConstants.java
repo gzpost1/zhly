@@ -50,7 +50,7 @@ public interface WorkFlowConstants {
     /**
      * 转办
      */
-    String BUSINESS_TRANSFER="businessTransfer";
+    Byte BUSINESS_TRANSFER=5;
 
     /**
      * 拒绝
@@ -87,6 +87,11 @@ public interface WorkFlowConstants {
      */
     Byte BUSINESS_BYPE_PENDING=1;
 
+    /**
+     * 终止
+     */
+    Byte BUSINESS_BYTE_CLOSE =4;
+
     String ATTRIBUTE_NAME_SPACE="http://flowable.org/bpmn";
 
     /**
@@ -101,4 +106,8 @@ public interface WorkFlowConstants {
     Byte RESULT_1 =1;
 
     Byte RESULT_0 = 0;
+    /**
+     * 获取待已审批列表
+     */
+    Integer QUERY_TYPE_APPROVAL = 1;
 }

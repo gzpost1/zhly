@@ -20,6 +20,9 @@ public class HandleDataDTO {
     private List<AttachmentDTO> attachments;
     private String comments;
     private String signInfo;
+    /**
+     * 单个转办是存的用户信息
+     */
     private UserInfo transferUserInfo;
     private UserInfo multiAddUserInfo;
     private String rollbackId;
@@ -27,4 +30,9 @@ public class HandleDataDTO {
     private UserInfo delegateUserInfo;
 
     private Byte BusinessType;
+
+    /**
+     * 转办的任务信息
+     */
+    private List<Long> userIds;
 }

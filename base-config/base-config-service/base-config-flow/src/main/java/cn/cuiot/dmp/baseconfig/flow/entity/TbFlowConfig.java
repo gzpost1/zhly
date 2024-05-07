@@ -47,6 +47,12 @@ public class TbFlowConfig extends BaseEntity {
     private String process;
 
     /**
+     * 表单
+     */
+    @TableField(exist = false)
+    private String formItems;
+
+    /**
      * logo
      */
     @TableField(value = "logo")

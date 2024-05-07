@@ -66,4 +66,94 @@
             from tb_work_info t1 left join users t2 on t1.create_user = t2.user_id
             where t1.proc_inst_id = #{query.procInstId}
     </select>
+
+    <sql id="queryMyNotApprovalSql">
+        t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.create_time,t1.create_user,t2.ID_ as task_id ,t2.TASK_DEF_ID_ as procDefId
+    </sql>
+    <select id="queryMyNotApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
+        select
+            <include refid="queryMyNotApprovalSql"/>
+        from tb_work_info t1 INNER JOIN act_ru_task t2 on  t1.proc_inst_id = t2.PROC_INST_ID_
+    </select>
+    <sql id="queryMyNotApprovalCondition">
+        <where>
+            <if test="query.assignee !=null and query.assignee !=''">
+                and t2.ASSIGNEE_ = #{query.assignee}
+            </if>
+            <if test="query.businessType !=null">
+                and t1.business_type = #{query.businessType}
+            </if>
+            <if test="query.orgId !=null">
+                and t1.org_id = #{query.orgId}
+            </if>
+            <if test="query.workName !=null and query.workName !=''">
+                and t1.work_name like concat('%',#{query.workName},'%')
+            </if>
+            <if test="query.createUser !=null">
+                and t1.create_user = #{query.createUser}
+            </if>
+            <if test="query.startTime !=null">
+                and t1.create_time >= #{query.startTime} and t1.create_time <![CDATA[<=]]> #{query.endTime}
+            </if>
+            <if test="query.procInstId !=null">
+                and t1.proc_inst_id like concat('%',#{query.procInstId},'%')
+            </if>
+            <if test="query.queryType !=null and query.queryType ==1">
+                and t2.DELETE_REASON_ = '0'
+            </if>
+            <if test="query.makeUserId !=null">
+                and t2.user_id = #{query.makeUserId}
+            </if>
+        </where>
+    </sql>
+    <sql id="queryMyApprovalSql">
+        t1.proc_inst_id, t1.create_user, t1.status, t1.work_souce, t1.work_name,  t1.orgId, t1.business_type
+            ,t1.create_time  ,t2.END_TIME_ as endTime
+    </sql>
+    <select id="queryMyApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
+        select
+            <include refid="queryMyApprovalSql"/>
+        from  tb_work_info t1 INNER JOIN  act_hi_taskinst t2 on t1.proc_inst_id = t2.PROC_DEF_ID_
+        <include refid="queryMyNotApprovalCondition"/>
+    </select>
+
+    <sql id="queryMakeApprovalSql">
+        t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user
+    </sql>
+    <select id="queryMakeApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
+        select
+            <include refid="queryMakeApprovalSql"/>
+        from tb_work_info t1 INNER JOIN tb_flow_cc t2 on t1.proc_inst_id = t2.process_instance_id
+        <include refid="queryMyNotApprovalCondition"/>
+    </select>
+
+    <sql id="queryMySubmitWorkInfo">
+        proc_inst_id,business_type,org_id,work_name,work_souce,status,create_time,create_user
+    </sql>
+    <select id="queryMySubmitWorkInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
+        select
+        <include refid="queryMakeApprovalSql"/>
+        from tb_work_info
+        <include refid="queryMySubmitWorkInfoContidition"/>
+    </select>
+    <sql id="queryMySubmitWorkInfoContidition">
+        <if test="query.businessType !=null">
+            and t1.business_type = #{query.businessType}
+        </if>
+        <if test="query.orgId !=null">
+            and t1.org_id = #{query.orgId}
+        </if>
+        <if test="query.workName !=null and query.workName !=''">
+            and t1.work_name like concat('%',#{query.workName},'%')
+        </if>
+        <if test="query.createUser !=null">
+            and t1.create_user = #{query.createUser}
+        </if>
+        <if test="query.startTime !=null">
+            and t1.create_time >= #{query.startTime} and t1.create_time <![CDATA[<=]]> #{query.endTime}
+        </if>
+        <if test="query.procInstId !=null">
+            and t1.proc_inst_id like concat('%',#{query.procInstId},'%')
+        </if>
+    </sql>
 </mapper>
