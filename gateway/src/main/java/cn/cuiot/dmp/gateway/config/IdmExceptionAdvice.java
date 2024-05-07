@@ -74,17 +74,6 @@ public class IdmExceptionAdvice {
     }
 
     /**
-     * function: ServletRequestBindingException异常处理
-     *
-     * @date 2020/7/30 3:11 下午
-     */
-    @ExceptionHandler(value = ServletRequestBindingException.class)
-    public Object defaultErrorHandler(ServletRequestBindingException exception) {
-        log.error("", exception);
-        return new IdmResDTO<>(ResultCode.PARAM_CANNOT_NULL);
-    }
-
-    /**
      * function: MethodArgumentNotValidException异常处理
      *
      * @auther 参数校验全局异常处理
