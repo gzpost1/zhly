@@ -2,10 +2,25 @@ package cn.cuiot.dmp.system.infrastructure.persistence.mapper;
 
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author caorui
  * @date 2024/4/26
  */
 public interface FormConfigMapper extends BaseMapper<FormConfigEntity> {
+
+    /**
+     * 根据id批量更新表单配置的分类或者状态
+     *
+     * @param typeId 分类ID
+     * @param status 状态
+     * @param idList 主键ID集合
+     */
+    int batchUpdateFormConfigById(@Param("typeId") Long typeId, @Param("status") Byte status,
+                                  @Param("idList") List<Long> idList);
+
 }

@@ -20,7 +20,7 @@ public interface ApiSystemService {
     DepartmentDto lookUpDepartmentInfo(Long deptId, Long userId, Long orgId);
 
     /**
-     * 根据调用id列表获取业务类型列表（流程/工单配置）
+     * 根据业务类型id列表获取业务类型列表（流程/工单配置）
      */
     List<BusinessTypeRspDTO> batchGetBusinessType(BusinessTypeReqDTO businessTypeReqDTO);
 

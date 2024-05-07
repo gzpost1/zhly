@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -69,12 +70,33 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
 
     @Override
     public int updateFormConfigStatus(FormConfig formConfig) {
-        return 0;
+        FormConfigEntity formConfigEntity = Optional.ofNullable(formConfigMapper.selectById(formConfig.getId()))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        formConfigEntity.setStatus(formConfig.getStatus());
+        return formConfigMapper.updateById(formConfigEntity);
     }
 
     @Override
     public int deleteFormConfig(Long id) {
-        return 0;
+        // 先删除表单配置详情，后删除表单
+        Query query = getQuery(id);
+        mongoTemplate.remove(query, FormConfigConstant.FORM_CONFIG_COLLECTION);
+        return formConfigMapper.deleteById(id);
+    }
+
+    @Override
+    public int batchMoveFormConfig(Long typeId, List<Long> idList) {
+        return formConfigMapper.batchUpdateFormConfigById(typeId, null, idList);
+    }
+
+    @Override
+    public int batchUpdateFormConfigStatus(Byte status, List<Long> idList) {
+        return formConfigMapper.batchUpdateFormConfigById(null, status, idList);
+    }
+
+    @Override
+    public int batchDeleteFormConfig(List<Long> idList) {
+        return formConfigMapper.deleteBatchIds(idList);
     }
 
     private Query getQuery(Long id) {

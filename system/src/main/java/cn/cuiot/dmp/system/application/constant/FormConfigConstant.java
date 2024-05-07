@@ -16,6 +16,7 @@ public class FormConfigConstant {
      * 表单配置分类相关
      */
     public static final Long ROOT_ID = 0L;
+    public static final String ROOT_NAME = "全部";
     public static final Long DEFAULT_PARENT_ID = -1L;
     public static final Byte ROOT_LEVEL_TYPE = (byte) 0;
     public static final Integer MAX_LEVEL_TYPE = 4;

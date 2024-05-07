@@ -2,6 +2,8 @@ package cn.cuiot.dmp.system.domain.repository;
 
 import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
 
+import java.util.List;
+
 /**
  * @author caorui
  * @date 2024/4/26
@@ -32,5 +34,20 @@ public interface FormConfigRepository {
      * 删除
      */
     int deleteFormConfig(Long id);
+
+    /**
+     * 批量移动
+     */
+    int batchMoveFormConfig(Long typeId, List<Long> idList);
+
+    /**
+     * 批量更新状态
+     */
+    int batchUpdateFormConfigStatus(Byte status, List<Long> idList);
+
+    /**
+     * 批量删除
+     */
+    int batchDeleteFormConfig(List<Long> idList);
 
 }
