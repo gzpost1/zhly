@@ -31,9 +31,12 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.PathMatcher;
 
 /**
  * @author guoying
@@ -45,6 +48,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Transactional(rollbackFor = Exception.class)
 public class MenuServiceImpl implements MenuService {
+
+    private final static String PERMISSION_PATH_SEPERATOR = ";";
 
     @Resource
     private OrganizationRepository organizationRepository;
@@ -69,6 +74,42 @@ public class MenuServiceImpl implements MenuService {
      */
     @Override
     public List<MenuTreeNode> getAllMenu(String orgId, String userId) {
+
+        List<MenuEntity> permissionMenus = getPermissionMenus(orgId, userId);
+
+        List<MenuTreeNode> treeList = Lists.newArrayList();
+
+        if (CollectionUtils.isNotEmpty(permissionMenus)) {
+            treeList = permissionMenus.stream().map(item -> {
+                MenuTreeNode treeNode = new MenuTreeNode(
+                        item.getId().toString(),
+                        StrUtil.toStringOrNull(item.getParentId()),
+                        item.getMenuName(),
+                        item.getMenuUrl(),
+                        item.getComponentUri(),
+                        item.getApiUrl(),
+                        item.getIcon(),
+                        item.getMenuType(),
+                        item.getPermissionCode(),
+                        item.getDescription(),
+                        item.getExternalLink(),
+                        item.getSort(),
+                        item.getHidden(),
+                        item.getStatus());
+                return treeNode;
+            }).collect(Collectors.toList());
+        }
+        return TreeUtil.makeTree(treeList);
+    }
+
+    /**
+     * 获取权限菜单
+     * @param orgId
+     * @param userId
+     * @return
+     */
+    @Override
+    public List<MenuEntity> getPermissionMenus(String orgId, String userId) {
         //判断账户类型
         Organization organization = organizationRepository
                 .find(new OrganizationId(Long.valueOf(orgId)));
@@ -93,37 +134,13 @@ public class MenuServiceImpl implements MenuService {
             String roleId = userDao.getRoleId(userId, orgId);
             allMenuList = menuDao.getAllRoleMenu(roleId);
         }
-
         if (CollectionUtils.isEmpty(allMenuList)) {
             return Lists.newArrayList();
         }
         allMenuList = allMenuList.stream()
                 .filter(item -> allowMenuIdList.contains(item.getId().toString())).collect(
                         Collectors.toList());
-
-        List<MenuTreeNode> treeList = Lists.newArrayList();
-
-        if (CollectionUtils.isNotEmpty(allMenuList)) {
-            treeList = allMenuList.stream().map(item -> {
-                MenuTreeNode treeNode = new MenuTreeNode(
-                        item.getId().toString(),
-                        StrUtil.toStringOrNull(item.getParentId()),
-                        item.getMenuName(),
-                        item.getMenuUrl(),
-                        item.getComponentUri(),
-                        item.getApiUrl(),
-                        item.getIcon(),
-                        item.getMenuType(),
-                        item.getPermissionCode(),
-                        item.getDescription(),
-                        item.getExternalLink(),
-                        item.getSort(),
-                        item.getHidden(),
-                        item.getStatus());
-                return treeNode;
-            }).collect(Collectors.toList());
-        }
-        return TreeUtil.makeTree(treeList);
+        return allMenuList;
     }
 
     @Override
@@ -137,7 +154,23 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public MenuEntity lookUpPermission(String userId, String orgId,
             String permisstionCode) {
-        return menuDao.lookUpPermission(userId, orgId, permisstionCode);
+        PathMatcher pathMatcher = new AntPathMatcher();
+        List<MenuEntity> permissionMenus = getPermissionMenus(orgId, userId);
+        if(CollectionUtils.isNotEmpty(permissionMenus)){
+            for(MenuEntity menuEntity:permissionMenus){
+                if(StringUtils.isNotBlank(menuEntity.getPermissionCode())){
+                    String[] permArr = menuEntity.getPermissionCode().split(PERMISSION_PATH_SEPERATOR);
+                    for (String perm : permArr) {
+                        if(StringUtils.isNotBlank(perm)){
+                            if (pathMatcher.match(perm, permisstionCode)) {
+                                return menuEntity;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**

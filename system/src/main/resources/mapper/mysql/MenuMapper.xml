@@ -135,19 +135,6 @@
         select id from menu where parent_id = #{parentId} order by sort asc
     </select>
 
-    <select id="lookUpPermission" resultType="cn.cuiot.dmp.system.infrastructure.entity.MenuEntity">
-        SELECT *
-        FROM menu m, menu_role o, user_role ur
-        <where>
-            m.id = o.pk_menu_id
-            and ur.pk_role_id = o.pk_role_id
-            and ur.pk_user_id = #{userId}
-            and ur.pk_org_id = #{orgId}
-            and m.permission_code = #{permissionCode}
-        </where>
-        limit 1
-    </select>
-
     <select id="getMenuByOrgTypeId"
             resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.MenuByOrgTypeIdResDto">
         SELECT

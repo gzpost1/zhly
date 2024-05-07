@@ -81,20 +81,6 @@ public interface MenuDao {
 	 */
 	List<Long> getMenuIdByParentId(Long parentId);
 
-
-	/**
-	 * 查询用户在某账户下的切换账户菜单
-	 *
-	 * @param userId
-	 * @param orgId
-	 * @param permisstionCode
-	 * @return
-	 */
-	MenuEntity lookUpPermission(@Param("userId") String userId,
-                                @Param("orgId") String orgId,
-                                @Param("permissionCode") String permisstionCode);
-
-
 	/**
 	 * 通过typeId获取菜单
 	 * @param orgTypeId

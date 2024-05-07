@@ -26,6 +26,14 @@ public interface MenuService {
     List<MenuTreeNode> getAllMenu(String orgId, String userId);
 
     /**
+     * 获取权限菜单
+     * @param orgId
+     * @param userId
+     * @return
+     */
+    List<MenuEntity> getPermissionMenus(String orgId, String userId);
+
+    /**
      * 根据orgTypeId查询菜单
      * @param orgTypeId
      * @return
