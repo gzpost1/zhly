@@ -14,10 +14,11 @@
     <result column="create_user" jdbcType="BIGINT" property="createUser" />
     <result column="deleted" jdbcType="TINYINT" property="deleted" />
     <result column="org_id" jdbcType="BIGINT" property="orgId" />
+    <result column="node_id" jdbcType="BIGINT" property="nodeId" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, user_id, process_instance_id, company_id, update_time, update_user, create_time, 
-    create_user, deleted, org_id
+    create_user, deleted, org_id,node_id
   </sql>
 </mapper>

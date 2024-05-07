@@ -15,6 +15,7 @@ import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -68,6 +69,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         tbFlowConfig.setRemark(createDto.getRemark());
         tbFlowConfig.setCommonConfigDto(createDto.getCommonConfigDto());
         tbFlowConfig.setStatus(EntityConstants.ENABLED);
+        tbFlowConfig.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         tbFlowConfig.setId(IdWorker.getId());
 
         //处理json

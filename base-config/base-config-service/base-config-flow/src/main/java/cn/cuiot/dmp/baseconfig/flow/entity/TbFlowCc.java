@@ -44,4 +44,9 @@ public class TbFlowCc extends YjBaseEntity {
      */
     @TableField(value = "org_id")
     private Long orgId;
+
+    /**
+     * 节点ID
+     */
+    private String nodeId;
 }
