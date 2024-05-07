@@ -1,23 +1,27 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
 import cn.cuiot.dmp.system.application.param.assembler.MenuConverter;
+import cn.cuiot.dmp.system.application.service.BusinessTypeService;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.application.service.MenuService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
+
 import java.util.List;
 import java.util.Objects;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * 供其他服务调用接口
@@ -41,6 +45,9 @@ public class ApiController {
 
     @Autowired
     private MenuConverter menuConverter;
+
+    @Autowired
+    private BusinessTypeService businessTypeService;
 
     /**
      * 获取部门信息
@@ -83,6 +90,15 @@ public class ApiController {
             menuDTO = menuConverter.entityToDTO(menuEntity);
         }
         return IdmResDTO.success(menuDTO);
+    }
+
+    /**
+     * 根据调用id列表获取业务类型列表（流程/工单配置）
+     */
+    @PostMapping(value = "/batchGetBusinessType", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<BusinessTypeRspDTO>> batchGetBusinessType(@RequestBody @Valid BusinessTypeReqDTO businessTypeReqDTO) {
+        List<BusinessTypeRspDTO> businessTypeRspDTOList = businessTypeService.batchGetBusinessType(businessTypeReqDTO);
+        return IdmResDTO.success(businessTypeRspDTOList);
     }
 
 }

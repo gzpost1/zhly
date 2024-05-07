@@ -4,10 +4,7 @@ import cn.cuiot.dmp.common.bean.TreeNode;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -61,16 +58,33 @@ public class TreeUtil {
     }
 
     /**
+     * 根据单个节点的树形结构，获取树的某个节点及其父节点的合并名称
+     *
+     * @param treeNode 单个节点的根节点
+     */
+    public static <T extends TreeNode<T>> String getParentTreeName(T treeNode) {
+        StringBuilder treeName = new StringBuilder();
+        treeName.append(treeNode.getTitle());
+        if (CollectionUtils.isNotEmpty(treeNode.getChildren())) {
+            for (T child : treeNode.getChildren()) {
+                treeName.append(">");
+                treeName.append(getParentTreeName(child));
+            }
+        }
+        return treeName.toString();
+    }
+
+    /**
      * 获取树的某个节点及其子节点的id列表
      *
      * @param treeNode 待获取树节点
      */
-    public static <T extends TreeNode<T>> List<String> getTreeIdList(T treeNode) {
+    public static <T extends TreeNode<T>> List<String> getChildTreeIdList(T treeNode) {
         List<String> treeIdList = new ArrayList<>();
         treeIdList.add(treeNode.getId());
         if (CollectionUtils.isNotEmpty(treeNode.getChildren())) {
             for (T child : treeNode.getChildren()) {
-                treeIdList.addAll(getTreeIdList(child));
+                treeIdList.addAll(getChildTreeIdList(child));
             }
         }
         return treeIdList;
