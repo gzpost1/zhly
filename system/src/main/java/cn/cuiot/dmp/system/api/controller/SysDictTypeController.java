@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.api.controller;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -51,9 +52,9 @@ public class SysDictTypeController {
     /**
      * 查看详情
      */
-    @GetMapping("/detail")
-    public IdmResDTO<SysDictType> detail(@RequestParam("id") Long id) {
-        SysDictType obj = Optional.ofNullable(sysDictTypeService.getById(id))
+    @PostMapping("/detail")
+    public IdmResDTO<SysDictType> detail(@RequestBody @Valid IdParam param) {
+        SysDictType obj = Optional.ofNullable(sysDictTypeService.getById(param.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST, "找不到记录"));
         return IdmResDTO.success(obj);
     }
@@ -94,11 +95,11 @@ public class SysDictTypeController {
      * 删除
      */
     @RequiresPermissions
-    @DeleteMapping("/delete")
-    public IdmResDTO delete(@RequestParam("id") Long id) {
-        SysDictType entity = Optional.ofNullable(sysDictTypeService.getById(id))
+    @PostMapping("/delete")
+    public IdmResDTO delete(@RequestBody @Valid IdParam param) {
+        SysDictType entity = Optional.ofNullable(sysDictTypeService.getById(param.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST, "找不到记录"));
-        sysDictTypeService.removeById(id);
+        sysDictTypeService.removeById(param.getId());
         return IdmResDTO.success(null);
     }
 }
