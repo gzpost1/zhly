@@ -73,8 +73,8 @@ public class SysDictTypeController {
      * 修改字典
      */
     @RequiresPermissions
-    @PostMapping("/udpate")
-    public IdmResDTO<SysDictType> udpate(@RequestBody @Valid SysDictTypeParam sysDictTypeParam) {
+    @PostMapping("/update")
+    public IdmResDTO<SysDictType> update(@RequestBody @Valid SysDictTypeParam sysDictTypeParam) {
 
         AssertUtil.notNull(sysDictTypeParam.getDictId(),
                 new BusinessException(ResultCode.PARAM_NOT_NULL, "缺少参数"));

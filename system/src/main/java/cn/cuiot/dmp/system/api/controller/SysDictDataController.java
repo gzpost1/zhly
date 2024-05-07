@@ -77,8 +77,8 @@ public class SysDictDataController {
      * 修改字典项
      */
     @RequiresPermissions
-    @PostMapping("/udpate")
-    public IdmResDTO udpate(@RequestBody @Valid SysDictDataParam sysDictDataParam) {
+    @PostMapping("/update")
+    public IdmResDTO update(@RequestBody @Valid SysDictDataParam sysDictDataParam) {
         AssertUtil
                 .isFalse(sysDictDataService
                         .valueExists(sysDictDataParam.getDictId(), sysDictDataParam.getDataValue(),
