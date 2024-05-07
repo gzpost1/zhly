@@ -20,7 +20,7 @@ public interface OrgTypeMenuDao {
      * @param orgTypeId
      * @return
      */
-    List<String> getMenuIdListByOrgType(@Param("orgTypeId") Integer orgTypeId);
+    List<String> getMenuIdListByOrgType(@Param("orgTypeId") Long orgTypeId);
 
     /**
      * 根据类型删除菜单

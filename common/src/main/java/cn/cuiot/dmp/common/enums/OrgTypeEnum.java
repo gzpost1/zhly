@@ -1,47 +1,38 @@
 package cn.cuiot.dmp.common.enums;
 
 /**
- * @author zjb
- * @classname OrgTypeEnum
- * @description 租户类型枚举
- * @date 2021/12/1
+ * @Author 犬豪
+ * @Date 2023/8/28 11:46
+ * @Version V1.0
  */
 public enum OrgTypeEnum {
 
-    //账户类型（5：联通账户、11：物业账户、12：通用账户、）
+    PLATFORM(5L, "平台账户"),
 
-    UNICOM_ACCOUNT("联通账户", "5"),
-    PROPERTY_ACCOUNT("物业账户", "11"),
-    CURRENCY_ACCOUNT("通用账户", "12");
+    ENTERPRISE(11L, "企业账户");
 
-    /**
-     * 组织类型
-     */
-    private String orgType;
+    private final Long value;
+    private final String desc;
 
-    /**
-     * code
-     */
-    private String code;
-
-    OrgTypeEnum(String orgType, String code) {
-        this.code = code;
-        this.orgType = orgType;
+    OrgTypeEnum(Long value, String desc) {
+        this.value = value;
+        this.desc = desc;
     }
 
-    public String getOrgType() {
-        return orgType;
+    public Long getValue() {
+        return value;
     }
 
-    public void setOrgType(String orgType) {
-        this.orgType = orgType;
+    public String getDesc() {
+        return desc;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
+    public static OrgTypeEnum valueOf(Long type) {
+        for (OrgTypeEnum value : values()) {
+            if (value.getValue().equals(type)) {
+                return value;
+            }
+        }
+        return null;
     }
 }

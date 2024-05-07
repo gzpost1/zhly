@@ -41,7 +41,7 @@ public class LoginResDTO {
     private String orgName;
 
     /**
-     * 账户类型（1：个人账户、2：企业账户、3：子账户、4：超级账户、5：省份账户）
+     * 账户类型
      */
     private Integer orgTypeId;
 

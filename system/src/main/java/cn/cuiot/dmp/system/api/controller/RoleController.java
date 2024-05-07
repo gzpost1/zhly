@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * 角色管理
  * @author guoying
  * @className LogControllerImpl
  * @description 角色管理

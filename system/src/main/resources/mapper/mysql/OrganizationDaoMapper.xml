@@ -26,42 +26,47 @@
     <select id="getCommercialOrgList" resultType="cn.cuiot.dmp.system.infrastructure.entity.vo.ListOrganizationVO"
             parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto">
         SELECT
-        (SELECT username FROM `user` WHERE id = o.created_by) as created_by,
         o.id,
         o.status,
         o.org_name,
         o.org_key,
-        o.org_Owner,
         ug.to_dept_id as dept_id,
         d.department_name as dept_name,
         o.org_type_id,
         ot.name as org_type_name,
+        u.name as admin_name,
         u.phone_number,
         u.username,
-        o.created_on,
         o.company_name,
-        o.social_credit_code,
-        o.created_by_type,
+        o.exp_start_date,
+        o.exp_end_date,
         o.source
-        FROM organization o join user u on u.id = o.org_owner
+        FROM organization o
+        join user u on u.id = o.org_owner
         left join user_grant ug on ug.org_id=o.id
         left join department d on d.id = ug.to_dept_id
         left join organization_type ot on o.org_type_id=ot.id
         <trim prefix="WHERE" prefixOverrides="AND">
-            AND o.org_type_id >= 10
+            AND o.org_type_id = 11
             and o.deleted_flag = 0
             and u.deleted_flag = 0
-            <if test="deptIds != null">
+            <if test="deptIds != null and deptIds.size >0">
                 AND ug.to_dept_id in
                 <foreach collection="deptIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
-            <if test="orgName != null">
+            <if test="orgName != null and orgName != ''">
                 AND o.org_name like CONCAT('%',#{orgName},'%')
             </if>
-            <if test="socialCreditCode != null">
-                AND o.social_credit_code like CONCAT('%',#{socialCreditCode},'%')
+            <if test="status != null">
+                AND o.status = #{status}
+            </if>
+            <if test="orgStatus != null and orgStatus==1">
+                AND o.exp_end_date>=now()
+            </if>
+            <if test="orgStatus != null and orgStatus==2">
+                AND o.exp_end_date <![CDATA[<]]> now()
             </if>
             <if test="orgId != null">
                 AND o.id = #{orgId}

@@ -10,7 +10,7 @@ import cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntity;
 import cn.cuiot.dmp.system.domain.entity.Organization;
 import cn.cuiot.dmp.system.domain.types.enums.OrgSourceEnum;
 import cn.cuiot.dmp.system.domain.types.enums.OrgStatusEnum;
-import cn.cuiot.dmp.system.domain.types.enums.OrgTypeEnum;
+import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import org.apache.commons.lang3.StringUtils;
 
 /**

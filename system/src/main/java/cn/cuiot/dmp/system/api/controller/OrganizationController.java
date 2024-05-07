@@ -25,8 +25,6 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationChangeDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ResetUserPasswordReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateOrganizationDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataReqDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.GetOrganizationVO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.ListOrganizationVO;
 import cn.hutool.core.util.PhoneUtil;
@@ -115,18 +113,6 @@ public class OrganizationController extends BaseController {
     }
 
     /**
-     * 企业账户详情下的用户分页列表
-     */
-    @PostMapping(value = "/user/pageList", produces = MediaType.APPLICATION_JSON_VALUE)
-    public PageResult<UserDataResDTO> queryUserPageList(
-            @Validated @RequestBody UserDataReqDTO userDataReqDTO) {
-        userDataReqDTO.init();
-        userDataReqDTO.setSessionOrgId(LoginInfoHolder.getCurrentOrgId().toString());
-        userDataReqDTO.setSessionUserId(LoginInfoHolder.getCurrentUserId().toString());
-        return organizationService.queryUserPageList(userDataReqDTO);
-    }
-
-    /**
      * 企业账户详情下的用户,重置密码
      */
     @RequiresPermissions
@@ -154,25 +140,9 @@ public class OrganizationController extends BaseController {
         // 组织为空则使用当前登陆用户的组织
         if (StringUtils.isEmpty(dto.getDeptId())) {
             String deptId = userService.getDeptId(getUserId(), orgId);
-            if (DEPT_ID_ADMIN_ROOT.equals(deptId)) {
-                // 联通物联网总部账号需要看到所有组织，包括组织信息是空的企业账户。设置null才能看到。 超级管理员deptId本身就是空所以也能看到。
-                dto.setDeptId(null);
-            } else {
-                dto.setDeptId(deptId);
-            }
+            dto.setDeptId(deptId);
         }
         return organizationService.commercialOrgList(dto);
-    }
-
-    /**
-     * 启用/禁用企业账户
-     */
-    @RequiresPermissions
-    @PostMapping(value = "/operateOrganization", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Integer operateOrganization(@RequestBody @Valid OperateOrganizationDto dto) {
-        String userId = getUserId();
-        dto.setUserId(userId);
-        return organizationService.operateOrganization(dto);
     }
 
     /**

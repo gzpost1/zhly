@@ -1,7 +1,13 @@
 package cn.cuiot.dmp.system.infrastructure.entity.vo;
 
+import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Objects;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * @author cwl
@@ -23,9 +29,30 @@ public class ListOrganizationVO {
     private String orgName;
 
     /**
-     * 管理员id
+     * 企业名称
      */
-    private String orgOwner;
+    private String companyName;
+
+    /**
+     * 企业编号
+     */
+    private String orgKey;
+
+    /**
+     * 组织id
+     */
+    private String deptId;
+
+    /**
+     * 组织名
+     */
+    private String deptName;
+
+
+    /**
+     * 管理员姓名
+     */
+    private String adminName;
 
     /**
      * 管理员用户名
@@ -38,44 +65,14 @@ public class ListOrganizationVO {
     private String phoneNumber;
 
     /**
-     * 组织id
-     */
-    private String deptId;
-
-    /**
-     * 组织名
-     */
-    private String deptName;
-
-    /**
-     * 注册渠道
-     */
-    private String createdByChannel;
-
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createdOn;
-
-    /**
-     * 创建者
-     */
-    private String createdBy;
-
-    /**
-     * 创建者类型
-     */
-    private Integer createdByType;
-
-    /**
-     * 创建者名称
-     */
-    private String createdName;
-
-    /**
-     * 账户状态（0：禁用、 1：正常）
+     * 启用状态（0：禁用、 1：正常）
      */
     private Integer status;
+
+    /**
+     * 企业状态 0-未生效 1-正常 2-已过期
+     */
+    private Byte orgStatus;
 
     /**
      *  orgTypeId
@@ -87,19 +84,29 @@ public class ListOrganizationVO {
      **/
     private String orgTypeName;
 
-    /**
-     * 统一社会信用代码
-     */
-    private String socialCreditCode;
 
     /**
-     * 企业名称
+     * 企业有效期-开始时间
      */
-    private String companyName;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date expStartDate;
 
     /**
-     * 来源
+     * 企业有效期-结束时间
      */
-    private Integer source;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date expEndDate;
 
+
+    public Byte getOrgStatus() {
+        if(Objects.nonNull(expEndDate)){
+            if(LocalDateTime.now().isBefore(DateTimeUtil.dateToLocalDateTime(expEndDate).plusDays(1))){
+                return EntityConstants.NORMAL;
+            }
+            return EntityConstants.EXPIRE;
+        }
+        return orgStatus;
+    }
 }
