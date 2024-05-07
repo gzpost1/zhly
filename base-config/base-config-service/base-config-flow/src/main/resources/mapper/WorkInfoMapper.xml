@@ -23,11 +23,12 @@
     </sql>
     <sql id="queryWorkOrderInfoSql">
         t1.id ,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,
-               t1.time_out,t2.user_name
+              t2.business_type as timeOut
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
-            from tb_work_info t1 left join users t2 on t1.create_user = t2.user_id                                                                                                                                                                                  on t1.create_user = t2.user_id
+            from tb_work_info t1 left join (select business_type,proc_inst_id from tb_work_business_type_info WHERE business_type=1 group by proc_inst_id ,business_type) t2
+        on t1.proc_inst_id = t2.proc_inst_id                                                                                                                                                                              on t1.create_user = t2.user_id
     </select>
     <sql id="queryWorkOrderInfoCondition">
         <where>
@@ -44,7 +45,7 @@
                 and t1.create_user =#{createUser}
             </if>
             <if test="query.workSouce !=null ">
-                and t1.work_souce =#{query.workSouce}
+                and t2.business_type =#{query.workSouce}
             </if>
             <if test="query.timeOut !=null">
                 and t1.time_out =#{query.timeOut}

@@ -74,7 +74,16 @@ public class WorkPlanInfoDto   {
     /**
      * 工单推送日期，单位分钟
      */
-    private Integer pushTime;
+    private Long pushTime;
+
+    /**
+     * 推送天
+     */
+    private Integer pushDay;
+    /**
+     * 推送小时
+     */
+    private Double pushHour;
 
 
     /**
@@ -115,9 +124,9 @@ public class WorkPlanInfoDto   {
 
 
     /**
-     * 循环分钟
+     * 循环小时
      */
-    private Integer recurrentHour;
+    private Double recurrentHour;
 
 
     /**

@@ -20,4 +20,13 @@ public interface WorkOrderConstants {
 
     String USER_ROOT = "root";
 
+    /**
+     * 用户任务
+     */
+    String USER_TASK ="userTask";
+    /**
+     * 抄送数据
+     */
+    String  SERVICE_TASK="serviceTask";
+
 }

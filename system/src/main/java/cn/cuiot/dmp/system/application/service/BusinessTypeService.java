@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeUpdateDTO;
@@ -48,5 +50,10 @@ public interface BusinessTypeService {
      * 删除
      */
     int deleteBusinessType(BusinessTypeQueryDTO queryDTO);
+
+    /**
+     * 根据业务类型id列表获取业务类型列表（流程/工单配置）
+     */
+    List<BusinessTypeRspDTO> batchGetBusinessType(BusinessTypeReqDTO businessTypeReqDTO);
 
 }

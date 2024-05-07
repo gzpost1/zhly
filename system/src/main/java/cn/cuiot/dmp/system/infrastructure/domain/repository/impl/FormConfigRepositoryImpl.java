@@ -2,11 +2,9 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.application.constant.FormConfigConstant;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
 import cn.cuiot.dmp.system.domain.repository.FormConfigRepository;
-import cn.cuiot.dmp.system.infrastructure.entity.BusinessTypeEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigDetailEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.FormConfigMapper;
@@ -82,7 +80,7 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     private Query getQuery(Long id) {
         Query query = new Query();
         Criteria criteria = new Criteria();
-        criteria.and("id").is(id);
+        criteria.and(FormConfigConstant.FORM_CONFIG_COLLECTION_PK).is(id);
         query.addCriteria(criteria);
         return query;
     }

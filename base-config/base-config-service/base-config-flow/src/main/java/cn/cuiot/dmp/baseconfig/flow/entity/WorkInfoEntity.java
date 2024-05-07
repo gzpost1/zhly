@@ -76,8 +76,5 @@ public class WorkInfoEntity implements Serializable {
      */
     private String procInstId;
 
-    /**
-     * 超时 0未超时 1超时
-     */
-    private  Byte timeOut;
+
 }

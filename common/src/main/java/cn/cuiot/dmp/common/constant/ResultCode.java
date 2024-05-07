@@ -217,8 +217,9 @@ public enum ResultCode {
     ACCOUNT_LABEL_NOT_EXIST("7000002","所选账户标签不存在"),
 
     /**
-     *
+     * 系统服务相关（前两位表示服务模块，中间三位表示所属业务，后两位表示异常编码）
      */
+    QUERY_BUSINESS_TYPE_ERROR("0100101", "查询业务类型信息异常"),
     ;
 
 

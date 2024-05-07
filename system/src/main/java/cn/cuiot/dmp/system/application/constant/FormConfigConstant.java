@@ -10,6 +10,7 @@ public class FormConfigConstant {
      * 表单配置相关
      */
     public static final String FORM_CONFIG_COLLECTION = "form_config_collection";
+    public static final String FORM_CONFIG_COLLECTION_PK = "id";
 
     /**
      * 表单配置分类相关
