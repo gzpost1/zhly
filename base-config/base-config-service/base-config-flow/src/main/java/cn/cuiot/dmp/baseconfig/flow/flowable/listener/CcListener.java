@@ -46,6 +46,8 @@ public class CcListener implements JavaDelegate {
         ChildNode childNode = getNode(execution);
         ChildNode node = getChildNode(childNode, execution.getCurrentActivityId());
         CCInfo ccInfo = node.getProps().getCcInfo();
+        String nodeId = node.getId();
+
         if(Objects.nonNull(ccInfo)){
             List<Long> ccUserIds = new ArrayList<>();
             if(Objects.equals(ccInfo.getType(),FlowCCEnums.PERSON.getCode())){
@@ -62,6 +64,7 @@ public class CcListener implements JavaDelegate {
                     cc.setId(IdWorker.getId());
                     cc.setUserId(e);
                     cc.setProcessInstanceId(execution.getProcessInstanceId());
+                    cc.setNodeId(nodeId);
                     return cc;
                 }).collect(Collectors.toList());
 
