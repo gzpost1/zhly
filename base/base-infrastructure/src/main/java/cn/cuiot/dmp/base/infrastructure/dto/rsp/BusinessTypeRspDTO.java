@@ -14,9 +14,9 @@ public class BusinessTypeRspDTO implements Serializable {
     private static final long serialVersionUID = -5793057841924431430L;
 
     /**
-     * 调用方主键ID
+     * 业务类型主键ID
      */
-    private Long invokeId;
+    private Long businessTypeId;
 
     /**
      * 业务类型名称（层级结构）

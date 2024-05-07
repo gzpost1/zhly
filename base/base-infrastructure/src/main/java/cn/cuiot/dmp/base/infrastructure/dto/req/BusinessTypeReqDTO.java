@@ -23,9 +23,9 @@ public class BusinessTypeReqDTO implements Serializable {
     private Long orgId;
 
     /**
-     * 调用方主键ID（流程/工单配置的主键id）
+     * 业务类型ID列表
      */
-    @NotEmpty(message = "调用方主键ID列表不能为空")
-    private List<Long> invokeIdList;
+    @NotEmpty(message = "业务类型ID列表不能为空")
+    private List<Long> businessTypeIdList;
 
 }
