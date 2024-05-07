@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.api.controller;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -49,9 +50,9 @@ public class SysDictDataController {
     /**
      * 查看详情
      */
-    @GetMapping("/detail")
-    public IdmResDTO<SysDictData> detail(@RequestParam("id") Long id) {
-        SysDictData obj = Optional.ofNullable(sysDictDataService.getById(id))
+    @PostMapping("/detail")
+    public IdmResDTO<SysDictData> detail(@RequestBody @Valid IdParam param) {
+        SysDictData obj = Optional.ofNullable(sysDictDataService.getById(param.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST, "找不到记录"));
         return IdmResDTO.success(obj);
     }
@@ -77,8 +78,8 @@ public class SysDictDataController {
      * 修改字典项
      */
     @RequiresPermissions
-    @PostMapping("/udpate")
-    public IdmResDTO udpate(@RequestBody @Valid SysDictDataParam sysDictDataParam) {
+    @PostMapping("/update")
+    public IdmResDTO update(@RequestBody @Valid SysDictDataParam sysDictDataParam) {
         AssertUtil
                 .isFalse(sysDictDataService
                         .valueExists(sysDictDataParam.getDictId(), sysDictDataParam.getDataValue(),
@@ -118,11 +119,11 @@ public class SysDictDataController {
      * 删除
      */
     @RequiresPermissions
-    @DeleteMapping("/delete")
-    public IdmResDTO delete(@RequestParam("id") Long id) {
-        SysDictData entity = Optional.ofNullable(sysDictDataService.getById(id))
+    @PostMapping("/delete")
+    public IdmResDTO delete(@RequestBody @Valid IdParam param) {
+        SysDictData entity = Optional.ofNullable(sysDictDataService.getById(param.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST, "找不到记录"));
-        sysDictDataService.removeById(id);
+        sysDictDataService.removeById(param.getId());
         return IdmResDTO.success(null);
     }
 

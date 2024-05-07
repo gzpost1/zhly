@@ -4,7 +4,9 @@ import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.infrastructure.entity.SysDictType;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SysDictTypeQuery;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.SysDictTypeMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,15 +37,17 @@ public class SysDictTypeService {
     }
 
     public List<SysDictType> list(SysDictTypeQuery sysDictTypeQuery) {
-        QueryWrapper<SysDictType> queryWrapper = new QueryWrapper<>();
+        LambdaQueryWrapper<SysDictType> queryWrapper = Wrappers.lambdaQuery();
         if (StringUtils.isNotBlank(sysDictTypeQuery.getKeyword())) {
-            queryWrapper.and(qw->{
-                qw.like("dict_name", sysDictTypeQuery.getKeyword().trim())
-                        .or()
-                        .like("dict_code", sysDictTypeQuery.getKeyword().trim());
-            });
+            queryWrapper.like(SysDictType::getDictName,sysDictTypeQuery.getKeyword());
         }
-        queryWrapper.orderByAsc("sort");
+        if (StringUtils.isNotBlank(sysDictTypeQuery.getDictName())) {
+            queryWrapper.like(SysDictType::getDictName,sysDictTypeQuery.getDictName());
+        }
+        if (StringUtils.isNotBlank(sysDictTypeQuery.getDictCode())) {
+            queryWrapper.like(SysDictType::getDictCode,sysDictTypeQuery.getDictCode());
+        }
+        queryWrapper.orderByAsc(SysDictType::getSort);
         List<SysDictType> list = sysDictTypeMapper.selectList(queryWrapper);
         return list;
     }

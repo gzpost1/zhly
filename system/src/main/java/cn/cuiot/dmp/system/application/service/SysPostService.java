@@ -102,7 +102,7 @@ public class SysPostService {
     /**
      * 修改
      */
-    public void udpate(SysPostCmd cmd) {
+    public void update(SysPostCmd cmd) {
         SysPostEntity dbEntity = sysPostMapper.selectById(cmd.getId());
         if (!dbEntity.getOrgId().equals(cmd.getSessionOrgId())) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);

@@ -1,11 +1,10 @@
 package cn.cuiot.dmp.system.infrastructure.persistence.mapper;
 
-import cn.cuiot.dmp.base.infrastructure.dto.BaseEntity;
+import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import org.jpedal.parser.shape.S;
 
 /**
  * 岗位
@@ -14,7 +13,7 @@ import org.jpedal.parser.shape.S;
  */
 @Data
 @TableName(value = "tb_sys_post",autoResultMap = true)
-public class SysPostEntity extends BaseEntity {
+public class SysPostEntity extends YjBaseEntity {
 
     /**
      * 主键ID

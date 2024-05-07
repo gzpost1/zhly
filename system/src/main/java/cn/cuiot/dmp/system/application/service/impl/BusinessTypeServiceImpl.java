@@ -1,11 +1,14 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.common.bean.TreeNode;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.TreeUtil;
 import cn.cuiot.dmp.system.application.constant.BusinessTypeConstant;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeQueryDTO;
+import cn.cuiot.dmp.system.application.param.dto.BusinessTypeTreeNodeCopyDTO;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.BusinessTypeTreeNodeVO;
 import cn.cuiot.dmp.system.application.param.vo.BusinessTypeVO;
@@ -14,13 +17,16 @@ import cn.cuiot.dmp.system.domain.aggregate.BusinessType;
 import cn.cuiot.dmp.system.domain.repository.BusinessTypeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -77,7 +83,7 @@ public class BusinessTypeServiceImpl implements BusinessTypeService {
         BusinessTypeTreeNodeVO businessTypeTreeNodeVO = TreeUtil.getTreeNode(businessTypeTreeNodeList,
                 queryDTO.getId().toString());
         AssertUtil.notNull(businessTypeTreeNodeVO, "当前节点不能为空");
-        List<String> treeIdList = TreeUtil.getTreeIdList(businessTypeTreeNodeVO);
+        List<String> treeIdList = TreeUtil.getChildTreeIdList(businessTypeTreeNodeVO);
         List<String> hitIds = businessTypeTreeNodeVOList.stream()
                 .map(TreeNode::getId)
                 .filter(id -> !treeIdList.contains(id))
@@ -129,8 +135,60 @@ public class BusinessTypeServiceImpl implements BusinessTypeService {
         BusinessTypeTreeNodeVO businessTypeTreeNodeVO = TreeUtil.getTreeNode(businessTypeTreeNodeList,
                 queryDTO.getId().toString());
         AssertUtil.notNull(businessTypeTreeNodeVO, "当前节点不能为空");
-        List<String> treeIdList = TreeUtil.getTreeIdList(businessTypeTreeNodeVO);
+        List<String> treeIdList = TreeUtil.getChildTreeIdList(businessTypeTreeNodeVO);
         return businessTypeRepository.deleteBusinessType(treeIdList);
+    }
+
+    @Override
+    public List<BusinessTypeRspDTO> batchGetBusinessType(BusinessTypeReqDTO businessTypeReqDTO) {
+        Long orgId = businessTypeReqDTO.getOrgId();
+        List<Long> businessTypeIdList = businessTypeReqDTO.getBusinessTypeIdList();
+        AssertUtil.notNull(orgId, "组织id不能为空");
+        AssertUtil.notEmpty(businessTypeIdList, "业务类型ID列表不能为空");
+        List<BusinessType> businessTypeList = businessTypeRepository.queryByCompany(orgId);
+        // 拼接树型结构
+        List<BusinessTypeTreeNodeVO> businessTypeTreeNodeVOList = businessTypeList.stream()
+                .map(parent -> new BusinessTypeTreeNodeVO(
+                        parent.getId().toString(), parent.getParentId().toString(),
+                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
+                .collect(Collectors.toList());
+        List<BusinessTypeTreeNodeVO> businessTypeTreeNodeList = TreeUtil.makeTree(businessTypeTreeNodeVOList);
+        // 去重
+        List<Long> distinctIdList = businessTypeIdList.stream().distinct().collect(Collectors.toList());
+        // 获取调用id和对应树型名称的map
+        Map<Long, String> invokeIdTreeNameMap = new HashMap<>();
+        for (Long id : distinctIdList) {
+            List<String> hitIds = new ArrayList<>();
+            hitIds.add(id.toString());
+            // 获取单个节点的树形结构
+            List<BusinessTypeTreeNodeVO> tmpBusinessTypeTreeNodeList = deepCopy(businessTypeTreeNodeList);
+            List<BusinessTypeTreeNodeVO> invokeTreeNodeList = TreeUtil.searchNode(tmpBusinessTypeTreeNodeList, hitIds);
+            String treeName = "";
+            if (CollectionUtils.isEmpty(invokeTreeNodeList)) {
+                invokeIdTreeNameMap.put(id, treeName);
+                continue;
+            }
+            BusinessTypeTreeNodeVO rootBusinessTypeTreeNodeVO = invokeTreeNodeList.get(0);
+            treeName = TreeUtil.getParentTreeName(rootBusinessTypeTreeNodeVO);
+            invokeIdTreeNameMap.put(id, treeName);
+        }
+        // 拼接对象返回
+        List<BusinessTypeRspDTO> businessTypeRspDTOList = new ArrayList<>();
+        for (Long id : distinctIdList) {
+            BusinessTypeRspDTO businessTypeRspDTO = new BusinessTypeRspDTO();
+            String treeName = invokeIdTreeNameMap.get(id);
+            businessTypeRspDTO.setBusinessTypeId(id);
+            businessTypeRspDTO.setTreeName(treeName);
+            businessTypeRspDTOList.add(businessTypeRspDTO);
+        }
+        return businessTypeRspDTOList;
+    }
+
+    private List<BusinessTypeTreeNodeVO> deepCopy(List<BusinessTypeTreeNodeVO> businessTypeTreeNodeVOList) {
+        BusinessTypeTreeNodeCopyDTO businessTypeTreeNodeCopyDTO = new BusinessTypeTreeNodeCopyDTO();
+        businessTypeTreeNodeCopyDTO.setBusinessTypeTreeNodeVOList(businessTypeTreeNodeVOList);
+        BusinessTypeTreeNodeCopyDTO cloneDTO = SerializationUtils.clone(businessTypeTreeNodeCopyDTO);
+        return cloneDTO.getBusinessTypeTreeNodeVOList();
     }
 
 }

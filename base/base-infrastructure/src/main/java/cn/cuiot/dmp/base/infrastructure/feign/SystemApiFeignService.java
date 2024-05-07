@@ -1,17 +1,20 @@
 package cn.cuiot.dmp.base.infrastructure.feign;
 
-import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
-import cn.cuiot.dmp.base.infrastructure.dto.FileUploadParam;
-import cn.cuiot.dmp.base.infrastructure.dto.FileUploadResponse;
-import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.*;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import javax.validation.Valid;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 系统管理Feign服务
@@ -41,5 +44,11 @@ public interface SystemApiFeignService {
             @RequestParam(value = "userId", required = false) String userId,
             @RequestParam(value = "orgId", required = false) String orgId,
             @RequestParam(value = "permissionCode", required = false) String permissionCode);
+
+    /**
+     * 根据业务类型id列表获取业务类型列表（流程/工单配置）
+     */
+    @PostMapping(value = "/api/batchGetBusinessType", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<BusinessTypeRspDTO>> batchGetBusinessType(@RequestBody @Valid BusinessTypeReqDTO businessTypeReqDTO);
 
 }

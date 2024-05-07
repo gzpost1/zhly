@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.entity;
 
-import cn.cuiot.dmp.base.infrastructure.dto.BaseEntity;
+import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalTime;
@@ -15,12 +15,12 @@ import org.springframework.format.annotation.DateTimeFormat;
  * 
  * </p>
  *
- * @author wuyongchong
+ * @author pengjian
  * @since 2024-05-06
  */
 @Data
 @TableName("tb_work_plan_info")
-public class WorkPlanInfoEntity extends BaseEntity {
+public class WorkPlanInfoEntity extends YjBaseEntity {
 
     private static final long serialVersionUID = 1L;
 

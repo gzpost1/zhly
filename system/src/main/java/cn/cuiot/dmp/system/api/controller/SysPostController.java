@@ -73,8 +73,8 @@ public class SysPostController {
      * 修改
      */
     @RequiresPermissions
-    @PostMapping("/udpate")
-    public IdmResDTO udpate(@RequestBody @Valid SysPostCmd cmd) {
+    @PostMapping("/update")
+    public IdmResDTO update(@RequestBody @Valid SysPostCmd cmd) {
         AssertUtil.isTrue(Objects.nonNull(cmd.getId()), "主键ID不能为空");
         AssertUtil
                 .isFalse(sysPostService
@@ -82,7 +82,7 @@ public class SysPostController {
                                         LoginInfoHolder.getCurrentOrgId()),
                         "岗位名称已存在");
         cmd.setSessionOrgId(LoginInfoHolder.getCurrentOrgId());
-        sysPostService.udpate(cmd);
+        sysPostService.update(cmd);
         return IdmResDTO.success(null);
     }
 

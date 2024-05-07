@@ -11,6 +11,7 @@
                 pk_org_id,
                 code,
                 path,
+                path_name,
                 description,
                 sort,
                 is_init,
@@ -291,8 +292,18 @@
         where id = #{id}
     </update>
 
-    <update id="updateDepartmentChildPath">
+    <update id="updatePath">
         update set path = REPLACE(path,#{oldPath},#{newPath}) where path like CONCAT(#{oldPath}, '%')
+    </update>
+
+    <update id="updateDepartmentName">
+        UPDATE department
+        SET department_name = #{departmentName}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePathNameByPath">
+        update set path_name = REPLACE(path_name,#{oldPathName},#{newPathName}) where path like CONCAT(#{path}, '%')
     </update>
 
     <select id="getDepartmentById" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">

@@ -355,6 +355,10 @@ public interface DepartmentDao {
     List<Long> checkDeptIdList(@Param("orgId") String orgId, @Param("userId") String userId, @Param("deptIdList") List<Long> deptIdList);
 
 
-    void updateDepartmentChildPath(@Param("oldPath") String oldPath,@Param("newPath")  String newPath);
+    void updatePath(@Param("oldPath") String oldPath,@Param("newPath")  String newPath);
+
+    void updateDepartmentName(@Param("id") Long id,@Param("departmentName")  String departmentName);
+
+    void updatePathNameByPath(@Param("path")  String path, @Param("oldPathName") String oldPathName, @Param("newPathName") String newPathName);
 
 }
