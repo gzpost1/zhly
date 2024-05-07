@@ -103,25 +103,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     private static final List<Integer> SPACE_GROUP_LIST = Lists.newArrayList(7, 4, 6, 3, 2, 1);
 
     @Override
-    public Long insertDepartment(InsertDepartmentDto dto) {
-        // 重名校验
-        final String siteName = dto.getDepartmentName();
-        int count = departmentDao.countByDepartmentName(siteName, dto.getPkOrgId());
-        if (count > 0) {
-            throw new BusinessException(ResultCode.DEPARTMENT_NAME_IS_EXIST);
-        }
-        DepartmentEntity entity = new DepartmentEntity();
-        entity.setCode(RandomCodeWorker.generateShortUuid());
-        entity.setDepartmentName(siteName);
-        entity.setPath(entity.getCode());
-        entity.setPkOrgId(dto.getPkOrgId());
-        entity.setCreatedOn(LocalDateTime.now());
-        entity.setCreatedBy(dto.getCreateBy());
-
-        return entity.getId();
-    }
-
-    @Override
     public Long insertSonDepartment(InsertSonDepartmentDto dto) {
         Long newDeptId = null;
         RLock disLock = redissonClient.getLock("LOCK_"
@@ -198,6 +179,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         entity.setCreatedBy(dto.getCreateBy());
         entity.setCode(RandomCodeWorker.generateShortUuid());
         entity.setPath(path + "-" + entity.getCode());
+        entity.setPathName(parentDept.getPathName() + ">" + departmentName);
         entity.setDGroup(parentDept.getDGroup());
         entity.setLevel(++parentDeptLevel);
         entity.setId(SnowflakeIdWorkerUtil.nextId());
@@ -241,7 +223,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         final Long parentId = byPrimary.getParentId();
 
         //同级组织名称不可重复
-        if (parentId != null) {
+        if (Objects.nonNull(parentId)) {
             int count = departmentDao
                     .countByDepartmentNameForUpdate(departmentName, pkOrgId,parentId, id);
             if (count > 0) {
@@ -260,6 +242,16 @@ public class DepartmentServiceImpl implements DepartmentService {
                 String.valueOf(dto.getPkOrgId()));
 
         redisUtil.del(DEPT_NAME_KEY_PREFIX + entity.getId());
+
+        //名称变更，需要变更path name
+        if(!byPrimary.getDepartmentName().equals(departmentName)){
+            String newPathName = departmentName;
+            if (Objects.nonNull(parentId)) {
+                DepartmentEntity parentDept = departmentDao.selectByPrimary(parentId);
+                newPathName = parentDept.getPathName()+">"+departmentName;
+            }
+            departmentDao.updatePathNameByPath(byPrimary.getPath(),byPrimary.getPathName(),newPathName);
+        }
 
         //获取账户日志操作对象
         String[] operationTarget = new String[1];

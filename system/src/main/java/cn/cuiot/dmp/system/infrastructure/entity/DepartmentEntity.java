@@ -31,7 +31,15 @@ public class DepartmentEntity {
 
     private String code;
 
+    /**
+     * 编码路径
+     */
     private String path;
+
+    /**
+     * 名称路径
+     */
+    private String pathName;
 
     private String description;
 

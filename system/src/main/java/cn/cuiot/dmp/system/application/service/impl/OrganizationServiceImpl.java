@@ -525,19 +525,28 @@ public class OrganizationServiceImpl implements OrganizationService {
                 dto.getDeptId().toString(), null);
 
         //修改组织结构
+        List<DepartmentEntity> departmentEntities = departmentDao
+                .selectRootByOrgId(pkOrgId.toString());
+        DepartmentEntity departmentEntity = null;
+        if (CollectionUtils.isNotEmpty(departmentEntities)) {
+            departmentEntity = departmentEntities.get(0);
+        }
+        //变更所属组织需要path
         if (!dto.getDeptId().toString().equals(grantDeptId)) {
             DepartmentEntity parentDept = departmentDao.selectByPrimary(dto.getDeptId());
-            List<DepartmentEntity> departmentEntities = departmentDao
-                    .selectRootByOrgId(pkOrgId.toString());
-            DepartmentEntity departmentEntity = null;
-            if (CollectionUtils.isNotEmpty(departmentEntities)) {
-                departmentEntity = departmentEntities.get(0);
+            if (Objects.nonNull(departmentEntity)) {
                 String oldPath = departmentEntity.getPath();
+                String  newPath = parentDept.getPath() + "-" + departmentEntity.getCode();
+                departmentEntity.setPath(newPath);
+                departmentDao.updatePath(oldPath,newPath);
+            }
+        }
+        //变更名称,需要变更path name
+        if(!oldOrganization.getCompanyName().equals(dto.getCompanyName())){
+            if (Objects.nonNull(departmentEntity)) {
                 departmentEntity.setDepartmentName(dto.getCompanyName());
-                departmentEntity.setPath(parentDept.getPath() + "-" + departmentEntity.getCode());
-                departmentDao.updateDepartment(departmentEntity);
-                //修改子节点path路径
-                departmentDao.updateDepartmentChildPath(oldPath, departmentEntity.getPath());
+                departmentDao.updateDepartmentName(departmentEntity.getId(),departmentEntity.getDepartmentName());
+                departmentDao.updatePathNameByPath(departmentEntity.getPath(),oldOrganization.getCompanyName(),dto.getCompanyName());
             }
         }
 

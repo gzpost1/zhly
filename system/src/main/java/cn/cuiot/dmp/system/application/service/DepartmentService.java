@@ -23,16 +23,6 @@ import java.util.List;
 public interface DepartmentService {
 
     /**
-     * 新增根组织
-     * @param dto
-     * @return
-     * @Author xieSH
-     * @Description 新增根组织
-     * @Date 2021/8/17 9:53
-     **/
-    Long insertDepartment(InsertDepartmentDto dto);
-
-    /**
      * 新增子组织
      * @param dto
      * @return
