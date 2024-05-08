@@ -106,7 +106,7 @@ public class WorkPlanInfoDto   {
 
     /**
      * 指定的星期
-     * 0-6 周天到周五  用英文逗号隔开
+     * 1-7 周天到周五  用英文逗号隔开
      */
     private String specifyWeek;
 
@@ -166,6 +166,8 @@ public class WorkPlanInfoDto   {
      */
     private String ext;
 
-
-
+    /**
+     * 启动流程数据
+     */
+    private StartProcessInstanceDTO startProcessInstanceDTO;
 }

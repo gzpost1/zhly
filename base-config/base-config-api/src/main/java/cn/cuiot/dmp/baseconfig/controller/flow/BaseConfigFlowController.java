@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.controller.flow;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.BatcheOperation;
 import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
@@ -12,6 +13,7 @@ import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto;
 import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
 import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -68,6 +70,7 @@ public class BaseConfigFlowController {
      */
     @RequiresPermissions
     @PostMapping("/create")
+    @LogRecord(operationCode = "flowCreate", operationName = "流程配置创建", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO create(@RequestBody @Valid FlowEngineInsertDto createDto) {
 
         tbFlowConfigService.saveFlow(createDto);
@@ -83,6 +86,7 @@ public class BaseConfigFlowController {
      */
     @RequiresPermissions
     @PostMapping("/update")
+    @LogRecord(operationCode = "flowUpdate", operationName = "流程配置修改", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO update(@RequestBody @Valid FlowEngineUpdateDto updateDto) {
 
         tbFlowConfigService.updateFlow(updateDto);
@@ -98,6 +102,7 @@ public class BaseConfigFlowController {
      */
     @RequiresPermissions
     @PostMapping("/delete")
+    @LogRecord(operationCode = "flowDelete", operationName = "流程配置删除", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO delete(@RequestBody @Valid DeleteParam deleteParam) {
 
         tbFlowConfigService.removeById(deleteParam.getId());
@@ -113,6 +118,7 @@ public class BaseConfigFlowController {
      */
     @RequiresPermissions
     @PostMapping("/updateStatus")
+    @LogRecord(operationCode = "flowUpdateStatus", operationName = "流程配置更新状态", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         tbFlowConfigService.updateStatus(updateStatusParam);
 
@@ -124,6 +130,7 @@ public class BaseConfigFlowController {
      */
     @RequiresPermissions
     @PostMapping("/batchedOperation")
+    @LogRecord(operationCode = "flowBatchedOperation", operationName = "流程配置批量修改", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO batchedOperation(@RequestBody @Valid BatcheOperation batcheOperation) {
         tbFlowConfigService.batchedOperation(batcheOperation);
         return IdmResDTO.success();

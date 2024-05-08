@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.controller.taskconfig;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.BatcheOperation;
 import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
@@ -13,6 +14,7 @@ import cn.cuiot.dmp.baseconfig.custommenu.entity.TbFlowTaskInfo;
 import cn.cuiot.dmp.baseconfig.custommenu.service.TbFlowTaskConfigService;
 import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskConfigVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +32,7 @@ import javax.validation.Valid;
  * @Created by libo
  */
 @RestController
-@RequestMapping("/tb_flow_task_info")
+@RequestMapping("/baseconfig/task")
 public class TbFlowTaskInfoController {
 
     @Autowired
@@ -66,7 +68,9 @@ public class TbFlowTaskInfoController {
      * @param createDto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/create")
+    @LogRecord(operationCode = "taskCreate", operationName = "任务配置创建", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO create(@RequestBody @Valid FlowTaskConfigInsertDto createDto) {
         flowTaskConfigService.create(createDto);
         return IdmResDTO.success();
@@ -78,7 +82,9 @@ public class TbFlowTaskInfoController {
      * @param updateDto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/update")
+    @LogRecord(operationCode = "taskUpdate", operationName = "任务配置更新", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO update(@RequestBody @Valid FlowTaskConfigUpdateDto updateDto) {
 
         flowTaskConfigService.updateData(updateDto);
@@ -92,7 +98,9 @@ public class TbFlowTaskInfoController {
      * @param deleteParam
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/delete")
+    @LogRecord(operationCode = "taskDelete", operationName = "任务配置删除", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO delete(@RequestBody @Valid DeleteParam deleteParam) {
         flowTaskConfigService.delete(Lists.newArrayList(deleteParam.getId()));
         return IdmResDTO.success();
@@ -104,7 +112,9 @@ public class TbFlowTaskInfoController {
      * @param updateStatusParam
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/updateStatus")
+    @LogRecord(operationCode = "taskUpdateStatus", operationName = "任务配置更新状态", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         flowTaskConfigService.updateStatus(updateStatusParam);
 
@@ -116,6 +126,7 @@ public class TbFlowTaskInfoController {
      */
     @RequiresPermissions
     @PostMapping("/batchedOperation")
+    @LogRecord(operationCode = "flowBatchedOperation", operationName = "任务配置批量修改", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO batchedOperation(@RequestBody @Valid BatcheOperation batcheOperation) {
         flowTaskConfigService.batchedOperation(batcheOperation);
         return IdmResDTO.success();

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.baseconfig.flow.mapper.PlanWorkExecutionInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.baseconfig.flow.entity.PlanWorkExecutionInfoEntity">
+        <id column="id" property="id" />
+        <result column="execution_time" property="executionTime" />
+        <result column="plan_work_id" property="planWorkId" />
+        <result column="state" property="state" />
+        <result column="proc_inst_id" property="procInstId" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, execution_time, plan_work_id, state, proc_inst_id
+    </sql>
+
+
+    <select id="queryExecutionTime" resultType="cn.cuiot.dmp.baseconfig.flow.dto.ExecutionDateDto">
+        SELECT
+        date_format( date_sub( #{endDate}, INTERVAL ( cast( help_topic_id AS signed ) - 0 ) DAY ), '%Y-%m-%d' ) executionDate
+        FROM
+        mysql.help_topic
+        WHERE
+        help_topic_id <![CDATA[<]]> timestampdiff(
+        DAY,
+        date_format( #{startDate}, '%Y-%m-%d' ),
+        date_format( #{endDate}, '%Y-%m-%d' )) + 1
+    </select>
+</mapper>

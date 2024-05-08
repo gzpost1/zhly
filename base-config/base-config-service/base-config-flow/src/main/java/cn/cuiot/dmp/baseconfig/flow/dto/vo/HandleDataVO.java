@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.vo;
 
+import cn.cuiot.dmp.baseconfig.flow.dto.NodeDetailDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
 import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
+import cn.cuiot.dmp.baseconfig.flow.entity.WorkBusinessTypeInfoEntity;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
@@ -42,6 +44,11 @@ public class HandleDataVO {
      * 任务详情
      */
     private Map<String,List<TaskDetailVO>> detailVOList;
+
+    /**
+     * 节点详情
+     */
+    private Map<String,NodeDetailDto> nodeList;
     /**
      * 已经结束的节点
      */
