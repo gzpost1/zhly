@@ -47,7 +47,6 @@ import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.OperateOrganizationDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgMenuDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgTypeDto;
@@ -68,13 +67,10 @@ import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.DeptTreePathUtils;
 import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.RandomPwUtils;
-import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.github.houbb.sensitive.api.IStrategy;
-import com.github.houbb.sensitive.core.api.strategory.StrategyPhone;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import java.io.UnsupportedEncodingException;
@@ -97,6 +93,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * @Author 26432
@@ -339,8 +337,18 @@ public class OrganizationServiceImpl implements OrganizationService {
                 dto.getDeptId().toString(), null);
 
         //发送事件
-        systemEventSendAdapter.sendOrganizationCreateActionEvent(
-                organization2EntityAssembler.toDTO(organization));
+        if(TransactionSynchronizationManager.isActualTransactionActive()){
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    systemEventSendAdapter.sendOrganizationCreateActionEvent(
+                            organization2EntityAssembler.toDTO(organization));
+                }
+            });
+        }else {
+            systemEventSendAdapter.sendOrganizationCreateActionEvent(
+                    organization2EntityAssembler.toDTO(organization));
+        }
 
         // 文件流输出
         createCsvFile(username, password);
@@ -526,8 +534,18 @@ public class OrganizationServiceImpl implements OrganizationService {
         updatePasswordIfNeed(dto);
 
         //发送事件
-        systemEventSendAdapter.sendOrganizationUpdateActionEvent(
-                organization2EntityAssembler.toDTO(organization));
+        if(TransactionSynchronizationManager.isActualTransactionActive()){
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    systemEventSendAdapter.sendOrganizationUpdateActionEvent(
+                            organization2EntityAssembler.toDTO(organization));
+                }
+            });
+        }else {
+            systemEventSendAdapter.sendOrganizationUpdateActionEvent(
+                    organization2EntityAssembler.toDTO(organization));
+        }
     }
 
     /**
@@ -756,7 +774,18 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw new BusinessException(ResultCode.ACCOUNT_DELETED_ERROR);
         }
         //发送事件
-        systemEventSendAdapter.sendOrganizationDeleteActionEvent(needDelete);
+        if(TransactionSynchronizationManager.isActualTransactionActive()){
+            OrganizationEntity finalNeedDelete = needDelete;
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    systemEventSendAdapter.sendOrganizationDeleteActionEvent(finalNeedDelete);
+                }
+            });
+        }else {
+            systemEventSendAdapter.sendOrganizationDeleteActionEvent(needDelete);
+        }
+
         return 1;
     }
 
@@ -811,14 +840,28 @@ public class OrganizationServiceImpl implements OrganizationService {
             removeOfflineCommand(pkOrgId);
         }
 
-        if (OrgStatusEnum.DISABLE.getCode().equals(organization.getStatus().getValue())) {
-            //发送事件
-            systemEventSendAdapter.sendOrganizationDisableActionEvent(
-                    organization2EntityAssembler.toDTO(organization));
-        } else {
-            //发送事件
-            systemEventSendAdapter.sendOrganizationEnableActionEvent(
-                    organization2EntityAssembler.toDTO(organization));
+        //发送事件
+        if(TransactionSynchronizationManager.isActualTransactionActive()){
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    if (OrgStatusEnum.DISABLE.getCode().equals(organization.getStatus().getValue())) {
+                        systemEventSendAdapter.sendOrganizationDisableActionEvent(
+                                organization2EntityAssembler.toDTO(organization));
+                    } else {
+                        systemEventSendAdapter.sendOrganizationEnableActionEvent(
+                                organization2EntityAssembler.toDTO(organization));
+                    }
+                }
+            });
+        }else {
+            if (OrgStatusEnum.DISABLE.getCode().equals(organization.getStatus().getValue())) {
+                systemEventSendAdapter.sendOrganizationDisableActionEvent(
+                        organization2EntityAssembler.toDTO(organization));
+            } else {
+                systemEventSendAdapter.sendOrganizationEnableActionEvent(
+                        organization2EntityAssembler.toDTO(organization));
+            }
         }
 
     }
