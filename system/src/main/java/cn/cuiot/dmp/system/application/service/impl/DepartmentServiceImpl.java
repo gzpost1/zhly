@@ -311,8 +311,10 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public List<GetDepartmentTreeLazyResDto> manageGetDepartmentTreeLazy(
             GetDepartmentTreeLazyReqDto dto) {
+
         final String orgId = dto.getLoginOrgId();
         final String userId = dto.getLoginUserId();
+
         List<GetDepartmentTreeLazyResDto> result;
         // 只能看到当前租户 所属dept为根,先获取根节点,以用户deptId为主键
         if (INIT.equals(dto.getType())) {
