@@ -10,9 +10,11 @@ import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.application.enums.RolePermitEnum;
 import cn.cuiot.dmp.system.application.enums.RoleTypeEnum;
 import cn.cuiot.dmp.system.application.enums.UserSourceTypeEnum;
+import cn.cuiot.dmp.system.application.service.MenuService;
 import cn.cuiot.dmp.system.application.service.RoleService;
 import cn.cuiot.dmp.system.domain.entity.Organization;
 import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
+import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.RoleEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.AddMenuDto;
@@ -52,6 +54,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Resource
     private UserDao userDao;
+
+    @Autowired
+    private MenuService menuService;
 
     @Autowired
     private OrganizationRepository organizationRepository;
@@ -161,17 +166,13 @@ public class RoleServiceImpl implements RoleService {
         if (null == roleDTO) {
             throw new BusinessException(ResultCode.QUERY_ROLE_DETAILS_ERROR);
         }
-        //查询角色对应菜单的权限id集合
-        List<AddMenuDto> addMenuDtos = roleDao.getRoleMenu(Integer.parseInt(roleDTO.getId()));
-        List<String> menuIds = new ArrayList<>();
-        for (AddMenuDto addMenuDto : addMenuDtos) {
-            menuIds.add(String.valueOf(addMenuDto.getId()));
+        if(CollectionUtils.isEmpty(dto.getMenuIds())){
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"请配置角色权限");
         }
-        for (String menuId : dto.getMenuIds()) {
-            if (!menuIds.contains(menuId)) {
-                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
-            }
-        }
+        /**
+         * 权限授权检测
+         */
+        checkSelectMenuIds(dto.getLoginOrgId(),dto.getLoginUserId(),dto.getMenuIds());
 
         Map<String, Object> paramsMap = new HashMap<>(3);
         // roleEntity 赋值
@@ -214,6 +215,26 @@ public class RoleServiceImpl implements RoleService {
 
         return rolePk;
 
+    }
+
+    /**
+     * 权限授权检测
+     */
+    private void checkSelectMenuIds(String loginOrgId,String loginUserId,List<String> menuIdList){
+        List<MenuEntity> permissionMenus = menuService
+                .getPermissionMenus(loginOrgId, loginUserId);
+        if(CollectionUtils.isEmpty(permissionMenus)){
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+        }
+        List<String> menuIds = new ArrayList<>();
+        for (MenuEntity menuEntity : permissionMenus) {
+            menuIds.add(String.valueOf(menuEntity.getId()));
+        }
+        for (String menuId : menuIdList) {
+            if (!menuIds.contains(menuId)) {
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            }
+        }
     }
 
     @Override
@@ -262,17 +283,25 @@ public class RoleServiceImpl implements RoleService {
         DEFAULT_ROLE_ID.stream().filter(s -> s.equals(roleBo.getId())).findAny().ifPresent(s -> {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         });
+        // 系统默认角色和只读角色不能修改
+        if (DEFAULT_ROLE_KEY.equals(roleBo.getRoleKey()) || READONLY_ROLE_KEY
+                .equals(roleBo.getRoleKey())) {
+            throw new BusinessException(ResultCode.DEFAULT_ROLE_NOT_OPERATE);
+        }
 
         RoleDTO oldRoleDTO = this.roleDao
                 .selectRoleById(Long.valueOf(roleBo.getSessionOrgId()), roleBo.getId());
         if (null == oldRoleDTO || !roleBo.getRoleKey().equals(oldRoleDTO.getRoleKey())) {
             throw new BusinessException(ResultCode.ROLE_NOT_EXIST);
         }
-        // 系统默认角色和只读角色不能修改
-        if (DEFAULT_ROLE_KEY.equals(roleBo.getRoleKey()) || READONLY_ROLE_KEY
-                .equals(roleBo.getRoleKey())) {
-            throw new BusinessException(ResultCode.DEFAULT_ROLE_NOT_OPERATE);
+
+        /**
+         * 权限授权检测
+         */
+        if(CollectionUtils.isEmpty(roleBo.getMenuIds())){
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"请配置角色权限");
         }
+        checkSelectMenuIds(roleBo.getSessionOrgId(),roleBo.getSessionUserId(),roleBo.getMenuIds());
 
         // 修改者类型
         roleBo.setUpdatedByType(UserSourceTypeEnum.PORTAL.getCode());
