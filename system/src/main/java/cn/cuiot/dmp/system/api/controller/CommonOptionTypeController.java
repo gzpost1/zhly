@@ -26,7 +26,7 @@ public class CommonOptionTypeController {
      * 根据id获取详情
      */
     @PostMapping("/queryForDetail")
-    public CommonOptionTypeVO queryForDetail(@RequestBody @Valid IdParam idParam){
+    public CommonOptionTypeVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return commonOptionTypeService.queryForDetail(idParam.getId());
     }
 

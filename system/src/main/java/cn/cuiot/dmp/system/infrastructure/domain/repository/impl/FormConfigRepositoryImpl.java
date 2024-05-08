@@ -2,13 +2,20 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.query.PageResult;
 import cn.cuiot.dmp.system.application.constant.FormConfigConstant;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
+import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 import cn.cuiot.dmp.system.domain.repository.FormConfigRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigDetailEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.FormConfigMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -18,7 +25,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author caorui
@@ -99,12 +108,42 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
         return formConfigMapper.deleteBatchIds(idList);
     }
 
+    @Override
+    public PageResult<FormConfig> queryFormConfigByType(FormConfigPageQuery pageQuery) {
+        LambdaQueryWrapper<FormConfigEntity> queryWrapper = new LambdaQueryWrapper<FormConfigEntity>()
+                .eq(Objects.nonNull(pageQuery.getTypeId()), FormConfigEntity::getTypeId, pageQuery.getTypeId())
+                .eq(StringUtils.isNotBlank(pageQuery.getName()), FormConfigEntity::getName, pageQuery.getName())
+                .eq(Objects.nonNull(pageQuery.getStatus()), FormConfigEntity::getStatus, pageQuery.getStatus());
+        IPage<FormConfigEntity> formConfigEntityPage = formConfigMapper.selectPage(
+                new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), queryWrapper);
+        if (Objects.isNull(formConfigEntityPage) || CollectionUtils.isEmpty(formConfigEntityPage.getRecords())) {
+            return new PageResult<>();
+        }
+        return formConfigEntity2FormConfig(formConfigEntityPage);
+    }
+
     private Query getQuery(Long id) {
         Query query = new Query();
         Criteria criteria = new Criteria();
         criteria.and(FormConfigConstant.FORM_CONFIG_COLLECTION_PK).is(id);
         query.addCriteria(criteria);
         return query;
+    }
+
+    private PageResult<FormConfig> formConfigEntity2FormConfig(IPage<FormConfigEntity> formConfigEntityPage) {
+        PageResult<FormConfig> formConfigPageResult = new PageResult<>();
+        List<FormConfig> formConfigList = formConfigEntityPage.getRecords().stream()
+                .map(o -> {
+                    FormConfig formConfig = new FormConfig();
+                    BeanUtils.copyProperties(o, formConfig);
+                    return formConfig;
+                })
+                .collect(Collectors.toList());
+        formConfigPageResult.setList(formConfigList);
+        formConfigPageResult.setCurrentPage((int) formConfigEntityPage.getCurrent());
+        formConfigPageResult.setPageSize((int) formConfigEntityPage.getSize());
+        formConfigPageResult.setTotal(formConfigEntityPage.getTotal());
+        return formConfigPageResult;
     }
 
 }
