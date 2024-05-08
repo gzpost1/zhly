@@ -32,4 +32,13 @@ public class ServiceTypeConst {
      */
     public static final String SUPER_ORGANIZATION_MANAGEMENT = "110";
 
+    //----------------------------------系统配置----------------------------------start
+    /**
+     * 平台日志
+     * 系统配置-流程配置
+     */
+    public static final String BASE_CONFIG = "109";
+    //----------------------------------系统配置----------------------------------end
+
+
 }

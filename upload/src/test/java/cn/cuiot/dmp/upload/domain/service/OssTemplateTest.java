@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.upload.domain.service;
 
+import cn.cuiot.dmp.base.application.rocketmq.MsgChannel;
+import cn.cuiot.dmp.common.log.dto.OperateLogDto;
 import cn.cuiot.dmp.upload.UploadApplication;
 import cn.cuiot.dmp.upload.domain.entity.BucketItem;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadRequest;
@@ -18,7 +20,15 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.util.MimeTypeUtils;
+
+import javax.annotation.Resource;
 
 /**
  * @author: wuyongchong
@@ -30,6 +40,10 @@ public class OssTemplateTest {
 
     @Autowired
     private OssTemplate ossTemplate;
+
+    @Autowired
+    private MsgChannel msgChannel;
+
 
     /**
      * 获取桶列表
@@ -162,6 +176,18 @@ public class OssTemplateTest {
         } catch (Exception ex) {
             log.error("chunkUpload error", ex);
         }
+    }
+
+    @Test
+    public void msgTest(){
+        OperateLogDto operateLogDto = new OperateLogDto();
+        operateLogDto.setOperationById("1");
+
+
+        // 记录日志
+        msgChannel.operationlogOutput().send(MessageBuilder.withPayload(operateLogDto)
+                .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
+                .build());
     }
 
 }
