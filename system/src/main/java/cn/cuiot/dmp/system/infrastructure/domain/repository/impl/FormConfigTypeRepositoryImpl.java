@@ -3,9 +3,14 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.query.PageResult;
 import cn.cuiot.dmp.system.application.constant.FormConfigConstant;
+import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
+import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigType;
+import cn.cuiot.dmp.system.domain.repository.FormConfigRepository;
 import cn.cuiot.dmp.system.domain.repository.FormConfigTypeRepository;
+import cn.cuiot.dmp.system.infrastructure.entity.FormConfigEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigTypeEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.FormConfigTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -31,6 +36,9 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
 
     @Autowired
     private FormConfigTypeMapper formConfigTypeMapper;
+
+    @Autowired
+    private FormConfigRepository formConfigRepository;
 
     @Override
     public FormConfigType queryForDetail(Long id) {
@@ -86,6 +94,11 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
         return formConfigTypeMapper.deleteBatchIds(idList);
     }
 
+    @Override
+    public PageResult<FormConfig> queryFormConfigByType(FormConfigPageQuery pageQuery) {
+        return formConfigRepository.queryFormConfigByType(pageQuery);
+    }
+
     private FormConfigTypeEntity initRootNode(Long companyId) {
         FormConfigTypeEntity formConfigTypeEntity = new FormConfigTypeEntity();
         formConfigTypeEntity.setId(FormConfigConstant.ROOT_ID);
@@ -108,5 +121,4 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
                     "分类名称已存在");
         }
     }
-
 }
