@@ -550,21 +550,17 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public List<Long> getChildrenDepartmentIds(String orgId, Long deptId) {
         List<Long> childrenList = Lists.newArrayList();
-        List<String> robotOrganization = redisUtil
-                .lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
-        if (CollectionUtils.isEmpty(robotOrganization)) {
-            syncRedis(orgId);
-            robotOrganization = redisUtil
-                    .lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
-        }
-        if (!CollectionUtils.isEmpty(robotOrganization)) {
+
+        List<DepartmentEntity> siteList = departmentDao.selectByOrgId(orgId);
+
+        if (!CollectionUtils.isEmpty(siteList)) {
             if (deptId == null || deptId.equals(0L)) {
-                return robotOrganization.stream()
-                        .map(x -> JSONObject.parseObject(x, DepartmentTreeVO.class).getId())
+                return siteList.stream()
+                        .map(x -> JSONObject.parseObject(JSONObject.toJSONString(x), DepartmentTreeVO.class).getId())
                         .collect(Collectors.toList());
             }
             childrenList.add(deptId);
-            List<Long> myChildList = getChildList(robotOrganization, deptId);
+            List<Long> myChildList = getChildList(siteList, deptId);
             if (!CollectionUtils.isEmpty(myChildList)) {
                 childrenList.addAll(myChildList);
             }
@@ -578,14 +574,14 @@ public class DepartmentServiceImpl implements DepartmentService {
         departmentDao.batchDeleteProperty(ids);
     }
 
-    private List<Long> getChildList(List<String> robotOrganization, Long deptId) {
+    private List<Long> getChildList(List<DepartmentEntity> siteList, Long deptId) {
         List<Long> childrenList = Lists.newArrayList();
         DepartmentTreeVO vo;
-        for (String org : robotOrganization) {
-            vo = JSONObject.parseObject(org, DepartmentTreeVO.class);
+        for (DepartmentEntity entity : siteList) {
+            vo = JSONObject.parseObject(JSONObject.toJSONString(entity), DepartmentTreeVO.class);
             if (vo.getParentId() != null && vo.getParentId().equals(deptId)) {
                 childrenList.add(vo.getId());
-                List<Long> myChildList = getChildList(robotOrganization, vo.getId());
+                List<Long> myChildList = getChildList(siteList, vo.getId());
                 if (!CollectionUtils.isEmpty(myChildList)) {
                     childrenList.addAll(myChildList);
                 }
