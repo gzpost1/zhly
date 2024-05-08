@@ -35,4 +35,9 @@ public class HandleDataDTO {
      * 转办的任务信息
      */
     private List<Long> userIds;
+
+    /**
+     * 节点id
+     */
+    private String nodeId;
 }

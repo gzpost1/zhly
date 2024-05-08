@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.baseconfig.controller.workorder;
 
 import cn.cuiot.dmp.baseconfig.flow.dto.BatchBusinessWorkDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.QueryPlanExecutionDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.QueryWorkPlanInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.WorkPlanInfoDto;
+import cn.cuiot.dmp.baseconfig.flow.entity.PlanWorkExecutionInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkPlanInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkPlanInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -72,5 +74,15 @@ public class WorkPlanInfoController {
     @PostMapping("batchBusinessWorkInfo")
     public IdmResDTO batchBusinessWorkInfo(@RequestBody BatchBusinessWorkDto dto){
         return workPlanInfoService.batchBusinessWorkInfo(dto);
+    }
+
+    /**
+     * 获取已生成或预生成列表
+     * @param dto
+     * @return
+     */
+    @PostMapping("queryExecutionInfo")
+    public IdmResDTO<IPage<PlanWorkExecutionInfoEntity>> queryExecutionInfo(@RequestBody QueryPlanExecutionDto dto){
+        return workPlanInfoService.queryExecutionInfo(dto);
     }
 }

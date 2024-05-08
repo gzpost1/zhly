@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.dto;
 
+import cn.cuiot.dmp.baseconfig.flow.entity.WorkBusinessTypeInfoEntity;
 import lombok.Data;
 
 import java.util.List;
@@ -23,5 +24,5 @@ public class NodeDetailDto {
     /**
      * 节点信息
      */
-    private List<NodeBusinessDto> nodeInfos;
+    private List<WorkBusinessTypeInfoEntity> nodeInfos;
 }

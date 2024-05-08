@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.constants;
 
+import io.lettuce.core.StrAlgoArgs;
+
 /**
  * @author LoveMyOrange
  * @create 2022-10-10 17:40
@@ -53,14 +55,16 @@ public interface WorkFlowConstants {
     Byte BUSINESS_TRANSFER=5;
 
     /**
-     * 拒绝
+     * 拒绝 invokeTarget
      */
     String BUSINESS_REFUSE = "businessRefuse";
+
+    String JOB_INVOKETARGET="createPlanWork";
 
     /**
      *回退
      */
-    String BUSINESS_BACK = "businessBack";
+    Byte BUSINESS_BACK = 8;
 
     /**
      * 挂起
@@ -78,14 +82,24 @@ public interface WorkFlowConstants {
     Byte BUSINESS_TYPE_SUPER = 3;
 
     /**
+     * 拒绝refuse
+     */
+    Byte BUSINESS_TYPE_REFUSR =7;
+
+    /**
      * 超时
      */
-    Byte BUSINESS_TYPE_TIME_OUT = 0;
+    Byte BUSINESS_TYPE_TIME_OUT = 1;
 
     /**
      * 挂起
      */
     Byte BUSINESS_BYPE_PENDING=1;
+
+    /**
+     * 定时任务状态
+     */
+    Byte JOB_STATUS=1;
 
     /**
      * 终止

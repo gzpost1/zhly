@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.Date;
 import java.io.Serializable;
@@ -40,6 +41,9 @@ public class WorkBusinessTypeInfoEntity implements Serializable {
      */
     private Long userId;
 
+   @TableField(exist = false)
+    private String userName;
+
     /**
      * 更新人的id
      */
@@ -74,5 +78,14 @@ public class WorkBusinessTypeInfoEntity implements Serializable {
      */
     private String node;
 
+    /**
+     * 转交人id
+     */
+    private String deliver;
 
+    /**
+     * 转交人名称
+     */
+    @TableField(exist = false)
+    private String deliverName;
 }
