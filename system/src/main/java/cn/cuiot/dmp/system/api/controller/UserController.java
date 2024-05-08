@@ -10,13 +10,13 @@ import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_NOT_EXIST;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -34,10 +34,16 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SmsCodeCheckReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SmsCodeCheckStrongerReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdatePasswordDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateUserDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import cn.cuiot.dmp.system.infrastructure.utils.VerifyUnit;
+import cn.hutool.core.util.PhoneUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.github.houbb.sensitive.core.api.SensitiveUtil;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +64,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 用户管理
+ *
  * @author guoying
  * @className LogControllerImpl
  * @description 用户管理
@@ -187,58 +194,67 @@ public class UserController extends BaseController {
     }
 
     /**
-     * 新增用户（虚拟用户）
+     * 新增用户
      */
     @RequiresPermissions
     @PostMapping(value = "/user/insertUserD", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void insertUser(@RequestBody @Valid InsertUserDTO userEntity) {
-        String orgId = getOrgId();
-        userEntity.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
-        userService.insertUserD(userEntity, orgId, getUserName());
+    public void insertUser(@RequestBody @Valid InsertUserDTO dto) {
+        String loginOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+        String loginUserId = LoginInfoHolder.getCurrentUserId().toString();
+
+        UserBo userBo = new UserBo();
+        userBo.setOrgId(loginOrgId);
+        userBo.setLoginUserId(loginUserId);
+        userBo.setRoleId(dto.getRoleId());
+        userBo.setUserName(dto.getUserName());
+        userBo.setName(dto.getName());
+        userBo.setPhoneNumber(dto.getPhoneNumber());
+        userBo.setDeptId(dto.getDeptId());
+        userBo.setPostId(dto.getPostId());
+        userBo.setRemark(dto.getRemark());
+
+        UserCsvDto userInfo = userService.insertUser(userBo);
+
+        // 文件流输出
+        List<JSONObject> jsonList = new ArrayList<>();
+        JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSON(userInfo).toString());
+        jsonList.add(jsonObject);
+
+        List<Object> head = new ArrayList<>();
+        head.add("username");
+        head.add("password");
+
+        response.setContentType("text/csv;charset=\"GBK\"");
+        response.setHeader("Content-Disposition", "attachment; filename=credentials.csv");
+        String[] split = userBo.getUserName().split("@");
+        String username = split[0];
+        try {
+            CommonCsvUtil.createCsvFile(head, jsonList, username + "credentials", response);
+        } catch (UnsupportedEncodingException e) {
+            log.error("insertUser error.", e);
+        }
     }
 
     /**
-     * 用户管理编辑
+     * 修改用户
      */
     @RequiresPermissions
     @PostMapping(value = "/user/updateUser", produces = MediaType.APPLICATION_JSON_VALUE)
-    public IdmResDTO updateUser(@RequestBody @Valid InsertUserDTO userEntity) {
-        if (!StringUtils.hasLength(userEntity.getUserId()) || !StringUtils
-                .hasLength(userEntity.getRoleId())) {
-            return new IdmResDTO(ResultCode.PARAM_CANNOT_NULL);
-        }
-        // 不允许修改自己的信息
-        if (getUserId().equals(userEntity.getUserId())) {
-            return new IdmResDTO(ResultCode.NO_OPERATION_PERMISSION);
-        }
+    public IdmResDTO updateUser(@RequestBody @Valid UpdateUserDTO dto) {
+
         UserBo userBo = new UserBo();
-        userBo.setId(Long.valueOf(userEntity.getUserId()));
+        userBo.setId(dto.getId());
         userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
         userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
-        userBo.setRoleId(userEntity.getRoleId());
-        userBo.setId(Long.parseLong(getUserId()));
-        userBo.setEmail(userEntity.getEmail());
-        userBo.setPhoneNumber(userEntity.getPhoneNumber());
-        if (StringUtils.hasLength(userBo.getPhoneNumber())
-                && !userBo.getPhoneNumber().matches(RegexConst.PHONE_NUMBER_REGEX)) {
-            return new IdmResDTO(ResultCode.PHONE_NUMBER_IS_INVALID);
-        }
-        if (StringUtils.hasLength(userBo.getEmail())
-                && !userBo.getEmail().matches(RegexConst.EMAIL_REGEX)) {
-            return new IdmResDTO(ResultCode.EMAIL_IS_INVALID);
-        }
-        userBo.setResetPassword(userEntity.getResetPassword());
-        userBo.setPassword(userEntity.getPassWord());
-        userBo.setDeptId(userEntity.getDeptId());
-        userBo.setContactPerson(userEntity.getContactPerson());
-        userBo.setContactAddress(userEntity.getContactAddress());
-        if (getUserName().equals("admin") && Objects
-                .equals(Const.STR_1, userEntity.getLongTimeLogin())) {
-            userBo.setLongTimeLogin(Const.STR_1);
-        } else {
-            userBo.setLongTimeLogin(null);
-        }
-        return userService.updatePermit(userBo);
+        userBo.setRoleId(dto.getRoleId());
+        userBo.setUserName(dto.getUserName());
+        userBo.setName(dto.getName());
+        userBo.setPhoneNumber(dto.getPhoneNumber());
+        userBo.setDeptId(dto.getDeptId());
+        userBo.setPostId(dto.getPostId());
+        userBo.setRemark(dto.getRemark());
+
+        return userService.updateUser(userBo);
     }
 
     /**
@@ -464,7 +480,8 @@ public class UserController extends BaseController {
         String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
         String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
         // 判断是否具有查询权限
-        UserResDTO userResDTO = userService.getUserMenuByUserIdAndOrgId(sessionUserId, sessionOrgId);
+        UserResDTO userResDTO = userService
+                .getUserMenuByUserIdAndOrgId(sessionUserId, sessionOrgId);
         if (userResDTO == null) {
             // 账号不存在
             throw new BusinessException(USER_ACCOUNT_NOT_EXIST);

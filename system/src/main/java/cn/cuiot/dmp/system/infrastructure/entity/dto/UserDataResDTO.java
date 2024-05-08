@@ -23,11 +23,6 @@ public class UserDataResDTO implements Serializable {
     private String id;
 
     /**
-     * 用户id
-     */
-    private String userId;
-
-    /**
      * 用户名
      */
     private String username;
@@ -98,6 +93,16 @@ public class UserDataResDTO implements Serializable {
      * 用户类型
      */
     private Integer userType;
+
+    /**
+     * 岗位ID
+     */
+    private Long postId;
+
+    /**
+     * 备注
+     */
+    private String remark;
 
     /**
      * 组织id

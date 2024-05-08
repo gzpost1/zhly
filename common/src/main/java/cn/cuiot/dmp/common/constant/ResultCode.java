@@ -64,7 +64,7 @@ public enum ResultCode {
     /**
      * 账户、用户相关错误
      */
-    PHONE_NUMBER_ALREADY_EXIST("050002", "该手机号已注册，请重新输入!"),
+    PHONE_NUMBER_ALREADY_EXIST("050002", "手机号已存在，请更换手机号"),
     USERNAME_ALREADY_EXIST("050003", "该用户名已注册，请重新输入!"),
     USERNAME_IS_INVALID("050004", "用户名长度为4-20字符"),
     PASSWORD_IS_INVALID("050005", "密码应由大写字母、小写字母、数字和特殊符号（!@#$%^&*.?）混合组成,且不能连续3位以上"),
@@ -106,7 +106,7 @@ public enum ResultCode {
     SMS_CODE_EXPIRED_ERROR("050051", "验证码已过期，请重新获取"),
     SMS_CODE_FREQUENTLY_REQ_ERROR("050052", "短时间内请勿重复提交"),
     ORG_NAME_ERROR("050053", "账户名称不规范，应可控制在32个字符以内,内容应该包括数字、字母、中文"),
-    USER_USERNAME_ERRER("050056", "用户名称重复，请修改后重试"),
+    USER_USERNAME_ERRER("050056", "用户名已存在"),
     ORG_ORGKEY_ERRER("050057", "账户key重复，请修改后重试"),
     ROLE_ROLEKEY_ERROR("050058", "角色key不存在"),
     CANNOT_OPERATION("050059", "不可操作"),

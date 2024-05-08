@@ -7,13 +7,20 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 /**
- * 新增用户
+ * 修改用户
  * @author zhh
  * @version 1.0
  * @date 2020/9/7 20:09
  */
 @Data
-public class InsertUserDTO {
+public class UpdateUserDTO {
+
+    /**
+     * 用户主键ID
+     */
+    @NotNull(message = "用户主键ID不能为空")
+    private Long id;
+
     /**
      * 用户名
      */
