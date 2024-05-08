@@ -38,6 +38,11 @@ public class UserDataResDTO implements Serializable {
     private String phoneNumber;
 
     /**
+     * 姓名
+     */
+    private String name;
+
+    /**
      * 邮箱
      */
     private String email;
@@ -103,6 +108,11 @@ public class UserDataResDTO implements Serializable {
      * 组织名
      */
     private String deptName;
+
+    /**
+     * 组织名路径
+     */
+    private String deptPathName;
 
     /**
      * 联系人

@@ -57,6 +57,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * 用户管理
  * @author guoying
  * @className LogControllerImpl
  * @description 用户管理
@@ -121,11 +122,12 @@ public class UserController extends BaseController {
     public PageResult<UserDataResDTO> getPage(
             @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
+            @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "deptId", required = false) Long deptId,
-            @RequestParam(value = "searchType", required = false) Integer searchType,
-            @RequestParam(value = "searchContent", required = false) String searchContent,
+            @RequestParam(value = "status", required = false) Byte status,
             @RequestParam(value = "currentPage", required = false, defaultValue = "1") int currentPage,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize) {
+
         if (pageSize > MAX_PAGE_SIZE) {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT);
         }
@@ -152,17 +154,11 @@ public class UserController extends BaseController {
                 params.put("path", departmentEntity.getPath());
             }
         }
-
-        if (searchType != null && StringUtils.hasLength(searchContent)) {
-            if (SEARCH_TYPE_USER_NAME.equals(searchType)) {
-                params.put("usernameLike", searchContent);
-            } else if (SEARCH_TYPE_ROLE_NAME.equals(searchType)) {
-                params.put("roleNameLike", searchContent);
-            } else if (SEARCH_TYPE_PHONE.equals(searchType)) {
-                params.put("phoneNumber", Sm4.encryption(searchContent));
-            } else if (SEARCH_TYPE_DEPARTMENT_NAME.equals(searchType)) {
-                params.put("departmentNameLike", searchContent);
-            }
+        if (Objects.nonNull(status)) {
+            params.put("status", status);
+        }
+        if (!StringUtils.isEmpty(name)) {
+            params.put("name", name);
         }
         if (!StringUtils.isEmpty(userName)) {
             params.put("userName", userName);
@@ -171,8 +167,7 @@ public class UserController extends BaseController {
             String decrypt = Sm4.encryption(phoneNumber);
             params.put("phone", decrypt);
         }
-        String orgId = getOrgId();
-        return userService.getPage(params, sessionOrgId, currentPage, pageSize, orgId);
+        return userService.getPage(params, sessionOrgId, currentPage, pageSize);
     }
 
     /**

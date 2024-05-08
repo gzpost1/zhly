@@ -91,10 +91,9 @@ public interface UserService {
      * @param sessionOrgId
      * @param currentPage
      * @param pageSize
-     * @param orgId
      * @return
      */
-    PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId, int currentPage, int pageSize, String orgId);
+    PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId, int currentPage, int pageSize);
 
     /**
      * 修改密码

@@ -190,4 +190,13 @@ public class UserResDTO {
      */
     private String dGroup;
 
+    /**
+     * 岗位ID
+     */
+    private Long postId;
+
+    /**
+     * 备注
+     */
+    private String remark;
 }

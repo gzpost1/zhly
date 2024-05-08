@@ -54,6 +54,15 @@ public class SysPostController {
     }
 
     /**
+     * 获取详情
+     */
+    @PostMapping("/queryForDetail")
+    public IdmResDTO<SysPostEntity> queryForDetail(@RequestBody @Valid IdParam param) {
+        SysPostEntity data = sysPostService.queryForDetail(param);
+        return IdmResDTO.success(data);
+    }
+
+    /**
      * 创建
      */
     @RequiresPermissions

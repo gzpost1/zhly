@@ -10,6 +10,12 @@ import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.UNAUTHORIZED_ACCESS;
 import static cn.cuiot.dmp.common.constant.ResultCode.USERNAME_IS_SENSITIVE_WORD;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
+import cn.cuiot.dmp.base.application.utils.IpUtil;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -19,13 +25,10 @@ import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.enums.LogLevelEnum;
 import cn.cuiot.dmp.common.enums.StatusCodeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
-import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
-import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.common.utils.Const;
-import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.Address;
 import cn.cuiot.dmp.domain.types.Email;
 import cn.cuiot.dmp.domain.types.EncryptedValue;
@@ -35,25 +38,30 @@ import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.domain.types.id.UserId;
-import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
 import cn.cuiot.dmp.system.application.enums.OrgLabelEnum;
 import cn.cuiot.dmp.system.application.enums.ResetPasswordEnum;
 import cn.cuiot.dmp.system.application.enums.RoleTypeEnum;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2EntityAssembler;
 import cn.cuiot.dmp.system.application.param.assembler.UserAssembler;
-import cn.cuiot.dmp.system.application.param.assembler.UserMapper;
 import cn.cuiot.dmp.system.application.param.command.UpdateUserCommand;
 import cn.cuiot.dmp.system.application.param.dto.DepartmentUserDto;
 import cn.cuiot.dmp.system.application.param.dto.UserDTO;
+import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.application.service.VerifyService;
+import cn.cuiot.dmp.system.domain.entity.Organization;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
+import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
+import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.OrganizationEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
-import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertUserDTO;
@@ -74,16 +82,7 @@ import cn.cuiot.dmp.system.infrastructure.persistence.dao.RoleDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.SpaceDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDataDao;
-import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.RandomPwUtils;
-import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
-import cn.cuiot.dmp.system.domain.entity.Organization;
-import cn.cuiot.dmp.system.domain.entity.User;
-import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
-import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
-import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
-import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
-import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.hutool.core.util.DesensitizedUtil;
 import cn.hutool.core.util.PhoneUtil;
 import com.alibaba.fastjson.JSON;
@@ -140,8 +139,6 @@ public class UserServiceImpl extends BaseController implements UserService {
     private Organization2EntityAssembler organization2EntityAssembler;
     @Autowired
     private RoleDao roleDao;
-    @Autowired
-    private UserMapper userMapper;
     @Autowired
     private MenuDao menuDao;
     @Autowired
@@ -287,7 +284,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         userResDTO.setMenu(Lists.newArrayList());
         List<String> allowMenuIdList = orgMenuDao.getAllowMenuIdList(orgId);
         List<MenuEntity> menuList = menuDao.selectMenuListByRoleId(userResDTO.getRoleId());
-        if(!CollectionUtils.isEmpty(allowMenuIdList)&&!CollectionUtils.isEmpty(menuList)){
+        if (!CollectionUtils.isEmpty(allowMenuIdList) && !CollectionUtils.isEmpty(menuList)) {
             menuList = menuList.stream()
                     .filter(item -> allowMenuIdList.contains(item.getId().toString())).collect(
                             Collectors.toList());
@@ -305,7 +302,7 @@ public class UserServiceImpl extends BaseController implements UserService {
             // 账号不存在
             throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST);
         }
-        UserResDTO userResDTO = userMapper.doToDTO(userEntity);
+        UserResDTO userResDTO = userAssembler.doToDTO(userEntity);
         // 查询用户组织的类型
         DepartmentDto userDept = departmentDao.getPathByUser(userId);
         if (userDept != null) {
@@ -391,12 +388,13 @@ public class UserServiceImpl extends BaseController implements UserService {
      */
     @Override
     public PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId,
-            int currentPage, int pageSize, String orgId) {
+            int currentPage, int pageSize) {
         PageInfo<UserDataResDTO> resultPageInfo;
         try {
             Organization organization = organizationRepository
                     .find(new OrganizationId(sessionOrgId));
             String orgOwner = String.valueOf(organization.getOrgOwner().getValue());
+
             List<UserDataEntity> entities;
             PageHelper.startPage(currentPage, pageSize);
             if (params.containsKey(ROLE_NAME_LIKE)) {
@@ -420,7 +418,7 @@ public class UserServiceImpl extends BaseController implements UserService {
 
             // 创建分页
             PageInfo<UserDataEntity> pageInfo = new PageInfo<>(entities);
-            resultPageInfo = userMapper.dataEntityListToDataDtoList(pageInfo);
+            resultPageInfo = userAssembler.dataEntityListToDataDtoList(pageInfo);
             for (UserDataResDTO userDataResDTO : resultPageInfo.getList()) {
                 //找到该用户对应的角色
                 String pkUserId = userDataResDTO.getId();
@@ -694,7 +692,7 @@ public class UserServiceImpl extends BaseController implements UserService {
             }
         }
 
-        UserDataResDTO userDataResDTO = userMapper.doToDataDTO(entity);
+        UserDataResDTO userDataResDTO = userAssembler.doToDataDTO(entity);
 
         userDataResDTO.setId(id);
         userDataResDTO.setDeptTreePath(deptById.getPath());
@@ -770,7 +768,8 @@ public class UserServiceImpl extends BaseController implements UserService {
     public UserCsvDto insertUser(UserBo userBo) {
         DepartmentEntity departmentEntity = departmentDao
                 .selectByPrimary(
-                        Long.parseLong(userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId())));
+                        Long.parseLong(
+                                userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId())));
 
         DepartmentEntity entity = departmentDao.selectByPrimary(Long.parseLong(userBo.getDeptId()));
         // 权限操作
@@ -883,12 +882,13 @@ public class UserServiceImpl extends BaseController implements UserService {
             OrganizationEntity sessionOrg = organization2EntityAssembler.toDTO(organization);
 
             //新增用户账户中间表关系
-            userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(),userdataEntity.getId().getValue(),
+            userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(), userdataEntity.getId().getValue(),
                     Long.parseLong(userBo.getOrgId()),
                     userBo.getDeptId(), userdataEntity.getCreatedBy());
 
             //新增用户角色中间表关系
-            userDao.insertFeferRole(SnowflakeIdWorkerUtil.nextId(),userdataEntity.getId().getValue(),
+            userDao.insertFeferRole(SnowflakeIdWorkerUtil.nextId(),
+                    userdataEntity.getId().getValue(),
                     Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
 
             UserCsvDto userCsvDto = new UserCsvDto(userdataEntity.getUsername(), password);
@@ -954,12 +954,13 @@ public class UserServiceImpl extends BaseController implements UserService {
         //删除中间关联表关系
         userDao.deleteUserRole(uid.toString(), orgId);
         //重新添加中间表关联关系
-        userDao.insertUserRole(SnowflakeIdWorkerUtil.nextId(),uid, Long.parseLong(roleId), orgId,
+        userDao.insertUserRole(SnowflakeIdWorkerUtil.nextId(), uid, Long.parseLong(roleId), orgId,
                 LocalDateTime.now(), String.valueOf(userId));
         //删除中间关联表关系
         userDao.deleteUserOrg(uid.toString(), orgId);
         //新增用户账户中间表关系
-        userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(),uid, Long.parseLong(userBo.getOrgId()),
+        userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(), uid,
+                Long.parseLong(userBo.getOrgId()),
                 userBo.getDeptId(), String.valueOf(userId));
         redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + uid);
         updateInfosWithoutSms(userBo);

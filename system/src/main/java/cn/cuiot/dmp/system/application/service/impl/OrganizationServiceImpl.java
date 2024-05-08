@@ -15,6 +15,7 @@ import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.common.utils.RandomCodeWorker;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
@@ -919,6 +920,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         OrgTypeDto orgTypeDto = organizationDao.getOrgType(vo.getOrgTypeId());
         vo.setOrgTypeName(orgTypeDto.getName());
 
+        //设置已勾选配置的菜单权限
+        vo.setMenuList(orgMenuDao.getMenuListByOrgId(pkOrgId.toString()));
+
         OrganizationChangeDto changeDto = new OrganizationChangeDto();
         changeDto.setId(SnowflakeIdWorkerUtil.nextId());
         changeDto.setPkOrgId(pkOrgId);
@@ -962,6 +966,9 @@ public class OrganizationServiceImpl implements OrganizationService {
             String grantDeptId = userDao.getUserGrantDeptId(organizationChangeDto.getPkOrgId());
             if (!departmentUtil.checkPrivilege(loginDeptId, grantDeptId)) {
                 throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            }
+            if(StringUtils.isNotBlank(organizationChangeDto.getChangeData())){
+                organizationChangeDto.setChangeDataObj(JsonUtil.readValue(organizationChangeDto.getChangeData(),GetOrganizationVO.class));
             }
         }
         return organizationChangeDto;

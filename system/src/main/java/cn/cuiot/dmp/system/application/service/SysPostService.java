@@ -156,4 +156,12 @@ public class SysPostService {
         return false;
     }
 
+    /**
+     * 获取详情
+     */
+    public SysPostEntity queryForDetail(IdParam param) {
+        SysPostEntity dbEntity = sysPostMapper.selectById(param.getId());
+        return dbEntity;
+    }
+
 }

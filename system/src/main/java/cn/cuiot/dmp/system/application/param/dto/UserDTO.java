@@ -22,6 +22,11 @@ public class UserDTO {
     private String username;
 
     /**
+     * 姓名
+     */
+    private String name;
+
+    /**
      * hash密码
      */
     private String password;
@@ -125,4 +130,14 @@ public class UserDTO {
      * 0：关闭，1：开启
      */
     private Integer longTimeLogin;
+
+    /**
+     * 岗位ID
+     */
+    private Long postId;
+
+    /**
+     * 备注
+     */
+    private String remark;
 }

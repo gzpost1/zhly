@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.entity.dto;
 
 
+import cn.cuiot.dmp.system.infrastructure.entity.vo.GetOrganizationVO;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
@@ -56,4 +57,9 @@ public class OrganizationChangeDto implements Serializable {
      * 变更内容
      */
     private String changeData;
+
+    /**
+     * 变更内容对象
+     */
+    private GetOrganizationVO changeDataObj;
 }
