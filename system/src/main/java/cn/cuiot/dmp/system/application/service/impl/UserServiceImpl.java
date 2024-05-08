@@ -923,32 +923,6 @@ public class UserServiceImpl extends BaseController implements UserService {
         return userCsvDto;
     }
 
-
-    /**
-     * 发送日志记录到kafka
-     *
-     * @param isSuccess 操作成功标识
-     * @param platformOperateLogDTO 日志记录
-     */
-    public void saveLog2Db(boolean isSuccess, OperateLogDto platformOperateLogDTO) {
-        platformOperateLogDTO.setRequestTime(
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
-        platformOperateLogDTO.setRequestIp(IpUtil.getIpAddr(request));
-        if (isSuccess) {
-            // 操作成功
-            platformOperateLogDTO.setStatusCode(StatusCodeEnum.SUCCESS.getCode());
-            platformOperateLogDTO.setStatusMsg(StatusCodeEnum.SUCCESS.getName());
-            platformOperateLogDTO
-                    .setLogLevel(cn.cuiot.dmp.common.enums.LogLevelEnum.INFO.getCode());
-        } else {
-            platformOperateLogDTO.setLogLevel(LogLevelEnum.ERROR.getCode());
-            platformOperateLogDTO.setStatusMsg(StatusCodeEnum.FAILED.getName());
-            platformOperateLogDTO.setStatusCode(StatusCodeEnum.FAILED.getCode());
-        }
-
-        operateLogService.saveDb(platformOperateLogDTO);
-    }
-
     @Override
     public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
             GetUserDepartmentTreeLazyReqDto dto) {
@@ -968,20 +942,6 @@ public class UserServiceImpl extends BaseController implements UserService {
                             DepartmentGroupEnum.COMMUNITY.getCode()));
         }
         return result;
-    }
-
-    private void checkSensitiveWord(int count, String userName) {
-        boolean flag = verifyService.searchSensitiveWord(userName);
-        if (!flag) {
-            return;
-        }
-        log.info("包含敏感词：{}", userName);
-        // 用户名包含有敏感词
-        if (count == -1) {
-            throw new BusinessException(USERNAME_IS_SENSITIVE_WORD);
-        }
-
-        throw new BusinessException(USERNAME_IS_SENSITIVE_WORD, "第" + count + "位用户名包含了非法字符，请重新输入！");
     }
 
     @Override
