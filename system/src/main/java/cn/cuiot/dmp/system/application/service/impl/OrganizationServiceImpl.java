@@ -357,6 +357,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         DepartmentEntity parentEntity = departmentDao.selectByPrimary(Long.valueOf(deptId));
 
         DepartmentEntity entity = new DepartmentEntity();
+        entity.setId(SnowflakeIdWorkerUtil.nextId());
         entity.setCode(RandomCodeWorker.generateShortUuid());
         entity.setDepartmentName(dto.getCompanyName());
         entity.setPath(parentEntity.getPath() + "-" + entity.getCode());

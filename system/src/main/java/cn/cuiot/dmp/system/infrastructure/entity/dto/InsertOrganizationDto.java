@@ -41,7 +41,7 @@ public class InsertOrganizationDto extends AbstractResourceParam {
     /**
      * 所属组织id
      */
-    @NotBlank(message = "请选择所属组织")
+    @NotNull(message = "请选择所属组织")
     private Long deptId;
 
 

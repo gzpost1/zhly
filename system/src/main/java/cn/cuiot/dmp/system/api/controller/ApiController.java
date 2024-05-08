@@ -68,7 +68,7 @@ public class ApiController {
             departmentDto = departmentService.getPathByUser(userId);
         }
         if (Objects.isNull(departmentDto) && Objects.nonNull(orgId)) {
-            List<DepartmentEntity> entityList = departmentService.getDeptByOrgId(orgId.toString());
+            List<DepartmentEntity> entityList = departmentService.getDeptRootByOrgId(orgId.toString());
             if (CollectionUtils.isNotEmpty(entityList)) {
                 departmentDto = departmentConverter.entityToDTO(entityList.get(0));
             }

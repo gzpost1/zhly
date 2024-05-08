@@ -48,6 +48,10 @@ public class ListOrganizationVO {
      */
     private String deptName;
 
+    /**
+     * 组织长名称
+     */
+    private String deptPathName;
 
     /**
      * 管理员姓名

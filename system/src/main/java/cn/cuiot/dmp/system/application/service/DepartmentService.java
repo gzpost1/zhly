@@ -81,7 +81,7 @@ public interface DepartmentService {
      * @Description 查询
      * @Date 2021/8/17 15:19
      **/
-    List<DepartmentEntity> getDeptByOrgId(String orgId);
+    List<DepartmentEntity> getDeptRootByOrgId(String orgId);
 
     /**
      * 根据组织id查询组织名称

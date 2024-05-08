@@ -260,7 +260,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public List<DepartmentEntity> getDeptByOrgId(String orgId) {
+    public List<DepartmentEntity> getDeptRootByOrgId(String orgId) {
         return departmentDao.selectRootByOrgId(orgId);
     }
 
@@ -351,26 +351,39 @@ public class DepartmentServiceImpl implements DepartmentService {
      */
     @Override
     public List<DepartmentTreeVO> getDepartmentTree(String orgId, String userId, String type) {
-        // 这里需要判断 .只能看到当前租户 所属dept为根
+        // 只能看到当前租户 所属dept为根
         Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
                 .orElse(null);
+
         DepartmentEntity department = departmentDao.selectByPrimary(deptId);
+
+
         // 初始化departmentTreeList
         List<DepartmentTreeVO> departmentTreeList = new ArrayList<>();
-        // 若为组织懒加载接口且用户所在组织为组织级以下（小区，区域等），则只返回用户所在组织
+
+        //用户所在组织为组织级以下（小区，区域等），则只返回用户所在组织
         if (!StringUtils.isEmpty(type) && type.equals(CurrencyConst.SPACE)) {
-            List<Integer> dgroups = Arrays.asList(DepartmentGroupEnum.COMMUNITY.getCode(),
+            List<Integer> dgroups = Arrays.asList(
+                    //小区
+                    DepartmentGroupEnum.COMMUNITY.getCode(),
+                    //楼栋
                     DepartmentGroupEnum.BUILDING.getCode(),
-                    DepartmentGroupEnum.HOUSE.getCode(), DepartmentGroupEnum.REGION.getCode(),
+                    //房屋
+                    DepartmentGroupEnum.HOUSE.getCode(),
+                    //区域
+                    DepartmentGroupEnum.REGION.getCode(),
+                    //楼层
                     DepartmentGroupEnum.FLOOR.getCode());
+
             if (dgroups.contains(department.getDGroup())) {
                 DepartmentTreeVO vo = new DepartmentTreeVO();
                 DepartmentEntity entity = departmentDao.getPathBySpacePath(department.getPath());
                 BeanUtils.copyProperties(entity, vo);
                 vo.setType(CurrencyConst.SPACE);
                 departmentTreeList.add(vo);
-                return departmentTreeList;
             }
+            return departmentTreeList;
+
         } else if (department.getDGroup().equals(DepartmentGroupEnum.BUILDING.getCode())
                 || department.getDGroup().equals(DepartmentGroupEnum.FLOOR.getCode())) {
             List<DepartmentTreeVO> children = new ArrayList();
@@ -380,23 +393,21 @@ public class DepartmentServiceImpl implements DepartmentService {
             departmentTreeList.add(vo);
             return departmentTreeList;
         }
+
         if (department.getDGroup().equals(DepartmentGroupEnum.COMMUNITY.getCode())) {
             deptId = departmentDao.selectByPrimary(department.getParentId()).getId();
         }
-        List<String> robotOrganization = redisUtil
-                .lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
-        if (CollectionUtils.isEmpty(robotOrganization)) {
-            syncRedis(orgId);
-            robotOrganization = redisUtil
-                    .lGet(CacheConst.ROBOT_ORGANIZATION_REDIS_KEY + "_" + orgId, 0, -1);
-        }
-        if (!CollectionUtils.isEmpty(robotOrganization)) {
+
+        List<DepartmentEntity> siteList = departmentDao.selectByOrgId(orgId);
+
+        if (!CollectionUtils.isEmpty(siteList)) {
             DepartmentTreeVO vo;
             List<DepartmentTreeVO> departmentTreeListTemp = new ArrayList<>();
-            for (String s : robotOrganization) {
-                vo = JSONObject.parseObject(s, DepartmentTreeVO.class);
+            for (DepartmentEntity s : siteList) {
+                vo = JSONObject.parseObject(JSONObject.toJSONString(s), DepartmentTreeVO.class);
                 departmentTreeListTemp.add(vo);
             }
+
             if (deptId != null) {
                 for (DepartmentTreeVO departmentTreeVO : departmentTreeListTemp) {
                     if (deptId.equals(departmentTreeVO.getId())) {
