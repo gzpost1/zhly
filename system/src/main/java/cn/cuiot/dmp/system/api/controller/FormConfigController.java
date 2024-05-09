@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
+ * 企业账号-系统配置-初始化配置-表单配置
+ *
  * @author caorui
  * @date 2024/4/28
  */

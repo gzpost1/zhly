@@ -33,4 +33,9 @@ public class FormConfigCreateDTO implements Serializable {
     @NotNull(message = "企业ID不能为空")
     private Long companyId;
 
+    /**
+     * 表单配置详情
+     */
+    private String formConfigDetail;
+
 }

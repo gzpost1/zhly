@@ -21,7 +21,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 /**
- * 企业账号-系统配置-初始化配置-表单配置
+ * 企业账号-系统配置-初始化配置-表单配置分类
  *
  * @author caorui
  * @date 2024/4/28
