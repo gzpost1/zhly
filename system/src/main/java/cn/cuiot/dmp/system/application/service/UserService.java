@@ -13,6 +13,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.UserExportVo;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +68,7 @@ public interface UserService {
     /**
      * 导出用户
      */
-    List<UserDataResDTO> exportUsers(UserBo userBo);
+    List<UserExportVo> exportUsers(UserBo userBo);
 
     /**
      * 用户管理组织树

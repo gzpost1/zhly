@@ -43,6 +43,18 @@
 			<artifactId>kaptcha</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>cn.afterturn</groupId>
+			<artifactId>easypoi-spring-boot-starter</artifactId>
+			<version>4.2.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.xmlbeans</groupId>
+					<artifactId>xmlbeans</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
     </dependencies>
 
 	<build>

@@ -5,6 +5,8 @@ import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORDS_NOT_EQUALS;
 import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_INVALID;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_NOT_EXIST;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
@@ -13,6 +15,7 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -33,12 +36,15 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateUserDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.UserExportVo;
+import cn.cuiot.dmp.system.infrastructure.utils.ExcelUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.github.houbb.sensitive.core.api.SensitiveUtil;
-import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +52,7 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
@@ -125,8 +132,8 @@ public class UserController extends BaseController {
             }
         }
 
-        if(!StringUtils.isEmpty(deptIds)){
-            params.put("deptIds",Splitter.on(",").splitToList(deptIds));
+        if (!StringUtils.isEmpty(deptIds)) {
+            params.put("deptIds", Splitter.on(",").splitToList(deptIds));
         }
 
         if (Objects.nonNull(status)) {
@@ -296,13 +303,26 @@ public class UserController extends BaseController {
      */
     @RequiresPermissions
     @PostMapping(value = "/user/exportUsers", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void exportUsers(@RequestBody @Valid ExportUserCmd dto) {
+    public void exportUsers(@RequestBody @Valid ExportUserCmd dto) throws IOException {
         UserBo userBo = new UserBo();
         userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
         userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
         userBo.setDeptId(dto.getDeptId());
-        List<UserDataResDTO> list = userService.exportUsers(userBo);
+        List<UserExportVo> dataList = userService.exportUsers(userBo);
 
+        List<Map<String, Object>> sheetsList = new ArrayList<>();
+
+        Map<String, Object> sheet1 = ExcelUtils
+                .createSheet("用户列表", dataList, UserExportVo.class);
+
+        sheetsList.add(sheet1);
+
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
+
+        ExcelUtils.downLoadExcel(
+                "user-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                response,
+                workbook);
     }
 
 

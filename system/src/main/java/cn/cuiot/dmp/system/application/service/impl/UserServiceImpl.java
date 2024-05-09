@@ -57,6 +57,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.UserExportVo;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.MenuDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao;
@@ -723,7 +724,7 @@ public class UserServiceImpl extends BaseController implements UserService {
      * 导出用户
      */
     @Override
-    public List<UserDataResDTO> exportUsers(UserBo userBo) {
+    public List<UserExportVo> exportUsers(UserBo userBo) {
         String sessionOrgId = userBo.getOrgId();
         String loginUserId = userBo.getLoginUserId();
         String deptId = userBo.getDeptId();
@@ -757,7 +758,7 @@ public class UserServiceImpl extends BaseController implements UserService {
             }*/
             userDataEntity.setPhoneNumber(phoneNumber);
         }
-        List<UserDataResDTO> resultList = userAssembler.entityListToResDtoList(entities);
+        List<UserExportVo> resultList = userAssembler.entityListToExportVoList(entities);
         return resultList;
     }
 

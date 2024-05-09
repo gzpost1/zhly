@@ -6,6 +6,7 @@ import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.UserExportVo;
 import com.github.pagehelper.PageInfo;
 import java.util.List;
 import org.mapstruct.Mapper;
@@ -59,6 +60,9 @@ public interface UserAssembler extends Assembler<User, UserDTO> {
      */
     @Mappings({})
     List<UserDataResDTO> entityListToResDtoList(List<UserDataEntity> list);
+
+    @Mappings({})
+    List<UserExportVo> entityListToExportVoList(List<UserDataEntity> list);
 
     @Mappings({
             @Mapping(source = "id.value", target = "id"),
