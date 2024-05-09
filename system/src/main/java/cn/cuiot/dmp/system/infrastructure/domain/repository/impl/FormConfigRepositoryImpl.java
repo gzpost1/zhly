@@ -2,6 +2,7 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.query.PageResult;
 import cn.cuiot.dmp.system.application.constant.FormConfigConstant;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
@@ -9,6 +10,7 @@ import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 import cn.cuiot.dmp.system.domain.repository.FormConfigRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigDetailEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigEntity;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.FormConfigDetailQueryDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.FormConfigMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -25,6 +27,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -77,7 +80,9 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(formConfig, formConfigEntity);
         // 先删除后保存表单配置内容
-        Query query = getQuery(formConfig.getId());
+        FormConfigDetailQueryDTO formConfigDetailQueryDTO = new FormConfigDetailQueryDTO();
+        formConfigDetailQueryDTO.setId(formConfig.getId());
+        Query query = getQuery(formConfigDetailQueryDTO);
         mongoTemplate.remove(query, FormConfigConstant.FORM_CONFIG_COLLECTION);
         FormConfigDetailEntity formConfigDetailEntity = new FormConfigDetailEntity();
         BeanUtils.copyProperties(formConfig, formConfigDetailEntity);
@@ -96,9 +101,31 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     @Override
     public int deleteFormConfig(Long id) {
         // 先删除表单配置详情，后删除表单
-        Query query = getQuery(id);
+        FormConfigDetailQueryDTO formConfigDetailQueryDTO = new FormConfigDetailQueryDTO();
+        formConfigDetailQueryDTO.setId(id);
+        Query query = getQuery(formConfigDetailQueryDTO);
         mongoTemplate.remove(query, FormConfigConstant.FORM_CONFIG_COLLECTION);
         return formConfigMapper.deleteById(id);
+    }
+
+    @Override
+    public List<FormConfig> batchQueryFormConfig(Byte status, List<Long> idList) {
+        AssertUtil.notEmpty(idList, "表单配置ID列表不能为空");
+        // 获取表单配置详情列表
+        FormConfigDetailQueryDTO formConfigDetailQueryDTO = new FormConfigDetailQueryDTO();
+        formConfigDetailQueryDTO.setIdList(idList);
+        Query query = getQuery(formConfigDetailQueryDTO);
+        List<FormConfigDetailEntity> formConfigDetailEntityList = mongoTemplate.find(query,
+                FormConfigDetailEntity.class, FormConfigConstant.FORM_CONFIG_COLLECTION);
+        // 获取表单配置
+        LambdaQueryWrapper<FormConfigEntity> queryWrapper = new LambdaQueryWrapper<FormConfigEntity>()
+                .in(FormConfigEntity::getId, idList)
+                .eq(Objects.nonNull(status), FormConfigEntity::getStatus, status);
+        List<FormConfigEntity> formConfigEntityList = formConfigMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(formConfigEntityList)) {
+            return new ArrayList<>();
+        }
+        return formConfigEntity2FormConfig(formConfigEntityList, formConfigDetailEntityList);
     }
 
     @Override
@@ -113,6 +140,11 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
 
     @Override
     public int batchDeleteFormConfig(List<Long> idList) {
+        // 先删除表单配置详情，后删除表单
+        FormConfigDetailQueryDTO formConfigDetailQueryDTO = new FormConfigDetailQueryDTO();
+        formConfigDetailQueryDTO.setIdList(idList);
+        Query query = getQuery(formConfigDetailQueryDTO);
+        mongoTemplate.remove(query, FormConfigConstant.FORM_CONFIG_COLLECTION);
         return formConfigMapper.deleteBatchIds(idList);
     }
 
@@ -130,10 +162,15 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
         return formConfigEntity2FormConfig(formConfigEntityPage);
     }
 
-    private Query getQuery(Long id) {
+    private Query getQuery(FormConfigDetailQueryDTO formConfigDetailQueryDTO) {
         Query query = new Query();
         Criteria criteria = new Criteria();
-        criteria.and(FormConfigConstant.FORM_CONFIG_COLLECTION_PK).is(id);
+        if (Objects.nonNull(formConfigDetailQueryDTO.getId())) {
+            criteria.and(FormConfigConstant.FORM_CONFIG_COLLECTION_PK).is(formConfigDetailQueryDTO.getId());
+        }
+        if (CollectionUtils.isNotEmpty(formConfigDetailQueryDTO.getIdList())) {
+            criteria.and(FormConfigConstant.FORM_CONFIG_COLLECTION_PK).in(formConfigDetailQueryDTO.getIdList());
+        }
         query.addCriteria(criteria);
         return query;
     }
@@ -152,6 +189,23 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
         formConfigPageResult.setPageSize((int) formConfigEntityPage.getSize());
         formConfigPageResult.setTotal(formConfigEntityPage.getTotal());
         return formConfigPageResult;
+    }
+
+    private List<FormConfig> formConfigEntity2FormConfig(List<FormConfigEntity> formConfigEntityList,
+                                                         List<FormConfigDetailEntity> formConfigDetailEntityList) {
+        List<FormConfig> formConfigList = new ArrayList<>();
+        for (FormConfigEntity formConfigEntity : formConfigEntityList) {
+            FormConfig formConfig = new FormConfig();
+            BeanUtils.copyProperties(formConfigEntity, formConfig);
+            for (FormConfigDetailEntity formConfigDetailEntity : formConfigDetailEntityList) {
+                if (formConfigDetailEntity.getId().equals(formConfigEntity.getId())) {
+                    formConfig.setFormConfigDetail(formConfigDetailEntity.getFormConfigDetail());
+                    break;
+                }
+            }
+            formConfigList.add(formConfig);
+        }
+        return formConfigList;
     }
 
 }

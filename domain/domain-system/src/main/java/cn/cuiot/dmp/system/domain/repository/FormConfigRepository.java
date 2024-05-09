@@ -38,6 +38,11 @@ public interface FormConfigRepository {
     int deleteFormConfig(Long id);
 
     /**
+     * 批量查询
+     */
+    List<FormConfig> batchQueryFormConfig(Byte status, List<Long> idList);
+
+    /**
      * 批量移动
      */
     int batchMoveFormConfig(Long typeId, List<Long> idList);

@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.system.application.param.dto.BatchFormConfigDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigUpdateDTO;
@@ -38,6 +40,11 @@ public interface FormConfigService {
      * 删除
      */
     int deleteFormConfig(Long id);
+
+    /**
+     * 批量查询
+     */
+    List<FormConfigRspDTO> batchQueryFormConfig(FormConfigReqDTO formConfigReqDTO);
 
     /**
      * 批量移动

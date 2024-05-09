@@ -220,6 +220,7 @@ public enum ResultCode {
      * 系统服务相关（前两位表示服务模块，中间三位表示所属业务，后两位表示异常编码）
      */
     QUERY_BUSINESS_TYPE_ERROR("0100101", "查询业务类型信息异常"),
+    QUERY_FORM_CONFIG_ERROR("0100201", "查询表单配置信息异常"),
     ;
 
 

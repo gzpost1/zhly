@@ -1,15 +1,15 @@
 package cn.cuiot.dmp.system.api.controller;
 
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
 import cn.cuiot.dmp.system.application.param.assembler.MenuConverter;
-import cn.cuiot.dmp.system.application.service.BusinessTypeService;
-import cn.cuiot.dmp.system.application.service.DepartmentService;
-import cn.cuiot.dmp.system.application.service.MenuService;
+import cn.cuiot.dmp.system.application.service.*;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 
@@ -48,6 +48,9 @@ public class ApiController {
 
     @Autowired
     private BusinessTypeService businessTypeService;
+
+    @Autowired
+    private FormConfigService formConfigService;
 
     /**
      * 获取部门信息
@@ -99,6 +102,15 @@ public class ApiController {
     public IdmResDTO<List<BusinessTypeRspDTO>> batchGetBusinessType(@RequestBody @Valid BusinessTypeReqDTO businessTypeReqDTO) {
         List<BusinessTypeRspDTO> businessTypeRspDTOList = businessTypeService.batchGetBusinessType(businessTypeReqDTO);
         return IdmResDTO.success(businessTypeRspDTOList);
+    }
+
+    /**
+     * 批量查询表单配置
+     */
+    @PostMapping(value = "/batchQueryFormConfig", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<FormConfigRspDTO>> batchQueryFormConfig(@RequestBody @Valid FormConfigReqDTO formConfigReqDTO) {
+        List<FormConfigRspDTO> formConfigRspDTOList = formConfigService.batchQueryFormConfig(formConfigReqDTO);
+        return IdmResDTO.success(formConfigRspDTOList);
     }
 
 }
