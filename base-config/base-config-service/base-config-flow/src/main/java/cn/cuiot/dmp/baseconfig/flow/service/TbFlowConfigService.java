@@ -50,7 +50,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
      * @return
      */
     public IPage<TbFlowPageDto> queryForPage(TbFlowConfigQuery query) {
-        return baseMapper.queryForPage(new Page(query.getCurrentPage(), query.getPageSize()), query);
+        return baseMapper.queryForPage(new Page(query.getPageNo(), query.getPageSize()), query);
     }
 
     /**
