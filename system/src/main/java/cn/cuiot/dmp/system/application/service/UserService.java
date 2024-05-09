@@ -49,6 +49,10 @@ public interface UserService {
      */
     IdmResDTO updateUser(UserBo userBo);
 
+    /**
+     * 批量移动用户
+     */
+    void moveUsers(UserBo userBo);
 
     /**
      * 批量删除用户

@@ -24,13 +24,13 @@ import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertUserDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.MoveUserDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SmsCodeCheckReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdatePasswordDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateUserDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
-import cn.cuiot.dmp.system.infrastructure.utils.VerifyUnit;
 import com.alibaba.fastjson.JSONObject;
 import com.github.houbb.sensitive.core.api.SensitiveUtil;
 import java.io.UnsupportedEncodingException;
@@ -43,7 +43,6 @@ import java.util.Optional;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -70,37 +69,6 @@ public class UserController extends BaseController {
      */
     private static final int MAX_PAGE_SIZE = 100;
 
-    /**
-     * 根据用户名查询
-     */
-    private static final Integer SEARCH_TYPE_USER_NAME = 1;
-
-    /**
-     * 根据手机号码查询
-     */
-    private static final Integer SEARCH_TYPE_PHONE = 2;
-
-    /**
-     * 根据角色查询
-     */
-    private static final Integer SEARCH_TYPE_ROLE_NAME = 3;
-
-    /**
-     * 根据组织名查询
-     */
-    private static final Integer SEARCH_TYPE_DEPARTMENT_NAME = 4;
-
-    private static final String FALSE = "false";
-
-    @Value("${self.debug}")
-    private String debug;
-
-    /**
-     * 自动注入verifyUnit
-     */
-    @Autowired
-    private VerifyUnit verifyUnit;
-
     @Autowired
     private UserService userService;
 
@@ -121,6 +89,7 @@ public class UserController extends BaseController {
             @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "deptId", required = false) Long deptId,
+            @RequestParam(value = "deptIds", required = false) List<Long> deptIds,
             @RequestParam(value = "status", required = false) Byte status,
             @RequestParam(value = "currentPage", required = false, defaultValue = "1") int currentPage,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize) {
@@ -151,6 +120,9 @@ public class UserController extends BaseController {
                 params.put("path", departmentEntity.getPath());
             }
         }
+
+        params.put("deptIds",deptIds);
+
         if (Objects.nonNull(status)) {
             params.put("status", status);
         }
@@ -247,9 +219,29 @@ public class UserController extends BaseController {
         return userService.updateUser(userBo);
     }
 
+
+    /**
+     * 批量移动用户
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/user/moveUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO moveUsers(@RequestBody @Valid MoveUserDTO dto) {
+
+        UserBo userBo = new UserBo();
+        userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
+        userBo.setDeptId(dto.getDeptId());
+        userBo.setIds(dto.getIds());
+
+        userService.moveUsers(userBo);
+
+        return IdmResDTO.success();
+    }
+
     /**
      * 批量删除用户
      */
+    @RequiresPermissions
     @PostMapping(value = "/user/deleteUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> deleteUsers(@RequestBody List<Long> ids) {
         if (CollectionUtils.isEmpty(ids)) {

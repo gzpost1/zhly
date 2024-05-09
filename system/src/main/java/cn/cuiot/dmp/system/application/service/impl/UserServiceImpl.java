@@ -3,8 +3,6 @@ package cn.cuiot.dmp.system.application.service.impl;
 import static cn.cuiot.dmp.common.constant.ResultCode.INNER_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_ALREADY_EXIST;
 import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_EXIST;
-import static cn.cuiot.dmp.common.constant.ResultCode.RESET_PASSWORD_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_EXPIRED_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.UNAUTHORIZED_ACCESS;
@@ -32,18 +30,15 @@ import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
-import cn.cuiot.dmp.system.application.enums.OrgLabelEnum;
 import cn.cuiot.dmp.system.application.enums.RoleTypeEnum;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2EntityAssembler;
 import cn.cuiot.dmp.system.application.param.assembler.UserAssembler;
 import cn.cuiot.dmp.system.application.param.command.UpdateUserCommand;
-import cn.cuiot.dmp.system.application.param.dto.DepartmentUserDto;
 import cn.cuiot.dmp.system.application.param.dto.UserDTO;
 import cn.cuiot.dmp.system.application.service.MenuService;
 import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.system.application.service.SysPostService;
 import cn.cuiot.dmp.system.application.service.UserService;
-import cn.cuiot.dmp.system.application.service.VerifyService;
 import cn.cuiot.dmp.system.domain.entity.Organization;
 import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
@@ -57,11 +52,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.LabelTypeDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgLabelDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.ResetPasswordReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
@@ -82,7 +73,6 @@ import com.github.houbb.sensitive.api.IStrategy;
 import com.github.houbb.sensitive.core.api.strategory.StrategyPhone;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Lists;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -97,7 +87,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -279,7 +268,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         //设置岗位名称
         if (Objects.nonNull(entity.getPostId())) {
             SysPostEntity postEntity = sysPostService.getById(entity.getPostId());
-            if(Objects.nonNull(postEntity)){
+            if (Objects.nonNull(postEntity)) {
                 userDataResDTO.setPostName(postEntity.getPostName());
             }
         }
@@ -515,6 +504,78 @@ public class UserServiceImpl extends BaseController implements UserService {
     }
 
     /**
+     * 批量移动用户
+     */
+    @Override
+    @LogRecord(operationCode = "moveUsers", operationName = "移动用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
+    @Transactional(rollbackFor = Exception.class)
+    public void moveUsers(UserBo userBo) {
+        String sessionOrgId = userBo.getOrgId();
+        List<Long> ids = userBo.getIds();
+        String loginUserId = userBo.getLoginUserId();
+        String deptId = userBo.getDeptId();
+
+        /**
+         * 判断所选组织部门是否可选
+         */
+        String loginDeptId = userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId());
+        DepartmentEntity loginDepartment = departmentDao
+                .selectByPrimary(Long.valueOf(loginDeptId));
+        DepartmentEntity departmentEntity = departmentDao
+                .selectByPrimary(Long.parseLong(deptId));
+        if (!departmentEntity.getPath().startsWith(loginDepartment.getPath())) {
+            throw new BusinessException(ResultCode.DEPARTMENT_ULTRA_VIRES);
+        }
+
+        String deptTreePath = Optional.ofNullable(departmentEntity).map(DepartmentEntity::getPath)
+                .orElse(null);
+        if (StringUtils.isEmpty(deptTreePath)) {
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST, "查询组织部门信息缺失");
+        }
+
+        // 查询该账户的账户所有者
+        Long orgOwner = userDao.findOrgOwner(sessionOrgId);
+
+        for (Long pkUserId : ids) {
+            // 根据userId查询orgId
+            Long orgId = this.userDao.getOrgId(pkUserId);
+            if (!sessionOrgId.equals(String.valueOf(orgId))) {
+                throw new BusinessException(UNAUTHORIZED_ACCESS);
+            }
+            // 判断是否是自己
+            if (pkUserId.toString().equals(loginUserId)) {
+                throw new BusinessException(ResultCode.CANNOT_OPERATION, "不能移动当前登录用户自己");
+            }
+
+            // 管理员不能移动
+            if (pkUserId.equals(orgOwner)) {
+                throw new BusinessException(ResultCode.CANNOT_OPERATION, "管理员不能移动");
+            }
+
+            // 组织权限限制
+            DepartmentDto departmentDto = departmentDao.getPathByUser(pkUserId.toString());
+            String subTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
+                    .orElse(null);
+            if (StringUtils.isEmpty(subTreePath)) {
+                throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
+            }
+            if (!subTreePath.startsWith(deptTreePath)) {
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            }
+        }
+        for (Long pkUserId : ids) {
+            //删除中间关联表关系
+            userDao.deleteUserOrg(pkUserId.toString(), sessionOrgId);
+            //新增用户账户中间表关系
+            userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(), pkUserId,
+                    Long.parseLong(sessionOrgId),
+                    deptId, loginUserId);
+            // 设备模块使用了缓存，系统模块姓名或手机号变更需要清除redisKey
+            redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + pkUserId);
+        }
+    }
+
+    /**
      * 批量删除用户
      */
     @LogRecord(operationCode = "deleteUsers", operationName = "删除用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
@@ -536,11 +597,11 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         userBo.setOperationTarget(op);
 
-        DepartmentDto sessionDepartment= departmentDao.getPathByUser(loginUserId);
+        DepartmentDto sessionDepartment = departmentDao.getPathByUser(loginUserId);
         String deptTreePath = Optional.ofNullable(sessionDepartment).map(DepartmentDto::getPath)
                 .orElse(null);
         if (StringUtils.isEmpty(deptTreePath)) {
-            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST,"查询组织部门信息缺失");
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST, "查询组织部门信息缺失");
         }
 
         Organization sessionOrg = organizationRepository
@@ -564,10 +625,10 @@ public class UserServiceImpl extends BaseController implements UserService {
             }
 
             // 组织权限限制
-            DepartmentDto departmentDto= departmentDao.getPathByUser(loginUserId);
+            DepartmentDto departmentDto = departmentDao.getPathByUser(pkUserId.toString());
             String subTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
                     .orElse(null);
-            if (StringUtils.isEmpty(deptTreePath)) {
+            if (StringUtils.isEmpty(subTreePath)) {
                 throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
             }
             if (!subTreePath.startsWith(deptTreePath)) {
