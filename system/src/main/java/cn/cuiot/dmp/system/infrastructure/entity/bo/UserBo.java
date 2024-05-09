@@ -71,7 +71,7 @@ public class UserBo extends AbstractResourceParam {
     /**
      * 用户名
      */
-    private String userName;
+    private String username;
 
     /**
      * 姓名

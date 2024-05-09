@@ -39,7 +39,6 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import cn.cuiot.dmp.system.infrastructure.utils.VerifyUnit;
-import cn.hutool.core.util.PhoneUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.houbb.sensitive.core.api.SensitiveUtil;
 import java.io.UnsupportedEncodingException;
@@ -124,7 +123,6 @@ public class UserController extends BaseController {
     /**
      * 用户列表筛选-分页
      */
-    @RequiresPermissions
     @GetMapping(value = "/user/listUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<UserDataResDTO> getPage(
             @RequestParam(value = "userName", required = false) String userName,
@@ -184,12 +182,12 @@ public class UserController extends BaseController {
     @GetMapping(value = "/user/getUser", produces = MediaType.APPLICATION_JSON_VALUE)
     public UserDataResDTO getDetail(@RequestParam(value = "id") String id) {
         // 获取session中的orgId
-        String sessionOrgId = getOrgId();
-        String sessionUserId = getUserId();
+        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
         if (StringUtils.isEmpty(sessionOrgId)) {
             throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
         }
-        //对敏感信息脱敏返回--2020/12/07 新增
+        //对敏感信息脱敏返回
         return SensitiveUtil.desCopy(userService.getOne(id, sessionOrgId, sessionUserId));
     }
 
@@ -206,7 +204,7 @@ public class UserController extends BaseController {
         userBo.setOrgId(loginOrgId);
         userBo.setLoginUserId(loginUserId);
         userBo.setRoleId(dto.getRoleId());
-        userBo.setUserName(dto.getUserName());
+        userBo.setUsername(dto.getUsername());
         userBo.setName(dto.getName());
         userBo.setPhoneNumber(dto.getPhoneNumber());
         userBo.setDeptId(dto.getDeptId());
@@ -226,7 +224,7 @@ public class UserController extends BaseController {
 
         response.setContentType("text/csv;charset=\"GBK\"");
         response.setHeader("Content-Disposition", "attachment; filename=credentials.csv");
-        String[] split = userBo.getUserName().split("@");
+        String[] split = userBo.getUsername().split("@");
         String username = split[0];
         try {
             CommonCsvUtil.createCsvFile(head, jsonList, username + "credentials", response);
@@ -247,7 +245,7 @@ public class UserController extends BaseController {
         userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
         userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
         userBo.setRoleId(dto.getRoleId());
-        userBo.setUserName(dto.getUserName());
+        userBo.setUsername(dto.getUsername());
         userBo.setName(dto.getName());
         userBo.setPhoneNumber(dto.getPhoneNumber());
         userBo.setDeptId(dto.getDeptId());

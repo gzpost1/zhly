@@ -164,4 +164,9 @@ public class SysPostService {
         return dbEntity;
     }
 
+    public SysPostEntity getById(Long postId) {
+        SysPostEntity dbEntity = sysPostMapper.selectById(postId);
+        return dbEntity;
+    }
+
 }

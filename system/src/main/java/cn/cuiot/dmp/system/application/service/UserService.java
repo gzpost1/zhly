@@ -24,6 +24,17 @@ import java.util.Map;
 public interface UserService {
 
     /**
+     * 用户列表筛选-分页
+     */
+    PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId,
+            int currentPage, int pageSize);
+
+    /**
+     * 查询用户详情
+     */
+    UserDataResDTO getOne(String id, String sessionOrgId, String sessionUserId);
+
+    /**
      * 新增用户
      */
     UserCsvDto insertUser(UserBo userBo);
@@ -32,6 +43,13 @@ public interface UserService {
      * 更改用户
      */
     IdmResDTO updateUser(UserBo userBo);
+
+
+    /**
+     * 批量删除用户
+     */
+    int deleteUsers(UserBo userBo);
+
 
     /**
      * 根据userId查询用户信息
@@ -77,11 +95,7 @@ public interface UserService {
      */
     SimpleStringResDTO updatePasswordByPhoneWithoutSid(UserBo userBo);
 
-    /**
-     * 用户列表筛选-分页
-     */
-    PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId,
-            int currentPage, int pageSize);
+
 
     /**
      * 修改密码
@@ -94,20 +108,10 @@ public interface UserService {
     void updatePhoneNumber(UserBo userBo);
 
     /**
-     * 批量删除用户
-     */
-    int deleteUsers(UserBo userBo);
-
-    /**
      * 虚拟用户重置密码
      */
     UserCsvDto resetPasswordWithOutSms(UserBo userBo);
 
-
-    /**
-     * 查询用户详情
-     */
-    UserDataResDTO getOne(String id, String sessionOrgId, String sessionUserId);
 
     /**
      * 用户管理组织树

@@ -19,7 +19,7 @@ public class InsertUserDTO {
      */
     @NotBlank(message = "请输入用户名")
     @Length(max = 30,message = "用户名不可超过30字")
-    private String userName;
+    private String username;
 
     /**
      * 姓名

@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,11 @@ import org.springframework.util.CollectionUtils;
 @Service
 @Component
 public class OssTemplate {
+
+    /**
+     * 默认预签URL有效期
+     */
+    private final static Integer DEFAULT_EXPIRE_SECONDS=604800;
 
     @Autowired
     private List<FileStorage> fileStorageList;
@@ -151,6 +157,7 @@ public class OssTemplate {
     public String getObjectUrl(String bucketName, String objectName, String urlType,
             Integer expires) {
         try {
+            expires = Objects.isNull(expires)?DEFAULT_EXPIRE_SECONDS:expires;
             return getFileStorage().getObjectUrl(bucketName, objectName, urlType, expires);
         } catch (Exception e) {
             log.error(
@@ -205,6 +212,7 @@ public class OssTemplate {
      */
     public String getPresignedObjectUrl(String bucketName, String objectName, Integer expires) {
         try {
+            expires = Objects.isNull(expires)?DEFAULT_EXPIRE_SECONDS:expires;
             return getFileStorage().getPresignedObjectUrl(bucketName, objectName, expires);
         } catch (Exception e) {
             log.error("getPresignedObjectUrl error,bucketName:{},objectName:{},throwable:{}",

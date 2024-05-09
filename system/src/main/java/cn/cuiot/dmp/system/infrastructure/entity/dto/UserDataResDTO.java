@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.entity.dto;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
@@ -53,14 +54,10 @@ public class UserDataResDTO implements Serializable {
     private String roleName;
 
     /**
-     * 角色key
-     */
-    private String roleKey;
-
-    /**
      * 最后登录时间
      */
-    @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastOnlineOn;
 
     /**
@@ -72,21 +69,20 @@ public class UserDataResDTO implements Serializable {
     /**
      * 创建时间
      */
-    @JsonProperty("createTime")
-    @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn;
 
     /**
      * 修改者
      */
-    @JsonProperty("modifiedBy")
     private String updatedBy;
 
     /**
      * 修改时间
      */
-    @JsonProperty("modifiedOn")
-    @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedOn;
 
     /**
@@ -98,6 +94,11 @@ public class UserDataResDTO implements Serializable {
      * 岗位ID
      */
     private Long postId;
+
+    /**
+     * 岗位名称
+     */
+    private String postName;
 
     /**
      * 备注
@@ -149,29 +150,8 @@ public class UserDataResDTO implements Serializable {
      */
     private Boolean isOwner;
 
-    /**
-     * 是否开通服务,0:未开通服务,1:已经开通服务
-     */
-    private Integer isServe;
-
 
     private String pkOrgId;
-
-    /**
-     *  label    用户标签（1:商务楼宇（写字楼等）,2:厂园区（工业、科技、物流等园区厂区）,3:商业综合体（购物中心、百货市场等）,
-     *                   4:专业市场（建材、汽配、农贸等）,5:九小场所,6:联通管理方,7:其它商企（网吧、便利店、中小独栋企业等）
-     **/
-    private Integer  label;
-
-    /**
-     * 其他标签名称
-     */
-    private String  otherLabelName;
-
-    /**
-     * 标签名称
-     */
-    private String  labelName;
 
     /**
      * 组织树
