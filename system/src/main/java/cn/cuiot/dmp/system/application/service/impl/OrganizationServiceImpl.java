@@ -648,13 +648,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public PageResult<ListOrganizationVO> commercialOrgList(ListOrganizationDto dto) {
-        PageMethod.startPage(dto.getCurrentPage(), dto.getPageSize());
-        List<ListOrganizationVO> voList = queryOrgList(dto);
-        PageInfo<ListOrganizationVO> pageInfo = new PageInfo<>(voList);
-        return new PageResult<>(pageInfo);
-    }
-
-    private List<ListOrganizationVO> queryOrgList(ListOrganizationDto dto) {
         // 获取子组织
         if (StringUtils.isNotBlank(dto.getDeptId())) {
             List deptIds = departmentService
@@ -666,16 +659,15 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (!StringUtils.isEmpty(dto.getPhoneNumber())) {
             String orgId = organizationDao
                     .getOrgIdByUserPhoneNumber(Sm4.encryption(dto.getPhoneNumber()));
-            if (StringUtils.isEmpty(orgId)) {
-                return Collections.emptyList();
-            }
             dto.setOrgId(orgId);
         }
+        PageMethod.startPage(dto.getPageNo(), dto.getPageSize());
         List<ListOrganizationVO> voList = organizationDao.getCommercialOrgList(dto);
         for (ListOrganizationVO vo : voList) {
             vo.setPhoneNumber(Sm4.decrypt(vo.getPhoneNumber()));
         }
-        return voList;
+        PageInfo<ListOrganizationVO> pageInfo = new PageInfo<>(voList);
+        return new PageResult<>(pageInfo);
     }
 
     private void removeOfflineCommand(Long id) {
