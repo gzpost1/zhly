@@ -21,7 +21,6 @@ public class WorkPlanInfoDto   {
     /**
      * 主键id
      */
-    @TableId("id")
     private Long id;
 
 

@@ -39,6 +39,10 @@ public class ServiceTypeConst {
      */
     public static final String BASE_CONFIG = "109";
     //----------------------------------系统配置----------------------------------end
-
+    /**
+     * 平台日志
+     * 工单配置
+     */
+    public static final String WORK_BASE_CONFIG = "101";
 
 }
