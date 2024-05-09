@@ -154,6 +154,11 @@ public class UserDataEntity {
     private Long postId;
 
     /**
+     * 岗位名称
+     */
+    private String postName;
+
+    /**
      * 备注
      */
     private String remark;

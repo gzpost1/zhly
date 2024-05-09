@@ -55,10 +55,19 @@ public interface UserService {
     void moveUsers(UserBo userBo);
 
     /**
+     * 批量启停用
+     */
+    void changeUserStatus(UserBo userBo);
+
+    /**
      * 批量删除用户
      */
     int deleteUsers(UserBo userBo);
 
+    /**
+     * 导出用户
+     */
+    List<UserDataResDTO> exportUsers(UserBo userBo);
 
     /**
      * 用户管理组织树
@@ -124,4 +133,5 @@ public interface UserService {
      * 更新用户表
      */
     int updateByCommand(UpdateUserCommand updatedUser);
+
 }

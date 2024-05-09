@@ -21,6 +21,8 @@ import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.ChangeUserStatusDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.ExportUserCmd;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertUserDTO;
@@ -33,6 +35,8 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import com.alibaba.fastjson.JSONObject;
 import com.github.houbb.sensitive.core.api.SensitiveUtil;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,7 +93,7 @@ public class UserController extends BaseController {
             @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "deptId", required = false) Long deptId,
-            @RequestParam(value = "deptIds", required = false) List<Long> deptIds,
+            @RequestParam(value = "deptIds", required = false) String deptIds,
             @RequestParam(value = "status", required = false) Byte status,
             @RequestParam(value = "currentPage", required = false, defaultValue = "1") int currentPage,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize) {
@@ -121,7 +125,9 @@ public class UserController extends BaseController {
             }
         }
 
-        params.put("deptIds",deptIds);
+        if(!StringUtils.isEmpty(deptIds)){
+            params.put("deptIds",Splitter.on(",").splitToList(deptIds));
+        }
 
         if (Objects.nonNull(status)) {
             params.put("status", status);
@@ -239,6 +245,24 @@ public class UserController extends BaseController {
     }
 
     /**
+     * 批量启停用
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/user/changeUserStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO changeUserStatus(@RequestBody @Valid ChangeUserStatusDTO dto) {
+
+        UserBo userBo = new UserBo();
+        userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
+        userBo.setStatus(dto.getStatus());
+        userBo.setIds(dto.getIds());
+
+        userService.changeUserStatus(userBo);
+
+        return IdmResDTO.success();
+    }
+
+    /**
      * 批量删除用户
      */
     @RequiresPermissions
@@ -264,6 +288,21 @@ public class UserController extends BaseController {
         Map<String, Object> resultMap = new HashMap<>(1);
         resultMap.put("succeedCount", this.userService.deleteUsers(userBo));
         return resultMap;
+    }
+
+
+    /**
+     * 导出用户
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/user/exportUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void exportUsers(@RequestBody @Valid ExportUserCmd dto) {
+        UserBo userBo = new UserBo();
+        userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
+        userBo.setDeptId(dto.getDeptId());
+        List<UserDataResDTO> list = userService.exportUsers(userBo);
+
     }
 
 

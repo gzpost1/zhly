@@ -128,4 +128,8 @@ public class UserBo extends AbstractResourceParam {
      */
     private String loginUserId;
 
+    /**
+     * 状态 1启用 0禁用
+     */
+    private Byte status;
 }

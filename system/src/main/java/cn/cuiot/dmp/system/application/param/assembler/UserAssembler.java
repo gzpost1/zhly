@@ -7,6 +7,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import com.github.pagehelper.PageInfo;
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -49,6 +50,15 @@ public interface UserAssembler extends Assembler<User, UserDTO> {
      */
     @Mappings({})
     PageInfo<UserDataResDTO> dataEntityListToDataDtoList(PageInfo<UserDataEntity> entityPageInfo);
+
+    /**
+     * DataEntityList 转 DataDTOList
+     *
+     * @param list
+     * @return
+     */
+    @Mappings({})
+    List<UserDataResDTO> entityListToResDtoList(List<UserDataEntity> list);
 
     @Mappings({
             @Mapping(source = "id.value", target = "id"),

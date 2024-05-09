@@ -45,6 +45,7 @@ import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
 import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
+import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
 import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
@@ -73,8 +74,10 @@ import com.github.houbb.sensitive.api.IStrategy;
 import com.github.houbb.sensitive.core.api.strategory.StrategyPhone;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Maps;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -576,6 +579,68 @@ public class UserServiceImpl extends BaseController implements UserService {
     }
 
     /**
+     * 批量启停用
+     */
+    @Override
+    public void changeUserStatus(UserBo userBo) {
+        String sessionOrgId = userBo.getOrgId();
+        List<Long> ids = userBo.getIds();
+        String loginUserId = userBo.getLoginUserId();
+        Byte status = userBo.getStatus();
+
+        /**
+         * 判断所选组织部门是否可选
+         */
+        String loginDeptId = userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId());
+        DepartmentEntity loginDepartment = departmentDao
+                .selectByPrimary(Long.valueOf(loginDeptId));
+
+        String deptTreePath = Optional.ofNullable(loginDepartment).map(DepartmentEntity::getPath)
+                .orElse(null);
+        if (StringUtils.isEmpty(deptTreePath)) {
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST, "查询组织部门信息缺失");
+        }
+
+        // 查询该账户的账户所有者
+        Long orgOwner = userDao.findOrgOwner(sessionOrgId);
+
+        for (Long pkUserId : ids) {
+            // 根据userId查询orgId
+            Long orgId = this.userDao.getOrgId(pkUserId);
+            if (!sessionOrgId.equals(String.valueOf(orgId))) {
+                throw new BusinessException(UNAUTHORIZED_ACCESS);
+            }
+            // 判断是否是自己
+            if (pkUserId.toString().equals(loginUserId)) {
+                throw new BusinessException(ResultCode.CANNOT_OPERATION, "不能操作当前登录用户自己");
+            }
+
+            // 管理员不能移动
+            if (pkUserId.equals(orgOwner)) {
+                throw new BusinessException(ResultCode.CANNOT_OPERATION, "管理员不能操作");
+            }
+
+            // 组织权限限制
+            DepartmentDto departmentDto = departmentDao.getPathByUser(pkUserId.toString());
+            String subTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
+                    .orElse(null);
+            if (StringUtils.isEmpty(subTreePath)) {
+                throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
+            }
+            if (!subTreePath.startsWith(deptTreePath)) {
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            }
+        }
+        for (Long pkUserId : ids) {
+            User userEntity = User.builder().build();
+            userEntity.setId(new UserId(pkUserId));
+            userEntity.setStatus(UserStatusEnum.valueOf(status.intValue()));
+            userEntity.updatedByPortal(loginUserId);
+            userRepository.save(userEntity);
+        }
+    }
+
+    /**
      * 批量删除用户
      */
     @LogRecord(operationCode = "deleteUsers", operationName = "删除用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
@@ -652,6 +717,48 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
 
         return result;
+    }
+
+    /**
+     * 导出用户
+     */
+    @Override
+    public List<UserDataResDTO> exportUsers(UserBo userBo) {
+        String sessionOrgId = userBo.getOrgId();
+        String loginUserId = userBo.getLoginUserId();
+        String deptId = userBo.getDeptId();
+
+        /**
+         * 判断所选组织部门是否可选
+         */
+        String loginDeptId = userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId());
+        DepartmentEntity loginDepartment = departmentDao
+                .selectByPrimary(Long.valueOf(loginDeptId));
+        DepartmentEntity departmentEntity = departmentDao
+                .selectByPrimary(Long.parseLong(deptId));
+        if (!departmentEntity.getPath().startsWith(loginDepartment.getPath())) {
+            throw new BusinessException(ResultCode.DEPARTMENT_ULTRA_VIRES);
+        }
+
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("orgId", sessionOrgId);
+        params.put("loginUserId",loginUserId);
+        params.put("path",departmentEntity.getPath());
+
+        List<UserDataEntity> entities = userDataDao.searchList(params);
+
+        //手机号解密
+        IStrategy strategyPhone = new StrategyPhone();
+        for (UserDataEntity userDataEntity : entities) {
+            String phoneNumber = Sm4.decrypt(userDataEntity.getPhoneNumber());
+           /* if (StringUtils.hasLength(phoneNumber)) {
+                final String phoneSensitive = (String) strategyPhone.des(phoneNumber, null);
+                userDataEntity.setPhoneNumber(phoneSensitive);
+            }*/
+            userDataEntity.setPhoneNumber(phoneNumber);
+        }
+        List<UserDataResDTO> resultList = userAssembler.entityListToResDtoList(entities);
+        return resultList;
     }
 
     @Override
