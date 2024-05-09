@@ -350,6 +350,20 @@ public class UserController extends BaseController {
         if (org.apache.commons.collections.CollectionUtils.isEmpty(importDtoList)) {
             throw new BusinessException(ResultCode.REQUEST_FORMAT_ERROR, "excel解析失败");
         }
+        for(ImportUserDto userDto:importDtoList){
+            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getUsername())){
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，用户名不能为空");
+            }
+            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getName())){
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，姓名不能为空");
+            }
+            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getPhoneNumber())){
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，手机号不能为空");
+            }
+            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getRoleName())){
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，角色不能为空");
+            }
+        }
 
         UserBo userBo = new UserBo();
         userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());

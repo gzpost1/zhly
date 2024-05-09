@@ -77,6 +77,7 @@ import com.github.houbb.sensitive.api.IStrategy;
 import com.github.houbb.sensitive.core.api.strategory.StrategyPhone;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -86,6 +87,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -583,7 +585,9 @@ public class UserServiceImpl extends BaseController implements UserService {
     /**
      * 批量启停用
      */
+    @LogRecord(operationCode = "changeUserStatus", operationName = "启停用用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void changeUserStatus(UserBo userBo) {
         String sessionOrgId = userBo.getOrgId();
         List<Long> ids = userBo.getIds();
@@ -766,17 +770,19 @@ public class UserServiceImpl extends BaseController implements UserService {
     /**
      * 导入用户
      */
+    @LogRecord(operationCode = "importUsers", operationName = "导入用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
-    public List<UserImportDownloadVo> importUsers(UserBo userBo) {
-        String sessionOrgId = userBo.getOrgId();
-        String loginUserId = userBo.getLoginUserId();
-        String deptId = userBo.getDeptId();
-        List<ImportUserDto> dtoList = userBo.getImportDtoList();
+    @Transactional(rollbackFor = Exception.class)
+    public List<UserImportDownloadVo> importUsers(UserBo cmd) {
+        String sessionOrgId = cmd.getOrgId();
+        String loginUserId = cmd.getLoginUserId();
+        String deptId = cmd.getDeptId();
+        List<ImportUserDto> dtoList = cmd.getImportDtoList();
 
         /**
          * 判断所选组织部门是否可选
          */
-        String loginDeptId = userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId());
+        String loginDeptId = userDao.getDeptId(cmd.getLoginUserId(), cmd.getOrgId());
         DepartmentEntity loginDepartment = departmentDao
                 .selectByPrimary(Long.valueOf(loginDeptId));
         DepartmentEntity departmentEntity = departmentDao
@@ -785,7 +791,126 @@ public class UserServiceImpl extends BaseController implements UserService {
             throw new BusinessException(ResultCode.DEPARTMENT_ULTRA_VIRES);
         }
 
-        return null;
+        List<RoleDTO> roleList = roleDao.selectRoleListByOrgId(sessionOrgId);
+        if (CollectionUtils.isEmpty(roleList)) {
+            throw new BusinessException(ResultCode.ROLE_NOT_EXIST, "查询不到可用的角色");
+        }
+
+        List<UserBo> userBoList = Lists.newArrayList();
+        for (ImportUserDto userDto : dtoList) {
+            //判断用户名是否已经存在
+            if (Objects.nonNull(userRepository
+                    .commonQueryOne(
+                            UserCommonQuery.builder().username(userDto.getUsername()).build()))) {
+                throw new BusinessException(ResultCode.USER_USERNAME_ERRER,
+                        "导入失败，用户名[" + userDto.getUsername() + "]已经存在");
+            }
+            /**
+             * 判断手机号
+             */
+            String phoneNumber = userDto.getPhoneNumber();
+            if (!PhoneUtil.isPhone(phoneNumber)) {
+                throw new BusinessException(ResultCode.PHONE_NUMBER_IS_INVALID,
+                        "导入失败，手机号[" + phoneNumber + "]输入不正确");
+            }
+            if (userPhoneNumberDomainService
+                    .judgePhoneNumberAlreadyExists(new PhoneNumber(phoneNumber), UserTypeEnum.USER,
+                            UserTypeEnum.NULL)) {
+                throw new BusinessException(PHONE_NUMBER_ALREADY_EXIST,
+                        "导入失败，手机号[" + phoneNumber + "]已经存在");
+            }
+            /**
+             * 判断角色
+             */
+            RoleDTO roleDTO = roleDao
+                    .selectRoleByName(userDto.getRoleName(), Long.valueOf(sessionOrgId));
+            if (Objects.isNull(roleDTO)) {
+                throw new BusinessException(ResultCode.ROLE_NOT_EXIST,
+                        "导入失败，角色[" + userDto.getRoleName() + "]不存在");
+            }
+            if (RoleTypeEnum.DEFAULT.getCode().equals(roleDTO.getRoleType())) {
+                throw new BusinessException(ResultCode.USER_DEFAULT_ROLE_NOT_ALLOW_ERROR,
+                        "导入失败，角色[" + userDto.getRoleName() + "]不可选");
+            }
+            Boolean roleFlag = false;
+            for (RoleDTO tmpRole : roleList) {
+                if (tmpRole.getId().equals(roleDTO.getId())) {
+                    roleFlag = true;
+                    break;
+                }
+            }
+            if (!roleFlag) {
+                throw new BusinessException(ResultCode.ROLE_NOT_EXIST,
+                        "导入失败，角色[" + userDto.getRoleName() + "]不可选");
+            }
+            /**
+             * 判断岗位
+             */
+            SysPostEntity postEntity = null;
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(userDto.getPostName())) {
+                postEntity = sysPostService
+                        .getByName(userDto.getPostName(), Long.valueOf(sessionOrgId));
+                if (Objects.isNull(postEntity)) {
+                    throw new BusinessException(ResultCode.REQ_PARAM_ERROR,
+                            "导入失败，岗位[" + userDto.getPostName() + "]不存在");
+                }
+            }
+            UserBo userBo = new UserBo();
+            userBo.setOrgId(sessionOrgId);
+            userBo.setLoginUserId(loginUserId);
+            userBo.setRoleId(roleDTO.getId());
+            userBo.setUsername(userDto.getUsername());
+            userBo.setName(userDto.getName());
+            userBo.setPhoneNumber(userDto.getPhoneNumber());
+            userBo.setDeptId(deptId);
+            if (Objects.nonNull(postEntity)) {
+                userBo.setPostId(postEntity.getId());
+            }
+            /**
+             * 随机密码
+             */
+            String password = randomPwUtils
+                    .getRandomPassword((int) (8 + Math.random() * (20 - 8 + 1)));
+            userBo.setPassword(password);
+            userBo.setRemark(userDto.getRemark());
+
+            userBoList.add(userBo);
+        }
+
+        List<UserImportDownloadVo> resultList = Lists.newArrayList();
+
+        for (UserBo userBo : userBoList) {
+            User userEntity = User.builder().build();
+            userEntity.setUsername(userBo.getUsername());
+            userEntity.setName(userBo.getName());
+            userEntity.setPassword(new Password(userBo.getPassword()));
+            userEntity.setCreatedBy(userBo.getLoginUserId());
+            userEntity.setCreatedByType(OperateByTypeEnum.USER);
+            userEntity.setPhoneNumber(new PhoneNumber(userBo.getPhoneNumber()));
+            userEntity.setPostId(userBo.getPostId());
+            userEntity.setRemark(userBo.getRemark());
+            userEntity.setUserType(UserTypeEnum.USER);
+            userRepository.save(userEntity);
+            userBo.setId(userEntity.getId().getValue());
+
+            //新增用户账户中间表关系
+            userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(), userEntity.getId().getValue(),
+                    Long.parseLong(userBo.getOrgId()),
+                    userBo.getDeptId(), userEntity.getCreatedBy());
+
+            //新增用户角色中间表关系
+            userDao.insertFeferRole(SnowflakeIdWorkerUtil.nextId(),
+                    userEntity.getId().getValue(),
+                    Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
+
+            UserImportDownloadVo downloadVo = new UserImportDownloadVo();
+            downloadVo.setUsername(userBo.getUsername());
+            downloadVo.setPhoneNumber(userBo.getPhoneNumber());
+            downloadVo.setPassword(userBo.getPassword());
+            resultList.add(downloadVo);
+        }
+
+        return resultList;
     }
 
     @Override

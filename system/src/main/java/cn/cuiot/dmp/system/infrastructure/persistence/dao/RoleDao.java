@@ -211,4 +211,10 @@ public interface RoleDao {
      */
     void insertMenusRole(RoleBo roleBo);
 
+
+    /**
+     * 根据角色名查询角色信息
+     */
+    RoleDTO selectRoleByName(@Param("roleName") String roleName,@Param("orgId") Long orgId);
+
 }

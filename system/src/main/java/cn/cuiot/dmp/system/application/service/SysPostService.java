@@ -19,6 +19,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -167,6 +168,19 @@ public class SysPostService {
     public SysPostEntity getById(Long postId) {
         SysPostEntity dbEntity = sysPostMapper.selectById(postId);
         return dbEntity;
+    }
+
+    /**
+     * 根据名称获取
+     */
+    public SysPostEntity getByName(String postName, Long orgId) {
+        List<SysPostEntity> selectList = sysPostMapper.selectList(
+                Wrappers.<SysPostEntity>lambdaQuery().eq(SysPostEntity::getOrgId, orgId)
+                        .eq(SysPostEntity::getPostName, postName));
+        if (CollectionUtils.isNotEmpty(selectList)) {
+            return selectList.get(0);
+        }
+        return null;
     }
 
 }
