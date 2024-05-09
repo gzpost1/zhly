@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.dto;
 
-import cn.cuiot.dmp.query.PageQuery;
+import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;
 
 /**

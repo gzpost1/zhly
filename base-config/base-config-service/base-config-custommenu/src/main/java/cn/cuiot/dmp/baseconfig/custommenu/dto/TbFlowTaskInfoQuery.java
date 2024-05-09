@@ -1,5 +1,5 @@
 package cn.cuiot.dmp.baseconfig.custommenu.dto;
-import cn.cuiot.dmp.query.PageQuery;
+import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;
 
 /**
@@ -8,7 +8,7 @@ import lombok.Data;
  * @Created by libo
  */
 @Data
-public class TbFlowTaskInfoQuery extends PageQuery{
+public class TbFlowTaskInfoQuery extends PageQuery {
     /**
      * 任务名称
      */
