@@ -12,6 +12,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.FormConfigEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.FormConfigMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -48,12 +49,19 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
         FormConfigEntity formConfigEntity = formConfigMapper.selectById(id);
         FormConfig formConfig = new FormConfig();
         BeanUtils.copyProperties(formConfigEntity, formConfig);
+        // 查询表单详情
+        FormConfigDetailEntity formConfigDetailEntity = mongoTemplate.findById(formConfig.getId(),
+                FormConfigDetailEntity.class, FormConfigConstant.FORM_CONFIG_COLLECTION);
+        if (Objects.nonNull(formConfigDetailEntity)) {
+            formConfig.setFormConfigDetail(formConfigDetailEntity.getFormConfigDetail());
+        }
         return formConfig;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int saveFormConfig(FormConfig formConfig) {
+        formConfig.setId(IdWorker.getId());
         FormConfigEntity formConfigEntity = new FormConfigEntity();
         BeanUtils.copyProperties(formConfig, formConfigEntity);
         // 保存表单配置内容

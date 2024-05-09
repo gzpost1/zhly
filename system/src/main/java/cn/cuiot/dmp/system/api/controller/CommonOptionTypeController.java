@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.system.application.param.vo.CommonOptionTypeVO;
 import cn.cuiot.dmp.system.application.service.CommonOptionTypeService;
@@ -25,6 +26,7 @@ public class CommonOptionTypeController {
     /**
      * 根据id获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public CommonOptionTypeVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return commonOptionTypeService.queryForDetail(idParam.getId());
