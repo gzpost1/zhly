@@ -2,8 +2,10 @@ package cn.cuiot.dmp.base.application.service.impl;
 
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -66,6 +68,26 @@ public class ApiSystemServiceImpl implements ApiSystemService {
         } catch (Exception ex) {
             log.info("ApiSystemServiceImpl==batchGetBusinessType==fail", ex);
             throw new BusinessException(ResultCode.QUERY_BUSINESS_TYPE_ERROR);
+        }
+    }
+
+    @Override
+    public List<FormConfigRspDTO> batchQueryFormConfig(FormConfigReqDTO formConfigReqDTO) {
+        try {
+            IdmResDTO<List<FormConfigRspDTO>> idmResDTO = systemApiFeignService
+                    .batchQueryFormConfig(formConfigReqDTO);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==batchQueryFormConfig==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_FORM_CONFIG_ERROR);
         }
     }
 
