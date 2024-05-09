@@ -23,7 +23,7 @@ public interface MenuService {
      * @param userId
      * @return
      */
-    List<MenuTreeNode> getAllMenu(String orgId, String userId);
+    List<MenuTreeNode> getAllMenu(String orgId, String userId,String type);
 
     /**
      * 获取权限菜单

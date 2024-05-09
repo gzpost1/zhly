@@ -70,13 +70,21 @@ public class MenuServiceImpl implements MenuService {
     private OrgTypeMenuDao orgTypeMenuDao;
 
     /**
+     * 企业菜单权限类型
+     */
+    private final static String ENTERPRISE_TYPE="enterprise";
+
+    /**
      * 获取菜单
      */
     @Override
-    public List<MenuTreeNode> getAllMenu(String orgId, String userId) {
-
-        List<MenuEntity> permissionMenus = getPermissionMenus(orgId, userId);
-
+    public List<MenuTreeNode> getAllMenu(String orgId, String userId,String type) {
+        List<MenuEntity> permissionMenus = null;
+        if(ENTERPRISE_TYPE.equals(type)){
+            permissionMenus = menuDao.selectMenuByOrgTypeId(OrgTypeEnum.ENTERPRISE.getValue());
+        }else{
+            permissionMenus = getPermissionMenus(orgId, userId);
+        }
         List<MenuTreeNode> treeList = Lists.newArrayList();
 
         if (CollectionUtils.isNotEmpty(permissionMenus)) {

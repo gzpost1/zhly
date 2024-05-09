@@ -286,9 +286,13 @@ public class OrganizationServiceImpl implements OrganizationService {
          * 权限配置
          */
         List<String> menuList = dto.getMenuList();
+        int size = menuList.size();
         List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(orgTypeId);
         menuList = menuList.stream().filter(menuIdList::contains).distinct()
                 .collect(Collectors.toList());
+        if(size!=menuList.size()){
+            throw new BusinessException(ResultCode.CANNOT_OPERATION,"配置企业权限有误");
+        }
 
         //账户类型为企业账户
         Organization organization = Organization.builder()
@@ -454,10 +458,16 @@ public class OrganizationServiceImpl implements OrganizationService {
         /**
          * 保存菜单权限
          */
-        /*List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(dto.getOrgTypeId());
-        List<String> menuList = menuIdList.stream().filter(o -> dto.getMenuList().contains(o))
-                .collect(Collectors.toList());*/
+        Long orgTypeId = OrgTypeEnum.ENTERPRISE.getValue();
         List<String> menuList = dto.getMenuList();
+        int size = menuList.size();
+        List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(orgTypeId);
+        menuList = menuList.stream().filter(menuIdList::contains).distinct()
+                .collect(Collectors.toList());
+        if(size!=menuList.size()){
+            throw new BusinessException(ResultCode.CANNOT_OPERATION,"配置企业权限有误");
+        }
+
         orgMenuDao.deleteByOrgId(pkOrgId);
         if (!CollectionUtils.isEmpty(menuList)) {
             List<OrgMenuDto> menuDtoList = menuList.stream().map(ite -> {
