@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.system.application.param.dto.BatchFormConfigDTO;
@@ -31,6 +32,7 @@ public class FormConfigController {
     /**
      * 根据id获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public FormConfigVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return formConfigService.queryForDetail(idParam.getId());
@@ -39,6 +41,7 @@ public class FormConfigController {
     /**
      * 保存
      */
+    @RequiresPermissions
     @PostMapping("/save")
     public int saveFormConfig(@RequestBody @Valid FormConfigCreateDTO createDTO) {
         return formConfigService.saveFormConfig(createDTO);
@@ -47,6 +50,7 @@ public class FormConfigController {
     /**
      * 更新
      */
+    @RequiresPermissions
     @PostMapping("/update")
     public int updateFormConfig(@RequestBody @Valid FormConfigUpdateDTO updateDTO) {
         return formConfigService.updateFormConfig(updateDTO);
@@ -55,6 +59,7 @@ public class FormConfigController {
     /**
      * 更新状态
      */
+    @RequiresPermissions
     @PostMapping("/updateStatus")
     public int updateFormConfigStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         return formConfigService.updateFormConfigStatus(updateStatusParam);
@@ -63,6 +68,7 @@ public class FormConfigController {
     /**
      * 删除
      */
+    @RequiresPermissions
     @PostMapping("/delete")
     public int deleteFormConfig(@RequestBody @Valid IdParam idParam) {
         return formConfigService.deleteFormConfig(idParam.getId());
@@ -71,6 +77,7 @@ public class FormConfigController {
     /**
      * 批量移动
      */
+    @RequiresPermissions
     @PostMapping("/batchMove")
     public int batchMoveFormConfig(@RequestBody @Valid BatchFormConfigDTO batchFormConfigDTO) {
         return formConfigService.batchMoveFormConfig(batchFormConfigDTO);
@@ -79,6 +86,7 @@ public class FormConfigController {
     /**
      * 批量更新状态
      */
+    @RequiresPermissions
     @PostMapping("/batchUpdateStatus")
     public int batchUpdateFormConfigStatus(@RequestBody @Valid BatchFormConfigDTO batchFormConfigDTO) {
         return formConfigService.batchUpdateFormConfigStatus(batchFormConfigDTO);
@@ -87,6 +95,7 @@ public class FormConfigController {
     /**
      * 批量删除
      */
+    @RequiresPermissions
     @PostMapping("/batchDelete")
     public int batchDeleteFormConfig(@RequestBody @Valid BatchFormConfigDTO batchFormConfigDTO) {
         return formConfigService.batchDeleteFormConfig(batchFormConfigDTO.getIdList());

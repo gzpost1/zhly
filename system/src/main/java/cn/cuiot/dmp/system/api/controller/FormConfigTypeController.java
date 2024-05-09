@@ -36,6 +36,7 @@ public class FormConfigTypeController {
     /**
      * 根据id获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public FormConfigTypeVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return formConfigTypeService.queryForDetail(idParam.getId());
