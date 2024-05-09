@@ -14,6 +14,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.UserExportVo;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.UserImportDownloadVo;
 import java.util.List;
 import java.util.Map;
 
@@ -69,6 +70,11 @@ public interface UserService {
      * 导出用户
      */
     List<UserExportVo> exportUsers(UserBo userBo);
+
+    /**
+     * 导入用户
+     */
+    List<UserImportDownloadVo> importUsers(UserBo userBo);
 
     /**
      * 用户管理组织树

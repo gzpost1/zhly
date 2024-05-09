@@ -6,6 +6,8 @@ import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_INVALID;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_NOT_EXIST;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
@@ -15,6 +17,7 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
@@ -28,6 +31,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.ChangeUserStatusDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ExportUserCmd;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.ImportUserDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertUserDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.MoveUserDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SmsCodeCheckReqDTO;
@@ -37,6 +41,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.UserExportVo;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.UserImportDownloadVo;
 import cn.cuiot.dmp.system.infrastructure.utils.ExcelUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.github.houbb.sensitive.core.api.SensitiveUtil;
@@ -62,6 +67,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 用户管理
@@ -323,6 +329,50 @@ public class UserController extends BaseController {
                 "user-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
                 response,
                 workbook);
+    }
+
+    /**
+     * 导入用户
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/user/importUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void importUsers(@RequestParam("file") MultipartFile file,
+            @RequestParam(value = "deptId", required = true) String deptId) throws Exception {
+
+        AssertUtil.isFalse((null == file || file.isEmpty()), "上传文件为空");
+
+        ImportParams params = new ImportParams();
+        params.setHeadRows(1);
+
+        List<ImportUserDto> importDtoList = ExcelImportUtil
+                .importExcel(file.getInputStream(), ImportUserDto.class, params);
+
+        if (org.apache.commons.collections.CollectionUtils.isEmpty(importDtoList)) {
+            throw new BusinessException(ResultCode.REQUEST_FORMAT_ERROR, "excel解析失败");
+        }
+
+        UserBo userBo = new UserBo();
+        userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
+        userBo.setDeptId(deptId);
+        userBo.setImportDtoList(importDtoList);
+
+        List<UserImportDownloadVo> dataList = userService.importUsers(userBo);
+
+        List<Map<String, Object>> sheetsList = new ArrayList<>();
+
+        Map<String, Object> sheet1 = ExcelUtils
+                .createSheet("用户", dataList, ImportUserDto.class);
+
+        sheetsList.add(sheet1);
+
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
+
+        ExcelUtils.downLoadExcel(
+                "user-credentials-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                response,
+                workbook);
+
     }
 
 

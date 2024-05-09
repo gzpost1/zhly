@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.entity.bo;
 
 import cn.cuiot.dmp.common.log.intf.AbstractResourceParam;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.ImportUserDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ResetPasswordReqDTO;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -132,4 +133,9 @@ public class UserBo extends AbstractResourceParam {
      * 状态 1启用 0禁用
      */
     private Byte status;
+
+    /**
+     * 导入列表
+     */
+    private List<ImportUserDto> importDtoList;
 }

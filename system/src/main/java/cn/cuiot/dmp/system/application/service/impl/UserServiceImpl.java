@@ -53,11 +53,13 @@ import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.ImportUserDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.UserExportVo;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.UserImportDownloadVo;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.MenuDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao;
@@ -78,7 +80,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -743,8 +744,8 @@ public class UserServiceImpl extends BaseController implements UserService {
 
         Map<String, Object> params = Maps.newHashMap();
         params.put("orgId", sessionOrgId);
-        params.put("loginUserId",loginUserId);
-        params.put("path",departmentEntity.getPath());
+        params.put("loginUserId", loginUserId);
+        params.put("path", departmentEntity.getPath());
 
         List<UserDataEntity> entities = userDataDao.searchList(params);
 
@@ -760,6 +761,31 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         List<UserExportVo> resultList = userAssembler.entityListToExportVoList(entities);
         return resultList;
+    }
+
+    /**
+     * 导入用户
+     */
+    @Override
+    public List<UserImportDownloadVo> importUsers(UserBo userBo) {
+        String sessionOrgId = userBo.getOrgId();
+        String loginUserId = userBo.getLoginUserId();
+        String deptId = userBo.getDeptId();
+        List<ImportUserDto> dtoList = userBo.getImportDtoList();
+
+        /**
+         * 判断所选组织部门是否可选
+         */
+        String loginDeptId = userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId());
+        DepartmentEntity loginDepartment = departmentDao
+                .selectByPrimary(Long.valueOf(loginDeptId));
+        DepartmentEntity departmentEntity = departmentDao
+                .selectByPrimary(Long.parseLong(deptId));
+        if (!departmentEntity.getPath().startsWith(loginDepartment.getPath())) {
+            throw new BusinessException(ResultCode.DEPARTMENT_ULTRA_VIRES);
+        }
+
+        return null;
     }
 
     @Override
