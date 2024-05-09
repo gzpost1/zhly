@@ -39,6 +39,7 @@ import cn.cuiot.dmp.system.application.param.assembler.UserAssembler;
 import cn.cuiot.dmp.system.application.param.command.UpdateUserCommand;
 import cn.cuiot.dmp.system.application.param.dto.DepartmentUserDto;
 import cn.cuiot.dmp.system.application.param.dto.UserDTO;
+import cn.cuiot.dmp.system.application.service.MenuService;
 import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.system.application.service.SysPostService;
 import cn.cuiot.dmp.system.application.service.UserService;
@@ -138,7 +139,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     private SpaceDao spaceDao;
 
     @Autowired
-    private VerifyService verifyService;
+    private MenuService menuService;
 
     @Autowired
     private OrgMenuDao orgMenuDao;
@@ -178,6 +179,11 @@ public class UserServiceImpl extends BaseController implements UserService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+
+    @Override
+    public Map<String, String> getDGroup(String orgId, String userId) {
+        return departmentDao.getDgroupByUserIdAndOrgId(orgId, userId);
+    }
 
     /**
      * 用户列表筛选-分页
@@ -517,7 +523,8 @@ public class UserServiceImpl extends BaseController implements UserService {
     public int deleteUsers(UserBo userBo) {
         String sessionOrgId = userBo.getOrgId();
         List<Long> ids = userBo.getIds();
-        Long pkUserId = userBo.getId();
+        String loginUserId = userBo.getLoginUserId();
+
         // 查询该账户的账户所有者
         Long orgOwner = userDao.findOrgOwner(sessionOrgId);
 
@@ -529,32 +536,35 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         userBo.setOperationTarget(op);
 
-        DepartmentDto departmentDto = departmentDao.getPathByUser(pkUserId.toString());
-        String deptTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
+        DepartmentDto sessionDepartment= departmentDao.getPathByUser(loginUserId);
+        String deptTreePath = Optional.ofNullable(sessionDepartment).map(DepartmentDto::getPath)
                 .orElse(null);
         if (StringUtils.isEmpty(deptTreePath)) {
-            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST,"查询组织部门信息缺失");
         }
 
         Organization sessionOrg = organizationRepository
                 .find(new OrganizationId(Long.valueOf(sessionOrgId)));
-        for (Long id : ids) {
+
+        for (Long pkUserId : ids) {
             // 根据userId查询orgId
-            Long orgId = this.userDao.getOrgId(id);
+            Long orgId = this.userDao.getOrgId(pkUserId);
             if (!sessionOrgId.equals(String.valueOf(orgId))) {
                 throw new BusinessException(UNAUTHORIZED_ACCESS);
             }
 
             // 判断是否是自己
-            if (id.equals(pkUserId)) {
+            if (pkUserId.toString().equals(loginUserId)) {
                 throw new BusinessException(ResultCode.CANNOT_DELETE_SELF);
             }
-            // 判断该用户是不是账户的所有者
-            if (id.equals(orgOwner)) {
+
+            // 管理员不能删除
+            if (pkUserId.equals(orgOwner)) {
                 throw new BusinessException(ResultCode.CANNOT_DELETE_ORGOWNER);
             }
 
             // 组织权限限制
+            DepartmentDto departmentDto= departmentDao.getPathByUser(loginUserId);
             String subTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
                     .orElse(null);
             if (StringUtils.isEmpty(deptTreePath)) {
@@ -563,11 +573,9 @@ public class UserServiceImpl extends BaseController implements UserService {
             if (!subTreePath.startsWith(deptTreePath)) {
                 throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
             }
-
         }
-        int result = 0;
 
-        result = userRepository
+        int result = userRepository
                 .removeList(ids.stream().map(UserId::new).collect(Collectors.toList()));
 
         // 删除用户后，把用户与当前登录的账号的关联关系删除
@@ -576,32 +584,80 @@ public class UserServiceImpl extends BaseController implements UserService {
         userDataDao.deleteUserRoleByUserPks(ids, sessionOrgId);
 
         userRepository.removeUserRelate(ids);
-        for (Long id : ids) {
+
+        for (Long pkUserId : ids) {
             // 设备模块使用了缓存，系统模块姓名或手机号变更需要清除redisKey
-            redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + id);
+            redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + pkUserId);
         }
 
         return result;
     }
 
     @Override
-    public int update(UpdateUserCommand updatedUser) {
-        if (updatedUser.getId() == null) {
-            return 0;
+    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
+            GetUserDepartmentTreeLazyReqDto dto) {
+        final String orgId = dto.getLoginOrgId();
+        final String userId = dto.getLoginUserId();
+        List<GetDepartmentTreeLazyResDto> result;
+        // 只能看到当前租户 所属dept为根,先获取根节点,以用户deptId为主键
+        Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
+                .orElse(null);
+        //如果是空间用户，需要找到他所在的组织
+        if (INIT.equals(dto.getType())) {
+            result = spaceDao.getRootDepartmentLazy(orgId, deptId.toString());
+        } else {
+            result = spaceDao.getUserDepartmentLazyChange(dto.getParentId(),
+                    Arrays.asList(DepartmentGroupEnum.SYSTEM.getCode(),
+                            DepartmentGroupEnum.TENANT.getCode(),
+                            DepartmentGroupEnum.COMMUNITY.getCode()));
         }
-        User user = User.builder().build();
-        user.setId(new UserId(updatedUser.getId()));
-        if (updatedUser.getEmail() != null) {
-            user.setEmail(new Email(updatedUser.getEmail()));
+        return result;
+    }
+
+    @Override
+    public UserResDTO getUserMenuByUserIdAndOrgId(String userId, String orgId) {
+        // 获取用户信息
+        UserResDTO userResDTO = getUserInfoByUserIdAndOrgId(userId, orgId);
+
+        List<MenuEntity> menuList = menuService.getPermissionMenus(orgId, userId);
+
+        userResDTO.setMenu(menuList);
+
+        return userResDTO;
+    }
+
+    @Override
+    public UserResDTO getUserInfoByUserIdAndOrgId(String userId, String orgId) {
+        // 获取用户信息
+        User userEntity = userRepository.find(new UserId(userId));
+        if (userEntity == null) {
+            // 账号不存在
+            throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST);
         }
-        user.setContactPerson(updatedUser.getContactPerson());
-        if (updatedUser.getContactAddress() != null) {
-            user.setContactAddress(new Address(updatedUser.getContactAddress()));
+        UserResDTO userResDTO = userAssembler.doToDTO(userEntity);
+        userResDTO.setOrgId(orgId);
+        // 查询用户组织的类型
+        DepartmentDto userDept = departmentDao.getPathByUser(userId);
+        if (userDept != null) {
+            userResDTO.setDGroup(userDept.getDGroup());
         }
-        if (updatedUser.getLastOnlineIp() != null) {
-            user.setLastOnlineIp(new IP(updatedUser.getLastOnlineIp()));
+        // 获取账户信息
+        Organization organization = organizationRepository.find(new OrganizationId(orgId));
+        if (organization == null) {
+            throw new BusinessException(ResultCode.ORG_IS_NOT_EXIST);
         }
-        return userRepository.save(user) ? 1 : 0;
+        userResDTO.setOrgTypeId(Math.toIntExact(organization.getOrgTypeId().getValue()));
+        userResDTO.setOrgKey(organization.getOrgKey());
+        userResDTO.setOrgName(organization.getOrgName());
+        userResDTO.setMaxDeptHigh(organization.getMaxDeptHigh());
+        // 不需要菜单权限
+        RoleDTO roleDTO = roleDao.selectRoleByUserId(Long.parseLong(orgId), Long.parseLong(userId));
+        if (roleDTO != null) {
+            userResDTO.setRoleId(roleDTO.getId());
+            userResDTO.setRoleKey(roleDTO.getRoleKey());
+            userResDTO.setRoleName(roleDTO.getRoleName());
+        }
+        return userResDTO;
     }
 
     @Override
@@ -623,6 +679,7 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     private void copyProperties(User userEntity, UserResDTO userResDTO) {
         userResDTO.setId(userEntity.getId().getStrValue());
+        userResDTO.setName(userEntity.getName());
         userResDTO.setUsername(userEntity.getUsername());
         userResDTO.setPassword(
                 userEntity.getPassword() != null ? userEntity.getPassword().getHashEncryptValue()
@@ -671,113 +728,6 @@ public class UserServiceImpl extends BaseController implements UserService {
         return pkDeptId;
     }
 
-    @Override
-    public UserResDTO getUserMenuByUserIdAndOrgId(String userId, String orgId) {
-        // 获取用户信息
-        UserResDTO userResDTO = getUserInfoByUserIdAndOrgId(userId, orgId);
-
-        userResDTO.setMenu(Lists.newArrayList());
-        List<String> allowMenuIdList = orgMenuDao.getAllowMenuIdList(orgId);
-        List<MenuEntity> menuList = menuDao.selectMenuListByRoleId(userResDTO.getRoleId());
-        if (!CollectionUtils.isEmpty(allowMenuIdList) && !CollectionUtils.isEmpty(menuList)) {
-            menuList = menuList.stream()
-                    .filter(item -> allowMenuIdList.contains(item.getId().toString())).collect(
-                            Collectors.toList());
-            userResDTO.setMenu(menuList);
-        }
-
-        return userResDTO;
-    }
-
-    @Override
-    public UserResDTO getUserInfoByUserIdAndOrgId(String userId, String orgId) {
-        // 获取用户信息
-        User userEntity = userRepository.find(new UserId(userId));
-        if (userEntity == null) {
-            // 账号不存在
-            throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST);
-        }
-        UserResDTO userResDTO = userAssembler.doToDTO(userEntity);
-        // 查询用户组织的类型
-        DepartmentDto userDept = departmentDao.getPathByUser(userId);
-        if (userDept != null) {
-            userResDTO.setDGroup(userDept.getDGroup());
-            userResDTO.setOrgId(orgId);
-        }
-        // 获取账户信息
-        Organization organization = organizationRepository.find(new OrganizationId(orgId));
-        if (organization == null) {
-            throw new BusinessException(ResultCode.ORG_IS_NOT_EXIST);
-        }
-        // 获取账户标签id
-        OrgLabelDto orgLabelDto = organizationDao.getOrgLabelById(orgId);
-        userResDTO.setOrgLabelTypeId(orgLabelDto == null ? null : orgLabelDto.getLabelId());
-        userResDTO.setOrgTypeId(Math.toIntExact(organization.getOrgTypeId().getValue()));
-        userResDTO.setOrgKey(organization.getOrgKey());
-        userResDTO.setOrgName(organization.getOrgName());
-        userResDTO.setMaxDeptHigh(organization.getMaxDeptHigh());
-        // 不需要菜单权限
-        RoleDTO roleDTO = roleDao.selectRoleByUserId(Long.parseLong(orgId), Long.parseLong(userId));
-        if (roleDTO != null) {
-            userResDTO.setRoleId(roleDTO.getId());
-            userResDTO.setRoleKey(roleDTO.getRoleKey());
-            userResDTO.setRoleName(roleDTO.getRoleName());
-        }
-        return userResDTO;
-    }
-
-    private SimpleStringResDTO updatePasswordCommon(ResetPasswordReqDTO resetPasswordReqDTO,
-            User user,
-            UserBo userBo, String uuid) {
-        // 获取密码
-        String password = resetPasswordReqDTO.getPassword();
-
-        //获取操作对象
-        String[] op = new String[1];
-        op[0] = user.getUsername();
-        userBo.setOperationTarget(op);
-
-        user.setPassword(new Password(password));
-        user.updatedByPortal();
-        redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + user.getId().getStrValue());
-        boolean success = userRepository.save(user);
-        // 修改成功
-        if (success) {
-            stringRedisTemplate.delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY + uuid);
-
-            return new SimpleStringResDTO("修改成功");
-        }
-        // 修改失败
-        else {
-            throw new BusinessException(RESET_PASSWORD_ERROR);
-        }
-    }
-
-
-    @LogRecord(operationCode = "resetPassword", operationName = "重置密码", serviceType = ServiceTypeConst.SECURITY_SETTING)
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public SimpleStringResDTO updatePasswordByPhoneWithoutSid(UserBo userBo) {
-        ResetPasswordReqDTO resetPasswordReqDTO = userBo.getResetPasswordReqDTO();
-        User user = userRepository.find(new UserId(userBo.getId()));
-        String phoneNumber = user.getDecryptedPhoneNumber();
-        // 获取redis中的验证码文本
-        String expectedSmsText = stringRedisTemplate.opsForValue()
-                .get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P
-                        + userBo.getId() + phoneNumber);
-        if (FALSE.equals(debug) && StringUtils.isEmpty(expectedSmsText)) {
-            // 短信验证码过期
-            throw new BusinessException(SMS_CODE_EXPIRED_ERROR);
-        }
-        if (FALSE.equals(debug)
-                && !expectedSmsText.equals(phoneNumber + resetPasswordReqDTO.getSmsCode())) {
-            throw new BusinessException(SMS_CODE_ERROR);
-        }
-
-        return updatePasswordCommon(resetPasswordReqDTO, user, userBo,
-                userBo.getId() + phoneNumber);
-    }
-
     /**
      * 修改密码(登录人自行修改)
      */
@@ -793,7 +743,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     }
 
     /**
-     * 修改手机号
+     * 修改手机号(登录人自行修改)
      */
     @LogRecord(operationCode = "updatePhoneNumber", operationName = "修改手机号", serviceType = ServiceTypeConst.SECURITY_SETTING)
     @Override
@@ -875,40 +825,6 @@ public class UserServiceImpl extends BaseController implements UserService {
     }
 
     @Override
-    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
-            GetUserDepartmentTreeLazyReqDto dto) {
-        final String orgId = dto.getLoginOrgId();
-        final String userId = dto.getLoginUserId();
-        List<GetDepartmentTreeLazyResDto> result;
-        // 只能看到当前租户 所属dept为根,先获取根节点,以用户deptId为主键
-        Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
-                .orElse(null);
-        //如果是空间用户，需要找到他所在的组织
-        if (INIT.equals(dto.getType())) {
-            result = spaceDao.getRootDepartmentLazy(orgId, deptId.toString());
-        } else {
-            result = spaceDao.getUserDepartmentLazyChange(dto.getParentId(),
-                    Arrays.asList(DepartmentGroupEnum.SYSTEM.getCode(),
-                            DepartmentGroupEnum.TENANT.getCode(),
-                            DepartmentGroupEnum.COMMUNITY.getCode()));
-        }
-        return result;
-    }
-
-    @Override
-    public List<LabelTypeDto> getLabelTypeList(String labelType) {
-        List<LabelTypeDto> labelTypeList = userDataDao.getLabelTypeList(labelType);
-        return labelTypeList.stream()
-                .filter(dto -> !OrgLabelEnum.UNICOM_ADMIN.getName().equals(dto.getLabelName()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Map<String, String> getDGroup(String orgId, String userId) {
-        return departmentDao.getDgroupByUserIdAndOrgId(orgId, userId);
-    }
-
-    @Override
     public UserDTO getOneUser(String account, String safeAccount, String password) {
         PhoneNumber phoneNumber = null;
         EncryptedValue encryptedValue = new EncryptedValue(safeAccount);
@@ -920,15 +836,23 @@ public class UserServiceImpl extends BaseController implements UserService {
     }
 
     @Override
-    public String checkUserInDeptId(Long parkId) {
-        return userDataDao.checkUserInDeptId(parkId);
+    public int updateByCommand(UpdateUserCommand updatedUser) {
+        if (updatedUser.getId() == null) {
+            return 0;
+        }
+        User user = User.builder().build();
+        user.setId(new UserId(updatedUser.getId()));
+        if (updatedUser.getEmail() != null) {
+            user.setEmail(new Email(updatedUser.getEmail()));
+        }
+        user.setContactPerson(updatedUser.getContactPerson());
+        if (updatedUser.getContactAddress() != null) {
+            user.setContactAddress(new Address(updatedUser.getContactAddress()));
+        }
+        if (updatedUser.getLastOnlineIp() != null) {
+            user.setLastOnlineIp(new IP(updatedUser.getLastOnlineIp()));
+        }
+        return userRepository.save(user) ? 1 : 0;
     }
 
-    @Override
-    public void checkDepartmentUser(Long orgId, String path) {
-        List<DepartmentUserDto> departmentUser = userDataDao.getDepartmentUser(orgId, path);
-        if (!CollectionUtils.isEmpty(departmentUser)) {
-            throw new BusinessException(ResultCode.DEPARTMENT_EXISTS_USER);
-        }
-    }
 }

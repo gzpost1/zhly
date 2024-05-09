@@ -1,17 +1,13 @@
 package cn.cuiot.dmp.system.api.controller;
 
 import static cn.cuiot.dmp.common.constant.ResultCode.OLD_PASSWORD_IS_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.PARAM_CANNOT_NULL;
 import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORDS_NOT_EQUALS;
-import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_EMPTY;
 import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_INVALID;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_OLD_INVALID;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_NOT_EXIST;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
-import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.RegexConst;
@@ -28,11 +24,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertUserDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.LabelTypeDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.ResetPasswordReqDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SmsCodeCheckReqDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.SmsCodeCheckStrongerReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdatePasswordDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateUserDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
@@ -264,22 +256,59 @@ public class UserController extends BaseController {
             throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
         }
         // 获取session中的userId
-        Long userId = LoginInfoHolder.getCurrentUserId();
-        if (Objects.isNull(userId)) {
-            throw new BusinessException(ResultCode.USER_ID_NOT_EXIST);
+        Long sessionUserId = LoginInfoHolder.getCurrentUserId();
+        if (Objects.isNull(sessionUserId)) {
+            throw new BusinessException(ResultCode.USER_ID_NOT_EXIST, "获取当前登录信息失败");
         }
         // 获取session中的orgId
         String sessionOrgId = getOrgId();
         if (StringUtils.isEmpty(sessionOrgId)) {
-            throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
+            throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST, "获取当前登录信息失败");
         }
         UserBo userBo = new UserBo();
         userBo.setOrgId(sessionOrgId);
-        userBo.setId(userId);
+        userBo.setLoginUserId(sessionUserId.toString());
         userBo.setIds(ids);
         Map<String, Object> resultMap = new HashMap<>(1);
         resultMap.put("succeedCount", this.userService.deleteUsers(userBo));
         return resultMap;
+    }
+
+
+    /**
+     * 用户管理组织树（懒加载）
+     */
+    @GetMapping(value = "/user/getUserDepartmentTreeLazy", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
+            @Valid GetUserDepartmentTreeLazyReqDto dto) {
+        dto.setLoginUserId(getUserId());
+        dto.setLoginOrgId(getOrgId());
+        return userService.getUserDepartmentTreeLazy(dto);
+    }
+
+    /**
+     * 查询登录用户信息
+     */
+    @PostMapping(value = "/getLoginUserInfo", produces = "application/json;charset=UTF-8")
+    public UserResDTO queryUserById() {
+        // 获取session中的userId
+        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
+        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+        // 判断是否具有查询权限
+        UserResDTO userResDTO = userService
+                .getUserMenuByUserIdAndOrgId(sessionUserId, sessionOrgId);
+        if (userResDTO == null) {
+            // 账号不存在
+            throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
+        }
+        //对加密的手机号码解密--2020/12/08
+        //增加手机号为空判断，在不为空的情况下才做解密处理 --2020/12/15
+        if (null != userResDTO.getPhoneNumber()) {
+            userResDTO.setPhoneNumber(Sm4.decrypt(userResDTO.getPhoneNumber()));
+        }
+        //安全考虑去除密码返回
+        userResDTO.setPassword(null);
+        return SensitiveUtil.desCopy(userResDTO);
     }
 
     /**
@@ -315,29 +344,7 @@ public class UserController extends BaseController {
     }
 
     /**
-     * 用户管理组织树（懒加载）
-     */
-    @GetMapping(value = "/user/getUserDepartmentTreeLazy", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
-            @Valid GetUserDepartmentTreeLazyReqDto dto) {
-        dto.setLoginUserId(getUserId());
-        dto.setLoginOrgId(getOrgId());
-        return userService.getUserDepartmentTreeLazy(dto);
-    }
-
-    /**
-     * 获取标签类型列表
-     */
-    @GetMapping(value = "/user/getLabelTypeList", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<LabelTypeDto> getLabelTypeList(@RequestParam("labelType") String labelType) {
-        if (labelType.isEmpty()) {
-            throw new BusinessException(ResultCode.LABEL_TYPE_NOT_EXIST);
-        }
-        return userService.getLabelTypeList(labelType);
-    }
-
-    /**
-     * 修改手机号
+     * 修改手机号(登录人自行修改)
      */
     @PostMapping(value = "/user/updatePhoneNumber", produces = MediaType.APPLICATION_JSON_VALUE)
     public void updatePhoneNumber(@RequestBody SmsCodeCheckReqDTO dto) {
@@ -369,129 +376,5 @@ public class UserController extends BaseController {
         userService.updatePhoneNumber(userBo);
     }
 
-    /**
-     * 修改手机号
-     */
-    @PostMapping(value = "/user/replacePhoneNumber", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void replacePhoneNumber(@RequestBody SmsCodeCheckStrongerReqDTO dto) {
-        String phoneNumber = Optional.ofNullable(dto).map(d -> d.getPhoneNumber()).orElse(null);
-        if (StringUtils.isEmpty(phoneNumber)) {
-            throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
-        }
-        // 手机号参数校验
-        if (!phoneNumber.matches(RegexConst.PHONE_NUMBER_REGEX)) {
-            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_INVALID);
-        }
-
-        // 获取session中的userId
-        Long userId = LoginInfoHolder.getCurrentUserId();
-        if (Objects.isNull(userId)) {
-            throw new BusinessException(ResultCode.USER_ID_NOT_EXIST);
-        }
-
-        // 加强校验，校验第一步的旧手机号验证
-        String smsCodeOld = Optional.ofNullable(dto).map(SmsCodeCheckStrongerReqDTO::getSmsCodeOld)
-                .orElse(null);
-        if (StringUtils.isEmpty(smsCodeOld)) {
-            // 短信验证码为空
-            throw new BusinessException(SMS_TEXT_OLD_INVALID);
-        }
-        //0.9改动原手机号参数去除，由后端自行获取--2020/12/07
-        String phoneNumberOld = Sm4
-                .decrypt(userService.getUserById(userId.toString()).getPhoneNumber());
-        boolean smsCodeVerified = true;
-        if (FALSE.equals(debug)) {
-            // 短信验证码验证
-            try {
-                smsCodeVerified = verifyUnit.checkSmsCode(
-                        CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumberOld,
-                        phoneNumberOld + smsCodeOld);
-            } catch (BusinessException e) {
-                log.warn("短信验证码错误");
-                throw new BusinessException(SMS_TEXT_OLD_INVALID);
-            }
-            // 验证成功
-            if (!smsCodeVerified) {
-                throw new BusinessException(SMS_TEXT_OLD_INVALID);
-            }
-        }
-
-        // 获取短信验证码
-        String smsCode = Optional.ofNullable(dto).map(d -> d.getSmsCode()).orElse(null);
-        if (StringUtils.isEmpty(smsCode)) {
-            throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
-        }
-
-        UserBo userBo = new UserBo();
-        userBo.setId(userId);
-        userBo.setSmsCode(smsCode);
-        userBo.setPhoneNumber(phoneNumber);
-        userBo.setOrgId(getOrgId());
-        // 更改手机号
-        userService.updatePhoneNumber(userBo);
-    }
-
-    /**
-     * 重置密码
-     *
-     * @param resetPasswordReqDTO 修改密码信息
-     * @return SimpleStringResDTO
-     */
-    @PostMapping(value = "/user/resetPasswordByPhone", produces = MediaType.APPLICATION_JSON_VALUE)
-    public SimpleStringResDTO resetPasswordByPhone(
-            @RequestBody ResetPasswordReqDTO resetPasswordReqDTO) {
-        if (resetPasswordReqDTO == null || StringUtils.isEmpty(resetPasswordReqDTO.getSmsCode())
-                || StringUtils.isEmpty(resetPasswordReqDTO.getPassword())) {
-            throw new BusinessException(PARAM_CANNOT_NULL);
-        }
-        // 获取密码
-        String password = resetPasswordReqDTO.getPassword();
-        // 密码参数校验
-        if (StringUtils.isEmpty(password)) {
-            {
-            }
-            // 密码为空
-            throw new BusinessException(PASSWORD_IS_EMPTY);
-        }
-        // 密码参数校验
-        if (!password.matches(RegexConst.PASSWORD_REGEX)) {
-            // 密码不符合规则
-            throw new BusinessException(PASSWORD_IS_INVALID);
-        }
-        if (!StringUtils.isEmpty(resetPasswordReqDTO.getPasswordAgain())
-                && !password.equals(resetPasswordReqDTO.getPasswordAgain())) {
-            throw new BusinessException(PASSWORDS_NOT_EQUALS);
-        }
-        UserBo userBo = new UserBo();
-        userBo.setId(LoginInfoHolder.getCurrentUserId());
-        userBo.setResetPasswordReqDTO(resetPasswordReqDTO);
-        // 重置密码
-        return userService.updatePasswordByPhoneWithoutSid(userBo);
-    }
-
-    /**
-     * 查询登录用户信息
-     */
-    @PostMapping(value = "/getLoginUserInfo", produces = "application/json;charset=UTF-8")
-    public UserResDTO queryUserById() {
-        // 获取session中的userId
-        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
-        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
-        // 判断是否具有查询权限
-        UserResDTO userResDTO = userService
-                .getUserMenuByUserIdAndOrgId(sessionUserId, sessionOrgId);
-        if (userResDTO == null) {
-            // 账号不存在
-            throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
-        }
-        //对加密的手机号码解密--2020/12/08
-        //增加手机号为空判断，在不为空的情况下才做解密处理 --2020/12/15
-        if (null != userResDTO.getPhoneNumber()) {
-            userResDTO.setPhoneNumber(Sm4.decrypt(userResDTO.getPhoneNumber()));
-        }
-        //安全考虑去除密码返回
-        userResDTO.setPassword(null);
-        return SensitiveUtil.desCopy(userResDTO);
-    }
 
 }

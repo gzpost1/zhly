@@ -275,7 +275,7 @@ public class LoginServiceImpl implements LoginService {
             UpdateUserCommand updateUserParams = new UpdateUserCommand();
             updateUserParams.setId(validateUser.getId().getValue());
             updateUserParams.setLastOnlineIp(ipAddr);
-            userService.update(updateUserParams);
+            userService.updateByCommand(updateUserParams);
 
             // 初始化返回对象
             LoginResDTO loginResDTO = new LoginResDTO();
@@ -478,7 +478,7 @@ public class LoginServiceImpl implements LoginService {
         UpdateUserCommand updateUserParams = new UpdateUserCommand();
         updateUserParams.setId(validateUser.getId().getValue());
         updateUserParams.setLastOnlineIp(ipAddr);
-        userService.update(updateUserParams);
+        userService.updateByCommand(updateUserParams);
 
         // 初始化返回对象
         LoginResDTO loginResDTO = new LoginResDTO();

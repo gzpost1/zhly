@@ -24,6 +24,11 @@ import java.util.Map;
 public interface UserService {
 
     /**
+     * 获得用户所在组织得dGroup属性
+     */
+    Map<String, String> getDGroup(String orgId, String userId);
+
+    /**
      * 用户列表筛选-分页
      */
     PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId,
@@ -52,16 +57,29 @@ public interface UserService {
 
 
     /**
+     * 用户管理组织树
+     */
+    List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
+            GetUserDepartmentTreeLazyReqDto dto);
+
+    /**
+     * 根据userId和orgId查询用户信息
+     */
+    UserResDTO getUserMenuByUserIdAndOrgId(String userId, String orgId);
+
+
+    /**
+     * 根据userId和orgId查询用户信息
+     */
+    UserResDTO getUserInfoByUserIdAndOrgId(String userId, String orgId);
+
+    /**
      * 根据userId查询用户信息
      *
      * @param userId 用户id
      */
     UserResDTO getUserById(String userId);
 
-    /**
-     * 更新用户表
-     */
-    int update(UpdateUserCommand updatedUser);
 
     /**
      * 获取user的orgId
@@ -76,25 +94,6 @@ public interface UserService {
      * @return String
      */
     String getDeptId(String pkUserId, String pkOrgId);
-
-    /**
-     * 根据userId和orgId查询用户信息
-     */
-    UserResDTO getUserMenuByUserIdAndOrgId(String userId, String orgId);
-
-
-    /**
-     * 根据userId和orgId查询用户信息
-     */
-    UserResDTO getUserInfoByUserIdAndOrgId(String userId, String orgId);
-
-    /**
-     * 重置密码(不带短信会话id)
-     *
-     * @return userBo
-     */
-    SimpleStringResDTO updatePasswordByPhoneWithoutSid(UserBo userBo);
-
 
 
     /**
@@ -112,36 +111,13 @@ public interface UserService {
      */
     UserCsvDto resetPasswordWithOutSms(UserBo userBo);
 
-
-    /**
-     * 用户管理组织树
-     */
-    List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
-            GetUserDepartmentTreeLazyReqDto dto);
-
-    /**
-     * 获取标签类型列表
-     */
-    List<LabelTypeDto> getLabelTypeList(String labelType);
-
-    /**
-     * 获得用户所在组织得dGroup属性
-     */
-    Map<String, String> getDGroup(String orgId, String userId);
-
     /**
      * 根据条件查询用户（登录）
      */
     UserDTO getOneUser(String account, String safeAccount, String password);
 
     /**
-     * 检查dept下有无用户或人员
+     * 更新用户表
      */
-    String checkUserInDeptId(Long parkId);
-
-    /**
-     * 检查组织下是否存在用户
-     */
-    void checkDepartmentUser(Long orgId, String path);
-
+    int updateByCommand(UpdateUserCommand updatedUser);
 }
