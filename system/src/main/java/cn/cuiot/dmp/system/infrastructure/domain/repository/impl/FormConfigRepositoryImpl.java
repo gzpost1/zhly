@@ -12,6 +12,8 @@ import cn.cuiot.dmp.system.infrastructure.entity.FormConfigDetailEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.FormConfigDetailQueryDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.FormConfigMapper;
+import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity;
+import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntityMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -45,11 +47,15 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     private FormConfigMapper formConfigMapper;
 
     @Autowired
+    private UserEntityMapper userEntityMapper;
+
+    @Autowired
     private MongoTemplate mongoTemplate;
 
     @Override
     public FormConfig queryForDetail(Long id) {
-        FormConfigEntity formConfigEntity = formConfigMapper.selectById(id);
+        FormConfigEntity formConfigEntity = Optional.ofNullable(formConfigMapper.selectById(id))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         FormConfig formConfig = new FormConfig();
         BeanUtils.copyProperties(formConfigEntity, formConfig);
         // 查询表单详情
@@ -134,6 +140,11 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     }
 
     @Override
+    public int batchMoveFormConfigDefault(List<String> typeIdList) {
+        return formConfigMapper.batchMoveFormConfigDefault(typeIdList);
+    }
+
+    @Override
     public int batchUpdateFormConfigStatus(Byte status, List<Long> idList) {
         return formConfigMapper.batchUpdateFormConfigById(null, status, idList);
     }
@@ -152,7 +163,7 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     public PageResult<FormConfig> queryFormConfigByType(FormConfigPageQuery pageQuery) {
         LambdaQueryWrapper<FormConfigEntity> queryWrapper = new LambdaQueryWrapper<FormConfigEntity>()
                 .eq(Objects.nonNull(pageQuery.getTypeId()), FormConfigEntity::getTypeId, pageQuery.getTypeId())
-                .eq(StringUtils.isNotBlank(pageQuery.getName()), FormConfigEntity::getName, pageQuery.getName())
+                .like(StringUtils.isNotBlank(pageQuery.getName()), FormConfigEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), FormConfigEntity::getStatus, pageQuery.getStatus());
         IPage<FormConfigEntity> formConfigEntityPage = formConfigMapper.selectPage(
                 new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), queryWrapper);
@@ -181,6 +192,11 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
                 .map(o -> {
                     FormConfig formConfig = new FormConfig();
                     BeanUtils.copyProperties(o, formConfig);
+                    if (StringUtils.isNotBlank(o.getCreatedBy())) {
+                        String createdName = Optional.ofNullable(userEntityMapper.selectById(o.getCreatedBy()))
+                                .orElse(new UserEntity()).getName();
+                        formConfig.setCreatedName(createdName);
+                    }
                     return formConfig;
                 })
                 .collect(Collectors.toList());

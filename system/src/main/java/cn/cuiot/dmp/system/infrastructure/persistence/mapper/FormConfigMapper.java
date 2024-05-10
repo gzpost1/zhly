@@ -23,4 +23,11 @@ public interface FormConfigMapper extends BaseMapper<FormConfigEntity> {
     int batchUpdateFormConfigById(@Param("typeId") Long typeId, @Param("status") Byte status,
                                   @Param("idList") List<Long> idList);
 
+    /**
+     * 根据分类列表，默认把所选分类下所有的表单配置到"全部"分类下
+     *
+     * @param typeIdList 主键ID集合
+     */
+    int batchMoveFormConfigDefault(@Param("typeIdList") List<String> typeIdList);
+
 }

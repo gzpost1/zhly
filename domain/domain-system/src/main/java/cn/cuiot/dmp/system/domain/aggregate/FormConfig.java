@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.system.domain.aggregate;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * @author caorui
@@ -47,5 +49,16 @@ public class FormConfig implements Serializable {
      * 表单配置详情
      */
     private String formConfigDetail;
+
+    /**
+     * 创建人
+     */
+    private String createdName;
+
+    /**
+     * 创建时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createdOn;
 
 }

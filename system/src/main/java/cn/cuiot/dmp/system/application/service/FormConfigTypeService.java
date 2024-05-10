@@ -8,7 +8,7 @@ import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigTypeTreeNodeVO;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigTypeVO;
-import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
+import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 
 import java.util.List;
@@ -57,6 +57,6 @@ public interface FormConfigTypeService {
     /**
      * 根据表单分类查询表单配置列表
      */
-    PageResult<FormConfig> queryFormConfigByType(FormConfigPageQuery pageQuery);
+    PageResult<FormConfigVO> queryFormConfigByType(FormConfigPageQuery pageQuery);
 
 }

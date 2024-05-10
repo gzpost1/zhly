@@ -18,4 +18,13 @@
         </foreach>
     </update>
 
+    <update id="batchMoveFormConfigDefault" parameterType="java.util.List">
+        update form_config
+        set type_id = 0
+        where type_id in
+        <foreach collection="typeIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
 </mapper>
