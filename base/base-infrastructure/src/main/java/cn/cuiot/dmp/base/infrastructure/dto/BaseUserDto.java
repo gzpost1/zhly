@@ -12,7 +12,7 @@ public class BaseUserDto implements Serializable {
     /**
      * 用户表主键id
      */
-    private String id;
+    private Long id;
 
     /**
      * 用户名
