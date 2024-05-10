@@ -108,7 +108,7 @@ public class UserController extends BaseController {
             @RequestParam(value = "deptId", required = false) Long deptId,
             @RequestParam(value = "deptIds", required = false) String deptIds,
             @RequestParam(value = "status", required = false) Byte status,
-            @RequestParam(value = "currentPage", required = false, defaultValue = "1") int currentPage,
+            @RequestParam(value = "pageNo", required = false, defaultValue = "1") int pageNo,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize) {
 
         if (pageSize > MAX_PAGE_SIZE) {
@@ -155,7 +155,7 @@ public class UserController extends BaseController {
             String decrypt = Sm4.encryption(phoneNumber);
             params.put("phone", decrypt);
         }
-        return userService.getPage(params, sessionOrgId, currentPage, pageSize);
+        return userService.getPage(params, sessionOrgId, pageNo, pageSize);
     }
 
     /**

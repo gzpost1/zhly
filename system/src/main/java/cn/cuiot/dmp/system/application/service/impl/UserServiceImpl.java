@@ -186,14 +186,14 @@ public class UserServiceImpl extends BaseController implements UserService {
      */
     @Override
     public PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId,
-            int currentPage, int pageSize) {
+            int pageNo, int pageSize) {
         PageInfo<UserDataResDTO> resultPageInfo;
         try {
             Organization organization = organizationRepository
                     .find(new OrganizationId(sessionOrgId));
             String orgOwner = String.valueOf(organization.getOrgOwner().getValue());
 
-            PageHelper.startPage(currentPage, pageSize);
+            PageHelper.startPage(pageNo, pageSize);
             List<UserDataEntity> entities = userDataDao.searchList(params);
 
             //对entities集合里的手机号解密、脱敏--2020/12/09

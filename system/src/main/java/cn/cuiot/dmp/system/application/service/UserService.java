@@ -34,7 +34,7 @@ public interface UserService {
      * 用户列表筛选-分页
      */
     PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId,
-            int currentPage, int pageSize);
+            int pageNo, int pageSize);
 
     /**
      * 查询用户详情
