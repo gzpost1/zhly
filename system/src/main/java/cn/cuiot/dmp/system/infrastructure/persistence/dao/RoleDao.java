@@ -191,7 +191,7 @@ public interface RoleDao {
      * @param roleId
      * @return
      */
-    List<AddMenuDto> getRoleMenu(Integer roleId);
+    List<AddMenuDto> getRoleMenu(Long roleId);
 
 
 

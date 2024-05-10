@@ -60,22 +60,13 @@ public interface RoleService {
     Long createRole(CreateRoleDto dto);
 
     /**
-     * 根据pkId查询角色详情
-     *
-     * @param orgId 账户id
-     * @param id    角色自增id
-     * @return
-     */
-    RoleDTO getRoleInfo(Long orgId, Long id);
-
-    /**
      * 根据角色id查询角色详细信息
      * @param roleId
      * @param orgId
      * @param userId
      * @return
      */
-    RoleDTO getRoleAll(String roleId, String orgId, String userId);
+    RoleDTO getRoleInfo(String roleId, String orgId, String userId);
 
 
 
