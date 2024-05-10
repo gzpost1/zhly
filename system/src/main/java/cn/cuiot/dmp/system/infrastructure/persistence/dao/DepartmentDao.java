@@ -188,7 +188,7 @@ public interface DepartmentDao {
      * 根据path查询组织
      * @return
      */
-    List<DepartmentEntity> getDepartmentListByPath(@Param("orgId")Long orgId, @Param("path")String path);
+    List<DepartmentEntity> getDepartmentListByPath(@Param("orgId")Long orgId, @Param("path")String path,@Param("parentId")Long parentId);
 
     /**
      * 根据组织id查询下级组织

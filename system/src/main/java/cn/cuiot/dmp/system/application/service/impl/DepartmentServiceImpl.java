@@ -843,7 +843,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
         List<DepartmentEntity> childList = departmentDao
                 .getDepartmentListByPath(departmentEntity.getPkOrgId(),
-                        departmentEntity.getPath());
+                        departmentEntity.getPath(),query.getParentId());
 
         List<DepartmentDto> dtoList = null;
         if(Boolean.TRUE.equals(query.getSelfReturn())){
