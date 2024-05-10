@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -362,6 +363,15 @@ public class UserController extends BaseController {
                 throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，角色不能为空");
             }
         }
+        //判断用户名是否重复
+        if(importDtoList.size()!=importDtoList.stream().map(ite->ite.getUsername()).distinct().collect(Collectors.toList()).size()){
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"导入失败，文件中存在用户名重复");
+        }
+        //判断手机号是否重复
+        if(importDtoList.size()!=importDtoList.stream().map(ite->ite.getPhoneNumber()).distinct().collect(Collectors.toList()).size()){
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"导入失败，文件中存在手机号重复");
+        }
+
 
         UserBo userBo = new UserBo();
         userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
@@ -374,7 +384,7 @@ public class UserController extends BaseController {
         List<Map<String, Object>> sheetsList = new ArrayList<>();
 
         Map<String, Object> sheet1 = ExcelUtils
-                .createSheet("用户", dataList, ImportUserDto.class);
+                .createSheet("用户", dataList, UserImportDownloadVo.class);
 
         sheetsList.add(sheet1);
 
