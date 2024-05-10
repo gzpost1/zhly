@@ -33,6 +33,7 @@ public enum ResultCode {
 
     PARAM_NOT_COMPLIANT("010005", "请求参数不符合规定"),
 
+    METHOD_NOT_SUPPORTED("010006", "请求方式不支持"),
 
     OBJECT_NOT_EXIST("011000", "对象不存在"),
 

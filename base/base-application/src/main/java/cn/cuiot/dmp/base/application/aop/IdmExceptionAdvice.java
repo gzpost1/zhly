@@ -21,6 +21,7 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -37,6 +38,14 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @Slf4j
 @RestControllerAdvice
 public class IdmExceptionAdvice {
+
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public Object defaultErrorHandler(HttpRequestMethodNotSupportedException exception) {
+        log.error("", exception);
+        exception.printStackTrace();
+        return new IdmResDTO<>(ResultCode.METHOD_NOT_SUPPORTED);
+    }
 
     /**
      * 统一处理异常的默认方法（应按业务需求编写不同类型的异常处理器）
