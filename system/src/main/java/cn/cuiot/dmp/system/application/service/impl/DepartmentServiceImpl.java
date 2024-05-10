@@ -842,14 +842,24 @@ public class DepartmentServiceImpl implements DepartmentService {
             throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
         }
         List<DepartmentEntity> childList = departmentDao
-                .getDepartmentListByParentIdAndPath(departmentEntity.getId(),
+                .getDepartmentListByPath(departmentEntity.getPkOrgId(),
                         departmentEntity.getPath());
 
-        List<DepartmentDto> dtoList = Optional.ofNullable(childList).orElse(Lists.newArrayList())
-                .stream().map(item -> {
-                    return departmentConverter.entityToDTO(item);
-                }).collect(Collectors.toList());
-
+        List<DepartmentDto> dtoList = null;
+        if(Boolean.TRUE.equals(query.getSelfReturn())){
+            dtoList = Optional.ofNullable(childList).orElse(Lists.newArrayList())
+                    .stream()
+                    .map(item -> {
+                        return departmentConverter.entityToDTO(item);
+                    }).collect(Collectors.toList());
+        }else{
+            dtoList = Optional.ofNullable(childList).orElse(Lists.newArrayList())
+                    .stream()
+                    .filter(item->!item.getId().equals(query.getDeptId()))
+                    .map(item -> {
+                        return departmentConverter.entityToDTO(item);
+                    }).collect(Collectors.toList());
+        }
         return dtoList;
     }
 }

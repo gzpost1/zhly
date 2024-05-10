@@ -13,13 +13,17 @@ import lombok.Data;
 public class DepartmentReqDto implements Serializable {
 
     /**
+     * 部门ID列表
+     */
+    private List<Long> deptIdList;
+
+    /**
      * 部门ID
      */
     private Long deptId;
 
     /**
-     * 部门ID列表
+     * 是否也返回自己
      */
-    private List<Long> deptIdList;
-
+    private Boolean selfReturn;
 }

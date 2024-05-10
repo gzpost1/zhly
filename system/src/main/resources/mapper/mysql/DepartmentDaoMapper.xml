@@ -189,6 +189,12 @@
         FROM department WHERE parent_id = #{parentId} and path like concat(#{path}, '%') order by sort desc
     </select>
 
+    <select id="getDepartmentListByPath" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+        SELECT
+        <include refid="column"/>
+        FROM department WHERE pk_org_id = #{orgId} and path like concat(#{path}, '%') order by sort desc
+    </select>
+
     <select id="getSpaceListByParentId" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.SpaceTreeResDto">
         SELECT
             id spaceId,
@@ -311,12 +317,11 @@
     <select id="getDepartmentById" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
 
                 SELECT
-                    id , department_name
+        <include refid="column"/>
                 FROM
                     department
                 WHERE
                     id = #{id}
-
     </select>
 
     <select id="getAllSpaceTree" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
