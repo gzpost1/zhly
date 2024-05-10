@@ -35,6 +35,8 @@ public enum ResultCode {
 
     METHOD_NOT_SUPPORTED("010006", "请求方式不支持"),
 
+    CONTENT_TYPE_NOT_SUPPORTED("010007", "请求内容类型不支持"),
+
     OBJECT_NOT_EXIST("011000", "对象不存在"),
 
     SERVER_BUSY("011002", "服务繁忙，请稍后核对或者重试。"),

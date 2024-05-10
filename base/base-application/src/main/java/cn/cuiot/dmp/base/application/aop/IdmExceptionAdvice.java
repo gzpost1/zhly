@@ -3,6 +3,7 @@ package cn.cuiot.dmp.base.application.aop;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -16,11 +17,13 @@ import org.hibernate.validator.HibernateValidator;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.ServletRequestBindingException;
@@ -59,7 +62,16 @@ public class IdmExceptionAdvice {
     public Object defaultErrorHandler(HttpServletRequest request, HttpServletResponse response, Exception e) {
         log.error("", e);
         e.printStackTrace();
-        return new IdmResDTO<>(ResultCode.SERVER_BUSY);
+        String code = ResultCode.SERVER_BUSY.getCode();
+        String message = ResultCode.SERVER_BUSY.getMessage();
+        if (e instanceof HttpMediaTypeNotSupportedException) {
+            code = ResultCode.CONTENT_TYPE_NOT_SUPPORTED.getCode();
+            message = ResultCode.CONTENT_TYPE_NOT_SUPPORTED.getCode();
+        }
+        if (e instanceof SQLException || e instanceof DataAccessException) {
+            message = e.getMessage().contains("too long") ? "存在字段长度过长，请检查后重新提交" :"执行SQL错误";
+        }
+        return new IdmResDTO<>(code,message);
     }
 
     /**
