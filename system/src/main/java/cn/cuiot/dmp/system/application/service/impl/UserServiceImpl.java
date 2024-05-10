@@ -536,7 +536,7 @@ public class UserServiceImpl extends BaseController implements UserService {
             throw new BusinessException(ResultCode.DEPARTMENT_ULTRA_VIRES);
         }
 
-        String deptTreePath = Optional.ofNullable(departmentEntity).map(DepartmentEntity::getPath)
+        String deptTreePath = Optional.ofNullable(loginDepartment).map(DepartmentEntity::getPath)
                 .orElse(null);
         if (StringUtils.isEmpty(deptTreePath)) {
             throw new BusinessException(ResultCode.OBJECT_NOT_EXIST, "查询组织部门信息缺失");
