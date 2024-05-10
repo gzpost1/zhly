@@ -43,6 +43,12 @@ public interface SystemApiFeignService {
     IdmResDTO<List<BaseUserDto>> lookUpUserList(@RequestBody BaseUserReqDto query);
 
     /**
+     * 获取用户信息
+     */
+    @PostMapping(value = "/lookUpUserInfo", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<BaseUserDto> lookUpUserInfo(@RequestBody BaseUserReqDto query);
+
+    /**
      * 获取部门信息
      */
     @GetMapping(value = "/api/lookUpDepartmentInfo", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,6 +57,11 @@ public interface SystemApiFeignService {
             @RequestParam(value = "userId", required = false) Long userId,
             @RequestParam(value = "orgId", required = false) Long orgId);
 
+    /**
+     * 查询子部门
+     */
+    @PostMapping(value = "/lookUpDepartmentChildList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList(@RequestBody  DepartmentReqDto query);
 
     /**
      * 获取权限信息

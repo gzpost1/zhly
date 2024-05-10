@@ -3,6 +3,7 @@ package cn.cuiot.dmp.base.application.config;
 import cn.cuiot.dmp.base.application.interceptor.BaseAuthInterceptor;
 import cn.cuiot.dmp.base.application.interceptor.BaseLogInterceptor;
 import cn.cuiot.dmp.base.application.interceptor.BasePermissionInterceptor;
+import cn.cuiot.dmp.base.application.interceptor.InternalApiInterceptor;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,8 @@ public class BaseWebConfiguration implements WebMvcConfigurer {
         InterceptorRegistration interceptorRegistration = registry.addInterceptor(
                 baseLogInterceptor);
         interceptorRegistration.addPathPatterns("/**");
+        //增加服务间调用鉴权拦截器
+        registry.addInterceptor(internalApiInterceptor());
         //增加登录用户信息解析拦截器
         registry.addInterceptor(baseAuthInterceptor());
         //增加登录用户权限校验拦截器
@@ -44,6 +47,11 @@ public class BaseWebConfiguration implements WebMvcConfigurer {
     @Bean
     public BasePermissionInterceptor basePermissionInterceptor() {
         return new BasePermissionInterceptor();
+    }
+
+    @Bean
+    public InternalApiInterceptor internalApiInterceptor() {
+        return new InternalApiInterceptor();
     }
 
 }

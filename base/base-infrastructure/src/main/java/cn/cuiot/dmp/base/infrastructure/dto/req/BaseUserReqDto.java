@@ -13,6 +13,11 @@ import lombok.Data;
 public class BaseUserReqDto implements Serializable {
 
     /**
+     * 用户ID
+     */
+    private Long userId;
+
+    /**
      * 角色ID列表
      */
     private List<Long> roleIdList;

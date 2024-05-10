@@ -68,7 +68,7 @@ public class DepartmentController extends BaseController {
     @PostMapping(value = "/insertSonDepartment", produces = MediaType.APPLICATION_JSON_VALUE)
     public Long insertSonDepartment(@RequestBody @Valid InsertSonDepartmentDto dto) {
         dto.setPkOrgId(Long.parseLong(getOrgId()));
-        dto.setCreateBy(getUserName());
+        dto.setCreateBy(getUserId());
         dto.setUserId(getUserId());
         return departmentService.insertSonDepartment(dto);
     }

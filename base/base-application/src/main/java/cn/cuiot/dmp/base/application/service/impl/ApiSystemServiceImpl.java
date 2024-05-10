@@ -78,6 +78,29 @@ public class ApiSystemServiceImpl implements ApiSystemService {
         }
     }
 
+    /**
+     * 获取用户信息
+     */
+    @Override
+    public BaseUserDto lookUpUserInfo(BaseUserReqDto query) {
+        try {
+            IdmResDTO<BaseUserDto> idmResDTO = systemApiFeignService
+                    .lookUpUserInfo(query);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==lookUpUserInfo==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_DEPT_ERROR);
+        }
+    }
+
     @Override
     public DepartmentDto lookUpDepartmentInfo(Long deptId, Long userId, Long orgId) {
         try {
@@ -94,6 +117,29 @@ public class ApiSystemServiceImpl implements ApiSystemService {
             throw new RuntimeException(message);
         } catch (Exception ex) {
             log.info("ApiSystemServiceImpl==lookUpDepartmentInfo==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_DEPT_ERROR);
+        }
+    }
+
+    /**
+     * 查询子部门
+     */
+    @Override
+    public List<DepartmentDto> lookUpDepartmentChildList(DepartmentReqDto query) {
+        try {
+            IdmResDTO<List<DepartmentDto>> idmResDTO = systemApiFeignService
+                    .lookUpDepartmentChildList(query);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==lookUpDepartmentChildList==fail", ex);
             throw new BusinessException(ResultCode.QUERY_USER_DEPT_ERROR);
         }
     }
