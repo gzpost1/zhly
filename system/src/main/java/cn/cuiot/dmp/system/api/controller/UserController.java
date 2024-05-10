@@ -28,6 +28,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ChangeUserStatusDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.DeleteUserDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ExportUserCmd;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
@@ -280,10 +281,7 @@ public class UserController extends BaseController {
      */
     @RequiresPermissions
     @PostMapping(value = "/user/deleteUsers", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> deleteUsers(@RequestBody List<Long> ids) {
-        if (CollectionUtils.isEmpty(ids)) {
-            throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
-        }
+    public Map<String, Object> deleteUsers(@RequestBody @Valid DeleteUserDTO dto) {
         // 获取session中的userId
         Long sessionUserId = LoginInfoHolder.getCurrentUserId();
         if (Objects.isNull(sessionUserId)) {
@@ -297,7 +295,7 @@ public class UserController extends BaseController {
         UserBo userBo = new UserBo();
         userBo.setOrgId(sessionOrgId);
         userBo.setLoginUserId(sessionUserId.toString());
-        userBo.setIds(ids);
+        userBo.setIds(dto.getIds());
         Map<String, Object> resultMap = new HashMap<>(1);
         resultMap.put("succeedCount", this.userService.deleteUsers(userBo));
         return resultMap;
