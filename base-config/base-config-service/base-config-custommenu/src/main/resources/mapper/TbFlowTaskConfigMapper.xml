@@ -7,7 +7,6 @@
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="business_type_id" jdbcType="BIGINT" property="businessTypeId" />
-    <result column="org_id" jdbcType="BIGINT" property="orgId" />
     <result column="remark" jdbcType="VARCHAR" property="remark" />
     <result column="status" jdbcType="TINYINT" property="status" />
     <result column="company_id" jdbcType="BIGINT" property="companyId" />
@@ -19,13 +18,13 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, `name`, business_type_id, org_id, remark, `status`, company_id, update_time, 
+    id, `name`, business_type_id,  remark, `status`, company_id, update_time,
     update_user, create_time, create_user, deleted
   </sql>
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskInfoPageDto">
     select
-    id, `name`, business_type_id, org_id, remark,`status`, create_time, create_user
+    id, `name`, business_type_id, remark,`status`, create_time, create_user
     from tb_flow_task_config
     <where>
       <if test="query.name != null and query.name != ''">

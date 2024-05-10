@@ -33,7 +33,7 @@ public class TimeLimit {
     @Data
     public static class Handler {
         /**
-         * 处理类型
+         * 处理类型 0不处理 1自动终止 2自动挂起 3自动通过
          */
         private String type;
         /**

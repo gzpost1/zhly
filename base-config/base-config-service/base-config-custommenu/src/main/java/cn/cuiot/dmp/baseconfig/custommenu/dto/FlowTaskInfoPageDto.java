@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description 分页dto
@@ -36,7 +37,7 @@ public class FlowTaskInfoPageDto {
     /**
      * 所属组织
      */
-    private Long orgId;
+    private List<Long> orgId;
 
     /**
      * 所属组织名称

@@ -9,41 +9,35 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
- * @Description 流程保存
- * @Date 2024/4/22 20:16
+ * @Description 流程配置vo
+ * @Date 2024/5/9 15:26
  * @Created by libo
  */
 @Data
-public class FlowEngineInsertDto {
-
+public class FlowEngineVo {
     /**
      * 流程名称
      */
-    @NotBlank(message = "流程名称不能为空")
     private String name;
 
     /**
      * 业务类型ID
      */
-    @NotNull(message = "业务类型ID不能为空")
     private Long businessTypeId;
 
     /**
      * 所属组织
      */
-    @NotEmpty(message = "所属组织不能为空")
     private List<Long> orgId;
 
     /**
      * 流程定义json
      */
-    @NotBlank(message = "流程定义json不能为空")
     private String process;
 
     /**
      * logo
      */
-    @NotNull(message = "logo不能为空")
     private String logo;
 
     /**
@@ -59,7 +53,5 @@ public class FlowEngineInsertDto {
     /**
      * 通用配置
      */
-    @Valid
-    @NotNull(message = "通用配置不能为空")
     private CommonConfigDto commonConfigDto;
 }
