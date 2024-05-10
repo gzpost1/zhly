@@ -26,6 +26,11 @@ public class PageResult<T> implements Serializable {
      */
     private int currentPage;
 
+    /**
+     * 当前页
+     */
+    private int pageNo;
+
     public PageResult() {
     }
 
@@ -33,6 +38,7 @@ public class PageResult<T> implements Serializable {
         if (page != null) {
             pageSize = page.getPageSize();
             currentPage = page.getPageNum();
+            pageNo = page.getPageNum();
             total = page.getTotal();
             list = page.getResult();
         }
@@ -43,6 +49,7 @@ public class PageResult<T> implements Serializable {
         if (page != null) {
             pageSize = page.getPageSize();
             currentPage = page.getPageNum();
+            pageNo = page.getPageNum();
             total = page.getTotal();
             this.list = datas;
         }
@@ -53,6 +60,7 @@ public class PageResult<T> implements Serializable {
         if (pageInfo != null) {
             pageSize = pageInfo.getPageSize();
             currentPage = pageInfo.getPageNum();
+            pageNo = pageInfo.getPageNum();
             total = pageInfo.getTotal();
             list = pageInfo.getList();
         }
