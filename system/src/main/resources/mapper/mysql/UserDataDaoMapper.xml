@@ -5,8 +5,8 @@
     <select id="searchList" parameterType="java.util.Map" resultType="cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity">
         SELECT u.*,
         uo.pk_org_id,
-        d.id as dept_d,
-        d.department_name,
+        d.id as dept_id,
+        d.department_name as dept_name,
         d.path_name as dept_path_name,
         r.id as role_id,
         r.role_name,
@@ -48,7 +48,7 @@
                 </foreach>
             </if>
             <if test="path!=null and path != ''">
-                AND d.path like concat('%', #{path}, '%')
+                AND d.path like concat(#{path}, '%')
             </if>
             AND u.deleted_flag = 0
             AND u.user_type=1
