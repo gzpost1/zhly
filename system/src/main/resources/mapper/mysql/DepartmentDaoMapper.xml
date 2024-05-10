@@ -439,4 +439,18 @@
                 id IN ( SELECT pk_dept_id FROM user_org WHERE pk_user_id = #{userId} AND pk_org_id = #{orgId} ORDER BY id  ))
     </select>
 
+    <select id="lookUpDepartmentList" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+        SELECT
+        <include refid="column"/>
+        FROM department
+        <where>
+            <if test="param.deptIdList != null and param.deptIdList.size() >0">
+                AND id in
+                <foreach collection="param.deptIdList" item="deptId" open="(" separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
 </mapper>

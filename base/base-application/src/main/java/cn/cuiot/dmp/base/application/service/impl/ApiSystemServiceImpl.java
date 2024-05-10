@@ -1,19 +1,20 @@
 package cn.cuiot.dmp.base.application.service.impl;
 
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
-
 import java.util.List;
 import java.util.Objects;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,52 @@ public class ApiSystemServiceImpl implements ApiSystemService {
 
     @Autowired
     private SystemApiFeignService systemApiFeignService;
+
+    /**
+     * 查询部门
+     */
+    @Override
+    public List<DepartmentDto> lookUpDepartmentList(DepartmentReqDto query) {
+        try {
+            IdmResDTO<List<DepartmentDto>> idmResDTO = systemApiFeignService
+                    .lookUpDepartmentList(query);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==lookUpDepartmentList==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_DEPT_ERROR);
+        }
+    }
+
+    /**
+     * 查询用户
+     */
+    @Override
+    public List<BaseUserDto> lookUpUserList(BaseUserReqDto query) {
+        try {
+            IdmResDTO<List<BaseUserDto>> idmResDTO = systemApiFeignService
+                    .lookUpUserList(query);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==lookUpUserList==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_DEPT_ERROR);
+        }
+    }
 
     @Override
     public DepartmentDto lookUpDepartmentInfo(Long deptId, Long userId, Long orgId) {

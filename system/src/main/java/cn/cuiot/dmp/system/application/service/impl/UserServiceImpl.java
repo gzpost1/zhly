@@ -9,7 +9,9 @@ import static cn.cuiot.dmp.common.constant.ResultCode.UNAUTHORIZED_ACCESS;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -1175,4 +1177,20 @@ public class UserServiceImpl extends BaseController implements UserService {
         return userRepository.save(user) ? 1 : 0;
     }
 
+    /**
+     * 查询用户
+     */
+    @Override
+    public List<BaseUserDto> lookUpUserList(BaseUserReqDto query) {
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("roleIdList", query.getRoleIdList());
+        params.put("deptIds", query.getDeptIdList());
+        List<UserDataEntity> entities = userDataDao.searchList(params);
+        if (CollectionUtils.isNotEmpty(entities)) {
+            List<BaseUserDto> dtoList = userAssembler
+                    .dataEntityListToBaseUserDtoList(entities);
+            return dtoList;
+        }
+        return Lists.newArrayList();
+    }
 }

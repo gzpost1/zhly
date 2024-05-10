@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.persistence.dao;
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentPropertyDto;
@@ -361,4 +362,8 @@ public interface DepartmentDao {
 
     void updatePathNameByPath(@Param("path")  String path, @Param("oldPathName") String oldPathName, @Param("newPathName") String newPathName);
 
+    /**
+     * 查询部门
+     */
+    List<DepartmentEntity> lookUpDepartmentList(@Param("param") DepartmentReqDto query);
 }

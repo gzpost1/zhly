@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.base.infrastructure.feign;
 
 import cn.cuiot.dmp.base.infrastructure.dto.*;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
@@ -27,6 +29,18 @@ import java.util.List;
 @Component
 @FeignClient(value = "community-system")
 public interface SystemApiFeignService {
+
+    /**
+     * 查询部门
+     */
+    @PostMapping(value = "/lookUpDepartmentList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<DepartmentDto>> lookUpDepartmentList(@RequestBody DepartmentReqDto query);
+
+    /**
+     * 查询用户
+     */
+    @PostMapping(value = "/lookUpUserList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<BaseUserDto>> lookUpUserList(@RequestBody BaseUserReqDto query);
 
     /**
      * 获取部门信息

@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.application.param.command.UpdateUserCommand;
@@ -140,5 +142,10 @@ public interface UserService {
      * 更新用户表
      */
     int updateByCommand(UpdateUserCommand updatedUser);
+
+    /**
+     * 查询用户
+     */
+    List<BaseUserDto> lookUpUserList(BaseUserReqDto query);
 
 }

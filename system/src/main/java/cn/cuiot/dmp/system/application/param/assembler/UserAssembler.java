@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.application.param.assembler;
 
 import cn.cuiot.dmp.base.application.param.assembler.Assembler;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.system.application.param.dto.UserDTO;
 import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
@@ -72,4 +73,13 @@ public interface UserAssembler extends Assembler<User, UserDTO> {
             @Mapping(source = "contactAddress.value", target = "contactAddress")})
     UserDataResDTO doToDataDTO(User userEntity);
 
+
+    /**
+     * entityList 转 BaseUserDtoList
+     *
+     * @param entityList
+     * @return
+     */
+    @Mappings({})
+    List<BaseUserDto> dataEntityListToBaseUserDtoList(List<UserDataEntity> entityList);
 }

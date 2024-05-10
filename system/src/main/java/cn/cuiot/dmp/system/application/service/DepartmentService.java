@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentPropertyDto;
@@ -170,5 +171,10 @@ public interface DepartmentService {
      * @return
      */
     List<GetDepartmentTreeLazyResDto> manageGetDepartmentTreeLazy(GetDepartmentTreeLazyReqDto getDepartmentTreeLazyReqDto);
+
+    /**
+     * 查询部门
+     */
+    List<DepartmentDto> lookUpDepartmentList(DepartmentReqDto query);
 
 }
