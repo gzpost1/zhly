@@ -46,13 +46,13 @@ public class RoleController extends BaseController {
     @RequiresPermissions
     @GetMapping(value = "/listRoles", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<RoleDTO> getRoleListByPage(
-            @RequestParam(value = "currentPage", defaultValue = "1") Integer currentPage,
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "roleName", required = false) String roleName,
             @RequestParam(value = "roleKey", required = false) String roleKey
     ) {
         // 参数校验
-        if (null == currentPage || currentPage.compareTo(0) <= 0 ||
+        if (null == pageNo || pageNo.compareTo(0) <= 0 ||
                 null == pageSize || pageSize.compareTo(100) > 0 || pageSize.compareTo(0) <= 0) {
             throw new BusinessException(ResultCode.REQUEST_FORMAT_ERROR);
         }
@@ -60,7 +60,7 @@ public class RoleController extends BaseController {
         Map<String, Object> paramsMap = new HashMap<String, Object>(6) {{
             put("orgId", getOrgId());
             put("userId", getUserId());
-            put("currentPage", currentPage);
+            put("pageNo", pageNo);
             put("pageSize", pageSize);
             put("roleName", roleName);
             put("roleKey", roleKey);

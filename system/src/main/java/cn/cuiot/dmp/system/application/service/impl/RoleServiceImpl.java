@@ -83,7 +83,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public PageResult<RoleDTO> getRoleListByPage(Map<String, Object> paramsMap) {
-        Page<RoleDTO> page = PageHelper.startPage((Integer) paramsMap.get("currentPage"),
+        Page<RoleDTO> page = PageHelper.startPage((Integer) paramsMap.get("pageNo"),
                 (Integer) paramsMap.get("pageSize"));
         // 超管要看到企业管理员的角色，在sql里面判断
         List<RoleDTO> roleDtoList = this.roleDao.selectRoleListByPage(paramsMap);
