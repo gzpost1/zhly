@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.system.domain.repository;
 
-import cn.cuiot.dmp.query.PageResult;
+import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigType;

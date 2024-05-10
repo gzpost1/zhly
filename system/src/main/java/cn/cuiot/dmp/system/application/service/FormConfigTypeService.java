@@ -2,7 +2,7 @@ package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigTypeRspDTO;
-import cn.cuiot.dmp.query.PageResult;
+import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeUpdateDTO;

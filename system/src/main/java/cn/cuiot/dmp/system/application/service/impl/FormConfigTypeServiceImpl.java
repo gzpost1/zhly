@@ -5,7 +5,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigTypeRspDTO;
 import cn.cuiot.dmp.common.bean.TreeNode;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.TreeUtil;
-import cn.cuiot.dmp.query.PageResult;
+import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.application.constant.FormConfigConstant;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeTreeNodeCopyDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeCreateDTO;

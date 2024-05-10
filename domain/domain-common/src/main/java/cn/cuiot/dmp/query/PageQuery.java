@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.query;
 
 import java.io.Serializable;
+import java.util.Objects;
 import lombok.Data;
 
 /**
@@ -11,6 +12,7 @@ import lombok.Data;
  */
 @Data
 public class PageQuery implements Serializable {
+
     /**
      * 分页参数，每页数据量
      */
@@ -19,22 +21,24 @@ public class PageQuery implements Serializable {
     /**
      * 分页参数，当前页
      */
+    private Integer pageNo;
+
+    /**
+     * 分页参数，当前页
+     */
     private Integer currentPage;
 
-    public PageQuery(Integer pageSize, Integer currentPage) {
-        this.pageSize = pageSize;
-        this.currentPage = currentPage;
+    public Integer getPageNo() {
+        if (Objects.isNull(pageNo)) {
+            return currentPage;
+        }
+        return pageNo;
     }
 
-    public PageQuery() {
-    }
-
-    public void init() {
-        if (pageSize == null) {
-            pageSize = 10;
+    public Integer getCurrentPage() {
+        if (Objects.isNull(currentPage)) {
+            return pageNo;
         }
-        if (currentPage == null) {
-            currentPage = 1;
-        }
+        return currentPage;
     }
 }

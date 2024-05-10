@@ -3,7 +3,7 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
-import cn.cuiot.dmp.query.PageResult;
+import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.application.constant.FormConfigConstant;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;

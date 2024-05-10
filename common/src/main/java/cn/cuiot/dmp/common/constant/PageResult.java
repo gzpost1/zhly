@@ -16,15 +16,30 @@ public class PageResult<T> implements Serializable {
 
     private List<T> list;
 
+    private List<T> records;
+
     private long total;
     /**
      * 每页数量
      */
     private int pageSize;
     /**
+     * 每页数量
+     */
+    private int size;
+
+    /**
      * 当前页
      */
     private int currentPage;
+
+    /**
+     * 当前页
+     */
+    private int current;
+
+
+    private int pages;
 
     /**
      * 当前页
@@ -37,8 +52,11 @@ public class PageResult<T> implements Serializable {
     public PageResult(Page page) {
         if (page != null) {
             pageSize = page.getPageSize();
+            size = page.getPageSize();
             currentPage = page.getPageNum();
+            current = page.getPageNum();
             pageNo = page.getPageNum();
+            pages = page.getPages();
             total = page.getTotal();
             list = page.getResult();
         }
@@ -48,8 +66,11 @@ public class PageResult<T> implements Serializable {
     public PageResult(Page page, List datas) {
         if (page != null) {
             pageSize = page.getPageSize();
+            size = page.getPageSize();
             currentPage = page.getPageNum();
+            current = page.getPageNum();
             pageNo = page.getPageNum();
+            pages = page.getPages();
             total = page.getTotal();
             this.list = datas;
         }
@@ -59,12 +80,18 @@ public class PageResult<T> implements Serializable {
     public PageResult(PageInfo pageInfo) {
         if (pageInfo != null) {
             pageSize = pageInfo.getPageSize();
+            size = pageInfo.getPageSize();
             currentPage = pageInfo.getPageNum();
+            current = pageInfo.getPageNum();
             pageNo = pageInfo.getPageNum();
+            pages = pageInfo.getPages();
             total = pageInfo.getTotal();
-            list = pageInfo.getList();
+            this.list = pageInfo.getList();
         }
 
     }
 
+    public List<T> getRecords() {
+        return list;
+    }
 }
