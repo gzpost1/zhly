@@ -113,7 +113,6 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         flowConfigOrgService.saveFlowOrg(tbFlowConfig.getId(), orgIds);
 
 
-
         //获取发起人配置信息
         UserInfo userInfo = childNode.getProps().getAssignedUser().get(0);
         AssertUtil.notNull(userInfo, "发起人配置信息不能为空");
@@ -139,15 +138,15 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         save(tbFlowConfig);
     }
 
-    public ChildNode processJson(String processJson){
+    public ChildNode processJson(String processJson) {
         ChildNode childNode = JSONObject.parseObject(processJson, new TypeReference<ChildNode>() {
         });
         processChildNode(childNode);
         return childNode;
     }
 
-    public void processChildNode(ChildNode childNode){
-        if(Objects.nonNull(childNode.getProps()) && CollectionUtils.isNotEmpty(childNode.getProps().getFormIds()){
+    public void processChildNode(ChildNode childNode) {
+        if (Objects.nonNull(childNode.getProps()) && CollectionUtils.isNotEmpty(childNode.getProps().getFormIds())) {
             List<Long> formIds = childNode.getProps().getFormIds();
 
             FormConfigReqDTO formConfigReqDTO = new FormConfigReqDTO();
@@ -163,7 +162,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
 
             childNode.getProps().setFormPerms(formItems);
 
-            if(Objects.nonNull(childNode.getChildren())){
+            if (Objects.nonNull(childNode.getChildren())) {
                 processChildNode(childNode.getChildren());
             }
         }
