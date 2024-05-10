@@ -31,7 +31,7 @@
         and name like concat('%', #{query.name}, '%')
       </if>
       <if test="query.orgId != null">
-        and org_id = #{query.orgId}
+        and id in (SELECT flow_task_id from  tb_flow_task_org where org_id like concat( #{query.orgId}, '%'))
       </if>
       <if test="query.status != null">
         and status = #{query.status}
