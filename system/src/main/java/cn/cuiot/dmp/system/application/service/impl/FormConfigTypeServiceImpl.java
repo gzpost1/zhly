@@ -13,10 +13,12 @@ import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigTypeTreeNodeVO;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigTypeVO;
+import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.application.service.FormConfigTypeService;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigType;
+import cn.cuiot.dmp.system.domain.repository.FormConfigRepository;
 import cn.cuiot.dmp.system.domain.repository.FormConfigTypeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -39,6 +41,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FormConfigTypeServiceImpl implements FormConfigTypeService {
+
+    @Autowired
+    private FormConfigRepository formConfigRepository;
 
     @Autowired
     private FormConfigTypeRepository formConfigTypeRepository;
@@ -134,6 +139,8 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
                 queryDTO.getId().toString());
         AssertUtil.notNull(formConfigTypeTreeNodeVO, "当前节点不能为空");
         List<String> treeIdList = TreeUtil.getChildTreeIdList(formConfigTypeTreeNodeVO);
+        // 批量移动该分类及子节点下所有的表单配置到"全部"分类下
+        formConfigRepository.batchMoveFormConfigDefault(treeIdList);
         return formConfigTypeRepository.deleteFormConfigType(treeIdList);
     }
 
@@ -183,13 +190,22 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
     }
 
     @Override
-    public PageResult<FormConfig> queryFormConfigByType(FormConfigPageQuery pageQuery) {
+    public PageResult<FormConfigVO> queryFormConfigByType(FormConfigPageQuery pageQuery) {
         PageResult<FormConfig> formConfigPageResult = formConfigTypeRepository.queryFormConfigByType(pageQuery);
         if (CollectionUtils.isEmpty(formConfigPageResult.getList())) {
-            return formConfigPageResult;
+            return new PageResult<>();
         }
         fillTreeNameForFormConfig(formConfigPageResult.getList());
-        return formConfigPageResult;
+        PageResult<FormConfigVO> formConfigVOPageResult = new PageResult<>();
+        List<FormConfigVO> formConfigVOList = formConfigPageResult.getList().stream()
+                .map(o->{
+                    FormConfigVO formConfigVO = new FormConfigVO();
+                    BeanUtils.copyProperties(o, formConfigVO);
+                    return formConfigVO;
+                }).collect(Collectors.toList());
+        BeanUtils.copyProperties(formConfigPageResult, formConfigVOPageResult);
+        formConfigVOPageResult.setList(formConfigVOList);
+        return formConfigVOPageResult;
     }
 
     private List<FormConfigTypeTreeNodeVO> deepCopy(List<FormConfigTypeTreeNodeVO> FormConfigTypeTreeNodeVOList) {
@@ -200,7 +216,7 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
     }
 
     private void fillTreeNameForFormConfig(List<FormConfig> formConfigList) {
-        List<Long> formConfigTypeIdList = formConfigList.stream().map(FormConfig::getId).collect(Collectors.toList());
+        List<Long> formConfigTypeIdList = formConfigList.stream().map(FormConfig::getTypeId).collect(Collectors.toList());
         Long orgId = formConfigList.get(0).getCompanyId();
         FormConfigTypeReqDTO formConfigTypeReqDTO = new FormConfigTypeReqDTO(orgId, formConfigTypeIdList);
         List<FormConfigTypeRspDTO> formConfigTypeRspDTOList = batchGetFormConfigType(formConfigTypeReqDTO);

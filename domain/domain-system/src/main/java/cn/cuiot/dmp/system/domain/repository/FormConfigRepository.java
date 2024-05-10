@@ -48,6 +48,11 @@ public interface FormConfigRepository {
     int batchMoveFormConfig(Long typeId, List<Long> idList);
 
     /**
+     * 默认批量移动分类列表下所有的表单配置到"全部"分类下
+     */
+    int batchMoveFormConfigDefault(List<String> typeIdList);
+
+    /**
      * 批量更新状态
      */
     int batchUpdateFormConfigStatus(Byte status, List<Long> idList);

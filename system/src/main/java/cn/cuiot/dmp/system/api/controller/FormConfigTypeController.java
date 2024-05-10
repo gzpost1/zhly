@@ -8,8 +8,8 @@ import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigTypeTreeNodeVO;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigTypeVO;
+import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.application.service.FormConfigTypeService;
-import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -92,7 +92,7 @@ public class FormConfigTypeController {
      */
     @RequiresPermissions
     @PostMapping("/queryFormConfigByType")
-    public PageResult<FormConfig> queryFormConfigByType(@RequestBody @Valid FormConfigPageQuery pageQuery) {
+    public PageResult<FormConfigVO> queryFormConfigByType(@RequestBody @Valid FormConfigPageQuery pageQuery) {
         return formConfigTypeService.queryFormConfigByType(pageQuery);
     }
 

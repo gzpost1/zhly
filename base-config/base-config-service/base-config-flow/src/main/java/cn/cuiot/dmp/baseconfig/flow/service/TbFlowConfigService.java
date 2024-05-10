@@ -3,13 +3,18 @@ package cn.cuiot.dmp.baseconfig.flow.service;
 import cn.cuiot.dmp.base.infrastructure.constants.OperationConstant;
 import cn.cuiot.dmp.base.infrastructure.dto.BatcheOperation;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.FormOperates;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
 import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
 import cn.cuiot.dmp.baseconfig.flow.enums.AssignedUserType;
+import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
 import cn.cuiot.dmp.baseconfig.flow.mapper.TbFlowConfigMapper;
+import cn.cuiot.dmp.baseconfig.flow.utils.JsonUtil;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -47,6 +52,8 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
     private RepositoryService repositoryService;
     @Autowired
     private TbFlowConfigOrgService flowConfigOrgService;
+    @Autowired
+    private SystemToFlowService systemToFlowService;
 
 
     /**
@@ -94,14 +101,18 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         tbFlowConfig.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         tbFlowConfig.setId(IdWorker.getId());
 
+        //处理json
+        String processJson = createDto.getProcess();
+        //填充每个节点的表单内容
+        ChildNode childNode = processJson(processJson);
+        processJson = JsonUtil.writeValueAsString(childNode);
+        tbFlowConfig.setProcess(processJson);
+
         //保存流程和组织的中间表
         List<Long> orgIds = createDto.getOrgId();
         flowConfigOrgService.saveFlowOrg(tbFlowConfig.getId(), orgIds);
 
-        //处理json
-        String processJson = createDto.getProcess();
-        ChildNode childNode = JSONObject.parseObject(processJson, new TypeReference<ChildNode>() {
-        });
+
         //获取发起人配置信息
         UserInfo userInfo = childNode.getProps().getAssignedUser().get(0);
         AssertUtil.notNull(userInfo, "发起人配置信息不能为空");
@@ -126,6 +137,37 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
 
         save(tbFlowConfig);
     }
+
+    public ChildNode processJson(String processJson) {
+        ChildNode childNode = JSONObject.parseObject(processJson, new TypeReference<ChildNode>() {
+        });
+        processChildNode(childNode);
+        return childNode;
+    }
+
+    public void processChildNode(ChildNode childNode) {
+        if (Objects.nonNull(childNode.getProps()) && CollectionUtils.isNotEmpty(childNode.getProps().getFormIds())) {
+            List<Long> formIds = childNode.getProps().getFormIds();
+
+            FormConfigReqDTO formConfigReqDTO = new FormConfigReqDTO();
+            formConfigReqDTO.setIdList(formIds);
+            List<FormConfigRspDTO> formConfigRspDTOS = systemToFlowService.batchQueryFormConfig(formConfigReqDTO);
+            AssertUtil.notEmpty(formConfigRspDTOS, "表单配置信息为空");
+
+            List<FormOperates> formItems = formConfigRspDTOS.stream().map(e -> {
+                FormOperates formOperates = new FormOperates();
+                BeanUtils.copyProperties(e, formOperates);
+                return formOperates;
+            }).collect(Collectors.toList());
+
+            childNode.getProps().setFormPerms(formItems);
+
+            if (Objects.nonNull(childNode.getChildren())) {
+                processChildNode(childNode.getChildren());
+            }
+        }
+    }
+
 
     /**
      * 组装bpmnModel
@@ -193,13 +235,19 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         TbFlowConfig config = this.getById(updateDto.getId());
         AssertUtil.notNull(config, "找不到流程配置信息");
         BeanUtils.copyProperties(updateDto, config);
+
+        //处理json
+        String processJson = updateDto.getProcess();
+        //填充每个节点的表单ID
+        ChildNode childNode = processJson(processJson);
+        processJson = JsonUtil.writeValueAsString(childNode);
+        config.setProcess(processJson);
+
         this.updateById(config);
 
         //修改流程和组织的中间表
         flowConfigOrgService.updateFlowOrg(updateDto.getId(), updateDto.getOrgId());
 
-        ChildNode childNode = JSONObject.parseObject(updateDto.getProcess(), new TypeReference<ChildNode>() {
-        });
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("processJson", updateDto.getProcess());
         BpmnModel bpmnModel = assemBpmnModel(jsonObject, childNode, updateDto.getRemark(), updateDto.getName(), StringUtils.join(updateDto.getOrgId(), ","),

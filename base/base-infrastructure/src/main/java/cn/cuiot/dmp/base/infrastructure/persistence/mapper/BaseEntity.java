@@ -1,10 +1,12 @@
 package cn.cuiot.dmp.base.infrastructure.persistence.mapper;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,6 +30,8 @@ public abstract class BaseEntity implements Serializable {
      * 逻辑删除，1已删除，0未删除
      */
     @TableLogic
+    @TableField(fill = FieldFill.INSERT)
+    @JsonIgnore
     private Integer deletedFlag;
 
     /**
@@ -48,11 +52,14 @@ public abstract class BaseEntity implements Serializable {
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn;
 
     /**
      * 创建者。取值：SYSTEM：系统生成的；{userKey}：Portal用户创建的；{appKey}：API创建的。
      */
+    @TableField(fill = FieldFill.INSERT)
     private String createdBy;
 
     /**
@@ -63,11 +70,14 @@ public abstract class BaseEntity implements Serializable {
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedOn;
 
     /**
      * 更新者。取值：{userKey}：Portal用户更新的；{appKey}：API更新的。
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private String updatedBy;
 
     /**

@@ -3,6 +3,8 @@ package cn.cuiot.dmp.baseconfig.flow.feign;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -68,6 +70,25 @@ public class SystemToFlowService {
         } catch (Exception ex) {
             log.info("ApiSystemServiceImpl==lookUpUserList==fail", ex);
             throw new BusinessException(ResultCode.QUERY_USER_DEPT_ERROR);
+        }
+    }
+
+    public List<FormConfigRspDTO> batchQueryFormConfig(FormConfigReqDTO formConfigReqDTO) {
+        try {
+            IdmResDTO<List<FormConfigRspDTO>> idmResDTO = systemApiFeignService
+                    .batchQueryFormConfig(formConfigReqDTO);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==batchQueryFormConfig==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_FORM_CONFIG_ERROR);
         }
     }
 }
