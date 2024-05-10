@@ -5,6 +5,7 @@ import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
 import cn.cuiot.dmp.baseconfig.flow.enums.AssigneeTypeEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkBusinessEnums;
+import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkBusinessTypeInfoService;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static cn.cuiot.dmp.baseconfig.flow.constants.CommonConstants.START_USER_INFO;
 import static cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants.*;
@@ -49,6 +51,8 @@ public class CounterSignListener implements ExecutionListener {
 
     @Autowired
     private WorkBusinessTypeInfoService workBusinessTypeInfoService;
+    @Autowired
+    private SystemToFlowService systemToFlowService;
 
     @Override
     public void notify(DelegateExecution execution) {
@@ -136,10 +140,22 @@ public class CounterSignListener implements ExecutionListener {
 //                }
             } else if (AssigneeTypeEnums.ROLE.getTypeName().equals(assignedType)) {
                 //指定角色
-                //todo 等待接口
+                List<Long> roleIds = props.getAssignedUser().stream().map(e -> Long.valueOf(e.getId())).collect(Collectors.toList());
+
+                List<Long> userIdByRole = systemToFlowService.getUserIdByRole(roleIds);
+                if (userIdByRole != null) {
+                    assigneeList.addAll(userIdByRole.stream().map(String::valueOf).collect(Collectors.toList()));
+                }
+
             } else if (AssigneeTypeEnums.DEPT.getTypeName().equals(assignedType)) {
                 //指定部门
-                //todo 等待接口
+                List<Long> deptIds = props.getAssignedUser().stream().map(e -> Long.valueOf(e.getId())).collect(Collectors.toList());
+
+                List<Long> userIdByDept = systemToFlowService.getUserIdByDept(deptIds);
+                if (userIdByDept != null) {
+                    assigneeList.addAll(userIdByDept.stream().map(String::valueOf).collect(Collectors.toList()));
+                }
+
             } else if (AssigneeTypeEnums.SELF.getTypeName().equals(assignedType)) {
                 String startUserJson = execution.getVariable(START_USER_INFO, String.class);
                 UserInfo userInfo = JSONObject.parseObject(startUserJson, new TypeReference<UserInfo>() {
