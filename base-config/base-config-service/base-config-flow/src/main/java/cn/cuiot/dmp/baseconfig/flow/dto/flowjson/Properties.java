@@ -81,6 +81,11 @@ public class Properties {
   private Long formTaskId;
 
   /**
+   * 表单ID
+   */
+  private List<Long> formIds;
+
+  /**
    * 表单需要处理的任务任务完成规则 0按顺序执行 1随机
    */
   private Byte formTaskType;

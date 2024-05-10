@@ -162,7 +162,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             WorkInfoEntity entity = new WorkInfoEntity();
             entity.setId(IdWorker.getId());
             entity.setBusinessType(flowConfig.getBusinessTypeId());
-            entity.setOrgId(flowConfig.getOrgId());
+            entity.setOrgId(LoginInfoHolder.getCurrentDeptId());
             entity.setCreateTime(new Date());
             entity.setWorkName(flowConfig.getName());
             entity.setWorkSouce(startProcessInstanceDTO.getWorkSource());

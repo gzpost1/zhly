@@ -6,6 +6,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description 分页对象
@@ -37,7 +38,7 @@ public class TbFlowPageDto implements Serializable {
     /**
      * 所属组织
      */
-    private Long orgId;
+    private List<Long> orgIds;
 
     /**
      * 所属组织名称

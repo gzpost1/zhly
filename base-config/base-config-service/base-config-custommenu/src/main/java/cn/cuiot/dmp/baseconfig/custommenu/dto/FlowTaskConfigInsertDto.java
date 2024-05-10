@@ -31,7 +31,7 @@ public class FlowTaskConfigInsertDto {
      * 所属组织
      */
     @NotNull(message = "所属组织不能为空")
-    private Long orgId;
+    private List<Long> orgId;
 
     /**
      * 任务描述

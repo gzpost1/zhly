@@ -34,12 +34,6 @@ public class TbFlowConfig extends YjBaseEntity {
     private Long businessTypeId;
 
     /**
-     * 所属组织
-     */
-    @TableField(value = "org_id")
-    private Long orgId;
-
-    /**
      * 流程配置
      */
     @TableField(value = "`process`")
