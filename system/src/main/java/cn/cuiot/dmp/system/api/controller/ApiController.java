@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.InternalApi;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
@@ -32,6 +33,7 @@ import javax.validation.Valid;
  * @author: wuyongchong
  * @date: 2024/4/25 14:44
  */
+@InternalApi
 @RestController
 @RequestMapping("/api")
 public class ApiController {
@@ -77,6 +79,15 @@ public class ApiController {
     }
 
     /**
+     * 获取用户信息
+     */
+    @PostMapping(value = "/lookUpUserInfo", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<BaseUserDto> lookUpUserInfo(@RequestBody BaseUserReqDto query) {
+        BaseUserDto dto = userService.lookUpUserInfo(query);
+        return IdmResDTO.success(dto);
+    }
+
+    /**
      * 获取部门信息
      */
     @GetMapping(value = "/lookUpDepartmentInfo", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -101,6 +112,16 @@ public class ApiController {
             }
         }
         return IdmResDTO.success(departmentDto);
+    }
+
+
+    /**
+     * 查询子部门
+     */
+    @PostMapping(value = "/lookUpDepartmentChildList", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList(@RequestBody  DepartmentReqDto query) {
+        List<DepartmentDto> list = departmentService.lookUpDepartmentChildList(query);
+        return IdmResDTO.success(list);
     }
 
     /**

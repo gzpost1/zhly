@@ -148,4 +148,9 @@ public interface UserService {
      */
     List<BaseUserDto> lookUpUserList(BaseUserReqDto query);
 
+    /**
+     * 获取用户信息
+     */
+    BaseUserDto lookUpUserInfo(BaseUserReqDto query);
+
 }

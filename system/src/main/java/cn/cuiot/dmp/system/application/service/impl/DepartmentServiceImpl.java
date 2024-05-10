@@ -825,4 +825,31 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         return dtoList;
     }
+
+    /**
+     * 查询子部门
+     * @param query
+     * @return
+     */
+    @Override
+    public List<DepartmentDto> lookUpDepartmentChildList(DepartmentReqDto query) {
+        if(Objects.isNull(query.getDeptId())){
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL);
+        }
+        DepartmentEntity departmentEntity = departmentDao
+                .getDepartmentById(query.getDeptId().toString());
+        if(Objects.isNull(departmentEntity)){
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
+        }
+        List<DepartmentEntity> childList = departmentDao
+                .getDepartmentListByParentIdAndPath(departmentEntity.getId(),
+                        departmentEntity.getPath());
+
+        List<DepartmentDto> dtoList = Optional.ofNullable(childList).orElse(Lists.newArrayList())
+                .stream().map(item -> {
+                    return departmentConverter.entityToDTO(item);
+                }).collect(Collectors.toList());
+
+        return dtoList;
+    }
 }

@@ -177,4 +177,10 @@ public interface DepartmentService {
      */
     List<DepartmentDto> lookUpDepartmentList(DepartmentReqDto query);
 
+    /**
+     * 查询子部门
+     * @param query
+     * @return
+     */
+    List<DepartmentDto> lookUpDepartmentChildList(DepartmentReqDto query);
 }

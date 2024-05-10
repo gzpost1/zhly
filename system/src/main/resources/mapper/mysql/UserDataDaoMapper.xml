@@ -20,6 +20,9 @@
         left join role r on ur.pk_role_id = r.id
         left join tb_sys_post p on p.id = u.post_id
         <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="userId != null">
+                AND u.id = #{userId}
+            </if>
             <if test="userName != null and userName != ''">
                 AND u.username like CONCAT('%',#{userName},'%')
             </if>

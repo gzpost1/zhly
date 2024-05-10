@@ -1193,4 +1193,20 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         return Lists.newArrayList();
     }
+
+    /**
+     * 获取用户信息
+     */
+    @Override
+    public BaseUserDto lookUpUserInfo(BaseUserReqDto query) {
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("userId", query.getUserId());
+        List<UserDataEntity> entities = userDataDao.searchList(params);
+        if (CollectionUtils.isNotEmpty(entities)) {
+            List<BaseUserDto> dtoList = userAssembler
+                    .dataEntityListToBaseUserDtoList(entities);
+            return dtoList.get(0);
+        }
+        return null;
+    }
 }
