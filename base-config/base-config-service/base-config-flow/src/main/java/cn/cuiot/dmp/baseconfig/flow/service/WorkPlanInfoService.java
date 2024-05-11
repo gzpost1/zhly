@@ -1,5 +1,10 @@
 package cn.cuiot.dmp.baseconfig.flow.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.xxljob.XxlJobClient;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
@@ -8,6 +13,7 @@ import cn.cuiot.dmp.baseconfig.flow.entity.WorkPlanInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkPlanInfoMapper;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -18,9 +24,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jodd.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -36,18 +45,21 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
     @Autowired
     private PlanWorkExecutionInfoService planWorkExecutionInfoService;
+
+    @Autowired
+    private SystemApiFeignService systemApiFeignService;
     /**
      * 创建工单计划
      * @param workPlanInfoCreateDto
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO createWordPlan(WorkPlanInfoDto workPlanInfoCreateDto) {
         WorkPlanInfoEntity map = BeanMapper.map(workPlanInfoCreateDto, WorkPlanInfoEntity.class);
         map.setId(IdWorker.getId());
         map.setWorkJosn(JSONObject.toJSONString(workPlanInfoCreateDto.getStartProcessInstanceDTO()));
 
-        //创建预生成时间
-        saveExecutionTime(workPlanInfoCreateDto);
+
         //创建定时任务
         Long xxlJob = xxlJobClient.createXxlJob(workPlanInfoCreateDto.getPlanName(),
                 WorkFlowConstants.JOB_STATUS, WorkFlowConstants.JOB_INVOKETARGET, createCron(workPlanInfoCreateDto),
@@ -57,7 +69,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         this.save(map);
 
         workPlanInfoCreateDto.setId(map.getId());
-
+        //创建预生成时间
         saveExecutionTime(workPlanInfoCreateDto);
         return IdmResDTO.success();
     }
@@ -79,7 +91,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
                 queryExecutionTime(String.valueOf(startDate), String.valueOf(endDate) )).
                 orElseThrow(()->new RuntimeException("时间周期为空"));
         //工单推送时间
-        long round = Math.round(workPlanInfoCreateDto.getPushHour() * 60 + workPlanInfoCreateDto.getPushDay() * 24 * 3600);
+        long round = Math.round(workPlanInfoCreateDto.getPushHour() * 60 + workPlanInfoCreateDto.getPushDay() * 24 * 60);
         List<LocalDateTime> times = new ArrayList<>();
         for(ExecutionDateDto dto : dtos){
             LocalDateTime of = LocalDateTime.of(dto.getExecutionDate(), workPlanInfoCreateDto.getPlanTime());
@@ -128,10 +140,10 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             if(workPlanInfoCreateDto.getRecurrentState().intValue()==1){
                 //获取循环结束时间
                 LocalDateTime overTime = getOverTime(dto.getExecutionDate(), workPlanInfoCreateDto);
-                LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
+                LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
                 while (overTime.isAfter(localDateTime)){
                     times.add(localDateTime);
-                    localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
+                    localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
                 }
             }
         }
@@ -145,10 +157,10 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             if(workPlanInfoCreateDto.getRecurrentState().intValue()==1){
                 //获取循环结束时间
                 LocalDateTime overTime = getOverTime(dto.getExecutionDate(), workPlanInfoCreateDto);
-                LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
+                LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
                 while (overTime.isAfter(localDateTime)){
                     times.add(localDateTime);
-                    localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
+                    localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
                 }
             }
         }
@@ -175,24 +187,24 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
                 if(workPlanInfoCreateDto.getRecurrentState().intValue()==1){
                     //获取循环结束时间
                     LocalDateTime overTime = getOverTime(dto.getExecutionDate(), workPlanInfoCreateDto);
-                    LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
+                    LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
                     while (overTime.isAfter(localDateTime)){
                         times.add(localDateTime);
-                        localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
+                        localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
                     }
                 }
             }
         }else{
-            times.add(of);
+//            times.add(of);
             //没有指定天数
             //启用循环
             if(workPlanInfoCreateDto.getRecurrentState().intValue()==1){
                 //获取循环结束时间
                 LocalDateTime overTime = getOverTime(dto.getExecutionDate(), workPlanInfoCreateDto);
-                LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
+                LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
                 while (overTime.isAfter(localDateTime)){
                     times.add(localDateTime);
-                    localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
+                    localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
                 }
             }
         }
@@ -235,7 +247,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             if(dto.getRecurrentState().intValue()==0){
                 specifyMinute=specifyMinute+"/"+String.valueOf(Math.round(dto.getRecurrentHour()*60));
             }
-             cron =String.format("%d %d %d %d * ?", second,
+             cron =String.format("%d %s %d %s * ? *", second,
                     specifyMinute, hour, specifyDay);
         }
         //按周
@@ -246,7 +258,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
                 specifyMinute=specifyMinute+"/"+String.valueOf(Math.round(dto.getRecurrentHour()*60));
             }
             String specifyWeek = dto.getSpecifyWeek();
-             cron =String.format("%d %d %d * * %d", second,
+             cron =String.format("%d %s %d ? * %d *", second,
                     specifyMinute, hour, specifyWeek);
         }
         //按月执行
@@ -256,7 +268,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             if(dto.getRecurrentState().intValue()==0){
                 specifyMinute=specifyMinute+"/"+String.valueOf(Math.round(dto.getRecurrentHour()*60));
             }
-             cron =String.format("%d %d %d %d %d ?", second,
+             cron =String.format("%d %s %d %s %s ? *", second,
                     specifyMinute, hour, dto.getSpecifyDay(),dto.getSpecifyMonth());
         }
 
@@ -283,16 +295,39 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
      */
     public IdmResDTO<IPage<WorkPlanInfoEntity>>  queryWordPlanInfo(QueryWorkPlanInfoDto dto) {
 
-        //TODO 根据组织id获取自己及下属的组织id
+        //根据组织id获取自己及下属的组织id
+        List<DepartmentDto> deptList = getDeptIds(LoginInfoHolder.getCurrentDeptId());
+        List<Long> deptIds = deptList.stream().map(DepartmentDto::getId).collect(Collectors.toList());
+        dto.setOrgIds(deptIds);
         LambdaQueryWrapper<WorkPlanInfoEntity> lw = getCondition(dto);
         Page<WorkPlanInfoEntity> workPlanInfoEntityPage = this.getBaseMapper().selectPage(new Page<>(dto.getCurrentPage(), dto.getPageSize()), lw);
         List<WorkPlanInfoEntity> records = workPlanInfoEntityPage.getRecords();
         if(CollectionUtil.isNotEmpty(records)){
+            List<Long> userIds = records.stream().map(WorkPlanInfoEntity::getCreateUser).collect(Collectors.toList());
+            Map<Long, String> userMap = getUserMap(userIds);
             records.stream().forEach(item->{
                 //TODO根据userId获取userName
+                item.setCreateName(userMap.get(item.getCreateUser()));
             });
         }
         return IdmResDTO.success(workPlanInfoEntityPage);
+    }
+
+    public Map<Long,String> getUserMap(List<Long> userIds){
+        BaseUserReqDto userReqDto = new BaseUserReqDto();
+        userReqDto.setUserIdList(userIds);
+        IdmResDTO<List<BaseUserDto>> listIdmResDTO = systemApiFeignService.lookUpUserList(userReqDto);
+        List<BaseUserDto> data = Optional.ofNullable(listIdmResDTO.getData()).orElseThrow(()->new RuntimeException("用户信息不存在"));
+        return data.stream().collect(Collectors.toMap(BaseUserDto::getId,BaseUserDto::getName ));
+    }
+
+    public List<DepartmentDto> getDeptIds(Long deptId){
+        DepartmentReqDto paraDto = new DepartmentReqDto();
+        paraDto.setDeptId(deptId);
+        paraDto.setSelfReturn(true);
+        IdmResDTO<List<DepartmentDto>> listIdmResDTO = systemApiFeignService.lookUpDepartmentChildList(paraDto);
+        return listIdmResDTO.getData();
+
     }
     public LambdaQueryWrapper getCondition(QueryWorkPlanInfoDto dto){
         LambdaQueryWrapper<WorkPlanInfoEntity> lw = new LambdaQueryWrapper<>();

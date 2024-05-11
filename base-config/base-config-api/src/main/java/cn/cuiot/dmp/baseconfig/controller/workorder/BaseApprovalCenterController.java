@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.controller.workorder;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.baseconfig.flow.dto.QueryApprovalInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
@@ -8,6 +9,7 @@ import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +21,7 @@ import java.util.List;
 
 
 /**
+ * 操作按钮
  * @author pengjian
  * @create 2024/4/23 16:12
  */
@@ -35,6 +38,7 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("start")
+    @LogRecord(operationCode = "startWork", operationName = "启动工单", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO start(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
 
         return workInfoService.start(startProcessInstanceDTO);
@@ -57,6 +61,7 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("agree")
+    @LogRecord(operationCode = "agree", operationName = "审批同意", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO agree(@RequestBody HandleDataDTO handleDataDTO){
         return workInfoService.agree(handleDataDTO);
     }
