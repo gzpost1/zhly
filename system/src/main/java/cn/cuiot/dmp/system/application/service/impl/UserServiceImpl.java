@@ -936,6 +936,12 @@ public class UserServiceImpl extends BaseController implements UserService {
         return result;
     }
 
+    /**
+     * 获取用户与权限信息
+     * @param userId
+     * @param orgId
+     * @return
+     */
     @Override
     public UserResDTO getUserMenuByUserIdAndOrgId(String userId, String orgId) {
         // 获取用户信息
@@ -947,7 +953,10 @@ public class UserServiceImpl extends BaseController implements UserService {
 
         userResDTO.setPermission_ids(Lists.newArrayList());
         if(CollectionUtils.isNotEmpty(menuList)){
-            userResDTO.setPermission_ids(menuList.stream().map(ite->ite.getPermissionCode()).collect(Collectors.toList()));
+            userResDTO.setPermission_ids(menuList.stream()
+                    .filter(ite-> org.apache.commons.lang3.StringUtils.isNotBlank(ite.getPermissionCode()))
+                    .map(ite->ite.getPermissionCode())
+                    .collect(Collectors.toList()));
         }
         return userResDTO;
     }
