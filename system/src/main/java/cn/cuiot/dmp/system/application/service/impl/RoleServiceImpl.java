@@ -25,6 +25,7 @@ import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -82,7 +83,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public PageResult<RoleDTO> getRoleListByPage(Map<String, Object> paramsMap) {
-        Page<RoleDTO> page = PageHelper.startPage((Integer) paramsMap.get("currentPage"),
+        Page<RoleDTO> page = PageHelper.startPage((Integer) paramsMap.get("pageNo"),
                 (Integer) paramsMap.get("pageSize"));
         // 超管要看到企业管理员的角色，在sql里面判断
         List<RoleDTO> roleDtoList = this.roleDao.selectRoleListByPage(paramsMap);
@@ -116,13 +117,26 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int deleteRoles(RoleBo roleBo) {
-        // 预置角色不能删除
-        DEFAULT_ROLE_ID.stream().filter(s -> s.equals(roleBo.getId())).findAny().ifPresent(s -> {
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
-        });
+        String sessionOrgId = roleBo.getSessionOrgId();
+        List<Long> deleteIdList = Optional.ofNullable(roleBo.getDeleteIdList())
+                .orElse(Lists.newArrayList());
+        if(Objects.nonNull(roleBo.getId())){
+            if(!deleteIdList.contains(roleBo.getId())){
+                deleteIdList.add(roleBo.getId());
+            }
+        }
+
+        for(Long deleteId:deleteIdList){
+            // 预置角色不能删除
+            DEFAULT_ROLE_ID.stream().filter(s -> s.equals(deleteId)).findAny().ifPresent(s -> {
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            });
+        }
+
         // 获取操作对象
         List<RoleEntity> roleEntityList = this.roleDao
-                .selectRoleByRoleIds(roleBo.getDeleteIdList());
+                .selectRoleByRoleIds(deleteIdList);
+
         String[] operationTargetArray = new String[roleEntityList.size()];
         for (int i = 0; i < roleEntityList.size(); i++) {
             operationTargetArray[i] = roleEntityList.get(i).getRoleName();
@@ -131,7 +145,8 @@ public class RoleServiceImpl implements RoleService {
 
         // 查询角色关联的用户
         List<Map<String, Long>> userIdList = this.roleDao
-                .selectUserIdsByRoleIds(roleBo.getSessionOrgId(), roleBo.getDeleteIdList());
+                .selectUserIdsByRoleIds(sessionOrgId,deleteIdList);
+
         if (!CollectionUtils.isEmpty(userIdList) && userIdList.parallelStream().anyMatch(map -> {
             return null != map.get(USER_ID);
         })) {
@@ -140,14 +155,14 @@ public class RoleServiceImpl implements RoleService {
 
         // 删除成功的角色数量
         int count = this.roleDao
-                .deleteRolesByIds(roleBo.getSessionOrgId(), roleBo.getDeleteIdList(),
+                .deleteRolesByIds(roleBo.getSessionOrgId(), deleteIdList,
                         LocalDateTime.now());
 
         // 批量删除账户角色关联关系
-        this.roleDao.deleteOrgRole(roleBo.getSessionOrgId(), roleBo.getDeleteIdList());
+        this.roleDao.deleteOrgRole(roleBo.getSessionOrgId(), deleteIdList);
 
         // 批量删除角色和菜单的关联关系
-        this.roleDao.deleteBatchMenuRole(roleBo.getSessionOrgId(), roleBo.getDeleteIdList());
+        this.roleDao.deleteBatchMenuRole(roleBo.getSessionOrgId(),deleteIdList);
 
         return count;
     }
@@ -238,19 +253,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleDTO getRoleInfo(Long orgId, Long id) {
-        RoleDTO roleDTO = this.roleDao.selectRoleByUserId(orgId, id);
-        if (null == roleDTO) {
-            throw new BusinessException(ResultCode.QUERY_ROLE_DETAILS_ERROR);
-        }
-        // 设置角色权限名称
-        roleDTO.setPermitName(
-                RolePermitEnum.getRolePermitNameByPermitCode(Integer.valueOf(roleDTO.getPermit())));
-        return roleDTO;
-    }
-
-    @Override
-    public RoleDTO getRoleAll(String roleId, String orgId, String userId) {
+    public RoleDTO getRoleInfo(String roleId, String orgId, String userId) {
         RoleDTO roleDTO = roleDao
                 .selectOneRole(Long.parseLong(orgId), Long.parseLong(roleId),
                         Long.parseLong(userId));
@@ -259,13 +262,17 @@ public class RoleServiceImpl implements RoleService {
         }
 
         //查询角色对应菜单的权限id集合
-        List<AddMenuDto> addMenuDtos = roleDao.getRoleMenu(Integer.parseInt(roleId));
+        List<AddMenuDto> addMenuDtos = roleDao.getRoleMenu(Long.valueOf(roleId));
         List<String> menuIds = new ArrayList<>();
         for (AddMenuDto addMenuDto : addMenuDtos) {
             menuIds.add(String.valueOf(addMenuDto.getId()));
         }
 
         roleDTO.setMenuIds(menuIds);
+
+        // 设置角色权限名称
+        roleDTO.setPermitName(
+                RolePermitEnum.getRolePermitNameByPermitCode(Integer.valueOf(roleDTO.getPermit())));
 
         return roleDTO;
     }
@@ -274,11 +281,11 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Long updateRole(RoleBo roleBo) {
         // 本身角色不让编辑
-        RoleDTO roleDTO = roleDao.selectRoleByUserId(Long.parseLong(roleBo.getSessionOrgId()),
+       /* RoleDTO roleDTO = roleDao.selectRoleByUserId(Long.parseLong(roleBo.getSessionOrgId()),
                 Long.parseLong(roleBo.getSessionUserId()));
         if (Objects.equals(roleDTO.getId(), roleBo.getId().toString())) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
-        }
+        }*/
         // 预置角色不能编辑
         DEFAULT_ROLE_ID.stream().filter(s -> s.equals(roleBo.getId())).findAny().ifPresent(s -> {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
@@ -291,7 +298,7 @@ public class RoleServiceImpl implements RoleService {
 
         RoleDTO oldRoleDTO = this.roleDao
                 .selectRoleById(Long.valueOf(roleBo.getSessionOrgId()), roleBo.getId());
-        if (null == oldRoleDTO || !roleBo.getRoleKey().equals(oldRoleDTO.getRoleKey())) {
+        if (null == oldRoleDTO) {
             throw new BusinessException(ResultCode.ROLE_NOT_EXIST);
         }
 

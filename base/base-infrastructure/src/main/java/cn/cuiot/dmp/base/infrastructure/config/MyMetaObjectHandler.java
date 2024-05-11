@@ -3,9 +3,11 @@ package cn.cuiot.dmp.base.infrastructure.config;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
+
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 import org.springframework.stereotype.Component;
@@ -21,10 +23,15 @@ import org.springframework.stereotype.Component;
 public class MyMetaObjectHandler implements MetaObjectHandler {
 
     private final static String CREATETIME_FIELD = "createTime";
+    private final static String CREATED_ON_FIELD = "createdOn";
     private final static String CREATEUSER_FIELD = "createUser";
+    private final static String CREATED_BY_FIELD = "createdBy";
     private final static String UPDATETIME_FIELD = "updateTime";
-    private final static String UPDATEUSER_FIELD = "createUser";
+    private final static String UPDATED_ON_FIELD = "updatedOn";
+    private final static String UPDATEUSER_FIELD = "updateUser";
+    private final static String UPDATED_BY_FIELD = "updatedBy";
     private final static String DELETED_FIELD = "deleted";
+    private final static String DELETED_FLAG = "deletedFlag";
 
     private final static String ET = "et";
 
@@ -34,10 +41,6 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void insertFill(MetaObject metaObject) {
         //其中方法参数中第一个是前面自动填充所对应的字段，第二个是要自动填充的值。第三个是指定实体类的对象
-
-        this.setFieldValByName("createdOn", LocalDateTime.now(), metaObject);
-        this.setFieldValByName("updateOn", LocalDateTime.now(), metaObject);
-        this.setFieldValByName("deletedFlag", 0, metaObject);
 
         if (metaObject.hasSetter(CREATETIME_FIELD)) {
             Object createTime = getFieldValByName(CREATETIME_FIELD, metaObject);
@@ -52,10 +55,31 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
                 }
             }
         }
+        if (metaObject.hasSetter(CREATED_ON_FIELD)) {
+            Object createTime = getFieldValByName(CREATED_ON_FIELD, metaObject);
+            if (createTime == null) {
+                Class<?> fieldType = getFieldType(metaObject, CREATED_ON_FIELD);
+                if (fieldType.isAssignableFrom(LocalDateTime.class)) {
+                    setFieldValByName(CREATED_ON_FIELD, LocalDateTime.now(), metaObject);
+                } else if (fieldType.isAssignableFrom(LocalDate.class)) {
+                    setFieldValByName(CREATED_ON_FIELD, LocalDate.now(), metaObject);
+                } else {
+                    setFieldValByName(CREATED_ON_FIELD, new Date(), metaObject);
+                }
+            }
+        }
+
         if (metaObject.hasSetter(CREATEUSER_FIELD)) {
             Object createUser = getFieldValByName(CREATEUSER_FIELD, metaObject);
             if (createUser == null) {
                 setFieldValByName(CREATEUSER_FIELD, LoginInfoHolder.getCurrentUserId(), metaObject);
+            }
+        }
+
+        if (metaObject.hasSetter(CREATED_BY_FIELD)) {
+            Object createUser = getFieldValByName(CREATED_BY_FIELD, metaObject);
+            if (createUser == null) {
+                setFieldValByName(CREATED_BY_FIELD, String.valueOf(LoginInfoHolder.getCurrentUserId()), metaObject);
             }
         }
 
@@ -65,10 +89,22 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
                 setFieldValByName(DELETED_FIELD, EntityConstants.NOT_DELETED, metaObject);
             }
         }
+        if (metaObject.hasSetter(DELETED_FLAG)) {
+            Object deleted = getFieldValByName(DELETED_FLAG, metaObject);
+            if (deleted == null) {
+                setFieldValByName(DELETED_FLAG, Integer.valueOf(EntityConstants.NOT_DELETED), metaObject);
+            }
+        }
         if (metaObject.hasSetter(UPDATETIME_FIELD)) {
             Object updateTime = getFieldValByName(UPDATETIME_FIELD, metaObject);
             if (updateTime == null) {
-                update(metaObject);
+                updateTime(metaObject);
+            }
+        }
+        if (metaObject.hasSetter(UPDATED_ON_FIELD)) {
+            Object updateTime = getFieldValByName(UPDATED_ON_FIELD, metaObject);
+            if (updateTime == null) {
+                updateOn(metaObject);
             }
         }
         if (metaObject.hasSetter(UPDATEUSER_FIELD)) {
@@ -76,7 +112,12 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
             if (updateUser == null) {
                 setFieldValByName(UPDATEUSER_FIELD, LoginInfoHolder.getCurrentUserId(), metaObject);
             }
-
+        }
+        if (metaObject.hasSetter(UPDATED_BY_FIELD)) {
+            Object updateUser = getFieldValByName(UPDATED_BY_FIELD, metaObject);
+            if (updateUser == null) {
+                setFieldValByName(UPDATED_BY_FIELD, String.valueOf(LoginInfoHolder.getCurrentUserId()), metaObject);
+            }
         }
     }
 
@@ -85,18 +126,22 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
      */
     @Override
     public void updateFill(MetaObject metaObject) {
-        this.setFieldValByName("updateOn", LocalDateTime.now(), metaObject);
         if (metaObject.hasSetter(UPDATETIME_FIELD)) {
-            update(metaObject);
+            updateTime(metaObject);
+        }
+        if (metaObject.hasSetter(UPDATED_ON_FIELD)) {
+            updateOn(metaObject);
         }
         if (metaObject.hasSetter(UPDATEUSER_FIELD)) {
             //Object updateUser = getFieldValByName(UPDATEUSER_FIELD, metaObject);
             setFieldValByName(UPDATEUSER_FIELD, LoginInfoHolder.getCurrentUserId(), metaObject);
         }
-
+        if (metaObject.hasSetter(UPDATED_BY_FIELD)) {
+            setFieldValByName(UPDATED_BY_FIELD, String.valueOf(LoginInfoHolder.getCurrentUserId()), metaObject);
+        }
     }
 
-    private void update(MetaObject metaObject) {
+    private void updateTime(MetaObject metaObject) {
         Class<?> fieldType = getFieldType(metaObject, UPDATETIME_FIELD);
         if (fieldType.isAssignableFrom(LocalDateTime.class)) {
             setFieldValByName(UPDATETIME_FIELD, LocalDateTime.now(), metaObject);
@@ -104,6 +149,17 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
             setFieldValByName(UPDATETIME_FIELD, LocalDate.now(), metaObject);
         } else {
             setFieldValByName(UPDATETIME_FIELD, new Date(), metaObject);
+        }
+    }
+
+    private void updateOn(MetaObject metaObject) {
+        Class<?> fieldType = getFieldType(metaObject, UPDATED_ON_FIELD);
+        if (fieldType.isAssignableFrom(LocalDateTime.class)) {
+            setFieldValByName(UPDATED_ON_FIELD, LocalDateTime.now(), metaObject);
+        } else if (fieldType.isAssignableFrom(LocalDate.class)) {
+            setFieldValByName(UPDATED_ON_FIELD, LocalDate.now(), metaObject);
+        } else {
+            setFieldValByName(UPDATED_ON_FIELD, new Date(), metaObject);
         }
     }
 

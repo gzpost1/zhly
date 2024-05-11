@@ -2,6 +2,8 @@ package cn.cuiot.dmp.base.application.interceptor;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.service.ApiPermissionService;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
@@ -27,10 +29,6 @@ public class BasePermissionInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
             Object handler) throws Exception {
 
-        if (Objects.isNull(LoginInfoHolder.getCurrentUserId())) {
-            return true;
-        }
-
         if (!(handler instanceof HandlerMethod)) {
             return true;
         }
@@ -43,6 +41,10 @@ public class BasePermissionInterceptor implements HandlerInterceptor {
         if (annotation == null) {
             return true;
         }
+        if (Objects.isNull(LoginInfoHolder.getCurrentUserId())) {
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+        }
+
         String permissionCode = annotation.value();
         if (StringUtils.isBlank(permissionCode)) {
             permissionCode = request.getServletPath();

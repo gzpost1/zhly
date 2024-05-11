@@ -3,21 +3,26 @@ package cn.cuiot.dmp.system.application.service.impl;
 import static cn.cuiot.dmp.common.constant.CacheConst.DEPT_CODE_KEY_PREFIX;
 import static cn.cuiot.dmp.common.constant.CacheConst.DEPT_NAME_KEY_PREFIX;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.NumberConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.RandomCodeWorker;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.application.constant.CurrencyConst;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
+import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
+import cn.cuiot.dmp.system.domain.entity.Organization;
+import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
-import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentPropertyDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameResDto;
@@ -33,9 +38,6 @@ import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDataDao;
 import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
-import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
-import cn.cuiot.dmp.system.domain.entity.Organization;
-import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import java.time.LocalDateTime;
@@ -89,6 +91,9 @@ public class DepartmentServiceImpl implements DepartmentService {
     private SpaceDao spaceDao;
 
     @Autowired
+    private DepartmentConverter departmentConverter;
+
+    @Autowired
     private DepartmentUtil departmentUtil;
 
     public static final String NULL_WORD = "null";
@@ -134,7 +139,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         //只有组织级用户才可添加组织
         DepartmentEntity userDept = departmentDao.selectByPrimary(
-                Long.valueOf(userDao.getDeptId(pkUserId,pkOrgId.toString())));
+                Long.valueOf(userDao.getDeptId(pkUserId, pkOrgId.toString())));
         if (!Arrays
                 .asList(DepartmentGroupEnum.TENANT.getCode(), DepartmentGroupEnum.SYSTEM.getCode())
                 .contains(userDept.getDGroup())) {
@@ -151,7 +156,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         int maxDeptHigh = organization != null ? organization.getMaxDeptHigh() : 0;
 
         //获取租户账户类型
-        Integer orgTypeId =organization != null ? organization.getOrgTypeId().getValue().intValue(): null;
+        Integer orgTypeId =
+                organization != null ? organization.getOrgTypeId().getValue().intValue() : null;
 
         //层级限制判断
         Integer parentDeptLevel = parentDept.getLevel();
@@ -161,7 +167,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         //同级组织名称不可重复
         String department = departmentDao
-                .selectDepartmentName(pkOrgId,parentId, dto.getDepartmentName());
+                .selectDepartmentName(pkOrgId, parentId, dto.getDepartmentName());
         if (department != null) {
             throw new BusinessException(ResultCode.DEPARTMENT_NAME_EXIST);
         }
@@ -194,7 +200,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public int insertDepartmentProperty(DepartmentPropertyDto dto) {
-        return departmentDao.insertDepartmentProperty(dto.getId(),dto.getDeptId(), dto.getKey(), dto.getVal());
+        return departmentDao
+                .insertDepartmentProperty(dto.getId(), dto.getDeptId(), dto.getKey(), dto.getVal());
     }
 
     @Override
@@ -223,7 +230,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         //同级组织名称不可重复
         if (Objects.nonNull(parentId)) {
             int count = departmentDao
-                    .countByDepartmentNameForUpdate(departmentName, pkOrgId,parentId, id);
+                    .countByDepartmentNameForUpdate(departmentName, pkOrgId, parentId, id);
             if (count > 0) {
                 throw new BusinessException(ResultCode.DEPARTMENT_NAME_EXIST);
             }
@@ -242,13 +249,14 @@ public class DepartmentServiceImpl implements DepartmentService {
         redisUtil.del(DEPT_NAME_KEY_PREFIX + entity.getId());
 
         //名称变更，需要变更path name
-        if(!byPrimary.getDepartmentName().equals(departmentName)){
+        if (!byPrimary.getDepartmentName().equals(departmentName)) {
             String newPathName = departmentName;
             if (Objects.nonNull(parentId)) {
                 DepartmentEntity parentDept = departmentDao.selectByPrimary(parentId);
-                newPathName = parentDept.getPathName()+">"+departmentName;
+                newPathName = parentDept.getPathName() + ">" + departmentName;
             }
-            departmentDao.updatePathNameByPath(byPrimary.getPath(),byPrimary.getPathName(),newPathName);
+            departmentDao.updatePathNameByPath(byPrimary.getPath(), byPrimary.getPathName(),
+                    newPathName);
         }
 
         //获取账户日志操作对象
@@ -358,7 +366,6 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .orElse(null);
 
         DepartmentEntity department = departmentDao.selectByPrimary(deptId);
-
 
         // 初始化departmentTreeList
         List<DepartmentTreeVO> departmentTreeList = new ArrayList<>();
@@ -558,7 +565,9 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (!CollectionUtils.isEmpty(siteList)) {
             if (deptId == null || deptId.equals(0L)) {
                 return siteList.stream()
-                        .map(x -> JSONObject.parseObject(JSONObject.toJSONString(x), DepartmentTreeVO.class).getId())
+                        .map(x -> JSONObject
+                                .parseObject(JSONObject.toJSONString(x), DepartmentTreeVO.class)
+                                .getId())
                         .collect(Collectors.toList());
             }
             childrenList.add(deptId);
@@ -803,4 +812,54 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     }
 
+    /**
+     * 查询部门
+     */
+    @Override
+    public List<DepartmentDto> lookUpDepartmentList(DepartmentReqDto query) {
+        List<DepartmentEntity> selectList = departmentDao.lookUpDepartmentList(query);
+        List<DepartmentDto> dtoList = Optional.ofNullable(selectList).orElse(Lists.newArrayList())
+                .stream().map(item -> {
+                    return departmentConverter.entityToDTO(item);
+                }).collect(Collectors.toList());
+
+        return dtoList;
+    }
+
+    /**
+     * 查询子部门
+     * @param query
+     * @return
+     */
+    @Override
+    public List<DepartmentDto> lookUpDepartmentChildList(DepartmentReqDto query) {
+        if(Objects.isNull(query.getDeptId())){
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL);
+        }
+        DepartmentEntity departmentEntity = departmentDao
+                .getDepartmentById(query.getDeptId().toString());
+        if(Objects.isNull(departmentEntity)){
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
+        }
+        List<DepartmentEntity> childList = departmentDao
+                .getDepartmentListByPath(departmentEntity.getPkOrgId(),
+                        departmentEntity.getPath(),query.getParentId());
+
+        List<DepartmentDto> dtoList = null;
+        if(Boolean.TRUE.equals(query.getSelfReturn())){
+            dtoList = Optional.ofNullable(childList).orElse(Lists.newArrayList())
+                    .stream()
+                    .map(item -> {
+                        return departmentConverter.entityToDTO(item);
+                    }).collect(Collectors.toList());
+        }else{
+            dtoList = Optional.ofNullable(childList).orElse(Lists.newArrayList())
+                    .stream()
+                    .filter(item->!item.getId().equals(query.getDeptId()))
+                    .map(item -> {
+                        return departmentConverter.entityToDTO(item);
+                    }).collect(Collectors.toList());
+        }
+        return dtoList;
+    }
 }

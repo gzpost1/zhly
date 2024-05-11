@@ -23,7 +23,7 @@ public class ListOrganizationDto{
      * 当前页数
      */
     @NotNull(message = "当前页数不能为空")
-    private Integer currentPage = 1;
+    private Integer pageNo = 1;
 
     /**
      * 每页数量

@@ -1,15 +1,19 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.InternalApi;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
 import cn.cuiot.dmp.system.application.param.assembler.MenuConverter;
-import cn.cuiot.dmp.system.application.service.BusinessTypeService;
-import cn.cuiot.dmp.system.application.service.DepartmentService;
-import cn.cuiot.dmp.system.application.service.MenuService;
+import cn.cuiot.dmp.system.application.service.*;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 
@@ -29,6 +33,7 @@ import javax.validation.Valid;
  * @author: wuyongchong
  * @date: 2024/4/25 14:44
  */
+@InternalApi
 @RestController
 @RequestMapping("/api")
 public class ApiController {
@@ -48,6 +53,39 @@ public class ApiController {
 
     @Autowired
     private BusinessTypeService businessTypeService;
+
+    @Autowired
+    private FormConfigService formConfigService;
+
+    @Autowired
+    private UserService userService;
+
+    /**
+     * 查询部门
+     */
+    @PostMapping(value = "/lookUpDepartmentList", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<DepartmentDto>> lookUpDepartmentList(@RequestBody  DepartmentReqDto query) {
+        List<DepartmentDto> list = departmentService.lookUpDepartmentList(query);
+        return IdmResDTO.success(list);
+    }
+
+    /**
+     * 查询用户
+     */
+    @PostMapping(value = "/lookUpUserList", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<BaseUserDto>> lookUpUserList(@RequestBody BaseUserReqDto query) {
+        List<BaseUserDto> list = userService.lookUpUserList(query);
+        return IdmResDTO.success(list);
+    }
+
+    /**
+     * 获取用户信息
+     */
+    @PostMapping(value = "/lookUpUserInfo", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<BaseUserDto> lookUpUserInfo(@RequestBody BaseUserReqDto query) {
+        BaseUserDto dto = userService.lookUpUserInfo(query);
+        return IdmResDTO.success(dto);
+    }
 
     /**
      * 获取部门信息
@@ -76,6 +114,16 @@ public class ApiController {
         return IdmResDTO.success(departmentDto);
     }
 
+
+    /**
+     * 查询子部门
+     */
+    @PostMapping(value = "/lookUpDepartmentChildList", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList(@RequestBody  DepartmentReqDto query) {
+        List<DepartmentDto> list = departmentService.lookUpDepartmentChildList(query);
+        return IdmResDTO.success(list);
+    }
+
     /**
      * 获取权限信息
      */
@@ -99,6 +147,15 @@ public class ApiController {
     public IdmResDTO<List<BusinessTypeRspDTO>> batchGetBusinessType(@RequestBody @Valid BusinessTypeReqDTO businessTypeReqDTO) {
         List<BusinessTypeRspDTO> businessTypeRspDTOList = businessTypeService.batchGetBusinessType(businessTypeReqDTO);
         return IdmResDTO.success(businessTypeRspDTOList);
+    }
+
+    /**
+     * 批量查询表单配置
+     */
+    @PostMapping(value = "/batchQueryFormConfig", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<FormConfigRspDTO>> batchQueryFormConfig(@RequestBody @Valid FormConfigReqDTO formConfigReqDTO) {
+        List<FormConfigRspDTO> formConfigRspDTOList = formConfigService.batchQueryFormConfig(formConfigReqDTO);
+        return IdmResDTO.success(formConfigRspDTOList);
     }
 
 }

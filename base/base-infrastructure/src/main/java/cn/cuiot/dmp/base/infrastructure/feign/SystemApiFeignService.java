@@ -1,8 +1,12 @@
 package cn.cuiot.dmp.base.infrastructure.feign;
 
 import cn.cuiot.dmp.base.infrastructure.dto.*;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 
 import org.springframework.cloud.openfeign.FeignClient;
@@ -27,6 +31,24 @@ import java.util.List;
 public interface SystemApiFeignService {
 
     /**
+     * 查询部门
+     */
+    @PostMapping(value = "/lookUpDepartmentList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<DepartmentDto>> lookUpDepartmentList(@RequestBody DepartmentReqDto query);
+
+    /**
+     * 查询用户
+     */
+    @PostMapping(value = "/lookUpUserList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<BaseUserDto>> lookUpUserList(@RequestBody BaseUserReqDto query);
+
+    /**
+     * 获取用户信息
+     */
+    @PostMapping(value = "/lookUpUserInfo", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<BaseUserDto> lookUpUserInfo(@RequestBody BaseUserReqDto query);
+
+    /**
      * 获取部门信息
      */
     @GetMapping(value = "/api/lookUpDepartmentInfo", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -35,6 +57,11 @@ public interface SystemApiFeignService {
             @RequestParam(value = "userId", required = false) Long userId,
             @RequestParam(value = "orgId", required = false) Long orgId);
 
+    /**
+     * 查询子部门
+     */
+    @PostMapping(value = "/lookUpDepartmentChildList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList(@RequestBody  DepartmentReqDto query);
 
     /**
      * 获取权限信息
@@ -50,5 +77,11 @@ public interface SystemApiFeignService {
      */
     @PostMapping(value = "/api/batchGetBusinessType", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<BusinessTypeRspDTO>> batchGetBusinessType(@RequestBody @Valid BusinessTypeReqDTO businessTypeReqDTO);
+
+    /**
+     * 批量查询表单配置
+     */
+    @PostMapping(value = "/api/batchQueryFormConfig", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<FormConfigRspDTO>> batchQueryFormConfig(@RequestBody @Valid FormConfigReqDTO formConfigReqDTO);
 
 }

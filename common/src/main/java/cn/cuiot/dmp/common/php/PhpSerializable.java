@@ -3,7 +3,7 @@ package cn.cuiot.dmp.common.php;
 /**
  * @author zhangxp207
  */
-public interface Serializable {
+public interface PhpSerializable {
     /**
      * serialize
      * @author <zhangxp207@chinaunicom.cn>

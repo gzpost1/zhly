@@ -1,5 +1,8 @@
 package cn.cuiot.dmp.system.domain.repository;
 
+import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
+import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigType;
 
 import java.util.List;
@@ -34,5 +37,10 @@ public interface FormConfigTypeRepository {
      * 删除
      */
     int deleteFormConfigType(List<String> idList);
+
+    /**
+     * 根据表单分类查询表单配置列表
+     */
+    PageResult<FormConfig> queryFormConfigByType(FormConfigPageQuery pageQuery);
 
 }

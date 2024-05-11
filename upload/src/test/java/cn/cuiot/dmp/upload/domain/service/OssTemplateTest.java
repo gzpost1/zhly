@@ -94,7 +94,7 @@ public class OssTemplateTest {
             String contentType = Files.probeContentType(Paths.get(file.getName()));
             FileInputStream inputStream = new FileInputStream(file);
             String url = ossTemplate
-                    .putObject(bucketName, "img/test.jpg", inputStream, contentType, true);
+                    .putObject(bucketName, "img/test.jpg", inputStream, contentType, false);
             log.info("url:{}", url);
         } catch (Exception e) {
             e.printStackTrace();
@@ -143,7 +143,7 @@ public class OssTemplateTest {
     @Test
     void getPresignedObjectUrl() {
         String bucketName = "zhlypt";
-        String objectName = "img/test.jpg";
+        String objectName = "img/202405/1788411614841638914.jpg";
         String presignedObjectUrl = ossTemplate.getPresignedObjectUrl(bucketName, objectName, 60);
         log.info("presignedObjectUrl:{}", presignedObjectUrl);
     }

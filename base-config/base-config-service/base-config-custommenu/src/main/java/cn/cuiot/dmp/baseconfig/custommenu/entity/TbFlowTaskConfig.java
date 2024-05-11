@@ -33,12 +33,6 @@ public class TbFlowTaskConfig extends YjBaseEntity {
     private Long businessTypeId;
 
     /**
-     * 所属组织
-     */
-    @TableField(value = "org_id")
-    private Long orgId;
-
-    /**
      * 任务描述
      */
     @TableField(value = "remark")

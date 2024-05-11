@@ -27,6 +27,11 @@ public class GetOrganizationVO {
     private String orgName;
 
     /**
+     * 企业编码
+     */
+    private String orgKey;
+
+    /**
      * 管理姓名
      */
     private String adminName;

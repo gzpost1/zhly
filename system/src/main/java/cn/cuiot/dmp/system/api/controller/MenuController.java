@@ -47,10 +47,10 @@ public class MenuController extends BaseController {
      * 获取菜单目录
      */
     @PostMapping(value = "/getAllMenu", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<MenuTreeNode> getMenu() {
+    public List<MenuTreeNode> getMenu(@RequestParam(value = "type",required = false) String type) {
         String orgId = getOrgId();
         String userId = getUserId();
-        return menuService.getAllMenu(orgId, userId);
+        return menuService.getAllMenu(orgId, userId,type);
     }
 
     /**

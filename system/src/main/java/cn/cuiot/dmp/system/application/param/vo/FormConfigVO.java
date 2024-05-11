@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.system.application.param.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * @author caorui
@@ -34,8 +36,29 @@ public class FormConfigVO implements Serializable {
     private Long typeId;
 
     /**
+     * 分类名称（合并后的层级名称，e.g.巡检>设备巡检）
+     */
+    private String typeName;
+
+    /**
      * 状态(0:禁用,1:正常)
      */
     private Byte status;
+
+    /**
+     * 表单配置详情
+     */
+    private String formConfigDetail;
+
+    /**
+     * 创建人
+     */
+    private String createdName;
+
+    /**
+     * 创建时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createdOn;
 
 }

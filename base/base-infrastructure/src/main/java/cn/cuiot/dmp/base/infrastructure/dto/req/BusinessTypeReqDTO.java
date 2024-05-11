@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.base.infrastructure.dto.req;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -12,6 +14,8 @@ import java.util.List;
  * @date 2024/5/6
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class BusinessTypeReqDTO implements Serializable {
 
     private static final long serialVersionUID = 500044746805601568L;

@@ -8,6 +8,7 @@ import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskConfigUpdateDto;
 import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskInfoPageDto;
 import cn.cuiot.dmp.baseconfig.custommenu.dto.TbFlowTaskInfoQuery;
 import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskConfigVo;
+import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskInfoVo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -15,6 +16,8 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,13 +26,18 @@ import cn.cuiot.dmp.baseconfig.custommenu.mapper.TbFlowTaskConfigMapper;
 import cn.cuiot.dmp.baseconfig.custommenu.entity.TbFlowTaskConfig;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class TbFlowTaskConfigService extends ServiceImpl<TbFlowTaskConfigMapper, TbFlowTaskConfig> {
     @Autowired
     private TbFlowTaskInfoService flowTaskInfoService;
+    @Autowired
+    private TbFlowTaskOrgService flowTaskOrgService;
 
 
     /**
@@ -38,7 +46,23 @@ public class TbFlowTaskConfigService extends ServiceImpl<TbFlowTaskConfigMapper,
      * @return
      */
     public IPage<FlowTaskInfoPageDto> queryForPage(TbFlowTaskInfoQuery query) {
-        return baseMapper.queryForPage(new Page(query.getCurrentPage(), query.getPageSize()), query);
+        IPage<FlowTaskInfoPageDto> flowTaskInfoPageDtoIPage = baseMapper.queryForPage(new Page(query.getPageNo(), query.getPageSize()), query);
+        //填充每一行的组织机构ID
+        if (Objects.nonNull(flowTaskInfoPageDtoIPage) && CollectionUtils.isNotEmpty(flowTaskInfoPageDtoIPage.getRecords())) {
+            List<Long> dataIds = flowTaskInfoPageDtoIPage.getRecords().stream().map(FlowTaskInfoPageDto::getId).collect(Collectors.toList());
+            Map<Long, String> orgNameMap = flowTaskOrgService.queryOrgNameByFlowConfigIds(dataIds);
+            if (Objects.nonNull(orgNameMap)) {
+                flowTaskInfoPageDtoIPage.getRecords().forEach(e -> {
+                    if (orgNameMap.containsKey(e.getId())) {
+                        List<Long> orgIds = Arrays.stream(StringUtils.split(orgNameMap.get(e.getId()), ","))
+                                .map(idstr -> Long.valueOf(idstr)).collect(Collectors.toList());
+                        e.setOrgId(orgIds);
+                    }
+                });
+            }
+
+        }
+        return flowTaskInfoPageDtoIPage;
     }
 
     /**
@@ -74,7 +98,8 @@ public class TbFlowTaskConfigService extends ServiceImpl<TbFlowTaskConfigMapper,
         this.removeByIds(ids);
         //2 删除任务对象
         flowTaskInfoService.deleteByTaskConfigIds(ids);
-
+        //3 删除任务组织中间表
+        flowTaskOrgService.deleteByFlowConfigIds(ids);
     }
 
     /**
@@ -104,6 +129,9 @@ public class TbFlowTaskConfigService extends ServiceImpl<TbFlowTaskConfigMapper,
 
         //创建任务对象
         flowTaskInfoService.create(entity.getId(), createDto.getTaskInfoList());
+
+        //创建流程和组织的中间表
+        flowTaskOrgService.saveFlowOrg(entity.getId(), createDto.getOrgId());
     }
 
     /**
@@ -120,6 +148,8 @@ public class TbFlowTaskConfigService extends ServiceImpl<TbFlowTaskConfigMapper,
         //更新任务对象
         flowTaskInfoService.updateList(config.getId(),updateDto.getTaskInfoList());
 
+        //修改流程和组织的中间表
+        flowTaskOrgService.updateFlowOrg(updateDto.getId(), updateDto.getOrgId());
     }
 
     /**
@@ -132,7 +162,19 @@ public class TbFlowTaskConfigService extends ServiceImpl<TbFlowTaskConfigMapper,
         TbFlowTaskConfig config = this.getById(id);
         if(config != null){
             BeanUtils.copyProperties(config, flowTaskConfigVo);
-            flowTaskConfigVo.setTaskInfoList(flowTaskInfoService.queryByTaskConfigId(id));
+            List<FlowTaskInfoVo> flowTaskInfoVos = flowTaskInfoService.queryByTaskConfigId(id);
+            if(CollectionUtils.isNotEmpty(flowTaskInfoVos)){
+                //根据sort排序
+                flowTaskInfoVos = flowTaskInfoVos.stream().sorted((e1, e2) -> e1.getSort().compareTo(e2.getSort())).collect(Collectors.toList());
+
+                List<Long> taskMenuIds = flowTaskInfoVos.stream().map(FlowTaskInfoVo::getFormId).collect(Collectors.toList());
+                flowTaskConfigVo.setTaskMenuIds(taskMenuIds);
+            }
+            flowTaskConfigVo.setTaskInfoList(flowTaskInfoVos);
+
+            //查询流程和组织的中间表
+            List<Long> orgIds = flowTaskOrgService.queryOrgIdsByFlowConfigId(id);
+            flowTaskConfigVo.setOrgId(orgIds);
         }
         return flowTaskConfigVo;
     }

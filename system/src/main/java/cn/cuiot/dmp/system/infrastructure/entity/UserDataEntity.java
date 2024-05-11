@@ -21,6 +21,11 @@ public class UserDataEntity {
     private String username;
 
     /**
+     * 姓名
+     */
+    private String name;
+
+    /**
      * 用户类型（1：实体用户）
      */
     private Integer userType;
@@ -142,4 +147,49 @@ public class UserDataEntity {
      */
     private String longTimeLogin;
 
+
+    /**
+     * 岗位ID
+     */
+    private Long postId;
+
+    /**
+     * 岗位名称
+     */
+    private String postName;
+
+    /**
+     * 备注
+     */
+    private String remark;
+
+    /**
+     * 组织id
+     */
+    private String deptId;
+
+    /**
+     * 组织名
+     */
+    private String deptName;
+
+    /**
+     * 组织名路径
+     */
+    private String deptPathName;
+
+    /**
+     * 角色id
+     */
+    private String roleId;
+
+    /**
+     * 角色名称
+     */
+    private String roleName;
+
+    /**
+     * 角色key
+     */
+    private String roleKey;
 }

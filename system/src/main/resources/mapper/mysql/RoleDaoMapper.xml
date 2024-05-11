@@ -276,6 +276,7 @@
         and o.pk_org_id = #{orgId} limit 1
     </select>
 
+
     <insert id="insertMenusRole" parameterType="cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo">
         INSERT INTO menu_role(pk_menu_id,pk_role_id,created_on,created_by,created_by_type)
         VALUES
@@ -283,5 +284,16 @@
             #{menuId}, #{id},#{updatedOn}, #{updatedBy}, #{updatedByType}
         </foreach>
     </insert>
+
+    <select id="selectRoleByName"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO">
+        select
+        <include refid="role_column"/>
+        from role r
+        LEFT JOIN org_role o ON r.id = o.pk_role_id
+        WHERE r.role_name = #{roleName}
+        and r.delete_flag = 0
+        and o.pk_org_id = #{orgId} limit 1
+    </select>
 
 </mapper>

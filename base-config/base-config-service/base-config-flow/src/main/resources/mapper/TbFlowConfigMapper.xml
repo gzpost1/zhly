@@ -7,7 +7,6 @@
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="business_type_id" jdbcType="BIGINT" property="businessTypeId" />
-    <result column="org_id" jdbcType="BIGINT" property="orgId" />
     <result column="process" jdbcType="LONGVARCHAR" property="process" />
     <result column="logo" jdbcType="VARCHAR" property="logo" />
     <result column="notify_setting" jdbcType="LONGVARCHAR" property="notifySetting" />
@@ -26,26 +25,29 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, `name`, business_type_id, org_id, `process`, logo, notify_setting, remark, common_config_dto, 
+    id, `name`, business_type_id,  `process`, logo, notify_setting, remark, common_config_dto,
     `status`, company_id, update_time, update_user, create_time, create_user, deleted
   </sql>
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto">
     select
-    id, `name`, business_type_id, org_id, remark,`status`, create_time, create_user
+    id, `name`, business_type_id, remark,`status`, create_time, create_user
     from tb_flow_config
     <where>
       <if test="query.name != null and query.name != ''">
         and name like concat('%', #{query.name}, '%')
       </if>
       <if test="query.orgId != null">
-        and org_id = #{query.orgId}
+        and id in (SELECT flow_config_id from  tb_flow_config_org where org_id like concat( #{query.orgId}, '%'))
       </if>
       <if test="query.status != null">
         and status = #{query.status}
       </if>
       <if test="query.companyId != null">
         and company_id = #{query.companyId}
+      </if>
+      <if test="query.businessTypeId != null">
+        and business_type_id = #{query.businessTypeId}
       </if>
     </where>
   </select>

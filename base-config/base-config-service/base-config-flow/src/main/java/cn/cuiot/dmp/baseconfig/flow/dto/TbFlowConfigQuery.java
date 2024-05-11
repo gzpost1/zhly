@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.dto;
 
-import cn.cuiot.dmp.query.PageQuery;
+import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;
 
 /**
@@ -29,4 +29,9 @@ public class TbFlowConfigQuery extends PageQuery {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 业务分类
+     */
+    private Long businessTypeId;
 }

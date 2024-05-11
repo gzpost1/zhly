@@ -2,6 +2,7 @@ package cn.cuiot.dmp.system.api.controller;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -10,6 +11,7 @@ import cn.cuiot.dmp.system.application.service.RoleService;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CreateRoleDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO;
+import com.google.common.collect.Lists;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,13 +46,13 @@ public class RoleController extends BaseController {
     @RequiresPermissions
     @GetMapping(value = "/listRoles", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<RoleDTO> getRoleListByPage(
-            @RequestParam(value = "currentPage", defaultValue = "1") Integer currentPage,
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "roleName", required = false) String roleName,
             @RequestParam(value = "roleKey", required = false) String roleKey
     ) {
         // 参数校验
-        if (null == currentPage || currentPage.compareTo(0) <= 0 ||
+        if (null == pageNo || pageNo.compareTo(0) <= 0 ||
                 null == pageSize || pageSize.compareTo(100) > 0 || pageSize.compareTo(0) <= 0) {
             throw new BusinessException(ResultCode.REQUEST_FORMAT_ERROR);
         }
@@ -58,7 +60,7 @@ public class RoleController extends BaseController {
         Map<String, Object> paramsMap = new HashMap<String, Object>(6) {{
             put("orgId", getOrgId());
             put("userId", getUserId());
-            put("currentPage", currentPage);
+            put("pageNo", pageNo);
             put("pageSize", pageSize);
             put("roleName", roleName);
             put("roleKey", roleKey);
@@ -99,49 +101,24 @@ public class RoleController extends BaseController {
      * 删除角色
      */
     @RequiresPermissions
-    @PostMapping(value = "deleteRoles", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> deleteRoles(@RequestBody Map<String, List<Long>> paramsMap) {
-        List<Long> idList = paramsMap.get("id");
-        if (idList.size() < 1) {
-            throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
-        }
-
+    @PostMapping(value = "deleteRole", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Map<String, Object> deleteRoles(@RequestBody @Valid IdParam param) {
         Map<String, Object> resultMap = new HashMap<>(1);
         RoleBo roleBo = new RoleBo();
         roleBo.setSessionOrgId(LoginInfoHolder.getCurrentOrgId().toString());
-        roleBo.setDeleteIdList(idList);
+        roleBo.setDeleteIdList(Lists.newArrayList(param.getId()));
         resultMap.put("succeedCount", this.roleService.deleteRoles(roleBo));
         return resultMap;
     }
 
     /**
-     * 查询角色详情（系统预置角色）
-     */
-    @RequiresPermissions
-    @GetMapping(value = "/getRoleInfo", produces = MediaType.APPLICATION_JSON_VALUE)
-    public RoleDTO getRoleInfo(@RequestParam("id") String id) {
-        if (StringUtils.isBlank(id)) {
-            throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
-        }
-
-        try {
-            Long.parseLong(id);
-        } catch (NumberFormatException nfe) {
-            throw new BusinessException(ResultCode.INVALID_PARAM_TYPE);
-        }
-
-        return this.roleService.getRoleInfo(Long.valueOf(getOrgId()), Long.valueOf(id));
-    }
-
-
-    /**
-     * 查询当前角色所有信息（自定角色，含菜单集合）
+     * 查询当前角色详情
      */
     @GetMapping(value = "/getRoleOne", produces = MediaType.APPLICATION_JSON_VALUE)
     public RoleDTO getRoleOne(@RequestParam(value = "id", required = true) String roleId) {
         String orgId = getOrgId();
         String userId = getUserId();
-        return roleService.getRoleAll(roleId, orgId, userId);
+        return roleService.getRoleInfo(roleId, orgId, userId);
     }
 
 
@@ -161,23 +138,12 @@ public class RoleController extends BaseController {
     @PostMapping(value = "/updateRole", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> updateRole(@RequestBody RoleBo roleBo) {
         if (null == roleBo || StringUtils.isBlank(String.valueOf(roleBo.getId())) || StringUtils
-                .isBlank(roleBo.getRoleName())
-                || StringUtils.isBlank(roleBo.getRoleKey()) || StringUtils
-                .isBlank(String.valueOf(roleBo.getPermit()))) {
+                .isBlank(roleBo.getRoleName())) {
             throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
         }
-        try {
-            roleBo.setSessionUserId(LoginInfoHolder.getCurrentUserId().toString());
-            roleBo.setSessionOrgId(LoginInfoHolder.getCurrentOrgId().toString());
-            roleBo.getId();
-            roleBo.getPermit();
-        } catch (NumberFormatException nfe) {
-            throw new BusinessException(ResultCode.INVALID_PARAM_TYPE);
-        }
-
-        Map<String, Object> resultMap = new HashMap<>(1);
         roleBo.setSessionUserId(LoginInfoHolder.getCurrentUserId().toString());
         roleBo.setSessionOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        Map<String, Object> resultMap = new HashMap<>(1);
         resultMap.put("id", this.roleService.updateRole(roleBo));
         return resultMap;
     }

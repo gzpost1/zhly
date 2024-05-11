@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.system.domain.repository;
 
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
-import cn.cuiot.dmp.query.PageResult;
+import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.repository.Repository;
 import cn.cuiot.dmp.system.domain.entity.Organization;
 import cn.cuiot.dmp.system.domain.query.OrganizationCommonQuery;

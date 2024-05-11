@@ -15,6 +15,7 @@ import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.common.utils.RandomCodeWorker;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
@@ -285,9 +286,13 @@ public class OrganizationServiceImpl implements OrganizationService {
          * 权限配置
          */
         List<String> menuList = dto.getMenuList();
+        int size = menuList.size();
         List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(orgTypeId);
         menuList = menuList.stream().filter(menuIdList::contains).distinct()
                 .collect(Collectors.toList());
+        if(size!=menuList.size()){
+            throw new BusinessException(ResultCode.CANNOT_OPERATION,"配置企业权限有误");
+        }
 
         //账户类型为企业账户
         Organization organization = Organization.builder()
@@ -453,10 +458,16 @@ public class OrganizationServiceImpl implements OrganizationService {
         /**
          * 保存菜单权限
          */
-        /*List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(dto.getOrgTypeId());
-        List<String> menuList = menuIdList.stream().filter(o -> dto.getMenuList().contains(o))
-                .collect(Collectors.toList());*/
+        Long orgTypeId = OrgTypeEnum.ENTERPRISE.getValue();
         List<String> menuList = dto.getMenuList();
+        int size = menuList.size();
+        List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(orgTypeId);
+        menuList = menuList.stream().filter(menuIdList::contains).distinct()
+                .collect(Collectors.toList());
+        if(size!=menuList.size()){
+            throw new BusinessException(ResultCode.CANNOT_OPERATION,"配置企业权限有误");
+        }
+
         orgMenuDao.deleteByOrgId(pkOrgId);
         if (!CollectionUtils.isEmpty(menuList)) {
             List<OrgMenuDto> menuDtoList = menuList.stream().map(ite -> {
@@ -637,13 +648,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public PageResult<ListOrganizationVO> commercialOrgList(ListOrganizationDto dto) {
-        PageMethod.startPage(dto.getCurrentPage(), dto.getPageSize());
-        List<ListOrganizationVO> voList = queryOrgList(dto);
-        PageInfo<ListOrganizationVO> pageInfo = new PageInfo<>(voList);
-        return new PageResult<>(pageInfo);
-    }
-
-    private List<ListOrganizationVO> queryOrgList(ListOrganizationDto dto) {
         // 获取子组织
         if (StringUtils.isNotBlank(dto.getDeptId())) {
             List deptIds = departmentService
@@ -655,16 +659,15 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (!StringUtils.isEmpty(dto.getPhoneNumber())) {
             String orgId = organizationDao
                     .getOrgIdByUserPhoneNumber(Sm4.encryption(dto.getPhoneNumber()));
-            if (StringUtils.isEmpty(orgId)) {
-                return Collections.emptyList();
-            }
             dto.setOrgId(orgId);
         }
+        PageMethod.startPage(dto.getPageNo(), dto.getPageSize());
         List<ListOrganizationVO> voList = organizationDao.getCommercialOrgList(dto);
         for (ListOrganizationVO vo : voList) {
             vo.setPhoneNumber(Sm4.decrypt(vo.getPhoneNumber()));
         }
-        return voList;
+        PageInfo<ListOrganizationVO> pageInfo = new PageInfo<>(voList);
+        return new PageResult<>(pageInfo);
     }
 
     private void removeOfflineCommand(Long id) {
@@ -919,6 +922,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         OrgTypeDto orgTypeDto = organizationDao.getOrgType(vo.getOrgTypeId());
         vo.setOrgTypeName(orgTypeDto.getName());
 
+        //设置已勾选配置的菜单权限
+        vo.setMenuList(orgMenuDao.getMenuListByOrgId(pkOrgId.toString()));
+
         OrganizationChangeDto changeDto = new OrganizationChangeDto();
         changeDto.setId(SnowflakeIdWorkerUtil.nextId());
         changeDto.setPkOrgId(pkOrgId);
@@ -962,6 +968,9 @@ public class OrganizationServiceImpl implements OrganizationService {
             String grantDeptId = userDao.getUserGrantDeptId(organizationChangeDto.getPkOrgId());
             if (!departmentUtil.checkPrivilege(loginDeptId, grantDeptId)) {
                 throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            }
+            if(StringUtils.isNotBlank(organizationChangeDto.getChangeData())){
+                organizationChangeDto.setChangeDataObj(JsonUtil.readValue(organizationChangeDto.getChangeData(),GetOrganizationVO.class));
             }
         }
         return organizationChangeDto;

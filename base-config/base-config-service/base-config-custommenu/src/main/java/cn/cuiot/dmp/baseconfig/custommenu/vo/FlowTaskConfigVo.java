@@ -1,13 +1,7 @@
 package cn.cuiot.dmp.baseconfig.custommenu.vo;
 
-import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskInfoUpdateDto;
 import lombok.Data;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -33,7 +27,7 @@ public class FlowTaskConfigVo {
     /**
      * 所属组织
      */
-    private Long orgId;
+    private List<Long> orgId;
 
     /**
      * 任务描述
@@ -44,4 +38,9 @@ public class FlowTaskConfigVo {
      * 任务对象信息
      */
     private List<FlowTaskInfoVo> taskInfoList;
+
+    /**
+     * 任务表单ID
+     */
+    private List<Long> taskMenuIds;
 }

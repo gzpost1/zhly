@@ -4,7 +4,9 @@ import lombok.Data;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @Description 流程保存
@@ -29,8 +31,8 @@ public class FlowEngineInsertDto {
     /**
      * 所属组织
      */
-    @NotNull(message = "所属组织不能为空")
-    private Long orgId;
+    @NotEmpty(message = "所属组织不能为空")
+    private List<Long> orgId;
 
     /**
      * 流程定义json

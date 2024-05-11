@@ -1,22 +1,24 @@
 package cn.cuiot.dmp.system.api.controller;
 
 import static cn.cuiot.dmp.common.constant.ResultCode.OLD_PASSWORD_IS_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.PARAM_CANNOT_NULL;
 import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORDS_NOT_EQUALS;
-import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_EMPTY;
 import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_INVALID;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_OLD_INVALID;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_NOT_EXIST;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
-import cn.cuiot.dmp.common.constant.CacheConst;
+import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.utils.Const;
+import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -25,28 +27,40 @@ import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.ChangeUserStatusDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.DeleteUserDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.ExportUserCmd;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.ImportUserDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertUserDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.LabelTypeDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.ResetPasswordReqDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.MoveUserDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SmsCodeCheckReqDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.SmsCodeCheckStrongerReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdatePasswordDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateUserDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
-import cn.cuiot.dmp.system.infrastructure.utils.VerifyUnit;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.UserExportVo;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.UserImportDownloadVo;
+import cn.cuiot.dmp.system.infrastructure.utils.ExcelUtils;
+import com.alibaba.fastjson.JSONObject;
 import com.github.houbb.sensitive.core.api.SensitiveUtil;
+import com.google.common.base.Splitter;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -55,8 +69,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
+ * 用户管理
+ *
  * @author guoying
  * @className LogControllerImpl
  * @description 用户管理
@@ -70,37 +87,6 @@ public class UserController extends BaseController {
      * 最大分页数
      */
     private static final int MAX_PAGE_SIZE = 100;
-
-    /**
-     * 根据用户名查询
-     */
-    private static final Integer SEARCH_TYPE_USER_NAME = 1;
-
-    /**
-     * 根据手机号码查询
-     */
-    private static final Integer SEARCH_TYPE_PHONE = 2;
-
-    /**
-     * 根据角色查询
-     */
-    private static final Integer SEARCH_TYPE_ROLE_NAME = 3;
-
-    /**
-     * 根据组织名查询
-     */
-    private static final Integer SEARCH_TYPE_DEPARTMENT_NAME = 4;
-
-    private static final String FALSE = "false";
-
-    @Value("${self.debug}")
-    private String debug;
-
-    /**
-     * 自动注入verifyUnit
-     */
-    @Autowired
-    private VerifyUnit verifyUnit;
 
     @Autowired
     private UserService userService;
@@ -116,16 +102,17 @@ public class UserController extends BaseController {
     /**
      * 用户列表筛选-分页
      */
-    @RequiresPermissions
     @GetMapping(value = "/user/listUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<UserDataResDTO> getPage(
             @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
+            @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "deptId", required = false) Long deptId,
-            @RequestParam(value = "searchType", required = false) Integer searchType,
-            @RequestParam(value = "searchContent", required = false) String searchContent,
-            @RequestParam(value = "currentPage", required = false, defaultValue = "1") int currentPage,
+            @RequestParam(value = "deptIds", required = false) String deptIds,
+            @RequestParam(value = "status", required = false) Byte status,
+            @RequestParam(value = "pageNo", required = false, defaultValue = "1") int pageNo,
             @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize) {
+
         if (pageSize > MAX_PAGE_SIZE) {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT);
         }
@@ -153,16 +140,15 @@ public class UserController extends BaseController {
             }
         }
 
-        if (searchType != null && StringUtils.hasLength(searchContent)) {
-            if (SEARCH_TYPE_USER_NAME.equals(searchType)) {
-                params.put("usernameLike", searchContent);
-            } else if (SEARCH_TYPE_ROLE_NAME.equals(searchType)) {
-                params.put("roleNameLike", searchContent);
-            } else if (SEARCH_TYPE_PHONE.equals(searchType)) {
-                params.put("phoneNumber", Sm4.encryption(searchContent));
-            } else if (SEARCH_TYPE_DEPARTMENT_NAME.equals(searchType)) {
-                params.put("departmentNameLike", searchContent);
-            }
+        if (!StringUtils.isEmpty(deptIds)) {
+            params.put("deptIds", Splitter.on(",").splitToList(deptIds));
+        }
+
+        if (Objects.nonNull(status)) {
+            params.put("status", status);
+        }
+        if (!StringUtils.isEmpty(name)) {
+            params.put("name", name);
         }
         if (!StringUtils.isEmpty(userName)) {
             params.put("userName", userName);
@@ -171,8 +157,7 @@ public class UserController extends BaseController {
             String decrypt = Sm4.encryption(phoneNumber);
             params.put("phone", decrypt);
         }
-        String orgId = getOrgId();
-        return userService.getPage(params, sessionOrgId, currentPage, pageSize, orgId);
+        return userService.getPage(params, sessionOrgId, pageNo, pageSize);
     }
 
     /**
@@ -182,95 +167,271 @@ public class UserController extends BaseController {
     @GetMapping(value = "/user/getUser", produces = MediaType.APPLICATION_JSON_VALUE)
     public UserDataResDTO getDetail(@RequestParam(value = "id") String id) {
         // 获取session中的orgId
-        String sessionOrgId = getOrgId();
-        String sessionUserId = getUserId();
+        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
         if (StringUtils.isEmpty(sessionOrgId)) {
             throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
         }
-        //对敏感信息脱敏返回--2020/12/07 新增
+        //对敏感信息脱敏返回
         return SensitiveUtil.desCopy(userService.getOne(id, sessionOrgId, sessionUserId));
     }
 
     /**
-     * 新增用户（虚拟用户）
+     * 新增用户
      */
     @RequiresPermissions
     @PostMapping(value = "/user/insertUserD", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void insertUser(@RequestBody @Valid InsertUserDTO userEntity) {
-        String orgId = getOrgId();
-        userEntity.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
-        userService.insertUserD(userEntity, orgId, getUserName());
+    public void insertUser(@RequestBody @Valid InsertUserDTO dto) {
+        String loginOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+        String loginUserId = LoginInfoHolder.getCurrentUserId().toString();
+
+        UserBo userBo = new UserBo();
+        userBo.setOrgId(loginOrgId);
+        userBo.setLoginUserId(loginUserId);
+        userBo.setRoleId(dto.getRoleId());
+        userBo.setUsername(dto.getUsername());
+        userBo.setName(dto.getName());
+        userBo.setPhoneNumber(dto.getPhoneNumber());
+        userBo.setDeptId(dto.getDeptId());
+        userBo.setPostId(dto.getPostId());
+        userBo.setRemark(dto.getRemark());
+
+        UserCsvDto userInfo = userService.insertUser(userBo);
+
+        // 文件流输出
+        List<JSONObject> jsonList = new ArrayList<>();
+        JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSON(userInfo).toString());
+        jsonList.add(jsonObject);
+
+        List<Object> head = new ArrayList<>();
+        head.add("username");
+        head.add("password");
+
+        response.setContentType("text/csv;charset=\"GBK\"");
+        response.setHeader("Content-Disposition", "attachment; filename=credentials.csv");
+        String[] split = userBo.getUsername().split("@");
+        String username = split[0];
+        try {
+            CommonCsvUtil.createCsvFile(head, jsonList, username + "credentials", response);
+        } catch (UnsupportedEncodingException e) {
+            log.error("insertUser error.", e);
+        }
     }
 
     /**
-     * 用户管理编辑
+     * 修改用户
      */
     @RequiresPermissions
     @PostMapping(value = "/user/updateUser", produces = MediaType.APPLICATION_JSON_VALUE)
-    public IdmResDTO updateUser(@RequestBody @Valid InsertUserDTO userEntity) {
-        if (!StringUtils.hasLength(userEntity.getUserId()) || !StringUtils
-                .hasLength(userEntity.getRoleId())) {
-            return new IdmResDTO(ResultCode.PARAM_CANNOT_NULL);
-        }
-        // 不允许修改自己的信息
-        if (getUserId().equals(userEntity.getUserId())) {
-            return new IdmResDTO(ResultCode.NO_OPERATION_PERMISSION);
-        }
+    public IdmResDTO updateUser(@RequestBody @Valid UpdateUserDTO dto) {
+
         UserBo userBo = new UserBo();
-        userBo.setId(Long.valueOf(userEntity.getUserId()));
+        userBo.setId(dto.getId());
         userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
         userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
-        userBo.setRoleId(userEntity.getRoleId());
-        userBo.setId(Long.parseLong(getUserId()));
-        userBo.setEmail(userEntity.getEmail());
-        userBo.setPhoneNumber(userEntity.getPhoneNumber());
-        if (StringUtils.hasLength(userBo.getPhoneNumber())
-                && !userBo.getPhoneNumber().matches(RegexConst.PHONE_NUMBER_REGEX)) {
-            return new IdmResDTO(ResultCode.PHONE_NUMBER_IS_INVALID);
-        }
-        if (StringUtils.hasLength(userBo.getEmail())
-                && !userBo.getEmail().matches(RegexConst.EMAIL_REGEX)) {
-            return new IdmResDTO(ResultCode.EMAIL_IS_INVALID);
-        }
-        userBo.setResetPassword(userEntity.getResetPassword());
-        userBo.setPassword(userEntity.getPassWord());
-        userBo.setDeptId(userEntity.getDeptId());
-        userBo.setContactPerson(userEntity.getContactPerson());
-        userBo.setContactAddress(userEntity.getContactAddress());
-        if (getUserName().equals("admin") && Objects
-                .equals(Const.STR_1, userEntity.getLongTimeLogin())) {
-            userBo.setLongTimeLogin(Const.STR_1);
-        } else {
-            userBo.setLongTimeLogin(null);
-        }
-        return userService.updatePermit(userBo);
+        userBo.setRoleId(dto.getRoleId());
+        userBo.setUsername(dto.getUsername());
+        userBo.setName(dto.getName());
+        userBo.setPhoneNumber(dto.getPhoneNumber());
+        userBo.setDeptId(dto.getDeptId());
+        userBo.setPostId(dto.getPostId());
+        userBo.setRemark(dto.getRemark());
+
+        return userService.updateUser(userBo);
+    }
+
+
+    /**
+     * 批量移动用户
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/user/moveUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO moveUsers(@RequestBody @Valid MoveUserDTO dto) {
+
+        UserBo userBo = new UserBo();
+        userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
+        userBo.setDeptId(dto.getDeptId());
+        userBo.setIds(dto.getIds());
+
+        userService.moveUsers(userBo);
+
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 批量启停用
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/user/changeUserStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO changeUserStatus(@RequestBody @Valid ChangeUserStatusDTO dto) {
+
+        UserBo userBo = new UserBo();
+        userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
+        userBo.setStatus(dto.getStatus());
+        userBo.setIds(dto.getIds());
+
+        userService.changeUserStatus(userBo);
+
+        return IdmResDTO.success();
     }
 
     /**
      * 批量删除用户
      */
+    @RequiresPermissions
     @PostMapping(value = "/user/deleteUsers", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> deleteUsers(@RequestBody List<Long> ids) {
-        if (CollectionUtils.isEmpty(ids)) {
-            throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
-        }
+    public Map<String, Object> deleteUsers(@RequestBody @Valid DeleteUserDTO dto) {
         // 获取session中的userId
-        Long userId = LoginInfoHolder.getCurrentUserId();
-        if (Objects.isNull(userId)) {
-            throw new BusinessException(ResultCode.USER_ID_NOT_EXIST);
+        Long sessionUserId = LoginInfoHolder.getCurrentUserId();
+        if (Objects.isNull(sessionUserId)) {
+            throw new BusinessException(ResultCode.USER_ID_NOT_EXIST, "获取当前登录信息失败");
         }
         // 获取session中的orgId
         String sessionOrgId = getOrgId();
         if (StringUtils.isEmpty(sessionOrgId)) {
-            throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
+            throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST, "获取当前登录信息失败");
         }
         UserBo userBo = new UserBo();
         userBo.setOrgId(sessionOrgId);
-        userBo.setId(userId);
-        userBo.setIds(ids);
+        userBo.setLoginUserId(sessionUserId.toString());
+        userBo.setIds(dto.getIds());
         Map<String, Object> resultMap = new HashMap<>(1);
         resultMap.put("succeedCount", this.userService.deleteUsers(userBo));
         return resultMap;
+    }
+
+
+    /**
+     * 导出用户
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/user/exportUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void exportUsers(@RequestBody @Valid ExportUserCmd dto) throws IOException {
+        UserBo userBo = new UserBo();
+        userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
+        userBo.setDeptId(dto.getDeptId());
+        List<UserExportVo> dataList = userService.exportUsers(userBo);
+
+        List<Map<String, Object>> sheetsList = new ArrayList<>();
+
+        Map<String, Object> sheet1 = ExcelUtils
+                .createSheet("用户列表", dataList, UserExportVo.class);
+
+        sheetsList.add(sheet1);
+
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
+
+        ExcelUtils.downLoadExcel(
+                "user-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                response,
+                workbook);
+    }
+
+    /**
+     * 导入用户
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/user/importUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void importUsers(@RequestParam("file") MultipartFile file,
+            @RequestParam(value = "deptId", required = true) String deptId) throws Exception {
+
+        AssertUtil.isFalse((null == file || file.isEmpty()), "上传文件为空");
+
+        ImportParams params = new ImportParams();
+        params.setHeadRows(1);
+
+        List<ImportUserDto> importDtoList = ExcelImportUtil
+                .importExcel(file.getInputStream(), ImportUserDto.class, params);
+
+        if (org.apache.commons.collections.CollectionUtils.isEmpty(importDtoList)) {
+            throw new BusinessException(ResultCode.REQUEST_FORMAT_ERROR, "excel解析失败");
+        }
+        for(ImportUserDto userDto:importDtoList){
+            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getUsername())){
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，用户名不能为空");
+            }
+            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getName())){
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，姓名不能为空");
+            }
+            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getPhoneNumber())){
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，手机号不能为空");
+            }
+            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getRoleName())){
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，角色不能为空");
+            }
+        }
+        //判断用户名是否重复
+        if(importDtoList.size()!=importDtoList.stream().map(ite->ite.getUsername()).distinct().collect(Collectors.toList()).size()){
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"导入失败，文件中存在用户名重复");
+        }
+        //判断手机号是否重复
+        if(importDtoList.size()!=importDtoList.stream().map(ite->ite.getPhoneNumber()).distinct().collect(Collectors.toList()).size()){
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"导入失败，文件中存在手机号重复");
+        }
+
+
+        UserBo userBo = new UserBo();
+        userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+        userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
+        userBo.setDeptId(deptId);
+        userBo.setImportDtoList(importDtoList);
+
+        List<UserImportDownloadVo> dataList = userService.importUsers(userBo);
+
+        List<Map<String, Object>> sheetsList = new ArrayList<>();
+
+        Map<String, Object> sheet1 = ExcelUtils
+                .createSheet("用户", dataList, UserImportDownloadVo.class);
+
+        sheetsList.add(sheet1);
+
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
+
+        ExcelUtils.downLoadExcel(
+                "user-credentials-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                response,
+                workbook);
+
+    }
+
+
+    /**
+     * 用户管理组织树（懒加载）
+     */
+    @GetMapping(value = "/user/getUserDepartmentTreeLazy", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
+            @Valid GetUserDepartmentTreeLazyReqDto dto) {
+        dto.setLoginUserId(getUserId());
+        dto.setLoginOrgId(getOrgId());
+        return userService.getUserDepartmentTreeLazy(dto);
+    }
+
+    /**
+     * 查询登录用户信息
+     */
+    @PostMapping(value = "/getLoginUserInfo", produces = "application/json;charset=UTF-8")
+    public UserResDTO queryUserById() {
+        // 获取session中的userId
+        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
+        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+        // 判断是否具有查询权限
+        UserResDTO userResDTO = userService
+                .getUserMenuByUserIdAndOrgId(sessionUserId, sessionOrgId);
+        if (userResDTO == null) {
+            // 账号不存在
+            throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
+        }
+        //对加密的手机号码解密--2020/12/08
+        //增加手机号为空判断，在不为空的情况下才做解密处理 --2020/12/15
+        if (null != userResDTO.getPhoneNumber()) {
+            userResDTO.setPhoneNumber(Sm4.decrypt(userResDTO.getPhoneNumber()));
+        }
+        //安全考虑去除密码返回
+        userResDTO.setPassword(null);
+        return SensitiveUtil.desCopy(userResDTO);
     }
 
     /**
@@ -306,29 +467,7 @@ public class UserController extends BaseController {
     }
 
     /**
-     * 用户管理组织树（懒加载）
-     */
-    @GetMapping(value = "/user/getUserDepartmentTreeLazy", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
-            @Valid GetUserDepartmentTreeLazyReqDto dto) {
-        dto.setLoginUserId(getUserId());
-        dto.setLoginOrgId(getOrgId());
-        return userService.getUserDepartmentTreeLazy(dto);
-    }
-
-    /**
-     * 获取标签类型列表
-     */
-    @GetMapping(value = "/user/getLabelTypeList", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<LabelTypeDto> getLabelTypeList(@RequestParam("labelType") String labelType) {
-        if (labelType.isEmpty()) {
-            throw new BusinessException(ResultCode.LABEL_TYPE_NOT_EXIST);
-        }
-        return userService.getLabelTypeList(labelType);
-    }
-
-    /**
-     * 修改手机号
+     * 修改手机号(登录人自行修改)
      */
     @PostMapping(value = "/user/updatePhoneNumber", produces = MediaType.APPLICATION_JSON_VALUE)
     public void updatePhoneNumber(@RequestBody SmsCodeCheckReqDTO dto) {
@@ -360,128 +499,5 @@ public class UserController extends BaseController {
         userService.updatePhoneNumber(userBo);
     }
 
-    /**
-     * 修改手机号
-     */
-    @PostMapping(value = "/user/replacePhoneNumber", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void replacePhoneNumber(@RequestBody SmsCodeCheckStrongerReqDTO dto) {
-        String phoneNumber = Optional.ofNullable(dto).map(d -> d.getPhoneNumber()).orElse(null);
-        if (StringUtils.isEmpty(phoneNumber)) {
-            throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
-        }
-        // 手机号参数校验
-        if (!phoneNumber.matches(RegexConst.PHONE_NUMBER_REGEX)) {
-            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_INVALID);
-        }
-
-        // 获取session中的userId
-        Long userId = LoginInfoHolder.getCurrentUserId();
-        if (Objects.isNull(userId)) {
-            throw new BusinessException(ResultCode.USER_ID_NOT_EXIST);
-        }
-
-        // 加强校验，校验第一步的旧手机号验证
-        String smsCodeOld = Optional.ofNullable(dto).map(SmsCodeCheckStrongerReqDTO::getSmsCodeOld)
-                .orElse(null);
-        if (StringUtils.isEmpty(smsCodeOld)) {
-            // 短信验证码为空
-            throw new BusinessException(SMS_TEXT_OLD_INVALID);
-        }
-        //0.9改动原手机号参数去除，由后端自行获取--2020/12/07
-        String phoneNumberOld = Sm4
-                .decrypt(userService.getUserById(userId.toString()).getPhoneNumber());
-        boolean smsCodeVerified = true;
-        if (FALSE.equals(debug)) {
-            // 短信验证码验证
-            try {
-                smsCodeVerified = verifyUnit.checkSmsCode(
-                        CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumberOld,
-                        phoneNumberOld + smsCodeOld);
-            } catch (BusinessException e) {
-                log.warn("短信验证码错误");
-                throw new BusinessException(SMS_TEXT_OLD_INVALID);
-            }
-            // 验证成功
-            if (!smsCodeVerified) {
-                throw new BusinessException(SMS_TEXT_OLD_INVALID);
-            }
-        }
-
-        // 获取短信验证码
-        String smsCode = Optional.ofNullable(dto).map(d -> d.getSmsCode()).orElse(null);
-        if (StringUtils.isEmpty(smsCode)) {
-            throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
-        }
-
-        UserBo userBo = new UserBo();
-        userBo.setId(userId);
-        userBo.setSmsCode(smsCode);
-        userBo.setPhoneNumber(phoneNumber);
-        userBo.setOrgId(getOrgId());
-        // 更改手机号
-        userService.updatePhoneNumber(userBo);
-    }
-
-    /**
-     * 重置密码
-     *
-     * @param resetPasswordReqDTO 修改密码信息
-     * @return SimpleStringResDTO
-     */
-    @PostMapping(value = "/user/resetPasswordByPhone", produces = MediaType.APPLICATION_JSON_VALUE)
-    public SimpleStringResDTO resetPasswordByPhone(
-            @RequestBody ResetPasswordReqDTO resetPasswordReqDTO) {
-        if (resetPasswordReqDTO == null || StringUtils.isEmpty(resetPasswordReqDTO.getSmsCode())
-                || StringUtils.isEmpty(resetPasswordReqDTO.getPassword())) {
-            throw new BusinessException(PARAM_CANNOT_NULL);
-        }
-        // 获取密码
-        String password = resetPasswordReqDTO.getPassword();
-        // 密码参数校验
-        if (StringUtils.isEmpty(password)) {
-            {
-            }
-            // 密码为空
-            throw new BusinessException(PASSWORD_IS_EMPTY);
-        }
-        // 密码参数校验
-        if (!password.matches(RegexConst.PASSWORD_REGEX)) {
-            // 密码不符合规则
-            throw new BusinessException(PASSWORD_IS_INVALID);
-        }
-        if (!StringUtils.isEmpty(resetPasswordReqDTO.getPasswordAgain())
-                && !password.equals(resetPasswordReqDTO.getPasswordAgain())) {
-            throw new BusinessException(PASSWORDS_NOT_EQUALS);
-        }
-        UserBo userBo = new UserBo();
-        userBo.setId(LoginInfoHolder.getCurrentUserId());
-        userBo.setResetPasswordReqDTO(resetPasswordReqDTO);
-        // 重置密码
-        return userService.updatePasswordByPhoneWithoutSid(userBo);
-    }
-
-    /**
-     * 查询登录用户信息
-     */
-    @PostMapping(value = "/getLoginUserInfo", produces = "application/json;charset=UTF-8")
-    public UserResDTO queryUserById() {
-        // 获取session中的userId
-        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
-        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
-        // 判断是否具有查询权限
-        UserResDTO userResDTO = userService.getUserMenuByUserIdAndOrgId(sessionUserId, sessionOrgId);
-        if (userResDTO == null) {
-            // 账号不存在
-            throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
-        }
-        //对加密的手机号码解密--2020/12/08
-        //增加手机号为空判断，在不为空的情况下才做解密处理 --2020/12/15
-        if (null != userResDTO.getPhoneNumber()) {
-            userResDTO.setPhoneNumber(Sm4.decrypt(userResDTO.getPhoneNumber()));
-        }
-        //安全考虑去除密码返回
-        userResDTO.setPassword(null);
-        return SensitiveUtil.desCopy(userResDTO);
-    }
 
 }

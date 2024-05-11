@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
-import cn.cuiot.dmp.query.PageResult;
+import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.infrastructure.domain.converter.OrganizatioConverter;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntityMapper;

@@ -67,7 +67,7 @@ public class UserResDTO {
      * 注册时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @JSONField(format = "yyyy-MM-dd")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn;
 
     /**
@@ -122,7 +122,7 @@ public class UserResDTO {
      * 最后上线时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @JSONField(format = "yyyy-MM-dd")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastOnlineOn;
 
     /**
@@ -190,4 +190,13 @@ public class UserResDTO {
      */
     private String dGroup;
 
+    /**
+     * 岗位ID
+     */
+    private Long postId;
+
+    /**
+     * 备注
+     */
+    private String remark;
 }

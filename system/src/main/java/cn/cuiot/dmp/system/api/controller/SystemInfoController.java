@@ -30,7 +30,7 @@ public class SystemInfoController {
      */
     @RequiresPermissions
     @PostMapping("/queryForDetail")
-    public SystemInfoVO queryForDetail(@RequestBody @Valid IdParam idParam){
+    public SystemInfoVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return systemInfoService.queryForDetail(idParam.getId());
     }
 
@@ -39,7 +39,7 @@ public class SystemInfoController {
      */
     @RequiresPermissions
     @PostMapping("/queryBySource")
-    public SystemInfoVO queryBySource(@RequestBody @Valid SystemInfoQueryDTO systemInfoQueryDTO){
+    public SystemInfoVO queryBySource(@RequestBody @Valid SystemInfoQueryDTO systemInfoQueryDTO) {
         return systemInfoService.queryBySource(systemInfoQueryDTO);
     }
 
@@ -49,7 +49,7 @@ public class SystemInfoController {
      */
     @RequiresPermissions
     @PostMapping("/createOrUpdate")
-    public int createOrUpdate(@RequestBody @Valid SystemInfoCreateDTO systemInfoCreateDTO){
+    public int createOrUpdate(@RequestBody @Valid SystemInfoCreateDTO systemInfoCreateDTO) {
         return systemInfoService.saveOrUpdateSystemInfo(systemInfoCreateDTO);
     }
 

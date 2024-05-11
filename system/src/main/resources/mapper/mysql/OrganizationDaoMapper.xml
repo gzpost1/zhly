@@ -170,7 +170,7 @@
 
     <select id="getOrganizationChangeById"
             resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationChangeDto">
-        select id, pk_org_id, change_type, change_name, change_date, change_user_id, change_username, change_person
+        select id, pk_org_id, change_type, change_name, change_date, change_user_id, change_username, change_person,change_data
         from organization_change
         where id=#{id}
     </select>

@@ -3,29 +3,25 @@ package cn.cuiot.dmp.system.application.service.impl;
 import static cn.cuiot.dmp.common.constant.ResultCode.INNER_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_ALREADY_EXIST;
 import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_EXIST;
-import static cn.cuiot.dmp.common.constant.ResultCode.RESET_PASSWORD_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_EXPIRED_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.UNAUTHORIZED_ACCESS;
-import static cn.cuiot.dmp.common.constant.ResultCode.USERNAME_IS_SENSITIVE_WORD;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.common.enums.LogLevelEnum;
-import cn.cuiot.dmp.common.enums.StatusCodeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.base.application.annotation.LogRecord;
-import cn.cuiot.dmp.common.log.dto.OperateLogDto;
-import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
-import cn.cuiot.dmp.system.application.service.OperateLogService;
-import cn.cuiot.dmp.common.utils.Const;
-import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.Address;
 import cn.cuiot.dmp.domain.types.Email;
 import cn.cuiot.dmp.domain.types.EncryptedValue;
@@ -35,37 +31,37 @@ import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.domain.types.id.UserId;
-import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
-import cn.cuiot.dmp.system.application.enums.OrgLabelEnum;
-import cn.cuiot.dmp.system.application.enums.ResetPasswordEnum;
 import cn.cuiot.dmp.system.application.enums.RoleTypeEnum;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2EntityAssembler;
 import cn.cuiot.dmp.system.application.param.assembler.UserAssembler;
-import cn.cuiot.dmp.system.application.param.assembler.UserMapper;
 import cn.cuiot.dmp.system.application.param.command.UpdateUserCommand;
-import cn.cuiot.dmp.system.application.param.dto.DepartmentUserDto;
 import cn.cuiot.dmp.system.application.param.dto.UserDTO;
+import cn.cuiot.dmp.system.application.service.MenuService;
+import cn.cuiot.dmp.system.application.service.OperateLogService;
+import cn.cuiot.dmp.system.application.service.SysPostService;
 import cn.cuiot.dmp.system.application.service.UserService;
-import cn.cuiot.dmp.system.application.service.VerifyService;
+import cn.cuiot.dmp.system.domain.entity.Organization;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
+import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
+import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
+import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.OrganizationEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
-import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertUserDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.LabelTypeDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgLabelDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.ResetPasswordReqDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.ImportUserDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserLabelDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.UserExportVo;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.UserImportDownloadVo;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.MenuDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao;
@@ -74,29 +70,18 @@ import cn.cuiot.dmp.system.infrastructure.persistence.dao.RoleDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.SpaceDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDataDao;
-import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
+import cn.cuiot.dmp.system.infrastructure.persistence.mapper.SysPostEntity;
 import cn.cuiot.dmp.system.infrastructure.utils.RandomPwUtils;
-import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
-import cn.cuiot.dmp.system.domain.entity.Organization;
-import cn.cuiot.dmp.system.domain.entity.User;
-import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
-import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
-import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
-import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
-import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.hutool.core.util.DesensitizedUtil;
 import cn.hutool.core.util.PhoneUtil;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.github.houbb.sensitive.api.IStrategy;
 import com.github.houbb.sensitive.core.api.strategory.StrategyPhone;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import java.io.UnsupportedEncodingException;
+import com.google.common.collect.Maps;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -104,14 +89,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -141,8 +125,6 @@ public class UserServiceImpl extends BaseController implements UserService {
     @Autowired
     private RoleDao roleDao;
     @Autowired
-    private UserMapper userMapper;
-    @Autowired
     private MenuDao menuDao;
     @Autowired
     private DepartmentDao departmentDao;
@@ -155,13 +137,16 @@ public class UserServiceImpl extends BaseController implements UserService {
     private SpaceDao spaceDao;
 
     @Autowired
-    private VerifyService verifyService;
+    private MenuService menuService;
 
     @Autowired
     private OrgMenuDao orgMenuDao;
 
     @Autowired
     private UserAssembler userAssembler;
+
+    @Autowired
+    private SysPostService sysPostService;
 
     private static final String ROLE_NAME_LIKE = "roleNameLike";
 
@@ -192,24 +177,809 @@ public class UserServiceImpl extends BaseController implements UserService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+
     @Override
-    public int update(UpdateUserCommand updatedUser) {
-        if (updatedUser.getId() == null) {
-            return 0;
+    public Map<String, String> getDGroup(String orgId, String userId) {
+        return departmentDao.getDgroupByUserIdAndOrgId(orgId, userId);
+    }
+
+    /**
+     * 用户列表筛选-分页
+     */
+    @Override
+    public PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId,
+            int pageNo, int pageSize) {
+        PageInfo<UserDataResDTO> resultPageInfo;
+        try {
+            Organization organization = organizationRepository
+                    .find(new OrganizationId(sessionOrgId));
+            String orgOwner = String.valueOf(organization.getOrgOwner().getValue());
+
+            PageHelper.startPage(pageNo, pageSize);
+            List<UserDataEntity> entities = userDataDao.searchList(params);
+
+            //对entities集合里的手机号解密、脱敏--2020/12/09
+            IStrategy strategyPhone = new StrategyPhone();
+            for (UserDataEntity userDataEntity : entities) {
+                String phoneNumber = Sm4.decrypt(userDataEntity.getPhoneNumber());
+                if (StringUtils.hasLength(phoneNumber)) {
+                    final String phoneSensitive = (String) strategyPhone.des(phoneNumber, null);
+                    userDataEntity.setPhoneNumber(phoneSensitive);
+                }
+                String email = userDataEntity.getEmail();
+                if (StringUtils.hasLength(email)) {
+                    userDataEntity.setEmail(DesensitizedUtil.email(email));
+                }
+            }
+            // 创建分页
+            PageInfo<UserDataEntity> pageInfo = new PageInfo<>(entities);
+            resultPageInfo = userAssembler.dataEntityListToDataDtoList(pageInfo);
+            for (UserDataResDTO userDataResDTO : resultPageInfo.getList()) {
+                String pkUserId = userDataResDTO.getId();
+                userDataResDTO
+                        .setIsOwner(pkUserId.equals(orgOwner) || ROOT_USER_ID.equals(pkUserId));
+            }
+        } catch (BusinessException e) {
+            log.error("getPage error", e);
+            throw new BusinessException(INNER_ERROR);
         }
-        User user = User.builder().build();
-        user.setId(new UserId(updatedUser.getId()));
-        if (updatedUser.getEmail() != null) {
-            user.setEmail(new Email(updatedUser.getEmail()));
+        return new PageResult<>(resultPageInfo);
+    }
+
+    /**
+     * 查询用户详情
+     */
+    @Override
+    public UserDataResDTO getOne(String pkUserId, String sessionOrgId, String sessionUserId) {
+        //判断是否有权限查看
+        Long orgId = this.userDao.getOrgId(Long.valueOf(pkUserId));
+        if (!sessionOrgId.equals(String.valueOf(orgId))) {
+            throw new BusinessException(UNAUTHORIZED_ACCESS);
         }
-        user.setContactPerson(updatedUser.getContactPerson());
-        if (updatedUser.getContactAddress() != null) {
-            user.setContactAddress(new Address(updatedUser.getContactAddress()));
+
+        // 要查询的用户的组织
+        String deptId = userDao.getDeptId(pkUserId, sessionOrgId);
+        DepartmentEntity departmentEntity = departmentDao.selectByPrimary(Long.parseLong(deptId));
+
+        User entity = userRepository.find(new UserId(pkUserId));
+        if (entity == null) {
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
         }
-        if (updatedUser.getLastOnlineIp() != null) {
-            user.setLastOnlineIp(new IP(updatedUser.getLastOnlineIp()));
+
+        UserDataResDTO userDataResDTO = userAssembler.doToDataDTO(entity);
+
+        userDataResDTO.setId(pkUserId);
+
+        //找到该用户对应的角色
+        String roleId = userDao.getRoleId(pkUserId, sessionOrgId);
+        userDataResDTO.setRoleId(roleId);
+        // 找到角色名称
+        String roleName = userDao.getRoleName(roleId);
+        userDataResDTO.setRoleName(roleName);
+        // 找到组织
+        userDataResDTO.setDeptId(deptId);
+        userDataResDTO.setDeptName(departmentEntity.getDepartmentName());
+        userDataResDTO.setDeptPathName(departmentEntity.getPathName());
+        userDataResDTO.setDeptTreePath(departmentEntity.getPath());
+        // 找到租户信息
+        userDataResDTO.setOrgId(sessionOrgId);
+        Organization org = organizationRepository
+                .find(new OrganizationId(Long.valueOf(sessionOrgId)));
+        userDataResDTO.setOrgName(org.getOrgName());
+        String orgDeptId = userDao.getUserGrantDeptId(Long.parseLong(sessionOrgId));
+        if (Strings.isNotBlank(orgDeptId)) {
+            departmentEntity = departmentDao.selectByPrimary(Long.parseLong(orgDeptId));
+            userDataResDTO.setOrgDeptName(departmentEntity.getDepartmentName());
         }
-        return userRepository.save(user) ? 1 : 0;
+        userDataResDTO.setPhoneNumber(entity.getDecryptedPhoneNumber());
+        userDataResDTO.setEmail(entity.getEmail() != null ? entity.getEmail().decrypt() : null);
+
+        //设置岗位名称
+        if (Objects.nonNull(entity.getPostId())) {
+            SysPostEntity postEntity = sysPostService.getById(entity.getPostId());
+            if (Objects.nonNull(postEntity)) {
+                userDataResDTO.setPostName(postEntity.getPostName());
+            }
+        }
+
+        return userDataResDTO;
+    }
+
+    /**
+     * 新增用户
+     */
+    @LogRecord(operationCode = "insertUser", operationName = "新增用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public UserCsvDto insertUser(UserBo userBo) {
+        /**
+         * 判断所选组织是否可选
+         */
+        String loginDeptId = userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId());
+        DepartmentEntity loginDepartment = departmentDao
+                .selectByPrimary(Long.valueOf(loginDeptId));
+        DepartmentEntity departmentEntity = departmentDao
+                .selectByPrimary(Long.parseLong(userBo.getDeptId()));
+        if (!departmentEntity.getPath().startsWith(loginDepartment.getPath())) {
+            throw new BusinessException(ResultCode.DEPARTMENT_ULTRA_VIRES);
+        }
+
+        //获取日志操作对象
+        String[] op = new String[1];
+        op[0] = userBo.getUsername();
+        userBo.setOperationTarget(op);
+
+        /**
+         * 判断所选角色是否可选
+         */
+        List<RoleDTO> roleList = roleDao.selectRoleListByOrgId(userBo.getOrgId());
+        RoleDTO role = null;
+        for (RoleDTO roleDTO : roleList) {
+            if (roleDTO.getId().equals(userBo.getRoleId())) {
+                role = roleDTO;
+                break;
+            }
+        }
+        if (Objects.isNull(role)) {
+            throw new BusinessException(ResultCode.ROLE_NOT_EXIST, "角色不可选");
+        }
+        //默认角色不可选
+        if (RoleTypeEnum.DEFAULT.getCode().equals(role.getRoleType())) {
+            throw new BusinessException(ResultCode.USER_DEFAULT_ROLE_NOT_ALLOW_ERROR);
+        }
+
+        //用户名正则校验
+        String userName = userBo.getUsername();
+        if (!userName.matches(RegexConst.USERNAME_REGEX)) {
+            throw new BusinessException(ResultCode.USERNAME_SEARCH_IN_INVALID);
+        }
+
+        //判断用户名是否已经存在
+        if (Objects.nonNull(userRepository
+                .commonQueryOne(UserCommonQuery.builder().username(userName).build()))) {
+            throw new BusinessException(ResultCode.USER_USERNAME_ERRER);
+        }
+
+        /**
+         * 判断手机号
+         */
+        String phoneNumber = userBo.getPhoneNumber();
+        if (StringUtils.hasLength(phoneNumber)
+                && !PhoneUtil.isPhone(phoneNumber)) {
+            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_INVALID, "请输入正确的11位手机号");
+        }
+        if (userPhoneNumberDomainService
+                .judgePhoneNumberAlreadyExists(new PhoneNumber(phoneNumber), UserTypeEnum.USER,
+                        UserTypeEnum.NULL)) {
+            // 手机号已存在
+            throw new BusinessException(PHONE_NUMBER_ALREADY_EXIST);
+        }
+
+        User userEntity = User.builder().build();
+
+        userEntity.setUsername(userBo.getUsername());
+        userEntity.setName(userBo.getName());
+        userEntity.setEmail(userBo.getEmail() != null ? new Email(userBo.getEmail()) : null);
+        /**
+         * 随机密码
+         */
+        String password = randomPwUtils.getRandomPassword((int) (8 + Math.random() * (20 - 8 + 1)));
+        userBo.setPassword(password);
+        userEntity.setPassword(new Password(password));
+
+        userEntity.setCreatedBy(userBo.getLoginUserId().toString());
+        userEntity.setCreatedByType(OperateByTypeEnum.USER);
+        userEntity.setPhoneNumber(new PhoneNumber(phoneNumber));
+        userEntity.setPostId(userBo.getPostId());
+        userEntity.setRemark(userBo.getRemark());
+        userEntity.setUserType(UserTypeEnum.USER);
+        userEntity.setLongTimeLogin(
+                userBo.getLongTimeLogin() != null ? Integer.valueOf(userBo.getLongTimeLogin())
+                        : null);
+
+        try {
+
+            userRepository.save(userEntity);
+
+            userBo.setId(userEntity.getId().getValue());
+
+            Organization organization = organizationRepository
+                    .find(new OrganizationId(Long.valueOf(userBo.getOrgId())));
+
+            //新增用户账户中间表关系
+            userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(), userEntity.getId().getValue(),
+                    Long.parseLong(userBo.getOrgId()),
+                    userBo.getDeptId(), userEntity.getCreatedBy());
+
+            //新增用户角色中间表关系
+            userDao.insertFeferRole(SnowflakeIdWorkerUtil.nextId(),
+                    userEntity.getId().getValue(),
+                    Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
+
+            UserCsvDto userCsvDto = new UserCsvDto(userEntity.getUsername(), password);
+
+            return userCsvDto;
+        } catch (Exception e) {
+            log.error("新增用户失败", e);
+            throw new BusinessException(ResultCode.SERVER_BUSY);
+        }
+    }
+
+    /**
+     * 更改用户
+     */
+    @LogRecord(operationCode = "updateUser", operationName = "编辑用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public IdmResDTO updateUser(UserBo userBo) {
+
+        String loginUserId = userBo.getLoginUserId();
+        String orgId = userBo.getOrgId();
+        String roleId = userBo.getRoleId();
+
+        //获取日志操作对象
+        String[] op = new String[1];
+        op[0] = userBo.getUsername();
+        userBo.setOperationTarget(op);
+
+        /**
+         * 判断所选组织部门是否可选
+         */
+        String loginDeptId = userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId());
+        DepartmentEntity loginDepartment = departmentDao
+                .selectByPrimary(Long.valueOf(loginDeptId));
+        DepartmentEntity departmentEntity = departmentDao
+                .selectByPrimary(Long.parseLong(userBo.getDeptId()));
+        if (!departmentEntity.getPath().startsWith(loginDepartment.getPath())) {
+            throw new BusinessException(ResultCode.DEPARTMENT_ULTRA_VIRES);
+        }
+
+        /**
+         * 只能操作本企业的用户
+         */
+        Long oldOrgId = this.userDao.getOrgId(userBo.getId());
+        if (!orgId.equals(String.valueOf(oldOrgId))) {
+            throw new BusinessException(UNAUTHORIZED_ACCESS);
+        }
+
+        // 管理员用户不可修改
+        Long orgOwner = userDao.findOrgOwner(orgId);
+        if (userBo.getId().equals(orgOwner)) {
+            throw new BusinessException(ResultCode.CANNOT_SWITCH, "管理员用户不可修改");
+        }
+
+        /**
+         * 判断所选角色是否可选
+         */
+        List<RoleDTO> roleList = roleDao.selectRoleListByOrgId(userBo.getOrgId());
+        RoleDTO role = null;
+        for (RoleDTO roleDTO : roleList) {
+            if (roleDTO.getId().equals(userBo.getRoleId())) {
+                role = roleDTO;
+                break;
+            }
+        }
+        if (Objects.isNull(role)) {
+            throw new BusinessException(ResultCode.ROLE_NOT_EXIST, "该角色不可选");
+        }
+        //默认角色不可选
+        if (RoleTypeEnum.DEFAULT.getCode().equals(role.getRoleType())) {
+            throw new BusinessException(ResultCode.USER_DEFAULT_ROLE_NOT_ALLOW_ERROR);
+        }
+
+        //用户名正则校验
+        String username = userBo.getUsername();
+        if (!username.matches(RegexConst.USERNAME_REGEX)) {
+            throw new BusinessException(ResultCode.USERNAME_SEARCH_IN_INVALID);
+        }
+
+        //判断用户名是否已经存在
+        User userByUsername = userRepository
+                .commonQueryOne(UserCommonQuery.builder().username(username).build());
+        if (Objects.nonNull(userByUsername) && !userByUsername.getId().getValue()
+                .equals(userBo.getId())) {
+            throw new BusinessException(ResultCode.USER_USERNAME_ERRER);
+        }
+
+        User userEntity = User.builder().build();
+        userEntity.setId(new UserId(userBo.getId()));
+        userEntity.setUsername(userBo.getUsername());
+        userEntity.setName(userBo.getName());
+        userEntity.setPostId(userBo.getPostId());
+        userEntity.setRemark(userBo.getRemark());
+        userEntity.setLongTimeLogin(
+                userBo.getLongTimeLogin() != null ? Integer.valueOf(userBo.getLongTimeLogin())
+                        : null);
+        userEntity.updatedByPortal(loginUserId);
+        userRepository.save(userEntity);
+
+        //删除中间关联表关系
+        userDao.deleteUserRole(userBo.getId().toString(), orgId);
+        //重新添加中间表关联关系
+        userDao.insertUserRole(SnowflakeIdWorkerUtil.nextId(), userBo.getId(),
+                Long.parseLong(roleId), orgId,
+                LocalDateTime.now(), loginUserId);
+
+        //删除中间关联表关系
+        userDao.deleteUserOrg(userBo.getId().toString(), orgId);
+        //新增用户账户中间表关系
+        userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(), userBo.getId(),
+                Long.parseLong(userBo.getOrgId()),
+                userBo.getDeptId(), loginUserId);
+
+        redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + userBo.getId());
+
+        return new IdmResDTO(ResultCode.SUCCESS);
+    }
+
+    /**
+     * 批量移动用户
+     */
+    @Override
+    @LogRecord(operationCode = "moveUsers", operationName = "移动用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
+    @Transactional(rollbackFor = Exception.class)
+    public void moveUsers(UserBo userBo) {
+        String sessionOrgId = userBo.getOrgId();
+        List<Long> ids = userBo.getIds();
+        String loginUserId = userBo.getLoginUserId();
+        String deptId = userBo.getDeptId();
+
+        /**
+         * 判断所选组织部门是否可选
+         */
+        String loginDeptId = userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId());
+        DepartmentEntity loginDepartment = departmentDao
+                .selectByPrimary(Long.valueOf(loginDeptId));
+        DepartmentEntity departmentEntity = departmentDao
+                .selectByPrimary(Long.parseLong(deptId));
+        if (!departmentEntity.getPath().startsWith(loginDepartment.getPath())) {
+            throw new BusinessException(ResultCode.DEPARTMENT_ULTRA_VIRES);
+        }
+
+        String deptTreePath = Optional.ofNullable(loginDepartment).map(DepartmentEntity::getPath)
+                .orElse(null);
+        if (StringUtils.isEmpty(deptTreePath)) {
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST, "查询组织部门信息缺失");
+        }
+
+        // 查询该账户的账户所有者
+        Long orgOwner = userDao.findOrgOwner(sessionOrgId);
+
+        for (Long pkUserId : ids) {
+            // 根据userId查询orgId
+            Long orgId = this.userDao.getOrgId(pkUserId);
+            if (!sessionOrgId.equals(String.valueOf(orgId))) {
+                throw new BusinessException(UNAUTHORIZED_ACCESS);
+            }
+            // 判断是否是自己
+            if (pkUserId.toString().equals(loginUserId)) {
+                throw new BusinessException(ResultCode.CANNOT_OPERATION, "不能移动当前登录用户自己");
+            }
+
+            // 管理员不能移动
+            if (pkUserId.equals(orgOwner)) {
+                throw new BusinessException(ResultCode.CANNOT_OPERATION, "管理员不能移动");
+            }
+
+            // 组织权限限制
+            DepartmentDto departmentDto = departmentDao.getPathByUser(pkUserId.toString());
+            String subTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
+                    .orElse(null);
+            if (StringUtils.isEmpty(subTreePath)) {
+                throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
+            }
+            if (!subTreePath.startsWith(deptTreePath)) {
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            }
+        }
+        for (Long pkUserId : ids) {
+            //删除中间关联表关系
+            userDao.deleteUserOrg(pkUserId.toString(), sessionOrgId);
+            //新增用户账户中间表关系
+            userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(), pkUserId,
+                    Long.parseLong(sessionOrgId),
+                    deptId, loginUserId);
+            // 设备模块使用了缓存，系统模块姓名或手机号变更需要清除redisKey
+            redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + pkUserId);
+        }
+    }
+
+    /**
+     * 批量启停用
+     */
+    @LogRecord(operationCode = "changeUserStatus", operationName = "启停用用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void changeUserStatus(UserBo userBo) {
+        String sessionOrgId = userBo.getOrgId();
+        List<Long> ids = userBo.getIds();
+        String loginUserId = userBo.getLoginUserId();
+        Byte status = userBo.getStatus();
+
+        /**
+         * 判断所选组织部门是否可选
+         */
+        String loginDeptId = userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId());
+        DepartmentEntity loginDepartment = departmentDao
+                .selectByPrimary(Long.valueOf(loginDeptId));
+
+        String deptTreePath = Optional.ofNullable(loginDepartment).map(DepartmentEntity::getPath)
+                .orElse(null);
+        if (StringUtils.isEmpty(deptTreePath)) {
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST, "查询组织部门信息缺失");
+        }
+
+        // 查询该账户的账户所有者
+        Long orgOwner = userDao.findOrgOwner(sessionOrgId);
+
+        for (Long pkUserId : ids) {
+            // 根据userId查询orgId
+            Long orgId = this.userDao.getOrgId(pkUserId);
+            if (!sessionOrgId.equals(String.valueOf(orgId))) {
+                throw new BusinessException(UNAUTHORIZED_ACCESS);
+            }
+            // 判断是否是自己
+            if (pkUserId.toString().equals(loginUserId)) {
+                throw new BusinessException(ResultCode.CANNOT_OPERATION, "不能操作当前登录用户自己");
+            }
+
+            // 管理员不能移动
+            if (pkUserId.equals(orgOwner)) {
+                throw new BusinessException(ResultCode.CANNOT_OPERATION, "管理员不能操作");
+            }
+
+            // 组织权限限制
+            DepartmentDto departmentDto = departmentDao.getPathByUser(pkUserId.toString());
+            String subTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
+                    .orElse(null);
+            if (StringUtils.isEmpty(subTreePath)) {
+                throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
+            }
+            if (!subTreePath.startsWith(deptTreePath)) {
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            }
+        }
+        for (Long pkUserId : ids) {
+            User userEntity = User.builder().build();
+            userEntity.setId(new UserId(pkUserId));
+            userEntity.setStatus(UserStatusEnum.valueOf(status.intValue()));
+            userEntity.updatedByPortal(loginUserId);
+            userRepository.save(userEntity);
+        }
+    }
+
+    /**
+     * 批量删除用户
+     */
+    @LogRecord(operationCode = "deleteUsers", operationName = "删除用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int deleteUsers(UserBo userBo) {
+        String sessionOrgId = userBo.getOrgId();
+        List<Long> ids = userBo.getIds();
+        String loginUserId = userBo.getLoginUserId();
+
+        // 查询该账户的账户所有者
+        Long orgOwner = userDao.findOrgOwner(sessionOrgId);
+
+        //获取操作对象
+        String[] op = new String[ids.size()];
+        for (int i = 0; i < ids.size(); i++) {
+            User userDataEntity = userRepository.find(new UserId(ids.get(i)));
+            op[i] = userDataEntity.getUsername();
+        }
+        userBo.setOperationTarget(op);
+
+        DepartmentDto sessionDepartment = departmentDao.getPathByUser(loginUserId);
+        String deptTreePath = Optional.ofNullable(sessionDepartment).map(DepartmentDto::getPath)
+                .orElse(null);
+        if (StringUtils.isEmpty(deptTreePath)) {
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST, "查询组织部门信息缺失");
+        }
+
+        Organization sessionOrg = organizationRepository
+                .find(new OrganizationId(Long.valueOf(sessionOrgId)));
+
+        for (Long pkUserId : ids) {
+            // 根据userId查询orgId
+            Long orgId = this.userDao.getOrgId(pkUserId);
+            if (!sessionOrgId.equals(String.valueOf(orgId))) {
+                throw new BusinessException(UNAUTHORIZED_ACCESS);
+            }
+
+            // 判断是否是自己
+            if (pkUserId.toString().equals(loginUserId)) {
+                throw new BusinessException(ResultCode.CANNOT_DELETE_SELF);
+            }
+
+            // 管理员不能删除
+            if (pkUserId.equals(orgOwner)) {
+                throw new BusinessException(ResultCode.CANNOT_DELETE_ORGOWNER);
+            }
+
+            // 组织权限限制
+            DepartmentDto departmentDto = departmentDao.getPathByUser(pkUserId.toString());
+            String subTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
+                    .orElse(null);
+            if (StringUtils.isEmpty(subTreePath)) {
+                throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
+            }
+            if (!subTreePath.startsWith(deptTreePath)) {
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            }
+        }
+
+        int result = userRepository
+                .removeList(ids.stream().map(UserId::new).collect(Collectors.toList()));
+
+        // 删除用户后，把用户与当前登录的账号的关联关系删除
+        userDataDao.deleteUserOrgByUserPks(ids, sessionOrgId);
+        // 再删除与角色的关联
+        userDataDao.deleteUserRoleByUserPks(ids, sessionOrgId);
+
+        userRepository.removeUserRelate(ids);
+
+        for (Long pkUserId : ids) {
+            // 设备模块使用了缓存，系统模块姓名或手机号变更需要清除redisKey
+            redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + pkUserId);
+        }
+
+        return result;
+    }
+
+    /**
+     * 导出用户
+     */
+    @Override
+    public List<UserExportVo> exportUsers(UserBo userBo) {
+        String sessionOrgId = userBo.getOrgId();
+        String loginUserId = userBo.getLoginUserId();
+        String deptId = userBo.getDeptId();
+
+        /**
+         * 判断所选组织部门是否可选
+         */
+        String loginDeptId = userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId());
+        DepartmentEntity loginDepartment = departmentDao
+                .selectByPrimary(Long.valueOf(loginDeptId));
+        DepartmentEntity departmentEntity = departmentDao
+                .selectByPrimary(Long.parseLong(deptId));
+        if (!departmentEntity.getPath().startsWith(loginDepartment.getPath())) {
+            throw new BusinessException(ResultCode.DEPARTMENT_ULTRA_VIRES);
+        }
+
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("orgId", sessionOrgId);
+        params.put("loginUserId", loginUserId);
+        params.put("path", departmentEntity.getPath());
+
+        List<UserDataEntity> entities = userDataDao.searchList(params);
+
+        //手机号解密
+        IStrategy strategyPhone = new StrategyPhone();
+        for (UserDataEntity userDataEntity : entities) {
+            String phoneNumber = Sm4.decrypt(userDataEntity.getPhoneNumber());
+           /* if (StringUtils.hasLength(phoneNumber)) {
+                final String phoneSensitive = (String) strategyPhone.des(phoneNumber, null);
+                userDataEntity.setPhoneNumber(phoneSensitive);
+            }*/
+            userDataEntity.setPhoneNumber(phoneNumber);
+        }
+        List<UserExportVo> resultList = userAssembler.entityListToExportVoList(entities);
+        return resultList;
+    }
+
+    /**
+     * 导入用户
+     */
+    @LogRecord(operationCode = "importUsers", operationName = "导入用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public List<UserImportDownloadVo> importUsers(UserBo cmd) {
+        String sessionOrgId = cmd.getOrgId();
+        String loginUserId = cmd.getLoginUserId();
+        String deptId = cmd.getDeptId();
+        List<ImportUserDto> dtoList = cmd.getImportDtoList();
+
+        /**
+         * 判断所选组织部门是否可选
+         */
+        String loginDeptId = userDao.getDeptId(cmd.getLoginUserId(), cmd.getOrgId());
+        DepartmentEntity loginDepartment = departmentDao
+                .selectByPrimary(Long.valueOf(loginDeptId));
+        DepartmentEntity departmentEntity = departmentDao
+                .selectByPrimary(Long.parseLong(deptId));
+        if (!departmentEntity.getPath().startsWith(loginDepartment.getPath())) {
+            throw new BusinessException(ResultCode.DEPARTMENT_ULTRA_VIRES);
+        }
+
+        List<RoleDTO> roleList = roleDao.selectRoleListByOrgId(sessionOrgId);
+        if (CollectionUtils.isEmpty(roleList)) {
+            throw new BusinessException(ResultCode.ROLE_NOT_EXIST, "查询不到可用的角色");
+        }
+
+        List<UserBo> userBoList = Lists.newArrayList();
+        for (ImportUserDto userDto : dtoList) {
+            //判断用户名是否已经存在
+            if (Objects.nonNull(userRepository
+                    .commonQueryOne(
+                            UserCommonQuery.builder().username(userDto.getUsername()).build()))) {
+                throw new BusinessException(ResultCode.USER_USERNAME_ERRER,
+                        "导入失败，用户名[" + userDto.getUsername() + "]已经存在");
+            }
+            /**
+             * 判断手机号
+             */
+            String phoneNumber = userDto.getPhoneNumber();
+            if (!PhoneUtil.isPhone(phoneNumber)) {
+                throw new BusinessException(ResultCode.PHONE_NUMBER_IS_INVALID,
+                        "导入失败，手机号[" + phoneNumber + "]输入不正确");
+            }
+            if (userPhoneNumberDomainService
+                    .judgePhoneNumberAlreadyExists(new PhoneNumber(phoneNumber), UserTypeEnum.USER,
+                            UserTypeEnum.NULL)) {
+                throw new BusinessException(PHONE_NUMBER_ALREADY_EXIST,
+                        "导入失败，手机号[" + phoneNumber + "]已经存在");
+            }
+            /**
+             * 判断角色
+             */
+            RoleDTO roleDTO = roleDao
+                    .selectRoleByName(userDto.getRoleName(), Long.valueOf(sessionOrgId));
+            if (Objects.isNull(roleDTO)) {
+                throw new BusinessException(ResultCode.ROLE_NOT_EXIST,
+                        "导入失败，角色[" + userDto.getRoleName() + "]不存在");
+            }
+            if (RoleTypeEnum.DEFAULT.getCode().equals(roleDTO.getRoleType())) {
+                throw new BusinessException(ResultCode.USER_DEFAULT_ROLE_NOT_ALLOW_ERROR,
+                        "导入失败，角色[" + userDto.getRoleName() + "]不可选");
+            }
+            Boolean roleFlag = false;
+            for (RoleDTO tmpRole : roleList) {
+                if (tmpRole.getId().equals(roleDTO.getId())) {
+                    roleFlag = true;
+                    break;
+                }
+            }
+            if (!roleFlag) {
+                throw new BusinessException(ResultCode.ROLE_NOT_EXIST,
+                        "导入失败，角色[" + userDto.getRoleName() + "]不可选");
+            }
+            /**
+             * 判断岗位
+             */
+            SysPostEntity postEntity = null;
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(userDto.getPostName())) {
+                postEntity = sysPostService
+                        .getByName(userDto.getPostName(), Long.valueOf(sessionOrgId));
+                if (Objects.isNull(postEntity)) {
+                    throw new BusinessException(ResultCode.REQ_PARAM_ERROR,
+                            "导入失败，岗位[" + userDto.getPostName() + "]不存在");
+                }
+            }
+            UserBo userBo = new UserBo();
+            userBo.setOrgId(sessionOrgId);
+            userBo.setLoginUserId(loginUserId);
+            userBo.setRoleId(roleDTO.getId());
+            userBo.setUsername(userDto.getUsername());
+            userBo.setName(userDto.getName());
+            userBo.setPhoneNumber(userDto.getPhoneNumber());
+            userBo.setDeptId(deptId);
+            if (Objects.nonNull(postEntity)) {
+                userBo.setPostId(postEntity.getId());
+            }
+            /**
+             * 随机密码
+             */
+            String password = randomPwUtils
+                    .getRandomPassword((int) (8 + Math.random() * (20 - 8 + 1)));
+            userBo.setPassword(password);
+            userBo.setRemark(userDto.getRemark());
+
+            userBoList.add(userBo);
+        }
+
+        List<UserImportDownloadVo> resultList = Lists.newArrayList();
+
+        for (UserBo userBo : userBoList) {
+            User userEntity = User.builder().build();
+            userEntity.setUsername(userBo.getUsername());
+            userEntity.setName(userBo.getName());
+            userEntity.setPassword(new Password(userBo.getPassword()));
+            userEntity.setCreatedBy(userBo.getLoginUserId());
+            userEntity.setCreatedByType(OperateByTypeEnum.USER);
+            userEntity.setPhoneNumber(new PhoneNumber(userBo.getPhoneNumber()));
+            userEntity.setPostId(userBo.getPostId());
+            userEntity.setRemark(userBo.getRemark());
+            userEntity.setUserType(UserTypeEnum.USER);
+            userRepository.save(userEntity);
+            userBo.setId(userEntity.getId().getValue());
+
+            //新增用户账户中间表关系
+            userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(), userEntity.getId().getValue(),
+                    Long.parseLong(userBo.getOrgId()),
+                    userBo.getDeptId(), userEntity.getCreatedBy());
+
+            //新增用户角色中间表关系
+            userDao.insertFeferRole(SnowflakeIdWorkerUtil.nextId(),
+                    userEntity.getId().getValue(),
+                    Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
+
+            UserImportDownloadVo downloadVo = new UserImportDownloadVo();
+            downloadVo.setUsername(userBo.getUsername());
+            downloadVo.setPhoneNumber(userBo.getPhoneNumber());
+            downloadVo.setPassword(userBo.getPassword());
+            resultList.add(downloadVo);
+        }
+
+        return resultList;
+    }
+
+    @Override
+    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
+            GetUserDepartmentTreeLazyReqDto dto) {
+        final String orgId = dto.getLoginOrgId();
+        final String userId = dto.getLoginUserId();
+        List<GetDepartmentTreeLazyResDto> result;
+        // 只能看到当前租户 所属dept为根,先获取根节点,以用户deptId为主键
+        Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
+                .orElse(null);
+        //如果是空间用户，需要找到他所在的组织
+        if (INIT.equals(dto.getType())) {
+            result = spaceDao.getRootDepartmentLazy(orgId, deptId.toString());
+        } else {
+            result = spaceDao.getUserDepartmentLazyChange(dto.getParentId(),
+                    Arrays.asList(DepartmentGroupEnum.SYSTEM.getCode(),
+                            DepartmentGroupEnum.TENANT.getCode(),
+                            DepartmentGroupEnum.COMMUNITY.getCode()));
+        }
+        return result;
+    }
+
+    @Override
+    public UserResDTO getUserMenuByUserIdAndOrgId(String userId, String orgId) {
+        // 获取用户信息
+        UserResDTO userResDTO = getUserInfoByUserIdAndOrgId(userId, orgId);
+
+        List<MenuEntity> menuList = menuService.getPermissionMenus(orgId, userId);
+
+        userResDTO.setMenu(menuList);
+
+        return userResDTO;
+    }
+
+    @Override
+    public UserResDTO getUserInfoByUserIdAndOrgId(String userId, String orgId) {
+        // 获取用户信息
+        User userEntity = userRepository.find(new UserId(userId));
+        if (userEntity == null) {
+            // 账号不存在
+            throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST);
+        }
+        UserResDTO userResDTO = userAssembler.doToDTO(userEntity);
+        userResDTO.setOrgId(orgId);
+        // 查询用户组织的类型
+        DepartmentDto userDept = departmentDao.getPathByUser(userId);
+        if (userDept != null) {
+            userResDTO.setDGroup(userDept.getDGroup());
+        }
+        // 获取账户信息
+        Organization organization = organizationRepository.find(new OrganizationId(orgId));
+        if (organization == null) {
+            throw new BusinessException(ResultCode.ORG_IS_NOT_EXIST);
+        }
+        userResDTO.setOrgTypeId(Math.toIntExact(organization.getOrgTypeId().getValue()));
+        userResDTO.setOrgKey(organization.getOrgKey());
+        userResDTO.setOrgName(organization.getOrgName());
+        userResDTO.setMaxDeptHigh(organization.getMaxDeptHigh());
+        // 不需要菜单权限
+        RoleDTO roleDTO = roleDao.selectRoleByUserId(Long.parseLong(orgId), Long.parseLong(userId));
+        if (roleDTO != null) {
+            userResDTO.setRoleId(roleDTO.getId());
+            userResDTO.setRoleKey(roleDTO.getRoleKey());
+            userResDTO.setRoleName(roleDTO.getRoleName());
+        }
+        return userResDTO;
     }
 
     @Override
@@ -231,6 +1001,7 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     private void copyProperties(User userEntity, UserResDTO userResDTO) {
         userResDTO.setId(userEntity.getId().getStrValue());
+        userResDTO.setName(userEntity.getName());
         userResDTO.setUsername(userEntity.getUsername());
         userResDTO.setPassword(
                 userEntity.getPassword() != null ? userEntity.getPassword().getHashEncryptValue()
@@ -279,178 +1050,6 @@ public class UserServiceImpl extends BaseController implements UserService {
         return pkDeptId;
     }
 
-    @Override
-    public UserResDTO getUserMenuByUserIdAndOrgId(String userId, String orgId) {
-        // 获取用户信息
-        UserResDTO userResDTO = getUserInfoByUserIdAndOrgId(userId, orgId);
-
-        userResDTO.setMenu(Lists.newArrayList());
-        List<String> allowMenuIdList = orgMenuDao.getAllowMenuIdList(orgId);
-        List<MenuEntity> menuList = menuDao.selectMenuListByRoleId(userResDTO.getRoleId());
-        if(!CollectionUtils.isEmpty(allowMenuIdList)&&!CollectionUtils.isEmpty(menuList)){
-            menuList = menuList.stream()
-                    .filter(item -> allowMenuIdList.contains(item.getId().toString())).collect(
-                            Collectors.toList());
-            userResDTO.setMenu(menuList);
-        }
-
-        return userResDTO;
-    }
-
-    @Override
-    public UserResDTO getUserInfoByUserIdAndOrgId(String userId, String orgId) {
-        // 获取用户信息
-        User userEntity = userRepository.find(new UserId(userId));
-        if (userEntity == null) {
-            // 账号不存在
-            throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST);
-        }
-        UserResDTO userResDTO = userMapper.doToDTO(userEntity);
-        // 查询用户组织的类型
-        DepartmentDto userDept = departmentDao.getPathByUser(userId);
-        if (userDept != null) {
-            userResDTO.setDGroup(userDept.getDGroup());
-            userResDTO.setOrgId(orgId);
-        }
-        // 获取账户信息
-        Organization organization = organizationRepository.find(new OrganizationId(orgId));
-        if (organization == null) {
-            throw new BusinessException(ResultCode.ORG_IS_NOT_EXIST);
-        }
-        // 获取账户标签id
-        OrgLabelDto orgLabelDto = organizationDao.getOrgLabelById(orgId);
-        userResDTO.setOrgLabelTypeId(orgLabelDto == null ? null : orgLabelDto.getLabelId());
-        userResDTO.setOrgTypeId(Math.toIntExact(organization.getOrgTypeId().getValue()));
-        userResDTO.setOrgKey(organization.getOrgKey());
-        userResDTO.setOrgName(organization.getOrgName());
-        userResDTO.setMaxDeptHigh(organization.getMaxDeptHigh());
-        // 不需要菜单权限
-        RoleDTO roleDTO = roleDao.selectRoleByUserId(Long.parseLong(orgId), Long.parseLong(userId));
-        if (roleDTO != null) {
-            userResDTO.setRoleId(roleDTO.getId());
-            userResDTO.setRoleKey(roleDTO.getRoleKey());
-            userResDTO.setRoleName(roleDTO.getRoleName());
-        }
-        return userResDTO;
-    }
-
-    private SimpleStringResDTO updatePasswordCommon(ResetPasswordReqDTO resetPasswordReqDTO,
-            User user,
-            UserBo userBo, String uuid) {
-        // 获取密码
-        String password = resetPasswordReqDTO.getPassword();
-
-        //获取操作对象
-        String[] op = new String[1];
-        op[0] = user.getUsername();
-        userBo.setOperationTarget(op);
-
-        user.setPassword(new Password(password));
-        user.updatedByPortal();
-        redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + user.getId().getStrValue());
-        boolean success = userRepository.save(user);
-        // 修改成功
-        if (success) {
-            stringRedisTemplate.delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY + uuid);
-
-            return new SimpleStringResDTO("修改成功");
-        }
-        // 修改失败
-        else {
-            throw new BusinessException(RESET_PASSWORD_ERROR);
-        }
-    }
-
-
-    @LogRecord(operationCode = "resetPassword", operationName = "重置密码", serviceType = ServiceTypeConst.SECURITY_SETTING)
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public SimpleStringResDTO updatePasswordByPhoneWithoutSid(UserBo userBo) {
-        ResetPasswordReqDTO resetPasswordReqDTO = userBo.getResetPasswordReqDTO();
-        User user = userRepository.find(new UserId(userBo.getId()));
-        String phoneNumber = user.getDecryptedPhoneNumber();
-        // 获取redis中的验证码文本
-        String expectedSmsText = stringRedisTemplate.opsForValue()
-                .get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P
-                        + userBo.getId() + phoneNumber);
-        if (FALSE.equals(debug) && StringUtils.isEmpty(expectedSmsText)) {
-            // 短信验证码过期
-            throw new BusinessException(SMS_CODE_EXPIRED_ERROR);
-        }
-        if (FALSE.equals(debug)
-                && !expectedSmsText.equals(phoneNumber + resetPasswordReqDTO.getSmsCode())) {
-            throw new BusinessException(SMS_CODE_ERROR);
-        }
-
-        return updatePasswordCommon(resetPasswordReqDTO, user, userBo,
-                userBo.getId() + phoneNumber);
-    }
-
-    /**
-     * 用户列表筛选-分页
-     */
-    @Override
-    public PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId,
-            int currentPage, int pageSize, String orgId) {
-        PageInfo<UserDataResDTO> resultPageInfo;
-        try {
-            Organization organization = organizationRepository
-                    .find(new OrganizationId(sessionOrgId));
-            String orgOwner = String.valueOf(organization.getOrgOwner().getValue());
-            List<UserDataEntity> entities;
-            PageHelper.startPage(currentPage, pageSize);
-            if (params.containsKey(ROLE_NAME_LIKE)) {
-                entities = userDataDao.searchListByRole(params);
-            } else {
-                entities = userDataDao.searchList(params);
-            }
-            //对entities集合里的手机号解密、脱敏--2020/12/09
-            IStrategy strategyPhone = new StrategyPhone();
-            for (UserDataEntity userDataEntity : entities) {
-                String phoneNumber = Sm4.decrypt(userDataEntity.getPhoneNumber());
-                if (StringUtils.hasLength(phoneNumber)) {
-                    final String phoneSensitive = (String) strategyPhone.des(phoneNumber, null);
-                    userDataEntity.setPhoneNumber(phoneSensitive);
-                }
-                String email = userDataEntity.getEmail();
-                if (StringUtils.hasLength(email)) {
-                    userDataEntity.setEmail(DesensitizedUtil.email(email));
-                }
-            }
-
-            // 创建分页
-            PageInfo<UserDataEntity> pageInfo = new PageInfo<>(entities);
-            resultPageInfo = userMapper.dataEntityListToDataDtoList(pageInfo);
-            for (UserDataResDTO userDataResDTO : resultPageInfo.getList()) {
-                //找到该用户对应的角色
-                String pkUserId = userDataResDTO.getId();
-                String roleId = userDao.getRoleId(pkUserId, sessionOrgId);
-                userDataResDTO.setRoleId(roleId);
-                // 找到角色名称
-                String roleName = userDao.getRoleName(roleId);
-                userDataResDTO.setRoleName(roleName);
-                // 找到角色key
-                String roleKey = userDao.getRoleKey(roleId);
-                userDataResDTO.setRoleKey(roleKey);
-                // 找到组织
-                String deptId = userDao.getDeptId(pkUserId, sessionOrgId);
-                userDataResDTO.setDeptId(deptId);
-                // 找到组织名称
-                if (StringUtils.hasLength(deptId)) {
-                    DepartmentEntity departmentEntity = departmentDao
-                            .selectByPrimary(Long.parseLong(deptId));
-                    userDataResDTO.setDeptName(departmentEntity.getDepartmentName());
-                }
-                userDataResDTO
-                        .setIsOwner(pkUserId.equals(orgOwner) || ROOT_USER_ID.equals(pkUserId));
-            }
-        } catch (BusinessException e) {
-            log.error("getPage error", e);
-            throw new BusinessException(INNER_ERROR);
-        }
-        return new PageResult<>(resultPageInfo);
-    }
-
     /**
      * 修改密码(登录人自行修改)
      */
@@ -466,7 +1065,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     }
 
     /**
-     * 修改手机号
+     * 修改手机号(登录人自行修改)
      */
     @LogRecord(operationCode = "updatePhoneNumber", operationName = "修改手机号", serviceType = ServiceTypeConst.SECURITY_SETTING)
     @Override
@@ -517,220 +1116,6 @@ public class UserServiceImpl extends BaseController implements UserService {
         redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + userId);
     }
 
-    /**
-     * 批量删除用户
-     */
-    @LogRecord(operationCode = "deleteUsers", operationName = "删除用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public int deleteUsers(UserBo userBo) {
-        String sessionOrgId = userBo.getOrgId();
-        List<Long> ids = userBo.getIds();
-        Long pkUserId = userBo.getId();
-        // 查询该账户的账户所有者
-        Long orgOwner = userDao.findOrgOwner(sessionOrgId);
-
-        //获取操作对象
-        String[] op = new String[ids.size()];
-        for (int i = 0; i < ids.size(); i++) {
-            User userDataEntity = userRepository.find(new UserId(ids.get(i)));
-            op[i] = userDataEntity.getUsername();
-        }
-        userBo.setOperationTarget(op);
-
-        DepartmentDto departmentDto = departmentDao.getPathByUser(pkUserId.toString());
-        String deptTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
-                .orElse(null);
-        if (StringUtils.isEmpty(deptTreePath)) {
-            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
-        }
-
-        Organization sessionOrg = organizationRepository
-                .find(new OrganizationId(Long.valueOf(sessionOrgId)));
-        for (Long id : ids) {
-            // 根据userId查询orgId
-            Long orgId = this.userDao.getOrgId(id);
-            if (!sessionOrgId.equals(String.valueOf(orgId))) {
-                throw new BusinessException(UNAUTHORIZED_ACCESS);
-            }
-
-            // 判断是否是自己
-            if (id.equals(pkUserId)) {
-                throw new BusinessException(ResultCode.CANNOT_DELETE_SELF);
-            }
-            // 判断该用户是不是账户的所有者
-            if (id.equals(orgOwner)) {
-                throw new BusinessException(ResultCode.CANNOT_DELETE_ORGOWNER);
-            }
-
-            // 组织权限限制
-            String subTreePath = Optional.ofNullable(departmentDto).map(DepartmentDto::getPath)
-                    .orElse(null);
-            if (StringUtils.isEmpty(deptTreePath)) {
-                throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
-            }
-            if (!subTreePath.startsWith(deptTreePath)) {
-                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
-            }
-
-        }
-        int result = 0;
-
-        result = userRepository
-                .removeList(ids.stream().map(UserId::new).collect(Collectors.toList()));
-
-        // 删除用户后，把用户与当前登录的账号的关联关系删除
-        userDataDao.deleteUserOrgByUserPks(ids, sessionOrgId);
-        // 再删除与角色的关联
-        userDataDao.deleteUserRoleByUserPks(ids, sessionOrgId);
-
-        userRepository.removeUserRelate(ids);
-        for (Long id : ids) {
-            // 设备模块使用了缓存，系统模块姓名或手机号变更需要清除redisKey
-            redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + id);
-        }
-
-        return result;
-    }
-
-    private void updatePasswordIfNeed(UserBo userBo) {
-        if (ResetPasswordEnum.RESET.getCode().equals(userBo.getResetPassword())) {
-            UserCsvDto userInfo = resetPasswordWithOutSms(userBo);
-            log.info("用户数据存储");
-
-            // 文件流输出
-            List<JSONObject> jsonList = new ArrayList<>();
-            JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSON(userInfo).toString());
-            jsonList.add(jsonObject);
-
-            List<Object> head = new ArrayList<>();
-            head.add("username");
-            head.add("password");
-
-            response.setContentType("text/csv;charset=\"GBK\"");
-            response.setHeader("Content-Disposition", "attachment; filename=credentials.csv");
-            String[] split = userInfo.getUsername().split("@");
-            String username = split[0];
-            try {
-                CommonCsvUtil.createCsvFile(head, jsonList, username + "credentials", response);
-            } catch (UnsupportedEncodingException e) {
-                log.error("updateUser error.", e);
-            }
-        }
-    }
-
-    private void updateInfosWithoutSms(UserBo userBo) {
-        PhoneNumber newPhoneNumber = null;
-        if (StringUtils.hasLength(userBo.getPhoneNumber())) {
-            newPhoneNumber = new PhoneNumber(userBo.getPhoneNumber());
-        }
-        Long pkUserId = userBo.getId();
-        //获取日志操作对象
-        User user = userRepository.find(new UserId(pkUserId));
-        log.info("修改用户，user：" + JSON.toJSONString(user));
-
-        if (newPhoneNumber != null && !newPhoneNumber.equals(user.getPhoneNumber())) {
-            boolean exists = userPhoneNumberDomainService
-                    .judgePhoneNumberAlreadyExists(newPhoneNumber, UserTypeEnum.USER,
-                            UserTypeEnum.NULL);
-            if (exists) {
-                // 手机号已注册
-                throw new BusinessException(PHONE_NUMBER_ALREADY_EXIST);
-            }
-        }
-        user.setPhoneNumber(newPhoneNumber);
-        user.setEmail(userBo.getEmail() != null ? new Email(userBo.getEmail()) : null);
-        user.setContactPerson(userBo.getContactPerson());
-        user.setContactAddress(
-                userBo.getContactAddress() != null ? new Address(userBo.getContactAddress())
-                        : null);
-        user.updatedByPortal();
-        userRepository.save(user);
-
-        // 设备模块使用了缓存，系统模块姓名或手机号变更需要清除redisKey
-        redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + pkUserId);
-    }
-
-
-    /**
-     * 查询用户详情
-     */
-    @Override
-    public UserDataResDTO getOne(String id, String sessionOrgId, String sessionUserId) {
-        Long orgId = this.userDao.getOrgId(Long.valueOf(id));
-        if (!sessionOrgId.equals(String.valueOf(orgId))) {
-            throw new BusinessException(UNAUTHORIZED_ACCESS);
-        }
-        DepartmentEntity deptById = departmentDao
-                .selectByPrimary(Long.parseLong(userDao.getDeptId(id, String.valueOf(orgId))));
-        // 要查询的用户的组织
-        String deptId = userDao.getDeptId(id, sessionOrgId);
-        // 登陆用户的子组织
-        //String sessionDeptId = userDao.getDeptId(sessionUserId, sessionOrgId);
-        // 因为组织下挂了小区了，小区上又创建了维修工用户，下面的校验会导致无法查看小区的员工信息。
-        User entity = userRepository.find(new UserId(id));
-        if (entity == null) {
-            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
-        }
-        // 如果创建者是用户id,找到名称
-        OperateByTypeEnum createdByType = entity.getCreatedByType();
-        if (createdByType != null && createdByType.equals(OperateByTypeEnum.USER) && !StringUtils
-                .isEmpty(entity.getCreatedBy())
-                && NumberUtils.isParsable(entity.getCreatedBy())) {
-            User creatorEntity = userRepository.find(new UserId(entity.getCreatedBy()));
-            if (creatorEntity != null) {
-                String creatorName = creatorEntity.getUsername();
-                entity.setCreatedBy(creatorName);
-            }
-        }
-        // 如果更新者是用户id,找到名称
-        OperateByTypeEnum updatedByType = entity.getUpdatedByType();
-        if (updatedByType != null && updatedByType.equals(OperateByTypeEnum.USER) && !StringUtils
-                .isEmpty(entity.getUpdatedBy())) {
-            User updatorEntity = userRepository.find(new UserId(entity.getUpdatedBy()));
-            if (updatorEntity != null) {
-                String updatorName = updatorEntity.getUsername();
-                entity.setUpdatedBy(updatorName);
-            }
-        }
-
-        UserDataResDTO userDataResDTO = userMapper.doToDataDTO(entity);
-
-        userDataResDTO.setId(id);
-        userDataResDTO.setDeptTreePath(deptById.getPath());
-        //找到该用户对应的角色
-        String pkUserId = userDataResDTO.getId();
-        String roleId = userDao.getRoleId(pkUserId, sessionOrgId);
-        userDataResDTO.setRoleId(roleId);
-        // 找到角色名称
-        String roleName = userDao.getRoleName(roleId);
-        userDataResDTO.setRoleName(roleName);
-        // 找到角色key
-        String roleKey = userDao.getRoleKey(roleId);
-        userDataResDTO.setRoleKey(roleKey);
-        // 找到组织
-        userDataResDTO.setDeptId(deptId);
-        DepartmentEntity departmentEntity = departmentDao.selectByPrimary(Long.parseLong(deptId));
-        userDataResDTO.setDeptName(departmentEntity.getDepartmentName());
-        // 找到租户信息
-        userDataResDTO.setOrgId(sessionOrgId);
-        Organization org = organizationRepository
-                .find(new OrganizationId(Long.valueOf(sessionOrgId)));
-        userDataResDTO.setOrgName(org.getOrgName());
-        String orgDeptId = userDao.getUserGrantDeptId(Long.parseLong(sessionOrgId));
-        if (Strings.isNotBlank(orgDeptId)) {
-            departmentEntity = departmentDao.selectByPrimary(Long.parseLong(orgDeptId));
-            userDataResDTO.setOrgDeptName(departmentEntity.getDepartmentName());
-        }
-        //对手机号解密--2020/12/07 新增
-        userDataResDTO.setPhoneNumber(entity.getDecryptedPhoneNumber());
-        userDataResDTO.setEmail(entity.getEmail() != null ? entity.getEmail().decrypt() : null);
-        UserLabelDto userLabelDto = userDao.getUserLabelById(id);
-        userDataResDTO.setLabel(userLabelDto.getLabelId());
-        userDataResDTO.setOtherLabelName(userLabelDto.getOtherLabelName());
-        userDataResDTO.setLabelName(userLabelDto.getLabelName());
-        return userDataResDTO;
-    }
 
     @Override
     public UserCsvDto resetPasswordWithOutSms(UserBo userBo) {
@@ -761,286 +1146,6 @@ public class UserServiceImpl extends BaseController implements UserService {
         return userCsvDto;
     }
 
-    /**
-     * 新增用户
-     */
-    @LogRecord(operationCode = "insertUserD", operationName = "新增用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public UserCsvDto insertUser(UserBo userBo) {
-        DepartmentEntity departmentEntity = departmentDao
-                .selectByPrimary(
-                        Long.parseLong(userDao.getDeptId(userBo.getLoginUserId(), userBo.getOrgId())));
-
-        DepartmentEntity entity = departmentDao.selectByPrimary(Long.parseLong(userBo.getDeptId()));
-        // 权限操作
-        if (!entity.getPath().startsWith(departmentEntity.getPath())) {
-            throw new BusinessException(ResultCode.DEPARTMENT_ULTRA_VIRES);
-        }
-        //获取日志操作对象
-        String[] op = new String[1];
-        op[0] = userBo.getUserName();
-        userBo.setOperationTarget(op);
-
-        // 入参组织权限校验(限制用户组织下小区级及以上组织)
-        List<RoleDTO> roleList = roleDao.selectRoleListByOrgId(userBo.getOrgId());
-        //判断账户下是否有这个角色id
-        int num = 0;
-        RoleDTO role = null;
-        for (RoleDTO roleDTO : roleList) {
-            if (roleDTO.getId().equals(userBo.getRoleId())) {
-                num++;
-                role = roleDTO;
-            }
-        }
-        if (num == 0) {
-            throw new BusinessException(ResultCode.ROLE_NOT_EXIST);
-        }
-        // 安全要求：和前端保持一致，前端不允许选择默认角色（置灰了），所以后端也要校验，不然前端可以绕过
-        if (RoleTypeEnum.DEFAULT.getCode().equals(role.getRoleType())) {
-            throw new BusinessException(ResultCode.USER_DEFAULT_ROLE_NOT_ALLOW_ERROR);
-        }
-
-        String password = userBo.getPassword();
-        User userDataEntity = userRepository
-                .commonQueryOne(UserCommonQuery.builder().username(userBo.getUserName()).build());
-        if (userDataEntity != null) {
-            throw new BusinessException(ResultCode.USER_USERNAME_ERRER);
-        }
-        String roleKey = userDao.findRoleKey(userBo.getRoleId());
-        //判断角色key是否存在
-        if (StringUtils.isEmpty(roleKey)) {
-            throw new BusinessException(ResultCode.ROLE_ROLEKEY_ERROR);
-        }
-        User userdataEntity = User.builder().build();
-        //用户名称正则判断
-        if (!userBo.getUserName().matches(RegexConst.USERNAME_REGEX)) {
-            //不符合正则
-            throw new BusinessException(ResultCode.USERNAME_IS_INVALID);
-        }
-
-        userdataEntity.setUsername(userBo.getUserName());
-        userdataEntity.setEmail(userBo.getEmail() != null ? new Email(userBo.getEmail()) : null);
-        //如果密码为空，则表示自动生成密码
-        if (StringUtils.isEmpty(password)) {
-            int i = (int) (8 + Math.random() * (20 - 8 + 1));
-            password = randomPwUtils.getRandomPassword(i);
-            userBo.setPassword(password);
-            //将生成的随机密码进行加密
-            userdataEntity.setPassword(new Password(password));
-
-        } else {
-            //不为空，表示已添加密码，进行正则判断
-            if (password.matches(RegexConst.PASSWORD_REGEX)) {
-                userdataEntity.setPassword(new Password(password));
-
-            } else {
-                throw new BusinessException(ResultCode.PASSWORD_IS_INVALID);
-            }
-        }
-        //用户名正则校验
-        if (!userdataEntity.getUsername().matches(RegexConst.USERNAME_REGEX)) {
-            throw new BusinessException(ResultCode.USERNAME_SEARCH_IN_INVALID);
-        }
-
-        //校验数据库是否已有该手机号 --2021/01/22
-        String phoneNumber = userBo.getPhoneNumber();
-
-        if (userPhoneNumberDomainService
-                .judgePhoneNumberAlreadyExists(new PhoneNumber(phoneNumber), UserTypeEnum.USER,
-                        UserTypeEnum.NULL)) {
-            // 手机号已注册
-            throw new BusinessException(PHONE_NUMBER_ALREADY_EXIST);
-        }
-
-        try {
-            userdataEntity.setCreatedBy(userBo.getId().toString());
-            userdataEntity.setCreatedByType(OperateByTypeEnum.USER);
-            userdataEntity.setPhoneNumber(new PhoneNumber(phoneNumber));
-            userdataEntity.setContactPerson(userBo.getContactPerson());
-            userdataEntity.setContactAddress(
-                    userBo.getContactAddress() != null ? new Address(userBo.getContactAddress())
-                            : null);
-            userdataEntity.setUserType(UserTypeEnum.USER);
-            userdataEntity.setLongTimeLogin(
-                    userBo.getLongTimeLogin() != null ? Integer.valueOf(userBo.getLongTimeLogin())
-                            : null);
-            userRepository.save(userdataEntity);
-
-            //新增用户标签表关系
-            UserLabelDto userLabelDto = new UserLabelDto();
-            userLabelDto.setUserId(userdataEntity.getId().getStrValue());
-            userLabelDto.setLabelName(userBo.getOtherLabelName());
-            userLabelDto.setLabelId(userBo.getLabel());
-            userLabelDto.setCreatedBy(userBo.getCreatedBy());
-            userLabelDto.setCreateTime(LocalDateTime.now());
-            userDataDao.insertUserLabel(userLabelDto);
-
-            userBo.setId(userdataEntity.getId().getValue());
-            Organization organization = organizationRepository
-                    .find(new OrganizationId(Long.valueOf(userBo.getOrgId())));
-
-            OrganizationEntity sessionOrg = organization2EntityAssembler.toDTO(organization);
-
-            //新增用户账户中间表关系
-            userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(),userdataEntity.getId().getValue(),
-                    Long.parseLong(userBo.getOrgId()),
-                    userBo.getDeptId(), userdataEntity.getCreatedBy());
-
-            //新增用户角色中间表关系
-            userDao.insertFeferRole(SnowflakeIdWorkerUtil.nextId(),userdataEntity.getId().getValue(),
-                    Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
-
-            UserCsvDto userCsvDto = new UserCsvDto(userdataEntity.getUsername(), password);
-
-            return userCsvDto;
-        } catch (Exception e) {
-            log.error("新增用户失败", e);
-            throw new BusinessException(ResultCode.SERVER_BUSY);
-        }
-    }
-
-    /**
-     * 更改用户对应角色权限
-     */
-    @LogRecord(operationCode = "updateUser", operationName = "编辑用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public IdmResDTO updatePermit(UserBo userBo) {
-        // 被修改的用户
-        Long uid = userBo.getId();
-        // 当前登陆用户
-        Long userId = userBo.getId();
-        String orgId = userBo.getOrgId();
-        String roleId = userBo.getRoleId();
-
-        //获取日志操作对象
-        String[] op = new String[1];
-        User userDataEntity = userRepository.find(new UserId(uid));
-        op[0] = userDataEntity.getUsername();
-        userBo.setOperationTarget(op);
-
-        // 根据userId查询orgId
-        Long org = this.userDao.getOrgId(uid);
-        if (!orgId.equals(String.valueOf(org))) {
-            throw new BusinessException(UNAUTHORIZED_ACCESS);
-        }
-
-        // 查询该账户的账户所有者
-        Long orgOwner = userDao.findOrgOwner(orgId);
-        // 判断该用户是不是账户的所有者
-        if (uid.equals(String.valueOf(orgOwner))) {
-            throw new BusinessException(ResultCode.CANNOT_SWITCH);
-        }
-        List<RoleDTO> roleList = roleDao.selectRoleListByOrgId(orgId);
-        //判断账户下是否有这个角色id
-        int num = 0;
-        RoleDTO role = null;
-        for (RoleDTO roleDTO : roleList) {
-            if (roleDTO.getId().equals(roleId)) {
-                num++;
-                role = roleDTO;
-            }
-        }
-        if (num == 0) {
-            return new IdmResDTO(ResultCode.ROLE_NOT_EXIST);
-        }
-        //添加更新时间和更新者
-        userDataEntity.updatedByPortal(userId);
-        if (!StringUtils.isEmpty(userBo.getLongTimeLogin())) {
-            userDataEntity.setLongTimeLogin(Integer.valueOf(userBo.getLongTimeLogin()));
-        }
-        userRepository.save(userDataEntity);
-        //删除中间关联表关系
-        userDao.deleteUserRole(uid.toString(), orgId);
-        //重新添加中间表关联关系
-        userDao.insertUserRole(SnowflakeIdWorkerUtil.nextId(),uid, Long.parseLong(roleId), orgId,
-                LocalDateTime.now(), String.valueOf(userId));
-        //删除中间关联表关系
-        userDao.deleteUserOrg(uid.toString(), orgId);
-        //新增用户账户中间表关系
-        userDao.insertUserOrg(SnowflakeIdWorkerUtil.nextId(),uid, Long.parseLong(userBo.getOrgId()),
-                userBo.getDeptId(), String.valueOf(userId));
-        redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + uid);
-        updateInfosWithoutSms(userBo);
-        updatePasswordIfNeed(userBo);
-
-        return new IdmResDTO(ResultCode.SUCCESS);
-    }
-
-    /**
-     * 发送日志记录到kafka
-     *
-     * @param isSuccess 操作成功标识
-     * @param platformOperateLogDTO 日志记录
-     */
-    public void saveLog2Db(boolean isSuccess, OperateLogDto platformOperateLogDTO) {
-        platformOperateLogDTO.setRequestTime(
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
-        platformOperateLogDTO.setRequestIp(IpUtil.getIpAddr(request));
-        if (isSuccess) {
-            // 操作成功
-            platformOperateLogDTO.setStatusCode(StatusCodeEnum.SUCCESS.getCode());
-            platformOperateLogDTO.setStatusMsg(StatusCodeEnum.SUCCESS.getName());
-            platformOperateLogDTO
-                    .setLogLevel(cn.cuiot.dmp.common.enums.LogLevelEnum.INFO.getCode());
-        } else {
-            platformOperateLogDTO.setLogLevel(LogLevelEnum.ERROR.getCode());
-            platformOperateLogDTO.setStatusMsg(StatusCodeEnum.FAILED.getName());
-            platformOperateLogDTO.setStatusCode(StatusCodeEnum.FAILED.getCode());
-        }
-
-        operateLogService.saveDb(platformOperateLogDTO);
-    }
-
-    @Override
-    public List<GetDepartmentTreeLazyResDto> getUserDepartmentTreeLazy(
-            GetUserDepartmentTreeLazyReqDto dto) {
-        final String orgId = dto.getLoginOrgId();
-        final String userId = dto.getLoginUserId();
-        List<GetDepartmentTreeLazyResDto> result;
-        // 只能看到当前租户 所属dept为根,先获取根节点,以用户deptId为主键
-        Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
-                .orElse(null);
-        //如果是空间用户，需要找到他所在的组织
-        if (INIT.equals(dto.getType())) {
-            result = spaceDao.getRootDepartmentLazy(orgId, deptId.toString());
-        } else {
-            result = spaceDao.getUserDepartmentLazyChange(dto.getParentId(),
-                    Arrays.asList(DepartmentGroupEnum.SYSTEM.getCode(),
-                            DepartmentGroupEnum.TENANT.getCode(),
-                            DepartmentGroupEnum.COMMUNITY.getCode()));
-        }
-        return result;
-    }
-
-    private void checkSensitiveWord(int count, String userName) {
-        boolean flag = verifyService.searchSensitiveWord(userName);
-        if (!flag) {
-            return;
-        }
-        log.info("包含敏感词：{}", userName);
-        // 用户名包含有敏感词
-        if (count == -1) {
-            throw new BusinessException(USERNAME_IS_SENSITIVE_WORD);
-        }
-
-        throw new BusinessException(USERNAME_IS_SENSITIVE_WORD, "第" + count + "位用户名包含了非法字符，请重新输入！");
-    }
-
-    @Override
-    public List<LabelTypeDto> getLabelTypeList(String labelType) {
-        List<LabelTypeDto> labelTypeList = userDataDao.getLabelTypeList(labelType);
-        return labelTypeList.stream()
-                .filter(dto -> !OrgLabelEnum.UNICOM_ADMIN.getName().equals(dto.getLabelName()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Map<String, String> getDGroup(String orgId, String userId) {
-        return departmentDao.getDgroupByUserIdAndOrgId(orgId, userId);
-    }
-
     @Override
     public UserDTO getOneUser(String account, String safeAccount, String password) {
         PhoneNumber phoneNumber = null;
@@ -1053,94 +1158,55 @@ public class UserServiceImpl extends BaseController implements UserService {
     }
 
     @Override
-    public String checkUserInDeptId(Long parkId) {
-        return userDataDao.checkUserInDeptId(parkId);
+    public int updateByCommand(UpdateUserCommand updatedUser) {
+        if (updatedUser.getId() == null) {
+            return 0;
+        }
+        User user = User.builder().build();
+        user.setId(new UserId(updatedUser.getId()));
+        if (updatedUser.getEmail() != null) {
+            user.setEmail(new Email(updatedUser.getEmail()));
+        }
+        user.setContactPerson(updatedUser.getContactPerson());
+        if (updatedUser.getContactAddress() != null) {
+            user.setContactAddress(new Address(updatedUser.getContactAddress()));
+        }
+        if (updatedUser.getLastOnlineIp() != null) {
+            user.setLastOnlineIp(new IP(updatedUser.getLastOnlineIp()));
+        }
+        return userRepository.save(user) ? 1 : 0;
     }
 
+    /**
+     * 查询用户
+     */
     @Override
-    public void insertUserD(InsertUserDTO userEntity, String orgId, String loginUserName) {
-        log.info(userEntity.getUserName());
-
-        if (StringUtils.isEmpty(userEntity.getUserName()) || StringUtils
-                .isEmpty(userEntity.getPhoneNumber())) {
-            throw new BusinessException(ResultCode.REQ_PARAM_ERROR);
+    public List<BaseUserDto> lookUpUserList(BaseUserReqDto query) {
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("roleIdList", query.getRoleIdList());
+        params.put("deptIds", query.getDeptIdList());
+        List<UserDataEntity> entities = userDataDao.searchList(params);
+        if (CollectionUtils.isNotEmpty(entities)) {
+            List<BaseUserDto> dtoList = userAssembler
+                    .dataEntityListToBaseUserDtoList(entities);
+            return dtoList;
         }
-
-        //对传入手机号校验 --2020/01/22
-        String phoneNumber = userEntity.getPhoneNumber();
-        if (StringUtils.hasLength(phoneNumber) || StringUtils.hasLength(userEntity.getEmail())) {
-            if (StringUtils.hasLength(phoneNumber) && !phoneNumber
-                    .matches(RegexConst.PHONE_NUMBER_REGEX)) {
-                throw new BusinessException(ResultCode.PHONE_NUMBER_IS_INVALID);
-            }
-            if (StringUtils.hasLength(userEntity.getEmail()) && !userEntity.getEmail()
-                    .matches(RegexConst.EMAIL_REGEX)) {
-                throw new BusinessException(ResultCode.EMAIL_IS_INVALID);
-            }
-        }
-
-        //只对用户输入的字符校验，以@符号为分界线系统生成的不校验 --2021/01/07
-        String userName = userEntity.getUserName().split("@")[0];
-        //校验用户名是否含有敏感词 --2020/12/29
-        checkSensitiveWord(-1, userName);
-
-        UserBo userBo = new UserBo();
-        userBo.setOrgId(orgId);
-        userBo.setFrom(userEntity.getFrom());
-        userBo.setLoginUserId(userEntity.getLoginUserId());
-        userBo.setUserName(userEntity.getUserName());
-        userBo.setPassword(userEntity.getPassWord());
-        userBo.setResetPassword(userEntity.getResetPassword());
-        userBo.setRoleId(userEntity.getRoleId());
-        //新增手机号 --2021/01/22
-        userBo.setPhoneNumber(userEntity.getPhoneNumber());
-        userBo.setEmail(userEntity.getEmail());
-        userBo.setDeptId(userEntity.getDeptId());
-        userBo.setContactPerson(userEntity.getContactPerson());
-        userBo.setContactAddress(userEntity.getContactAddress());
-        // 根据账户标签获取用户标签
-        Integer label = organizationDao.getUserLabelByOrg(orgId);
-        userBo.setLabel(label);
-        userBo.setOtherLabelName(userEntity.getOtherLabelName());
-        if (loginUserName.equals("admin") && Objects
-                .equals(Const.STR_1, userEntity.getLongTimeLogin())) {
-            userBo.setLongTimeLogin(Const.STR_1);
-        } else {
-            userBo.setLongTimeLogin(null);
-        }
-        UserCsvDto userInfo = insertUser(userBo);
-
-        if (userInfo == null) {
-            throw new BusinessException(ResultCode.REQ_PARAM_ERROR);
-        }
-
-        log.info("用户数据存储");
-
-        // 文件流输出
-        List<JSONObject> jsonList = new ArrayList<>();
-        JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSON(userInfo).toString());
-        jsonList.add(jsonObject);
-
-        List<Object> head = new ArrayList<>();
-        head.add("username");
-        head.add("password");
-
-        response.setContentType("text/csv;charset=\"GBK\"");
-        response.setHeader("Content-Disposition", "attachment; filename=credentials.csv");
-        String[] split = userBo.getUserName().split("@");
-        String username = split[0];
-        try {
-            CommonCsvUtil.createCsvFile(head, jsonList, username + "credentials", response);
-        } catch (UnsupportedEncodingException e) {
-            log.error("insertUser error.", e);
-        }
+        return Lists.newArrayList();
     }
 
+    /**
+     * 获取用户信息
+     */
     @Override
-    public void checkDepartmentUser(Long orgId, String path) {
-        List<DepartmentUserDto> departmentUser = userDataDao.getDepartmentUser(orgId, path);
-        if (!CollectionUtils.isEmpty(departmentUser)) {
-            throw new BusinessException(ResultCode.DEPARTMENT_EXISTS_USER);
+    public BaseUserDto lookUpUserInfo(BaseUserReqDto query) {
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("userId", query.getUserId());
+        List<UserDataEntity> entities = userDataDao.searchList(params);
+        if (CollectionUtils.isNotEmpty(entities)) {
+            List<BaseUserDto> dtoList = userAssembler
+                    .dataEntityListToBaseUserDtoList(entities);
+            return dtoList.get(0);
         }
+        return null;
     }
 }

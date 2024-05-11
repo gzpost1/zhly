@@ -191,7 +191,7 @@ public interface RoleDao {
      * @param roleId
      * @return
      */
-    List<AddMenuDto> getRoleMenu(Integer roleId);
+    List<AddMenuDto> getRoleMenu(Long roleId);
 
 
 
@@ -210,5 +210,11 @@ public interface RoleDao {
      * @param roleBo
      */
     void insertMenusRole(RoleBo roleBo);
+
+
+    /**
+     * 根据角色名查询角色信息
+     */
+    RoleDTO selectRoleByName(@Param("roleName") String roleName,@Param("orgId") Long orgId);
 
 }
