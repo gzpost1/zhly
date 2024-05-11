@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.CommonOptionMapper">
+
+    <update id="batchUpdateCommonOptionById" parameterType="java.util.List">
+        update common_option
+        <set>
+            <if test="status !=null">
+                status = #{status},
+            </if>
+            <if test="typeId !=null">
+                type_id = #{typeId}
+            </if>
+        </set>
+        where id in
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="batchMoveCommonOptionDefault" parameterType="java.util.List">
+        update common_option
+        set type_id = 0
+        where type_id in
+        <foreach collection="typeIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+</mapper>
