@@ -33,19 +33,19 @@ public interface SystemApiFeignService {
     /**
      * 查询部门
      */
-    @PostMapping(value = "/lookUpDepartmentList", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/lookUpDepartmentList", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<DepartmentDto>> lookUpDepartmentList(@RequestBody DepartmentReqDto query);
 
     /**
      * 查询用户
      */
-    @PostMapping(value = "/lookUpUserList", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/lookUpUserList", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<BaseUserDto>> lookUpUserList(@RequestBody BaseUserReqDto query);
 
     /**
      * 获取用户信息
      */
-    @PostMapping(value = "/lookUpUserInfo", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/lookUpUserInfo", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<BaseUserDto> lookUpUserInfo(@RequestBody BaseUserReqDto query);
 
     /**
@@ -60,7 +60,7 @@ public interface SystemApiFeignService {
     /**
      * 查询子部门
      */
-    @PostMapping(value = "/lookUpDepartmentChildList", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/lookUpDepartmentChildList", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList(@RequestBody  DepartmentReqDto query);
 
     /**
