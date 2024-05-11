@@ -945,6 +945,10 @@ public class UserServiceImpl extends BaseController implements UserService {
 
         userResDTO.setMenu(menuList);
 
+        userResDTO.setPermission_ids(Lists.newArrayList());
+        if(CollectionUtils.isNotEmpty(menuList)){
+            userResDTO.setPermission_ids(menuList.stream().map(ite->ite.getPermissionCode()).collect(Collectors.toList()));
+        }
         return userResDTO;
     }
 

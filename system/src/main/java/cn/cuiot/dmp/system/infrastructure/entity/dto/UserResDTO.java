@@ -199,4 +199,9 @@ public class UserResDTO {
      * 备注
      */
     private String remark;
+
+    /**
+     * 权限标识列表
+     */
+    private List<String> permission_ids;
 }
