@@ -186,12 +186,6 @@
     <select id="getDepartmentListByParentIdAndPath" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
         SELECT
         <include refid="column"/>
-        FROM department WHERE parent_id = #{parentId} and path like concat(#{path}, '%') order by sort desc
-    </select>
-
-    <select id="getDepartmentListByPath" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
-        SELECT
-        <include refid="column"/>
         FROM department
         WHERE pk_org_id = #{orgId}
         <if test="path != null and path != ''">

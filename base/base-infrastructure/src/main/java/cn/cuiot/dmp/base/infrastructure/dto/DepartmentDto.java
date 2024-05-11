@@ -46,6 +46,11 @@ public class DepartmentDto implements Serializable {
     private String path;
 
     /**
+     * 名称路径
+     */
+    private String pathName;
+
+    /**
      * 排序
      */
     private Integer sort;

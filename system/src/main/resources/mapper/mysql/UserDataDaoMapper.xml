@@ -23,6 +23,12 @@
             <if test="userId != null">
                 AND u.id = #{userId}
             </if>
+            <if test="userIdList != null and userIdList.size() >0">
+                AND u.id in
+                <foreach collection="userIdList" item="userIdItem" open="(" separator="," close=")">
+                    #{userIdItem}
+                </foreach>
+            </if>
             <if test="userName != null and userName != ''">
                 AND u.username like CONCAT('%',#{userName},'%')
             </if>
