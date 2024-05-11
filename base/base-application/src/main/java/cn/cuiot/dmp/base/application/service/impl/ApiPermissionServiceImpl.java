@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.base.application.service.impl;
 
+import cn.cuiot.dmp.base.application.config.AppProperties;
 import cn.cuiot.dmp.base.application.service.ApiPermissionService;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
@@ -25,32 +26,30 @@ public class ApiPermissionServiceImpl implements ApiPermissionService {
     @Autowired
     private SystemApiFeignService systemApiFeignService;
 
+    @Autowired
+    private AppProperties appProperties;
+
     @Override
     public void checkApiPermission(String permissionCode, String userId, String orgId) {
         log.info("checkApiPermission, permissionCode:{}, userId: {}, orgId: {}", permissionCode,
                 userId, orgId);
-        /*User user = userRepository.find(new UserId(userId));
-        if (UserTypeEnum.USER.equals(user.getUserType())) {
-            MenuEntity menuEntity = menuDao.getChangeOrgMenu(userId, orgId, permissionCode);
-            if (menuEntity == null) {
+        if(Boolean.TRUE.equals(appProperties.getEnablePermission())){
+            try {
+                IdmResDTO<MenuDTO> idmResDTO = systemApiFeignService
+                        .lookUpPermission(userId, orgId, permissionCode);
+                if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                        .equals(idmResDTO.getCode())) {
+                    return;
+                }
+                String message = null;
+                if (Objects.nonNull(idmResDTO)) {
+                    message = idmResDTO.getMessage();
+                }
+                throw new RuntimeException(message);
+            } catch (Exception ex) {
+                log.info("ApiPermissionServiceImpl==checkApiPermission==fail", ex);
                 throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
             }
-        }*/
-        try {
-            IdmResDTO<MenuDTO> idmResDTO = systemApiFeignService
-                    .lookUpPermission(userId, orgId, permissionCode);
-            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
-                    .equals(idmResDTO.getCode())) {
-                return;
-            }
-            String message = null;
-            if (Objects.nonNull(idmResDTO)) {
-                message = idmResDTO.getMessage();
-            }
-            throw new RuntimeException(message);
-        } catch (Exception ex) {
-            log.info("ApiPermissionServiceImpl==checkApiPermission==fail", ex);
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
     }
 

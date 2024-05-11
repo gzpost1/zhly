@@ -11,6 +11,8 @@ import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
 import cn.cuiot.dmp.system.application.param.assembler.MenuConverter;
 import cn.cuiot.dmp.system.application.service.*;
@@ -136,6 +138,8 @@ public class ApiController {
         MenuEntity menuEntity = menuService.lookUpPermission(userId, orgId, permissionCode);
         if (Objects.nonNull(menuEntity)) {
             menuDTO = menuConverter.entityToDTO(menuEntity);
+        }else{
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
         return IdmResDTO.success(menuDTO);
     }

@@ -160,17 +160,21 @@ public class MenuServiceImpl implements MenuService {
      * 获得权限信息
      */
     @Override
-    public MenuEntity lookUpPermission(String userId, String orgId,
-            String permisstionCode) {
+    public MenuEntity lookUpPermission(String userId, String orgId,String reqPermission) {
         PathMatcher pathMatcher = new AntPathMatcher();
         List<MenuEntity> permissionMenus = getPermissionMenus(orgId, userId);
         if(CollectionUtils.isNotEmpty(permissionMenus)){
             for(MenuEntity menuEntity:permissionMenus){
                 if(StringUtils.isNotBlank(menuEntity.getPermissionCode())){
-                    String[] permArr = menuEntity.getPermissionCode().split(PERMISSION_PATH_SEPERATOR);
-                    for (String perm : permArr) {
-                        if(StringUtils.isNotBlank(perm)){
-                            if (pathMatcher.match(perm, permisstionCode)) {
+                    if (reqPermission.equals(menuEntity.getPermissionCode())) {
+                        return menuEntity;
+                    }
+                }
+                if(StringUtils.isNotBlank(menuEntity.getApiUrl())){
+                    String[] urlArr = menuEntity.getApiUrl().split(PERMISSION_PATH_SEPERATOR);
+                    for (String urlPerm : urlArr) {
+                        if(StringUtils.isNotBlank(urlPerm)){
+                            if (pathMatcher.match(urlPerm, reqPermission)) {
                                 return menuEntity;
                             }
                         }

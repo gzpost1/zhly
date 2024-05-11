@@ -18,4 +18,9 @@ public class AppProperties {
      */
     private String accessToken;
 
+    /**
+     * 开启菜单权限校验
+     */
+    private Boolean enablePermission;
+
 }
