@@ -177,18 +177,12 @@ public interface DepartmentDao {
     void batchDeleteProperty(@Param("ids") List<Long> ids);
 
     /**
-     * 根据parentId查询组织
+     * 根据parentId和path查询组织
      * @param parentId
      * @param path
      * @return
      */
-    List<DepartmentEntity> getDepartmentListByParentIdAndPath(@Param("parentId")Long parentId, @Param("path")String path);
-
-    /**
-     * 根据path查询组织
-     * @return
-     */
-    List<DepartmentEntity> getDepartmentListByPath(@Param("orgId")Long orgId, @Param("path")String path,@Param("parentId")Long parentId);
+    List<DepartmentEntity> getDepartmentListByParentIdAndPath(@Param("orgId")Long orgId,@Param("parentId")Long parentId, @Param("path") String path);
 
     /**
      * 根据组织id查询下级组织

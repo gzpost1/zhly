@@ -28,7 +28,7 @@ public class DepartmentReqDto implements Serializable {
     private Boolean selfReturn;
 
     /**
-     * 父部门ID
+     * 返回类型  1-直接子部门  空或其他-所有子部门
      */
-    private Long parentId;
+    private Integer returnType;
 }

@@ -841,25 +841,35 @@ public class DepartmentServiceImpl implements DepartmentService {
         if(Objects.isNull(departmentEntity)){
             throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
         }
-        List<DepartmentEntity> childList = departmentDao
-                .getDepartmentListByPath(departmentEntity.getPkOrgId(),
-                        departmentEntity.getPath(),query.getParentId());
-
-        List<DepartmentDto> dtoList = null;
-        if(Boolean.TRUE.equals(query.getSelfReturn())){
-            dtoList = Optional.ofNullable(childList).orElse(Lists.newArrayList())
-                    .stream()
-                    .map(item -> {
-                        return departmentConverter.entityToDTO(item);
-                    }).collect(Collectors.toList());
+        List<DepartmentEntity> childList = Lists.newArrayList();
+        List<DepartmentEntity> selectList = null;
+        if(NumberConst.ONE.equals(query.getReturnType())){
+            //只返回直接子部门
+            selectList = departmentDao
+                    .getDepartmentListByParentIdAndPath(departmentEntity.getPkOrgId(),departmentEntity.getId(),null);
         }else{
-            dtoList = Optional.ofNullable(childList).orElse(Lists.newArrayList())
+            //返回所有子部门
+            selectList = departmentDao
+                    .getDepartmentListByParentIdAndPath(departmentEntity.getPkOrgId(),null,departmentEntity.getPath());
+            //先去除自己
+            selectList = Optional.ofNullable(selectList).orElse(Lists.newArrayList())
                     .stream()
-                    .filter(item->!item.getId().equals(query.getDeptId()))
-                    .map(item -> {
-                        return departmentConverter.entityToDTO(item);
-                    }).collect(Collectors.toList());
+                    .filter(item->!item.getId().equals(departmentEntity.getId()))
+                    .collect(Collectors.toList());
         }
+        if(Boolean.TRUE.equals(query.getSelfReturn())){
+            childList.add(departmentEntity);
+        }
+        if(org.apache.commons.collections.CollectionUtils.isNotEmpty(selectList)){
+            childList.addAll(selectList);
+        }
+
+        List<DepartmentDto> dtoList = Optional.ofNullable(childList).orElse(Lists.newArrayList())
+                .stream()
+                .map(item -> {
+                    return departmentConverter.entityToDTO(item);
+                }).collect(Collectors.toList());
+
         return dtoList;
     }
 }

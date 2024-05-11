@@ -27,4 +27,9 @@ public class BaseUserReqDto implements Serializable {
      */
     private List<Long> deptIdList;
 
+    /**
+     * 用户ID列表
+     */
+    private List<Long> userIdList;
+
 }
