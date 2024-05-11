@@ -1,13 +1,37 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
-import cn.cuiot.dmp.system.application.param.vo.CommonOptionTypeVO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CommonOptionTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonOptionTypeRspDTO;
+import cn.cuiot.dmp.common.bean.TreeNode;
+import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.TreeUtil;
+import cn.cuiot.dmp.system.application.constant.CommonOptionConstant;
+import cn.cuiot.dmp.system.application.param.dto.CommonOptionTypeCreateDTO;
+import cn.cuiot.dmp.system.application.param.dto.CommonOptionTypeQueryDTO;
+import cn.cuiot.dmp.system.application.param.dto.CommonOptionTypeUpdateDTO;
+import cn.cuiot.dmp.system.application.param.dto.CommonOptionTypeTreeNodeCopyDTO;
+import cn.cuiot.dmp.system.application.param.vo.*;
 import cn.cuiot.dmp.system.application.service.CommonOptionTypeService;
+import cn.cuiot.dmp.system.domain.aggregate.CommonOptionPageQuery;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOptionType;
+import cn.cuiot.dmp.system.domain.aggregate.CommonOption;
+import cn.cuiot.dmp.system.domain.aggregate.CommonOptionType;
+import cn.cuiot.dmp.system.domain.repository.CommonOptionRepository;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionTypeRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author caorui
@@ -18,6 +42,9 @@ import org.springframework.stereotype.Service;
 public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
 
     @Autowired
+    private CommonOptionRepository commonOptionRepository;
+
+    @Autowired
     private CommonOptionTypeRepository commonOptionTypeRepository;
 
     @Override
@@ -26,6 +53,180 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
         CommonOptionTypeVO commonOptionTypeVO = new CommonOptionTypeVO();
         BeanUtils.copyProperties(commonOptionType, commonOptionTypeVO);
         return commonOptionTypeVO;
+    }
+
+    @Override
+    public List<CommonOptionTypeTreeNodeVO> queryByCompany(CommonOptionTypeQueryDTO queryDTO) {
+        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryByCompany(queryDTO.getCompanyId());
+        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList = commonOptionTypeList.stream()
+                .map(parent -> new CommonOptionTypeTreeNodeVO(
+                        parent.getId().toString(), parent.getParentId().toString(),
+                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
+                .collect(Collectors.toList());
+        if (StringUtils.isBlank(queryDTO.getName())) {
+            return TreeUtil.makeTree(commonOptionTypeTreeNodeVOList);
+        }
+        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeList = TreeUtil.makeTree(commonOptionTypeTreeNodeVOList);
+        List<String> hitIds = commonOptionTypeTreeNodeVOList.stream()
+                .filter(o -> o.getName().contains(queryDTO.getName()))
+                .map(TreeNode::getId)
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(hitIds)) {
+            return new ArrayList<>();
+        }
+        return TreeUtil.searchNode(commonOptionTypeTreeNodeList, hitIds);
+    }
+
+    @Override
+    public List<CommonOptionTypeTreeNodeVO> queryExcludeChild(CommonOptionTypeQueryDTO queryDTO) {
+        AssertUtil.notNull(queryDTO.getId(), "当前节点不能为空");
+        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryByCompany(queryDTO.getCompanyId());
+        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList = commonOptionTypeList.stream()
+                .map(parent -> new CommonOptionTypeTreeNodeVO(
+                        parent.getId().toString(), parent.getParentId().toString(),
+                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
+                .collect(Collectors.toList());
+        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeList = TreeUtil.makeTree(commonOptionTypeTreeNodeVOList);
+        CommonOptionTypeTreeNodeVO commonOptionTypeTreeNodeVO = TreeUtil.getTreeNode(commonOptionTypeTreeNodeList,
+                queryDTO.getId().toString());
+        AssertUtil.notNull(commonOptionTypeTreeNodeVO, "当前节点不能为空");
+        List<String> treeIdList = TreeUtil.getChildTreeIdList(commonOptionTypeTreeNodeVO);
+        List<String> hitIds = commonOptionTypeTreeNodeVOList.stream()
+                .map(TreeNode::getId)
+                .filter(id -> !treeIdList.contains(id))
+                .collect(Collectors.toList());
+        return TreeUtil.searchNode(commonOptionTypeTreeNodeList, hitIds);
+    }
+
+    @Override
+    public int saveCommonOptionType(CommonOptionTypeCreateDTO commonOptionTypeCreateDTO) {
+        AssertUtil.isTrue(CommonOptionConstant.MAX_LEVEL_TYPE >= commonOptionTypeCreateDTO.getLevelType(),
+                "常用选项类型超过最大层级");
+        CommonOptionType commonOptionTypeParent = commonOptionTypeRepository.queryForDetail(commonOptionTypeCreateDTO.getParentId());
+        AssertUtil.notNull(commonOptionTypeParent, "父节点不存在");
+        AssertUtil.isTrue(commonOptionTypeCreateDTO.getLevelType() - commonOptionTypeParent.getLevelType() == 1,
+                "父节点和子节点只能相差一级");
+        CommonOptionType commonOptionType = new CommonOptionType();
+        BeanUtils.copyProperties(commonOptionTypeCreateDTO, commonOptionType);
+        return commonOptionTypeRepository.saveCommonOptionType(commonOptionType);
+    }
+
+    @Override
+    public int updateCommonOptionType(CommonOptionTypeUpdateDTO commonOptionTypeUpdateDTO) {
+        AssertUtil.isTrue(CommonOptionConstant.MAX_LEVEL_TYPE >= commonOptionTypeUpdateDTO.getLevelType(),
+                "常用选项类型超过最大层级");
+        CommonOptionType commonOptionTypeParent = commonOptionTypeRepository.queryForDetail(commonOptionTypeUpdateDTO.getParentId());
+        AssertUtil.notNull(commonOptionTypeParent, "父节点不存在");
+        AssertUtil.isTrue(commonOptionTypeUpdateDTO.getLevelType() - commonOptionTypeParent.getLevelType() == 1,
+                "父节点和子节点只能相差一级");
+        CommonOptionType commonOptionType = commonOptionTypeRepository.queryForDetail(commonOptionTypeUpdateDTO.getId());
+        BeanUtils.copyProperties(commonOptionTypeUpdateDTO, commonOptionType);
+        return commonOptionTypeRepository.updateCommonOptionType(commonOptionType);
+    }
+
+    @Override
+    public int deleteCommonOptionType(CommonOptionTypeQueryDTO queryDTO) {
+        AssertUtil.notNull(queryDTO.getId(), "当前节点不能为空");
+        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryByCompany(queryDTO.getCompanyId());
+        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList = commonOptionTypeList.stream()
+                .map(parent -> new CommonOptionTypeTreeNodeVO(
+                        parent.getId().toString(), parent.getParentId().toString(),
+                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
+                .collect(Collectors.toList());
+        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeList = TreeUtil.makeTree(commonOptionTypeTreeNodeVOList);
+        CommonOptionTypeTreeNodeVO commonOptionTypeTreeNodeVO = TreeUtil.getTreeNode(commonOptionTypeTreeNodeList,
+                queryDTO.getId().toString());
+        AssertUtil.notNull(commonOptionTypeTreeNodeVO, "当前节点不能为空");
+        List<String> treeIdList = TreeUtil.getChildTreeIdList(commonOptionTypeTreeNodeVO);
+        // 批量移动该分类及子节点下所有的表单配置到"全部"分类下
+        commonOptionRepository.batchMoveCommonOptionDefault(treeIdList);
+        return commonOptionTypeRepository.deleteCommonOptionType(treeIdList);
+    }
+
+    @Override
+    public List<CommonOptionTypeRspDTO> batchGetCommonOptionType(CommonOptionTypeReqDTO commonOptionTypeReqDTO) {
+        Long orgId = commonOptionTypeReqDTO.getOrgId();
+        List<Long> commonOptionTypeIdList = commonOptionTypeReqDTO.getCommonOptionTypeIdList();
+        AssertUtil.notNull(orgId, "组织id不能为空");
+        AssertUtil.notEmpty(commonOptionTypeIdList, "常用选项类型ID列表不能为空");
+        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryByCompany(orgId);
+        // 拼接树型结构
+        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList = commonOptionTypeList.stream()
+                .map(parent -> new CommonOptionTypeTreeNodeVO(
+                        parent.getId().toString(), parent.getParentId().toString(),
+                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
+                .collect(Collectors.toList());
+        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeList = TreeUtil.makeTree(commonOptionTypeTreeNodeVOList);
+        // 去重
+        List<Long> distinctIdList = commonOptionTypeIdList.stream().distinct().collect(Collectors.toList());
+        // 获取调用id和对应树型名称的map
+        Map<Long, String> invokeIdTreeNameMap = new HashMap<>();
+        for (Long id : distinctIdList) {
+            List<String> hitIds = new ArrayList<>();
+            hitIds.add(id.toString());
+            // 获取单个节点的树形结构
+            List<CommonOptionTypeTreeNodeVO> tmpCommonOptionTypeTreeNodeList = deepCopy(commonOptionTypeTreeNodeList);
+            List<CommonOptionTypeTreeNodeVO> invokeTreeNodeList = TreeUtil.searchNode(tmpCommonOptionTypeTreeNodeList, hitIds);
+            String treeName = "";
+            if (CollectionUtils.isEmpty(invokeTreeNodeList)) {
+                invokeIdTreeNameMap.put(id, treeName);
+                continue;
+            }
+            CommonOptionTypeTreeNodeVO rootCommonOptionTypeTreeNodeVO = invokeTreeNodeList.get(0);
+            treeName = TreeUtil.getParentTreeName(rootCommonOptionTypeTreeNodeVO);
+            invokeIdTreeNameMap.put(id, treeName);
+        }
+        // 拼接对象返回
+        List<CommonOptionTypeRspDTO> commonOptionTypeRspDTOList = new ArrayList<>();
+        for (Long id : distinctIdList) {
+            CommonOptionTypeRspDTO commonOptionTypeRspDTO = new CommonOptionTypeRspDTO();
+            String treeName = invokeIdTreeNameMap.get(id);
+            commonOptionTypeRspDTO.setCommonOptionTypeId(id);
+            commonOptionTypeRspDTO.setTreeName(treeName);
+            commonOptionTypeRspDTOList.add(commonOptionTypeRspDTO);
+        }
+        return commonOptionTypeRspDTOList;
+    }
+
+    @Override
+    public PageResult<CommonOptionVO> queryCommonOptionByType(CommonOptionPageQuery pageQuery) {
+        PageResult<CommonOption> commonOptionPageResult = commonOptionTypeRepository.queryCommonOptionByType(pageQuery);
+        if (CollectionUtils.isEmpty(commonOptionPageResult.getList())) {
+            return new PageResult<>();
+        }
+        fillTreeNameForCommonOption(commonOptionPageResult.getList());
+        PageResult<CommonOptionVO> commonOptionVOPageResult = new PageResult<>();
+        List<CommonOptionVO> commonOptionVOList = commonOptionPageResult.getList().stream()
+                .map(o->{
+                    CommonOptionVO commonOptionVO = new CommonOptionVO();
+                    BeanUtils.copyProperties(o, commonOptionVO);
+                    return commonOptionVO;
+                }).collect(Collectors.toList());
+        BeanUtils.copyProperties(commonOptionPageResult, commonOptionVOPageResult);
+        commonOptionVOPageResult.setList(commonOptionVOList);
+        return commonOptionVOPageResult;
+    }
+
+    private List<CommonOptionTypeTreeNodeVO> deepCopy(List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList) {
+        CommonOptionTypeTreeNodeCopyDTO commonOptionTypeTreeNodeCopyDTO = new CommonOptionTypeTreeNodeCopyDTO();
+        commonOptionTypeTreeNodeCopyDTO.setCommonOptionTypeTreeNodeVOList(commonOptionTypeTreeNodeVOList);
+        CommonOptionTypeTreeNodeCopyDTO cloneDTO = SerializationUtils.clone(commonOptionTypeTreeNodeCopyDTO);
+        return cloneDTO.getCommonOptionTypeTreeNodeVOList();
+    }
+
+    private void fillTreeNameForCommonOption(List<CommonOption> commonOptionList) {
+        List<Long> commonOptionTypeIdList = commonOptionList.stream().map(CommonOption::getTypeId).collect(Collectors.toList());
+        Long orgId = commonOptionList.get(0).getCompanyId();
+        CommonOptionTypeReqDTO commonOptionTypeReqDTO = new CommonOptionTypeReqDTO(orgId, commonOptionTypeIdList);
+        List<CommonOptionTypeRspDTO> commonOptionTypeRspDTOList = batchGetCommonOptionType(commonOptionTypeReqDTO);
+        for (CommonOption commonOption : commonOptionList) {
+            for (CommonOptionTypeRspDTO commonOptionTypeRspDTO : commonOptionTypeRspDTOList) {
+                if (commonOptionTypeRspDTO.getCommonOptionTypeId().equals(commonOption.getTypeId())) {
+                    commonOption.setTypeName(commonOptionTypeRspDTO.getTreeName());
+                    break;
+                }
+            }
+        }
     }
 
 }

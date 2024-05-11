@@ -8,12 +8,12 @@ import java.io.Serializable;
 
 /**
  * @author caorui
- * @date 2024/5/8
+ * @date 2024/5/11
  */
 @Data
-public class FormConfigTypeCreateDTO implements Serializable {
+public class CommonOptionTypeCreateDTO implements Serializable {
 
-    private static final long serialVersionUID = -867405649257892233L;
+    private static final long serialVersionUID = 3064064921671877897L;
 
     /**
      * 类型名称

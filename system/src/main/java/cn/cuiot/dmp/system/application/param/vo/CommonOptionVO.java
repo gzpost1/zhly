@@ -34,8 +34,18 @@ public class CommonOptionVO implements Serializable {
     private Long typeId;
 
     /**
+     * 分类名称（合并后的层级名称，e.g.巡检>设备巡检）
+     */
+    private String typeName;
+
+    /**
      * 状态(0:禁用,1:正常)
      */
     private Byte status;
+
+    /**
+     * 常用选项详情
+     */
+    private String commonOptionDetail;
 
 }

@@ -16,6 +16,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +72,7 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int saveBusinessType(BusinessType businessType) {
         checkBusinessTypeNode(businessType);
         BusinessTypeEntity businessTypeEntity = new BusinessTypeEntity();
@@ -79,6 +81,7 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateBusinessType(BusinessType businessType) {
         checkBusinessTypeNode(businessType);
         BusinessTypeEntity businessTypeEntity = Optional.ofNullable(businessTypeMapper.selectById(businessType.getId()))
@@ -93,6 +96,7 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteBusinessType(List<String> idList) {
         return businessTypeMapper.deleteBatchIds(idList);
     }

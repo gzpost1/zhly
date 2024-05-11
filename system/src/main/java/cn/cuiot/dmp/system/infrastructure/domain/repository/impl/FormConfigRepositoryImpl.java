@@ -81,6 +81,7 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateFormConfig(FormConfig formConfig) {
         FormConfigEntity formConfigEntity = Optional.ofNullable(formConfigMapper.selectById(formConfig.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
@@ -97,6 +98,7 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateFormConfigStatus(FormConfig formConfig) {
         FormConfigEntity formConfigEntity = Optional.ofNullable(formConfigMapper.selectById(formConfig.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
@@ -105,6 +107,7 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteFormConfig(Long id) {
         // 先删除表单配置详情，后删除表单
         FormConfigDetailQueryDTO formConfigDetailQueryDTO = new FormConfigDetailQueryDTO();
@@ -135,21 +138,25 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int batchMoveFormConfig(Long typeId, List<Long> idList) {
         return formConfigMapper.batchUpdateFormConfigById(typeId, null, idList);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int batchMoveFormConfigDefault(List<String> typeIdList) {
         return formConfigMapper.batchMoveFormConfigDefault(typeIdList);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int batchUpdateFormConfigStatus(Byte status, List<Long> idList) {
         return formConfigMapper.batchUpdateFormConfigById(null, status, idList);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int batchDeleteFormConfig(List<Long> idList) {
         // 先删除表单配置详情，后删除表单
         FormConfigDetailQueryDTO formConfigDetailQueryDTO = new FormConfigDetailQueryDTO();
