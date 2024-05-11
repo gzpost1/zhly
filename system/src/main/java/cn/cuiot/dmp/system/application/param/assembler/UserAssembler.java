@@ -15,6 +15,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
 /**
+ * 用户数据装配
  * @Author 犬豪
  * @Date 2023/9/5 13:31
  * @Version V1.0
@@ -70,7 +71,8 @@ public interface UserAssembler extends Assembler<User, UserDTO> {
             @Mapping(source = "email.encryptedValue", target = "email"),
             @Mapping(source = "phoneNumber.encryptedValue", target = "phoneNumber"),
             @Mapping(source = "userType.value", target = "userType"),
-            @Mapping(source = "contactAddress.value", target = "contactAddress")})
+            @Mapping(source = "contactAddress.value", target = "contactAddress"),
+            @Mapping(source = "status.value", target = "status")})
     UserDataResDTO doToDataDTO(User userEntity);
 
 
