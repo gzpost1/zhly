@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalTime;
@@ -176,4 +177,9 @@ public class WorkPlanInfoEntity extends YjBaseEntity {
      */
     private String workJosn;
 
+    /**
+     * 创建人名称
+     */
+    @TableField(exist = false)
+    private  String createName;
 }

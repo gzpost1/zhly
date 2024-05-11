@@ -23,11 +23,21 @@ public class WorkInfoDto extends PageQuery {
      */
     private Long businessType;
 
+    /**
+     * 业务类型名称
+     */
+    private String businessTypeName;
+
 
     /**
      * 所属组织
      */
     private Long org;
+
+    /**
+     * 组织名称
+     */
+    private String orgPath;
 
 
     /**
@@ -41,7 +51,10 @@ public class WorkInfoDto extends PageQuery {
      */
     private Byte workSouce;
 
-
+    /**
+     * 用户手机号
+     */
+    private String phone;
 
     /**
      * 状态
@@ -57,7 +70,7 @@ public class WorkInfoDto extends PageQuery {
     /**
      * 创建的用户id
      */
-    private String createUser;
+    private Long createUser;
 
     /**
      * 创建人名称
@@ -82,4 +95,9 @@ public class WorkInfoDto extends PageQuery {
      * 工单耗时
      */
     private String workTime;
+
+    /**
+     * 企业id
+     */
+    private Long companyId;
 }

@@ -33,11 +33,27 @@ public class WorkInfoEntity implements Serializable {
      */
     private Long businessType;
 
+    /**
+     * 业务类型名称
+     */
+    @TableField(value = "company_id")
+    private String businessTypeName;
 
     /**
      * 所属组织
      */
     private Long orgId;
+
+    /**
+     * 组织名称
+     */
+    @TableField(value = "company_id")
+    private String orgPath;
+
+    /**
+     * 企业ID
+     */
+    private Long companyId;
 
 
     /**
@@ -70,6 +86,11 @@ public class WorkInfoEntity implements Serializable {
      */
     private Long createUser;
 
+    /**
+     * 用户名称
+     */
+    @TableField(exist = false)
+    private String userName;
 
     /**
      * 流程实例id

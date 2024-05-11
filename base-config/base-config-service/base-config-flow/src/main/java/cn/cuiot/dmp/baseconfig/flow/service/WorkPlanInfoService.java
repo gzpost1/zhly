@@ -1,5 +1,10 @@
 package cn.cuiot.dmp.baseconfig.flow.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.xxljob.XxlJobClient;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
@@ -8,6 +13,7 @@ import cn.cuiot.dmp.baseconfig.flow.entity.WorkPlanInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkPlanInfoMapper;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -22,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -37,6 +45,9 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
     @Autowired
     private PlanWorkExecutionInfoService planWorkExecutionInfoService;
+
+    @Autowired
+    private SystemApiFeignService systemApiFeignService;
     /**
      * 创建工单计划
      * @param workPlanInfoCreateDto
@@ -284,16 +295,39 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
      */
     public IdmResDTO<IPage<WorkPlanInfoEntity>>  queryWordPlanInfo(QueryWorkPlanInfoDto dto) {
 
-        //TODO 根据组织id获取自己及下属的组织id
+        //根据组织id获取自己及下属的组织id
+        List<DepartmentDto> deptList = getDeptIds(LoginInfoHolder.getCurrentDeptId());
+        List<Long> deptIds = deptList.stream().map(DepartmentDto::getId).collect(Collectors.toList());
+        dto.setOrgIds(deptIds);
         LambdaQueryWrapper<WorkPlanInfoEntity> lw = getCondition(dto);
         Page<WorkPlanInfoEntity> workPlanInfoEntityPage = this.getBaseMapper().selectPage(new Page<>(dto.getCurrentPage(), dto.getPageSize()), lw);
         List<WorkPlanInfoEntity> records = workPlanInfoEntityPage.getRecords();
         if(CollectionUtil.isNotEmpty(records)){
+            List<Long> userIds = records.stream().map(WorkPlanInfoEntity::getCreateUser).collect(Collectors.toList());
+            Map<Long, String> userMap = getUserMap(userIds);
             records.stream().forEach(item->{
                 //TODO根据userId获取userName
+                item.setCreateName(userMap.get(item.getCreateUser()));
             });
         }
         return IdmResDTO.success(workPlanInfoEntityPage);
+    }
+
+    public Map<Long,String> getUserMap(List<Long> userIds){
+        BaseUserReqDto userReqDto = new BaseUserReqDto();
+        userReqDto.setUserIdList(userIds);
+        IdmResDTO<List<BaseUserDto>> listIdmResDTO = systemApiFeignService.lookUpUserList(userReqDto);
+        List<BaseUserDto> data = Optional.ofNullable(listIdmResDTO.getData()).orElseThrow(()->new RuntimeException("用户信息不存在"));
+        return data.stream().collect(Collectors.toMap(BaseUserDto::getId,BaseUserDto::getName ));
+    }
+
+    public List<DepartmentDto> getDeptIds(Long deptId){
+        DepartmentReqDto paraDto = new DepartmentReqDto();
+        paraDto.setDeptId(deptId);
+        paraDto.setSelfReturn(true);
+        IdmResDTO<List<DepartmentDto>> listIdmResDTO = systemApiFeignService.lookUpDepartmentChildList(paraDto);
+        return listIdmResDTO.getData();
+
     }
     public LambdaQueryWrapper getCondition(QueryWorkPlanInfoDto dto){
         LambdaQueryWrapper<WorkPlanInfoEntity> lw = new LambdaQueryWrapper<>();

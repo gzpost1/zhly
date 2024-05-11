@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.base.infrastructure.dto.req;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +17,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder(toBuilder = true)
 public class BusinessTypeReqDTO implements Serializable {
 
     private static final long serialVersionUID = 500044746805601568L;

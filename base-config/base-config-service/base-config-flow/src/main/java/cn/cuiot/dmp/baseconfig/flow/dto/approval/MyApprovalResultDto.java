@@ -30,12 +30,19 @@ public class MyApprovalResultDto {
     /**
      * 业务类型
      */
-    private Byte businessType;
+    private Long businessType;
+
+    /**
+     * 业务类型名称
+     */
+    private String businessTypeName;
 
     /**
      * 所属组织
      */
     private Long orgId;
+
+    private String orgPath;
 
     /**
      * 所属组织名称
@@ -64,4 +71,9 @@ public class MyApprovalResultDto {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date entTime;
+
+    /**
+     * 企业id
+     */
+    private Long companyId;
 }
