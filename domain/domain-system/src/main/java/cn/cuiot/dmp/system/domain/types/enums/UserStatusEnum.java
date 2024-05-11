@@ -7,7 +7,7 @@ package cn.cuiot.dmp.system.domain.types.enums;
  * @Version V1.0
  */
 public enum UserStatusEnum {
-    OPEN(0, "开启"), CLOSE(1, "关闭");
+    OPEN(1, "开启"), CLOSE(0, "关闭");
 
     UserStatusEnum(Integer value, String desc) {
         this.value = value;

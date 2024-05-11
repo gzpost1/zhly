@@ -162,4 +162,9 @@ public class UserDataResDTO implements Serializable {
      * 长期登录
      */
     private String longTimeLogin;
+
+    /**
+     * 状态
+     */
+    private Integer status;
 }
