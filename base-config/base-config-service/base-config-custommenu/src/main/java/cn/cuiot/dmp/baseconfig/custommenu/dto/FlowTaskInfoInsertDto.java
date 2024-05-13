@@ -15,7 +15,7 @@ public class FlowTaskInfoInsertDto {
     private String name;
 
     /**
-     * 对象类型
+     * 对象类型 0楼盘 1楼栋 2房屋 3空间 4设备 5车位 6自定义
      */
     private Byte equipmentType;
 

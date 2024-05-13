@@ -57,43 +57,10 @@ public class BaseConfigFlowController {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
 
         IPage<TbFlowPageDto> tbFlowPageDtoIPage = tbFlowConfigService.queryForPage(query);
-        fillOrgNameAndBusinessName(tbFlowPageDtoIPage);
+        systemUtilService.fillOrgNameAndBusinessName(tbFlowPageDtoIPage);
 
         return IdmResDTO.success().body(tbFlowPageDtoIPage);
     }
-
-    /**
-     * 填充每一行的业务名称和组织机构名称
-     *
-     * @param tbFlowPageDtoIPage
-     */
-    private void fillOrgNameAndBusinessName(IPage<TbFlowPageDto> tbFlowPageDtoIPage) {
-        //填充每一行的业务名称和组织机构名称
-        if (Objects.nonNull(tbFlowPageDtoIPage) && CollectionUtils.isNotEmpty(tbFlowPageDtoIPage.getRecords())) {
-            //每一行转化为 BusinessAndOrgDto
-            List<BusinessAndOrgDto> businessAndOrgDtoList = tbFlowPageDtoIPage.getRecords().stream().map(e -> {
-                BusinessAndOrgDto businessAndOrgDto = new BusinessAndOrgDto();
-                businessAndOrgDto.setDataId(e.getId());
-                businessAndOrgDto.setOrgIds(e.getOrgIds());
-                businessAndOrgDto.setCompanyId(e.getCompanyId());
-                businessAndOrgDto.setBusinessTypeIdList(Lists.newArrayList(e.getBusinessTypeId()));
-                return businessAndOrgDto;
-            }).collect(Collectors.toList());
-
-            //获取业务类型和组织机构名称
-            Map<Long, BusinessAndOrgNameDto> nameDtoMap = systemUtilService.processBusinessAndOrgNameDto(businessAndOrgDtoList);
-
-            //填充每一行的业务名称和组织机构名称
-            tbFlowPageDtoIPage.getRecords().forEach(e -> {
-                BusinessAndOrgNameDto businessAndOrgNameDto = nameDtoMap.get(e.getId());
-                if (Objects.nonNull(businessAndOrgNameDto)) {
-                    e.setBusinessTypeName(businessAndOrgNameDto.getBusinessTypeName());
-                    e.setOrgName(businessAndOrgNameDto.getOrgName());
-                }
-            });
-        }
-    }
-
 
     /**
      * 获取详情

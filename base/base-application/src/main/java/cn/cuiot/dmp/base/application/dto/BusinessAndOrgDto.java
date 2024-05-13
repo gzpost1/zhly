@@ -30,4 +30,9 @@ public class BusinessAndOrgDto {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 创建用户ID
+     */
+    private Long createUserId;
 }
