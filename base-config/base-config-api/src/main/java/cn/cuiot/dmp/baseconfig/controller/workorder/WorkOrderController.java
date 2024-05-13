@@ -39,7 +39,7 @@ public class WorkOrderController extends BaseController {
     @PostMapping("queryFirstFormInfo")
     public IdmResDTO<Properties> queryFirstFormInfo(@RequestBody FirstFormDto dto){
 
-        return workInfoService.queryFirstFormInfo(dto,getUserId());
+        return workInfoService.queryFirstFormInfo(dto,"1111111");
     }
 
     /**

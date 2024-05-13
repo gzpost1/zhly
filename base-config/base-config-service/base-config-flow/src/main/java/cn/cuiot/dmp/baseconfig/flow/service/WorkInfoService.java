@@ -486,7 +486,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public IdmResDTO<Properties> queryFirstFormInfo(FirstFormDto dto, String userId) {
-        ChildNode childNodeByNodeId = getChildNodeByNodeId(dto.getProcessDefinitionId(), dto.getTaskDefinitionKey());
+        ChildNode childNodeByNodeId = getChildNodeByNodeId(dto.getProcessDefinitionId(), WorkOrderConstants.USER_ROOT);
         Properties props = childNodeByNodeId.getProps();
 
         List<String> ids = props.getAssignedUser().stream().map(UserInfo::getId).collect(Collectors.toList());
@@ -511,7 +511,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
            List<Long> deptIds = departs.stream().map(DepartmentDto::getId).collect(Collectors.toList());
            dto.setOrgIds(deptIds);
        }
-        Page<WorkInfoDto> workInfoEntityPage = getBaseMapper().queryWorkOrderInfo(new Page<WorkInfoDto>(dto.getCurrentPage(),dto.getPageSize()),dto);
+        IPage<WorkInfoDto> workInfoEntityPage = getBaseMapper().queryWorkOrderInfo(new Page<WorkInfoDto>(dto.getCurrentPage(),dto.getPageSize()),dto);
         List<WorkInfoDto> records = workInfoEntityPage.getRecords();
         if(CollectionUtils.isNotEmpty(records)){
             //企业id 获取业务类型
@@ -976,7 +976,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     }
 
     public IdmResDTO<IPage<WorkInfoEntity>> queryMySubmitWorkInfo(QueryMyApprovalDto dto) {
-        dto.setCreateUser(String.valueOf(LoginInfoHolder.getCurrentUserId()));
+        dto.setCreateUser(LoginInfoHolder.getCurrentUserId());
         Page<WorkInfoEntity> page = baseMapper.queryMySubmitWorkInfo(new Page<WorkInfoEntity>(dto.getCurrentPage(),dto.getPageSize()),
                 dto);
         List<WorkInfoEntity> records = page.getRecords();

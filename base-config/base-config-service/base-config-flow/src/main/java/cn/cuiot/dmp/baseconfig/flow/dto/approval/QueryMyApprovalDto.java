@@ -36,7 +36,7 @@ public class QueryMyApprovalDto extends PageQuery {
     /**
      * 发起人userId
      */
-    private String createUser;
+    private Long createUser;
 
     /**
      * 发起开始时间
