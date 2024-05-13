@@ -6,10 +6,12 @@ import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
  * @Date 2024/5/9 15:39
  * @Created by libo
  */
+@Slf4j
 @Service
 public class SystemUtilService {
     @Autowired
@@ -33,11 +36,20 @@ public class SystemUtilService {
      * @return
      */
     public Map<Long, BusinessAndOrgNameDto> processBusinessAndOrgNameDto(List<BusinessAndOrgDto> businessAndOrgDtoList) {
-        // 获取业务类型列表
-        List<Long> businessTypeIds = businessAndOrgDtoList.stream()
-                .flatMap(businessAndOrgDto -> businessAndOrgDto.getBusinessTypeIdList().stream()).collect(Collectors.toList());
-        List<BusinessTypeRspDTO> businessTypeList = getBusinessTypeList(businessTypeIds, businessAndOrgDtoList.get(0).getOrgIds().get(0));
+        //获取业务类型名称
+        Map<Long, List<BusinessAndOrgDto>> companyBusinessMap = businessAndOrgDtoList.stream().collect(Collectors.groupingBy(BusinessAndOrgDto::getCompanyId));
+        List<BusinessTypeRspDTO> businessTypeList = new ArrayList<>();
+        companyBusinessMap.forEach((k,v) -> {
+            // 获取业务类型列表
+            List<Long> businessTypeIds = v.stream()
+                    .flatMap(businessAndOrgDto -> businessAndOrgDto.getBusinessTypeIdList().stream()).collect(Collectors.toList());
+            List<BusinessTypeRspDTO> businessResultList = getBusinessTypeList(businessTypeIds, k);
+            businessTypeList.addAll(businessResultList);
+        });
 
+
+
+        //查询组织机构名称
         List<DepartmentDto> deptNameList = getDeptNameList(businessAndOrgDtoList);
 
         //填充每一行的业务名称和组织机构名称
@@ -73,6 +85,8 @@ public class SystemUtilService {
                 .flatMap(businessAndOrgDto -> businessAndOrgDto.getOrgIds().stream()).collect(Collectors.toList());
         DepartmentReqDto departmentReqDto = new DepartmentReqDto();
         departmentReqDto.setDeptIdList(deptIds);
+
+        log.info("获取组织机构名称参数：{}", departmentReqDto);
         List<DepartmentDto> departmentDtos = apiSystemService.lookUpDepartmentList(departmentReqDto);
         return departmentDtos;
     }
@@ -87,6 +101,7 @@ public class SystemUtilService {
         BusinessTypeReqDTO businessTypeReqDTO = new BusinessTypeReqDTO();
         businessTypeReqDTO.setBusinessTypeIdList(businessTypeIdList);
         businessTypeReqDTO.setOrgId(orgId);
+        log.info("获取业务类型列表参数：{}", businessTypeReqDTO);
         return apiSystemService.batchGetBusinessType(businessTypeReqDTO);
     }
 

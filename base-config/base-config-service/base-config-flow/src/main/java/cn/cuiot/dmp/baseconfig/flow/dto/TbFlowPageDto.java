@@ -71,4 +71,9 @@ public class TbFlowPageDto implements Serializable {
      * 创建人名称
      */
     private String createUserName;
+
+    /**
+     * 企业ID
+     */
+    private Long companyId;
 }

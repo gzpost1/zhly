@@ -75,6 +75,7 @@ public class BaseConfigFlowController {
                 BusinessAndOrgDto businessAndOrgDto = new BusinessAndOrgDto();
                 businessAndOrgDto.setDataId(e.getId());
                 businessAndOrgDto.setOrgIds(e.getOrgIds());
+                businessAndOrgDto.setCompanyId(e.getCompanyId());
                 businessAndOrgDto.setBusinessTypeIdList(Lists.newArrayList(e.getBusinessTypeId()));
                 return businessAndOrgDto;
             }).collect(Collectors.toList());
