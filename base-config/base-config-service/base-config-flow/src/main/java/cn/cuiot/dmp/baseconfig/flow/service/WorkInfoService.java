@@ -1007,4 +1007,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(page);
     }
 
+    /**
+     * 获取部门信息
+     * @param dto
+     * @return
+     */
+    public List<DepartmentDto> queryDeptList(WorkInfoDto dto) {
+        return getDeptIds(LoginInfoHolder.getCurrentDeptId());
+    }
 }

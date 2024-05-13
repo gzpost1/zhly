@@ -82,7 +82,7 @@ public class IdmResDTO<T> {
     }
 
     public static <T> IdmResDTO<T> error(String message) {
-        return new IdmResDTO<T>(ErrorCode.UNKNOWN.getCode(), message);
+        return new IdmResDTO<T>(ResultCode.ERROR.getCode(), message);
     }
 
 }

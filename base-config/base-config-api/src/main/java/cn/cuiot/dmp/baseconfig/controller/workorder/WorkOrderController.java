@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.baseconfig.controller.workorder;
 
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.FirstFormDto;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 工单信息
@@ -46,6 +49,16 @@ public class WorkOrderController extends BaseController {
     @PostMapping("queryWorkOrderInfo")
     public IdmResDTO<IPage<WorkInfoDto>> queryWorkOrderInfo(@RequestBody WorkInfoDto dto){
         return workInfoService.queryWorkOrderInfo(dto);
+    }
+
+    /**
+     * 所属组织
+     * @param dto
+     * @return
+     */
+    @PostMapping("queryDeptList")
+    public List<DepartmentDto> queryDeptList(@RequestBody WorkInfoDto dto){
+        return workInfoService.queryDeptList(dto);
     }
     /**
      * 详情基本信息

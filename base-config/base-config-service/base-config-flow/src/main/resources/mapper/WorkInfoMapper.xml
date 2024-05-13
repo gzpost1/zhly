@@ -69,7 +69,7 @@
     </select>
 
     <sql id="queryMyNotApprovalSql">
-        t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.create_time,t1.create_user,t1.company_id
+        t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.create_time,t1.create_user,t1.company_id,
             t2.ID_ as task_id ,t2.TASK_DEF_ID_ as procDefId
     </sql>
     <select id="queryMyNotApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
