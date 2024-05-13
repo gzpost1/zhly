@@ -46,6 +46,7 @@ public class SystemUtilService {
                 businessAndOrgDto.setOrgIds(e.getOrgIds());
                 businessAndOrgDto.setCompanyId(e.getCompanyId());
                 businessAndOrgDto.setBusinessTypeIdList(Lists.newArrayList(e.getBusinessTypeId()));
+                businessAndOrgDto.setCreateUserId(e.getCreateUser());
                 return businessAndOrgDto;
             }).collect(Collectors.toList());
 

@@ -50,5 +50,6 @@
         and business_type_id = #{query.businessTypeId}
       </if>
     </where>
+    order by create_time desc
   </select>
 </mapper>

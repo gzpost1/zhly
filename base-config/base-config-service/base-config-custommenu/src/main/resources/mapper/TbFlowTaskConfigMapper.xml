@@ -40,5 +40,6 @@
         and company_id = #{query.companyId}
       </if>
     </where>
+    order by create_time desc
   </select>
 </mapper>
