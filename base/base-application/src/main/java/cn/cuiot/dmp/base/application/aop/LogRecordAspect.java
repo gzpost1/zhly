@@ -163,7 +163,7 @@ public class LogRecordAspect extends BaseController {
             operateLogDto.setStatusCode(StatusCodeEnum.FAILED.getCode());
             operateLogDto.setStatusMsg(StatusCodeEnum.FAILED.getName());
 
-            //记录日志
+            //发生异常记录日志
             sendService.sendOperaLog(operateLogDto);
             throw e;
         }
@@ -283,10 +283,7 @@ public class LogRecordAspect extends BaseController {
             operateLogDto.setLogLevel(LogLevelEnum.INFO.getCode());
 
             // 记录日志
-//            operationlogOutput.send(MessageBuilder.withPayload(operateLogDto)
-//                    .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
-//                    .build());
-
+            sendService.sendOperaLog(operateLogDto);
         } catch (Exception e) {
             log.error("LogRecordAspect joinPoint.afterProceed error", e);
         }
