@@ -10,7 +10,6 @@ import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigType;
 import cn.cuiot.dmp.system.domain.repository.FormConfigRepository;
 import cn.cuiot.dmp.system.domain.repository.FormConfigTypeRepository;
-import cn.cuiot.dmp.system.infrastructure.entity.FormConfigEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigTypeEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.FormConfigTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -19,6 +18,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +42,8 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
 
     @Override
     public FormConfigType queryForDetail(Long id) {
-        FormConfigTypeEntity formConfigTypeEntity = formConfigTypeMapper.selectById(id);
+        FormConfigTypeEntity formConfigTypeEntity = Optional.ofNullable(formConfigTypeMapper.selectById(id))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         FormConfigType formConfigType = new FormConfigType();
         BeanUtils.copyProperties(formConfigTypeEntity, formConfigType);
         return formConfigType;
@@ -73,6 +74,7 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int saveFormConfigType(FormConfigType formConfigType) {
         checkFormConfigTypeNode(formConfigType);
         FormConfigTypeEntity formConfigTypeEntity = new FormConfigTypeEntity();
@@ -81,6 +83,7 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateFormConfigType(FormConfigType formConfigType) {
         checkFormConfigTypeNode(formConfigType);
         FormConfigTypeEntity formConfigTypeEntity = Optional.ofNullable(formConfigTypeMapper.selectById(formConfigType.getId()))
@@ -90,6 +93,7 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteFormConfigType(List<String> idList) {
         return formConfigTypeMapper.deleteBatchIds(idList);
     }
@@ -106,6 +110,7 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
         formConfigTypeEntity.setName(FormConfigConstant.ROOT_NAME);
         formConfigTypeEntity.setLevelType(FormConfigConstant.ROOT_LEVEL_TYPE);
         formConfigTypeEntity.setParentId(FormConfigConstant.DEFAULT_PARENT_ID);
+        formConfigTypeEntity.setPathName(FormConfigConstant.ROOT_NAME);
         formConfigTypeMapper.insert(formConfigTypeEntity);
         return formConfigTypeEntity;
     }

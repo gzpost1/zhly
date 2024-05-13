@@ -56,7 +56,7 @@ public class TbFlowTaskConfigService extends ServiceImpl<TbFlowTaskConfigMapper,
                     if (orgNameMap.containsKey(e.getId())) {
                         List<Long> orgIds = Arrays.stream(StringUtils.split(orgNameMap.get(e.getId()), ","))
                                 .map(idstr -> Long.valueOf(idstr)).collect(Collectors.toList());
-                        e.setOrgId(orgIds);
+                        e.setOrgIds(orgIds);
                     }
                 });
             }

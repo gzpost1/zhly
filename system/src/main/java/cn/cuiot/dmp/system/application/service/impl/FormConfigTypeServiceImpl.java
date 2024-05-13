@@ -102,7 +102,7 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
     @Override
     public int saveFormConfigType(FormConfigTypeCreateDTO formConfigTypeCreateDTO) {
         AssertUtil.isTrue(FormConfigConstant.MAX_LEVEL_TYPE >= formConfigTypeCreateDTO.getLevelType(),
-                "业务类型超过最大层级");
+                "表单配置类型超过最大层级");
         FormConfigType formConfigTypeParent = formConfigTypeRepository.queryForDetail(formConfigTypeCreateDTO.getParentId());
         AssertUtil.notNull(formConfigTypeParent, "父节点不存在");
         AssertUtil.isTrue(formConfigTypeCreateDTO.getLevelType() - formConfigTypeParent.getLevelType() == 1,
@@ -115,7 +115,7 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
     @Override
     public int updateFormConfigType(FormConfigTypeUpdateDTO formConfigTypeUpdateDTO) {
         AssertUtil.isTrue(FormConfigConstant.MAX_LEVEL_TYPE >= formConfigTypeUpdateDTO.getLevelType(),
-                "业务类型超过最大层级");
+                "表单配置类型超过最大层级");
         FormConfigType formConfigTypeParent = formConfigTypeRepository.queryForDetail(formConfigTypeUpdateDTO.getParentId());
         AssertUtil.notNull(formConfigTypeParent, "父节点不存在");
         AssertUtil.isTrue(formConfigTypeUpdateDTO.getLevelType() - formConfigTypeParent.getLevelType() == 1,

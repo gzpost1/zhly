@@ -38,5 +38,6 @@
       <foreach collection="list" item="flowConfigId" open="(" close=")" separator=",">
           #{flowConfigId}
       </foreach>
+      group by flow_config_id
   </select>
 </mapper>

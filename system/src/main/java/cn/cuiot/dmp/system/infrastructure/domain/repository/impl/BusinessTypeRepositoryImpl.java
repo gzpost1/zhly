@@ -3,7 +3,9 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.TreeUtil;
 import cn.cuiot.dmp.system.application.constant.BusinessTypeConstant;
+import cn.cuiot.dmp.system.application.param.vo.BusinessTypeTreeNodeVO;
 import cn.cuiot.dmp.system.domain.aggregate.BusinessType;
 import cn.cuiot.dmp.system.domain.repository.BusinessTypeRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.BusinessTypeEntity;
@@ -16,6 +18,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +50,20 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
     }
 
     @Override
+    public List<BusinessType> queryForList(List<Long> idList) {
+        LambdaQueryWrapper<BusinessTypeEntity> queryWrapper = new LambdaQueryWrapper<BusinessTypeEntity>()
+                .in(BusinessTypeEntity::getId, idList);
+        List<BusinessTypeEntity> businessTypeEntityList = businessTypeMapper.selectList(queryWrapper);
+        return businessTypeEntityList.stream()
+                .map(o -> {
+                    BusinessType businessType = new BusinessType();
+                    BeanUtils.copyProperties(o, businessType);
+                    return businessType;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<BusinessType> queryByCompany(Long companyId) {
         LambdaQueryWrapper<BusinessTypeEntity> queryWrapper = new LambdaQueryWrapper<BusinessTypeEntity>()
                 .eq(BusinessTypeEntity::getCompanyId, companyId);
@@ -71,19 +88,23 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int saveBusinessType(BusinessType businessType) {
         checkBusinessTypeNode(businessType);
         BusinessTypeEntity businessTypeEntity = new BusinessTypeEntity();
         BeanUtils.copyProperties(businessType, businessTypeEntity);
+        businessType.setPathName(fillPathName(businessType));
         return businessTypeMapper.insert(businessTypeEntity);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateBusinessType(BusinessType businessType) {
         checkBusinessTypeNode(businessType);
         BusinessTypeEntity businessTypeEntity = Optional.ofNullable(businessTypeMapper.selectById(businessType.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(businessType, businessTypeEntity);
+        businessType.setPathName(fillPathName(businessType));
         return businessTypeMapper.updateById(businessTypeEntity);
     }
 
@@ -93,6 +114,7 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteBusinessType(List<String> idList) {
         return businessTypeMapper.deleteBatchIds(idList);
     }
@@ -106,8 +128,36 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
         businessTypeEntity.setName(organizationEntity.getCompanyName());
         businessTypeEntity.setLevelType(BusinessTypeConstant.ROOT_LEVEL_TYPE);
         businessTypeEntity.setParentId(BusinessTypeConstant.DEFAULT_PARENT_ID);
+        businessTypeEntity.setPathName(organizationEntity.getCompanyName());
         businessTypeMapper.insert(businessTypeEntity);
         return businessTypeEntity;
+    }
+
+    /**
+     * 保存或者更新节点的时候，同步更新名称路径
+     */
+    private String fillPathName(BusinessType businessType) {
+        AssertUtil.notNull(businessType.getName(), "业务名称不能为空");
+        AssertUtil.notNull(businessType.getCompanyId(), "企业id不能为空");
+        AssertUtil.notNull(businessType.getParentId(), "父级id不能为空");
+        String pathName;
+        List<BusinessType> businessTypeList = queryByCompany(businessType.getCompanyId());
+        // 拼接树型结构
+        List<BusinessTypeTreeNodeVO> businessTypeTreeNodeVOList = businessTypeList.stream()
+                .map(parent -> new BusinessTypeTreeNodeVO(
+                        parent.getId().toString(), parent.getParentId().toString(),
+                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
+                .collect(Collectors.toList());
+        List<BusinessTypeTreeNodeVO> businessTypeTreeNodeList = TreeUtil.makeTree(businessTypeTreeNodeVOList);
+        List<String> hitIds = new ArrayList<>();
+        hitIds.add(businessType.getParentId().toString());
+        List<BusinessTypeTreeNodeVO> invokeTreeNodeList = TreeUtil.searchNode(businessTypeTreeNodeList, hitIds);
+        if (CollectionUtils.isEmpty(invokeTreeNodeList)) {
+            return businessType.getName();
+        }
+        BusinessTypeTreeNodeVO rootBusinessTypeTreeNodeVO = invokeTreeNodeList.get(0);
+        pathName = TreeUtil.getParentTreeName(rootBusinessTypeTreeNodeVO) + ">" + businessType.getName();
+        return pathName;
     }
 
     private void checkBusinessTypeNode(BusinessType businessType) {

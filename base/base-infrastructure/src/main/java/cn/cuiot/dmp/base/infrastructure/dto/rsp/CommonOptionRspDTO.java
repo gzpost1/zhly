@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.system.domain.aggregate;
+package cn.cuiot.dmp.base.infrastructure.dto.rsp;
 
 import lombok.Data;
 
@@ -6,12 +6,12 @@ import java.io.Serializable;
 
 /**
  * @author caorui
- * @date 2024/4/26
+ * @date 2024/5/11
  */
 @Data
-public class CommonOption implements Serializable {
+public class CommonOptionRspDTO implements Serializable {
 
-    private static final long serialVersionUID = -581125814590108701L;
+    private static final long serialVersionUID = 6271602146183414219L;
 
     /**
      * 主键ID
@@ -19,7 +19,7 @@ public class CommonOption implements Serializable {
     private Long id;
 
     /**
-     * 常用选项名称
+     * 表单名称
      */
     private String name;
 
@@ -32,11 +32,6 @@ public class CommonOption implements Serializable {
      * 分类ID
      */
     private Long typeId;
-
-    /**
-     * 分类名称（合并后的层级名称，e.g.巡检>设备巡检）
-     */
-    private String typeName;
 
     /**
      * 状态(0:禁用,1:正常)

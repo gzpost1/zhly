@@ -373,6 +373,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         userEntity.setPostId(userBo.getPostId());
         userEntity.setRemark(userBo.getRemark());
         userEntity.setUserType(UserTypeEnum.USER);
+        userEntity.setStatus(UserStatusEnum.OPEN);
         userEntity.setLongTimeLogin(
                 userBo.getLongTimeLogin() != null ? Integer.valueOf(userBo.getLongTimeLogin())
                         : null);
@@ -892,6 +893,7 @@ public class UserServiceImpl extends BaseController implements UserService {
             userEntity.setPostId(userBo.getPostId());
             userEntity.setRemark(userBo.getRemark());
             userEntity.setUserType(UserTypeEnum.USER);
+            userEntity.setStatus(UserStatusEnum.OPEN);
             userRepository.save(userEntity);
             userBo.setId(userEntity.getId().getValue());
 

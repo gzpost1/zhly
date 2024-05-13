@@ -41,6 +41,7 @@ import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
 import cn.cuiot.dmp.system.domain.types.enums.OrgSourceEnum;
+import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
 import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.OrganizationEntity;
@@ -271,6 +272,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         userDataEntity.setCreatedBy(dto.getSessionUserId().toString());
         userDataEntity.setCreatedByType(OperateByTypeEnum.USER);
         userDataEntity.setUserType(UserTypeEnum.USER);
+        userDataEntity.setStatus(UserStatusEnum.OPEN);
         if (!userRepository.save(userDataEntity)) {
             throw new BusinessException(ResultCode.INNER_ERROR);
         }

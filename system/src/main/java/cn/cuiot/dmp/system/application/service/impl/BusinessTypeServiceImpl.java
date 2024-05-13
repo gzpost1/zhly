@@ -141,44 +141,17 @@ public class BusinessTypeServiceImpl implements BusinessTypeService {
 
     @Override
     public List<BusinessTypeRspDTO> batchGetBusinessType(BusinessTypeReqDTO businessTypeReqDTO) {
-        Long orgId = businessTypeReqDTO.getOrgId();
         List<Long> businessTypeIdList = businessTypeReqDTO.getBusinessTypeIdList();
-        AssertUtil.notNull(orgId, "组织id不能为空");
         AssertUtil.notEmpty(businessTypeIdList, "业务类型ID列表不能为空");
-        List<BusinessType> businessTypeList = businessTypeRepository.queryByCompany(orgId);
-        // 拼接树型结构
-        List<BusinessTypeTreeNodeVO> businessTypeTreeNodeVOList = businessTypeList.stream()
-                .map(parent -> new BusinessTypeTreeNodeVO(
-                        parent.getId().toString(), parent.getParentId().toString(),
-                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
-                .collect(Collectors.toList());
-        List<BusinessTypeTreeNodeVO> businessTypeTreeNodeList = TreeUtil.makeTree(businessTypeTreeNodeVOList);
         // 去重
         List<Long> distinctIdList = businessTypeIdList.stream().distinct().collect(Collectors.toList());
-        // 获取调用id和对应树型名称的map
-        Map<Long, String> invokeIdTreeNameMap = new HashMap<>();
-        for (Long id : distinctIdList) {
-            List<String> hitIds = new ArrayList<>();
-            hitIds.add(id.toString());
-            // 获取单个节点的树形结构
-            List<BusinessTypeTreeNodeVO> tmpBusinessTypeTreeNodeList = deepCopy(businessTypeTreeNodeList);
-            List<BusinessTypeTreeNodeVO> invokeTreeNodeList = TreeUtil.searchNode(tmpBusinessTypeTreeNodeList, hitIds);
-            String treeName = "";
-            if (CollectionUtils.isEmpty(invokeTreeNodeList)) {
-                invokeIdTreeNameMap.put(id, treeName);
-                continue;
-            }
-            BusinessTypeTreeNodeVO rootBusinessTypeTreeNodeVO = invokeTreeNodeList.get(0);
-            treeName = TreeUtil.getParentTreeName(rootBusinessTypeTreeNodeVO);
-            invokeIdTreeNameMap.put(id, treeName);
-        }
+        List<BusinessType> businessTypeList = businessTypeRepository.queryForList(distinctIdList);
         // 拼接对象返回
         List<BusinessTypeRspDTO> businessTypeRspDTOList = new ArrayList<>();
-        for (Long id : distinctIdList) {
+        for (BusinessType businessType : businessTypeList) {
             BusinessTypeRspDTO businessTypeRspDTO = new BusinessTypeRspDTO();
-            String treeName = invokeIdTreeNameMap.get(id);
-            businessTypeRspDTO.setBusinessTypeId(id);
-            businessTypeRspDTO.setTreeName(treeName);
+            businessTypeRspDTO.setBusinessTypeId(businessType.getId());
+            businessTypeRspDTO.setTreeName(businessType.getPathName());
             businessTypeRspDTOList.add(businessTypeRspDTO);
         }
         return businessTypeRspDTOList;

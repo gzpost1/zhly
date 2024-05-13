@@ -23,12 +23,6 @@ public class BusinessTypeReqDTO implements Serializable {
     private static final long serialVersionUID = 500044746805601568L;
 
     /**
-     * 组织id
-     */
-    @NotNull(message = "组织id不能为空")
-    private Long orgId;
-
-    /**
      * 业务类型ID列表
      */
     @NotEmpty(message = "业务类型ID列表不能为空")

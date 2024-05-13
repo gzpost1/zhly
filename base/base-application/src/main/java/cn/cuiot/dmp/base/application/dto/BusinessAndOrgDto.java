@@ -25,4 +25,14 @@ public class BusinessAndOrgDto {
      * 组织ID列表
      */
     private List<Long> orgIds;
+
+    /**
+     * 企业ID
+     */
+    private Long companyId;
+
+    /**
+     * 创建用户ID
+     */
+    private Long createUserId;
 }

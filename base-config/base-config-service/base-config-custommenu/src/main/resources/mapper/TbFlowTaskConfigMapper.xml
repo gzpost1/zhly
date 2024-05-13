@@ -24,7 +24,7 @@
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskInfoPageDto">
     select
-    id, `name`, business_type_id, remark,`status`, create_time, create_user
+    id, `name`, business_type_id, remark,`status`, create_time, create_user,company_id
     from tb_flow_task_config
     <where>
       <if test="query.name != null and query.name != ''">
@@ -40,5 +40,6 @@
         and company_id = #{query.companyId}
       </if>
     </where>
+    order by create_time desc
   </select>
 </mapper>
