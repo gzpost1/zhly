@@ -19,6 +19,11 @@ public interface CommonOptionTypeRepository {
     CommonOptionType queryForDetail(Long id);
 
     /**
+     * 获取常用选项类型列表
+     */
+    List<CommonOptionType> queryForList(List<Long> idList);
+
+    /**
      * 根据企业id获取常用选项类型
      */
     List<CommonOptionType> queryByCompany(Long companyId);
