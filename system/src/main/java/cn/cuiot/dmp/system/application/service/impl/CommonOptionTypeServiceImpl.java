@@ -27,9 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -144,44 +142,17 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
 
     @Override
     public List<CommonOptionTypeRspDTO> batchGetCommonOptionType(CommonOptionTypeReqDTO commonOptionTypeReqDTO) {
-        Long orgId = commonOptionTypeReqDTO.getOrgId();
         List<Long> commonOptionTypeIdList = commonOptionTypeReqDTO.getCommonOptionTypeIdList();
-        AssertUtil.notNull(orgId, "组织id不能为空");
         AssertUtil.notEmpty(commonOptionTypeIdList, "常用选项类型ID列表不能为空");
-        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryByCompany(orgId);
-        // 拼接树型结构
-        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList = commonOptionTypeList.stream()
-                .map(parent -> new CommonOptionTypeTreeNodeVO(
-                        parent.getId().toString(), parent.getParentId().toString(),
-                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
-                .collect(Collectors.toList());
-        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeList = TreeUtil.makeTree(commonOptionTypeTreeNodeVOList);
         // 去重
         List<Long> distinctIdList = commonOptionTypeIdList.stream().distinct().collect(Collectors.toList());
-        // 获取调用id和对应树型名称的map
-        Map<Long, String> invokeIdTreeNameMap = new HashMap<>();
-        for (Long id : distinctIdList) {
-            List<String> hitIds = new ArrayList<>();
-            hitIds.add(id.toString());
-            // 获取单个节点的树形结构
-            List<CommonOptionTypeTreeNodeVO> tmpCommonOptionTypeTreeNodeList = deepCopy(commonOptionTypeTreeNodeList);
-            List<CommonOptionTypeTreeNodeVO> invokeTreeNodeList = TreeUtil.searchNode(tmpCommonOptionTypeTreeNodeList, hitIds);
-            String treeName = "";
-            if (CollectionUtils.isEmpty(invokeTreeNodeList)) {
-                invokeIdTreeNameMap.put(id, treeName);
-                continue;
-            }
-            CommonOptionTypeTreeNodeVO rootCommonOptionTypeTreeNodeVO = invokeTreeNodeList.get(0);
-            treeName = TreeUtil.getParentTreeName(rootCommonOptionTypeTreeNodeVO);
-            invokeIdTreeNameMap.put(id, treeName);
-        }
+        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryForList(distinctIdList);
         // 拼接对象返回
         List<CommonOptionTypeRspDTO> commonOptionTypeRspDTOList = new ArrayList<>();
-        for (Long id : distinctIdList) {
+        for (CommonOptionType commonOptionType : commonOptionTypeList) {
             CommonOptionTypeRspDTO commonOptionTypeRspDTO = new CommonOptionTypeRspDTO();
-            String treeName = invokeIdTreeNameMap.get(id);
-            commonOptionTypeRspDTO.setCommonOptionTypeId(id);
-            commonOptionTypeRspDTO.setTreeName(treeName);
+            commonOptionTypeRspDTO.setCommonOptionTypeId(commonOptionType.getId());
+            commonOptionTypeRspDTO.setTreeName(commonOptionType.getPathName());
             commonOptionTypeRspDTOList.add(commonOptionTypeRspDTO);
         }
         return commonOptionTypeRspDTOList;
@@ -196,7 +167,7 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
         fillTreeNameForCommonOption(commonOptionPageResult.getList());
         PageResult<CommonOptionVO> commonOptionVOPageResult = new PageResult<>();
         List<CommonOptionVO> commonOptionVOList = commonOptionPageResult.getList().stream()
-                .map(o->{
+                .map(o -> {
                     CommonOptionVO commonOptionVO = new CommonOptionVO();
                     BeanUtils.copyProperties(o, commonOptionVO);
                     return commonOptionVO;
@@ -215,8 +186,7 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
 
     private void fillTreeNameForCommonOption(List<CommonOption> commonOptionList) {
         List<Long> commonOptionTypeIdList = commonOptionList.stream().map(CommonOption::getTypeId).collect(Collectors.toList());
-        Long orgId = commonOptionList.get(0).getCompanyId();
-        CommonOptionTypeReqDTO commonOptionTypeReqDTO = new CommonOptionTypeReqDTO(orgId, commonOptionTypeIdList);
+        CommonOptionTypeReqDTO commonOptionTypeReqDTO = new CommonOptionTypeReqDTO(commonOptionTypeIdList);
         List<CommonOptionTypeRspDTO> commonOptionTypeRspDTOList = batchGetCommonOptionType(commonOptionTypeReqDTO);
         for (CommonOption commonOption : commonOptionList) {
             for (CommonOptionTypeRspDTO commonOptionTypeRspDTO : commonOptionTypeRspDTOList) {

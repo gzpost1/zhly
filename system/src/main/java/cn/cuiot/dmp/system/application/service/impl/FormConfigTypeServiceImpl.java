@@ -29,9 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -146,44 +144,17 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
 
     @Override
     public List<FormConfigTypeRspDTO> batchGetFormConfigType(FormConfigTypeReqDTO formConfigTypeReqDTO) {
-        Long orgId = formConfigTypeReqDTO.getOrgId();
         List<Long> formConfigTypeIdList = formConfigTypeReqDTO.getFormConfigTypeIdList();
-        AssertUtil.notNull(orgId, "组织id不能为空");
         AssertUtil.notEmpty(formConfigTypeIdList, "表单配置类型ID列表不能为空");
-        List<FormConfigType> formConfigTypeList = formConfigTypeRepository.queryByCompany(orgId);
-        // 拼接树型结构
-        List<FormConfigTypeTreeNodeVO> formConfigTypeTreeNodeVOList = formConfigTypeList.stream()
-                .map(parent -> new FormConfigTypeTreeNodeVO(
-                        parent.getId().toString(), parent.getParentId().toString(),
-                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
-                .collect(Collectors.toList());
-        List<FormConfigTypeTreeNodeVO> formConfigTypeTreeNodeList = TreeUtil.makeTree(formConfigTypeTreeNodeVOList);
         // 去重
         List<Long> distinctIdList = formConfigTypeIdList.stream().distinct().collect(Collectors.toList());
-        // 获取调用id和对应树型名称的map
-        Map<Long, String> invokeIdTreeNameMap = new HashMap<>();
-        for (Long id : distinctIdList) {
-            List<String> hitIds = new ArrayList<>();
-            hitIds.add(id.toString());
-            // 获取单个节点的树形结构
-            List<FormConfigTypeTreeNodeVO> tmpFormConfigTypeTreeNodeList = deepCopy(formConfigTypeTreeNodeList);
-            List<FormConfigTypeTreeNodeVO> invokeTreeNodeList = TreeUtil.searchNode(tmpFormConfigTypeTreeNodeList, hitIds);
-            String treeName = "";
-            if (CollectionUtils.isEmpty(invokeTreeNodeList)) {
-                invokeIdTreeNameMap.put(id, treeName);
-                continue;
-            }
-            FormConfigTypeTreeNodeVO rootFormConfigTypeTreeNodeVO = invokeTreeNodeList.get(0);
-            treeName = TreeUtil.getParentTreeName(rootFormConfigTypeTreeNodeVO);
-            invokeIdTreeNameMap.put(id, treeName);
-        }
+        List<FormConfigType> formConfigTypeList = formConfigTypeRepository.queryForList(distinctIdList);
         // 拼接对象返回
         List<FormConfigTypeRspDTO> formConfigTypeRspDTOList = new ArrayList<>();
-        for (Long id : distinctIdList) {
+        for (FormConfigType formConfigType : formConfigTypeList) {
             FormConfigTypeRspDTO formConfigTypeRspDTO = new FormConfigTypeRspDTO();
-            String treeName = invokeIdTreeNameMap.get(id);
-            formConfigTypeRspDTO.setFormConfigTypeId(id);
-            formConfigTypeRspDTO.setTreeName(treeName);
+            formConfigTypeRspDTO.setFormConfigTypeId(formConfigType.getId());
+            formConfigTypeRspDTO.setTreeName(formConfigType.getPathName());
             formConfigTypeRspDTOList.add(formConfigTypeRspDTO);
         }
         return formConfigTypeRspDTOList;
@@ -198,7 +169,7 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
         fillTreeNameForFormConfig(formConfigPageResult.getList());
         PageResult<FormConfigVO> formConfigVOPageResult = new PageResult<>();
         List<FormConfigVO> formConfigVOList = formConfigPageResult.getList().stream()
-                .map(o->{
+                .map(o -> {
                     FormConfigVO formConfigVO = new FormConfigVO();
                     BeanUtils.copyProperties(o, formConfigVO);
                     return formConfigVO;
@@ -217,8 +188,7 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
 
     private void fillTreeNameForFormConfig(List<FormConfig> formConfigList) {
         List<Long> formConfigTypeIdList = formConfigList.stream().map(FormConfig::getTypeId).collect(Collectors.toList());
-        Long orgId = formConfigList.get(0).getCompanyId();
-        FormConfigTypeReqDTO formConfigTypeReqDTO = new FormConfigTypeReqDTO(orgId, formConfigTypeIdList);
+        FormConfigTypeReqDTO formConfigTypeReqDTO = new FormConfigTypeReqDTO(formConfigTypeIdList);
         List<FormConfigTypeRspDTO> formConfigTypeRspDTOList = batchGetFormConfigType(formConfigTypeReqDTO);
         for (FormConfig formConfig : formConfigList) {
             for (FormConfigTypeRspDTO formConfigTypeRspDTO : formConfigTypeRspDTOList) {

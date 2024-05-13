@@ -93,7 +93,7 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
         checkBusinessTypeNode(businessType);
         BusinessTypeEntity businessTypeEntity = new BusinessTypeEntity();
         BeanUtils.copyProperties(businessType, businessTypeEntity);
-        businessType.setPathName(fillPathName(businessType));
+        businessTypeEntity.setPathName(fillPathName(businessType));
         return businessTypeMapper.insert(businessTypeEntity);
     }
 
@@ -104,7 +104,7 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
         BusinessTypeEntity businessTypeEntity = Optional.ofNullable(businessTypeMapper.selectById(businessType.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(businessType, businessTypeEntity);
-        businessType.setPathName(fillPathName(businessType));
+        businessTypeEntity.setPathName(fillPathName(businessType));
         return businessTypeMapper.updateById(businessTypeEntity);
     }
 
@@ -137,7 +137,7 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
      * 保存或者更新节点的时候，同步更新名称路径
      */
     private String fillPathName(BusinessType businessType) {
-        AssertUtil.notNull(businessType.getName(), "业务名称不能为空");
+        AssertUtil.notNull(businessType.getName(), "分类名称不能为空");
         AssertUtil.notNull(businessType.getCompanyId(), "企业id不能为空");
         AssertUtil.notNull(businessType.getParentId(), "父级id不能为空");
         String pathName;

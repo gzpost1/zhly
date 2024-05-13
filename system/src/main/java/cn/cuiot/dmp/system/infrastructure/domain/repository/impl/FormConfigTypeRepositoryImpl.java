@@ -4,7 +4,9 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.utils.TreeUtil;
 import cn.cuiot.dmp.system.application.constant.FormConfigConstant;
+import cn.cuiot.dmp.system.application.param.vo.FormConfigTypeTreeNodeVO;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigType;
@@ -50,6 +52,20 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
     }
 
     @Override
+    public List<FormConfigType> queryForList(List<Long> idList) {
+        LambdaQueryWrapper<FormConfigTypeEntity> queryWrapper = new LambdaQueryWrapper<FormConfigTypeEntity>()
+                .in(FormConfigTypeEntity::getId, idList);
+        List<FormConfigTypeEntity> formConfigTypeEntityList = formConfigTypeMapper.selectList(queryWrapper);
+        return formConfigTypeEntityList.stream()
+                .map(o -> {
+                    FormConfigType formConfigType = new FormConfigType();
+                    BeanUtils.copyProperties(o, formConfigType);
+                    return formConfigType;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<FormConfigType> queryByCompany(Long companyId) {
         LambdaQueryWrapper<FormConfigTypeEntity> queryWrapper = new LambdaQueryWrapper<FormConfigTypeEntity>()
                 .eq(FormConfigTypeEntity::getCompanyId, companyId);
@@ -79,6 +95,7 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
         checkFormConfigTypeNode(formConfigType);
         FormConfigTypeEntity formConfigTypeEntity = new FormConfigTypeEntity();
         BeanUtils.copyProperties(formConfigType, formConfigTypeEntity);
+        formConfigTypeEntity.setPathName(fillPathName(formConfigType));
         return formConfigTypeMapper.insert(formConfigTypeEntity);
     }
 
@@ -89,6 +106,7 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
         FormConfigTypeEntity formConfigTypeEntity = Optional.ofNullable(formConfigTypeMapper.selectById(formConfigType.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(formConfigType, formConfigTypeEntity);
+        formConfigTypeEntity.setPathName(fillPathName(formConfigType));
         return formConfigTypeMapper.updateById(formConfigTypeEntity);
     }
 
@@ -113,6 +131,33 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
         formConfigTypeEntity.setPathName(FormConfigConstant.ROOT_NAME);
         formConfigTypeMapper.insert(formConfigTypeEntity);
         return formConfigTypeEntity;
+    }
+
+    /**
+     * 保存或者更新节点的时候，同步更新名称路径
+     */
+    private String fillPathName(FormConfigType formConfigType) {
+        AssertUtil.notNull(formConfigType.getName(), "分类名称不能为空");
+        AssertUtil.notNull(formConfigType.getCompanyId(), "企业id不能为空");
+        AssertUtil.notNull(formConfigType.getParentId(), "父级id不能为空");
+        String pathName;
+        List<FormConfigType> formConfigTypeList = queryByCompany(formConfigType.getCompanyId());
+        // 拼接树型结构
+        List<FormConfigTypeTreeNodeVO> formConfigTypeTreeNodeVOList = formConfigTypeList.stream()
+                .map(parent -> new FormConfigTypeTreeNodeVO(
+                        parent.getId().toString(), parent.getParentId().toString(),
+                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
+                .collect(Collectors.toList());
+        List<FormConfigTypeTreeNodeVO> formConfigTypeTreeNodeList = TreeUtil.makeTree(formConfigTypeTreeNodeVOList);
+        List<String> hitIds = new ArrayList<>();
+        hitIds.add(formConfigType.getParentId().toString());
+        List<FormConfigTypeTreeNodeVO> invokeTreeNodeList = TreeUtil.searchNode(formConfigTypeTreeNodeList, hitIds);
+        if (CollectionUtils.isEmpty(invokeTreeNodeList)) {
+            return formConfigType.getName();
+        }
+        FormConfigTypeTreeNodeVO rootFormConfigTypeTreeNodeVO = invokeTreeNodeList.get(0);
+        pathName = TreeUtil.getParentTreeName(rootFormConfigTypeTreeNodeVO) + ">" + formConfigType.getName();
+        return pathName;
     }
 
     private void checkFormConfigTypeNode(FormConfigType formConfigType) {

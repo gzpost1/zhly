@@ -4,7 +4,9 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.TreeUtil;
 import cn.cuiot.dmp.system.application.constant.CommonOptionConstant;
+import cn.cuiot.dmp.system.application.param.vo.CommonOptionTypeTreeNodeVO;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOption;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOptionPageQuery;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOptionType;
@@ -50,6 +52,20 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
     }
 
     @Override
+    public List<CommonOptionType> queryForList(List<Long> idList) {
+        LambdaQueryWrapper<CommonOptionTypeEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionTypeEntity>()
+                .in(CommonOptionTypeEntity::getId, idList);
+        List<CommonOptionTypeEntity> commonOptionTypeEntityList = commonOptionTypeMapper.selectList(queryWrapper);
+        return commonOptionTypeEntityList.stream()
+                .map(o -> {
+                    CommonOptionType commonOptionType = new CommonOptionType();
+                    BeanUtils.copyProperties(o, commonOptionType);
+                    return commonOptionType;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<CommonOptionType> queryByCompany(Long companyId) {
         LambdaQueryWrapper<CommonOptionTypeEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionTypeEntity>()
                 .eq(CommonOptionTypeEntity::getCompanyId, companyId);
@@ -79,6 +95,7 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
         checkCommonOptionTypeNode(commonOptionType);
         CommonOptionTypeEntity commonOptionTypeEntity = new CommonOptionTypeEntity();
         BeanUtils.copyProperties(commonOptionType, commonOptionTypeEntity);
+        commonOptionTypeEntity.setPathName(fillPathName(commonOptionType));
         return commonOptionTypeMapper.insert(commonOptionTypeEntity);
     }
 
@@ -89,6 +106,7 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
         CommonOptionTypeEntity commonOptionTypeEntity = Optional.ofNullable(commonOptionTypeMapper.selectById(commonOptionType.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(commonOptionType, commonOptionTypeEntity);
+        commonOptionTypeEntity.setPathName(fillPathName(commonOptionType));
         return commonOptionTypeMapper.updateById(commonOptionTypeEntity);
     }
 
@@ -115,6 +133,33 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
         return commonOptionTypeEntity;
     }
 
+    /**
+     * 保存或者更新节点的时候，同步更新名称路径
+     */
+    private String fillPathName(CommonOptionType commonOptionType) {
+        AssertUtil.notNull(commonOptionType.getName(), "分类名称不能为空");
+        AssertUtil.notNull(commonOptionType.getCompanyId(), "企业id不能为空");
+        AssertUtil.notNull(commonOptionType.getParentId(), "父级id不能为空");
+        String pathName;
+        List<CommonOptionType> commonOptionTypeList = queryByCompany(commonOptionType.getCompanyId());
+        // 拼接树型结构
+        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList = commonOptionTypeList.stream()
+                .map(parent -> new CommonOptionTypeTreeNodeVO(
+                        parent.getId().toString(), parent.getParentId().toString(),
+                        parent.getName(), parent.getLevelType(), parent.getCompanyId()))
+                .collect(Collectors.toList());
+        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeList = TreeUtil.makeTree(commonOptionTypeTreeNodeVOList);
+        List<String> hitIds = new ArrayList<>();
+        hitIds.add(commonOptionType.getParentId().toString());
+        List<CommonOptionTypeTreeNodeVO> invokeTreeNodeList = TreeUtil.searchNode(commonOptionTypeTreeNodeList, hitIds);
+        if (CollectionUtils.isEmpty(invokeTreeNodeList)) {
+            return commonOptionType.getName();
+        }
+        CommonOptionTypeTreeNodeVO rootCommonOptionTypeTreeNodeVO = invokeTreeNodeList.get(0);
+        pathName = TreeUtil.getParentTreeName(rootCommonOptionTypeTreeNodeVO) + ">" + commonOptionType.getName();
+        return pathName;
+    }
+
     private void checkCommonOptionTypeNode(CommonOptionType commonOptionType) {
         LambdaQueryWrapper<CommonOptionTypeEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionTypeEntity>()
                 .eq(CommonOptionTypeEntity::getLevelType, commonOptionType.getLevelType())
@@ -126,5 +171,5 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
                     "分类名称已存在");
         }
     }
-    
+
 }
