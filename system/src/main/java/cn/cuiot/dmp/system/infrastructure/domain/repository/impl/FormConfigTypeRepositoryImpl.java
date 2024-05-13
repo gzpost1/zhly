@@ -110,6 +110,7 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
         formConfigTypeEntity.setName(FormConfigConstant.ROOT_NAME);
         formConfigTypeEntity.setLevelType(FormConfigConstant.ROOT_LEVEL_TYPE);
         formConfigTypeEntity.setParentId(FormConfigConstant.DEFAULT_PARENT_ID);
+        formConfigTypeEntity.setPathName(FormConfigConstant.ROOT_NAME);
         formConfigTypeMapper.insert(formConfigTypeEntity);
         return formConfigTypeEntity;
     }

@@ -110,6 +110,7 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
         commonOptionTypeEntity.setName(CommonOptionConstant.ROOT_NAME);
         commonOptionTypeEntity.setLevelType(CommonOptionConstant.ROOT_LEVEL_TYPE);
         commonOptionTypeEntity.setParentId(CommonOptionConstant.DEFAULT_PARENT_ID);
+        commonOptionTypeEntity.setPathName(CommonOptionConstant.ROOT_NAME);
         commonOptionTypeMapper.insert(commonOptionTypeEntity);
         return commonOptionTypeEntity;
     }

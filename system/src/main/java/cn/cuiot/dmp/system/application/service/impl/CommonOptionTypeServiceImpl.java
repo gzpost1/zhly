@@ -16,7 +16,6 @@ import cn.cuiot.dmp.system.application.service.CommonOptionTypeService;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOptionPageQuery;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOptionType;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOption;
-import cn.cuiot.dmp.system.domain.aggregate.CommonOptionType;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionRepository;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionTypeRepository;
 import lombok.extern.slf4j.Slf4j;
