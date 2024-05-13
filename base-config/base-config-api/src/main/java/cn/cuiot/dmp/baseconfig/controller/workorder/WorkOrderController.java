@@ -2,6 +2,7 @@ package cn.cuiot.dmp.baseconfig.controller.workorder;
 
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.FirstFormDto;
@@ -48,7 +49,8 @@ public class WorkOrderController extends BaseController {
      */
     @PostMapping("queryWorkOrderInfo")
     public IdmResDTO<IPage<WorkInfoDto>> queryWorkOrderInfo(@RequestBody WorkInfoDto dto){
-        return workInfoService.queryWorkOrderInfo(dto);
+
+        return workInfoService.queryWorkOrderInfo(dto );
     }
 
     /**

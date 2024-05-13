@@ -180,7 +180,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             entity.setStatus(WorkOrderStatusEnums.completed.getStatus());
             this.save(entity);
         }
-        taskService.addComment(task.getId(),task.getProcessInstanceId(), START_PROCESS,"启动流程");
         return IdmResDTO.success(task.getProcessInstanceId());
     }
 
@@ -507,9 +506,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     public IdmResDTO<IPage<WorkInfoDto>> queryWorkOrderInfo(WorkInfoDto dto) {
         //根据组织id获取本组织与子组织信息
-        List<DepartmentDto> departs = getDeptIds(dto.getOrg());
-        List<Long> deptIds = departs.stream().map(DepartmentDto::getId).collect(Collectors.toList());
-        dto.setOrgIds(deptIds);
+       if(CollectionUtils.isEmpty(dto.getOrgIds())){
+           List<DepartmentDto> departs = getDeptIds(dto.getOrg());
+           List<Long> deptIds = departs.stream().map(DepartmentDto::getId).collect(Collectors.toList());
+           dto.setOrgIds(deptIds);
+       }
         Page<WorkInfoDto> workInfoEntityPage = getBaseMapper().queryWorkOrderInfo(new Page<WorkInfoDto>(dto.getCurrentPage(),dto.getPageSize()),dto);
         List<WorkInfoDto> records = workInfoEntityPage.getRecords();
         if(CollectionUtils.isNotEmpty(records)){
