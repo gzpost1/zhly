@@ -14,7 +14,7 @@ public interface WorkFlowConstants {
     String DEFAULT_NULL_ASSIGNEE="100000000000";
     String DEFAULT_ADMIN_ASSIGNEE="381496";
     String AUTO_REFUSE_STR="autoRefuse";
-    String FLOWABLE_NAME_SPACE_NAME="DingDing";
+    String FLOWABLE_NAME_SPACE_NAME="yunjintech";
     String FLOWABLE_NAME_SPACE="http://flowable.org/bpmn";
     String VIEW_PROCESS_JSON_NAME="processJson";
     String VIEW_ASSIGNEE_USER_NAME="assignedUser";
