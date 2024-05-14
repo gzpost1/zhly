@@ -38,4 +38,9 @@ public class CommonOptionTypeEntity extends BaseEntity {
      */
     private Long companyId;
 
+    /**
+     * 名称路径（e.g.巡检>设备巡检）
+     */
+    private String pathName;
+
 }

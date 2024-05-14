@@ -177,10 +177,10 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             entity.setWorkSouce(startProcessInstanceDTO.getWorkSource());
             entity.setCreateUser(LoginInfoHolder.getCurrentUserId());
             entity.setProcInstId(task.getProcessInstanceId());
+            entity.setCompanyId(flowConfig.getCompanyId());
             entity.setStatus(WorkOrderStatusEnums.completed.getStatus());
             this.save(entity);
         }
-        taskService.addComment(task.getId(),task.getProcessInstanceId(), START_PROCESS,"启动流程");
         return IdmResDTO.success(task.getProcessInstanceId());
     }
 
@@ -486,8 +486,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * 查询节点属性数据,并判断是否有权限发起该流程
      * @return
      */
-    public IdmResDTO<Properties> queryFirstFormInfo(FirstFormDto dto, String userId) {
-        ChildNode childNodeByNodeId = getChildNodeByNodeId(dto.getProcessDefinitionId(), dto.getTaskDefinitionKey());
+    public IdmResDTO<Properties> queryFirstFormInfo(FirstFormDto dto, Long userId) {
+        ChildNode childNodeByNodeId = getChildNodeByNodeId(dto.getProcessDefinitionId(), WorkOrderConstants.USER_ROOT);
         Properties props = childNodeByNodeId.getProps();
 
         List<String> ids = props.getAssignedUser().stream().map(UserInfo::getId).collect(Collectors.toList());
@@ -507,16 +507,17 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     public IdmResDTO<IPage<WorkInfoDto>> queryWorkOrderInfo(WorkInfoDto dto) {
         //根据组织id获取本组织与子组织信息
-        List<DepartmentDto> departs = getDeptIds(dto.getOrg());
-        List<Long> deptIds = departs.stream().map(DepartmentDto::getId).collect(Collectors.toList());
-        dto.setOrgIds(deptIds);
-        Page<WorkInfoDto> workInfoEntityPage = getBaseMapper().queryWorkOrderInfo(new Page<WorkInfoDto>(dto.getCurrentPage(),dto.getPageSize()),dto);
+       if(CollectionUtils.isEmpty(dto.getOrgIds())){
+           List<DepartmentDto> departs = getDeptIds(dto.getOrg());
+           List<Long> deptIds = departs.stream().map(DepartmentDto::getId).collect(Collectors.toList());
+           dto.setOrgIds(deptIds);
+       }
+        IPage<WorkInfoDto> workInfoEntityPage = getBaseMapper().queryWorkOrderInfo(new Page<WorkInfoDto>(dto.getCurrentPage(),dto.getPageSize()),dto);
         List<WorkInfoDto> records = workInfoEntityPage.getRecords();
         if(CollectionUtils.isNotEmpty(records)){
             //企业id 获取业务类型
-            Long companyId = records.get(0).getCompanyId();
             List<Long> businessIds = records.stream().map(WorkInfoDto::getBusinessType).collect(Collectors.toList());
-            Map<Long, String> busiMap = getBusiMap(companyId,businessIds);
+            Map<Long, String> busiMap = getBusiMap(businessIds);
 
             //获取全部userId
             List<Long> userIds = records.stream().map(WorkInfoDto::getCreateUser).collect(Collectors.toList());
@@ -554,9 +555,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         List<BaseUserDto> data = Optional.ofNullable(listIdmResDTO.getData()).orElseThrow(()->new RuntimeException("用户信息不存在"));
         return data.stream().collect(Collectors.toMap(BaseUserDto::getId,BaseUserDto::getName ));
     }
-    public Map<Long,String> getBusiMap(Long companyId,List<Long> businessIds){
-        IdmResDTO<List<BusinessTypeRspDTO>> listIdmResDTO = systemApiFeignService.batchGetBusinessType(BusinessTypeReqDTO.builder().
-                orgId(companyId).businessTypeIdList(businessIds).build());
+    public Map<Long,String> getBusiMap(List<Long> businessIds){
+        IdmResDTO<List<BusinessTypeRspDTO>> listIdmResDTO = systemApiFeignService.batchGetBusinessType(BusinessTypeReqDTO.builder()
+                .businessTypeIdList(businessIds).build());
         List<BusinessTypeRspDTO> businessInfo = Optional.ofNullable(listIdmResDTO.getData()).orElseThrow(()->new RuntimeException("业务类型不存在"));
         return businessInfo.stream().collect(Collectors.toMap(BusinessTypeRspDTO::getBusinessTypeId, BusinessTypeRspDTO::getTreeName));
     }
@@ -593,7 +594,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         Map<Long, String> deptMap = getDeptMap(Arrays.asList(resultDto.getOrg()));
         resultDto.setOrgPath(deptMap.get(resultDto.getOrg()));
         // 业务类型后返回数据
-        Map<Long, String> busiMap = getBusiMap(resultDto.getCompanyId(), Arrays.asList(resultDto.getBusinessType()));
+        Map<Long, String> busiMap = getBusiMap(Arrays.asList(resultDto.getBusinessType()));
         resultDto.setBusinessTypeName(busiMap.get(resultDto.getBusinessType()));
         //获取用户手机号
         BaseUserReqDto reqDto = new BaseUserReqDto();
@@ -858,6 +859,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         businessTypeInfo.setNode(hisTaskInfo.getTaskDefinitionKey());
         businessTypeInfo.setStartTime(new Date());
         businessTypeInfo.setComments(handleDataDTO.getComments());
+        businessTypeInfo.setReason(handleDataDTO.getReason());
         return businessTypeInfo;
     }
 
@@ -895,9 +897,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         List<MyApprovalResultDto> records = pages.getRecords();
         if(CollectionUtils.isNotEmpty(records)){
             //根据业务类型获取数据
-            Long companyId = records.get(0).getCompanyId();
             List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
-            Map<Long, String> busiMap = getBusiMap(companyId, busiTypes);
+            Map<Long, String> busiMap = getBusiMap(busiTypes);
 
             //组织ids
             List<Long> orgIds = records.stream().map(MyApprovalResultDto::getOrgId).collect(Collectors.toList());
@@ -934,9 +935,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(CollectionUtils.isNotEmpty(records)){
 
             //根据业务类型获取数据
-            Long companyId = records.get(0).getCompanyId();
             List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
-            Map<Long, String> busiMap = getBusiMap(companyId, busiTypes);
+            Map<Long, String> busiMap = getBusiMap(busiTypes);
 
             //组织ids
             List<Long> orgIds = records.stream().map(MyApprovalResultDto::getOrgId).collect(Collectors.toList());
@@ -968,25 +968,39 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 dto);
         List<MyApprovalResultDto> records = page.getRecords();
         if(CollectionUtils.isNotEmpty(records)){
+
+            //根据业务类型获取数据
+            List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
+            Map<Long, String> busiMap = getBusiMap(busiTypes);
+
+            //组织ids
+            List<Long> orgIds = records.stream().map(MyApprovalResultDto::getOrgId).collect(Collectors.toList());
+            Map<Long, String> deptMap = getDeptMap(orgIds);
+
+            //userIds
+            List<Long> usreIds = records.stream().map(MyApprovalResultDto::getUserId).collect(Collectors.toList());
+            Map<Long, String> userMap = getUserMap(usreIds);
             records.stream().forEach(item->{
-                //TODO 根据业务类型id获取业务类型数据
-                //TODO 获取所属组织
-                //TODO 发起人
+                //根据业务类型id获取业务类型数据
+                item.setBusinessTypeName(busiMap.get(item.getBusinessType()));
+                //获取所属组织
+                item.setOrgPath(deptMap.get(item.getOrgId()));
+                // 发起人
+                item.setUserName(userMap.get(item.getUserId()));
             });
         }
         return IdmResDTO.success(page);
     }
 
     public IdmResDTO<IPage<WorkInfoEntity>> queryMySubmitWorkInfo(QueryMyApprovalDto dto) {
-        dto.setCreateUser(String.valueOf(LoginInfoHolder.getCurrentUserId()));
+        dto.setCreateUser(LoginInfoHolder.getCurrentUserId());
         Page<WorkInfoEntity> page = baseMapper.queryMySubmitWorkInfo(new Page<WorkInfoEntity>(dto.getCurrentPage(),dto.getPageSize()),
                 dto);
         List<WorkInfoEntity> records = page.getRecords();
         if(CollectionUtils.isNotEmpty(records)){
             //根据业务类型获取数据
-            Long companyId = records.get(0).getCompanyId();
             List<Long> busiTypes = records.stream().map(WorkInfoEntity::getBusinessType).collect(Collectors.toList());
-            Map<Long, String> busiMap = getBusiMap(companyId, busiTypes);
+            Map<Long, String> busiMap = getBusiMap(busiTypes);
 
             //组织ids
             List<Long> orgIds = records.stream().map(WorkInfoEntity::getOrgId).collect(Collectors.toList());
@@ -1007,4 +1021,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(page);
     }
 
+    /**
+     * 获取部门信息
+     * @param dto
+     * @return
+     */
+    public List<DepartmentDto> queryDeptList(WorkInfoDto dto) {
+        return getDeptIds(LoginInfoHolder.getCurrentDeptId());
+    }
 }

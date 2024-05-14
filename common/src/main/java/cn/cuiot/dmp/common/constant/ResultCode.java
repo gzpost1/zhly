@@ -18,7 +18,7 @@ public enum ResultCode {
      */
     SUCCESS("000000", "API请求成功"),
 
-
+    ERROR("000001","系统异常"),
 
     /**
      * 公共错误：系统错误

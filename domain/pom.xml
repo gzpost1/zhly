@@ -19,6 +19,7 @@
         <module>domain-system</module>
         <module>domain-common</module>
         <module>domain-upload</module>
+        <module>domain-archive</module>
     </modules>
 
     <dependencies>

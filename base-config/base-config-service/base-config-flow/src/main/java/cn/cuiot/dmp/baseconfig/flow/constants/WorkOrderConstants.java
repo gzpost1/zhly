@@ -28,5 +28,14 @@ public interface WorkOrderConstants {
      * 抄送数据
      */
     String  SERVICE_TASK="serviceTask";
+    /**
+     * 工单来源 计划生成
+     */
+    Byte WORK_SOURCE_PLAN = 0;
+
+    /**
+     * 工单来源 自查
+     */
+    Byte WORK_SOURCE_MAKE = 1;
 
 }

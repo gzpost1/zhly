@@ -40,4 +40,9 @@ public class HandleDataDTO {
      * 节点id
      */
     private String nodeId;
+
+    /**
+     * 补充说明
+     */
+    private String reason;
 }

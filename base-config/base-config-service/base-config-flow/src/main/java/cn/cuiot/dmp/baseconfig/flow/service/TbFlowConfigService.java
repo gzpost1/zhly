@@ -55,6 +55,18 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
     @Autowired
     private SystemToFlowService systemToFlowService;
 
+    /**
+     * 分页查询
+     *
+     * @param query
+     * @return
+     */
+    public IPage<TbFlowPageDto> queryForWorkOrderPage(TbFlowConfigQuery query) {
+        IPage<TbFlowPageDto> tbFlowPageDtoIPage = baseMapper.queryForPage(new Page(query.getPageNo(), query.getPageSize()), query);
+        return tbFlowPageDtoIPage;
+    }
+
+
 
     /**
      * 分页查询

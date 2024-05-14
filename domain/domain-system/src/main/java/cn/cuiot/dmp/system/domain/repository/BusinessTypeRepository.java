@@ -16,6 +16,11 @@ public interface BusinessTypeRepository {
     BusinessType queryForDetail(Long id);
 
     /**
+     * 获取业务类型列表
+     */
+    List<BusinessType> queryForList(List<Long> idList);
+
+    /**
      * 根据企业id获取业务类型树
      */
     List<BusinessType> queryByCompany(Long companyId);

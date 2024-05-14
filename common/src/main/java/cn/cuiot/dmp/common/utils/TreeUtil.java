@@ -115,6 +115,9 @@ public class TreeUtil {
         if (isRemoveNode(tree, hitIds)) {
             return null;
         }
+        if (CollectionUtils.isEmpty(tree.getChildren())) {
+            return tree;
+        }
         Iterator<T> iterator = tree.getChildren().iterator();
         while (iterator.hasNext()) {
             T child = iterator.next();

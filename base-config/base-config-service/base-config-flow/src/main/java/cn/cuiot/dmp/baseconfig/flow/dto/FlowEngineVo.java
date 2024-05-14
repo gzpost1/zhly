@@ -15,6 +15,7 @@ import java.util.List;
  */
 @Data
 public class FlowEngineVo {
+    private Long id;
     /**
      * 流程名称
      */
@@ -54,4 +55,9 @@ public class FlowEngineVo {
      * 通用配置
      */
     private CommonConfigDto commonConfigDto;
+
+    /**
+     * 流程定义ID
+     */
+    private String processDefinitionId;
 }

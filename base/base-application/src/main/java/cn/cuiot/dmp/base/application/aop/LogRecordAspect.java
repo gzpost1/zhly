@@ -11,6 +11,7 @@ import cn.cuiot.dmp.common.enums.LogLevelEnum;
 import cn.cuiot.dmp.common.enums.StatusCodeEnum;
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
 import cn.cuiot.dmp.common.log.intf.ResourceParam;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -149,21 +150,23 @@ public class LogRecordAspect extends BaseController {
             log.error("LogRecordAspect joinPoint.proceed error", e);
 
             // 获取操作对象
-            String operationTarget = this.getOperationTarget(joinPoint);
-            if (StringUtils.isNotBlank(operationTarget)) {
-                operateLogDto.setOperationTarget(operationTarget);
-            }
+//            String operationTarget = this.getOperationTarget(joinPoint);
+//            if (StringUtils.isNotBlank(operationTarget)) {
+//                operateLogDto.setOperationTarget(operationTarget);
+//            }
+            operateLogDto.setOperationTarget(LoginInfoHolder.getCurrentUserId().toString());
+            operateLogDto.setOperationTargetInfo(LoginInfoHolder.getCurrentUserId().toString());
 
-            String operationTargetInfo = getOperationTargetInfo(joinPoint);
-            if (StringUtils.isNotBlank(operationTargetInfo)) {
-                operateLogDto.setOperationTargetInfo(operationTargetInfo);
-            }
+//            String operationTargetInfo = getOperationTargetInfo(joinPoint);
+//            if (StringUtils.isNotBlank(operationTargetInfo)) {
+//                operateLogDto.setOperationTargetInfo(operationTargetInfo);
+//            }
 
             operateLogDto.setLogLevel(LogLevelEnum.ERROR.getCode());
             operateLogDto.setStatusCode(StatusCodeEnum.FAILED.getCode());
             operateLogDto.setStatusMsg(StatusCodeEnum.FAILED.getName());
 
-            //记录日志
+            //发生异常记录日志
             sendService.sendOperaLog(operateLogDto);
             throw e;
         }
@@ -260,15 +263,9 @@ public class LogRecordAspect extends BaseController {
         //方法执行后
         try {
             // 获取操作对象
-            String operationTarget = this.getOperationTarget(joinPoint);
-            if (StringUtils.isNotBlank(operationTarget)) {
-                operateLogDto.setOperationTarget(operationTarget);
-            }
+            operateLogDto.setOperationTarget(LoginInfoHolder.getCurrentUserId().toString());
+            operateLogDto.setOperationTargetInfo(LoginInfoHolder.getCurrentUserId().toString());
 
-            String operationTargetInfo = getOperationTargetInfo(joinPoint);
-            if (StringUtils.isNotBlank(operationTargetInfo)) {
-                operateLogDto.setOperationTargetInfo(operationTargetInfo);
-            }
             if (obj instanceof IdmResDTO) {
                 IdmResDTO respDto = (IdmResDTO) obj;
                 operateLogDto.setResponseParams(respDto.toString());
@@ -283,10 +280,7 @@ public class LogRecordAspect extends BaseController {
             operateLogDto.setLogLevel(LogLevelEnum.INFO.getCode());
 
             // 记录日志
-//            operationlogOutput.send(MessageBuilder.withPayload(operateLogDto)
-//                    .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
-//                    .build());
-
+            sendService.sendOperaLog(operateLogDto);
         } catch (Exception e) {
             log.error("LogRecordAspect joinPoint.afterProceed error", e);
         }

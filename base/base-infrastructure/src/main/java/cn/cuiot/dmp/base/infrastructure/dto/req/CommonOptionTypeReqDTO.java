@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
@@ -19,12 +18,6 @@ import java.util.List;
 public class CommonOptionTypeReqDTO implements Serializable {
 
     private static final long serialVersionUID = -5111498545780365357L;
-
-    /**
-     * 组织id
-     */
-    @NotNull(message = "组织id不能为空")
-    private Long orgId;
 
     /**
      * 常用选项类型ID列表

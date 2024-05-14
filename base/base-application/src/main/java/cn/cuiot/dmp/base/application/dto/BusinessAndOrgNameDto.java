@@ -23,4 +23,8 @@ public class BusinessAndOrgNameDto {
      */
     private String orgName;
 
+    /**
+     * 创建用户名称
+     */
+    private String createUserName;
 }

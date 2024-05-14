@@ -1,22 +1,20 @@
 package cn.cuiot.dmp.baseconfig.flow.flowable.listener;
 
-import cn.cuiot.dmp.base.infrastructure.utils.SpringContextHolder;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.CCInfo;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
-import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
 import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowCc;
 import cn.cuiot.dmp.baseconfig.flow.enums.FlowCCEnums;
+import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
 import cn.cuiot.dmp.baseconfig.flow.service.TbFlowCcService;
-import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.flowable.bpmn.model.Process;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -40,6 +38,8 @@ public class CcListener implements JavaDelegate {
     private RepositoryService repositoryService;
     @Resource
     private TbFlowCcService flowCcService;
+    @Autowired
+    private SystemToFlowService systemToFlowService;
 
     @Override
     public void execute(DelegateExecution execution) {
@@ -48,17 +48,17 @@ public class CcListener implements JavaDelegate {
         CCInfo ccInfo = node.getProps().getCcInfo();
         String nodeId = node.getId();
 
-        if(Objects.nonNull(ccInfo)){
+        if (Objects.nonNull(ccInfo)) {
             List<Long> ccUserIds = new ArrayList<>();
-            if(Objects.equals(ccInfo.getType(),FlowCCEnums.PERSON.getCode())){
+            if (Objects.equals(ccInfo.getType(), FlowCCEnums.PERSON.getCode())) {
                 ccUserIds = ccInfo.getCcIds();
-            }else if(Objects.equals(ccInfo.getType(),FlowCCEnums.ROLE.getCode())){
-                //todo 根据角色获取用户
-            }else if(Objects.equals(ccInfo.getType(),FlowCCEnums.DEPARTMENT.getCode())){
-                //todo 根据部门获取用户
+            } else if (Objects.equals(ccInfo.getType(), FlowCCEnums.ROLE.getCode())) {
+                ccUserIds = systemToFlowService.getUserIdByRole(ccInfo.getCcIds());
+            } else if (Objects.equals(ccInfo.getType(), FlowCCEnums.DEPARTMENT.getCode())) {
+                ccUserIds = systemToFlowService.getUserIdByDept(ccInfo.getCcIds());
             }
 
-            if(CollectionUtils.isNotEmpty(ccUserIds)){
+            if (CollectionUtils.isNotEmpty(ccUserIds)) {
                 List<TbFlowCc> collect = ccUserIds.stream().map(e -> {
                     TbFlowCc cc = new TbFlowCc();
                     cc.setId(IdWorker.getId());
@@ -81,7 +81,8 @@ public class CcListener implements JavaDelegate {
         JSONObject jsonObject = JSONObject.parseObject(dingDing, new TypeReference<JSONObject>() {
         });
         String processJson = jsonObject.getString(VIEW_PROCESS_JSON_NAME);
-        ChildNode childNode = JSONObject.parseObject(processJson, new TypeReference<ChildNode>(){});
+        ChildNode childNode = JSONObject.parseObject(processJson, new TypeReference<ChildNode>() {
+        });
         return childNode;
     }
 }

@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.baseconfig.task;
 
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
+import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.entity.PlanWorkExecutionInfoEntity;
+import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkPlanInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.service.PlanWorkExecutionInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
@@ -13,7 +15,9 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.ObjectMapper;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.xxl.job.core.handler.annotation.XxlJob;
+import liquibase.pro.packaged.L;
 import liquibase.pro.packaged.P;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,12 +55,17 @@ public class WorkPlanInfoTask {
             return;
         }
         StartProcessInstanceDTO startProcessInstanceDTO = JsonUtil.readValue(entity.getWorkJosn(), StartProcessInstanceDTO.class);
+        startProcessInstanceDTO.setWorkSource(WorkOrderConstants.WORK_SOURCE_PLAN);
         IdmResDTO start = workInfoService.start(startProcessInstanceDTO);
         Long data =Long.parseLong(String.valueOf(start.getData())) ;
         if(Objects.nonNull(data)){
             updatePlanWorkExecutionInfo( param, data);
+            //回写工单表
+
         }
+
     }
+
 
     public void updatePlanWorkExecutionInfo(String param,Long data){
         LambdaQueryWrapper<PlanWorkExecutionInfoEntity> lw = new LambdaQueryWrapper<>();

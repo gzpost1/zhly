@@ -15,6 +15,6 @@ public class IdWorkerIdGenerator implements IdGenerator {
 
   @Override
   public String getNextId() {
-    return SpringContextHolder.getBean(IdWorker.class).getId()+"";
+    return IdWorker.getId()+"";
   }
 }

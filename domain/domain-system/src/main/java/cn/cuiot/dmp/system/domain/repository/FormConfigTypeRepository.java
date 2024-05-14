@@ -19,6 +19,11 @@ public interface FormConfigTypeRepository {
     FormConfigType queryForDetail(Long id);
 
     /**
+     * 获取表单配置类型列表
+     */
+    List<FormConfigType> queryForList(List<Long> idList);
+
+    /**
      * 根据企业id获取表单配置类型
      */
     List<FormConfigType> queryByCompany(Long companyId);

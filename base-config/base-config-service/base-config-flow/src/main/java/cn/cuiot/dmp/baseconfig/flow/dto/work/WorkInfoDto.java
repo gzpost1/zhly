@@ -47,7 +47,7 @@ public class WorkInfoDto extends PageQuery {
 
 
     /**
-     * 工单来源
+     * 工单来源 0 计划生成  1 自查报事
      */
     private Byte workSouce;
 
@@ -57,7 +57,7 @@ public class WorkInfoDto extends PageQuery {
     private String phone;
 
     /**
-     * 状态
+     * 状态 1已完结2进行中3已终止4已挂起
      */
     private Byte status;
 
