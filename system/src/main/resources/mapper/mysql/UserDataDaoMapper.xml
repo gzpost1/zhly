@@ -44,9 +44,6 @@
             <if test="status != null">
                 AND u.`status`= #{status}
             </if>
-            <if test="loginUserId != 1">
-                AND u.id != 1
-            </if>
             <if test="orgId != null and orgId != -1">
                 AND uo.pk_org_id = #{orgId}
             </if>
@@ -92,9 +89,6 @@
             </if>
             <if test="status != null">
                 AND u.`status`= #{status}
-            </if>
-            <if test="loginUserId != 1">
-                AND u.id != 1
             </if>
             <if test="orgId != null and orgId != -1">
                 AND ur.pk_org_id = #{orgId}
