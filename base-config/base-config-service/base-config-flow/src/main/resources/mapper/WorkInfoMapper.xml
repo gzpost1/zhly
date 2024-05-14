@@ -27,7 +27,7 @@
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
-            from tb_work_info t1 left join tb_work_business_type_info t2 on t1.proc_inst_id = t2.proc_inst_id
+            from tb_work_info t1 left join  (select business_type,proc_inst_id from tb_work_business_type_info WHERE business_type=1 group by proc_inst_id ,business_type) t2 on t1.proc_inst_id = t2.proc_inst_id
 
           <include refid="queryWorkOrderInfoCondition"/>
     </select>

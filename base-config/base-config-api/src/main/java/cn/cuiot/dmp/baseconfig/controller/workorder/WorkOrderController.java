@@ -11,6 +11,7 @@ import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkProcInstDto;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,7 +40,7 @@ public class WorkOrderController extends BaseController {
     @PostMapping("queryFirstFormInfo")
     public IdmResDTO<Properties> queryFirstFormInfo(@RequestBody FirstFormDto dto){
 
-        return workInfoService.queryFirstFormInfo(dto,"1111111");
+        return workInfoService.queryFirstFormInfo(dto, LoginInfoHolder.getCurrentUserId());
     }
 
     /**

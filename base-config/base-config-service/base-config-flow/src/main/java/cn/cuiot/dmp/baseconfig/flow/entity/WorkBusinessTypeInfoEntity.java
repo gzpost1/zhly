@@ -69,9 +69,14 @@ public class WorkBusinessTypeInfoEntity implements Serializable {
 
 
     /**
-     * 意见
+     * 原因
      */
     private String comments;
+
+    /**
+     * 补充说明
+     */
+    private String reason;
 
     /**
      * 节点

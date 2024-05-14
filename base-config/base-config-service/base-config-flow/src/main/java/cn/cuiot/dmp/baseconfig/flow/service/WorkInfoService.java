@@ -485,7 +485,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * 查询节点属性数据,并判断是否有权限发起该流程
      * @return
      */
-    public IdmResDTO<Properties> queryFirstFormInfo(FirstFormDto dto, String userId) {
+    public IdmResDTO<Properties> queryFirstFormInfo(FirstFormDto dto, Long userId) {
         ChildNode childNodeByNodeId = getChildNodeByNodeId(dto.getProcessDefinitionId(), WorkOrderConstants.USER_ROOT);
         Properties props = childNodeByNodeId.getProps();
 
@@ -858,6 +858,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         businessTypeInfo.setNode(hisTaskInfo.getTaskDefinitionKey());
         businessTypeInfo.setStartTime(new Date());
         businessTypeInfo.setComments(handleDataDTO.getComments());
+        businessTypeInfo.setReason(handleDataDTO.getReason());
         return businessTypeInfo;
     }
 
