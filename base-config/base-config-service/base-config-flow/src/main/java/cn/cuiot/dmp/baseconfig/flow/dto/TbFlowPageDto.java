@@ -38,4 +38,14 @@ public class TbFlowPageDto extends PageInfoBaseDto implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
+    /**
+     * 图片
+     */
+    private String logo;
+
+    /**
+     * 流程定义ID
+     */
+    private String processDefinitionId;
+
 }

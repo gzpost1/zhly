@@ -13,10 +13,13 @@ import cn.cuiot.dmp.baseconfig.flow.dto.*;
 import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants.PROCESS_PREFIX;
 
 /**
  * 基础功能-系统配置-初始化配置-流程配置
@@ -45,6 +50,46 @@ public class BaseConfigFlowController {
 
     @Autowired
     private TbFlowConfigService tbFlowConfigService;
+    @Resource
+    private RepositoryService repositoryService;
+
+    /**
+     * 工单获取流程分页
+     *
+     * @param query
+     * @return
+     */
+    @PostMapping("/queryForWorkOrderPage")
+    public IdmResDTO<IPage<TbFlowPageDto>> queryForWorkOrderPage(@RequestBody TbFlowConfigQuery query) {
+        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        IPage<TbFlowPageDto> tbFlowPageDtoIPage = tbFlowConfigService.queryForWorkOrderPage(query);
+        if(Objects.nonNull(tbFlowPageDtoIPage) && CollectionUtils.isNotEmpty(tbFlowPageDtoIPage.getRecords())){
+            tbFlowPageDtoIPage.getRecords().stream().forEach(e -> {
+                ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(PROCESS_PREFIX + e.getId()).latestVersion().singleResult();
+                AssertUtil.notNull(processDefinition,"该流程暂未接入Flowable,请重试");
+                e.setProcessDefinitionId(processDefinition.getId());
+
+            });
+        }
+        return IdmResDTO.success().body(tbFlowPageDtoIPage);
+    }
+
+    /**
+     * 工单获取流程详情
+     *
+     * @param idParam
+     * @return
+     */
+    @PostMapping("/queryForWorkDetail")
+    public IdmResDTO<FlowEngineVo> queryForWorkDetail(@RequestBody @Valid IdParam idParam) {
+        FlowEngineVo flowEngineVo = tbFlowConfigService.queryForDetail(idParam.getId());
+        AssertUtil.notNull(flowEngineVo,"流程配置不存在");
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(PROCESS_PREFIX + flowEngineVo.getId()).latestVersion().singleResult();
+        AssertUtil.notNull(processDefinition,"该流程暂未接入Flowable,请重试");
+        flowEngineVo.setProcessDefinitionId(processDefinition.getId());
+        return IdmResDTO.success().body(flowEngineVo);
+    }
+
 
     /**
      * 获取分页
@@ -57,7 +102,7 @@ public class BaseConfigFlowController {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
 
         IPage<TbFlowPageDto> tbFlowPageDtoIPage = tbFlowConfigService.queryForPage(query);
-        systemUtilService.fillOrgNameAndBusinessName(tbFlowPageDtoIPage);
+//        systemUtilService.fillOrgNameAndBusinessName(tbFlowPageDtoIPage);
 
         return IdmResDTO.success().body(tbFlowPageDtoIPage);
     }

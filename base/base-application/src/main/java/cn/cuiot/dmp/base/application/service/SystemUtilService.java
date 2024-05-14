@@ -36,7 +36,7 @@ public class SystemUtilService {
      *
      * @param page
      */
-    public  <T extends PageInfoBaseDto> void fillOrgNameAndBusinessName(IPage<T> page) {
+    public <T extends PageInfoBaseDto> void fillOrgNameAndBusinessName(IPage<T> page) {
         //填充每一行的业务名称和组织机构名称
         if (Objects.nonNull(page) && CollectionUtils.isNotEmpty(page.getRecords())) {
             //每一行转化为 BusinessAndOrgDto
@@ -74,10 +74,7 @@ public class SystemUtilService {
      */
     public Map<Long, BusinessAndOrgNameDto> processBusinessAndOrgNameDto(List<BusinessAndOrgDto> businessAndOrgDtoList) {
         // 获取业务类型名称列表
-        List<Long> businessTypeIds = businessAndOrgDtoList.stream()
-                .flatMap(businessAndOrgDto -> businessAndOrgDto.getBusinessTypeIdList().stream()).collect(Collectors.toList());
-        List<BusinessTypeRspDTO> businessResultList = getBusinessTypeList(businessTypeIds);
-        List<BusinessTypeRspDTO> businessTypeList = new ArrayList<>(businessResultList);
+        List<BusinessTypeRspDTO> businessTypeList = getBusinessTypeList(businessAndOrgDtoList);
 
         //查询组织机构名称
         List<DepartmentDto> deptNameList = getDeptNameList(businessAndOrgDtoList);
@@ -103,7 +100,9 @@ public class SystemUtilService {
             }
 
             //设置创建用户名称
-            businessAndOrgNameDto.setCreateUserName(userNameList.get(e.getCreateUserId()));
+            if(Objects.nonNull(userNameList)){
+                businessAndOrgNameDto.setCreateUserName(userNameList.get(e.getCreateUserId()));
+            }
 
             return businessAndOrgNameDto;
         }).collect(Collectors.toMap(BusinessAndOrgNameDto::getDataId, Function.identity()));
@@ -117,18 +116,23 @@ public class SystemUtilService {
      * @param businessAndOrgDtoList
      */
     private Map<Long, String> getUserNameList(List<BusinessAndOrgDto> businessAndOrgDtoList) {
-        List<Long> userIds = businessAndOrgDtoList.stream().map(BusinessAndOrgDto::getCreateUserId).distinct().collect(Collectors.toList());
+        Map<Long, String> userNameMap = new HashMap<>();
+
+        List<Long> userIds = businessAndOrgDtoList.stream().filter(e -> Objects.nonNull(e.getCreateUserId()))
+                .map(BusinessAndOrgDto::getCreateUserId).distinct().collect(Collectors.toList());
 
         //获取用户名称
-        BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
-        baseUserReqDto.setUserIdList(userIds);
-        log.info("获取用户名称参数：{}", baseUserReqDto);
-        List<BaseUserDto> baseUserDtos = apiSystemService.lookUpUserList(baseUserReqDto);
+        if (CollectionUtils.isNotEmpty(userIds)) {
+            BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
+            baseUserReqDto.setUserIdList(userIds);
+            log.info("获取用户名称参数：{}", baseUserReqDto);
+            List<BaseUserDto> baseUserDtos = apiSystemService.lookUpUserList(baseUserReqDto);
 
-        Map<Long, String> userNameMap = new HashMap<>();
-        if (CollectionUtils.isNotEmpty(baseUserDtos)) {
-            userNameMap = baseUserDtos.stream().collect(Collectors.toMap(BaseUserDto::getId, BaseUserDto::getName));
+            if (CollectionUtils.isNotEmpty(baseUserDtos)) {
+                userNameMap = baseUserDtos.stream().collect(Collectors.toMap(BaseUserDto::getId, BaseUserDto::getName));
+            }
         }
+
 
         return userNameMap;
     }
@@ -140,27 +144,40 @@ public class SystemUtilService {
      * @return
      */
     private List<DepartmentDto> getDeptNameList(List<BusinessAndOrgDto> businessAndOrgDtoList) {
-        List<Long> deptIds = businessAndOrgDtoList.stream()
-                .flatMap(businessAndOrgDto -> businessAndOrgDto.getOrgIds().stream()).collect(Collectors.toList());
-        DepartmentReqDto departmentReqDto = new DepartmentReqDto();
-        departmentReqDto.setDeptIdList(deptIds);
+        List<DepartmentDto> departmentDtos = new ArrayList<>();
 
-        log.info("获取组织机构名称参数：{}", departmentReqDto);
-        List<DepartmentDto> departmentDtos = apiSystemService.lookUpDepartmentList(departmentReqDto);
+        List<Long> deptIds = businessAndOrgDtoList.stream().filter(e -> CollectionUtils.isNotEmpty(e.getOrgIds()))
+                .flatMap(businessAndOrgDto -> businessAndOrgDto.getOrgIds().stream()).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(deptIds)) {
+            DepartmentReqDto departmentReqDto = new DepartmentReqDto();
+            departmentReqDto.setDeptIdList(deptIds);
+
+            log.info("获取组织机构名称参数：{}", departmentReqDto);
+            departmentDtos = apiSystemService.lookUpDepartmentList(departmentReqDto);
+        }
+
         return departmentDtos;
     }
 
     /**
      * 获取业务类型列表
      *
-     * @param businessTypeIdList
+     * @param businessAndOrgDtoList
      * @return
      */
-    public List<BusinessTypeRspDTO> getBusinessTypeList(List<Long> businessTypeIdList) {
-        BusinessTypeReqDTO businessTypeReqDTO = new BusinessTypeReqDTO();
-        businessTypeReqDTO.setBusinessTypeIdList(businessTypeIdList);
-        log.info("获取业务类型列表参数：{}", businessTypeReqDTO);
-        return apiSystemService.batchGetBusinessType(businessTypeReqDTO);
+    public List<BusinessTypeRspDTO> getBusinessTypeList(List<BusinessAndOrgDto> businessAndOrgDtoList) {
+        List<BusinessTypeRspDTO> businessTypeRspDTOS = new ArrayList<>();
+
+        List<Long> businessTypeIds = businessAndOrgDtoList.stream().filter(e -> CollectionUtils.isNotEmpty(e.getBusinessTypeIdList()))
+                .flatMap(businessAndOrgDto -> businessAndOrgDto.getBusinessTypeIdList().stream()).collect(Collectors.toList());
+
+        if (CollectionUtils.isNotEmpty(businessTypeIds)) {
+            BusinessTypeReqDTO businessTypeReqDTO = new BusinessTypeReqDTO();
+            businessTypeReqDTO.setBusinessTypeIdList(businessTypeIds);
+            log.info("获取业务类型列表参数：{}", businessTypeReqDTO);
+            businessTypeRspDTOS = apiSystemService.batchGetBusinessType(businessTypeReqDTO);
+        }
+        return businessTypeRspDTOS;
     }
 
 }

@@ -31,9 +31,10 @@
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto">
     select
-    id, `name`, business_type_id, remark,`status`, create_time, create_user,company_id
+    id, `name`, business_type_id, remark,`status`, create_time, create_user,company_id,logo
     from tb_flow_config
     <where>
+      deleted = 0
       <if test="query.name != null and query.name != ''">
         and name like concat('%', #{query.name}, '%')
       </if>
