@@ -56,10 +56,7 @@ import org.apache.poi.hssf.record.DVALRecord;
 import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.Process;
 import org.flowable.common.engine.impl.identity.Authentication;
-import org.flowable.engine.HistoryService;
-import org.flowable.engine.RepositoryService;
-import org.flowable.engine.RuntimeService;
-import org.flowable.engine.TaskService;
+import org.flowable.engine.*;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -71,6 +68,7 @@ import org.flowable.engine.task.Comment;
 import org.flowable.task.api.DelegationState;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
+import org.flowable.variable.api.history.HistoricVariableInstanceQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -110,8 +108,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     private WorkBusinessTypeInfoService workBusinessTypeInfoService;
     @Autowired
     private SystemApiFeignService systemApiFeignService;
-
-
+    @Autowired
+    private ProcessEngine processEngine;
     public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO) {
         JSONObject formData = startProcessInstanceDTO.getFormData();
         UserInfo startUserInfo = startProcessInstanceDTO.getStartUserInfo();
@@ -178,7 +176,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             entity.setCreateUser(LoginInfoHolder.getCurrentUserId());
             entity.setProcInstId(task.getProcessInstanceId());
             entity.setCompanyId(flowConfig.getCompanyId());
-            entity.setStatus(WorkOrderStatusEnums.completed.getStatus());
+            entity.setStatus(WorkOrderStatusEnums.progress.getStatus());
             this.save(entity);
         }
         return IdmResDTO.success(task.getProcessInstanceId());
@@ -613,8 +611,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 .createHistoricProcessInstanceQuery()
                 .processInstanceId(resultDto.getProcInstId())
                 .singleResult()).orElseThrow(()->new RuntimeException("未找到流程实例信息"));
-
-        Long time =historicProcessInstance.getEndTime().getTime()-historicProcessInstance.getStartTime().getTime()-pendTime;
+        Long time= null;
+        if(Objects.nonNull(historicProcessInstance.getEndTime())){
+            time =historicProcessInstance.getEndTime().getTime()-historicProcessInstance.getStartTime().getTime()-(Objects.nonNull(pendTime)?pendTime:0);
+        }else{
+            time =new Date().getTime()-historicProcessInstance.getStartTime().getTime()-(Objects.nonNull(pendTime)?pendTime:0);
+        }
         resultDto.setWorkTime(converTime(time));
         return IdmResDTO.success(resultDto);
     }
@@ -660,16 +662,10 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
                 .includeProcessVariables().singleResult();
         String processDefinitionKey = historicProcessInstance.getProcessDefinitionKey();
-        String ex = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess().
-                getAttributeValue(ATTRIBUTE_NAME_SPACE, ATTRIBUTE_NAME);
-        HashMap hashMap = JSONObject.parseObject(ex, new TypeReference<HashMap>() {
-        });
-        String processJson = MapUtil.getStr(hashMap, "processJson");
-        String formJson = MapUtil.getStr(hashMap, "formJson");
 
         TbFlowConfig flowConfig = flowConfigService.getById(processDefinitionKey.replace(PROCESS_PREFIX, ""));
-        flowConfig.setProcess(processJson);
-        flowConfig.setFormItems(formJson);
+        flowConfig.setProcess(flowConfig.getProcess());
+        flowConfig.setFormItems(flowConfig.getFormItems());
         HandleDataVO handleDataVO =new HandleDataVO();
         Map<String, Object> processVariables = historicProcessInstance.getProcessVariables();
 
@@ -1028,5 +1024,23 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     public List<DepartmentDto> queryDeptList(WorkInfoDto dto) {
         return getDeptIds(LoginInfoHolder.getCurrentDeptId());
+    }
+
+    public IdmResDTO queryDataForm(HandleDataDTO handleDataDTO) {
+        HistoricVariableInstanceQuery query = processEngine.getHistoryService()
+                .createHistoricVariableInstanceQuery()
+                .processInstanceId(handleDataDTO.getProcessInstanceId())
+                .variableName("formData");
+        HistoricVariableInstanceQuery formData = query.variableName("formData");
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
+                .processInstanceId(handleDataDTO.getProcessInstanceId())
+                .singleResult();
+
+        String flowableKey = processInstance.getProcessDefinitionKey().replaceAll("[a-zA-Z]", "");
+        TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
+                orElseThrow(()->new RuntimeException("流程配置为空"));
+
+
+        return IdmResDTO.success();
     }
 }
