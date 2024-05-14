@@ -12,6 +12,7 @@
         <module>upload</module>
         <module>base-config</module>
         <module>base-consumer</module>
+        <module>archive</module>
     </modules>
 
     <parent>
