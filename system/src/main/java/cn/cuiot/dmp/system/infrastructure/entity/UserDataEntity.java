@@ -131,6 +131,11 @@ public class UserDataEntity {
 
     private String orgId;
 
+    /**
+     * 租户名
+     */
+    private String orgName;
+
     private Integer orgTypeId;
 
     private Integer identity;
@@ -177,6 +182,11 @@ public class UserDataEntity {
      * 组织名路径
      */
     private String deptPathName;
+
+    /**
+     * 组织路径
+     */
+    private String deptPath;
 
     /**
      * 角色id
