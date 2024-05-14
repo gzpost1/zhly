@@ -69,4 +69,19 @@ public class BaseUserDto implements Serializable {
      */
     private String orgName;
 
+    /**
+     * 企业类型
+     */
+    private Integer orgTypeId;
+
+    /**
+     * 组织名路径
+     */
+    private String deptPathName;
+
+    /**
+     * 组织路径
+     */
+    private String deptPath;
+
 }

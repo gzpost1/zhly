@@ -22,7 +22,7 @@
         id, business_type, org, work_name, work_souce, user_id, status
     </sql>
     <sql id="queryWorkOrderInfoSql">
-        t1.id ,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,
+        t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,
               t2.business_type as timeOut
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
