@@ -21,12 +21,12 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -151,8 +151,9 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
     }
 
     public ChildNode processJson(String processJson) {
-        ChildNode childNode = JSONObject.parseObject(processJson, new TypeReference<ChildNode>() {
+        ChildNode childNode = JsonUtil.readValue(processJson, new TypeReference<ChildNode>() {
         });
+
         processChildNode(childNode);
         return childNode;
     }
