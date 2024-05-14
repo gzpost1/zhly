@@ -967,10 +967,25 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 dto);
         List<MyApprovalResultDto> records = page.getRecords();
         if(CollectionUtils.isNotEmpty(records)){
+
+            //根据业务类型获取数据
+            List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
+            Map<Long, String> busiMap = getBusiMap(busiTypes);
+
+            //组织ids
+            List<Long> orgIds = records.stream().map(MyApprovalResultDto::getOrgId).collect(Collectors.toList());
+            Map<Long, String> deptMap = getDeptMap(orgIds);
+
+            //userIds
+            List<Long> usreIds = records.stream().map(MyApprovalResultDto::getUserId).collect(Collectors.toList());
+            Map<Long, String> userMap = getUserMap(usreIds);
             records.stream().forEach(item->{
-                //TODO 根据业务类型id获取业务类型数据
-                //TODO 获取所属组织
-                //TODO 发起人
+                //根据业务类型id获取业务类型数据
+                item.setBusinessTypeName(busiMap.get(item.getBusinessType()));
+                //获取所属组织
+                item.setOrgPath(deptMap.get(item.getOrgId()));
+                // 发起人
+                item.setUserName(userMap.get(item.getUserId()));
             });
         }
         return IdmResDTO.success(page);

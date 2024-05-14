@@ -306,7 +306,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             List<Long> userIds = records.stream().map(WorkPlanInfoEntity::getCreateUser).collect(Collectors.toList());
             Map<Long, String> userMap = getUserMap(userIds);
             records.stream().forEach(item->{
-                //TODO根据userId获取userName
+                //根据userId获取userName
                 item.setCreateName(userMap.get(item.getCreateUser()));
             });
         }
