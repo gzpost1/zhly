@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.archive.infrastructure.persistence.mapper.RoomArchivesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="loupan_id" property="loupanId" />
+        <result column="space_category" property="spaceCategory" />
+        <result column="location" property="location" />
+        <result column="latitude" property="latitude" />
+        <result column="longitude" property="longitude" />
+        <result column="professional_purpose" property="professionalPurpose" />
+        <result column="space_area" property="spaceArea" />
+        <result column="business_nature" property="businessNature" />
+        <result column="ownership_unit" property="ownershipUnit" />
+        <result column="ownership_attribute" property="ownershipAttribute" />
+        <result column="resource_type" property="resourceType" />
+        <result column="property_service_level" property="propertyServiceLevel" />
+        <result column="space_description" property="spaceDescription" />
+        <result column="location_method" property="locationMethod" />
+        <result column="location_deviation" property="locationDeviation" />
+        <result column="status" property="status" />
+        <result column="images" property="images" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, loupan_id, space_category, location, latitude, longitude, professional_purpose, space_area, business_nature, ownership_unit, ownership_attribute, resource_type, property_service_level, space_description, location_method, location_deviation, status, images, update_time, update_user, create_time, create_user, deleted
+    </sql>
+
+</mapper>
