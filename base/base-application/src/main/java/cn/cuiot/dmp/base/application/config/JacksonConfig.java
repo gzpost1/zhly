@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.base.application.config;
 
+import cn.cuiot.dmp.base.application.xss.XssStringJsonDeserializer;
 import cn.cuiot.dmp.common.deserializer.StringToDateDeserializer;
 import cn.cuiot.dmp.common.serialize.JacksonAnnotationInterceptByDate;
 import cn.cuiot.dmp.common.serialize.LongTypeJsonSerializer;
@@ -48,6 +49,10 @@ public class JacksonConfig {
         //解决时间入参转换Date问题
         mapperBuilder.deserializerByType(Date.class, new StringToDateDeserializer());
         mapperBuilder.annotationIntrospector(new JacksonAnnotationInterceptByDate());
+
+        //xss
+        mapperBuilder.deserializerByType(String.class, new XssStringJsonDeserializer());
+
         return mapperBuilder;
     }
 
