@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.archive.infrastructure.persistence.mapper.HousesArchivesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="room_num" property="roomNum" />
+        <result column="loupan_id" property="loupanId" />
+        <result column="code" property="code" />
+        <result column="floor_name" property="floorName" />
+        <result column="floor_alias" property="floorAlias" />
+        <result column="capacity" property="capacity" />
+        <result column="qibie" property="qibie" />
+        <result column="floor_coefficient" property="floorCoefficient" />
+        <result column="house_type" property="houseType" />
+        <result column="orientation" property="orientation" />
+        <result column="building_area" property="buildingArea" />
+        <result column="usable_area" property="usableArea" />
+        <result column="charge_area" property="chargeArea" />
+        <result column="shared_area" property="sharedArea" />
+        <result column="utilization_rate" property="utilizationRate" />
+        <result column="property_type" property="propertyType" />
+        <result column="status" property="status" />
+        <result column="usage" property="usage" />
+        <result column="business_nature" property="businessNature" />
+        <result column="resource_type" property="resourceType" />
+        <result column="ownership_unit" property="ownershipUnit" />
+        <result column="ownership_attribute" property="ownershipAttribute" />
+        <result column="handover_date" property="handoverDate" />
+        <result column="responsible_person" property="responsiblePerson" />
+        <result column="parking_area" property="parkingArea" />
+        <result column="remarks" property="remarks" />
+        <result column="floor_plan" property="floorPlan" />
+        <result column="attachments" property="attachments" />
+        <result column="listing_title" property="listingTitle" />
+        <result column="recommended" property="recommended" />
+        <result column="listing_images" property="listingImages" />
+        <result column="basic_services" property="basicServices" />
+        <result column="listing_description" property="listingDescription" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, room_num, loupan_id, code, floor_name, floor_alias, capacity, qibie, floor_coefficient, house_type, orientation, building_area, usable_area, charge_area, shared_area, utilization_rate, property_type, status, usage, business_nature, resource_type, ownership_unit, ownership_attribute, handover_date, responsible_person, parking_area, remarks, floor_plan, attachments, listing_title, recommended, listing_images, basic_services, listing_description, update_time, update_user, create_time, create_user, deleted
+    </sql>
+
+</mapper>

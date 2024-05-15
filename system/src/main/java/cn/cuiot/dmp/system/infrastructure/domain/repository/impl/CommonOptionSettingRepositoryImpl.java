@@ -103,7 +103,9 @@ public class CommonOptionSettingRepositoryImpl implements CommonOptionSettingRep
                     return commonOptionSettingEntity;
                 })
                 .collect(Collectors.toList());
-        commonOptionSettingMapper.batchSaveCommonOptionSettings(newCommonOptionSettingEntities);
+        if (CollectionUtils.isNotEmpty(newCommonOptionSettingEntities)) {
+            commonOptionSettingMapper.batchSaveCommonOptionSettings(newCommonOptionSettingEntities);
+        }
         // id不为空说明为更新数据，直接更新
         List<CommonOptionSettingEntity> updateCommonOptionSettingEntities = commonOptionSettings.stream()
                 .filter(o -> Objects.nonNull(o.getId()))
@@ -114,7 +116,9 @@ public class CommonOptionSettingRepositoryImpl implements CommonOptionSettingRep
                     return commonOptionSettingEntity;
                 })
                 .collect(Collectors.toList());
-        commonOptionSettingMapper.batchUpdateCommonOptionSettings(updateCommonOptionSettingEntities);
+        if (CollectionUtils.isNotEmpty(updateCommonOptionSettingEntities)) {
+            updateCommonOptionSettingEntities.forEach(o -> commonOptionSettingMapper.updateById(o));
+        }
         // 数据库存在但传入参数不存在则说明为删除数据，软删除
         List<CommonOptionSettingEntity> deleteCommonOptionSettingEntities = oldCommonOptionSettingEntities.stream()
                 .filter(old -> !commonOptionSettings.stream()
@@ -123,7 +127,11 @@ public class CommonOptionSettingRepositoryImpl implements CommonOptionSettingRep
                         .contains(old.getId()))
                 .peek(o -> o.setDeletedFlag(Integer.valueOf(EntityConstants.DELETED)))
                 .collect(Collectors.toList());
-        commonOptionSettingMapper.batchUpdateCommonOptionSettings(deleteCommonOptionSettingEntities);
+        if (CollectionUtils.isNotEmpty(deleteCommonOptionSettingEntities)) {
+            commonOptionSettingMapper.deleteBatchIds(deleteCommonOptionSettingEntities.stream()
+                    .map(CommonOptionSettingEntity::getId)
+                    .collect(Collectors.toList()));
+        }
     }
 
 }
