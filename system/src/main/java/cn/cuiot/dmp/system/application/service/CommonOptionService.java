@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.CommonOptionReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonOptionRspDTO;
 import cn.cuiot.dmp.system.application.param.dto.BatchCommonOptionDTO;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionCreateDTO;
+import cn.cuiot.dmp.system.application.param.dto.CommonOptionDTO;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.CommonOptionVO;
 
@@ -20,6 +21,11 @@ public interface CommonOptionService {
      * 根据id获取业务类型详情
      */
     CommonOptionVO queryForDetail(Long id);
+
+    /**
+     * 根据条件获取业务类型详情
+     */
+    CommonOptionVO queryForDetailByName(CommonOptionDTO commonOptionDTO);
 
     /**
      * 保存

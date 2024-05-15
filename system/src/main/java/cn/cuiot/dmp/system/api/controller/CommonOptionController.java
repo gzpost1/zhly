@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.system.application.param.dto.BatchCommonOptionDTO;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionCreateDTO;
+import cn.cuiot.dmp.system.application.param.dto.CommonOptionDTO;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.CommonOptionVO;
 import cn.cuiot.dmp.system.application.service.CommonOptionService;
@@ -36,6 +37,15 @@ public class CommonOptionController {
     @PostMapping("/queryForDetail")
     public CommonOptionVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return commonOptionService.queryForDetail(idParam.getId());
+    }
+
+    /**
+     * 根据名称获取详情
+     */
+    @RequiresPermissions
+    @PostMapping("/queryForDetailByName")
+    public CommonOptionVO queryForDetailByName(@RequestBody @Valid CommonOptionDTO commonOptionDTO) {
+        return commonOptionService.queryForDetailByName(commonOptionDTO);
     }
 
     /**

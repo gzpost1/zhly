@@ -60,6 +60,26 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     }
 
     @Override
+    public CommonOption queryForDetailByName(CommonOption commonOption) {
+        AssertUtil.notBlank(commonOption.getName(),"常用选项名称不能为空");
+        AssertUtil.notNull(commonOption.getCompanyId(), "企业Id不能为空");
+        // 获取常用选项
+        LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
+                .eq(CommonOptionEntity::getName, commonOption.getName())
+                .eq(CommonOptionEntity::getCompanyId, commonOption.getCompanyId());
+        List<CommonOptionEntity> commonOptionEntityList = commonOptionMapper.selectList(queryWrapper);
+        AssertUtil.notEmpty(commonOptionEntityList, "常用选项不存在");
+        CommonOptionEntity commonOptionEntity = commonOptionEntityList.get(0);
+        CommonOption commonOptionResult = new CommonOption();
+        BeanUtils.copyProperties(commonOptionEntity, commonOptionResult);
+        // 查询常用选项详情
+        List<CommonOptionSetting> commonOptionSettings = commonOptionSettingRepository
+                .batchQueryCommonOptionSettings(commonOptionEntity.getId());
+        commonOptionResult.setCommonOptionSettings(commonOptionSettings);
+        return commonOptionResult;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public int saveCommonOption(CommonOption commonOption) {
         commonOption.setId(IdWorker.getId());

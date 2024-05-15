@@ -6,6 +6,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonOptionRspDTO;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.application.param.dto.BatchCommonOptionDTO;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionCreateDTO;
+import cn.cuiot.dmp.system.application.param.dto.CommonOptionDTO;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.CommonOptionVO;
 import cn.cuiot.dmp.system.application.service.CommonOptionService;
@@ -37,6 +38,16 @@ public class CommonOptionServiceImpl implements CommonOptionService {
         CommonOption commonOption = commonOptionRepository.queryForDetail(id);
         CommonOptionVO commonOptionVO = new CommonOptionVO();
         BeanUtils.copyProperties(commonOption, commonOptionVO);
+        return commonOptionVO;
+    }
+
+    @Override
+    public CommonOptionVO queryForDetailByName(CommonOptionDTO commonOptionDTO) {
+        CommonOption commonOption = new CommonOption();
+        BeanUtils.copyProperties(commonOptionDTO, commonOption);
+        CommonOption commonOptionResult = commonOptionRepository.queryForDetailByName(commonOption);
+        CommonOptionVO commonOptionVO = new CommonOptionVO();
+        BeanUtils.copyProperties(commonOptionResult, commonOptionVO);
         return commonOptionVO;
     }
 

@@ -18,6 +18,11 @@ public interface CommonOptionRepository {
     CommonOption queryForDetail(Long id);
 
     /**
+     * 根据条件获取详情
+     */
+    CommonOption queryForDetailByName(CommonOption commonOption);
+
+    /**
      * 保存
      */
     int saveCommonOption(CommonOption commonOption);
