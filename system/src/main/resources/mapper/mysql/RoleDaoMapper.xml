@@ -296,4 +296,23 @@
         and o.pk_org_id = #{orgId} limit 1
     </select>
 
+    <select id="lookUpRoleList"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
+        select
+        <include refid="role_column"/>
+        from role r
+        LEFT JOIN org_role o ON r.id = o.pk_role_id
+        <where>
+            <if test="idList != null and idList.size() >0">
+                AND r.id in
+                <foreach collection="idList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="orgId != null">
+                and o.pk_org_id = #{orgId}
+            </if>
+        </where>
+    </select>
+
 </mapper>

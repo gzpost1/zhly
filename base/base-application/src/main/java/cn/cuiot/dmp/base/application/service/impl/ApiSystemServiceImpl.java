@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.base.application.service.impl;
 
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
@@ -31,6 +33,29 @@ public class ApiSystemServiceImpl implements ApiSystemService {
 
     @Autowired
     private SystemApiFeignService systemApiFeignService;
+
+    /**
+     * 查询角色
+     */
+    @Override
+    public List<BaseRoleDto> lookUpRoleList(BaseRoleReqDto query) {
+        try {
+            IdmResDTO<List<BaseRoleDto>> idmResDTO = systemApiFeignService
+                    .lookUpRoleList(query);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==lookUpRoleList==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_DEPT_ERROR);
+        }
+    }
 
     /**
      * 查询部门

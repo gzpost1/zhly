@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.system.api.controller;
 
 import cn.cuiot.dmp.base.application.annotation.InternalApi;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
@@ -61,6 +63,18 @@ public class ApiController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RoleService roleService;
+
+    /**
+     * 查询角色
+     */
+    @PostMapping(value = "/lookUpRoleList", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<BaseRoleDto>> lookUpRoleList(@RequestBody BaseRoleReqDto query) {
+        List<BaseRoleDto> list = roleService.lookUpRoleList(query);
+        return IdmResDTO.success(list);
+    }
 
     /**
      * 查询部门

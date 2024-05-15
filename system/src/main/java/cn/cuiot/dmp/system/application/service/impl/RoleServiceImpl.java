@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
@@ -10,6 +12,7 @@ import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.application.enums.RolePermitEnum;
 import cn.cuiot.dmp.system.application.enums.RoleTypeEnum;
 import cn.cuiot.dmp.system.application.enums.UserSourceTypeEnum;
+import cn.cuiot.dmp.system.application.param.assembler.RoleConverter;
 import cn.cuiot.dmp.system.application.service.MenuService;
 import cn.cuiot.dmp.system.application.service.RoleService;
 import cn.cuiot.dmp.system.domain.entity.Organization;
@@ -35,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,6 +65,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Autowired
     private OrganizationRepository organizationRepository;
+
+    @Autowired
+    private RoleConverter roleConverter;
 
     /**
      * 默认管理员角色key
@@ -120,13 +127,13 @@ public class RoleServiceImpl implements RoleService {
         String sessionOrgId = roleBo.getSessionOrgId();
         List<Long> deleteIdList = Optional.ofNullable(roleBo.getDeleteIdList())
                 .orElse(Lists.newArrayList());
-        if(Objects.nonNull(roleBo.getId())){
-            if(!deleteIdList.contains(roleBo.getId())){
+        if (Objects.nonNull(roleBo.getId())) {
+            if (!deleteIdList.contains(roleBo.getId())) {
                 deleteIdList.add(roleBo.getId());
             }
         }
 
-        for(Long deleteId:deleteIdList){
+        for (Long deleteId : deleteIdList) {
             // 预置角色不能删除
             DEFAULT_ROLE_ID.stream().filter(s -> s.equals(deleteId)).findAny().ifPresent(s -> {
                 throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
@@ -145,7 +152,7 @@ public class RoleServiceImpl implements RoleService {
 
         // 查询角色关联的用户
         List<Map<String, Long>> userIdList = this.roleDao
-                .selectUserIdsByRoleIds(sessionOrgId,deleteIdList);
+                .selectUserIdsByRoleIds(sessionOrgId, deleteIdList);
 
         if (!CollectionUtils.isEmpty(userIdList) && userIdList.parallelStream().anyMatch(map -> {
             return null != map.get(USER_ID);
@@ -162,7 +169,7 @@ public class RoleServiceImpl implements RoleService {
         this.roleDao.deleteOrgRole(roleBo.getSessionOrgId(), deleteIdList);
 
         // 批量删除角色和菜单的关联关系
-        this.roleDao.deleteBatchMenuRole(roleBo.getSessionOrgId(),deleteIdList);
+        this.roleDao.deleteBatchMenuRole(roleBo.getSessionOrgId(), deleteIdList);
 
         return count;
     }
@@ -181,13 +188,13 @@ public class RoleServiceImpl implements RoleService {
         if (null == roleDTO) {
             throw new BusinessException(ResultCode.QUERY_ROLE_DETAILS_ERROR);
         }
-        if(CollectionUtils.isEmpty(dto.getMenuIds())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"请配置角色权限");
+        if (CollectionUtils.isEmpty(dto.getMenuIds())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "请配置角色权限");
         }
         /**
          * 权限授权检测
          */
-        checkSelectMenuIds(dto.getLoginOrgId(),dto.getLoginUserId(),dto.getMenuIds());
+        checkSelectMenuIds(dto.getLoginOrgId(), dto.getLoginUserId(), dto.getMenuIds());
 
         Map<String, Object> paramsMap = new HashMap<>(3);
         // roleEntity 赋值
@@ -235,10 +242,11 @@ public class RoleServiceImpl implements RoleService {
     /**
      * 权限授权检测
      */
-    private void checkSelectMenuIds(String loginOrgId,String loginUserId,List<String> menuIdList){
+    private void checkSelectMenuIds(String loginOrgId, String loginUserId,
+            List<String> menuIdList) {
         List<MenuEntity> permissionMenus = menuService
                 .getPermissionMenus(loginOrgId, loginUserId);
-        if(CollectionUtils.isEmpty(permissionMenus)){
+        if (CollectionUtils.isEmpty(permissionMenus)) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
         List<String> menuIds = new ArrayList<>();
@@ -305,10 +313,11 @@ public class RoleServiceImpl implements RoleService {
         /**
          * 权限授权检测
          */
-        if(CollectionUtils.isEmpty(roleBo.getMenuIds())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"请配置角色权限");
+        if (CollectionUtils.isEmpty(roleBo.getMenuIds())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "请配置角色权限");
         }
-        checkSelectMenuIds(roleBo.getSessionOrgId(),roleBo.getSessionUserId(),roleBo.getMenuIds());
+        checkSelectMenuIds(roleBo.getSessionOrgId(), roleBo.getSessionUserId(),
+                roleBo.getMenuIds());
 
         // 修改者类型
         roleBo.setUpdatedByType(UserSourceTypeEnum.PORTAL.getCode());
@@ -351,5 +360,18 @@ public class RoleServiceImpl implements RoleService {
         return Long.valueOf(oldRoleDTO.getId());
     }
 
+    /**
+     * 查询角色
+     */
+    @Override
+    public List<BaseRoleDto> lookUpRoleList(BaseRoleReqDto query) {
+        List<RoleEntity> roleEntities = roleDao
+                .lookUpRoleList(query.getOrgId(), query.getRoleIdList());
+        List<BaseRoleDto> dtoList = Optional.ofNullable(roleEntities).orElse(Lists.newArrayList())
+                .stream().map(item -> {
+                    return roleConverter.entityToBaseRoleDto(item);
+                }).collect(Collectors.toList());
+        return dtoList;
+    }
 }
 

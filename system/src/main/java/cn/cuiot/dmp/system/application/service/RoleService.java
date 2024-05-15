@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CreateRoleDto;
@@ -79,4 +81,8 @@ public interface RoleService {
     Long updateRole(RoleBo roleBo);
 
 
+    /**
+     * 查询角色
+     */
+    List<BaseRoleDto> lookUpRoleList(BaseRoleReqDto query);
 }

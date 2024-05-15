@@ -217,4 +217,10 @@ public interface RoleDao {
      */
     RoleDTO selectRoleByName(@Param("roleName") String roleName,@Param("orgId") Long orgId);
 
+
+    /**
+     * 查询角色
+     */
+    List<RoleEntity> lookUpRoleList(@Param("orgId") Long orgId,@Param("idList") List<Long> idList);
+
 }
