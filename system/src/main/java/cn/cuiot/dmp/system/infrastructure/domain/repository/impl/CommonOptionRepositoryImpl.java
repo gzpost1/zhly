@@ -11,7 +11,6 @@ import cn.cuiot.dmp.system.domain.aggregate.CommonOptionSetting;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionRepository;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionSettingRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.CommonOptionEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.CommonOptionDetailEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CommonOptionDetailQueryDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CommonOptionMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -210,23 +209,6 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
         commonOptionPageResult.setPageSize((int) commonOptionEntityPage.getSize());
         commonOptionPageResult.setTotal(commonOptionEntityPage.getTotal());
         return commonOptionPageResult;
-    }
-
-    private List<CommonOption> commonOptionEntity2CommonOption(List<CommonOptionEntity> commonOptionEntityList,
-                                                               List<CommonOptionDetailEntity> commonOptionDetailEntityList) {
-        List<CommonOption> commonOptionList = new ArrayList<>();
-        for (CommonOptionEntity commonOptionEntity : commonOptionEntityList) {
-            CommonOption commonOption = new CommonOption();
-            BeanUtils.copyProperties(commonOptionEntity, commonOption);
-            for (CommonOptionDetailEntity commonOptionDetailEntity : commonOptionDetailEntityList) {
-                if (commonOptionDetailEntity.getId().equals(commonOptionEntity.getId())) {
-                    commonOption.setCommonOptionDetail(commonOptionDetailEntity.getCommonOptionDetail());
-                    break;
-                }
-            }
-            commonOptionList.add(commonOption);
-        }
-        return commonOptionList;
     }
 
     private void checkDelete(Long id) {

@@ -38,9 +38,4 @@ public class CommonOptionRspDTO implements Serializable {
      */
     private Byte status;
 
-    /**
-     * 常用选项详情
-     */
-    private String commonOptionDetail;
-
 }

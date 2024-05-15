@@ -12,6 +12,7 @@ import cn.cuiot.dmp.system.application.service.CommonOptionService;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOption;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class CommonOptionServiceImpl implements CommonOptionService {
         CommonOption commonOption = commonOptionRepository.queryForDetail(id);
         CommonOptionVO commonOptionVO = new CommonOptionVO();
         BeanUtils.copyProperties(commonOption, commonOptionVO);
+        commonOptionVO.setCommonOptionSettings(commonOption.getCommonOptionSettings());
         return commonOptionVO;
     }
 
@@ -43,6 +45,9 @@ public class CommonOptionServiceImpl implements CommonOptionService {
     public int saveCommonOption(CommonOptionCreateDTO createDTO) {
         CommonOption commonOption = new CommonOption();
         BeanUtils.copyProperties(createDTO, commonOption);
+        if (CollectionUtils.isNotEmpty(createDTO.getCommonOptionSettings())) {
+            commonOption.setCommonOptionSettings(createDTO.getCommonOptionSettings());
+        }
         return commonOptionRepository.saveCommonOption(commonOption);
     }
 
@@ -50,6 +55,9 @@ public class CommonOptionServiceImpl implements CommonOptionService {
     public int updateCommonOption(CommonOptionUpdateDTO updateDTO) {
         CommonOption commonOption = new CommonOption();
         BeanUtils.copyProperties(updateDTO, commonOption);
+        if (CollectionUtils.isNotEmpty(updateDTO.getCommonOptionSettings())) {
+            commonOption.setCommonOptionSettings(updateDTO.getCommonOptionSettings());
+        }
         return commonOptionRepository.updateCommonOption(commonOption);
     }
 

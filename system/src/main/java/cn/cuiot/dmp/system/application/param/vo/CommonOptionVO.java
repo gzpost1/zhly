@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.system.application.param.vo;
 
+import cn.cuiot.dmp.system.domain.aggregate.CommonOptionSetting;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author caorui
@@ -44,8 +46,8 @@ public class CommonOptionVO implements Serializable {
     private Byte status;
 
     /**
-     * 常用选项详情
+     * 常用选项设置
      */
-    private String commonOptionDetail;
+    private List<CommonOptionSetting> commonOptionSettings;
 
 }
