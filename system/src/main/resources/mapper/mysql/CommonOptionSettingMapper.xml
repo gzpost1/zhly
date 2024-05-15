@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.CommonOptionSettingMapper">
+
+    <insert id="batchSaveCommonOptionSettings" parameterType="java.util.List">
+        INSERT INTO common_option_setting
+        (
+        id,
+        `name`,
+        common_option_id,
+        deleted_flag
+        )
+        values
+        <foreach collection="list" separator="," item="item">
+            (
+            #{item.id},
+            #{item.name},
+            #{item.commonOptionId},
+            0
+            )
+        </foreach>
+    </insert>
+
+    <update id="batchUpdateCommonOptionById" parameterType="java.util.List">
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            update common_option_setting
+            <trim prefix="SET" suffixOverrides=",">
+                <if test="item.name != null and item.name != '' ">
+                    `name` = #{item.name},
+                </if>
+                <if test="item.deletedFlag != null">
+                    deleted_flag = #{item.deletedFlag}
+                </if>
+            </trim>
+            where id = #{item.id}
+        </foreach>
+    </update>
+
+</mapper>

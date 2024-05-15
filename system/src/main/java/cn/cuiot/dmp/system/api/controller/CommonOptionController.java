@@ -66,6 +66,15 @@ public class CommonOptionController {
     }
 
     /**
+     * 删除预校验
+     */
+    @RequiresPermissions
+    @PostMapping("/checkBeforeDelete")
+    public void checkBeforeDelete(@RequestBody @Valid IdParam idParam) {
+        commonOptionService.checkDeleteStatus(idParam.getId());
+    }
+
+    /**
      * 删除
      */
     @RequiresPermissions

@@ -61,6 +61,11 @@ public class CommonOptionServiceImpl implements CommonOptionService {
     }
 
     @Override
+    public void checkDeleteStatus(Long id) {
+        commonOptionRepository.checkDeleteStatus(id);
+    }
+
+    @Override
     public int deleteCommonOption(Long id) {
         return commonOptionRepository.deleteCommonOption(id);
     }
