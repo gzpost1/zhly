@@ -33,6 +33,11 @@ public interface CommonOptionRepository {
     int updateCommonOptionStatus(CommonOption commonOption);
 
     /**
+     * 删除预校验
+     */
+    void checkDeleteStatus(Long id);
+
+    /**
      * 删除
      */
     int deleteCommonOption(Long id);

@@ -7,7 +7,9 @@ import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.application.constant.CommonOptionConstant;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOption;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOptionPageQuery;
+import cn.cuiot.dmp.system.domain.aggregate.CommonOptionSetting;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionRepository;
+import cn.cuiot.dmp.system.domain.repository.CommonOptionSettingRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.CommonOptionEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.CommonOptionDetailEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CommonOptionDetailQueryDTO;
@@ -21,7 +23,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
@@ -45,7 +46,7 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     private CommonOptionMapper commonOptionMapper;
 
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private CommonOptionSettingRepository commonOptionSettingRepository;
 
     @Override
     public CommonOption queryForDetail(Long id) {
@@ -54,11 +55,8 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
         CommonOption commonOption = new CommonOption();
         BeanUtils.copyProperties(commonOptionEntity, commonOption);
         // 查询常用选项详情
-        CommonOptionDetailEntity commonOptionDetailEntity = mongoTemplate.findById(commonOption.getId(),
-                CommonOptionDetailEntity.class, CommonOptionConstant.COMMON_OPTION_COLLECTION);
-        if (Objects.nonNull(commonOptionDetailEntity)) {
-            commonOption.setCommonOptionDetail(commonOptionDetailEntity.getCommonOptionDetail());
-        }
+        List<CommonOptionSetting> commonOptionSettings = commonOptionSettingRepository.batchQueryCommonOptionSettings(id);
+        commonOption.setCommonOptionSettings(commonOptionSettings);
         return commonOption;
     }
 
@@ -69,9 +67,10 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
         CommonOptionEntity commonOptionEntity = new CommonOptionEntity();
         BeanUtils.copyProperties(commonOption, commonOptionEntity);
         // 保存常用选项内容
-        CommonOptionDetailEntity commonOptionDetailEntity = new CommonOptionDetailEntity();
-        BeanUtils.copyProperties(commonOption, commonOptionDetailEntity);
-        mongoTemplate.save(commonOptionDetailEntity, CommonOptionConstant.COMMON_OPTION_COLLECTION);
+        if (CollectionUtils.isNotEmpty(commonOption.getCommonOptionSettings())) {
+            commonOptionSettingRepository.batchSaveOrUpdateCommonOptionSettings(commonOption.getId(),
+                    commonOption.getCommonOptionSettings());
+        }
         return commonOptionMapper.insert(commonOptionEntity);
     }
 
@@ -81,14 +80,16 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
         CommonOptionEntity commonOptionEntity = Optional.ofNullable(commonOptionMapper.selectById(commonOption.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(commonOption, commonOptionEntity);
-        // 先删除后保存常用选项内容
-        CommonOptionDetailQueryDTO commonOptionDetailQueryDTO = new CommonOptionDetailQueryDTO();
-        commonOptionDetailQueryDTO.setId(commonOption.getId());
-        Query query = getQuery(commonOptionDetailQueryDTO);
-        mongoTemplate.remove(query, CommonOptionConstant.COMMON_OPTION_COLLECTION);
-        CommonOptionDetailEntity commonOptionDetailEntity = new CommonOptionDetailEntity();
-        BeanUtils.copyProperties(commonOption, commonOptionDetailEntity);
-        mongoTemplate.save(commonOptionDetailEntity, CommonOptionConstant.COMMON_OPTION_COLLECTION);
+        // 如果传入的常用选项设置不为空，则执行保存更新操作
+        if (CollectionUtils.isNotEmpty(commonOption.getCommonOptionSettings())) {
+            commonOptionSettingRepository.batchSaveOrUpdateCommonOptionSettings(commonOption.getId(),
+                    commonOption.getCommonOptionSettings());
+        } else {
+            // 如果为空，则删除原有数据
+            List<Long> commonOptionIdList = new ArrayList<>();
+            commonOptionIdList.add(commonOption.getId());
+            commonOptionSettingRepository.batchDeleteCommonOptionSettings(commonOptionIdList);
+        }
         return commonOptionMapper.updateById(commonOptionEntity);
     }
 
@@ -102,25 +103,23 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     }
 
     @Override
+    public void checkDeleteStatus(Long id) {
+        checkDelete(id);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public int deleteCommonOption(Long id) {
         // 先删除常用选项详情，后删除常用选项
-        CommonOptionDetailQueryDTO commonOptionDetailQueryDTO = new CommonOptionDetailQueryDTO();
-        commonOptionDetailQueryDTO.setId(id);
-        Query query = getQuery(commonOptionDetailQueryDTO);
-        mongoTemplate.remove(query, CommonOptionConstant.COMMON_OPTION_COLLECTION);
+        List<Long> commonOptionIdList = new ArrayList<>();
+        commonOptionIdList.add(id);
+        commonOptionSettingRepository.batchDeleteCommonOptionSettings(commonOptionIdList);
         return commonOptionMapper.deleteById(id);
     }
 
     @Override
     public List<CommonOption> batchQueryCommonOption(Byte status, List<Long> idList) {
         AssertUtil.notEmpty(idList, "常用选项ID列表不能为空");
-        // 获取常用选项详情列表
-        CommonOptionDetailQueryDTO commonOptionDetailQueryDTO = new CommonOptionDetailQueryDTO();
-        commonOptionDetailQueryDTO.setIdList(idList);
-        Query query = getQuery(commonOptionDetailQueryDTO);
-        List<CommonOptionDetailEntity> commonOptionDetailEntityList = mongoTemplate.find(query,
-                CommonOptionDetailEntity.class, CommonOptionConstant.COMMON_OPTION_COLLECTION);
         // 获取常用选项
         LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
                 .in(CommonOptionEntity::getId, idList)
@@ -129,7 +128,16 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
         if (CollectionUtils.isEmpty(commonOptionEntityList)) {
             return new ArrayList<>();
         }
-        return commonOptionEntity2CommonOption(commonOptionEntityList, commonOptionDetailEntityList);
+        return commonOptionEntityList.stream()
+                .map(o -> {
+                    CommonOption commonOption = new CommonOption();
+                    BeanUtils.copyProperties(o, commonOption);
+                    List<CommonOptionSetting> commonOptionSettings = commonOptionSettingRepository
+                            .batchQueryCommonOptionSettings(o.getId());
+                    commonOption.setCommonOptionSettings(commonOptionSettings);
+                    return commonOption;
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -154,10 +162,7 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     @Transactional(rollbackFor = Exception.class)
     public int batchDeleteCommonOption(List<Long> idList) {
         // 先删除常用选项详情，后删除常用选项
-        CommonOptionDetailQueryDTO commonOptionDetailQueryDTO = new CommonOptionDetailQueryDTO();
-        commonOptionDetailQueryDTO.setIdList(idList);
-        Query query = getQuery(commonOptionDetailQueryDTO);
-        mongoTemplate.remove(query, CommonOptionConstant.COMMON_OPTION_COLLECTION);
+        commonOptionSettingRepository.batchDeleteCommonOptionSettings(idList);
         return commonOptionMapper.deleteBatchIds(idList);
     }
 
@@ -194,6 +199,9 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
                 .map(o -> {
                     CommonOption commonOption = new CommonOption();
                     BeanUtils.copyProperties(o, commonOption);
+                    List<CommonOptionSetting> commonOptionSettings = commonOptionSettingRepository
+                            .batchQueryCommonOptionSettings(o.getId());
+                    commonOption.setCommonOptionSettings(commonOptionSettings);
                     return commonOption;
                 })
                 .collect(Collectors.toList());
@@ -205,7 +213,7 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     }
 
     private List<CommonOption> commonOptionEntity2CommonOption(List<CommonOptionEntity> commonOptionEntityList,
-                                                         List<CommonOptionDetailEntity> commonOptionDetailEntityList) {
+                                                               List<CommonOptionDetailEntity> commonOptionDetailEntityList) {
         List<CommonOption> commonOptionList = new ArrayList<>();
         for (CommonOptionEntity commonOptionEntity : commonOptionEntityList) {
             CommonOption commonOption = new CommonOption();
@@ -220,5 +228,10 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
         }
         return commonOptionList;
     }
-    
+
+    private void checkDelete(Long id) {
+        // 该类型已被表单引用，不可删除
+        return;
+    }
+
 }

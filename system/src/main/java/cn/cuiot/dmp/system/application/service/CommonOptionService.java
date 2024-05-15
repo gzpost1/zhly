@@ -37,6 +37,11 @@ public interface CommonOptionService {
     int updateCommonOptionStatus(UpdateStatusParam updateStatusParam);
 
     /**
+     * 删除预校验
+     */
+    void checkDeleteStatus(Long id);
+
+    /**
      * 删除
      */
     int deleteCommonOption(Long id);
