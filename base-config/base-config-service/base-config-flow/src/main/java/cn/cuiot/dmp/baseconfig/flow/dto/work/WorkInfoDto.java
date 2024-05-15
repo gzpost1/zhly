@@ -68,6 +68,11 @@ public class WorkInfoDto extends PageQuery {
     private Date createTime;
 
     /**
+     * 操作时间
+     */
+    private Date businessTime;
+
+    /**
      * 创建的用户id
      */
     private Long createUser;

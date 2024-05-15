@@ -86,10 +86,16 @@ public interface WorkFlowConstants {
      */
     Byte BUSINESS_TYPE_REFUSR =7;
 
+
+    /**
+     * 发起
+     */
+    Byte BUSINESS_TYPE_OPEN =7;
+
     /**
      * 超时
      */
-    Byte BUSINESS_TYPE_TIME_OUT = 1;
+    Byte BUSINESS_TYPE_APPROVED = 1;
 
     /**
      * 挂起

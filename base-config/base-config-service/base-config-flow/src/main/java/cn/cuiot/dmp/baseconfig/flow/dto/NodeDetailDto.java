@@ -3,6 +3,7 @@ package cn.cuiot.dmp.baseconfig.flow.dto;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkBusinessTypeInfoEntity;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,4 +26,13 @@ public class NodeDetailDto {
      * 节点信息
      */
     private List<WorkBusinessTypeInfoEntity> nodeInfos;
+
+    /**
+     * 节点处理人员
+     */
+    private String businessName;
+    /**
+     * 创建时间
+     */
+    private Date createDate;
 }
