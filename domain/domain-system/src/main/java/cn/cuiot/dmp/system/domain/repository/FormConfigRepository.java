@@ -67,4 +67,9 @@ public interface FormConfigRepository {
      */
     PageResult<FormConfig> queryFormConfigByType(FormConfigPageQuery pageQuery);
 
+    /**
+     * 根据表单配置检查常用选项是否引用，true为引用，false为未引用
+     */
+    boolean useCommonOptionByFormConfig(Long commonOptionId);
+
 }

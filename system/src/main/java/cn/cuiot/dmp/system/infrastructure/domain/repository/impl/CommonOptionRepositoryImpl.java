@@ -10,6 +10,7 @@ import cn.cuiot.dmp.system.domain.aggregate.CommonOptionPageQuery;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOptionSetting;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionRepository;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionSettingRepository;
+import cn.cuiot.dmp.system.domain.repository.FormConfigRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.CommonOptionEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CommonOptionDetailQueryDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CommonOptionMapper;
@@ -46,6 +47,9 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
 
     @Autowired
     private CommonOptionSettingRepository commonOptionSettingRepository;
+
+    @Autowired
+    private FormConfigRepository formConfigRepository;
 
     @Override
     public CommonOption queryForDetail(Long id) {
@@ -232,8 +236,8 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     }
 
     private void checkDelete(Long id) {
-        // 该类型已被表单引用，不可删除
-        return;
+        // 该选项已被表单引用，不可删除
+        AssertUtil.isFalse(formConfigRepository.useCommonOptionByFormConfig(id), "该选项已被表单引用，不可删除");
     }
 
 }

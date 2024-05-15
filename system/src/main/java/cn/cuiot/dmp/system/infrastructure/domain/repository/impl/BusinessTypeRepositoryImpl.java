@@ -178,6 +178,12 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
                 .eq(BusinessTypeEntity::getParentId, id);
         List<BusinessTypeEntity> businessTypeEntityList = businessTypeMapper.selectList(queryWrapper);
         AssertUtil.isTrue(CollectionUtils.isEmpty(businessTypeEntityList), "该类型存在下级类型，不可删除");
+        // 该类型已关联流程，不可删除
+        AssertUtil.isTrue(businessTypeMapper.countFlowConfigByBusinessType(id) == 0,
+                "该类型已关联流程，不可删除");
+        // 该类型已关联任务，不可删除
+        AssertUtil.isTrue(businessTypeMapper.countFlowTaskConfigByBusinessType(id) == 0,
+                "该类型已关联任务，不可删除");
     }
 
 }

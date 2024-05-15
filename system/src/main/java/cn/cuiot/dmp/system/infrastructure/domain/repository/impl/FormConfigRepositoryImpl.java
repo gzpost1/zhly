@@ -4,12 +4,14 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.system.application.constant.FormConfigConstant;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 import cn.cuiot.dmp.system.domain.repository.FormConfigRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigDetailEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigEntity;
+import cn.cuiot.dmp.system.infrastructure.entity.bo.FormConfigDetailBO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.FormConfigDetailQueryDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.FormConfigMapper;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity;
@@ -18,6 +20,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -178,6 +182,49 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
             return new PageResult<>();
         }
         return formConfigEntity2FormConfig(formConfigEntityPage);
+    }
+
+    @Override
+    public boolean useCommonOptionByFormConfig(Long commonOptionId) {
+        LambdaQueryWrapper<FormConfigEntity> queryWrapper = new LambdaQueryWrapper<>();
+        List<FormConfigEntity> formConfigEntityList = formConfigMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(formConfigEntityList)) {
+            return false;
+        }
+        List<Long> formConfigIdList = formConfigEntityList.stream()
+                .map(FormConfigEntity::getId)
+                .collect(Collectors.toList());
+        // 获取表单配置详情列表
+        FormConfigDetailQueryDTO formConfigDetailQueryDTO = new FormConfigDetailQueryDTO();
+        formConfigDetailQueryDTO.setIdList(formConfigIdList);
+        Query query = getQuery(formConfigDetailQueryDTO);
+        List<FormConfigDetailEntity> formConfigDetailEntityList = mongoTemplate.find(query,
+                FormConfigDetailEntity.class, FormConfigConstant.FORM_CONFIG_COLLECTION);
+        if (CollectionUtils.isEmpty(formConfigDetailEntityList)) {
+            return false;
+        }
+        List<FormConfigDetailBO> formConfigDetailBOList = new ArrayList<>();
+        formConfigDetailEntityList.forEach(o -> {
+                    List<FormConfigDetailBO> formConfigDetailBOs = JsonUtil.readValue(o.getFormConfigDetail(),
+                            new TypeReference<List<FormConfigDetailBO>>() {
+                            });
+                    if (CollectionUtils.isNotEmpty(formConfigDetailBOs)) {
+                        formConfigDetailBOList.addAll(formConfigDetailBOs);
+                    }
+                }
+        );
+        if (CollectionUtils.isEmpty(formConfigDetailBOList)) {
+            return false;
+        }
+        for (FormConfigDetailBO formConfigDetailBO : formConfigDetailBOList) {
+            if (Objects.isNull(formConfigDetailBO.getProps())) {
+                continue;
+            }
+            if (commonOptionId.toString().equals(formConfigDetailBO.getProps().getTypeId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Query getQuery(FormConfigDetailQueryDTO formConfigDetailQueryDTO) {
