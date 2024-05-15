@@ -12,4 +12,11 @@
     <artifactId>base-config-flow</artifactId>
 
     <description>任务中心</description>
+    <dependencies>
+        <dependency>
+            <groupId>cn.cuiot.dmp</groupId>
+            <artifactId>base-config-custommenu</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

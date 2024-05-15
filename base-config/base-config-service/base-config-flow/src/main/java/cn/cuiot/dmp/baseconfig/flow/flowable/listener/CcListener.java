@@ -51,11 +51,11 @@ public class CcListener implements JavaDelegate {
         if (Objects.nonNull(ccInfo)) {
             List<Long> ccUserIds = new ArrayList<>();
             if (Objects.equals(ccInfo.getType(), FlowCCEnums.PERSON.getCode())) {
-                ccUserIds = ccInfo.getCcIds();
+                ccUserIds = ccInfo.getCcIds().stream().map(e -> Long.parseLong(e)).collect(Collectors.toList());
             } else if (Objects.equals(ccInfo.getType(), FlowCCEnums.ROLE.getCode())) {
-                ccUserIds = systemToFlowService.getUserIdByRole(ccInfo.getCcIds());
+                ccUserIds = systemToFlowService.getUserIdByRole(ccInfo.getCcIds().stream().map(e -> Long.parseLong(e)).collect(Collectors.toList()));
             } else if (Objects.equals(ccInfo.getType(), FlowCCEnums.DEPARTMENT.getCode())) {
-                ccUserIds = systemToFlowService.getUserIdByDept(ccInfo.getCcIds());
+                ccUserIds = systemToFlowService.getUserIdByDept(ccInfo.getCcIds().stream().map(e -> Long.parseLong(e)).collect(Collectors.toList()));
             }
 
             if (CollectionUtils.isNotEmpty(ccUserIds)) {

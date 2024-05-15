@@ -5,6 +5,9 @@ import cn.cuiot.dmp.base.infrastructure.dto.BatcheOperation;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
+import cn.cuiot.dmp.baseconfig.custommenu.dto.FormObjectOperates;
+import cn.cuiot.dmp.baseconfig.custommenu.service.TbFlowTaskConfigService;
+import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskConfigVo;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
@@ -54,6 +57,8 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
     private TbFlowConfigOrgService flowConfigOrgService;
     @Autowired
     private SystemToFlowService systemToFlowService;
+    @Autowired
+    private TbFlowTaskConfigService flowTaskConfigService;
 
     /**
      * 分页查询
@@ -159,21 +164,26 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
     }
 
     public void processChildNode(ChildNode childNode) {
-        if (Objects.nonNull(childNode.getProps()) && CollectionUtils.isNotEmpty(childNode.getProps().getFormIds())) {
-            List<Long> formIds = childNode.getProps().getFormIds();
+        //处理任务表单
+        if (Objects.nonNull(childNode.getProps()) && Objects.nonNull(childNode.getProps().getFormTaskId())) {
+            FlowTaskConfigVo flowTaskConfigVo = flowTaskConfigService.queryForDetail(childNode.getProps().getFormTaskId());
+            AssertUtil.notNull(flowTaskConfigVo,"表单任务为空");
 
-            FormConfigReqDTO formConfigReqDTO = new FormConfigReqDTO();
-            formConfigReqDTO.setIdList(formIds);
-            List<FormConfigRspDTO> formConfigRspDTOS = systemToFlowService.batchQueryFormConfig(formConfigReqDTO);
-            AssertUtil.notEmpty(formConfigRspDTOS, "表单配置信息为空");
+            List<Long> formIds = flowTaskConfigVo.getTaskMenuIds();
+            if(CollectionUtils.isNotEmpty(formIds)){
+                FormConfigReqDTO formConfigReqDTO = new FormConfigReqDTO();
+                formConfigReqDTO.setIdList(formIds);
+                List<FormConfigRspDTO> formConfigRspDTOS = systemToFlowService.batchQueryFormConfig(formConfigReqDTO);
+                AssertUtil.isTrue(CollectionUtils.isNotEmpty(formConfigRspDTOS) && formConfigRspDTOS.size() == formIds.size(),"表单配置为空");
 
-            List<FormOperates> formItems = formConfigRspDTOS.stream().map(e -> {
-                FormOperates formOperates = new FormOperates();
-                BeanUtils.copyProperties(e, formOperates);
-                return formOperates;
-            }).collect(Collectors.toList());
-
-            childNode.getProps().setFormPerms(formItems);
+                //填充任务中的每个对象的表单信息
+                flowTaskConfigVo.getTaskInfoList().stream().forEach(e -> {
+                    FormConfigRspDTO formConfigRspDTO = formConfigRspDTOS.stream().filter(f -> Objects.equals(f.getId(), e.getFormId())).findFirst().orElseThrow(
+                            () -> new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,e.getName()+"对象的表单配置为空"));
+                    FormObjectOperates formObjectOperates = new FormObjectOperates();
+                    BeanUtils.copyProperties(formConfigRspDTO,formObjectOperates);
+                });
+            }
 
             if (Objects.nonNull(childNode.getChildren())) {
                 processChildNode(childNode.getChildren());

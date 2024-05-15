@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.custommenu.vo;
 
+import cn.cuiot.dmp.baseconfig.custommenu.dto.FormObjectOperates;
 import lombok.Data;
 
 /**
@@ -39,4 +40,9 @@ public class FlowTaskInfoVo {
      * 序号
      */
     private Integer sort;
+
+    /**
+     * 对象表单
+     */
+    private FormObjectOperates formOperates;
 }

@@ -18,5 +18,5 @@ public class CCInfo {
     /**
      * 抄送部门id/人员id/角色id
      */
-    private List<Long> ccIds;
+    private List<String> ccIds;
 }

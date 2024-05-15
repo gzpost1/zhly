@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.flowjson;
 
+import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskConfigVo;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
@@ -74,6 +75,11 @@ public class Properties {
    * 表单内容
    */
   private List<FormOperates> formPerms;
+
+  /**
+   * 任务配置，包含表单信息
+   */
+  private FlowTaskConfigVo taskConfig;
 
   /**
    * 表单需要处理的任务
