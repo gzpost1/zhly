@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.base.infrastructure.feign;
 
 import cn.cuiot.dmp.base.infrastructure.dto.*;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
@@ -29,6 +30,12 @@ import java.util.List;
 @Component
 @FeignClient(value = "community-system")
 public interface SystemApiFeignService {
+
+    /**
+     * 查询角色
+     */
+    @PostMapping(value = "/api/lookUpRoleList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<BaseRoleDto>> lookUpRoleList(@RequestBody BaseRoleReqDto query);
 
     /**
      * 查询部门

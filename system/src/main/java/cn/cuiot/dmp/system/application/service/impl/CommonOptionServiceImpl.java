@@ -12,6 +12,7 @@ import cn.cuiot.dmp.system.application.service.CommonOptionService;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOption;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,6 +59,11 @@ public class CommonOptionServiceImpl implements CommonOptionService {
         CommonOption commonOption = new CommonOption();
         BeanUtils.copyProperties(updateStatusParam, commonOption);
         return commonOptionRepository.updateCommonOptionStatus(commonOption);
+    }
+
+    @Override
+    public void checkDeleteStatus(Long id) {
+        commonOptionRepository.checkDeleteStatus(id);
     }
 
     @Override

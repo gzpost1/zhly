@@ -14,7 +14,7 @@ public interface WorkFlowConstants {
     String DEFAULT_NULL_ASSIGNEE="100000000000";
     String DEFAULT_ADMIN_ASSIGNEE="381496";
     String AUTO_REFUSE_STR="autoRefuse";
-    String FLOWABLE_NAME_SPACE_NAME="DingDing";
+    String FLOWABLE_NAME_SPACE_NAME="yunjintech";
     String FLOWABLE_NAME_SPACE="http://flowable.org/bpmn";
     String VIEW_PROCESS_JSON_NAME="processJson";
     String VIEW_ASSIGNEE_USER_NAME="assignedUser";
@@ -86,10 +86,16 @@ public interface WorkFlowConstants {
      */
     Byte BUSINESS_TYPE_REFUSR =7;
 
+
+    /**
+     * 发起
+     */
+    Byte BUSINESS_TYPE_OPEN =7;
+
     /**
      * 超时
      */
-    Byte BUSINESS_TYPE_TIME_OUT = 1;
+    Byte BUSINESS_TYPE_APPROVED = 1;
 
     /**
      * 挂起

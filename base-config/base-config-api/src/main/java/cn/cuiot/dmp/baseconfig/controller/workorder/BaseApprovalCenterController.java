@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.QueryApprovalInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.BatchBusinessDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDTO;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
@@ -52,7 +53,19 @@ public class BaseApprovalCenterController extends BaseController {
      */
     public IdmResDTO<IPage<WorkInfoEntity>> processList(@RequestBody QueryApprovalInfoDto dto){
 
-        return workInfoService.processList(dto);
+        return workInfoService. processList(dto);
+    }
+
+
+    /**
+     * 审批同意
+     * @param handleDataDTO
+     * @return
+     */
+    @PostMapping("complete")
+    @LogRecord(operationCode = "complete", operationName = "完成任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
+    public IdmResDTO complete(@RequestBody HandleDataDTO handleDataDTO){
+        return workInfoService.complete(handleDataDTO);
     }
 
 
@@ -66,7 +79,6 @@ public class BaseApprovalCenterController extends BaseController {
     public IdmResDTO agree(@RequestBody HandleDataDTO handleDataDTO){
         return workInfoService.agree(handleDataDTO);
     }
-
     /**
      * 转办
      * @param handleDataDTO
@@ -94,7 +106,7 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("closeFlow")
-    public IdmResDTO closeFlow(@RequestBody List<HandleDataDTO> handleDataDTO){
+    public IdmResDTO closeFlow(@RequestBody BatchBusinessDto handleDataDTO){
         return workInfoService.closeFlow(handleDataDTO);
     }
 
@@ -104,7 +116,7 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("commentAndSuper")
-    public IdmResDTO commentAndSuper(@RequestBody List<HandleDataDTO> handleDataDTO){
+    public IdmResDTO commentAndSuper(@RequestBody BatchBusinessDto handleDataDTO){
         return workInfoService.commentAndSuper(handleDataDTO);
     }
 
@@ -124,7 +136,7 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("businessPending")
-    public IdmResDTO businessPending(@RequestBody List<HandleDataDTO> handleDataDTO){
+    public IdmResDTO businessPending(@RequestBody BatchBusinessDto handleDataDTO){
         return workInfoService.businessPending(handleDataDTO);
     }
 

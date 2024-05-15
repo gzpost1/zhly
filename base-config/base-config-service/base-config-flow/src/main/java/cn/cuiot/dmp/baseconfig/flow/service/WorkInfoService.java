@@ -23,24 +23,24 @@ import cn.cuiot.dmp.baseconfig.flow.dto.vo.AttachmentVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.CommentVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.TaskDetailVO;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.BusinessTypeInfoDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.FirstFormDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDTO;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkProcInstDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
 import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
 import cn.cuiot.dmp.baseconfig.flow.entity.UserEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkBusinessTypeInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.enums.AssigneeTypeEnums;
+import cn.cuiot.dmp.baseconfig.flow.enums.BusinessInfoEnums;
+import cn.cuiot.dmp.baseconfig.flow.enums.WorkInfoEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkOrderStatusEnums;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkInfoMapper;
+import cn.cuiot.dmp.baseconfig.flow.utils.JsonUtil;
 import cn.cuiot.dmp.baseconfig.flow.vo.HistoryProcessInstanceVO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -56,10 +56,7 @@ import org.apache.poi.hssf.record.DVALRecord;
 import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.Process;
 import org.flowable.common.engine.impl.identity.Authentication;
-import org.flowable.engine.HistoryService;
-import org.flowable.engine.RepositoryService;
-import org.flowable.engine.RuntimeService;
-import org.flowable.engine.TaskService;
+import org.flowable.engine.*;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -71,6 +68,7 @@ import org.flowable.engine.task.Comment;
 import org.flowable.task.api.DelegationState;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
+import org.flowable.variable.api.history.HistoricVariableInstanceQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -110,8 +108,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     private WorkBusinessTypeInfoService workBusinessTypeInfoService;
     @Autowired
     private SystemApiFeignService systemApiFeignService;
-
-
+    @Autowired
+    private ProcessEngine processEngine;
     public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO) {
         JSONObject formData = startProcessInstanceDTO.getFormData();
         UserInfo startUserInfo = startProcessInstanceDTO.getStartUserInfo();
@@ -177,8 +175,16 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             entity.setWorkSouce(startProcessInstanceDTO.getWorkSource());
             entity.setCreateUser(LoginInfoHolder.getCurrentUserId());
             entity.setProcInstId(task.getProcessInstanceId());
-            entity.setStatus(WorkOrderStatusEnums.completed.getStatus());
+            entity.setCompanyId(flowConfig.getCompanyId());
+            entity.setStatus(WorkOrderStatusEnums.progress.getStatus());
             this.save(entity);
+            HandleDataDTO handleDataDTO = new HandleDataDTO();
+            handleDataDTO.setTaskId(task.getId());
+
+            WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
+            workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_START.getCode());
+            workBusinessTypeInfoService.save(workBusinessTypeInfo);
+
         }
         return IdmResDTO.success(task.getProcessInstanceId());
     }
@@ -294,7 +300,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         taskService.complete(handleDataDTO.getTaskId());
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
-        businessTypeInfo.setBusinessType(RESULT_0);
+        businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_AGREE.getCode());
 
         //如果节点存在挂起数据，将挂起数据结束
         WorkBusinessTypeInfoEntity update = queryWorkBusinessById(businessTypeInfo.getNode(), businessTypeInfo.getProcInstId());
@@ -306,7 +312,25 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success();
     }
 
-
+    /**
+     * 完成任务
+     * @param handleDataDTO
+     * @return
+     */
+    public IdmResDTO complete(HandleDataDTO handleDataDTO) {
+        //审批通过
+        taskService.complete(handleDataDTO.getTaskId());
+        WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
+        businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_COMPLETED.getCode());
+        //如果节点存在挂起数据，将挂起数据结束
+        WorkBusinessTypeInfoEntity update = queryWorkBusinessById(businessTypeInfo.getNode(), businessTypeInfo.getProcInstId());
+        if(Objects.nonNull(update)){
+            update.setCloseUserId(LoginInfoHolder.getCurrentUserId());
+            update.setEndTime(new Date());
+            workBusinessTypeInfoService.updateById(update);
+        }
+        return IdmResDTO.success();
+    }
     /**
      * 转办
      * @param handleDataDTO
@@ -315,7 +339,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO assignee(HandleDataDTO handleDataDTO) {
         //记录转办信息
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
-        businessTypeInfo.setBusinessType(BUSINESS_TRANSFER);
+        businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_TRANSFER.getCode());
         workBusinessTypeInfoService.save(businessTypeInfo);
         //更新挂起时间
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
@@ -371,7 +395,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
 //        runtimeService.deleteProcessInstance(task.getProcessInstanceId(),"拒绝");
-        workBusinessTypeInfo.setBusinessType(BUSINESS_TYPE_REFUSR);
+        workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_REFUSE.getCode());
         workBusinessTypeInfoService.save(workBusinessTypeInfo);
         //更新挂起
         handleDataDTO.setNodeId(workBusinessTypeInfo.getNode());
@@ -386,20 +410,23 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param handleDataDTOs
      * @return
      */
-    public IdmResDTO commentAndSuper(List<HandleDataDTO> handleDataDTOs) {
+    public IdmResDTO commentAndSuper(BatchBusinessDto handleDataDTOs) {
         List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
-        for(HandleDataDTO handleDataDTO :handleDataDTOs ){
-
-            WorkBusinessTypeInfoEntity businessTypeInfo =getWorkBusinessTypeInfo(handleDataDTO);
+        for(String instId :handleDataDTOs.getProcessInstanceId() ){
+            HandleDataDTO dataDTO = new HandleDataDTO();
+            dataDTO.setProcessInstanceId(instId);
+            dataDTO.setComments(handleDataDTOs.getComments());
+            dataDTO.setReason(handleDataDTOs.getReason());
+            WorkBusinessTypeInfoEntity businessTypeInfo =getWorkBusinessTypeInfo(dataDTO);
             //评论
-            if(handleDataDTO.getBusinessType().intValue()==BUSINESS_TYPE_COMMENT.intValue()){
+            if(handleDataDTOs.getBusinessType().intValue()==BUSINESS_TYPE_COMMENT.intValue()){
 //            taskService.addComment(task.getId(),task.getProcessInstanceId(),COMMENTS_COMMENT,comments);
-                businessTypeInfo.setBusinessType(BUSINESS_TYPE_COMMENT);
+                businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_COMMENT.getCode());
             }
             //督办
-            if(handleDataDTO.getBusinessType().intValue()==BUSINESS_TYPE_SUPER.intValue()){
+            if(handleDataDTOs.getBusinessType().intValue()==BUSINESS_TYPE_SUPER.intValue()){
 //            taskService.addComment(task.getId(),task.getProcessInstanceId(),BUSINESS_SUPERVISION,comments);
-                businessTypeInfo.setBusinessType(BUSINESS_TYPE_SUPER);
+                businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_HANDLE.getCode());
             }
             businessTypeInfoEntities.add(businessTypeInfo);
         }
@@ -414,7 +441,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 //        Authentication.setAuthenticatedUserIddsacurrentUserInfo.getId());
         //回退留痕
         WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
-        workBusinessTypeInfo.setBusinessType(BUSINESS_BACK);
+        workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_ROLLBACK.getCode());
         workBusinessTypeInfoService.save(workBusinessTypeInfo);
 
         updateBusinessPendingDate(handleDataDTO);
@@ -440,15 +467,19 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param handleDataDTOs
      * @return
      */
-    public IdmResDTO businessPending(List<HandleDataDTO> handleDataDTOs) {
+    public IdmResDTO businessPending(BatchBusinessDto handleDataDTOs) {
 //        UserInfo currentUserInfo = handleDataDTO.getCurrentUserInfo();
 //        Authentication.setAuthenticatedUserId(currentUserInfo.getId());
 //        //挂起留痕
 //        taskService.addComment(handleDataDTO.getTaskId(),handleDataDTO.getProcessInstanceId(),BUSINESS_PENDING,handleDataDTO.getComments());
        List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
-        for(HandleDataDTO handleDataDTO : handleDataDTOs){
-           WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
-           businessTypeInfo.setBusinessType(BUSINESS_BYPE_PENDING);
+        for(String handleDataDTO : handleDataDTOs.getProcessInstanceId()){
+            HandleDataDTO dataDTO = new HandleDataDTO();
+            dataDTO.setProcessInstanceId(handleDataDTO);
+            dataDTO.setComments(handleDataDTOs.getComments());
+            dataDTO.setReason(handleDataDTOs.getReason());
+           WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dataDTO);
+           businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_PENDING.getCode());
            businessTypeInfoEntities.add(businessTypeInfo);
 
            //更新主流程状态
@@ -603,6 +634,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             throw new RuntimeException("用户信息不存在");
         }
         resultDto.setPhone(baseUserDtoIdmResDTO.getData().getPhoneNumber());
+        resultDto.setUserName(baseUserDtoIdmResDTO.getData().getName());
         //获取挂起时间
         BusinessTypeInfoDto businessTypeInfoDto = BusinessTypeInfoDto.builder().businessType(BUSINESS_BYPE_PENDING).
                 procInstId(Long.parseLong(resultDto.getProcInstId())).build();
@@ -612,12 +644,35 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 .createHistoricProcessInstanceQuery()
                 .processInstanceId(resultDto.getProcInstId())
                 .singleResult()).orElseThrow(()->new RuntimeException("未找到流程实例信息"));
-
-        Long time =historicProcessInstance.getEndTime().getTime()-historicProcessInstance.getStartTime().getTime()-pendTime;
+        Long time= null;
+        if(Objects.nonNull(historicProcessInstance.getEndTime())){
+            time =historicProcessInstance.getEndTime().getTime()-historicProcessInstance.getStartTime().getTime()-(Objects.nonNull(pendTime)?pendTime:0);
+        }else{
+            time =new Date().getTime()-historicProcessInstance.getStartTime().getTime()-(Objects.nonNull(pendTime)?pendTime:0);
+        }
         resultDto.setWorkTime(converTime(time));
+
+        queryBusinessTime(resultDto,historicProcessInstance.getEndTime());
+
         return IdmResDTO.success(resultDto);
     }
 
+    /**
+     * 获取操作时间
+     * @return
+     */
+
+    public void queryBusinessTime( WorkInfoDto resultDto,Date businessTime){
+        //完结与终止
+        if(resultDto.getStatus().equals(WorkInfoEnums.FINISH.getCode()) || resultDto.getStatus().equals(WorkInfoEnums.TERMINATED.getCode())){
+            resultDto.setBusinessTime(businessTime);
+        }
+        //挂起
+        if(resultDto.getStatus().equals(WorkInfoEnums.SUSPEND.getCode())){
+            WorkBusinessTypeInfoEntity businessTypeInfo = queryWorkBusinessById(null, Long.parseLong(resultDto.getProcInstId()));
+            resultDto.setBusinessTime(businessTypeInfo.getStartTime());
+        }
+    }
     /**
      * 转换耗时时间
      * @param time
@@ -659,16 +714,16 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
                 .includeProcessVariables().singleResult();
         String processDefinitionKey = historicProcessInstance.getProcessDefinitionKey();
-        String ex = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess().
-                getAttributeValue(ATTRIBUTE_NAME_SPACE, ATTRIBUTE_NAME);
-        HashMap hashMap = JSONObject.parseObject(ex, new TypeReference<HashMap>() {
-        });
-        String processJson = MapUtil.getStr(hashMap, "processJson");
-        String formJson = MapUtil.getStr(hashMap, "formJson");
 
         TbFlowConfig flowConfig = flowConfigService.getById(processDefinitionKey.replace(PROCESS_PREFIX, ""));
-        flowConfig.setProcess(processJson);
-        flowConfig.setFormItems(formJson);
+
+
+
+        Process mainProcess = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess();
+        Collection<FlowElement> flowElements = mainProcess.getFlowElements();
+        String instId = historicProcessInstance.getId();
+        flowConfig.setProcess(flowConfig.getProcess());
+        flowConfig.setFormItems(flowConfig.getFormItems());
         HandleDataVO handleDataVO =new HandleDataVO();
         Map<String, Object> processVariables = historicProcessInstance.getProcessVariables();
 
@@ -676,30 +731,41 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         JSONObject jsonObject = (JSONObject) processVariables.get(FORM_VAR);
         handleDataVO.setFormData(jsonObject);
 
-        List<HistoricActivityInstance> list = historyService.createHistoricActivityInstanceQuery()
-                .processInstanceId(historicProcessInstance.getId()).orderByHistoricActivityInstanceStartTime().asc().list();
-        if(CollectionUtils.isEmpty(list)){
-            return IdmResDTO.success();
-        }
+//        List<HistoricActivityInstance> list = historyService.createHistoricActivityInstanceQuery()
+//                .processInstanceId(historicProcessInstance.getId()).orderByHistoricActivityInstanceStartTime().asc().list();
+//        if(CollectionUtils.isEmpty(list)){
+//            return IdmResDTO.success();
+//        }
         Map<String,NodeDetailDto> pamaMap = new HashMap<>();
         //已经运行完成的节点
         List<String> endNodes = new ArrayList<>();
-        for (HistoricActivityInstance historicActivityInstance : list) {
-
-            if(StringUtils.equals(historicActivityInstance.getActivityType(),USER_TASK)){
+        for (FlowElement flowElement : flowElements) {
+            String nodeId = flowElement.getId();
+            if(nodeId.startsWith("node") || StringUtils.equals(WorkOrderConstants.USER_ROOT,nodeId)){
                 //没有收集
-                if(!pamaMap.containsKey(historicActivityInstance.getActivityId())){
+                if(!pamaMap.containsKey(nodeId)){
                     NodeDetailDto nodeDetailDto = new NodeDetailDto();
-                    nodeDetailDto.setNodeId(historicActivityInstance.getActivityId());
-                    nodeDetailDto.setTimeOut(checkNodeTimeOut(historicActivityInstance.getActivityId(),
-                            historicActivityInstance.getProcessInstanceId()));
-                    nodeDetailDto.setNodeInfos(queryNodeBusiness(historicActivityInstance.getActivityId(),
-                            historicActivityInstance.getProcessInstanceId()));
+
+                    nodeDetailDto.setNodeId(nodeId);
+
+                    nodeDetailDto.setTimeOut(checkNodeTimeOut(nodeId,
+                            instId));
+
+                    nodeDetailDto.setNodeInfos(queryNodeBusiness(nodeId,
+                            instId));
+
+                    nodeDetailDto.setBusinessName(getStartUserName(nodeId,
+                            instId));
+                    if(StringUtils.isEmpty(nodeDetailDto.getBusinessName())){
+                        continue;
+                    }
+                    nodeDetailDto.setCreateDate(historicProcessInstance.getStartTime());
+
                     pamaMap.put(nodeDetailDto.getNodeId(),nodeDetailDto);
                 }
             }
-            if(!endNodes.contains(historicActivityInstance.getActivityType())){
-                endNodes.add(historicActivityInstance.getActivityType());
+            if(!endNodes.contains(nodeId) && (nodeId.startsWith("node") || StringUtils.equals(WorkOrderConstants.USER_ROOT,nodeId))){
+                endNodes.add(nodeId);
             }
         }
 
@@ -717,7 +783,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public List<WorkBusinessTypeInfoEntity> queryNodeBusiness(String nodeId,String procinstId){
         LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
         lw.eq(WorkBusinessTypeInfoEntity::getNode,nodeId).eq(WorkBusinessTypeInfoEntity::getProcInstId,Long.parseLong(procinstId))
-                .eq(WorkBusinessTypeInfoEntity::getBusinessType, RESULT_1).orderByAsc(WorkBusinessTypeInfoEntity::getStartTime);
+                .orderByAsc(WorkBusinessTypeInfoEntity::getStartTime);
         List<WorkBusinessTypeInfoEntity> list = workBusinessTypeInfoService.list(lw);
         if(CollectionUtils.isEmpty(list)){
             return null;
@@ -734,6 +800,34 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             }
         });
         return list;
+    }
+
+    public String getStartUserName(String nodeId,String procinstId){
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(procinstId)
+                .includeProcessVariables().singleResult();
+
+        Map<String, Object> processVariables = historicProcessInstance.getProcessVariables();
+        String userNames =  "";
+        if(StringUtils.equals(nodeId, WorkOrderConstants.USER_ROOT)){
+            List<UserInfo> userInfos = JSONObject.parseObject(MapUtil.getStr(processVariables, nodeId), new TypeReference<List<UserInfo>>() {
+            });
+            if(CollectionUtils.isEmpty(userInfos)){
+                return "";
+            }
+            List<Long> userIds = userInfos.stream().map(UserInfo::getId).map(e->Long.parseLong(e)).collect(Collectors.toList());
+             userNames = getUserMap(userIds).values().stream().collect(Collectors.joining(","));
+        }else{
+
+            List<Long> userInfos = JSONObject.parseObject(MapUtil.getStr(processVariables, nodeId), new TypeReference<List<Long>>() {
+            });
+            if(Objects.isNull(userInfos)){
+                return "";
+            }
+
+            userNames = getUserMap(userInfos).values().stream().collect(Collectors.joining(","));
+        }
+
+        return  userNames;
     }
 
     public String getDeliverNames(String deliver){
@@ -809,18 +903,22 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param handleDataDTOs
      * @return
      */
-    public IdmResDTO closeFlow(List<HandleDataDTO> handleDataDTOs) {
+    public IdmResDTO closeFlow(BatchBusinessDto handleDataDTOs) {
         //保存操作信息
         List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
-        for(HandleDataDTO handleDataDTO:handleDataDTOs){
-            WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
-            workBusinessTypeInfo.setBusinessType(BUSINESS_BYTE_CLOSE);
+        for(String instId:handleDataDTOs.getProcessInstanceId()){
+            HandleDataDTO dataDTO = new HandleDataDTO();
+            dataDTO.setProcessInstanceId(instId);
+            dataDTO.setComments(handleDataDTOs.getComments());
+            dataDTO.setReason(handleDataDTOs.getReason());
+            WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(dataDTO);
+            workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_CLOSE.getCode());
             businessTypeInfoEntities.add(workBusinessTypeInfo);
             //终止流程
-            runtimeService.deleteProcessInstance(handleDataDTO.getProcessInstanceId(), handleDataDTO.getComments()); // 终止
+            runtimeService.deleteProcessInstance(instId, handleDataDTOs.getComments()); // 终止
             //
-            handleDataDTO.setNodeId(workBusinessTypeInfo.getNode());
-            updateBusinessPendingDate(handleDataDTO);
+            dataDTO.setNodeId(workBusinessTypeInfo.getNode());
+            updateBusinessPendingDate(dataDTO);
 
             //更新工单状态
             updateWorkInfo(WorkOrderStatusEnums.terminated.getStatus(), workBusinessTypeInfo.getProcInstId());
@@ -864,7 +962,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     public WorkBusinessTypeInfoEntity queryWorkBusinessById(String nodeId,Long procInstId){
         LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
-        lw.eq(WorkBusinessTypeInfoEntity::getNode,nodeId).eq(WorkBusinessTypeInfoEntity::getProcInstId,procInstId)
+        lw.eq(Objects.nonNull(nodeId),WorkBusinessTypeInfoEntity::getNode,nodeId).eq(WorkBusinessTypeInfoEntity::getProcInstId,procInstId)
                 .eq(WorkBusinessTypeInfoEntity::getBusinessType,RESULT_0).isNull(WorkBusinessTypeInfoEntity::getEndTime);
         List<WorkBusinessTypeInfoEntity> list = workBusinessTypeInfoService.list(lw);
         return CollectionUtils.isEmpty(list)?null:list.get(0);
@@ -889,7 +987,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public IdmResDTO<IPage<MyApprovalResultDto>> queryMyNotApproval(QueryMyApprovalDto dto) {
-
+        dto.setAssignee(String.valueOf(LoginInfoHolder.getCurrentUserId()));
         Page<MyApprovalResultDto> pages = baseMapper.queryMyNotApproval(new Page<MyApprovalResultDto>(dto.getCurrentPage()
                 ,dto.getPageSize()),dto);
 
@@ -1027,5 +1125,23 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     public List<DepartmentDto> queryDeptList(WorkInfoDto dto) {
         return getDeptIds(LoginInfoHolder.getCurrentDeptId());
+    }
+
+    public IdmResDTO queryDataForm(HandleDataDTO handleDataDTO) {
+        HistoricVariableInstanceQuery query = processEngine.getHistoryService()
+                .createHistoricVariableInstanceQuery()
+                .processInstanceId(handleDataDTO.getProcessInstanceId())
+                .variableName("formData");
+        HistoricVariableInstanceQuery formData = query.variableName("formData");
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
+                .processInstanceId(handleDataDTO.getProcessInstanceId())
+                .singleResult();
+
+        String flowableKey = processInstance.getProcessDefinitionKey().replaceAll("[a-zA-Z]", "");
+        TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
+                orElseThrow(()->new RuntimeException("流程配置为空"));
+
+
+        return IdmResDTO.success();
     }
 }

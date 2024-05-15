@@ -85,22 +85,22 @@ public class SystemUtilService {
         Map<Long, BusinessAndOrgNameDto> collect = businessAndOrgDtoList.stream().map(e -> {
             BusinessAndOrgNameDto businessAndOrgNameDto = new BusinessAndOrgNameDto();
             businessAndOrgNameDto.setDataId(e.getDataId());
-            if (CollectionUtils.isNotEmpty(businessTypeList)) {
+            if (CollectionUtils.isNotEmpty(businessTypeList) && CollectionUtils.isNotEmpty(e.getBusinessTypeIdList())) {
                 String businessName = businessTypeList.stream().filter(businessTypeRspDTO -> e.getBusinessTypeIdList().contains(businessTypeRspDTO.getBusinessTypeId()))
                         .map(BusinessTypeRspDTO::getTreeName).collect(Collectors.joining(","));
                 businessAndOrgNameDto.setBusinessTypeName(businessName);
             }
 
             //设置组织机构名称
-            if (CollectionUtils.isNotEmpty(deptNameList)) {
-                String orgName = e.getOrgIds().stream().map(orgId -> deptNameList.stream().filter(departmentDto -> departmentDto.getId().equals(orgId))
-                        .map(DepartmentDto::getName).findFirst().get()).collect(Collectors.joining(","));
+            if (CollectionUtils.isNotEmpty(deptNameList) && CollectionUtils.isNotEmpty(e.getOrgIds())) {
+                String orgName = deptNameList.stream().filter(businessTypeRspDTO -> e.getOrgIds().contains(businessTypeRspDTO.getId()))
+                        .map(DepartmentDto::getPathName).collect(Collectors.joining(","));
 
                 businessAndOrgNameDto.setOrgName(orgName);
             }
 
             //设置创建用户名称
-            if(Objects.nonNull(userNameList)){
+            if (Objects.nonNull(userNameList) && Objects.nonNull(e.getCreateUserId())) {
                 businessAndOrgNameDto.setCreateUserName(userNameList.get(e.getCreateUserId()));
             }
 

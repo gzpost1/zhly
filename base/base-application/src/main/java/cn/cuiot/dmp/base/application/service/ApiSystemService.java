@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.base.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
@@ -19,6 +21,11 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @date: 2024/4/25 15:52
  */
 public interface ApiSystemService {
+
+    /**
+     * 查询角色
+     */
+    List<BaseRoleDto> lookUpRoleList(BaseRoleReqDto query);
 
     /**
      * 查询部门

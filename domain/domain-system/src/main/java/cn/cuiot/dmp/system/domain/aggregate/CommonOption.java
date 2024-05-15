@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.domain.aggregate;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author caorui
@@ -44,8 +45,8 @@ public class CommonOption implements Serializable {
     private Byte status;
 
     /**
-     * 常用选项详情
+     * 常用选项设置
      */
-    private String commonOptionDetail;
+    private List<CommonOptionSetting> commonOptionSettings;
 
 }

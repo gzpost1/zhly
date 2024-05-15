@@ -170,6 +170,7 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
                 .map(o -> {
                     CommonOptionVO commonOptionVO = new CommonOptionVO();
                     BeanUtils.copyProperties(o, commonOptionVO);
+                    commonOptionVO.setCommonOptionSettings(o.getCommonOptionSettings());
                     return commonOptionVO;
                 }).collect(Collectors.toList());
         BeanUtils.copyProperties(commonOptionPageResult, commonOptionVOPageResult);

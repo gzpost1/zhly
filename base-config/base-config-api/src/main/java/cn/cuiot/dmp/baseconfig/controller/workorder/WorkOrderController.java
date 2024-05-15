@@ -83,4 +83,14 @@ public class WorkOrderController extends BaseController {
 
         return workInfoService.instanceInfo(HandleDataDTO);
     }
+
+    /**
+     * 获取提交的表单数据
+     * @param HandleDataDTO
+     * @return
+     */
+    @PostMapping("queryDataForm")
+    public IdmResDTO queryDataForm(@RequestBody HandleDataDTO HandleDataDTO){
+        return workInfoService.queryDataForm(HandleDataDTO);
+    }
 }

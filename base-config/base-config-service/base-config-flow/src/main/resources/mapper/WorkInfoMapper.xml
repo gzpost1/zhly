@@ -22,8 +22,8 @@
         id, business_type, org, work_name, work_souce, user_id, status
     </sql>
     <sql id="queryWorkOrderInfoSql">
-        t1.id ,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,
-              t2.business_type as timeOut
+        t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id
+
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
@@ -46,10 +46,10 @@
                 and t1.create_user =#{createUser}
             </if>
             <if test="query.workSouce !=null ">
-                and t2.business_type =#{query.workSouce}
+                and t1.work_souce =#{query.workSouce}
             </if>
-            <if test="query.timeOut !=null">
-                and t1.time_out =#{query.timeOut}
+            <if test="query.timeOut !=null and query.timeOut==1">
+                and t2.business_type =#{query.timeOut}
             </if>
             <if test="query.workName !=null">
                 and t1.work_name like concat('%',#{query.workName},'%')
@@ -70,7 +70,7 @@
     </select>
 
     <sql id="queryMyNotApprovalSql">
-        t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.create_time,t1.create_user,t1.company_id,
+        t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.create_time,t1.create_user as userId,t1.company_id,
             t2.ID_ as task_id ,t2.TASK_DEF_ID_ as procDefId
     </sql>
     <select id="queryMyNotApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">

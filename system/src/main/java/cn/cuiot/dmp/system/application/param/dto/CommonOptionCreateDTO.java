@@ -1,10 +1,12 @@
 package cn.cuiot.dmp.system.application.param.dto;
 
+import cn.cuiot.dmp.system.domain.aggregate.CommonOptionSetting;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author caorui
@@ -34,8 +36,8 @@ public class CommonOptionCreateDTO implements Serializable {
     private Long companyId;
 
     /**
-     * 常用选项详情
+     * 常用选项设置
      */
-    private String commonOptionDetail;
+    private List<CommonOptionSetting> commonOptionSettings;
 
 }
