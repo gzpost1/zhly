@@ -51,7 +51,7 @@ public class JacksonConfig {
         mapperBuilder.annotationIntrospector(new JacksonAnnotationInterceptByDate());
 
         //xss
-        mapperBuilder.deserializerByType(String.class, new XssStringJsonDeserializer());
+        //mapperBuilder.deserializerByType(String.class, new XssStringJsonDeserializer());
 
         return mapperBuilder;
     }
