@@ -1,10 +1,12 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.approval;
 
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.NodeButton;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author pengjian
@@ -88,4 +90,9 @@ public class MyApprovalResultDto {
      * 流程关联的组织
      */
     private String orgIds;
+
+    /**
+     * 节点按钮配置
+     */
+    private List<NodeButton> buttons;
 }

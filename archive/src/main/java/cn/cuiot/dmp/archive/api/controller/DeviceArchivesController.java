@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.Objects;
 
@@ -28,6 +31,12 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/device")
 public class DeviceArchivesController {
+
+    @Resource
+    protected HttpServletRequest request;
+
+    @Resource
+    protected HttpServletResponse response;
 
     @Autowired
     private DeviceArchivesService deviceArchivesService;
