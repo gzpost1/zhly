@@ -82,7 +82,7 @@
     <sql id="queryMyNotApprovalCondition">
         <where>
             <if test="query.assignee !=null and query.assignee !=''">
-                and t2.ASSIGNEE_ = #{query.assignee} and t2.ACT_NAME_ = '审批人'
+                and t2.ASSIGNEE_ = #{query.assignee} and t2.NAME_ = '审批人'
             </if>
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}
