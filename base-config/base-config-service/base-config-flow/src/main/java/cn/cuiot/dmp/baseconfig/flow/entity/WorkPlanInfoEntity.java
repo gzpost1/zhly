@@ -172,10 +172,6 @@ public class WorkPlanInfoEntity extends YjBaseEntity {
      */
     private String ext;
 
-    /**
-     * 创建json数据
-     */
-    private String workJosn;
 
     /**
      * 创建人名称

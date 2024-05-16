@@ -3,9 +3,11 @@ package cn.cuiot.dmp.baseconfig.task;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
+import cn.cuiot.dmp.baseconfig.flow.entity.PlanContentEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.PlanWorkExecutionInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkPlanInfoEntity;
+import cn.cuiot.dmp.baseconfig.flow.service.PlanContentService;
 import cn.cuiot.dmp.baseconfig.flow.service.PlanWorkExecutionInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkPlanInfoService;
@@ -14,8 +16,10 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.ObjectMapper;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import liquibase.pro.packaged.L;
 import liquibase.pro.packaged.P;
@@ -24,12 +28,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.*;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
+ * 生成工单计划
  * @author pengjian
  * @create 2024/5/7 16:31
  */
@@ -45,25 +47,28 @@ public class WorkPlanInfoTask {
     @Autowired
     private PlanWorkExecutionInfoService planWorkExecutionInfoService;
 
+    @Autowired
+    private PlanContentService planContentService;
+
     @XxlJob("createPlanWork")
-    public void createWork(String param){
+    public ReturnT<String> createWork(String param){
         //查询工单信息
         WorkPlanInfoEntity entity = workPlanInfoService.getById(Long.parseLong(param));
         //判断生效与失效
         if(checkExpire(entity)){
             log.info("任务"+param+"未开始");
-            return;
+            return ReturnT.SUCCESS;
         }
-        StartProcessInstanceDTO startProcessInstanceDTO = JsonUtil.readValue(entity.getWorkJosn(), StartProcessInstanceDTO.class);
+        PlanContentEntity planContentEntity = planContentService.getById(entity.getId());
+        StartProcessInstanceDTO startProcessInstanceDTO = JSONObject.parseObject(planContentEntity.getContent(), new TypeReference<StartProcessInstanceDTO>() {
+        });
         startProcessInstanceDTO.setWorkSource(WorkOrderConstants.WORK_SOURCE_PLAN);
         IdmResDTO start = workInfoService.start(startProcessInstanceDTO);
         Long data =Long.parseLong(String.valueOf(start.getData())) ;
         if(Objects.nonNull(data)){
             updatePlanWorkExecutionInfo( param, data);
-            //回写工单表
-
         }
-
+        return ReturnT.SUCCESS;
     }
 
 
