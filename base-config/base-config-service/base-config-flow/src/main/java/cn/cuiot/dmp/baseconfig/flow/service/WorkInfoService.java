@@ -390,16 +390,16 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(CollectionUtils.isNotEmpty(countSigeList)){
             countSigeList.stream().forEach(item->{
                 Map<String,Object> variableMap= new HashMap<>();
-                variableMap.put("assigneeName",item);
+                variableMap.put("assigneeName",String.valueOf(item));
                 runtimeService.addMultiInstanceExecution(tasks.get(0).getTaskDefinitionKey(), tasks.get(0).getProcessInstanceId(), variableMap);
             });
         }
 
         //减签
-        tasks.stream().filter(item->!handleDataDTO.getUserIds().contains(Long.parseLong(item.getAssignee())))
-                .forEach(it->{
-                    runtimeService.deleteMultiInstanceExecution(it.getExecutionId(),true);
-                });
+//        tasks.stream().filter(item->!handleDataDTO.getUserIds().contains(Long.parseLong(item.getAssignee())))
+//                .forEach(it->{
+//                    runtimeService.deleteMultiInstanceExecution(it.getExecutionId(),true);
+//                });
 
         return IdmResDTO.success();
     }
