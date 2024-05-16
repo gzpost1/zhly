@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.BusinessTypeUpdateDTO;
@@ -70,6 +72,7 @@ public class BusinessTypeController {
      * 更新
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateBusinessType", operationName = "更新业务类型", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/update")
     public int update(@RequestBody @Valid BusinessTypeUpdateDTO businessTypeUpdateDTO) {
         return businessTypeService.updateBusinessType(businessTypeUpdateDTO);
@@ -88,6 +91,7 @@ public class BusinessTypeController {
      * 删除
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteBusinessType", operationName = "删除业务类型", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public int delete(@RequestBody @Valid BusinessTypeQueryDTO queryDTO) {
         return businessTypeService.deleteBusinessType(queryDTO);

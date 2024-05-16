@@ -44,5 +44,17 @@ public class ServiceTypeConst {
      * 工单配置
      */
     public static final String WORK_BASE_CONFIG = "101";
+    //----------------------------------系统管理----------------------------------end
+    /**
+     * 平台日志
+     * 系统管理
+     */
+    public static final String SYSTEM_MANAGEMENT = "102";
+    //----------------------------------档案中心----------------------------------end
+    /**
+     * 平台日志
+     * 档案中心
+     */
+    public static final String ARCHIVE_CENTER = "103";
 
 }
