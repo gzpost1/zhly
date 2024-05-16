@@ -23,7 +23,7 @@
         <result column="utilization_rate" property="utilizationRate" />
         <result column="property_type" property="propertyType" />
         <result column="status" property="status" />
-        <result column="usage" property="usage" />
+        <result column="usage_type" property="usageType" />
         <result column="business_nature" property="businessNature" />
         <result column="resource_type" property="resourceType" />
         <result column="ownership_unit" property="ownershipUnit" />
@@ -48,7 +48,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, name, room_num, loupan_id, code, floor_name, floor_alias, capacity, qibie, floor_coefficient, house_type, orientation, building_area, usable_area, charge_area, shared_area, utilization_rate, property_type, status, usage, business_nature, resource_type, ownership_unit, ownership_attribute, handover_date, responsible_person, parking_area, remarks, floor_plan, attachments, listing_title, recommended, listing_images, basic_services, listing_description, update_time, update_user, create_time, create_user, deleted
+        id, name, room_num, loupan_id, code, floor_name, floor_alias, capacity, qibie, floor_coefficient, house_type, orientation, building_area, usable_area, charge_area, shared_area, utilization_rate, property_type, status, usage_type, business_nature, resource_type, ownership_unit, ownership_attribute, handover_date, responsible_person, parking_area, remarks, floor_plan, attachments, listing_title, recommended, listing_images, basic_services, listing_description, update_time, update_user, create_time, create_user, deleted
     </sql>
 
 </mapper>

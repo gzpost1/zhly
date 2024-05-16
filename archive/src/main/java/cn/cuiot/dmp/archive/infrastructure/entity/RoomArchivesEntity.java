@@ -112,7 +112,7 @@ public class RoomArchivesEntity extends YjBaseEntity implements Serializable {
     /**
      * 状态（默认启用，点击关闭）
      */
-    private Integer status;
+    private Byte status;
 
     /**
      * 图片（支持png/jpg/jpeg，小于50M，最多上传3张）

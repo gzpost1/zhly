@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.archive.infrastructure.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     /**
      * id
      */
+    @TableId
     private Long id;
 
     /**
@@ -123,7 +125,7 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     /**
      * 用途
      */
-    private Long usage;
+    private Long usageType;
 
     /**
      * 经营性质
