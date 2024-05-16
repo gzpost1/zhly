@@ -105,4 +105,11 @@ public class WorkInfoDto extends PageQuery {
      * 企业id
      */
     private Long companyId;
+
+    private Long configId;
+
+    /**
+     * 部门
+     */
+    private String deptIds;
 }

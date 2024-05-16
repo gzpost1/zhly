@@ -9,10 +9,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
-import cn.cuiot.dmp.baseconfig.flow.dto.AttachmentDTO;
-import cn.cuiot.dmp.baseconfig.flow.dto.NodeDetailDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.QueryApprovalInfoDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
+import cn.cuiot.dmp.baseconfig.flow.dto.*;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
@@ -24,15 +21,14 @@ import cn.cuiot.dmp.baseconfig.flow.dto.vo.CommentVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.TaskDetailVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
-import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
-import cn.cuiot.dmp.baseconfig.flow.entity.UserEntity;
-import cn.cuiot.dmp.baseconfig.flow.entity.WorkBusinessTypeInfoEntity;
-import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDTO;
+import cn.cuiot.dmp.baseconfig.flow.entity.*;
 import cn.cuiot.dmp.baseconfig.flow.enums.AssigneeTypeEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.BusinessInfoEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkInfoEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkOrderStatusEnums;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkInfoMapper;
+import cn.cuiot.dmp.baseconfig.flow.utils.BpmnModelUtils;
 import cn.cuiot.dmp.baseconfig.flow.utils.JsonUtil;
 import cn.cuiot.dmp.baseconfig.flow.vo.HistoryProcessInstanceVO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -108,6 +104,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     private WorkBusinessTypeInfoService workBusinessTypeInfoService;
     @Autowired
     private SystemApiFeignService systemApiFeignService;
+
+    @Autowired
+    private TbFlowConfigOrgService tbFlowConfigOrgService;
     @Autowired
     private ProcessEngine processEngine;
     public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO) {
@@ -177,6 +176,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             entity.setProcInstId(task.getProcessInstanceId());
             entity.setCompanyId(flowConfig.getCompanyId());
             entity.setStatus(WorkOrderStatusEnums.progress.getStatus());
+            entity.setOrgIds(orgIds(flowConfig.getId()));
             this.save(entity);
             HandleDataDTO handleDataDTO = new HandleDataDTO();
             handleDataDTO.setTaskId(task.getId());
@@ -189,7 +189,15 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(task.getProcessInstanceId());
     }
 
-
+    public String orgIds(Long configId){
+        LambdaQueryWrapper<TbFlowConfigOrg> lw = new LambdaQueryWrapper<>();
+        lw.eq(TbFlowConfigOrg::getFlowConfigId,configId);
+        List<TbFlowConfigOrg> list = tbFlowConfigOrgService.list(lw);
+        if(CollectionUtils.isEmpty(list)){
+            return "";
+        }
+        return list.stream().map(e -> String.valueOf(e.getOrgId())).collect(Collectors.joining(", "));
+    }
     public IdmResDTO<IPage<WorkInfoEntity>> processList(QueryApprovalInfoDto dto) {
         List<HistoricProcessInstance> historicProcessInstances =
                 historyService.createHistoricProcessInstanceQuery()
@@ -295,20 +303,30 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param handleDataDTO
      * @return
      */
-    public IdmResDTO agree(HandleDataDTO handleDataDTO) {
-        //审批通过
-
-        taskService.complete(handleDataDTO.getTaskId());
-        WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
-        businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_AGREE.getCode());
-
-        //如果节点存在挂起数据，将挂起数据结束
-        WorkBusinessTypeInfoEntity update = queryWorkBusinessById(businessTypeInfo.getNode(), businessTypeInfo.getProcInstId());
-        if(Objects.nonNull(update)){
-            update.setCloseUserId(LoginInfoHolder.getCurrentUserId());
-            update.setEndTime(new Date());
-            workBusinessTypeInfoService.updateById(update);
+    public IdmResDTO agree(BatchBusinessDto handleDataDTO) {
+        List<WorkBusinessTypeInfoEntity> busiList = new ArrayList<>();
+        Authentication.setAuthenticatedUserId(String.valueOf(LoginInfoHolder.getCurrentUserId()));
+        for (String taskId :handleDataDTO.getTaskIds()){
+            HandleDataDTO dto = new HandleDataDTO();
+            dto.setTaskId(taskId);
+            dto.setComments(handleDataDTO.getComments());
+            dto.setReason(handleDataDTO.getReason());
+            WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dto);
+            businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_AGREE.getCode());
+            taskService.complete(taskId);
+            busiList.add(businessTypeInfo);
+            //如果节点存在挂起数据，将挂起数据结束
+            WorkBusinessTypeInfoEntity update = queryWorkBusinessById(businessTypeInfo.getNode(), businessTypeInfo.getProcInstId());
+            if(Objects.nonNull(update)){
+                update.setCloseUserId(LoginInfoHolder.getCurrentUserId());
+                update.setEndTime(new Date());
+                workBusinessTypeInfoService.updateById(update);
+            }
         }
+        if(!CollectionUtils.isEmpty(busiList)){
+            workBusinessTypeInfoService.saveBatch(busiList);
+        }
+
         return IdmResDTO.success();
     }
 
@@ -344,13 +362,13 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //更新挂起时间
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
-
-        if(CollectionUtils.isNotEmpty(handleDataDTO.getUserIds())){
-            //批量转办
-            return assigneeByProcInstId(handleDataDTO);
-        }
-        //单个转办
-        taskService.setAssignee(handleDataDTO.getTaskId(),handleDataDTO.getTransferUserInfo().getId());
+        assigneeByProcInstId(handleDataDTO);
+//        if(CollectionUtils.isNotEmpty(handleDataDTO.getUserIds())){
+//            //批量转办
+//            return assigneeByProcInstId(handleDataDTO);
+//        }
+//        //单个转办
+//        taskService.setAssignee(handleDataDTO.getTaskId(),handleDataDTO.getTransferUserInfo().getId());
 
         return IdmResDTO.success();
     }
@@ -391,16 +409,25 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param handleDataDTO
      * @return
      */
-    public IdmResDTO refuse(HandleDataDTO handleDataDTO) {
+    public IdmResDTO refuse(BatchBusinessDto handleDataDTO) {
+        List<WorkBusinessTypeInfoEntity> buList = new ArrayList<>();
+        for(String tasId : handleDataDTO.getTaskIds()){
+            HandleDataDTO dto = new HandleDataDTO();
+            dto.setTaskId(tasId);
+            dto.setReason(handleDataDTO.getReason());
+            dto.setComments(handleDataDTO.getComments());
+            WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(dto);
+            workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_REFUSE.getCode());
+            buList.add(workBusinessTypeInfo);
+            //更新挂起
+            dto.setNodeId(workBusinessTypeInfo.getNode());
+            updateBusinessPendingDate(dto);
+            taskService.complete(dto.getTaskId());
+        }
+        if(!CollectionUtils.isEmpty(buList)){
+            workBusinessTypeInfoService.saveBatch(buList);
+        }
 
-        WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
-//        runtimeService.deleteProcessInstance(task.getProcessInstanceId(),"拒绝");
-        workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_REFUSE.getCode());
-        workBusinessTypeInfoService.save(workBusinessTypeInfo);
-        //更新挂起
-        handleDataDTO.setNodeId(workBusinessTypeInfo.getNode());
-        updateBusinessPendingDate(handleDataDTO);
-        taskService.complete(handleDataDTO.getTaskId());
 
         return IdmResDTO.success();
     }
@@ -412,22 +439,25 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     public IdmResDTO commentAndSuper(BatchBusinessDto handleDataDTOs) {
         List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
+        //督办信息
         for(String instId :handleDataDTOs.getProcessInstanceId() ){
             HandleDataDTO dataDTO = new HandleDataDTO();
             dataDTO.setProcessInstanceId(instId);
             dataDTO.setComments(handleDataDTOs.getComments());
             dataDTO.setReason(handleDataDTOs.getReason());
             WorkBusinessTypeInfoEntity businessTypeInfo =getWorkBusinessTypeInfo(dataDTO);
-            //评论
-            if(handleDataDTOs.getBusinessType().intValue()==BUSINESS_TYPE_COMMENT.intValue()){
-//            taskService.addComment(task.getId(),task.getProcessInstanceId(),COMMENTS_COMMENT,comments);
-                businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_COMMENT.getCode());
-            }
-            //督办
-            if(handleDataDTOs.getBusinessType().intValue()==BUSINESS_TYPE_SUPER.intValue()){
-//            taskService.addComment(task.getId(),task.getProcessInstanceId(),BUSINESS_SUPERVISION,comments);
-                businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_HANDLE.getCode());
-            }
+            businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_HANDLE.getCode());
+            businessTypeInfoEntities.add(businessTypeInfo);
+        }
+
+        //评论信息
+        for(String taskId :handleDataDTOs.getTaskIds() ){
+            HandleDataDTO dataDTO = new HandleDataDTO();
+            dataDTO.setTaskId(taskId);
+            dataDTO.setComments(handleDataDTOs.getComments());
+            dataDTO.setReason(handleDataDTOs.getReason());
+            WorkBusinessTypeInfoEntity businessTypeInfo =getWorkBusinessTypeInfo(dataDTO);
+            businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_COMMENT.getCode());
             businessTypeInfoEntities.add(businessTypeInfo);
         }
         if(CollectionUtils.isNotEmpty(businessTypeInfoEntities)){
@@ -436,6 +466,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success();
     }
 
+
     public IdmResDTO rollback(HandleDataDTO handleDataDTO) {
         UserInfo currentUserInfo = handleDataDTO.getCurrentUserInfo();
 //        Authentication.setAuthenticatedUserIddsacurrentUserInfo.getId());
@@ -443,7 +474,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_ROLLBACK.getCode());
         workBusinessTypeInfoService.save(workBusinessTypeInfo);
-
+        //更新挂起时间
         updateBusinessPendingDate(handleDataDTO);
 
         List<HistoricTaskInstance> taskInstances = historyService.createHistoricTaskInstanceQuery()
@@ -468,23 +499,32 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public IdmResDTO businessPending(BatchBusinessDto handleDataDTOs) {
-//        UserInfo currentUserInfo = handleDataDTO.getCurrentUserInfo();
-//        Authentication.setAuthenticatedUserId(currentUserInfo.getId());
-//        //挂起留痕
-//        taskService.addComment(handleDataDTO.getTaskId(),handleDataDTO.getProcessInstanceId(),BUSINESS_PENDING,handleDataDTO.getComments());
+
        List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
+       //工单中心挂起
         for(String handleDataDTO : handleDataDTOs.getProcessInstanceId()){
             HandleDataDTO dataDTO = new HandleDataDTO();
             dataDTO.setProcessInstanceId(handleDataDTO);
             dataDTO.setComments(handleDataDTOs.getComments());
             dataDTO.setReason(handleDataDTOs.getReason());
-           WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dataDTO);
-           businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_PENDING.getCode());
-           businessTypeInfoEntities.add(businessTypeInfo);
-
+            WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dataDTO);
+            businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_PENDING.getCode());
+            businessTypeInfoEntities.add(businessTypeInfo);
            //更新主流程状态
             updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), businessTypeInfo.getProcInstId());
        }
+        //审批中心挂起
+        for(String taskId : handleDataDTOs.getTaskIds()){
+            HandleDataDTO dataDTO = new HandleDataDTO();
+            dataDTO.setTaskId(taskId);
+            dataDTO.setComments(handleDataDTOs.getComments());
+            dataDTO.setReason(handleDataDTOs.getReason());
+            WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dataDTO);
+            businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_PENDING.getCode());
+            businessTypeInfoEntities.add(businessTypeInfo);
+            //更新主流程状态
+            updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), businessTypeInfo.getProcInstId());
+        }
         if(CollectionUtils.isNotEmpty(businessTypeInfoEntities)){
             workBusinessTypeInfoService.saveBatch(businessTypeInfoEntities);
         }
@@ -506,6 +546,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             }
         }else {
             task = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
+            handleDataDTO.setProcessInstanceId(task.getProcessInstanceId());
         }
         if(null == task){
             throw new RuntimeException("找不到任务");
@@ -563,13 +604,22 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 item.setUserName(userMap.get(item.getCreateUser()));
                //业务类型
                 item.setBusinessTypeName(busiMap.get(item.getBusinessType()));
+                //获取流程输入的组织信息
+                item.setOrgIds(getOrgIds(item.getDeptIds()));
+
             });
         }
-
 
         return IdmResDTO.success(workInfoEntityPage);
     }
 
+
+    public List<Long> getOrgIds(String deptIds){
+        String[] stringArray = deptIds.split(",",-1);
+        return Arrays.stream(stringArray)
+                .map(e->Long.parseLong(e.trim())) // 将String转换为Long
+                .collect(Collectors.toList()); // 收集结果到List
+    }
     public Map<Long,String> getDeptMap(List<Long> deptIds){
         DepartmentReqDto depeDto = new DepartmentReqDto();
         depeDto.setDeptIdList(deptIds);
@@ -906,6 +956,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO closeFlow(BatchBusinessDto handleDataDTOs) {
         //保存操作信息
         List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
+        //工单中心终止流程
         for(String instId:handleDataDTOs.getProcessInstanceId()){
             HandleDataDTO dataDTO = new HandleDataDTO();
             dataDTO.setProcessInstanceId(instId);
@@ -916,6 +967,24 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             businessTypeInfoEntities.add(workBusinessTypeInfo);
             //终止流程
             runtimeService.deleteProcessInstance(instId, handleDataDTOs.getComments()); // 终止
+            //
+            dataDTO.setNodeId(workBusinessTypeInfo.getNode());
+            updateBusinessPendingDate(dataDTO);
+
+            //更新工单状态
+            updateWorkInfo(WorkOrderStatusEnums.terminated.getStatus(), workBusinessTypeInfo.getProcInstId());
+        }
+        //审批中心终止流程
+        for(String taskId : handleDataDTOs.getTaskIds()){
+            HandleDataDTO dataDTO = new HandleDataDTO();
+            dataDTO.setTaskId(taskId);
+            dataDTO.setComments(handleDataDTOs.getComments());
+            dataDTO.setReason(handleDataDTOs.getReason());
+            WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(dataDTO);
+            workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_CLOSE.getCode());
+            businessTypeInfoEntities.add(workBusinessTypeInfo);
+            //终止流程
+            runtimeService.deleteProcessInstance(dataDTO.getProcessInstanceId(), handleDataDTOs.getComments()); // 终止
             //
             dataDTO.setNodeId(workBusinessTypeInfo.getNode());
             updateBusinessPendingDate(dataDTO);
@@ -1015,7 +1084,25 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             });
         }
 
+        //处理按扭信息
+        processTaskButton(pages);
+
         return IdmResDTO.success(pages);
+    }
+
+    /**
+     * 处理节点具有的按钮信息
+     * @param pages
+     */
+    private void processTaskButton(Page<MyApprovalResultDto> pages) {
+        if(Objects.nonNull(pages) && org.apache.commons.collections4.CollectionUtils.isNotEmpty(pages.getRecords())){
+            pages.getRecords().stream().forEach(e -> {
+                ChildNode childNodeByNodeId = getChildNodeByNodeId(e.getProcInstId().toString(), e.getTaskId());
+                if(Objects.nonNull(childNodeByNodeId)){
+                    e.setButtons(childNodeByNodeId.getProps().getButtons());
+                }
+            });
+        }
     }
 
     /**

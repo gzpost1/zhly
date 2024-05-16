@@ -47,7 +47,7 @@ public class WorkInfoEntity implements Serializable {
     /**
      * 组织名称
      */
-    @TableField(value = "company_id")
+    @TableField(exist = false)
     private String orgPath;
 
     /**
@@ -97,5 +97,8 @@ public class WorkInfoEntity implements Serializable {
      */
     private String procInstId;
 
-
+    /**
+     * configId
+     */
+    private String orgIds;
 }

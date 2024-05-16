@@ -2,6 +2,7 @@ package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,12 +12,20 @@ import java.util.List;
 @Data
 public class BatchBusinessDto {
 
-    private List<String> processInstanceId;
+    /**
+     * 工单中心传
+     */
+    private List<String> processInstanceId = new ArrayList<>();
 
     private String comments;
 
     private String reason;
 
-    private Byte BusinessType;
+    private Byte businessType;
+
+    /**
+     * 审批中心传
+     */
+    private List<String> taskIds = new ArrayList<>();
 
 }

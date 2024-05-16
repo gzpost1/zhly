@@ -14,9 +14,7 @@ public interface WorkOrderConstants {
     String START_USER_INFO="startUser";
     String INITIATOR_ID="initiatorId";
     String BUSINESS_STATUS_1="1"; //正在处理
-    String BUSINESS_STATUS_2="2";//撤销
-    String BUSINESS_STATUS_3="3";//驳回
-    String BUSINESS_STATUS_4="4";//已结束
+
 
     String USER_ROOT = "root";
 
@@ -24,10 +22,7 @@ public interface WorkOrderConstants {
      * 用户任务
      */
     String USER_TASK ="userTask";
-    /**
-     * 抄送数据
-     */
-    String  SERVICE_TASK="serviceTask";
+
     /**
      * 工单来源 计划生成
      */

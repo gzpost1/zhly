@@ -58,7 +58,7 @@ public class BaseApprovalCenterController extends BaseController {
 
 
     /**
-     * 审批同意
+     * 完成
      * @param handleDataDTO
      * @return
      */
@@ -76,7 +76,7 @@ public class BaseApprovalCenterController extends BaseController {
      */
     @PostMapping("agree")
     @LogRecord(operationCode = "agree", operationName = "审批同意", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO agree(@RequestBody HandleDataDTO handleDataDTO){
+    public IdmResDTO agree(@RequestBody BatchBusinessDto handleDataDTO){
         return workInfoService.agree(handleDataDTO);
     }
     /**
@@ -90,12 +90,12 @@ public class BaseApprovalCenterController extends BaseController {
     }
 
     /**
-     * 驳回
+     * 驳回/拒绝
      * @param handleDataDTO
      * @return
      */
     @PostMapping("refuse")
-    public IdmResDTO refuse(@RequestBody HandleDataDTO handleDataDTO){
+    public IdmResDTO refuse(@RequestBody BatchBusinessDto handleDataDTO){
 
         return workInfoService.refuse(handleDataDTO);
     }

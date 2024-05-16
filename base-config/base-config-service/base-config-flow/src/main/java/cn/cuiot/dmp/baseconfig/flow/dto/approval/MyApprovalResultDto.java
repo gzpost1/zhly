@@ -1,10 +1,12 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.approval;
 
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.NodeButton;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author pengjian
@@ -33,6 +35,11 @@ public class MyApprovalResultDto {
     private Long businessType;
 
     /**
+     *工单名称
+     */
+    private String workName;
+
+    /**
      * 业务类型名称
      */
     private String businessTypeName;
@@ -51,7 +58,7 @@ public class MyApprovalResultDto {
     /**
      * 发起人id
      */
-    private Long UserId;
+    private Long userId;
 
     /**
      * 发起人名称
@@ -76,4 +83,16 @@ public class MyApprovalResultDto {
      * 企业id
      */
     private Long companyId;
+
+    private Byte state;
+
+    /**
+     * 流程关联的组织
+     */
+    private String orgIds;
+
+    /**
+     * 节点按钮配置
+     */
+    private List<NodeButton> buttons;
 }

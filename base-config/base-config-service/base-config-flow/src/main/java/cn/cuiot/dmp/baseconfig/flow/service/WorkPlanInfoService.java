@@ -8,6 +8,7 @@ import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.xxljob.XxlJobClient;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
+import cn.cuiot.dmp.baseconfig.flow.entity.PlanContentEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.PlanWorkExecutionInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkPlanInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkPlanInfoMapper;
@@ -48,6 +49,9 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
     @Autowired
     private SystemApiFeignService systemApiFeignService;
+
+    @Autowired
+    private PlanContentService planContentService;
     /**
      * 创建工单计划
      * @param workPlanInfoCreateDto
@@ -55,9 +59,10 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
      */
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO createWordPlan(WorkPlanInfoDto workPlanInfoCreateDto) {
+
+
         WorkPlanInfoEntity map = BeanMapper.map(workPlanInfoCreateDto, WorkPlanInfoEntity.class);
         map.setId(IdWorker.getId());
-        map.setWorkJosn(JSONObject.toJSONString(workPlanInfoCreateDto.getStartProcessInstanceDTO()));
 
 
         //创建定时任务
@@ -71,6 +76,11 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         workPlanInfoCreateDto.setId(map.getId());
         //创建预生成时间
         saveExecutionTime(workPlanInfoCreateDto);
+
+        PlanContentEntity entity = new PlanContentEntity();
+        entity.setId(map.getId());
+        entity.setContent(JSONObject.toJSONString(workPlanInfoCreateDto.getStartProcessInstanceDTO()));
+        planContentService.save(entity);
         return IdmResDTO.success();
     }
 

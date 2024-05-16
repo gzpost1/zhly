@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.base.application.aop;
 
+import cn.cuiot.dmp.base.application.mica.xss.exception.XssException;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -70,6 +71,10 @@ public class IdmExceptionAdvice {
         }
         if (e instanceof SQLException || e instanceof DataAccessException) {
             message = e.getMessage().contains("too long") ? "存在字段长度过长，请检查后重新提交" :"执行SQL错误";
+        }
+        if(e instanceof XssException){
+            code = ResultCode.INVALID_PARAM_TYPE.getCode();
+            message = e.getMessage();
         }
         return new IdmResDTO<>(code,message);
     }
