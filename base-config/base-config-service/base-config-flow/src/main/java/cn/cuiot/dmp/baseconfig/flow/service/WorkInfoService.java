@@ -28,6 +28,7 @@ import cn.cuiot.dmp.baseconfig.flow.enums.BusinessInfoEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkInfoEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkOrderStatusEnums;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkInfoMapper;
+import cn.cuiot.dmp.baseconfig.flow.utils.BpmnModelUtils;
 import cn.cuiot.dmp.baseconfig.flow.utils.JsonUtil;
 import cn.cuiot.dmp.baseconfig.flow.vo.HistoryProcessInstanceVO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -1083,7 +1084,25 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             });
         }
 
+        //处理按扭信息
+        processTaskButton(pages);
+
         return IdmResDTO.success(pages);
+    }
+
+    /**
+     * 处理节点具有的按钮信息
+     * @param pages
+     */
+    private void processTaskButton(Page<MyApprovalResultDto> pages) {
+        if(Objects.nonNull(pages) && org.apache.commons.collections4.CollectionUtils.isNotEmpty(pages.getRecords())){
+            pages.getRecords().stream().forEach(e -> {
+                ChildNode childNodeByNodeId = getChildNodeByNodeId(e.getProcInstId().toString(), e.getTaskId());
+                if(Objects.nonNull(childNodeByNodeId)){
+                    e.setButtons(childNodeByNodeId.getProps().getButtons());
+                }
+            });
+        }
     }
 
     /**

@@ -1156,7 +1156,6 @@ public class BpmnModelUtils {
     public static ChildNode getChildNodeByNodeId(String processDefinitionId, String currentActivityId) {
         RepositoryService repositoryService = SpringContextHolder.getBean(RepositoryService.class);
         Process mainProcess = repositoryService.getBpmnModel(processDefinitionId).getMainProcess();
-        UserTask userTask = (UserTask) mainProcess.getFlowElement(currentActivityId);
         String dingDing = mainProcess.getAttributeValue(FLOWABLE_NAME_SPACE, FLOWABLE_NAME_SPACE_NAME);
         JSONObject jsonObject = JSONObject.parseObject(dingDing, new TypeReference<JSONObject>() {
         });
