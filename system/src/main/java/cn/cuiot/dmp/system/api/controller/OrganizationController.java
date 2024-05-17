@@ -74,6 +74,7 @@ public class OrganizationController extends BaseController {
      * 新增企业与账号
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "insertOrganization", operationName = "新增企业与账号", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/insertOrganization", produces = MediaType.APPLICATION_JSON_VALUE)
     public void insertSonOrganization(@RequestBody @Valid InsertOrganizationDto dto) {
         if (!PhoneUtil.isPhone(dto.getPhoneNumber())) {
@@ -88,6 +89,7 @@ public class OrganizationController extends BaseController {
      * 编辑企业与账号
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateOrganization", operationName = "修改企业与账号", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/updateOrganization", produces = MediaType.APPLICATION_JSON_VALUE)
     public void updateOrganization(@RequestBody @Valid UpdateOrganizationDto dto) {
         if (!getOrgId().equals(SUP_ORGID)) {
@@ -116,7 +118,7 @@ public class OrganizationController extends BaseController {
      * 企业账户详情下的用户,重置密码
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "resetPassword", operationName = "admin重置账户详情下用户的密码", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
+    @LogRecord(operationCode = "resetOrganizationPassword", operationName = "重置企业账号密码", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/user/resetPassword", produces = MediaType.APPLICATION_JSON_VALUE)
     public void resetUserPassword(
             @Validated @RequestBody ResetUserPasswordReqDTO resetUserPasswordReqDTO) {
@@ -157,6 +159,7 @@ public class OrganizationController extends BaseController {
      * 删除企业账户
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteOrganizationAccount", operationName = "删除企业与账户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/deleteAccount")
     public int deleteAccount(@RequestParam("accountId") String accountId) {
         OrganizationResDTO organizationResDto = organizationService.getOneById(accountId);
@@ -171,6 +174,7 @@ public class OrganizationController extends BaseController {
      * 启停用
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateOrganizationStatus", operationName = "启停用企业与账户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/updateStatus")
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
@@ -183,6 +187,7 @@ public class OrganizationController extends BaseController {
      * 进入企业
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "simulateLogin", operationName = "进入企业", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/simulateLogin")
     public LoginResDTO simulateLogin(@RequestBody @Valid IdParam idParam) {
         String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();

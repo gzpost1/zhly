@@ -15,6 +15,7 @@ import cn.cuiot.dmp.system.domain.repository.CommonOptionTypeRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.CommonOptionTypeEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CommonOptionTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -123,13 +124,15 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
 
     private CommonOptionTypeEntity initRootNode(Long companyId) {
         CommonOptionTypeEntity commonOptionTypeEntity = new CommonOptionTypeEntity();
-        commonOptionTypeEntity.setId(CommonOptionConstant.ROOT_ID);
+        commonOptionTypeEntity.setId(IdWorker.getId());
         commonOptionTypeEntity.setCompanyId(companyId);
         commonOptionTypeEntity.setName(CommonOptionConstant.ROOT_NAME);
         commonOptionTypeEntity.setLevelType(CommonOptionConstant.ROOT_LEVEL_TYPE);
         commonOptionTypeEntity.setParentId(CommonOptionConstant.DEFAULT_PARENT_ID);
         commonOptionTypeEntity.setPathName(CommonOptionConstant.ROOT_NAME);
         commonOptionTypeMapper.insert(commonOptionTypeEntity);
+        // 初始化【挂起原因】【终止原因】【退回原因】固定选项，可编辑，不可删除
+        commonOptionRepository.initCommonOption(companyId, commonOptionTypeEntity.getId());
         return commonOptionTypeEntity;
     }
 

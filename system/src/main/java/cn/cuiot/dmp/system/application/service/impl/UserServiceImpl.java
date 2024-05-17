@@ -1205,6 +1205,11 @@ public class UserServiceImpl extends BaseController implements UserService {
         if (CollectionUtils.isNotEmpty(entities)) {
             List<BaseUserDto> dtoList = userAssembler
                     .dataEntityListToBaseUserDtoList(entities);
+            for(BaseUserDto dto:dtoList){
+                if(org.apache.commons.lang3.StringUtils.isNotBlank(dto.getPhoneNumber())){
+                    dto.setPhoneNumber(Sm4.decrypt(dto.getPhoneNumber()));
+                }
+            }
             return dtoList;
         }
         return Lists.newArrayList();
@@ -1221,6 +1226,11 @@ public class UserServiceImpl extends BaseController implements UserService {
         if (CollectionUtils.isNotEmpty(entities)) {
             List<BaseUserDto> dtoList = userAssembler
                     .dataEntityListToBaseUserDtoList(entities);
+            for(BaseUserDto dto:dtoList){
+                if(org.apache.commons.lang3.StringUtils.isNotBlank(dto.getPhoneNumber())){
+                    dto.setPhoneNumber(Sm4.decrypt(dto.getPhoneNumber()));
+                }
+            }
             return dtoList.get(0);
         }
         return null;

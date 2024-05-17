@@ -3,9 +3,11 @@ package cn.cuiot.dmp.system.api.controller;
 import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.common.utils.Const;
@@ -96,6 +98,7 @@ public class LoginController extends BaseController {
      * @param loginReqDTO 请求登录的用户信息
      * @return
      */
+    @LogRecord(operationCode = "session", operationName = "用户登录", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/session", produces = "application/json;charset=UTF-8")
     public LoginResDTO loginDmp(@RequestBody LoginReqDTO loginReqDTO) {
         /**
@@ -168,6 +171,7 @@ public class LoginController extends BaseController {
      * @param
      * @return
      */
+    @LogRecord(operationCode = "logOut", operationName = "用户登出", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @DeleteMapping(value = "/logOut", produces = "application/json;charset=UTF-8")
     public void logoutUser() {
         loginService.logoutIdentity(request, getOrgId(), getUserId(), getUserName());

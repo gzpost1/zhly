@@ -13,6 +13,7 @@ import cn.cuiot.dmp.system.infrastructure.persistence.mapper.BusinessTypeMapper;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntityMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -121,7 +122,7 @@ public class BusinessTypeRepositoryImpl implements BusinessTypeRepository {
 
     private BusinessTypeEntity initRootNode(Long companyId) {
         BusinessTypeEntity businessTypeEntity = new BusinessTypeEntity();
-        businessTypeEntity.setId(BusinessTypeConstant.ROOT_ID);
+        businessTypeEntity.setId(IdWorker.getId());
         businessTypeEntity.setCompanyId(companyId);
         OrganizationEntity organizationEntity = organizationEntityMapper.selectById(companyId);
         AssertUtil.notNull(organizationEntity, "企业不存在");

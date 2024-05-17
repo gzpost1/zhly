@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.baseconfig.controller.workorder;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.QueryApprovalInfoDto;
@@ -40,6 +41,7 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("start")
+    @RequiresPermissions
     @LogRecord(operationCode = "startWork", operationName = "启动工单", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO start(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
         startProcessInstanceDTO.setWorkSource(WorkOrderConstants.WORK_SOURCE_MAKE);
@@ -63,6 +65,7 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("complete")
+    @RequiresPermissions
     @LogRecord(operationCode = "complete", operationName = "完成任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO complete(@RequestBody HandleDataDTO handleDataDTO){
         return workInfoService.complete(handleDataDTO);
@@ -75,6 +78,7 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("agree")
+    @RequiresPermissions
     @LogRecord(operationCode = "agree", operationName = "审批同意", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO agree(@RequestBody BatchBusinessDto handleDataDTO){
         return workInfoService.agree(handleDataDTO);
@@ -85,6 +89,8 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("assignee")
+    @RequiresPermissions
+    @LogRecord(operationCode = "assignee", operationName = "转办", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO assignee(@RequestBody HandleDataDTO handleDataDTO){
         return workInfoService.assignee(handleDataDTO);
     }
@@ -95,6 +101,8 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("refuse")
+    @RequiresPermissions
+    @LogRecord(operationCode = "refuse", operationName = "拒绝", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO refuse(@RequestBody BatchBusinessDto handleDataDTO){
 
         return workInfoService.refuse(handleDataDTO);
@@ -106,6 +114,8 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("closeFlow")
+    @RequiresPermissions
+    @LogRecord(operationCode = "closeFlow", operationName = "终止", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO closeFlow(@RequestBody BatchBusinessDto handleDataDTO){
         return workInfoService.closeFlow(handleDataDTO);
     }
@@ -116,6 +126,8 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("commentAndSuper")
+    @RequiresPermissions
+    @LogRecord(operationCode = "commentAndSuper", operationName = "评论和督办", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO commentAndSuper(@RequestBody BatchBusinessDto handleDataDTO){
         return workInfoService.commentAndSuper(handleDataDTO);
     }
@@ -126,6 +138,8 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("rollback")
+    @RequiresPermissions
+    @LogRecord(operationCode = "rollback", operationName = "回退", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO rollback(@RequestBody HandleDataDTO handleDataDTO){
         return workInfoService.rollback(handleDataDTO);
     }
@@ -136,6 +150,8 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("businessPending")
+    @RequiresPermissions
+    @LogRecord(operationCode = "businessPending", operationName = "挂起", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO businessPending(@RequestBody BatchBusinessDto handleDataDTO){
         return workInfoService.businessPending(handleDataDTO);
     }

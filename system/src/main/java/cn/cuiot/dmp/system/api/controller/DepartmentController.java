@@ -64,7 +64,7 @@ public class DepartmentController extends BaseController {
      * 新增组织
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "insertSonDepartment", operationName = "新增子组织", serviceType = ServiceTypeConst.SUPER_ORGANIZATION_MANAGEMENT)
+    @LogRecord(operationCode = "insertSonDepartment", operationName = "新增组织", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/insertSonDepartment", produces = MediaType.APPLICATION_JSON_VALUE)
     public Long insertSonDepartment(@RequestBody @Valid InsertSonDepartmentDto dto) {
         dto.setPkOrgId(Long.parseLong(getOrgId()));
@@ -77,7 +77,7 @@ public class DepartmentController extends BaseController {
      * 修改组织
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateDepartment", operationName = "修改子组织", serviceType = ServiceTypeConst.SUPER_ORGANIZATION_MANAGEMENT)
+    @LogRecord(operationCode = "updateDepartment", operationName = "修改组织", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/updateDepartment", produces = MediaType.APPLICATION_JSON_VALUE)
     public int updateDepartment(@RequestBody @Valid UpdateDepartmentDto dto) {
         String orgId = getOrgId();
@@ -91,6 +91,7 @@ public class DepartmentController extends BaseController {
      * 删除组织
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteDepartment", operationName = "删除组织", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @GetMapping(value = "/deleteDepartment", produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteDepartment(Long id) {
         UpdateDepartmentDto updateDepartmentDto = new UpdateDepartmentDto();

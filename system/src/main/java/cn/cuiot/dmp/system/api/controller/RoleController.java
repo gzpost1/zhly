@@ -1,10 +1,12 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.service.RoleService;
@@ -43,7 +45,6 @@ public class RoleController extends BaseController {
     /**
      * 角色列表分页查询
      */
-    @RequiresPermissions
     @GetMapping(value = "/listRoles", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<RoleDTO> getRoleListByPage(
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
@@ -86,6 +87,7 @@ public class RoleController extends BaseController {
      * 新增角色
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "createRole", operationName = "新增角色", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/createRole", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> createRole(@RequestBody @Valid CreateRoleDto dto) {
         String userId = getUserId();
@@ -101,6 +103,7 @@ public class RoleController extends BaseController {
      * 删除角色
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteRole", operationName = "删除角色", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "deleteRole", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> deleteRoles(@RequestBody @Valid IdParam param) {
         Map<String, Object> resultMap = new HashMap<>(1);
@@ -135,6 +138,7 @@ public class RoleController extends BaseController {
      * 编辑角色
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateRole", operationName = "修改角色", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/updateRole", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> updateRole(@RequestBody RoleBo roleBo) {
         if (null == roleBo || StringUtils.isBlank(String.valueOf(roleBo.getId())) || StringUtils

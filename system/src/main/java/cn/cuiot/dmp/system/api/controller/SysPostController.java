@@ -1,9 +1,11 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.command.SysPostCmd;
@@ -66,6 +68,7 @@ public class SysPostController {
      * 创建
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "createPost", operationName = "创建岗位", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/create")
     public IdmResDTO create(@RequestBody @Valid SysPostCmd cmd) {
         AssertUtil
@@ -82,6 +85,7 @@ public class SysPostController {
      * 修改
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updatePost", operationName = "修改岗位", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/update")
     public IdmResDTO update(@RequestBody @Valid SysPostCmd cmd) {
         AssertUtil.isTrue(Objects.nonNull(cmd.getId()), "主键ID不能为空");
@@ -99,6 +103,7 @@ public class SysPostController {
      * 启停用
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updatePostStatus", operationName = "启停用岗位", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/updateStatus")
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         Long sessionUserId = LoginInfoHolder.getCurrentUserId();
@@ -111,6 +116,7 @@ public class SysPostController {
      * 删除
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deletePost", operationName = "删除岗位", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public IdmResDTO delete(@RequestBody @Valid IdParam idParam) {
         Long sessionUserId = LoginInfoHolder.getCurrentUserId();

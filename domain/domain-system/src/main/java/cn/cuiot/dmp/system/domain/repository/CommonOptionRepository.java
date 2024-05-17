@@ -77,4 +77,9 @@ public interface CommonOptionRepository {
      */
     PageResult<CommonOption> queryCommonOptionByType(CommonOptionPageQuery pageQuery);
 
+    /**
+     * 批量删除
+     */
+    void initCommonOption(Long companyId, Long typeId);
+
 }

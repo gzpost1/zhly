@@ -25,7 +25,6 @@ public class SysAreaController {
     /**
      * 获取地区树
      */
-    @RequiresPermissions
     @PostMapping("/getAreaTree")
     public List<AreaTreeNodeVO> getAreaTree() {
         return sysAreaService.getAreaTree();
@@ -34,7 +33,6 @@ public class SysAreaController {
     /**
      * 根据区域编码获取区域名称
      */
-    @RequiresPermissions
     @GetMapping("/getAreaName")
     public IdmResDTO<String> getAreaName(@RequestParam(value = "areaCode") String areaCode) {
         return IdmResDTO.success(sysAreaService.getAreaName(areaCode));

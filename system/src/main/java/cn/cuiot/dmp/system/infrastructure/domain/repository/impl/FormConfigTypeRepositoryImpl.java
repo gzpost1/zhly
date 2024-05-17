@@ -15,6 +15,7 @@ import cn.cuiot.dmp.system.domain.repository.FormConfigTypeRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.FormConfigTypeEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.FormConfigTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -123,7 +124,7 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
 
     private FormConfigTypeEntity initRootNode(Long companyId) {
         FormConfigTypeEntity formConfigTypeEntity = new FormConfigTypeEntity();
-        formConfigTypeEntity.setId(FormConfigConstant.ROOT_ID);
+        formConfigTypeEntity.setId(IdWorker.getId());
         formConfigTypeEntity.setCompanyId(companyId);
         formConfigTypeEntity.setName(FormConfigConstant.ROOT_NAME);
         formConfigTypeEntity.setLevelType(FormConfigConstant.ROOT_LEVEL_TYPE);
