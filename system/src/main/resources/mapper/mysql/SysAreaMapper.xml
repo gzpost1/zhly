@@ -11,16 +11,23 @@
         SELECT
         code as id,
         parent_code as parent_id,
-        name as title
+        name as title,
+        latitude,
+        longitude
         FROM
-        `tb_sys_area`
-        WHERE
-        town_code IS NULL
+        `tb_dict_area`
         ORDER BY CODE
     </select>
 
     <select id="getAreaInfoByAreaCode" resultType="cn.cuiot.dmp.system.domain.aggregate.SysArea">
-        select * from tb_sys_area where code = #{areaCode} limit 1
+        select * from tb_dict_area where code = #{areaCode} limit 1
+    </select>
+
+    <select id="getAreaInfoByAreaCodeList" resultType="cn.cuiot.dmp.system.domain.aggregate.SysArea">
+        select * from tb_dict_area where code in
+        <foreach collection="areaCodeList" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
     </select>
 
 </mapper>

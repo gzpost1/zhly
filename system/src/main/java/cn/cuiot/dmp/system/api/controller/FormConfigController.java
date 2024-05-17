@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.system.application.param.dto.BatchFormConfigDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigUpdateDTO;
@@ -51,6 +53,7 @@ public class FormConfigController {
      * 更新
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateFormConfig", operationName = "更新表单配置", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/update")
     public int updateFormConfig(@RequestBody @Valid FormConfigUpdateDTO updateDTO) {
         return formConfigService.updateFormConfig(updateDTO);
@@ -60,6 +63,7 @@ public class FormConfigController {
      * 更新状态
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateFormConfigStatus", operationName = "更新表单配置状态", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/updateStatus")
     public int updateFormConfigStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         return formConfigService.updateFormConfigStatus(updateStatusParam);
@@ -69,6 +73,7 @@ public class FormConfigController {
      * 删除
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteFormConfig", operationName = "删除表单配置", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public int deleteFormConfig(@RequestBody @Valid IdParam idParam) {
         return formConfigService.deleteFormConfig(idParam.getId());
@@ -78,6 +83,7 @@ public class FormConfigController {
      * 批量移动
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "batchMoveFormConfig", operationName = "批量移动表单配置", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/batchMove")
     public int batchMoveFormConfig(@RequestBody @Valid BatchFormConfigDTO batchFormConfigDTO) {
         return formConfigService.batchMoveFormConfig(batchFormConfigDTO);
@@ -87,6 +93,7 @@ public class FormConfigController {
      * 批量更新状态
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "batchUpdateFormConfigStatus", operationName = "批量更新表单配置状态", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/batchUpdateStatus")
     public int batchUpdateFormConfigStatus(@RequestBody @Valid BatchFormConfigDTO batchFormConfigDTO) {
         return formConfigService.batchUpdateFormConfigStatus(batchFormConfigDTO);
@@ -96,6 +103,7 @@ public class FormConfigController {
      * 批量删除
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "batchDeleteFormConfig", operationName = "批量删除表单配置", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/batchDelete")
     public int batchDeleteFormConfig(@RequestBody @Valid BatchFormConfigDTO batchFormConfigDTO) {
         return formConfigService.batchDeleteFormConfig(batchFormConfigDTO.getIdList());

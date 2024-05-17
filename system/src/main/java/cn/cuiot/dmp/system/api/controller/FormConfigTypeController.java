@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeUpdateDTO;
@@ -73,6 +75,7 @@ public class FormConfigTypeController {
      * 更新
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateFormConfigType", operationName = "更新表单配置分类", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/update")
     public int update(@RequestBody @Valid FormConfigTypeUpdateDTO FormConfigTypeUpdateDTO) {
         return formConfigTypeService.updateFormConfigType(FormConfigTypeUpdateDTO);
@@ -82,6 +85,7 @@ public class FormConfigTypeController {
      * 删除
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteFormConfigType", operationName = "删除表单配置分类", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public int delete(@RequestBody @Valid FormConfigTypeQueryDTO queryDTO) {
         return formConfigTypeService.deleteFormConfigType(queryDTO);

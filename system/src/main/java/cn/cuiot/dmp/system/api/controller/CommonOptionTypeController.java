@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionTypeCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionTypeUpdateDTO;
@@ -73,6 +75,7 @@ public class CommonOptionTypeController {
      * 更新
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateCommonOptionType", operationName = "更新常用选项分类", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/update")
     public int update(@RequestBody @Valid CommonOptionTypeUpdateDTO updateDTO) {
         return commonOptionTypeService.updateCommonOptionType(updateDTO);
@@ -82,6 +85,7 @@ public class CommonOptionTypeController {
      * 删除
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteCommonOptionType", operationName = "删除常用选项分类", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public int delete(@RequestBody @Valid CommonOptionTypeQueryDTO queryDTO) {
         return commonOptionTypeService.deleteCommonOptionType(queryDTO);

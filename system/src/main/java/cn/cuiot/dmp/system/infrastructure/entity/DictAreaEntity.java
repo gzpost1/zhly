@@ -1,19 +1,23 @@
 package cn.cuiot.dmp.system.infrastructure.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 /**
  * @author caorui
  * @date 2024/5/14
  */
 @Data
-@TableName(value = "tb_sys_area", autoResultMap = true)
-public class SysAreaEntity {
+@TableName(value = "tb_dict_area", autoResultMap = true)
+public class DictAreaEntity {
 
     /**
      * 区域编码，主键
      */
+    @TableId("code")
     private String code;
 
     /**
@@ -80,5 +84,32 @@ public class SysAreaEntity {
      * 上级/父级区域编码
      */
     private String parentCode;
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 地址级别：0：省 1：城市 2：县
+     */
+    private Integer level;
+
+    /**
+     * 地址
+     */
+    private String address;
+
+    /**
+     * 带分隔地址（逗号）
+     */
+    private String addressComma;
+
+    /**
+     * 纬度
+     */
+    private BigDecimal latitude;
+
+    /**
+     * 经度
+     */
+    private BigDecimal longitude;
 
 }
