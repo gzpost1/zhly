@@ -3,6 +3,8 @@ package cn.cuiot.dmp.system.infrastructure.messaging.spring;
 import cn.cuiot.dmp.system.application.param.event.OrganizationActionEvent;
 import cn.cuiot.dmp.system.application.param.event.OrganizationCreateActionEvent;
 import cn.cuiot.dmp.system.application.param.event.OrganizationDeleteActionEvent;
+import cn.cuiot.dmp.system.application.param.event.OrganizationDisableActionEvent;
+import cn.cuiot.dmp.system.application.param.event.OrganizationEnableActionEvent;
 import cn.cuiot.dmp.system.application.param.event.OrganizationUpdateActionEvent;
 import cn.cuiot.dmp.system.application.param.event.UserActionEvent;
 import cn.cuiot.dmp.system.application.param.event.UserCreateActionEvent;
@@ -55,6 +57,14 @@ public class SystemEventSendAdapter implements ApplicationContextAware {
         applicationContext.publishEvent(buildOrganizationUpdateActionEvent(organizationEntity));
     }
 
+    public void sendOrganizationEnableActionEvent(OrganizationEntity organizationEntity) {
+        applicationContext.publishEvent(buildOrganizationEnableActionEvent(organizationEntity));
+    }
+
+    public void sendOrganizationDisableActionEvent(OrganizationEntity organizationEntity) {
+        applicationContext.publishEvent(buildOrganizationDisableActionEvent(organizationEntity));
+    }
+
     private OrganizationDeleteActionEvent buildOrganizationDeleteActionEvent(OrganizationEntity organizationEntity) {
         OrganizationDeleteActionEvent organizationDeleteActionEvent = new OrganizationDeleteActionEvent();
         setOrganizationActionEventProperties(organizationEntity, organizationDeleteActionEvent);
@@ -67,6 +77,18 @@ public class SystemEventSendAdapter implements ApplicationContextAware {
         return organizationUpdateActionEvent;
     }
 
+    private OrganizationEnableActionEvent buildOrganizationEnableActionEvent(OrganizationEntity organizationEntity) {
+        OrganizationEnableActionEvent event = new OrganizationEnableActionEvent();
+        setOrganizationActionEventProperties(organizationEntity, event);
+        return event;
+    }
+
+    private OrganizationDisableActionEvent buildOrganizationDisableActionEvent(OrganizationEntity organizationEntity) {
+        OrganizationDisableActionEvent event = new OrganizationDisableActionEvent();
+        setOrganizationActionEventProperties(organizationEntity, event);
+        return event;
+    }
+
     private OrganizationCreateActionEvent buildOrganizationCreateActionEvent(OrganizationEntity organizationEntity) {
         OrganizationCreateActionEvent organizationCreateActionEvent = new OrganizationCreateActionEvent();
         setOrganizationActionEventProperties(organizationEntity, organizationCreateActionEvent);
@@ -77,7 +99,6 @@ public class SystemEventSendAdapter implements ApplicationContextAware {
         OrganizationActionEvent organizationActionEvent) {
         organizationActionEvent.setId(organizationEntity.getId());
         organizationActionEvent.setOrgKey(organizationEntity.getOrgKey());
-        organizationActionEvent.setOrgId(organizationEntity.getOrgId());
         organizationActionEvent.setOrgName(organizationEntity.getOrgName());
         organizationActionEvent.setOrgTypeId(organizationEntity.getOrgTypeId());
         organizationActionEvent.setStatus(organizationEntity.getStatus());
@@ -111,7 +132,6 @@ public class SystemEventSendAdapter implements ApplicationContextAware {
 
     private static void setUserActionEventProperties(UserDataEntity userData, UserActionEvent userActionEvent) {
         userActionEvent.setId(userData.getId());
-        userActionEvent.setUserId(userData.getUserId());
         userActionEvent.setUsername(userData.getUsername());
         userActionEvent.setPassword(userData.getPassword());
         userActionEvent.setEmail(userData.getEmail());

@@ -1,10 +1,11 @@
 package cn.cuiot.dmp.base.application.service;
 
 /**
- * @author wensq
- * @classname ApiPermissionService
- * @description 日志保存接口
- * @date 2021/12/3
+ * 权限校验服务接口
+ *
+ * @author wuyongchong
+ * @classname ApiPermissionServiceImpl
+ * @date 2024/04/25
  */
 public interface ApiPermissionService {
 

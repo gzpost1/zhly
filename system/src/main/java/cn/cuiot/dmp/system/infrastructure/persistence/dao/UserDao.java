@@ -95,18 +95,13 @@ public interface UserDao {
 
     /**
      * 添加用户与账户中间表关系数据
-     * @param uid
-     * @param oid
-     * @param did
-     * @param createdBy
-     * @return
      */
-    @Insert("INSERT INTO user_org(pk_user_id,pk_org_id,pk_dept_id,created_by) VALUES (#{uid},#{oid},#{did},#{createdBy})")
-    int insertUserOrg(@Param("uid") Long uid, @Param("oid") Long oid, @Param("did") String did, @Param("createdBy") String createdBy);
+    @Insert("INSERT INTO user_org(id,pk_user_id,pk_org_id,pk_dept_id,created_by) VALUES (#{id},#{uid},#{oid},#{did},#{createdBy})")
+    int insertUserOrg(@Param("id") Long id,@Param("uid") Long uid, @Param("oid") Long oid, @Param("did") String did, @Param("createdBy") String createdBy);
 
     /**
      * 添加用户授权关系
-     *
+     * @param id
      * @param orgId
      * @param privileges
      * @param toOrgId
@@ -114,8 +109,8 @@ public interface UserDao {
      * @param toUserId
      * @return
      */
-    @Insert("INSERT INTO user_grant(org_id,privileges,to_org_id,to_dept_id, to_user_id) VALUES (#{orgId},#{privileges},#{toOrgId},#{toDeptId},#{toUserId})")
-    int insertUserGrant(@Param("orgId") Long orgId, @Param("privileges") String privileges, @Param("toOrgId") String toOrgId, @Param("toDeptId") String toDeptId, @Param("toUserId") String toUserId);
+    @Insert("INSERT INTO user_grant(id,org_id,privileges,to_org_id,to_dept_id, to_user_id) VALUES (#{id},#{orgId},#{privileges},#{toOrgId},#{toDeptId},#{toUserId})")
+    int insertUserGrant(@Param("id") Long id, @Param("orgId") Long orgId, @Param("privileges") String privileges, @Param("toOrgId") String toOrgId, @Param("toDeptId") String toDeptId, @Param("toUserId") String toUserId);
 
     /**
      * 找到用户所对应的组织
@@ -137,14 +132,9 @@ public interface UserDao {
 
     /**
      * 用户注册时，添加角色
-     *
-     * @param pkUserId
-     * @param pkOrgId
-     * @param currentPkRole
-     * @return
      */
-    @Insert("insert into user_role (pk_user_id, pk_org_id, pk_role_id, created_by) values" + " (#{pkUserId}, #{pkOrgId}, #{currentPkRole}, 'system')")
-    int insertFeferRole(@Param("pkUserId") Long pkUserId, @Param("pkOrgId") Long pkOrgId, @Param("currentPkRole") Long currentPkRole);
+    @Insert("insert into user_role (id,pk_user_id, pk_org_id, pk_role_id, created_by) values" + " (#{id},#{pkUserId}, #{pkOrgId}, #{currentPkRole}, 'system')")
+    int insertFeferRole(@Param("id") Long id,@Param("pkUserId") Long pkUserId, @Param("pkOrgId") Long pkOrgId, @Param("currentPkRole") Long currentPkRole);
 
     /**
      * 查询该账户下第一条用户（账户所有者）
@@ -175,8 +165,8 @@ public interface UserDao {
      * @param uid
      * @return
      */
-    @Insert("insert into user_role(pk_user_id, pk_role_id, pk_org_id, created_on, created_by) " + "values (#{pkUserId}, #{pkRoleId}, #{pkOrgId}, #{createdOn}, #{createdBy})")
-    int insertUserRole(@Param("pkUserId") Long userId, @Param("pkRoleId") Long roleId, @Param("pkOrgId") String orgId, @Param("createdOn") LocalDateTime now, @Param("createdBy") String uid);
+    @Insert("insert into user_role(id,pk_user_id, pk_role_id, pk_org_id, created_on, created_by) " + "values (#{id},#{pkUserId}, #{pkRoleId}, #{pkOrgId}, #{createdOn}, #{createdBy})")
+    int insertUserRole(@Param("id") Long id, @Param("pkUserId") Long userId, @Param("pkRoleId") Long roleId, @Param("pkOrgId") String orgId, @Param("createdOn") LocalDateTime now, @Param("createdBy") String uid);
 
     /**
      * 通过角色id获取角色key

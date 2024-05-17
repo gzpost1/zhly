@@ -2,10 +2,10 @@ package cn.cuiot.dmp.system.api.subscribe.spring;
 
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
-import cn.cuiot.dmp.system.user_manage.domain.entity.User;
-import cn.cuiot.dmp.system.user_manage.domain.event.ResetPasswordSuccessEvent;
-import cn.cuiot.dmp.system.user_manage.domain.event.UserUpdateEvent;
-import cn.cuiot.dmp.system.user_manage.domain.service.VerifyDomainService;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.event.ResetPasswordSuccessEvent;
+import cn.cuiot.dmp.system.domain.event.UserUpdateEvent;
+import cn.cuiot.dmp.system.domain.service.VerifyDomainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

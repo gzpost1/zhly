@@ -3,14 +3,14 @@
 <mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao">
 
     <insert id="insertOrgMenu">
-        INSERT INTO org_menu ( org_id, menu_id, create_time, create_by )
+        INSERT INTO org_menu (id,org_id, menu_id, create_time, create_by )
             VALUE
-            <foreach collection="menuList" item="menu" separator=",">
-                (
-            #{orgId},
-            #{menu},
-            #{now},
-            #{userId}
+            <foreach collection="list" item="item" separator=",">
+                (#{item.id},
+            #{item.orgId},
+            #{item.menuId},
+            #{item.createTime},
+            #{item.createBy}
                 )
             </foreach>
     </insert>
@@ -23,20 +23,18 @@
         select menu_id from org_menu where org_id = #{orgId}
     </select>
 
-    <select id="getBanMenuIdList" resultType="java.lang.String">
+    <select id="getAllowMenuIdList" resultType="java.lang.String">
         SELECT
             menu_id
         FROM
-            org_type_menu_root
+            org_type_menu
         WHERE
-            menu_id NOT IN ( SELECT menu_id FROM org_menu WHERE org_id = #{orgId} )
-          AND org_type_id = (
-            SELECT
-                org_type_id
-            FROM
-                organization
-            WHERE
-                id = #{orgId})
+           org_type_id = (
+            SELECT org_type_id
+            FROM organization
+            WHERE id = #{orgId}
+           )
+           AND menu_id IN ( SELECT menu_id FROM org_menu WHERE org_id = #{orgId} )
     </select>
 
 </mapper>

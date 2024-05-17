@@ -7,10 +7,10 @@ import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntity;
-import cn.cuiot.dmp.system.user_manage.domain.entity.Organization;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgSourceEnum;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgStatusEnum;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.OrgTypeEnum;
+import cn.cuiot.dmp.system.domain.entity.Organization;
+import cn.cuiot.dmp.system.domain.types.enums.OrgSourceEnum;
+import cn.cuiot.dmp.system.domain.types.enums.OrgStatusEnum;
+import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -33,7 +33,6 @@ public class OrganizatioConverter implements Converter<Organization, Organizatio
         Organization organization = Organization.builder().build();
         organization.setId(organizationEntity.getId() != null ? new OrganizationId(organizationEntity.getId()) : null);
         organization.setOrgKey(organizationEntity.getOrgKey());
-        organization.setOrgId(organizationEntity.getOrgId());
         organization.setOrgName(organizationEntity.getOrgName());
         organization.setOrgTypeId(OrgTypeEnum.valueOf(organizationEntity.getOrgTypeId()));
         organization.setStatus(OrgStatusEnum.valueOf(organizationEntity.getStatus()));
@@ -45,6 +44,8 @@ public class OrganizatioConverter implements Converter<Organization, Organizatio
         organization.setSocialCreditCode(organizationEntity.getSocialCreditCode());
         organization.setCompanyName(organizationEntity.getCompanyName());
         organization.setDescription(organizationEntity.getDescription());
+        organization.setExpStartDate(organizationEntity.getExpStartDate());
+        organization.setExpEndDate(organizationEntity.getExpEndDate());
         organization.setCreatedOn(organizationEntity.getCreatedOn());
         organization.setCreatedBy(organizationEntity.getCreatedBy());
         organization.setCreatedByType(OperateByTypeEnum.valueOf(organizationEntity.getCreatedByType()));
@@ -66,7 +67,6 @@ public class OrganizatioConverter implements Converter<Organization, Organizatio
         OrganizationEntity entity = new OrganizationEntity();
         entity.setId(organization.getId() != null ? organization.getId().getValue() : null);
         entity.setOrgKey(organization.getOrgKey());
-        entity.setOrgId(organization.getOrgId());
         entity.setOrgName(organization.getOrgName());
         entity.setOrgTypeId(organization.getOrgTypeId() != null ? organization.getOrgTypeId().getValue() : null);
         entity.setStatus(organization.getStatus() != null ? organization.getStatus().getValue() : null);
@@ -76,6 +76,8 @@ public class OrganizatioConverter implements Converter<Organization, Organizatio
         entity.setSocialCreditCode(organization.getSocialCreditCode());
         entity.setCompanyName(organization.getCompanyName());
         entity.setDescription(organization.getDescription());
+        entity.setExpStartDate(organization.getExpStartDate());
+        entity.setExpEndDate(organization.getExpEndDate());
         entity.setCreatedOn(organization.getCreatedOn());
         entity.setCreatedBy(organization.getCreatedBy());
         entity.setCreatedByType(

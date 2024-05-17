@@ -39,10 +39,10 @@ public class LoginReqDTO {
     /**
      * 是否同意隐私协议（0：未同意、1：同意)
      */
-    private String privacyAgreement;
+    //private String privacyAgreement;
 
     /**
      * 短信验证码
      */
-    private String smsCode;
+    //private String smsCode;
 }

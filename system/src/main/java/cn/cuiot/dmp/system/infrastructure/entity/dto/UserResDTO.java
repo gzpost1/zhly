@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.system.infrastructure.entity.dto;
 
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.houbb.sensitive.annotation.Sensitive;
 import com.github.houbb.sensitive.core.api.strategory.StrategyEmail;
 import com.github.houbb.sensitive.core.api.strategory.StrategyPhone;
@@ -28,11 +30,6 @@ public class UserResDTO {
     private String id;
 
     /**
-     * 用户id
-     */
-    private String userId;
-
-    /**
      * 账户id
      */
     private String orgId;
@@ -43,8 +40,14 @@ public class UserResDTO {
     private String username;
 
     /**
+     * 姓名
+     */
+    private String name;
+
+    /**
      * 密码（加密）
      */
+    @JsonIgnore
     private String password;
 
     /**
@@ -56,15 +59,15 @@ public class UserResDTO {
 
     /**
      * 手机号
-     * 脱敏字段
      */
-    @Sensitive(strategy = StrategyPhone.class)
+    //@Sensitive(strategy = StrategyPhone.class)
     private String phoneNumber;
 
     /**
      * 注册时间
      */
-    @JsonFormat(pattern = "yyyy年MM月dd日 HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn;
 
     /**
@@ -118,6 +121,8 @@ public class UserResDTO {
     /**
      * 最后上线时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastOnlineOn;
 
     /**
@@ -185,4 +190,18 @@ public class UserResDTO {
      */
     private String dGroup;
 
+    /**
+     * 岗位ID
+     */
+    private Long postId;
+
+    /**
+     * 备注
+     */
+    private String remark;
+
+    /**
+     * 权限标识列表
+     */
+    private List<String> permission_ids;
 }

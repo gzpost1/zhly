@@ -1,10 +1,10 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
 import cn.cuiot.dmp.common.constant.PageResult;
-import cn.cuiot.dmp.system.infrastructure.entity.RoleEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CreateRoleDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleCreatedDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO;
 import java.util.List;
 import java.util.Map;
@@ -62,22 +62,13 @@ public interface RoleService {
     Long createRole(CreateRoleDto dto);
 
     /**
-     * 根据pkId查询角色详情
-     *
-     * @param orgId 账户id
-     * @param id    角色自增id
-     * @return
-     */
-    RoleDTO getRoleInfo(Long orgId, Long id);
-
-    /**
      * 根据角色id查询角色详细信息
      * @param roleId
      * @param orgId
      * @param userId
      * @return
      */
-    RoleCreatedDTO getRoleAll(String roleId, String orgId, String userId);
+    RoleDTO getRoleInfo(String roleId, String orgId, String userId);
 
 
 
@@ -90,4 +81,8 @@ public interface RoleService {
     Long updateRole(RoleBo roleBo);
 
 
+    /**
+     * 查询角色
+     */
+    List<BaseRoleDto> lookUpRoleList(BaseRoleReqDto query);
 }

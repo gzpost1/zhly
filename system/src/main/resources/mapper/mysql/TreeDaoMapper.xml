@@ -138,6 +138,7 @@
                         </when>
                         <otherwise>
                             and d0.path like concat(#{deptTreePath}, '%')
+                            and d0.parent_id=#{deptId}
                         </otherwise>
                     </choose>
                 </otherwise>

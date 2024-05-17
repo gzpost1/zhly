@@ -1,15 +1,15 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
-import cn.cuiot.dmp.query.PageResult;
+import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.infrastructure.domain.converter.OrganizatioConverter;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.OrganizationEntityMapper;
-import cn.cuiot.dmp.system.user_manage.domain.entity.Organization;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.OrderByTypeEnum;
-import cn.cuiot.dmp.system.user_manage.query.OrganizationCommonQuery;
-import cn.cuiot.dmp.system.user_manage.query.OrganizationMapperQuery;
-import cn.cuiot.dmp.system.user_manage.repository.OrganizationRepository;
+import cn.cuiot.dmp.system.domain.entity.Organization;
+import cn.cuiot.dmp.system.domain.types.enums.OrderByTypeEnum;
+import cn.cuiot.dmp.system.domain.query.OrganizationCommonQuery;
+import cn.cuiot.dmp.system.domain.query.OrganizationMapperQuery;
+import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;

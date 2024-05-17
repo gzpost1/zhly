@@ -10,9 +10,9 @@ import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
 import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity;
-import cn.cuiot.dmp.system.user_manage.domain.entity.User;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.UserStatusEnum;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
+import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,10 +36,8 @@ public class UserConverter implements Converter<User, UserEntity> {
             if (userEntity == null) {
                 return null;
             }
-
             User user = User.builder().build();
             user.setId(userEntity.getId() != null ? new UserId(userEntity.getId()) : null);
-            user.setUserId(userEntity.getUserId());
             user.setUsername(userEntity.getUsername());
             if (userEntity.getPassword() != null) {
                 Password password = new Password();
@@ -63,6 +61,10 @@ public class UserConverter implements Converter<User, UserEntity> {
             if (userEntity.getLastOnlineAddress() != null) {
                 user.setLastOnlineAddress(new Address(userEntity.getLastOnlineAddress()));
             }
+
+            user.setName(userEntity.getName());
+            user.setPostId(userEntity.getPostId());
+            user.setRemark(userEntity.getRemark());
 
             user.setLastOnlineOn(userEntity.getLastOnlineOn());
             user.setCreatedOn(userEntity.getCreatedOn());
@@ -92,7 +94,6 @@ public class UserConverter implements Converter<User, UserEntity> {
         }
         UserEntity entity = new UserEntity();
         entity.setId(user.getId() != null ? user.getId().getValue() : null);
-        entity.setUserId(user.getUserId());
         entity.setUsername(user.getUsername());
         entity.setPassword(user.getPassword() !=null ? user.getPassword().getHashEncryptValue() : null);
         entity.setEmail(user.getEncryptedEmail());
@@ -113,6 +114,11 @@ public class UserConverter implements Converter<User, UserEntity> {
         entity.setContactPerson(user.getContactPerson());
         entity.setContactAddress(user.getContactAddressStr());
         entity.setLongTimeLogin(user.getLongTimeLogin());
+
+        entity.setName(user.getName());
+        entity.setPostId(user.getPostId());
+        entity.setRemark(user.getRemark());
+
         return entity;
     }
 }

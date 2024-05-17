@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 import cn.cuiot.dmp.base.infrastructure.domain.repository.impl.AbstraceRepositoryImpl;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.Email;
 import cn.cuiot.dmp.domain.types.Password;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
@@ -14,11 +15,11 @@ import cn.cuiot.dmp.system.infrastructure.persistence.iservice.IUserEntityServic
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserDepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntityMapper;
-import cn.cuiot.dmp.system.user_manage.domain.entity.User;
-import cn.cuiot.dmp.system.user_manage.domain.entity.UserDepartmentInfo;
-import cn.cuiot.dmp.system.user_manage.domain.types.enums.UserTypeEnum;
-import cn.cuiot.dmp.system.user_manage.query.UserCommonQuery;
-import cn.cuiot.dmp.system.user_manage.repository.UserRepository;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.entity.UserDepartmentInfo;
+import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -48,7 +49,6 @@ public class UserRepositoryImpl extends
     private IUserEntityService iUserEntityService;
 
     private static final String COLUMN_NAME_PHONE_NUMBER = "phone_number";
-    private static final String COLUMN_NAME_USER_ID = "user_id";
     private static final String COLUMN_NAME_EMAIL = "email";
     private static final String COLUMN_NAME_USER_TYPE = "user_type";
     private static final String COLUMN_NAME_USER_NAME = "username";
@@ -79,7 +79,7 @@ public class UserRepositoryImpl extends
 
     private void fillInsertPropertyValue(User user) {
         //处理id<=0的异常情况
-        user.setId(null);
+        user.setId(new UserId(SnowflakeIdWorkerUtil.nextId()));
         if (user.getCreatedOn() == null) {
             user.setCreatedOn(LocalDateTime.now());
         }
@@ -227,8 +227,8 @@ public class UserRepositoryImpl extends
     }
 
     @Override
-    public List<UserDepartmentInfo> getUserInfo(String phoneNumber) {
-        List<UserDepartmentEntity> userEntityList = userEntityMapper.getUserInfo(phoneNumber);
+    public List<UserDepartmentInfo> getUserDepartmentInfo(String phoneNumber) {
+        List<UserDepartmentEntity> userEntityList = userEntityMapper.getUserDepartmentInfo(phoneNumber);
         List<UserDepartmentInfo> infoList = new ArrayList<>();
         for (UserDepartmentEntity entity : userEntityList) {
             UserDepartmentInfo info = new UserDepartmentInfo();
@@ -262,11 +262,6 @@ public class UserRepositoryImpl extends
         // 姓名
         if (userQuery.getUsername() != null) {
             queryWrapper.eq(COLUMN_NAME_USER_NAME, userQuery.getUsername());
-        }
-
-        // USER_ID
-        if (userQuery.getUserId() != null) {
-            queryWrapper.eq(COLUMN_NAME_USER_ID, userQuery.getUserId());
         }
 
         // 手机号

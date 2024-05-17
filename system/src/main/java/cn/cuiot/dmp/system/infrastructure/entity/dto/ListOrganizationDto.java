@@ -15,7 +15,7 @@ import lombok.Data;
 public class ListOrganizationDto{
 
     /**
-     * 账户名称
+     * 企业名称
      */
     private String orgName;
 
@@ -23,18 +23,13 @@ public class ListOrganizationDto{
      * 当前页数
      */
     @NotNull(message = "当前页数不能为空")
-    private Integer currentPage = 1;
+    private Integer pageNo = 1;
 
     /**
      * 每页数量
      */
     @NotNull(message = "每页数量不能为空")
     private Integer pageSize = 10;
-
-    /**
-     *  当前登录账户orgId
-     **/
-    private Long loginOrgId;
 
     /**
      * 组织id
@@ -47,9 +42,15 @@ public class ListOrganizationDto{
     private String phoneNumber;
 
     /**
-     * 统一社会信用代码
+     * 启用状态 1-启用 0-停用
      */
-    private String socialCreditCode;
+    private Byte status;
+
+
+    /**
+     * 企业状态 1-正常 2-已过期
+     */
+    private Byte orgStatus;
 
     /**
      * 组织ids(内部用)
@@ -58,8 +59,14 @@ public class ListOrganizationDto{
     private List<String> deptIds;
 
     /**
-     * 租户id
+     * 租户id(内部用)
      */
     @JsonIgnore
     private String orgId;
+
+    /**
+     *  当前登录账户orgId(内部用)
+     **/
+    private Long loginOrgId;
+
 }

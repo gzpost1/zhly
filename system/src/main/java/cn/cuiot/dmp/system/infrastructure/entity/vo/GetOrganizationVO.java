@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.system.infrastructure.entity.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Date;
 import java.util.List;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * @author cwl
@@ -23,6 +25,16 @@ public class GetOrganizationVO {
      * 账户名称
      */
     private String orgName;
+
+    /**
+     * 企业编码
+     */
+    private String orgKey;
+
+    /**
+     * 管理姓名
+     */
+    private String adminName;
 
     /**
      * 登录名
@@ -63,7 +75,7 @@ public class GetOrganizationVO {
     /**
      * 菜单跟节点id
      */
-    private List<String> menuRootList;
+    private List<String> menuList;
 
     /**
      *  label    用户标签（1:商务楼宇（写字楼等）,2:厂园区（工业、科技、物流等园区厂区）,3:商业综合体（购物中心、百货市场等）,
@@ -85,4 +97,25 @@ public class GetOrganizationVO {
      * 统一社会信用代码
      */
     private String socialCreditCode;
+
+
+    /**
+     * 企业有效期-开始时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date expStartDate;
+
+    /**
+     * 企业有效期-结束时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date expEndDate;
+
+
+    /**
+     * 备注
+     */
+    private String description;
 }

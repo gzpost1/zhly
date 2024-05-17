@@ -16,9 +16,10 @@
     <name>domain</name>
     <url>http://maven.apache.org</url>
     <modules>
-        <module>domain-system-user_manage</module>
+        <module>domain-system</module>
         <module>domain-common</module>
         <module>domain-upload</module>
+        <module>domain-archive</module>
     </modules>
 
     <dependencies>

@@ -31,12 +31,22 @@ public class LoginResDTO {
     private String refreshCode;
 
     /**
-     * orgId
+     * 账户ID
      */
-    private String organizationId;
+    private String orgId;
 
     /**
-     * 用户的手机号（脱敏）
+     * 账户名称
+     */
+    private String orgName;
+
+    /**
+     * 账户类型
+     */
+    private Integer orgTypeId;
+
+    /**
+     * 用户的手机号
      */
     private String phoneNumber;
 
@@ -54,4 +64,24 @@ public class LoginResDTO {
      * 是否同意隐私协议（0：未同意、1：同意)
      */
     private String privacyAgreement;
+
+    /**
+     * 岗位ID
+     */
+    private Long postId;
+
+    /**
+     * 姓名
+     */
+    private String name;
+
+    /**
+     * 头像
+     */
+    private String avatar;
+
+    /**
+     * 用户类型
+     */
+    private Integer userType;
 }

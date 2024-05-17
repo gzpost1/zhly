@@ -17,8 +17,10 @@ import cn.cuiot.dmp.upload.domain.entity.ChunkUploadRequest;
 import cn.cuiot.dmp.upload.domain.entity.ChunkUploadResponse;
 import cn.cuiot.dmp.upload.domain.service.OssTemplate;
 import cn.cuiot.dmp.upload.domain.types.MimeTypeEnum;
+import cn.cuiot.dmp.upload.domain.types.UploadStatusConstants;
 import cn.cuiot.dmp.upload.domain.types.UrlType;
 import cn.cuiot.dmp.upload.infrastructure.config.OssProperties;
+import cn.cuiot.dmp.upload.infrastructure.util.FileTypeUtil;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -31,6 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +47,11 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @Service
 public class OssUploadService {
+
+    /**
+     * 第一个分片
+     */
+    private final static Integer FIRST_CHUNK=0;
 
     @Autowired
     private OssTemplate ossTemplate;
@@ -63,9 +71,15 @@ public class OssUploadService {
 
         String suffix = multipartFile.getOriginalFilename()
                 .substring(multipartFile.getOriginalFilename().lastIndexOf(".") + 1).toLowerCase();
+        /**
+         * 文件类型安全校验
+         */
         AssertUtil.isTrue(checkForbiddenSuffix(suffix),
                 new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "不支持该文件类型上传"));
-
+        AssertUtil.isTrue(checkAllowSuffix(suffix),
+                new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "不支持该文件类型上传"));
+        AssertUtil.isTrue(FileTypeUtil.validate(param.getFile(),suffix),
+                new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "上传文件类型不支持上传"));
         AssertUtil.isTrue(checkAllowDirs(param.getDir()),
                 new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "目录参数不支持"));
 
@@ -83,8 +97,7 @@ public class OssUploadService {
         if (Objects.nonNull(param.getCompressImg())) {
             compressImg = param.getCompressImg();
         }
-        if (EntityConstants.YES.equals(compressImg) && suffix
-                .matches("^bmp|jpg|png|jpeg|tif|gif|svg$")) {
+        if (EntityConstants.YES.equals(compressImg) && MimeTypeEnum.getImageExtensions().contains(suffix)) {
             //启用图片压缩
             String localDirPath =
                     ossProperties.getTmpDirPath() + Matcher.quoteReplacement(File.separator)
@@ -138,7 +151,7 @@ public class OssUploadService {
         String presignedObjectUrl = ossTemplate
                 .getObjectUrl(bucketName, objectName, UrlType.PRESIGNED_URL, param.getExpires());
         return UploadResponse.builder()
-                .status("200")
+                .status(UploadStatusConstants.FINISH)
                 .bucketName(bucketName)
                 .objectName(objectName)
                 .url(url)
@@ -158,9 +171,15 @@ public class OssUploadService {
         String originalFilename = multipartFile.getOriginalFilename();
         String suffix = originalFilename.substring(originalFilename.lastIndexOf(".") + 1)
                 .toLowerCase();
+        /**
+         * 文件类型安全校验
+         */
         AssertUtil.isTrue(checkForbiddenSuffix(suffix),
                 new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "不支持该文件类型上传"));
-
+        AssertUtil.isTrue(checkAllowSuffix(suffix),
+                new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "不支持该文件类型上传"));
+        AssertUtil.isTrue(FileTypeUtil.validate(param.getFile(),suffix),
+                new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "上传文件类型不支持上传"));
         AssertUtil.isTrue(checkAllowDirs(param.getDir()),
                 new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "目录参数不支持"));
 
@@ -173,7 +192,7 @@ public class OssUploadService {
         String presignedObjectUrl = ossTemplate
                 .getObjectUrl(bucketName, objectName, UrlType.PRESIGNED_URL, param.getExpires());
         return UploadResponse.builder()
-                .status("200")
+                .status(UploadStatusConstants.FINISH)
                 .bucketName(bucketName)
                 .objectName(objectName)
                 .url(url)
@@ -223,12 +242,22 @@ public class OssUploadService {
         AssertUtil.isTrue((null != param.getFile() && !param.getFile().isEmpty()), "上传文件为空");
         AssertUtil.isTrue(StringUtils.isNotBlank(param.getDir()), "上传目录不能为空");
         AssertUtil.isTrue(StringUtils.isNotBlank(param.getBucketName()), "桶名称不能为空");
-        String suffix = param.getFileName()
-                .substring(param.getFileName().lastIndexOf(".") + 1).toLowerCase();
+        String suffix = StringUtils.substringAfterLast(param.getFileName(), ".");
+        AssertUtil.notNull(suffix,"上传文件类型不支持上传");
+        suffix = suffix.toLowerCase();
+        /**
+         * 文件类型安全校验
+         */
         AssertUtil.isTrue(checkForbiddenSuffix(suffix),
+                new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "不支持该文件类型上传"));
+        AssertUtil.isTrue(checkAllowSuffix(suffix),
                 new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "不支持该文件类型上传"));
         AssertUtil.isTrue(checkAllowDirs(param.getDir()),
                 new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "目录参数不支持"));
+        if(FIRST_CHUNK.equals(param.getChunk())) {
+            AssertUtil.isTrue(FileTypeUtil.validate(param.getFile(),suffix),
+                    new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "上传文件类型不支持上传"));
+        }
 
         ChunkUploadRequest request = new ChunkUploadRequest();
         request.setBucketName(param.getBucketName());
@@ -277,6 +306,16 @@ public class OssUploadService {
         return inputStream;
     }
 
+    /**
+     * 设置Bucket的策略
+     */
+    public void setBucketPolicy(String bucketName,String policy) {
+        ossTemplate.setBucketPolicy(bucketName,policy);
+    }
+
+    /**
+     * 检测允许目录
+     */
     private boolean checkAllowDirs(String dir) {
         List<String> dirList = ossProperties.getAllowDirs();
         log.info("allowDirs:{}", JSON.toJSONString(dirList));
@@ -286,6 +325,9 @@ public class OssUploadService {
         return false;
     }
 
+    /**
+     * 检测禁止后缀
+     */
     private boolean checkForbiddenSuffix(String suffix) {
         if (StringUtils.isBlank(suffix)) {
             return false;
@@ -296,6 +338,23 @@ public class OssUploadService {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 允许上传的文件后缀
+     * @param suffix
+     * @return
+     */
+    private boolean checkAllowSuffix(String suffix) {
+        List<String> suffixList = ossProperties.getAllowSuffix();
+        log.info("suffixList:{}", JSON.toJSONString(suffixList));
+       if(CollectionUtils.isEmpty(suffixList)){
+           return true;
+       }
+        if(suffixList.contains(suffix)){
+            return true;
+        }
+        return false;
     }
     
 }

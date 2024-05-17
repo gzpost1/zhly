@@ -11,6 +11,7 @@
                 pk_org_id,
                 code,
                 path,
+                path_name,
                 description,
                 sort,
                 is_init,
@@ -20,26 +21,28 @@
 
     </sql>
 
-    <insert id="insertDepartment" useGeneratedKeys="true" keyProperty="id"
-            parameterType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+    <insert id="insertDepartment" parameterType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
 
-                INSERT INTO department (d_group,
+                INSERT INTO department (id,d_group,
                                         department_name,
                                         parent_id,
                                         pk_org_id,
                                         `code`,
                                         `path`,
+                                        path_name,
                                         sort,
                                         `level`,
                                         created_on,
                                         created_by,
                                         description)
-                VALUES (#{dGroup},
+                VALUES (#{id},
+                        #{dGroup},
                         #{departmentName},
                         #{parentId},
                         #{pkOrgId},
                         #{code},
                         #{path},
+                        #{pathName},
                         #{sort},
                         #{level},
                         #{createdOn},
@@ -122,7 +125,6 @@
     </select>
 
     <select id="countByDepartmentNameForUpdate" resultType="java.lang.Integer">
-
                 select
                     COUNT(0)
                 from
@@ -130,8 +132,10 @@
                 where
                     department_name = #{departmentName}
                     and pk_org_id = #{orgId}
+                    <if test="parentId != null">
+                        and parent_id = #{parentId}
+                    </if>
                     and id != #{id}
-
     </select>
 
     <select id="countByParentId" resultType="java.lang.Integer">
@@ -182,7 +186,15 @@
     <select id="getDepartmentListByParentIdAndPath" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
         SELECT
         <include refid="column"/>
-        FROM department WHERE parent_id = #{parentId} and path like concat(#{path}, '%') order by sort desc
+        FROM department
+        WHERE pk_org_id = #{orgId}
+        <if test="path != null and path != ''">
+            and path like concat(#{path}, '%')
+        </if>
+        <if test="parentId != null">
+            and parent_id=#{parentId}
+        </if>
+        order by sort desc
     </select>
 
     <select id="getSpaceListByParentId" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.SpaceTreeResDto">
@@ -227,10 +239,11 @@
 
     </select>
 
-    <select id="getPathByUser" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto">
+    <select id="getPathByUser" resultType="cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto">
 
                 select
-                    d.id, d.path, d.department_name as name, d.d_group
+                    d.id, d.path, d.department_name as name, d.d_group, d.parent_id, d.pk_org_id, d.pk_org_id as org_id,
+                   d.code,d.level
                 from
                     department d
                     left join user_org uo on d.id = uo.pk_dept_id
@@ -246,13 +259,11 @@
     </select>
 
     <select id="selectDepartmentName" resultType="java.lang.String">
-
                 SELECT 1
                 FROM department d
                 WHERE d.pk_org_id = #{pkOrgId}
-                  AND d.d_group IN (1, 2)
+                  AND d.parent_id = #{parentId}
                   AND d.department_name = #{departmentName} LIMIT 1
-
     </select>
 
     <select id="getPathBySpacePath" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
@@ -291,15 +302,28 @@
         where id = #{id}
     </update>
 
+    <update id="updatePath">
+        update department set path = REPLACE(path,#{oldPath},#{newPath}) where path like CONCAT(#{oldPath}, '%')
+    </update>
+
+    <update id="updateDepartmentName">
+        UPDATE department
+        SET department_name = #{departmentName}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePathNameByPath">
+        update department set path_name = REPLACE(path_name,#{oldPathName},#{newPathName}) where path like CONCAT(#{path}, '%')
+    </update>
+
     <select id="getDepartmentById" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
 
                 SELECT
-                    id , department_name
+        <include refid="column"/>
                 FROM
                     department
                 WHERE
                     id = #{id}
-
     </select>
 
     <select id="getAllSpaceTree" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
@@ -420,6 +444,20 @@
                 department
             WHERE
                 id IN ( SELECT pk_dept_id FROM user_org WHERE pk_user_id = #{userId} AND pk_org_id = #{orgId} ORDER BY id  ))
+    </select>
+
+    <select id="lookUpDepartmentList" resultType="cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity">
+        SELECT
+        <include refid="column"/>
+        FROM department
+        <where>
+            <if test="param.deptIdList != null and param.deptIdList.size() >0">
+                AND id in
+                <foreach collection="param.deptIdList" item="deptId" open="(" separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </if>
+        </where>
     </select>
 
 </mapper>

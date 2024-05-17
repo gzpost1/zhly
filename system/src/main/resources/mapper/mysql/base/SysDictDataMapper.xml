@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.SysDictDataMapper">
+
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.system.infrastructure.entity.SysDictData">
+    <id column="data_id" jdbcType="BIGINT" property="dataId"/>
+    <result column="dict_id" jdbcType="BIGINT" property="dictId"/>
+    <result column="domain_id" jdbcType="BIGINT" property="domainId"/>
+    <result column="data_name" jdbcType="VARCHAR" property="dataName"/>
+    <result column="data_value" jdbcType="VARCHAR" property="dataValue"/>
+    <result column="sort" jdbcType="INTEGER" property="sort"/>
+    <result column="status" jdbcType="TINYINT" property="status"/>
+    <result column="remark" jdbcType="VARCHAR" property="remark"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    data_id, domain_id,dict_id, data_name, data_value, sort, `status`, remark
+  </sql>
+
+  <resultMap id="SysDictTypeVOResultMap" type="cn.cuiot.dmp.base.infrastructure.dto.DictTypeVO">
+    <id column="dict_code" property="code"/>
+    <collection property="items" ofType="cn.cuiot.dmp.base.infrastructure.dto.DictDataVO">
+      <id column="data_id" property="dataId"/>
+      <result column="data_name" jdbcType="VARCHAR" property="dataName"/>
+      <result column="data_value" jdbcType="VARCHAR" property="dataValue"/>
+      <result column="data_sort" jdbcType="VARCHAR" property="sort"/>
+      <result column="data_status" jdbcType="VARCHAR" property="status"/>
+      <result column="remark" jdbcType="VARCHAR" property="remark"/>
+    </collection>
+  </resultMap>
+
+  <select id="getDictDataList" resultMap="SysDictTypeVOResultMap">
+    select
+      a.dict_code,b.data_id,b.data_name,b.data_value, b.sort as data_sort, b.`status` as data_status,b.remark
+    from tb_sys_dict_type a
+    left join tb_sys_dict_data b on a.dict_id=b.dict_id
+    <where>
+      <if test="dictCode != null and dictCode != ''">
+        and a.dict_code=#{dictCode}
+      </if>
+    </where>
+	order by a.dict_id,b.sort
+  </select>
+
+</mapper>

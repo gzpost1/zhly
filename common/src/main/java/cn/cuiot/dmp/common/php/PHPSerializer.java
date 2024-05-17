@@ -261,8 +261,8 @@ public class PHPSerializer {
             byte[] className = getBytes(getClassName(cls), charset);
             byte[] classNameLen = getBytes(className.length);
 
-            if (obj instanceof Serializable) {
-                byte[] cs = ((Serializable) obj).serialize();
+            if (obj instanceof PhpSerializable) {
+                byte[] cs = ((PhpSerializable) obj).serialize();
 
                 byte[] cslen = getBytes(cs.length);
 
@@ -964,11 +964,11 @@ public class PHPSerializer {
         ht.put(hv++, o);
         if (o == null) {
             stream.skip(n);
-        } else if (o instanceof Serializable) {
+        } else if (o instanceof PhpSerializable) {
             byte[] b = new byte[n];
 
             stream.read(b, 0, n);
-            ((Serializable) o).unserialize(b);
+            ((PhpSerializable) o).unserialize(b);
         } else {
             stream.skip(n);
         }

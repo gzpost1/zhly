@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.base.application.aop;
 
+import cn.cuiot.dmp.base.application.mica.xss.exception.XssException;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -16,11 +18,14 @@ import org.hibernate.validator.HibernateValidator;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,6 +43,14 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @RestControllerAdvice
 public class IdmExceptionAdvice {
 
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public Object defaultErrorHandler(HttpRequestMethodNotSupportedException exception) {
+        log.error("", exception);
+        exception.printStackTrace();
+        return new IdmResDTO<>(ResultCode.METHOD_NOT_SUPPORTED);
+    }
+
     /**
      * 统一处理异常的默认方法（应按业务需求编写不同类型的异常处理器）
      *
@@ -50,7 +63,20 @@ public class IdmExceptionAdvice {
     public Object defaultErrorHandler(HttpServletRequest request, HttpServletResponse response, Exception e) {
         log.error("", e);
         e.printStackTrace();
-        return new IdmResDTO<>(ResultCode.SERVER_BUSY);
+        String code = ResultCode.SERVER_BUSY.getCode();
+        String message = ResultCode.SERVER_BUSY.getMessage();
+        if (e instanceof HttpMediaTypeNotSupportedException) {
+            code = ResultCode.CONTENT_TYPE_NOT_SUPPORTED.getCode();
+            message = ResultCode.CONTENT_TYPE_NOT_SUPPORTED.getCode();
+        }
+        if (e instanceof SQLException || e instanceof DataAccessException) {
+            message = e.getMessage().contains("too long") ? "存在字段长度过长，请检查后重新提交" :"执行SQL错误";
+        }
+        if(e instanceof XssException){
+            code = ResultCode.INVALID_PARAM_TYPE.getCode();
+            message = e.getMessage();
+        }
+        return new IdmResDTO<>(code,message);
     }
 
     /**

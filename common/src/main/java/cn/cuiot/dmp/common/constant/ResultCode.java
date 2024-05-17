@@ -18,7 +18,7 @@ public enum ResultCode {
      */
     SUCCESS("000000", "API请求成功"),
 
-
+    ERROR("000001","系统异常"),
 
     /**
      * 公共错误：系统错误
@@ -33,6 +33,9 @@ public enum ResultCode {
 
     PARAM_NOT_COMPLIANT("010005", "请求参数不符合规定"),
 
+    METHOD_NOT_SUPPORTED("010006", "请求方式不支持"),
+
+    CONTENT_TYPE_NOT_SUPPORTED("010007", "请求内容类型不支持"),
 
     OBJECT_NOT_EXIST("011000", "对象不存在"),
 
@@ -64,7 +67,7 @@ public enum ResultCode {
     /**
      * 账户、用户相关错误
      */
-    PHONE_NUMBER_ALREADY_EXIST("050002", "该手机号已注册，请重新输入!"),
+    PHONE_NUMBER_ALREADY_EXIST("050002", "手机号已存在，请更换手机号"),
     USERNAME_ALREADY_EXIST("050003", "该用户名已注册，请重新输入!"),
     USERNAME_IS_INVALID("050004", "用户名长度为4-20字符"),
     PASSWORD_IS_INVALID("050005", "密码应由大写字母、小写字母、数字和特殊符号（!@#$%^&*.?）混合组成,且不能连续3位以上"),
@@ -106,7 +109,7 @@ public enum ResultCode {
     SMS_CODE_EXPIRED_ERROR("050051", "验证码已过期，请重新获取"),
     SMS_CODE_FREQUENTLY_REQ_ERROR("050052", "短时间内请勿重复提交"),
     ORG_NAME_ERROR("050053", "账户名称不规范，应可控制在32个字符以内,内容应该包括数字、字母、中文"),
-    USER_USERNAME_ERRER("050056", "用户名称重复，请修改后重试"),
+    USER_USERNAME_ERRER("050056", "用户名已存在"),
     ORG_ORGKEY_ERRER("050057", "账户key重复，请修改后重试"),
     ROLE_ROLEKEY_ERROR("050058", "角色key不存在"),
     CANNOT_OPERATION("050059", "不可操作"),
@@ -167,9 +170,9 @@ public enum ResultCode {
      * 组织相关
      */
     DEPARTMENT_NAME_IS_EXIST("150001", "同级别下组织名称已存在"),
-    DEPARTMENT_HAS_CHILDREN("150002", "已存在下级组织,不可删除"),
+    DEPARTMENT_HAS_CHILDREN("150002", "该组织存在下级组织,不可删除！"),
     DEPARTMENT_ROOT_NO_DELETE("150005", "根组织不可删除"),
-    DEPARTMENT_HAS_USER("150006", "已存在用户,不可删除"),
+    DEPARTMENT_HAS_USER("150006", "组织内已有人员,不可删除！"),
     DEPARTMENT_HAS_ORG("150007", "已存在关联账户,不可删除"),
     DEPARTMENT_ULTRA_VIRES("150008", "所选组织没有操作权限"),
     COMMUNITY_NAME_IS_EXIST("150009", "小区名称已存在"),
@@ -216,6 +219,12 @@ public enum ResultCode {
     OTHER_LABEL_NAME_NOT_NULL("7000001","其它商企标签名称为空"),
     ACCOUNT_LABEL_NOT_EXIST("7000002","所选账户标签不存在"),
 
+    /**
+     * 系统服务相关（前两位表示服务模块，中间三位表示所属业务，后两位表示异常编码）
+     */
+    QUERY_BUSINESS_TYPE_ERROR("0100101", "查询业务类型信息异常"),
+    QUERY_FORM_CONFIG_ERROR("0100201", "查询表单配置信息异常"),
+    QUERY_FORM_CONFIG_DETAIL_ERROR("0100202", "查询表单配置详情异常"),
     ;
 
 

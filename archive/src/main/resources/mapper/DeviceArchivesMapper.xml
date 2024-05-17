@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.archive.infrastructure.persistence.mapper.DeviceArchivesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity">
+        <id column="id" property="id" />
+        <result column="loupan_id" property="loupanId" />
+        <result column="device_name" property="deviceName" />
+        <result column="device_category" property="deviceCategory" />
+        <result column="device_system" property="deviceSystem" />
+        <result column="device_professional" property="deviceProfessional" />
+        <result column="installation_location" property="installationLocation" />
+        <result column="location_details" property="locationDetails" />
+        <result column="latitude" property="latitude" />
+        <result column="longitude" property="longitude" />
+        <result column="installation_date" property="installationDate" />
+        <result column="email" property="email" />
+        <result column="device_status" property="deviceStatus" />
+        <result column="property_service_level" property="propertyServiceLevel" />
+        <result column="brand" property="brand" />
+        <result column="device_model" property="deviceModel" />
+        <result column="specification" property="specification" />
+        <result column="barcode" property="barcode" />
+        <result column="interface_name" property="interfaceName" />
+        <result column="parameter_configuration" property="parameterConfiguration" />
+        <result column="manufacturer" property="manufacturer" />
+        <result column="manufacturer_contact" property="manufacturerContact" />
+        <result column="manufacturing_date" property="manufacturingDate" />
+        <result column="supplier" property="supplier" />
+        <result column="supplier_contact" property="supplierContact" />
+        <result column="factory_number" property="factoryNumber" />
+        <result column="factory_date" property="factoryDate" />
+        <result column="operation_date" property="operationDate" />
+        <result column="warranty_period" property="warrantyPeriod" />
+        <result column="maintenance_supplier" property="maintenanceSupplier" />
+        <result column="maintenance_contact" property="maintenanceContact" />
+        <result column="remarks" property="remarks" />
+        <result column="image" property="image" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, loupan_id,device_name, device_category, device_system, device_professional, installation_location, location_details, latitude, longitude, installation_date, email, device_status, property_service_level, brand, device_model, specification, barcode, interface_name, parameter_configuration, manufacturer, manufacturer_contact, manufacturing_date, supplier, supplier_contact, factory_number, factory_date, operation_date, warranty_period, maintenance_supplier, maintenance_contact, remarks, image, update_time, update_user, create_time, create_user, deleted
+    </sql>
+
+</mapper>

@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.domain.event;
 
-import cn.cuiot.dmp.system.user_manage.domain.event.ResetPasswordSuccessEvent;
-import cn.cuiot.dmp.system.user_manage.messaging.UserDomainEventSender;
+import cn.cuiot.dmp.system.domain.event.ResetPasswordSuccessEvent;
+import cn.cuiot.dmp.system.domain.messaging.UserDomainEventSender;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

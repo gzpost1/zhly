@@ -3,9 +3,11 @@ package cn.cuiot.dmp.system.api.controller;
 import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.common.utils.Const;
@@ -22,19 +24,18 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SmsReqDTO;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.VerifyUnit;
-import cn.cuiot.dmp.system.user_manage.domain.entity.User;
+import cn.cuiot.dmp.system.domain.entity.User;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.PhoneUtil;
 import com.alibaba.fastjson.JSONObject;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 /**
+ * 登录登出管理
  * @author guoying
  * @className LogControllerImpl
  * @description 登录登出管理
@@ -96,37 +98,48 @@ public class LoginController extends BaseController {
      * @param loginReqDTO 请求登录的用户信息
      * @return
      */
+    @LogRecord(operationCode = "session", operationName = "用户登录", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/session", produces = "application/json;charset=UTF-8")
     public LoginResDTO loginDmp(@RequestBody LoginReqDTO loginReqDTO) {
-        log.info("pc用户登录信息 {}", loginReqDTO.getUserAccount());
-        // 用户账号参数校验
-        if (loginReqDTO == null || StringUtils.isEmpty(loginReqDTO.getUserAccount())) {
-            // 账号或密码为空
-            throw new BusinessException(ResultCode.USER_ACCOUNT_IS_EMPTY);
+        /**
+         * 手机号校验
+         */
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getUserAccount())) {
+            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_EMPTY,"请输入手机号");
         }
-        // 用户密码参数校验
-        if (loginReqDTO == null || StringUtils.isEmpty(loginReqDTO.getPassword())) {
-            // 账号或密码为空
-            throw new BusinessException(ResultCode.PASSWORD_IS_EMPTY);
+        if(!PhoneUtil.isPhone(loginReqDTO.getUserAccount())){
+            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_NOT_VALID,"请输入11位手机号码");
+        }
+        // 密码参数校验
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getPassword())) {
+            throw new BusinessException(ResultCode.PASSWORD_IS_EMPTY,"请输入密码");
+        }
+        //临时Aes密钥ID参数校验
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getKid())) {
+            throw new BusinessException(ResultCode.KID_IS_EMPTY,"密钥ID为空");
+        }
+        // 必须要阅读用户协议
+        /*if (!PRIVACY_AGREE.equals(loginReqDTO.getPrivacyAgreement())) {
+            throw new BusinessException(ResultCode.PRIVACY_AGREEMENT_ERROR);
+        }*/
+        // 验证码ID参数校验
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getSid())) {
+            throw new BusinessException(ResultCode.ACCESS_ERROR,"验证码ID参数为空");
         }
         // 验证码参数校验
-        if (loginReqDTO == null || StringUtils.isEmpty(loginReqDTO.getKaptchaText())) {
-            // 图形验证码为空
-            throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY);
+        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getKaptchaText())) {
+            throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY,"请输入验证码");
         }
-        // 验证码参数校验
-        if (loginReqDTO == null || StringUtils.isEmpty(loginReqDTO.getSid())) {
-            // 图形验证码为空
-            throw new BusinessException(ResultCode.ACCESS_ERROR);
-        }
-        if (loginReqDTO == null || StringUtils.isEmpty(loginReqDTO.getKid())) {
-            // 图形验证码为空
-            throw new BusinessException(ResultCode.KID_IS_EMPTY);
-        }
+        //图形验证码校验
+        verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid());
+
+        /**
+         * 获取AES密钥信息
+         */
         String jsonObject = stringRedisTemplate.opsForValue().get(SECRET_INFO_KEY + loginReqDTO.getKid());
         stringRedisTemplate.delete(SECRET_INFO_KEY + loginReqDTO.getKid());
         if (StringUtils.isEmpty(jsonObject)) {
-            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR);
+            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR,"密钥ID已过期，请重新获取");
         }
         Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
         // 密码解密
@@ -134,7 +147,7 @@ public class LoginController extends BaseController {
         // 账号密码校验
         User validateUser = loginService.authDmp(loginReqDTO);
         // 短信验证码验证
-        if (TRUE_WORD.equals(smsWord)) {
+        /*if (TRUE_WORD.equals(smsWord)) {
             List<String> userNameList = Arrays.asList(sidPassUserNameList.split(","));
             if (!userNameList.contains(loginReqDTO.getUserAccount())) {
                 // 手机号验证码参数校验
@@ -147,12 +160,7 @@ public class LoginController extends BaseController {
                     throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR);
                 }
             }
-            // 必须要阅读用户协议
-            if (!PRIVACY_AGREE.equals(loginReqDTO.getPrivacyAgreement())) {
-                throw new BusinessException(ResultCode.PRIVACY_AGREEMENT_ERROR);
-            }
-        }
-
+        }*/
         return loginService.loginIdentity(validateUser, request);
     }
 
@@ -163,6 +171,7 @@ public class LoginController extends BaseController {
      * @param
      * @return
      */
+    @LogRecord(operationCode = "logOut", operationName = "用户登出", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @DeleteMapping(value = "/logOut", produces = "application/json;charset=UTF-8")
     public void logoutUser() {
         loginService.logoutIdentity(request, getOrgId(), getUserId(), getUserName());
@@ -187,12 +196,12 @@ public class LoginController extends BaseController {
             // 图形验证码为空
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY);
         }
-        // 手机验证码参数校验
+        // 图形验证码sid参数校验
         if (smsReqDTO == null || StringUtils.isEmpty(smsReqDTO.getSid())) {
-            // 手机验证码为空
+            // 图形验证码sid为空
             throw new BusinessException(ResultCode.ACCESS_ERROR);
         }
-        boolean kaptchaVerified = true;
+        boolean kaptchaVerified = false;
         // 图形验证码校验
         if (TRUE_WORD.equals(smsWord)) {
             kaptchaVerified = verifyUnit.checkKaptchaText(smsReqDTO.getKaptchaText(), smsReqDTO.getSid());
@@ -222,7 +231,7 @@ public class LoginController extends BaseController {
                 redisUtil.expire(key, Const.ONE_DAY_SECOND);
                 SimpleStringResDTO simpleStringResDTO;
                 try {
-                    simpleStringResDTO = verifyService.sendSmsCodeWithoutKaptcha(phoneNumber, userDataEntity.getUserId());
+                    simpleStringResDTO = verifyService.sendSmsCodeWithoutKaptcha(phoneNumber, userDataEntity.getId().toString());
                 } catch (Exception e) {
                     redisUtil.decr(key, Const.NUMBER_1);
                     throw e;

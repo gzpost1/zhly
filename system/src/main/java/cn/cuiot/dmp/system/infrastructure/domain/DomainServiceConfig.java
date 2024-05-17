@@ -1,15 +1,15 @@
 package cn.cuiot.dmp.system.infrastructure.domain;
 
-import cn.cuiot.dmp.system.user_manage.domain.service.UserDomainService;
-import cn.cuiot.dmp.system.user_manage.domain.service.UserPhoneNumberDomainService;
-import cn.cuiot.dmp.system.user_manage.domain.service.VerifyDomainService;
-import cn.cuiot.dmp.system.user_manage.domain.service.impl.UserDomainServiceImpl;
-import cn.cuiot.dmp.system.user_manage.domain.service.impl.UserPhoneNumberDomainServiceImpl;
-import cn.cuiot.dmp.system.user_manage.domain.service.impl.VerifyDomainServiceImpl;
-import cn.cuiot.dmp.system.user_manage.domain.types.verify.VerificationCode;
-import cn.cuiot.dmp.system.user_manage.external.VerificationCodeValidator;
-import cn.cuiot.dmp.system.user_manage.messaging.UserDomainEventSender;
-import cn.cuiot.dmp.system.user_manage.repository.UserRepository;
+import cn.cuiot.dmp.system.domain.service.UserDomainService;
+import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
+import cn.cuiot.dmp.system.domain.service.VerifyDomainService;
+import cn.cuiot.dmp.system.domain.service.impl.UserDomainServiceImpl;
+import cn.cuiot.dmp.system.domain.service.impl.UserPhoneNumberDomainServiceImpl;
+import cn.cuiot.dmp.system.domain.service.impl.VerifyDomainServiceImpl;
+import cn.cuiot.dmp.system.domain.types.verify.VerificationCode;
+import cn.cuiot.dmp.system.domain.external.VerificationCodeValidator;
+import cn.cuiot.dmp.system.domain.messaging.UserDomainEventSender;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

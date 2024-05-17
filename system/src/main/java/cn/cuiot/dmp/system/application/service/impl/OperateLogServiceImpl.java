@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.system.infrastructure.entity.OperationLogEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OperationLogDao;
@@ -38,6 +39,7 @@ public class OperateLogServiceImpl implements OperateLogService {
         if (!StringUtils.isEmpty(entity.getResponseParams()) && entity.getResponseParams().length() > MAX_LENGTH) {
             entity.setResponseParams(entity.getResponseParams().substring(0, 2044) + "...");
         }
+        entity.setId(SnowflakeIdWorkerUtil.nextId());
         operationLogDao.insertOperationLog(entity);
         return 0;
     }

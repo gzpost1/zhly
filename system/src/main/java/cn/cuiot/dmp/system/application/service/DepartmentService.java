@@ -1,7 +1,8 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentPropertyDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameResDto;
@@ -21,16 +22,6 @@ import java.util.List;
  * @return
  **/
 public interface DepartmentService {
-
-    /**
-     * 新增根组织
-     * @param dto
-     * @return
-     * @Author xieSH
-     * @Description 新增根组织
-     * @Date 2021/8/17 9:53
-     **/
-    Long insertDepartment(InsertDepartmentDto dto);
 
     /**
      * 新增子组织
@@ -91,7 +82,7 @@ public interface DepartmentService {
      * @Description 查询
      * @Date 2021/8/17 15:19
      **/
-    List<DepartmentEntity> getDeptByOrgId(String orgId);
+    List<DepartmentEntity> getDeptRootByOrgId(String orgId);
 
     /**
      * 根据组织id查询组织名称
@@ -181,4 +172,15 @@ public interface DepartmentService {
      */
     List<GetDepartmentTreeLazyResDto> manageGetDepartmentTreeLazy(GetDepartmentTreeLazyReqDto getDepartmentTreeLazyReqDto);
 
+    /**
+     * 查询部门
+     */
+    List<DepartmentDto> lookUpDepartmentList(DepartmentReqDto query);
+
+    /**
+     * 查询子部门
+     * @param query
+     * @return
+     */
+    List<DepartmentDto> lookUpDepartmentChildList(DepartmentReqDto query);
 }

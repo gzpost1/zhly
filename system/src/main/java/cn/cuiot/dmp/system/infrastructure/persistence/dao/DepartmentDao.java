@@ -1,7 +1,8 @@
 package cn.cuiot.dmp.system.infrastructure.persistence.dao;
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentPropertyDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SpaceTreeResDto;
 import java.util.List;
@@ -91,7 +92,7 @@ public interface DepartmentDao {
      * @param orgId
      * @return
      */
-    int countByDepartmentName(String departmentName, Long orgId);
+    int countByDepartmentName(@Param("departmentName") String departmentName, @Param("orgId") Long orgId);
 
     /**
      * 查询
@@ -100,7 +101,7 @@ public interface DepartmentDao {
      * @param id
      * @return
      */
-    int countByDepartmentNameForUpdate(String departmentName, Long orgId, Long id);
+    int countByDepartmentNameForUpdate(@Param("departmentName") String departmentName,@Param("orgId")  Long orgId,@Param("parentId") Long parentId,@Param("id")  Long id);
 
     /**
      * 根据条件查询
@@ -109,7 +110,7 @@ public interface DepartmentDao {
      * @return
      */
     @Select("select 1 from department where department_name = #{departmentName} and parent_id = #{parentId} limit 1")
-    Integer selectByNameAndPatentId(String departmentName, Long parentId);
+    Integer selectByNameAndPatentId(@Param("departmentName") String departmentName,@Param("parentId") Long parentId);
 
     /**
      * 根据条件查询
@@ -119,7 +120,7 @@ public interface DepartmentDao {
      */
     @Select("select 1 from department d left join department_property dp on d.id = dp.dept_id \n" +
             "where dp.property_key = 'current_floor' and dp.val = #{currentFloor}  and d.parent_id = #{parentId} limit 1")
-    Integer selectByPropertyAndPatentId(String currentFloor, Long parentId);
+    Integer selectByPropertyAndPatentId(@Param("currentFloor") String currentFloor,@Param("parentId") Long parentId);
 
     /**
      * 根据条件查询
@@ -130,7 +131,7 @@ public interface DepartmentDao {
      */
     @Select("select 1 from department d left join department_property dp on d.id = dp.dept_id \n" +
             "where dp.property_key = 'current_floor' and dp.val = #{currentFloor} and d.parent_id = #{parentId} and d.id != #{id} limit 1")
-    Integer selectByPropertyAndPatentIdForUpdate(String currentFloor, Long parentId, Long id);
+    Integer selectByPropertyAndPatentIdForUpdate(@Param("currentFloor") String currentFloor,@Param("parentId")  Long parentId,@Param("id")  Long id);
 
     /**
      * 根据条件查询组织
@@ -140,7 +141,7 @@ public interface DepartmentDao {
      * @return
      */
     @Select("select 1 from department where department_name = #{departmentName} and parent_id = #{parentId} and id != #{id} limit 1")
-    Integer selectByNameAndPatentIdForUpdate(String departmentName, Long parentId, Long id);
+    Integer selectByNameAndPatentIdForUpdate(@Param("departmentName") String departmentName, @Param("parentId") Long parentId,@Param("id")  Long id);
 
     /**
      * 根据parentId查询
@@ -167,7 +168,7 @@ public interface DepartmentDao {
      * @param ids
      * @param orgId
      */
-    void batchDelete(List<Long> ids, String orgId);
+    void batchDelete(@Param("ids") List<Long> ids,@Param("orgId") String orgId);
 
     /**
      * 根据主键id删除
@@ -176,12 +177,12 @@ public interface DepartmentDao {
     void batchDeleteProperty(@Param("ids") List<Long> ids);
 
     /**
-     * 根据parentId查询组织
+     * 根据parentId和path查询组织
      * @param parentId
      * @param path
      * @return
      */
-    List<DepartmentEntity> getDepartmentListByParentIdAndPath(@Param("parentId")Long parentId, @Param("path")String path);
+    List<DepartmentEntity> getDepartmentListByParentIdAndPath(@Param("orgId")Long orgId,@Param("parentId")Long parentId, @Param("path") String path);
 
     /**
      * 根据组织id查询下级组织
@@ -208,14 +209,9 @@ public interface DepartmentDao {
 
     /**
      * 添加组织属性数据
-     *
-     * @param did Long
-     * @param key String
-     * @param val String
-     * @return int
      */
-    @Insert("INSERT INTO department_property(dept_id,property_key,val) VALUES (#{did},#{key},#{val})")
-    int insertDepartmentProperty(@Param("did") Long did, @Param("key") String key, @Param("val") String val);
+    @Insert("INSERT INTO department_property(id,dept_id,property_key,val) VALUES (#{id},#{did},#{key},#{val})")
+    int insertDepartmentProperty(@Param("id") Long id, @Param("did") Long did, @Param("key") String key, @Param("val") String val);
 
     /**
      * 修改组织属性数据
@@ -267,12 +263,9 @@ public interface DepartmentDao {
 
 
     /**
-     * 统一账户下组织名不能相同
-     * @param pkOrgId
-     * @param departmentName
-     * @return
+     * 同级组织名称不可重复
      */
-    String selectDepartmentName(@Param("pkOrgId") Long pkOrgId, @Param("departmentName") String departmentName);
+    String selectDepartmentName(@Param("pkOrgId") Long pkOrgId, @Param("parentId") Long parentId, @Param("departmentName") String departmentName);
 
     /**
      * 根据id查询组织路径
@@ -363,4 +356,14 @@ public interface DepartmentDao {
     List<Long> checkDeptIdList(@Param("orgId") String orgId, @Param("userId") String userId, @Param("deptIdList") List<Long> deptIdList);
 
 
+    void updatePath(@Param("oldPath") String oldPath,@Param("newPath")  String newPath);
+
+    void updateDepartmentName(@Param("id") Long id,@Param("departmentName")  String departmentName);
+
+    void updatePathNameByPath(@Param("path")  String path, @Param("oldPathName") String oldPathName, @Param("newPathName") String newPathName);
+
+    /**
+     * 查询部门
+     */
+    List<DepartmentEntity> lookUpDepartmentList(@Param("param") DepartmentReqDto query);
 }

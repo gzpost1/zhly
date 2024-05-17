@@ -22,11 +22,6 @@ public class OrganizationEntity {
     private String orgKey;
 
     /**
-     * 账户id
-     */
-    private String orgId;
-
-    /**
      * 账户名称
      */
     private String orgName;

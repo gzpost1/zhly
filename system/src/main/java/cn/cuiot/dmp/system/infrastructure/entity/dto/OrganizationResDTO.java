@@ -20,11 +20,6 @@ public class OrganizationResDTO {
     private Long id;
 
     /**
-     * 账户id
-     */
-    private String orgId;
-
-    /**
      * 账户名称
      */
     private String orgName;
@@ -38,11 +33,6 @@ public class OrganizationResDTO {
      * 账户类型（1：个人账户、2：企业账户、3：子账户、4：超级账户、5：省份账户）
      */
     private Integer orgTypeId;
-
-    /**
-     * 账户类型（1：个人账户、2：企业账户、3：子账户、4：超级账户、5：省份账户）
-     */
-    private Integer Type;
 
     /**
      * 父级账户id

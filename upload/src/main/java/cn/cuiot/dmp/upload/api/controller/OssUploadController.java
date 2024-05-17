@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.UUID;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -90,7 +91,11 @@ public class OssUploadController {
         if (StringUtils.isBlank(param.getBucketName())) {
             param.setBucketName(ossProperties.getBucketName());
         }
+        if(StringUtils.isBlank(param.getTaskId())){
+            param.setTaskId(UUID.randomUUID().toString());
+        }
         UploadResponse uploadResponse = ossUploadService.chunkUpload(param);
+        uploadResponse.setTaskId(param.getTaskId());
         return IdmResDTO.success(uploadResponse);
     }
 

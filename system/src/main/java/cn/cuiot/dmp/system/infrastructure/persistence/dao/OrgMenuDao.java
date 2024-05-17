@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.persistence.dao;
 
+import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgMenuDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -16,12 +17,8 @@ public interface OrgMenuDao {
 
     /**
      * 插入orgMenu表
-     * @param orgId
-     * @param menuList
-     * @param userId
-     * @param now
      */
-    void insertOrgMenu(@Param("orgId") Long orgId, @Param("menuList") List<String> menuList, @Param("userId") String userId, @Param("now") LocalDateTime now);
+    void insertOrgMenu(@Param("list") List<OrgMenuDto> list);
 
     /**
      * 删除orgMenDao
@@ -37,10 +34,10 @@ public interface OrgMenuDao {
     List<String> getMenuListByOrgId(@Param("orgId") String orgId);
 
     /**
-     * 获得没有应用权限的菜单id集合
+     * 获得org允许的菜单权限
      * @param orgId
      * @return
      */
-    List<String> getBanMenuIdList(@Param("orgId") String orgId);
+    List<String> getAllowMenuIdList(@Param("orgId") String orgId);
 
 }

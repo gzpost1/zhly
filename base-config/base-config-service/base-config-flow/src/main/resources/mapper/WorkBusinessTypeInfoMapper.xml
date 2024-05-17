@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.baseconfig.flow.mapper.WorkBusinessTypeInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.baseconfig.flow.entity.WorkBusinessTypeInfoEntity">
+        <id column="id" property="id" />
+        <result column="task_id" property="taskId" />
+        <result column="proc_inst_id" property="procInstId" />
+        <result column="user_id" property="userId" />
+        <result column="close_user_id" property="closeUserId" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="business_type" property="businessType" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, task_id, proc_inst_id, user_id, start_time, end_time, business_type, ext
+    </sql>
+
+
+</mapper>

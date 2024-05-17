@@ -20,7 +20,7 @@ public interface UserEntityMapper extends IotBaseMapper<UserEntity> {
 
     List<UserEntity> getPersonUserByPhoneNumber(String phoneNum);
 
-    List<UserDepartmentEntity> getUserInfo(String phoneNum);
+    List<UserDepartmentEntity> getUserDepartmentInfo(String phoneNum);
 
     List<UserEntity> findDeletedUserList(@Param("idList") List<Long> idList);
 

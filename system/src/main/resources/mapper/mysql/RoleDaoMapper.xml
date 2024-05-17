@@ -4,7 +4,6 @@
 
     <sql id="role_column">
         r.id,
-        r.role_id AS roleId,
         r.role_name AS roleName,
         r.role_key AS roleKey,
         r.description,
@@ -35,9 +34,7 @@
         LEFT JOIN org_role o ON r.id = o.pk_role_id
         <trim prefix="WHERE" prefixOverrides="AND">
             <if test="orgId !=null and orgId !=-1">
-                <if test="userId != 1">
-                    and o.pk_org_id = #{orgId}
-                </if>
+                and o.pk_org_id = #{orgId}
             </if>
             <if test="roleName !=null ">
                 and  r.role_name  like concat('%',#{roleName},'%')
@@ -93,16 +90,15 @@
     </insert>
 
 
-    <insert id="insertRole" useGeneratedKeys="true" keyProperty="id" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
+    <insert id="insertRole" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
         INSERT INTO `role`
         (
-            org_id, role_id, role_name, role_key, description, permit, role_type,
+            id,org_id,role_name, role_key, description, permit, role_type,
             created_by, created_by_type
         )
         VALUES
-        (
+        (   #{id},
             #{orgId},
-            #{roleId},
             #{roleName},
             #{roleKey},
             #{description},
@@ -127,15 +123,14 @@
         and  delete_flag = 0
     </update>
 
-    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
+    <insert id="insert" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
         INSERT INTO `role`
         (
-            role_id, role_name, role_key, description, permit, role_type,
+            id,role_name, role_key, description, permit, role_type,
             created_by, created_by_type
         )
         VALUES
-        (
-            #{roleId},
+        (   #{id},
             #{roleName},
             #{roleKey},
             #{description},
@@ -244,7 +239,7 @@
         and ur.pk_org_id = #{orgId} limit 1
     </select>
 
-    <select id="selectOneRole" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleCreatedDTO">
+    <select id="selectOneRole" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO">
         select
         <include refid="role_column"/>
         FROM role r,org_role o
@@ -263,10 +258,11 @@
     </select>
 
     <select id="getRoleMenu" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.AddMenuDto">
-        select mr.pk_menu_id id,m.menu_id menuId from menu_role mr,menu m where
-            mr.pk_role_id = #{roleId}
-                                                                            and
+        select m.*
+        from menu_role mr,menu m
+        where
             mr.pk_menu_id = m.id
+           and mr.pk_role_id = #{roleId}
     </select>
 
 
@@ -280,11 +276,43 @@
         and o.pk_org_id = #{orgId} limit 1
     </select>
 
+
     <insert id="insertMenusRole" parameterType="cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo">
         INSERT INTO menu_role(pk_menu_id,pk_role_id,created_on,created_by,created_by_type)
         VALUES
-        <foreach collection="menuIds" item="item" open="(" separator="),(" close=")">
-            #{item}, #{id},#{updatedOn}, #{updatedBy}, #{updatedByType}
+        <foreach collection="menuIds" item="menuId" open="(" separator="),(" close=")">
+            #{menuId}, #{id},#{updatedOn}, #{updatedBy}, #{updatedByType}
         </foreach>
     </insert>
+
+    <select id="selectRoleByName"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO">
+        select
+        <include refid="role_column"/>
+        from role r
+        LEFT JOIN org_role o ON r.id = o.pk_role_id
+        WHERE r.role_name = #{roleName}
+        and r.delete_flag = 0
+        and o.pk_org_id = #{orgId} limit 1
+    </select>
+
+    <select id="lookUpRoleList"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
+        select
+        <include refid="role_column"/>
+        from role r
+        LEFT JOIN org_role o ON r.id = o.pk_role_id
+        <where>
+            <if test="idList != null and idList.size() >0">
+                AND r.id in
+                <foreach collection="idList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="orgId != null">
+                and o.pk_org_id = #{orgId}
+            </if>
+        </where>
+    </select>
+
 </mapper>
