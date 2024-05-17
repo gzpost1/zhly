@@ -38,7 +38,6 @@ public class CommonOptionTypeController {
     /**
      * 根据id获取详情
      */
-    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public CommonOptionTypeVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return commonOptionTypeService.queryForDetail(idParam.getId());
@@ -47,7 +46,6 @@ public class CommonOptionTypeController {
     /**
      * 编辑时查询类型列表（排除当前节点）
      */
-    @RequiresPermissions
     @PostMapping("/queryExcludeChild")
     public List<CommonOptionTypeTreeNodeVO> queryExcludeChild(@RequestBody @Valid CommonOptionTypeQueryDTO queryDTO) {
         return commonOptionTypeService.queryExcludeChild(queryDTO);
@@ -56,7 +54,6 @@ public class CommonOptionTypeController {
     /**
      * 根据条件查询企业的表单配置详情
      */
-    @RequiresPermissions
     @PostMapping("/queryByCompany")
     public List<CommonOptionTypeTreeNodeVO> queryByCompany(@RequestBody @Valid CommonOptionTypeQueryDTO queryDTO) {
         return commonOptionTypeService.queryByCompany(queryDTO);
@@ -66,6 +63,7 @@ public class CommonOptionTypeController {
      * 创建
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "createCommonOptionType", operationName = "创建常用选项分类", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/create")
     public int create(@RequestBody @Valid CommonOptionTypeCreateDTO createDTO) {
         return commonOptionTypeService.saveCommonOptionType(createDTO);
@@ -94,7 +92,6 @@ public class CommonOptionTypeController {
     /**
      * 根据常用选项分类查询常用选项列表
      */
-    @RequiresPermissions
     @PostMapping("/queryCommonOptionByType")
     public PageResult<CommonOptionVO> queryCommonOptionByType(@RequestBody @Valid CommonOptionPageQuery pageQuery) {
         return commonOptionTypeService.queryCommonOptionByType(pageQuery);

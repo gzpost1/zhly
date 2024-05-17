@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.system.application.param.dto.SystemInfoCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.SystemInfoQueryDTO;
 import cn.cuiot.dmp.system.application.param.vo.SystemInfoVO;
@@ -28,7 +30,6 @@ public class SystemInfoController {
     /**
      * 根据id获取详情
      */
-    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public SystemInfoVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return systemInfoService.queryForDetail(idParam.getId());
@@ -37,7 +38,6 @@ public class SystemInfoController {
     /**
      * 根据来源id和来源类型获取详情
      */
-    @RequiresPermissions
     @PostMapping("/queryBySource")
     public SystemInfoVO queryBySource(@RequestBody @Valid SystemInfoQueryDTO systemInfoQueryDTO) {
         return systemInfoService.queryBySource(systemInfoQueryDTO);
@@ -48,6 +48,7 @@ public class SystemInfoController {
      * 由于所有字段可以传空，所以先查数据库，没有就新增，有就更新
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "createOrUpdateSystemInfo", operationName = "创建或更新系统信息", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/createOrUpdate")
     public int createOrUpdate(@RequestBody @Valid SystemInfoCreateDTO systemInfoCreateDTO) {
         return systemInfoService.saveOrUpdateSystemInfo(systemInfoCreateDTO);

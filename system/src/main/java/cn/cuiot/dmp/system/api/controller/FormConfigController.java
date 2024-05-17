@@ -34,7 +34,6 @@ public class FormConfigController {
     /**
      * 根据id获取详情
      */
-    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public FormConfigVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return formConfigService.queryForDetail(idParam.getId());
@@ -44,6 +43,7 @@ public class FormConfigController {
      * 保存
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "saveFormConfig", operationName = "保存表单配置", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/save")
     public int saveFormConfig(@RequestBody @Valid FormConfigCreateDTO createDTO) {
         return formConfigService.saveFormConfig(createDTO);

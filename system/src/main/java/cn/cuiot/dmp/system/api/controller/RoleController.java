@@ -45,7 +45,6 @@ public class RoleController extends BaseController {
     /**
      * 角色列表分页查询
      */
-    @RequiresPermissions
     @GetMapping(value = "/listRoles", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<RoleDTO> getRoleListByPage(
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,

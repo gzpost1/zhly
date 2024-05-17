@@ -38,7 +38,6 @@ public class FormConfigTypeController {
     /**
      * 根据id获取详情
      */
-    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public FormConfigTypeVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return formConfigTypeService.queryForDetail(idParam.getId());
@@ -47,7 +46,6 @@ public class FormConfigTypeController {
     /**
      * 编辑时查询类型列表（排除当前节点）
      */
-    @RequiresPermissions
     @PostMapping("/queryExcludeChild")
     public List<FormConfigTypeTreeNodeVO> queryExcludeChild(@RequestBody @Valid FormConfigTypeQueryDTO queryDTO) {
         return formConfigTypeService.queryExcludeChild(queryDTO);
@@ -56,8 +54,6 @@ public class FormConfigTypeController {
     /**
      * 根据条件查询企业的表单配置详情
      */
-    @RequiresPermissions
-    @PostMapping("/queryByCompany")
     public List<FormConfigTypeTreeNodeVO> queryByCompany(@RequestBody @Valid FormConfigTypeQueryDTO queryDTO) {
         return formConfigTypeService.queryByCompany(queryDTO);
     }
@@ -66,6 +62,7 @@ public class FormConfigTypeController {
      * 创建
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "createFormConfigType", operationName = "创建表单配置分类", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/create")
     public int create(@RequestBody @Valid FormConfigTypeCreateDTO FormConfigTypeCreateDTO) {
         return formConfigTypeService.saveFormConfigType(FormConfigTypeCreateDTO);
@@ -94,7 +91,6 @@ public class FormConfigTypeController {
     /**
      * 根据表单分类查询表单配置列表
      */
-    @RequiresPermissions
     @PostMapping("/queryFormConfigByType")
     public PageResult<FormConfigVO> queryFormConfigByType(@RequestBody @Valid FormConfigPageQuery pageQuery) {
         return formConfigTypeService.queryFormConfigByType(pageQuery);

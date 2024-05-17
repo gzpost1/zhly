@@ -35,7 +35,6 @@ public class BusinessTypeController {
     /**
      * 根据id获取详情
      */
-    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public BusinessTypeVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return businessTypeService.queryForDetail(idParam.getId());
@@ -44,7 +43,6 @@ public class BusinessTypeController {
     /**
      * 编辑时查询类型列表（排除当前节点）
      */
-    @RequiresPermissions
     @PostMapping("/queryExcludeChild")
     public List<BusinessTypeTreeNodeVO> queryExcludeChild(@RequestBody @Valid BusinessTypeQueryDTO queryDTO) {
         return businessTypeService.queryExcludeChild(queryDTO);
@@ -53,7 +51,6 @@ public class BusinessTypeController {
     /**
      * 根据条件查询企业的业务类型详情
      */
-    @RequiresPermissions
     @PostMapping("/queryByCompany")
     public List<BusinessTypeTreeNodeVO> queryByCompany(@RequestBody @Valid BusinessTypeQueryDTO queryDTO) {
         return businessTypeService.queryByCompany(queryDTO);
@@ -63,6 +60,7 @@ public class BusinessTypeController {
      * 创建
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "createBusinessType", operationName = "创建业务类型", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/create")
     public int create(@RequestBody @Valid BusinessTypeCreateDTO businessTypeCreateDTO) {
         return businessTypeService.saveBusinessType(businessTypeCreateDTO);

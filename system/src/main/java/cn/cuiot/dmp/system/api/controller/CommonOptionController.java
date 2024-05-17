@@ -35,7 +35,6 @@ public class CommonOptionController {
     /**
      * 根据id获取详情
      */
-    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public CommonOptionVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return commonOptionService.queryForDetail(idParam.getId());
@@ -44,7 +43,6 @@ public class CommonOptionController {
     /**
      * 根据名称获取详情
      */
-    @RequiresPermissions
     @PostMapping("/queryForDetailByName")
     public CommonOptionVO queryForDetailByName(@RequestBody @Valid CommonOptionDTO commonOptionDTO) {
         return commonOptionService.queryForDetailByName(commonOptionDTO);
@@ -54,6 +52,7 @@ public class CommonOptionController {
      * 保存
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "saveCommonOption", operationName = "保存常用选项", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/save")
     public int saveCommonOption(@RequestBody @Valid CommonOptionCreateDTO createDTO) {
         return commonOptionService.saveCommonOption(createDTO);
@@ -82,7 +81,6 @@ public class CommonOptionController {
     /**
      * 删除预校验
      */
-    @RequiresPermissions
     @PostMapping("/checkBeforeDelete")
     public void checkBeforeDelete(@RequestBody @Valid IdParam idParam) {
         commonOptionService.checkDeleteStatus(idParam.getId());
