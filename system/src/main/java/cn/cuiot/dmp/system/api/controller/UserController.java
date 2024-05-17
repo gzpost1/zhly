@@ -9,6 +9,7 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
@@ -16,6 +17,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -163,7 +165,6 @@ public class UserController extends BaseController {
     /**
      * 查询用户详情
      */
-    @RequiresPermissions
     @GetMapping(value = "/user/getUser", produces = MediaType.APPLICATION_JSON_VALUE)
     public UserDataResDTO getDetail(@RequestParam(value = "id") String id) {
         // 获取session中的orgId
@@ -180,6 +181,7 @@ public class UserController extends BaseController {
      * 新增用户
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "insertUserD", operationName = "新增用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/user/insertUserD", produces = MediaType.APPLICATION_JSON_VALUE)
     public void insertUser(@RequestBody @Valid InsertUserDTO dto) {
         String loginOrgId = LoginInfoHolder.getCurrentOrgId().toString();
@@ -222,6 +224,7 @@ public class UserController extends BaseController {
      * 修改用户
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateUser", operationName = "修改用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/user/updateUser", produces = MediaType.APPLICATION_JSON_VALUE)
     public IdmResDTO updateUser(@RequestBody @Valid UpdateUserDTO dto) {
 
@@ -245,6 +248,7 @@ public class UserController extends BaseController {
      * 批量移动用户
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "moveUsers", operationName = "移动用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/user/moveUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public IdmResDTO moveUsers(@RequestBody @Valid MoveUserDTO dto) {
 
@@ -263,6 +267,7 @@ public class UserController extends BaseController {
      * 批量启停用
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "changeUserStatus", operationName = "批量启停用用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/user/changeUserStatus", produces = MediaType.APPLICATION_JSON_VALUE)
     public IdmResDTO changeUserStatus(@RequestBody @Valid ChangeUserStatusDTO dto) {
 
@@ -281,6 +286,7 @@ public class UserController extends BaseController {
      * 批量删除用户
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteUsers", operationName = "删除用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/user/deleteUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> deleteUsers(@RequestBody @Valid DeleteUserDTO dto) {
         // 获取session中的userId
@@ -307,6 +313,7 @@ public class UserController extends BaseController {
      * 导出用户
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "exportUsers", operationName = "导出用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/user/exportUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public void exportUsers(@RequestBody @Valid ExportUserCmd dto) throws IOException {
         UserBo userBo = new UserBo();
@@ -334,6 +341,7 @@ public class UserController extends BaseController {
      * 导入用户
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "importUsers", operationName = "导入用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/user/importUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public void importUsers(@RequestParam("file") MultipartFile file,
             @RequestParam(value = "deptId", required = true) String deptId) throws Exception {
@@ -437,6 +445,7 @@ public class UserController extends BaseController {
     /**
      * 修改密码(登录人自行修改)
      */
+    @LogRecord(operationCode = "updatePassword", operationName = "修改密码", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/user/updatePassword", produces = MediaType.APPLICATION_JSON_VALUE)
     public void updatePassword(@RequestBody UpdatePasswordDto dto) {
         // 获取密码
@@ -469,6 +478,7 @@ public class UserController extends BaseController {
     /**
      * 修改手机号(登录人自行修改)
      */
+    @LogRecord(operationCode = "updatePhoneNumber", operationName = "修改手机号", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/user/updatePhoneNumber", produces = MediaType.APPLICATION_JSON_VALUE)
     public void updatePhoneNumber(@RequestBody SmsCodeCheckReqDTO dto) {
         String phoneNumber = Optional.ofNullable(dto).map(d -> d.getPhoneNumber()).orElse(null);

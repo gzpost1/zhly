@@ -1,9 +1,11 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.application.service.SysDictDataService;
@@ -63,6 +65,7 @@ public class SysDictTypeController {
      * 创建字典
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteDictType", operationName = "创建字典", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/create")
     public IdmResDTO<SysDictType> create(@RequestBody @Valid SysDictTypeParam sysDictTypeParam) {
         SysDictType sysDictType = BeanUtil.copyProperties(sysDictTypeParam, SysDictType.class);
@@ -74,6 +77,7 @@ public class SysDictTypeController {
      * 修改字典
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateDictType", operationName = "创建字典", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/update")
     public IdmResDTO<SysDictType> update(@RequestBody @Valid SysDictTypeParam sysDictTypeParam) {
 
@@ -95,6 +99,7 @@ public class SysDictTypeController {
      * 删除
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteDictType", operationName = "创建字典", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public IdmResDTO delete(@RequestBody @Valid IdParam param) {
         SysDictType entity = Optional.ofNullable(sysDictTypeService.getById(param.getId()))

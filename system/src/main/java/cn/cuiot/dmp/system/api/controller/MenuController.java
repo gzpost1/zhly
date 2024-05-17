@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.AuthorizeParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
@@ -7,6 +9,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.service.MenuService;
@@ -87,6 +90,8 @@ public class MenuController extends BaseController {
     /**
      * 创建菜单项
      */
+    @RequiresPermissions
+    @LogRecord(operationCode = "createMenu", operationName = "创建菜单项", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/create")
     public IdmResDTO create(@RequestBody @Valid MenuDTO menuDTO) {
         menuDTO.setCreatedBy(LoginInfoHolder.getCurrentUserId().toString());
@@ -100,6 +105,8 @@ public class MenuController extends BaseController {
     /**
      * 修改菜单项
      */
+    @RequiresPermissions
+    @LogRecord(operationCode = "updateMenu", operationName = "修改菜单项", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/update")
     public IdmResDTO update(@RequestBody @Valid MenuDTO menuDTO) {
         if (Objects.isNull(menuDTO.getId())) {
@@ -114,6 +121,8 @@ public class MenuController extends BaseController {
     /**
      * 删除菜单项
      */
+    @RequiresPermissions
+    @LogRecord(operationCode = "deleteMenu", operationName = "删除菜单项", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public IdmResDTO deleteMenu(@RequestBody @Valid IdParam idParam) {
         menuService.deleteMenu(idParam.getId());
@@ -123,6 +132,8 @@ public class MenuController extends BaseController {
     /**
      * 启停用
      */
+    @RequiresPermissions
+    @LogRecord(operationCode = "updateMenuStatus", operationName = "启停用菜单项", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/updateStatus")
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
@@ -135,6 +146,8 @@ public class MenuController extends BaseController {
     /**
      * 初始化授权
      */
+    @RequiresPermissions
+    @LogRecord(operationCode = "authorize", operationName = "初始化授权", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/authorize")
     public IdmResDTO authorize(@RequestBody @Valid AuthorizeParam authorizeParam) {
         String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();

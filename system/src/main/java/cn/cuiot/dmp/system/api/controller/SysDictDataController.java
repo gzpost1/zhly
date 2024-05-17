@@ -1,10 +1,12 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.BeanMapper;
@@ -61,6 +63,7 @@ public class SysDictDataController {
      * 创建字典项
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "createDictData", operationName = "创建字典项", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/create")
     public IdmResDTO create(@RequestBody @Valid SysDictDataParam sysDictDataParam) {
         AssertUtil
@@ -78,6 +81,7 @@ public class SysDictDataController {
      * 修改字典项
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateDictData", operationName = "修改字典项", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/update")
     public IdmResDTO update(@RequestBody @Valid SysDictDataParam sysDictDataParam) {
         AssertUtil
@@ -93,6 +97,7 @@ public class SysDictDataController {
      * 启用
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "enableDictData", operationName = "启用字典项", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/enable")
     public IdmResDTO enable(@RequestParam("id") Long id) {
         SysDictData entity = Optional.ofNullable(sysDictDataService.getById(id))
@@ -106,6 +111,7 @@ public class SysDictDataController {
      * 禁用
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "disableDictData", operationName = "禁用字典项", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/disable")
     public IdmResDTO disable(@RequestParam("id") Long id) {
         SysDictData entity = Optional.ofNullable(sysDictDataService.getById(id))
@@ -119,6 +125,7 @@ public class SysDictDataController {
      * 删除
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteDictData", operationName = "删除字典项", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public IdmResDTO delete(@RequestBody @Valid IdParam param) {
         SysDictData entity = Optional.ofNullable(sysDictDataService.getById(param.getId()))
