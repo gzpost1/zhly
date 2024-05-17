@@ -1,27 +1,41 @@
 package cn.cuiot.dmp.archive.api.controller;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
+import cn.cuiot.dmp.archive.application.param.dto.ParkingArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.query.ParkingArchivesQuery;
+import cn.cuiot.dmp.archive.application.param.vo.ParkingArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.ParkingArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
+import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.util.Objects;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @author liujianyu
@@ -102,5 +116,51 @@ public class ParkingArchivesController {
         entity.setLoupanId(param.getLoupanId());
         parkingArchivesService.update(entity, wrapper);
         return IdmResDTO.success();
+    }
+
+    /**
+     * 导出,按照id列表
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/export", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void export(@RequestBody IdsParam param) throws IOException {
+        List<ParkingArchivesExportVo> dataList = parkingArchivesService.buildExportData(param);
+        List<Map<String, Object>> sheetsList = new ArrayList<>();
+        Map<String, Object> sheet1 = ExcelUtils
+                .createSheet("空间档案", dataList, ParkingArchivesExportVo.class);
+
+        sheetsList.add(sheet1);
+
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
+
+        ExcelUtils.downLoadExcel(
+                "room-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                response,
+                workbook);
+    }
+
+    /**
+     * 导入
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void importData(@RequestParam("file") MultipartFile file) throws Exception {
+
+        AssertUtil.isFalse((null == file || file.isEmpty()), "上传文件为空");
+
+        ImportParams params = new ImportParams();
+        params.setHeadRows(1);
+
+        List<ParkingArchivesImportDto> importDtoList = ExcelImportUtil
+                .importExcel(file.getInputStream(), ParkingArchivesImportDto.class, params);
+
+        if(CollectionUtils.isEmpty(importDtoList)){
+            throw new BusinessException(ResultCode.REQUEST_FORMAT_ERROR, "excel解析失败");
+        }
+        for (ParkingArchivesImportDto dto : importDtoList){
+            parkingArchivesService.checkParamsImport(dto);
+        }
+
+        parkingArchivesService.importDataSave(importDtoList);
     }
 }

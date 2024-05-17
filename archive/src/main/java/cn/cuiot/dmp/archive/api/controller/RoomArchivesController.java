@@ -128,7 +128,7 @@ public class RoomArchivesController {
      */
     @RequiresPermissions
     @PostMapping(value = "/export", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void exportUsers(@RequestBody IdsParam param) throws IOException {
+    public void export(@RequestBody IdsParam param) throws IOException {
         List<RoomArchivesExportVo> dataList = roomArchivesService.buildExportData(param);
         List<Map<String, Object>> sheetsList = new ArrayList<>();
         Map<String, Object> sheet1 = ExcelUtils
@@ -149,7 +149,7 @@ public class RoomArchivesController {
      */
     @RequiresPermissions
     @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void importUsers(@RequestParam("file") MultipartFile file) throws Exception {
+    public void importData(@RequestParam("file") MultipartFile file) throws Exception {
 
         AssertUtil.isFalse((null == file || file.isEmpty()), "上传文件为空");
 

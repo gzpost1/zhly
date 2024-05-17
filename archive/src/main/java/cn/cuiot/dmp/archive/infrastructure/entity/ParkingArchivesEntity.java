@@ -50,7 +50,7 @@ public class ParkingArchivesEntity extends YjBaseEntity implements Serializable 
     /**
      * 状态
      */
-    private Integer status;
+    private Byte status;
 
     /**
      * 车位类型（下拉选择自定义配置中数据）
