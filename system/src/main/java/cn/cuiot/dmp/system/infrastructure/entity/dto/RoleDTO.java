@@ -18,10 +18,6 @@ public class RoleDTO {
      */
     private String id;
     /**
-     * 角色ID
-     */
-    private String roleId;
-    /**
      * 角色名称
      */
     private String roleName;

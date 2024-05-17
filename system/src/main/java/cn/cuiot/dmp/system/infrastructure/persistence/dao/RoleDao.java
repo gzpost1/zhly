@@ -3,7 +3,6 @@ package cn.cuiot.dmp.system.infrastructure.persistence.dao;
 import cn.cuiot.dmp.system.infrastructure.entity.RoleEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.AddMenuDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleCreatedDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -80,12 +79,10 @@ public interface RoleDao {
 
     /**
      * 删除角色和菜单的关联关系
-     *
-     * @param orgId  账户id
      * @param roleId pkRoleId
      * @return
      */
-    int deleteMenuRole(@Param("orgId") String orgId, @Param("roleId") Long roleId);
+    int deleteMenuRole(@Param("roleId") Long roleId);
 
     /**
      * 根据id删除角色
@@ -185,7 +182,7 @@ public interface RoleDao {
      * @param userId
      * @return
      */
-    RoleCreatedDTO selectOneRole(@Param("orgId") Long orgId, @Param("roleId") Long roleId, @Param("userId") Long userId);
+    RoleDTO selectOneRole(@Param("orgId") Long orgId, @Param("roleId") Long roleId, @Param("userId") Long userId);
 
 
     /**
@@ -194,7 +191,7 @@ public interface RoleDao {
      * @param roleId
      * @return
      */
-    List<AddMenuDto> getRoleMenu(Integer roleId);
+    List<AddMenuDto> getRoleMenu(Long roleId);
 
 
 
@@ -213,5 +210,17 @@ public interface RoleDao {
      * @param roleBo
      */
     void insertMenusRole(RoleBo roleBo);
+
+
+    /**
+     * 根据角色名查询角色信息
+     */
+    RoleDTO selectRoleByName(@Param("roleName") String roleName,@Param("orgId") Long orgId);
+
+
+    /**
+     * 查询角色
+     */
+    List<RoleEntity> lookUpRoleList(@Param("orgId") Long orgId,@Param("idList") List<Long> idList);
 
 }

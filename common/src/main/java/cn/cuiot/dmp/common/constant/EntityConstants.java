@@ -32,4 +32,14 @@ public final class EntityConstants {
      * 是
      */
     public static final Byte YES = 1;
+
+    /**
+     * 正常
+     */
+    public static final Byte NORMAL = 1;
+
+    /**
+     * 已过期
+     */
+    public static final Byte EXPIRE = 2;
 }

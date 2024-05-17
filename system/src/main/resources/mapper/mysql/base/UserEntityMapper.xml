@@ -3,14 +3,14 @@
 <mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntityMapper">
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, user_id, username, password, email, phone_number, avatar, status, last_online_ip, last_online_address, last_online_on, created_on, created_by, created_by_type, updated_on, updated_by, updated_by_type, deleted_flag, deleted_on, deleted_by, user_type, contact_person, contact_address, long_time_login
+        id,username,`name`,password, email, phone_number, avatar, status, last_online_ip, last_online_address, last_online_on, created_on, created_by, created_by_type, updated_on, updated_by, updated_by_type, deleted_flag, deleted_on, deleted_by, user_type, contact_person, contact_address, long_time_login,post_id,remark
     </sql>
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity">
         <id column="id" property="id" />
-        <result column="user_id" property="userId" />
         <result column="username" property="username" />
+        <result column="name" property="name" />
         <result column="password" property="password" />
         <result column="email" property="email" />
         <result column="phone_number" property="phoneNumber" />
@@ -32,6 +32,8 @@
         <result column="contact_person" property="contactPerson" />
         <result column="contact_address" property="contactAddress" />
         <result column="long_time_login" property="longTimeLogin" />
+        <result column="post_id" property="postId" />
+        <result column="remark" property="remark" />
     </resultMap>
 
 
@@ -51,7 +53,7 @@
         and u.user_type = 3
     </select>
 
-    <select id="getUserInfo" resultType="cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserDepartmentEntity">
+    <select id="getUserDepartmentInfo" resultType="cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserDepartmentEntity">
         select u.id, d.path, o.org_name
         from user u
         left join user_org uo on u.id = uo.pk_user_id
@@ -75,11 +77,12 @@
         </foreach>
     </select>
 
-    <insert id="batchInsertUser" useGeneratedKeys="true" keyProperty="id" parameterType="java.util.List">
+    <insert id="batchInsertUser" parameterType="java.util.List">
         INSERT INTO user
         (
-        user_id,
+        id,
         username,
+        `name`,
         password,
         email,
         phone_number,
@@ -94,13 +97,16 @@
         user_type,
         contact_person,
         contact_address,
-        long_time_login
+        long_time_login,
+        post_id,
+        remark
         )
         values
         <foreach collection="list" separator="," item="item">
             (
-            #{item.userId},
+            #{item.id},
             #{item.username},
+            #{item.name},
             #{item.password},
             #{item.email},
             #{item.phoneNumber},
@@ -115,7 +121,9 @@
             #{item.userType},
             #{item.contactPerson},
             #{item.contactAddress},
-            #{item.longTimeLogin}
+            #{item.longTimeLogin},
+            #{item.postId},
+            #{item.remark}
             )
         </foreach>
     </insert>

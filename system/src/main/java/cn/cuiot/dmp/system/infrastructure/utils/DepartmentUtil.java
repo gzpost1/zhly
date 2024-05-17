@@ -3,7 +3,7 @@ package cn.cuiot.dmp.system.infrastructure.utils;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;

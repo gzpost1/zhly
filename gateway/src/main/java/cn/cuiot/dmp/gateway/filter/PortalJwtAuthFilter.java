@@ -6,19 +6,19 @@ import cn.cuiot.dmp.common.enums.UserLongTimeLoginEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.gateway.service.SignatureService;
-import cn.cuiot.dmp.gateway.utils.JwtUtil;
 import cn.cuiot.dmp.gateway.utils.SecrtUtil;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -43,8 +43,29 @@ import reactor.core.publisher.Mono;
  * @author wangyh
  * @date 2020/8/4 10:56 上午
  **/
+@Slf4j
 @Component
 public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
+
+    /**
+     * 请求头
+     */
+    public static final String TOKEN = "token";
+
+    /**
+     * 请求头
+     */
+    public static final String AUTHORIZATION = "Authorization";
+
+    /**
+     * 用户组织
+     */
+    public static final String USERORG = "org";
+
+    /**
+     * 用户Id
+     */
+    public static final String USERID = "userId";
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -78,63 +99,22 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         }
 
         HttpHeaders headers = serverHttpRequest.getHeaders();
-        List<String> list = headers.get("token");
+        List<String> list = headers.get(TOKEN);
         if (list == null || list.isEmpty()) {
-            list = headers.get("Authorization");
+            list = headers.get(AUTHORIZATION);
         }
-
         if (list == null || list.isEmpty()) {
             throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
         }
-
         String jwt = list.get(0);
-        String userName = null;
 
         if (StringUtils.isEmpty(jwt)) {
             throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
         } else {
-            boolean auth = validateToken(jwt);
-            if (!auth) {
-                throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
-            }
-        }
-        String userId = getUserId(jwt);
-        String orgId = getOrgId(jwt);
-
-        String toKick = redisTemplate.opsForValue().get(CacheConst.LOGIN_ORG_TO_KICK);
-        if (!StringUtils.isEmpty(toKick)) {
-            String[] kickOrgIdArr = toKick.split(",");
-            List<String> kickOrgIds = Arrays.asList(kickOrgIdArr);
-            if (kickOrgIds.contains(orgId)) {
-                throw new BusinessException(ResultCode.LOGIN_INVALID);
-            }
+            //解析与校验token
+            checkToken(jwt);
         }
 
-        //判断session 是否失效
-        // 增加微信小程序登陆校验
-        String jwtRedis = redisTemplate.opsForValue().get(CacheConst.LOGIN_USERS_JWT + jwt);
-        String jwtRedisWx = redisTemplate.opsForValue().get(CacheConst.LOGIN_USERS_JWT_WX + jwt);
-        if (StringUtils.isEmpty(jwtRedis) && StringUtils.isEmpty(jwtRedisWx)) {
-            throw new BusinessException(ResultCode.LOGIN_INVALID);
-        } else if (!userId.equals(jwtRedis) && !userId.equals(jwtRedisWx)) {
-            throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
-        }
-        if (!StringUtils.isEmpty(jwtRedis)) {
-            if (Objects.equals(redisTemplate.opsForValue()
-                            .get(CacheConst.USER_LONG_TIME_LOGIN + userId),
-                    UserLongTimeLoginEnum.OPEN.getCode())) {
-                redisTemplate.expire(CacheConst.LOGIN_USERS_JWT + jwt,
-                        Const.USER_LONG_TIME_LOGIN_SESSION_TIME, TimeUnit.SECONDS);
-                redisTemplate.expire(CacheConst.USER_LONG_TIME_LOGIN + userId,
-                        Const.USER_LONG_TIME_LOGIN_SESSION_TIME, TimeUnit.SECONDS);
-            } else {
-                redisTemplate.expire(CacheConst.LOGIN_USERS_JWT + jwt, Const.SESSION_TIME,
-                        TimeUnit.SECONDS);
-            }
-        } else if (!StringUtils.isEmpty(jwtRedisWx)) {
-            redisTemplate.expire(CacheConst.LOGIN_USERS_JWT_WX + jwt, Const.WX_SESSION_TIME,
-                    TimeUnit.SECONDS);
-        }
         // 签名校验
         boolean needCheckSignature = signatureService.isNeedCheckSignature(exchange);
         if (needCheckSignature) {
@@ -176,63 +156,58 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         }
     }
 
-    protected String getOrgId(String jwt) {
-        Claims claims;
-        try {
-            claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt).getBody();
-        } catch (Exception e) {
-            claims = null;
-        }
-        if (claims == null) {
-            throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
-        }
-
-        String orgId = claims.get("org").toString();
-        if (orgId == null) {
-            throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
-        }
-        return orgId;
-    }
-
-    protected String getUserId(String jwt) {
-        Claims claims;
-        try {
-            claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt).getBody();
-        } catch (Exception e) {
-            claims = null;
-        }
-        if (claims == null) {
-            throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
-        }
-        String userId = claims.get("userId").toString();
-        if (userId == null) {
-            throw new BusinessException(ResultCode.USER_ID_NOT_EXIST);
-        }
-        return userId;
-    }
-
     /**
-     * 验证令牌
+     * 解析与校验token
      */
-    public static Boolean validateToken(String token) {
-        return !isTokenExpired(token);
-    }
-
-
-    /**
-     * 判断令牌是否过期
-     *
-     * @param token 令牌
-     * @return 是否过期
-     */
-    public static Boolean isTokenExpired(String token) {
+    private void checkToken(String jwt) {
         try {
-            Claims claims = JwtUtil.getClaimsFromToken(token);
-            Date expiration = claims.getExpiration();
-            return expiration.before(new Date());
-        } catch (Exception e) {
-            return true;
+            Claims claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt).getBody();
+
+            String userId = claims.get(USERID).toString();
+            String orgId = claims.get(USERORG).toString();
+
+            String toKick = redisTemplate.opsForValue().get(CacheConst.LOGIN_ORG_TO_KICK);
+            if (!StringUtils.isEmpty(toKick)) {
+                String[] kickOrgIdArr = toKick.split(",");
+                List<String> kickOrgIds = Arrays.asList(kickOrgIdArr);
+                if (kickOrgIds.contains(orgId)) {
+                    throw new BusinessException(ResultCode.LOGIN_INVALID);
+                }
+            }
+
+            //判断session 是否失效
+            // 增加微信小程序登陆校验
+            String jwtRedis = redisTemplate.opsForValue().get(CacheConst.LOGIN_USERS_JWT + jwt);
+            String jwtRedisWx = redisTemplate.opsForValue()
+                    .get(CacheConst.LOGIN_USERS_JWT_WX + jwt);
+            if (StringUtils.isEmpty(jwtRedis) && StringUtils.isEmpty(jwtRedisWx)) {
+                throw new BusinessException(ResultCode.LOGIN_INVALID);
+            } else if (!userId.equals(jwtRedis) && !userId.equals(jwtRedisWx)) {
+                throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
+            }
+            if (!StringUtils.isEmpty(jwtRedis)) {
+                if (Objects.equals(redisTemplate.opsForValue()
+                                .get(CacheConst.USER_LONG_TIME_LOGIN + userId),
+                        UserLongTimeLoginEnum.OPEN.getCode())) {
+                    redisTemplate.expire(CacheConst.LOGIN_USERS_JWT + jwt,
+                            Const.USER_LONG_TIME_LOGIN_SESSION_TIME, TimeUnit.SECONDS);
+                    redisTemplate.expire(CacheConst.USER_LONG_TIME_LOGIN + userId,
+                            Const.USER_LONG_TIME_LOGIN_SESSION_TIME, TimeUnit.SECONDS);
+                } else {
+                    redisTemplate.expire(CacheConst.LOGIN_USERS_JWT + jwt, Const.SESSION_TIME,
+                            TimeUnit.SECONDS);
+                }
+            } else if (!StringUtils.isEmpty(jwtRedisWx)) {
+                redisTemplate.expire(CacheConst.LOGIN_USERS_JWT_WX + jwt, Const.WX_SESSION_TIME,
+                        TimeUnit.SECONDS);
+            }
+        } catch (Exception ex) {
+            log.error(ex.getMessage(), ex);
+            if (ex instanceof ExpiredJwtException) {
+                throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED, "登录时效已过期");
+            } else {
+                throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
+            }
         }
     }
-
 }

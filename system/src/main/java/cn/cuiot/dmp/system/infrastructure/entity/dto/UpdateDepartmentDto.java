@@ -19,11 +19,6 @@ public class UpdateDepartmentDto extends InsertDepartmentDto {
     @NotNull(message = "主键id不能为空")
     private Long id;
 
-    /**
-     * 父级Id(修改子节点必传)
-     */
-    private Long parentId;
-
     private String orgId;
 
     private String description;

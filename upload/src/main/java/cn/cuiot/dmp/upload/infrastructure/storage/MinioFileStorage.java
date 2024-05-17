@@ -7,6 +7,7 @@ import cn.cuiot.dmp.upload.domain.entity.ChunkUploadResponse;
 import cn.cuiot.dmp.upload.domain.entity.ObjectItem;
 import cn.cuiot.dmp.upload.domain.storage.FileStorage;
 import cn.cuiot.dmp.upload.domain.types.MimeTypeEnum;
+import cn.cuiot.dmp.upload.domain.types.UploadStatusConstants;
 import cn.cuiot.dmp.upload.domain.types.UrlType;
 import cn.cuiot.dmp.upload.infrastructure.config.OssProperties;
 import cn.hutool.core.net.URLEncodeUtil;
@@ -29,6 +30,7 @@ import io.minio.RemoveBucketArgs;
 import io.minio.RemoveObjectArgs;
 import io.minio.RemoveObjectsArgs;
 import io.minio.Result;
+import io.minio.SetBucketPolicyArgs;
 import io.minio.StatObjectArgs;
 import io.minio.StatObjectResponse;
 import io.minio.http.Method;
@@ -98,6 +100,15 @@ public class MinioFileStorage extends FileStorage {
     @Override
     public void removeBucket(String bucketName) throws Exception {
         ossClient.removeBucket(RemoveBucketArgs.builder().bucket(bucketName).build());
+    }
+
+    @Override
+    public void setBucketPolicy(String bucketName, String policy) throws Exception {
+        SetBucketPolicyArgs policyArgs = SetBucketPolicyArgs.builder()
+                .bucket(bucketName)
+                .config(policy)
+                .build();
+        ossClient.setBucketPolicy(policyArgs);
     }
 
     @Override
@@ -273,7 +284,7 @@ public class MinioFileStorage extends FileStorage {
                 String url = URLEncodeUtil
                         .encode(ossProperties.getDomainUrl() + "/" + bucketName + "/" + objectName);
                 return ChunkUploadResponse.builder()
-                        .status(FINISH)
+                        .status(UploadStatusConstants.FINISH)
                         .url(url)
                         .bucketName(bucketName)
                         .objectName(objectName)
@@ -281,7 +292,7 @@ public class MinioFileStorage extends FileStorage {
             }
         }
         return ChunkUploadResponse.builder()
-                .status(UN_FINISH)
+                .status(UploadStatusConstants.UN_FINISH)
                 .url(chunkUrl)
                 .bucketName(bucketName)
                 .objectName(chunkObjectName)

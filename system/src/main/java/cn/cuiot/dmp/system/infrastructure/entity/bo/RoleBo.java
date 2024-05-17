@@ -9,8 +9,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
+ * RoleBo
  * @author guoying
- * @className RoleCreatedDTO
+ * @className RoleBo
  * @description 角色日志操作对象实体
  * @date 2020-10-16 15:38:20
  */
@@ -22,7 +23,12 @@ public class RoleBo extends AbstractResourceParam {
     /**
      * 账户id
      */
-    private String orgId;
+    private String sessionOrgId;
+
+    /**
+     * 用户id
+     */
+    private String sessionUserId;
 
     /**
      * 删除idList
@@ -30,19 +36,9 @@ public class RoleBo extends AbstractResourceParam {
     private List<Long> deleteIdList;
 
     /**
-     * 用户id
-     */
-    private String userId;
-
-    /**
      * 角色主键id
      */
     private Long id;
-
-    /**
-     * 角色id
-     */
-    private String roleId;
 
     /**
      * 角色名称
@@ -70,19 +66,9 @@ public class RoleBo extends AbstractResourceParam {
     private List<String> menuIds;
 
     /**
-     * api id集合
-     */
-    private List<String> apiIds;
-
-    /**
      * 角色类型(1:默认角色,2:自定义角色)
      */
-    private int roleType;
-
-    /**
-     * 资源权限（1：产品和设备全部权限；2：产品权限；3：设备权限）
-     */
-    private int resourcesPermit;
+    private Integer roleType;
 
     /**
      * 角色创建时间
@@ -127,20 +113,5 @@ public class RoleBo extends AbstractResourceParam {
      * 取值：【0：SYSTEM; 1: Portal；2：API】
      */
     private Integer updatedByType;
-
-    /**
-     * 全部资源权限【-1】
-     */
-    private Integer pdId;
-
-    /**
-     * 视频系统权限集合
-     */
-    private List<String> videoSystemPermit;
-
-    /**
-     * 是否选择视频服务权限(为false未选择)
-     */
-    private Boolean modifyPermission;
 
 }

@@ -28,6 +28,11 @@ public class GetSysParamResDto {
     private Integer logoId;
 
     /**
+     * LOGO图片地址
+     */
+    private String logoPath;
+
+    /**
      * 编辑时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

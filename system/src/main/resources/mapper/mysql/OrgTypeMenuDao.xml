@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgTypeMenuDao">
+    <insert id="insertMenu">
+        insert into org_type_menu( id,menu_id,org_type_id)
+        values
+        <foreach collection="list" item="item" open="(" separator="),(" close=")">
+            #{item.id},#{item.menuId}, #{item.orgTypeId}
+        </foreach>
+    </insert>
+
+    <delete id="deleteMenu">
+        delete from org_type_menu where org_type_id=#{orgTypeId}
+    </delete>
+
+    <select id="getMenuIdListByOrgType" resultType="java.lang.String">
+        SELECT menu_id FROM `org_type_menu` where org_type_id = #{orgTypeId}
+    </select>
+
+</mapper>

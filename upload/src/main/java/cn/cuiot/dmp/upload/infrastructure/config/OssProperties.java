@@ -75,4 +75,9 @@ public class OssProperties {
      * 允许上传文件目录
      */
     private List<String> allowDirs;
+
+    /**
+     * 允许上传的文件后缀
+     */
+    private List<String> allowSuffix;
 }

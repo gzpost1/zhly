@@ -1,11 +1,11 @@
 package cn.cuiot.dmp.system.infrastructure.domain.verify;
 
-import cn.cuiot.dmp.system.user_manage.domain.entity.User;
-import cn.cuiot.dmp.system.user_manage.domain.types.verify.EmailUserVerificationCode;
-import cn.cuiot.dmp.system.user_manage.domain.types.verify.UserVerificationResult;
-import cn.cuiot.dmp.system.user_manage.external.VerificationCodeValidator;
-import cn.cuiot.dmp.system.user_manage.query.UserCommonQuery;
-import cn.cuiot.dmp.system.user_manage.repository.UserRepository;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.types.verify.EmailUserVerificationCode;
+import cn.cuiot.dmp.system.domain.types.verify.UserVerificationResult;
+import cn.cuiot.dmp.system.domain.external.VerificationCodeValidator;
+import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.Ordered;

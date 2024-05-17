@@ -1,19 +1,22 @@
 package cn.cuiot.dmp.system.infrastructure.entity.dto;
 
 import cn.cuiot.dmp.common.log.intf.AbstractResourceParam;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Date;
 import java.util.List;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
- * @Author wen
- * @Description 修改账户 入参
+ * 企业修改入参
+ * @Author wuyc
  * @Date 2021/12/27 9:31
- * @param
- * @return
  **/
 @Data
 public class UpdateOrganizationDto extends AbstractResourceParam {
@@ -25,82 +28,71 @@ public class UpdateOrganizationDto extends AbstractResourceParam {
     private Long id;
 
     /**
-     * 账户名称
+     * 企业名称
      */
-    @NotBlank(message = "账户名称不能为空")
-    private String orgName;
+    @NotBlank(message = "请输入企业名称")
+    @Length(max = 50, message = "企业名称不可超过50字")
+    private String companyName;
+
 
     /**
-     * 登录名
+     * 所属组织id
      */
-    @NotBlank(message = "登录名不能为空")
-    private String username;
+    @NotNull(message = "请选择所属组织")
+    private Long deptId;
 
     /**
-     * 手机号
+     * 企业有效期-开始时间
      */
-    @NotBlank(message = "手机号不能为空")
-    private String phoneNumber;
+    @NotNull(message = "请选择企业有效期")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date expStartDate;
 
     /**
-     * 组织id
+     * 企业有效期-结束时间
      */
-    @NotBlank(message = "组织id不能为空")
-    private String deptId;
+    @NotNull(message = "请选择企业有效期")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date expEndDate;
 
     /**
-     * 账户状态(0：禁用、 1：启用）
+     * 备注
      */
-    @NotNull(message = "账户状态不能为空")
-    private Integer status;
+    @Length(max = 200, message = "备注不可超过200字")
+    private String description;
 
     /**
-     * 账户key
+     * 企业权限配置
      */
-    private String orgKey;
+    @NotEmpty(message = "请配置企业权限")
+    private List<String> menuList;
 
-    /**
-     * 当前登录账户Id
-     */
-    private String orgId;
-
-    /**
-     * 当前登录人Id
-     */
-    private String userId;
-    /**
-     * 账户密码
-     */
-    private String passWord;
-
-    /**
-     * 菜单根节点list
-     */
-    private List<String> menuRootList;
 
     /**
      * 下次登陆是否重置账户密码（0：不重置密码 1：重置密码）
      */
-    @NotNull(message = "重置账户密码参数不可为空")
     @Range(min = 0, max = 1, message = "是否重置账户密码参数不合法")
     private Integer resetPassword;
 
     /**
-     *  label    账户标签（8:商务楼宇（写字楼等）,9:厂园区（工业、科技、物流等园区厂区）,
-     *                   11:专业市场（建材、汽配、农贸等）,12:九小场所,13:联通管理方,14:其它商企（网吧、便利店、中小独栋企业等),16:商业综合体（购物中心、百货市场等））
-     **/
-    @NotNull(message = "账户标签不可为空")
-    @Range(min = 8, max = 16, message = "账户标签参数不合法")
-    private Integer  label;
+     * 当前登录用户-账户id(前端不用管)
+     */
+    private Long sessionOrgId;
 
     /**
-     * 其他标签名称
+     * 当前登录用户-用户id(前端不用管)
      */
-    private String  otherLabelName;
+    private Long sessionUserId;
 
     /**
-     * 账户(租户)类型
+     * 账户所有者-用户ID(前端不用管)
      */
-    @JsonIgnore
-    private Integer orgTypeId;
+    private String orgOwnerUserId;
+
+    /**
+     * 账户所有者-用户名(前端不用管)
+     */
+    private String orgOwnerUsername;
 }

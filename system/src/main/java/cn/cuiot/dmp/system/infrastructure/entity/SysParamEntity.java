@@ -57,4 +57,8 @@ public class SysParamEntity {
      */
     private String updaterPath;
 
+    /**
+     * LOGO图片地址
+     */
+    private String logoPath;
 }

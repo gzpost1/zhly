@@ -5,7 +5,6 @@
     <sql id="column">
         id,
         org_key,
-        org_id,
         org_name,
         org_type_id,
         parent_id,
@@ -27,43 +26,48 @@
     <select id="getCommercialOrgList" resultType="cn.cuiot.dmp.system.infrastructure.entity.vo.ListOrganizationVO"
             parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto">
         SELECT
-        (SELECT username FROM `user` WHERE id = o.created_by) as created_by,
         o.id,
-        o.org_id,
         o.status,
         o.org_name,
         o.org_key,
-        o.org_Owner,
         ug.to_dept_id as dept_id,
         d.department_name as dept_name,
+        d.path_name as dept_path_name,
         o.org_type_id,
         ot.name as org_type_name,
+        u.name as admin_name,
         u.phone_number,
         u.username,
-        o.created_on,
         o.company_name,
-        o.social_credit_code,
-        o.created_by_type,
+        o.exp_start_date,
+        o.exp_end_date,
         o.source
-        FROM organization o join user u on u.id = o.org_owner
+        FROM organization o
+        join user u on u.id = o.org_owner
         left join user_grant ug on ug.org_id=o.id
         left join department d on d.id = ug.to_dept_id
         left join organization_type ot on o.org_type_id=ot.id
         <trim prefix="WHERE" prefixOverrides="AND">
-            AND o.org_type_id >= 10
+            AND o.org_type_id = 11
             and o.deleted_flag = 0
             and u.deleted_flag = 0
-            <if test="deptIds != null">
+            <if test="deptIds != null and deptIds.size >0">
                 AND ug.to_dept_id in
                 <foreach collection="deptIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
-            <if test="orgName != null">
+            <if test="orgName != null and orgName != ''">
                 AND o.org_name like CONCAT('%',#{orgName},'%')
             </if>
-            <if test="socialCreditCode != null">
-                AND o.social_credit_code like CONCAT('%',#{socialCreditCode},'%')
+            <if test="status != null">
+                AND o.status = #{status}
+            </if>
+            <if test="orgStatus != null and orgStatus==1">
+                AND o.exp_end_date>=now()
+            </if>
+            <if test="orgStatus != null and orgStatus==2">
+                AND o.exp_end_date <![CDATA[<]]> now()
             </if>
             <if test="orgId != null">
                 AND o.id = #{orgId}
@@ -100,26 +104,17 @@
         		ol.org_id = #{orgId} )
     </select>
 
-    <select id="getLabelByPath" resultType="string">
-        select
-        	ol.label_id
-        from
-        	org_label ol
-        	left join department d on d.pk_org_id = ol.org_id
-        where
-	        d.`path` = #{path}
-    </select>
-
-    <insert id="insertOrgLabel" useGeneratedKeys="true" keyProperty="id"
-            parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.OrgLabelDto">
+    <insert id="insertOrgLabel" parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.OrgLabelDto">
         INSERT INTO org_label
-        (org_id,
+        (id,
+         org_id,
          label_id,
          label_name,
          create_by,
          create_time
         )
-        values (#{orgId},
+        values (#{id},
+                #{orgId},
                 #{labelId},
                 #{labelName},
                 #{createdBy},
@@ -147,7 +142,6 @@
           pk_user_id = (select u.id from user u where u.phone_number = #{safePhoneNum} and user_type = 1 and deleted_flag = 0)
     </select>
 
-
     <delete id="delOrgLab">
         delete
             from org_label
@@ -161,4 +155,24 @@
         where
             pk_org_id = #{orgId}
     </delete>
+
+    <insert id="saveOrganizationChange">
+      INSERT INTO organization_change ( id, pk_org_id, change_type, change_name, change_date, change_user_id, change_username, change_person, change_data )
+      VALUES (#{id},#{pkOrgId},#{changeType},#{changeName},#{changeDate},#{changeUserId},#{changeUsername},#{changePerson},#{changeData})
+    </insert>
+
+    <select id="selectOrganizationChangeByOrgId"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationChangeDto">
+        select id, pk_org_id, change_type, change_name, change_date, change_user_id, change_username, change_person
+        from organization_change
+        where pk_org_id=#{orgId}
+    </select>
+
+    <select id="getOrganizationChangeById"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationChangeDto">
+        select id, pk_org_id, change_type, change_name, change_date, change_user_id, change_username, change_person,change_data
+        from organization_change
+        where id=#{id}
+    </select>
+
 </mapper>

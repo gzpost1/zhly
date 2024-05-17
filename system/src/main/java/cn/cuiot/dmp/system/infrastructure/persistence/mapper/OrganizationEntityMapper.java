@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.persistence.mapper;
 
-import cn.cuiot.dmp.system.user_manage.query.OrganizationMapperQuery;
+import cn.cuiot.dmp.system.domain.query.OrganizationMapperQuery;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;

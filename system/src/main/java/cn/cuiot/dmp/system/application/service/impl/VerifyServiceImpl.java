@@ -9,7 +9,7 @@ import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.SecurityConst;
 import cn.cuiot.dmp.common.constant.SendMessageConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.utils.SnowflakeIdWorker;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.domain.types.id.UserId;
@@ -23,9 +23,9 @@ import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.SensitiveWordEngineUtils;
 import cn.cuiot.dmp.system.infrastructure.utils.SensitiveWordInitUtils;
 import cn.cuiot.dmp.system.infrastructure.utils.VerifyUnit;
-import cn.cuiot.dmp.system.user_manage.domain.entity.User;
-import cn.cuiot.dmp.system.user_manage.domain.service.UserPhoneNumberDomainService;
-import cn.cuiot.dmp.system.user_manage.repository.UserRepository;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import com.alibaba.fastjson.JSONObject;
 import com.google.code.kaptcha.Producer;
 import java.awt.image.BufferedImage;
@@ -96,11 +96,6 @@ public class VerifyServiceImpl implements VerifyService {
 
     private static final String PARTNER_CODE = "00000000";
 
-    /**
-     * 雪花算法生成器
-     */
-    private SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
-
     @Override
     public KaptchaResDTO createKaptchaImage() {
         // 生成文本验证码
@@ -109,7 +104,7 @@ public class VerifyServiceImpl implements VerifyService {
         BufferedImage bufferedImage = defaultKaptcha.createImage(capText);
         // 创建验证码
         KaptchaResDTO kaptchaResDTO = new KaptchaResDTO();
-        kaptchaResDTO.setSid(String.valueOf(idWorker.nextId()));
+        kaptchaResDTO.setSid(String.valueOf(SnowflakeIdWorkerUtil.nextId()));
         // 将BufferedImage转为Base64编码图片
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             // 将BufferedImage写入outputStream
@@ -132,7 +127,7 @@ public class VerifyServiceImpl implements VerifyService {
 
     @Override
     public SecretKeyResDTO createSecretKey() {
-        String kid = String.valueOf(idWorker.nextId());
+        String kid = String.valueOf(SnowflakeIdWorkerUtil.nextId());
         Aes aes = new Aes(RandomStringUtils.randomAlphabetic(16), RandomStringUtils.randomAlphabetic(16));
         stringRedisTemplate.opsForValue().set(SECRET_INFO_KEY + kid, JSONObject.toJSONString(aes), 2 * SecurityConst.SMS_CODE_EXPIRED_TIME, TimeUnit.MINUTES);
         return new SecretKeyResDTO(kid, aes.getSecretKey(), aes.getIv());

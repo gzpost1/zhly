@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgTypeMenuRootDao">
-
-    <select id="getMenuIdListByOrgType" resultType="java.lang.String">
-        SELECT menu_id FROM `org_type_menu_root` where org_type_id = #{orgTypeId}
-    </select>
-</mapper>

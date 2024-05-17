@@ -11,6 +11,7 @@ import cn.cuiot.dmp.upload.domain.entity.ChunkUploadResponse;
 import cn.cuiot.dmp.upload.domain.entity.ObjectItem;
 import cn.cuiot.dmp.upload.domain.storage.FileStorage;
 import cn.cuiot.dmp.upload.domain.types.MimeTypeEnum;
+import cn.cuiot.dmp.upload.domain.types.UploadStatusConstants;
 import cn.cuiot.dmp.upload.domain.types.UrlType;
 import cn.cuiot.dmp.upload.infrastructure.cache.OssRedisCache;
 import cn.cuiot.dmp.upload.infrastructure.config.OssProperties;
@@ -301,14 +302,14 @@ public class AmazonS3FileStorage extends FileStorage {
                 ossRedisCache.invalidateChunkCache(param.getTaskId());
                 String url = getObjectUrl(bucketName, objectName, null, null);
                 return ChunkUploadResponse.builder()
-                        .status(FINISH)
+                        .status(UploadStatusConstants.FINISH)
                         .url(url)
                         .bucketName(bucketName)
                         .objectName(objectName)
                         .build();
             }
             return ChunkUploadResponse.builder()
-                    .status(UN_FINISH)
+                    .status(UploadStatusConstants.UN_FINISH)
                     .url(objectName)
                     .bucketName(bucketName)
                     .objectName(objectName)

@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.domain.types;
 
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import lombok.Data;
 
@@ -11,52 +12,27 @@ import lombok.Data;
  * @Version V1.0
  */
 @Data
-public class LoginInfo {
-    public LoginInfo() {
-    }
-
-    public LoginInfo(String userName, Long userId, Long orgId) {
-        this.userName = userName;
-        this.userId = userId;
-        this.orgId = orgId;
-    }
+public class LoginInfo implements Serializable {
 
     /**
-     * 传入lazyPathFinder会开启path的懒加载功能，实现依赖于各个微服务具体实现
-     *
-     * @param lazyPathFinder
-     * @param userName
-     * @param userId
-     * @param orgId
+     * 用户id
      */
-    public LoginInfo(LazyPathFinder lazyPathFinder, String userName, Long userId, Long orgId) {
-        this.lazyPathFinder = lazyPathFinder;
-        this.userName = userName;
-        this.userId = userId;
-        this.orgId = orgId;
-    }
+    private Long userId;
 
-    /**
-     * 懒加载path查找器
-     */
-    private LazyPathFinder lazyPathFinder;
-
-    /**
-     * 是否已经尝试加载过了，标记接口
-     */
-    private boolean findedUserPathMark;
-    /**
-     * 是否已经尝试加载过了，标记接口
-     */
-    private boolean findedOrgPathMark;
     /**
      * 用户名
      */
-    private String userName;
+    private String username;
+
     /**
-     * 用户ID
+     * 用户的手机号
      */
-    private Long userId;
+    private String phoneNumber;
+
+    /**
+     * 姓名
+     */
+    private String name;
 
     /**
      * 账户ID
@@ -64,44 +40,31 @@ public class LoginInfo {
     private Long orgId;
 
     /**
-     * 用户所在组织路径
+     * 账户类型（1：个人账户、2：企业账户、3：子账户、4：超级账户、5：省份账户）
      */
-    private String userPath;
+    private Integer orgTypeId;
 
     /**
-     * 账户所在组织路径
+     * 部门ID
      */
-    private String orgPath;
+    private Long deptId;
+
+    /**
+     * 岗位ID
+     */
+    private Long postId;
+
+
+    /**
+     * 用户类型
+     */
+    private Integer userType;
 
     /**
      * 操作信息
      */
     private OperateInfo operateInfo;
 
-    public String getUserPath() {
-        if (userPath == null && !findedUserPathMark && getUserId() != null && lazyPathFinder != null) {
-            userPath = lazyPathFinder.lookUpUserPath(getUserId());
-            findedUserPathMark = true;
-        }
-        return userPath;
-    }
-
-    public String getOrgPath() {
-        if (orgPath == null && !findedOrgPathMark && getOrgId() != null && lazyPathFinder != null) {
-            orgPath = lazyPathFinder.lookUpOrgPath(getUserId());
-            findedOrgPathMark = true;
-        }
-        return orgPath;
-    }
-
-    /**
-     * 懒加载的用户所在path查找器
-     */
-    public interface LazyPathFinder {
-        String lookUpUserPath(Long userId);
-
-        String lookUpOrgPath(Long orgId);
-    }
 
     public OperateInfo buildOperateInfoIfNecessary() {
         if (operateInfo == null) {
@@ -114,13 +77,15 @@ public class LoginInfo {
      * 标记删除操作
      */
     public void markDeleteOperation() {
-        markDeleteOperation(getUserId() == null ? null : getUserId().toString(), LocalDateTime.now(), OperateByTypeEnum.USER);
+        markDeleteOperation(getUserId() == null ? null : getUserId().toString(),
+                LocalDateTime.now(), OperateByTypeEnum.USER);
     }
 
     /**
      * 标记删除操作
      */
-    public void markDeleteOperation(String deleteBy, LocalDateTime deleteOn, OperateByTypeEnum deleteByType) {
+    public void markDeleteOperation(String deleteBy, LocalDateTime deleteOn,
+            OperateByTypeEnum deleteByType) {
         buildOperateInfoIfNecessary();
         operateInfo.setOperateType(3);
         operateInfo.setOperateOn(deleteOn);
@@ -132,13 +97,15 @@ public class LoginInfo {
      * 标记新增操作
      */
     public void markCreateOperation() {
-        markCreateOperation(getUserId() == null ? null : getUserId().toString(), LocalDateTime.now(), OperateByTypeEnum.USER);
+        markCreateOperation(getUserId() == null ? null : getUserId().toString(),
+                LocalDateTime.now(), OperateByTypeEnum.USER);
     }
 
     /**
      * 标记新增操作
      */
-    public void markCreateOperation(String createBy, LocalDateTime createdOn, OperateByTypeEnum createdByType) {
+    public void markCreateOperation(String createBy, LocalDateTime createdOn,
+            OperateByTypeEnum createdByType) {
         buildOperateInfoIfNecessary();
         operateInfo.setOperateType(1);
         operateInfo.setOperateOn(createdOn);
@@ -150,13 +117,15 @@ public class LoginInfo {
      * 标记更新操作
      */
     public void markUpdateOperation() {
-        markUpdateOperation(getUserId() == null ? null : getUserId().toString(), LocalDateTime.now(), OperateByTypeEnum.USER);
+        markUpdateOperation(getUserId() == null ? null : getUserId().toString(),
+                LocalDateTime.now(), OperateByTypeEnum.USER);
     }
 
     /**
      * 标记更新操作
      */
-    public void markUpdateOperation(String updateBy, LocalDateTime updateOn, OperateByTypeEnum updateByType) {
+    public void markUpdateOperation(String updateBy, LocalDateTime updateOn,
+            OperateByTypeEnum updateByType) {
         buildOperateInfoIfNecessary();
         operateInfo.setOperateType(2);
         operateInfo.setOperateOn(updateOn);

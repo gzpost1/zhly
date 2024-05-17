@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.SysAreaMapper">
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.system.domain.aggregate.AreaTreeNode">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="parent_id" jdbcType="VARCHAR" property="parentId"/>
+        <result column="title" jdbcType="BIGINT" property="title"/>
+    </resultMap>
+
+    <select id="getAreaTree" resultMap="BaseResultMap">
+        SELECT
+        code as id,
+        parent_code as parent_id,
+        name as title,
+        latitude,
+        longitude
+        FROM
+        `tb_dict_area`
+        ORDER BY CODE
+    </select>
+
+    <select id="getAreaInfoByAreaCode" resultType="cn.cuiot.dmp.system.domain.aggregate.SysArea">
+        select * from tb_dict_area where code = #{areaCode} limit 1
+    </select>
+
+    <select id="getAreaInfoByAreaCodeList" resultType="cn.cuiot.dmp.system.domain.aggregate.SysArea">
+        select * from tb_dict_area where code in
+        <foreach collection="areaCodeList" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+</mapper>
