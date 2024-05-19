@@ -8,13 +8,13 @@ import java.io.Serializable;
 
 /**
  * @author caorui
- * @date 2024/5/16
+ * @date 2024/5/19
  */
 @Data
-@TableName(value = "custom_config_detail", autoResultMap = true)
-public class CustomConfigDetailEntity implements Serializable {
+@TableName(value = "archive_type", autoResultMap = true)
+public class ArchiveTypeEntity implements Serializable {
 
-    private static final long serialVersionUID = 4997629132409373243L;
+    private static final long serialVersionUID = 1268785109881572935L;
 
     /**
      * 主键ID
@@ -23,19 +23,15 @@ public class CustomConfigDetailEntity implements Serializable {
     private Long id;
 
     /**
-     * 自定义配置详情名称
+     * 档案类型名称
      */
     private String name;
 
     /**
-     * 自定义配置ID
+     * 档案类型
+     * @see cn.cuiot.dmp.system.application.enums.ArchiveTypeEnum
      */
-    private Long customConfigId;
-
-    /**
-     * 状态(0:禁用,1:正常)
-     */
-    private Byte status;
+    private Byte archiveType;
 
     /**
      * 逻辑删除，1已删除，0未删除
