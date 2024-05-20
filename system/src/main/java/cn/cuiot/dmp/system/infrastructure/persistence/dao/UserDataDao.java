@@ -105,4 +105,11 @@ public interface UserDataDao {
      * @return
      */
     List<DepartmentUserDto> getDepartmentUser(@Param("orgId") Long orgId, @Param("path") String path);
+
+    /**
+     * 查找组织下所有用户
+     *
+     * @param deptId 部门id
+     */
+    List<UserDataEntity> getUserByDeptId(@Param("deptId") Long deptId);
 }
