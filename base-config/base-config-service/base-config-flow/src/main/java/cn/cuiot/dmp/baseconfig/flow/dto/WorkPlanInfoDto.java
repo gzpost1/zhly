@@ -169,4 +169,6 @@ public class WorkPlanInfoDto   {
      * 启动流程数据
      */
     private StartProcessInstanceDTO startProcessInstanceDTO;
+
+    private Long flowConfigId;
 }

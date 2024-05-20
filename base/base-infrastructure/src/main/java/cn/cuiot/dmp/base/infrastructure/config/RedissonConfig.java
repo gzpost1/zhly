@@ -60,7 +60,8 @@ public class RedissonConfig {
                             .append(":")
                             .append(redissonProperties.getPort())
                             .toString()
-            ).setPassword(redissonProperties.getPassword());
+            ).setPassword(redissonProperties.getPassword())
+            .setPingConnectionInterval(1000);
         }
 
         return Redisson.create(config);

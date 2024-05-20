@@ -52,22 +52,41 @@ public class WorkPlanInfoTask {
 
     @XxlJob("createPlanWork")
     public ReturnT<String> createWork(String param){
-        //查询工单信息
-        WorkPlanInfoEntity entity = workPlanInfoService.getById(Long.parseLong(param));
-        //判断生效与失效
-        if(checkExpire(entity)){
-            log.info("任务"+param+"未开始");
+        LocalDateTime startDate = LocalDateTime.now();
+        LocalDateTime endDate = startDate.minusMinutes(6);
+        LambdaQueryWrapper<PlanWorkExecutionInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.gt(PlanWorkExecutionInfoEntity::getExecutionTime,endDate).le(PlanWorkExecutionInfoEntity::getExecutionTime,startDate)
+                .eq(PlanWorkExecutionInfoEntity::getState, WorkFlowConstants.RESULT_0);
+
+        List<PlanWorkExecutionInfoEntity> executionList = planWorkExecutionInfoService.list(lw);
+        if(CollectionUtil.isEmpty(executionList)){
             return ReturnT.SUCCESS;
         }
-        PlanContentEntity planContentEntity = planContentService.getById(entity.getId());
-        StartProcessInstanceDTO startProcessInstanceDTO = JSONObject.parseObject(planContentEntity.getContent(), new TypeReference<StartProcessInstanceDTO>() {
-        });
-        startProcessInstanceDTO.setWorkSource(WorkOrderConstants.WORK_SOURCE_PLAN);
-        IdmResDTO start = workInfoService.start(startProcessInstanceDTO);
-        Long data =Long.parseLong(String.valueOf(start.getData())) ;
-        if(Objects.nonNull(data)){
-            updatePlanWorkExecutionInfo( param, data);
+        List<PlanWorkExecutionInfoEntity> exList = new ArrayList<>();
+        for(PlanWorkExecutionInfoEntity entity : executionList){
+            //查询工单信息
+            WorkPlanInfoEntity planEntity = Optional.ofNullable(workPlanInfoService.getById(entity.getPlanWorkId())).orElse(new WorkPlanInfoEntity());
+
+            if(planEntity.getState().equals(WorkFlowConstants.RESULT_0)){
+                entity.setState( WorkFlowConstants.PARAM_2);
+            }else if (planEntity.getState().equals(WorkFlowConstants.RESULT_1)){
+                PlanContentEntity planContentEntity = planContentService.getById(entity.getPlanWorkId());
+                StartProcessInstanceDTO startProcessInstanceDTO = JSONObject.parseObject(planContentEntity.getContent(), new TypeReference<StartProcessInstanceDTO>() {
+                });
+                startProcessInstanceDTO.setWorkSource(WorkOrderConstants.WORK_SOURCE_PLAN);
+                IdmResDTO start = workInfoService.start(startProcessInstanceDTO);
+                Long data =Long.parseLong(String.valueOf(start.getData())) ;
+                entity.setProcInstId(data);
+                entity.setState( WorkFlowConstants.RESULT_1);
+            }
+            exList.add(entity);
         }
+
+        if(CollectionUtil.isNotEmpty(exList)){
+            planWorkExecutionInfoService.updateBatchById(exList);
+        }
+
+
         return ReturnT.SUCCESS;
     }
 

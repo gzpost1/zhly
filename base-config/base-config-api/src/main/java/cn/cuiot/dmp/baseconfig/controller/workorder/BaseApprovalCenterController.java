@@ -41,7 +41,6 @@ public class BaseApprovalCenterController extends BaseController {
      * @return
      */
     @PostMapping("start")
-    @RequiresPermissions
     @LogRecord(operationCode = "startWork", operationName = "启动工单", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO start(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
         startProcessInstanceDTO.setWorkSource(WorkOrderConstants.WORK_SOURCE_MAKE);

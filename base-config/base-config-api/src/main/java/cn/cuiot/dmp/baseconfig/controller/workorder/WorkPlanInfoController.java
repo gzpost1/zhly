@@ -9,6 +9,7 @@ import cn.cuiot.dmp.baseconfig.flow.dto.WorkPlanInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.entity.PlanWorkExecutionInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkPlanInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkPlanInfoService;
+import cn.cuiot.dmp.baseconfig.task.WorkPlanInfoTask;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -93,5 +94,13 @@ public class WorkPlanInfoController {
     @PostMapping("queryExecutionInfo")
     public IdmResDTO<IPage<PlanWorkExecutionInfoEntity>> queryExecutionInfo(@RequestBody QueryPlanExecutionDto dto){
         return workPlanInfoService.queryExecutionInfo(dto);
+    }
+
+    @Autowired
+    private WorkPlanInfoTask workPlanInfoTask;
+    @PostMapping("test")
+    public IdmResDTO test(){
+        workPlanInfoTask.createWork("");
+        return IdmResDTO.success();
     }
 }

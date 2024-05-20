@@ -66,6 +66,7 @@ import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.variable.api.history.HistoricVariableInstanceQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -108,6 +109,10 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     private TbFlowConfigOrgService tbFlowConfigOrgService;
     @Autowired
     private ProcessEngine processEngine;
+
+    @Autowired
+    private NodeTypeService nodeTypeService;
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO) {
         JSONObject formData = startProcessInstanceDTO.getFormData();
         UserInfo startUserInfo = startProcessInstanceDTO.getStartUserInfo();
@@ -163,6 +168,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             String flowableKey = processDefinition.getKey().replaceAll("[a-zA-Z]", "");
             TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
                     orElseThrow(()->new RuntimeException("流程配置为空"));
+
+            //保存节点类型
+            saveChildNode(processJson(flowConfig.getProcess()),task.getProcessInstanceId());
             //保存工单信息
             WorkInfoEntity entity = new WorkInfoEntity();
             entity.setId(IdWorker.getId());
@@ -176,6 +184,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             entity.setCompanyId(flowConfig.getCompanyId());
             entity.setStatus(WorkOrderStatusEnums.progress.getStatus());
             entity.setOrgIds(orgIds(flowConfig.getId()));
+//            entity.setFlowConfigId(flowConfig.getId());
             this.save(entity);
             HandleDataDTO handleDataDTO = new HandleDataDTO();
             handleDataDTO.setTaskId(task.getId());
@@ -186,6 +195,27 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         }
         return IdmResDTO.success(task.getProcessInstanceId());
+    }
+
+
+    public void saveChildNode(ChildNode childNode,String procinstId){
+        ChildNode children = childNode.getChildren();
+        if(Objects.nonNull(children) && StringUtils.isNotEmpty(children.getType())){
+            NodeTypeEntity entity = new NodeTypeEntity();
+            entity.setId(IdWorker.getId());
+            entity.setNodeId(children.getId());
+            entity.setNodeType(children.getType());
+            entity.setProcInstId(Long.parseLong(procinstId));
+            nodeTypeService.save(entity);
+            saveChildNode(children,procinstId);
+        }
+
+    }
+    public ChildNode processJson(String processJson) {
+        ChildNode childNode = JsonUtil.readValue(processJson, new com.fasterxml.jackson.core.type.TypeReference<ChildNode>() {
+        });
+
+        return childNode;
     }
 
     public String orgIds(Long configId){
