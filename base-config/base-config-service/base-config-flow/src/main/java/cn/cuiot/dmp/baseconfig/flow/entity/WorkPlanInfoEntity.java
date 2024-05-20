@@ -178,4 +178,7 @@ public class WorkPlanInfoEntity extends YjBaseEntity {
      */
     @TableField(exist = false)
     private  String createName;
+
+    @TableField(exist = false)
+    private String startProcessInstanceDTO;
 }
