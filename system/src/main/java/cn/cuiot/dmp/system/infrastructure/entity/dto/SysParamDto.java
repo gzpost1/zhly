@@ -18,14 +18,14 @@ public class SysParamDto {
     /**
      * 系统名称
      */
-    @NotBlank(message = "系统名称不能为空")
+    //@NotBlank(message = "系统名称不能为空")
     @Length(max = 30, message = "系统名称不可超过30字")
     private String title;
 
     /**
      * 系统logo
      */
-    @NotBlank(message = "系统logo不能为空")
+    //@NotBlank(message = "系统logo不能为空")
     private String logoPath;
 
     /**
