@@ -76,13 +76,13 @@
     <select id="queryMyNotApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
         select
             <include refid="queryMyNotApprovalSql"/>
-        from tb_work_info t1 INNER JOIN act_ru_task t2 on  t1.proc_inst_id = t2.PROC_INST_ID_
+        from tb_work_info t1 , act_ru_task t2 , tb_node_type t3
             <include refid="queryMyNotApprovalCondition"/>
     </select>
     <sql id="queryMyNotApprovalCondition">
         <where>
             <if test="query.assignee !=null and query.assignee !=''">
-                and t2.ASSIGNEE_ = #{query.assignee} and t2.NAME_ = '审批人'
+               and t1.proc_inst_id = t2.PROC_INST_ID_ and t2.PROC_INST_ID_ = t3.proc_inst_id and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'APPROVAL'
             </if>
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}
@@ -114,14 +114,14 @@
     <select id="queryMyApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
         select
             <include refid="queryMyApprovalSql"/>
-        from  tb_work_info t1 INNER JOIN  act_hi_taskinst t2 on t1.proc_inst_id = t2.PROC_INST_ID_
+        from  tb_work_info t1 , act_hi_taskinst t2 ,tb_node_type t3
         <include refid="queryMyApprovalSqlCondition"/>
     </select>
 
     <sql id="queryMyApprovalSqlCondition">
         <where>
             <if test="query.assignee !=null and query.assignee !=''">
-                and t2.ASSIGNEE_ = #{query.assignee}
+                and t2.ASSIGNEE_ = #{query.assignee} and t1.proc_inst_id = t2.PROC_INST_ID_ and t2.PROC_INST_ID_ = t3.proc_inst_id  and t3.node_type = 'APPROVAL'
             </if>
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}

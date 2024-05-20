@@ -2,6 +2,8 @@ package cn.cuiot.dmp.baseconfig.flow.constants;
 
 import io.lettuce.core.StrAlgoArgs;
 
+import java.util.List;
+
 /**
  * @author LoveMyOrange
  * @create 2022-10-10 17:40
@@ -59,11 +61,19 @@ public interface WorkFlowConstants {
     String TIME_HANDLER_TYPE = "timeHandler";
 
     /**
+     * 最后一天
+     */
+    String LAST_DAT="32";
+
+    /**
      * 返回结果
      */
     Byte RESULT_1 =1;
 
     Byte RESULT_0 = 0;
+
+    Byte PARAM_2 = 2;
+
     /**
      * 获取待已审批列表
      */

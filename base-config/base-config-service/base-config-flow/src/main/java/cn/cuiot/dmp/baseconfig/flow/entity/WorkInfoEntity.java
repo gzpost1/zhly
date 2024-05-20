@@ -101,4 +101,6 @@ public class WorkInfoEntity implements Serializable {
      * configId
      */
     private String orgIds;
+
+
 }
