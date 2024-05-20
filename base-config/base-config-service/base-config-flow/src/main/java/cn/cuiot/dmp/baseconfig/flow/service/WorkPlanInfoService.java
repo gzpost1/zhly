@@ -28,6 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjuster;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,14 +66,14 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
         WorkPlanInfoEntity map = BeanMapper.map(workPlanInfoCreateDto, WorkPlanInfoEntity.class);
         map.setId(IdWorker.getId());
+        map.setOrgId(LoginInfoHolder.getCurrentOrgId());
 
+//        //创建定时任务
+//        Long xxlJob = xxlJobClient.createXxlJob(workPlanInfoCreateDto.getPlanName(),
+//                WorkFlowConstants.JOB_STATUS, WorkFlowConstants.JOB_INVOKETARGET, createCron(workPlanInfoCreateDto),
+//                String.valueOf(map.getId()));
 
-        //创建定时任务
-        Long xxlJob = xxlJobClient.createXxlJob(workPlanInfoCreateDto.getPlanName(),
-                WorkFlowConstants.JOB_STATUS, WorkFlowConstants.JOB_INVOKETARGET, createCron(workPlanInfoCreateDto),
-                String.valueOf(map.getId()));
-
-        map.setTaskId(xxlJob);
+//        map.setTaskId(xxlJob);
         this.save(map);
 
         workPlanInfoCreateDto.setId(map.getId());
@@ -100,10 +103,11 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         List<ExecutionDateDto> dtos = Optional.ofNullable(planWorkExecutionInfoService.
                 queryExecutionTime(String.valueOf(startDate), String.valueOf(endDate) )).
                 orElseThrow(()->new RuntimeException("时间周期为空"));
-        //工单推送时间
+        //工单推送时间 单位分钟
         long round = Math.round(workPlanInfoCreateDto.getPushHour() * 60 + workPlanInfoCreateDto.getPushDay() * 24 * 60);
         List<LocalDateTime> times = new ArrayList<>();
         for(ExecutionDateDto dto : dtos){
+            //计划开始时间
             LocalDateTime of = LocalDateTime.of(dto.getExecutionDate(), workPlanInfoCreateDto.getPlanTime());
             //按天
             if(workPlanInfoCreateDto.getExecutionStrategy().intValue()==1){
@@ -137,14 +141,26 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
     }
 
+    public static void main(String[] args) {
+        String dateTimeString = "2024-04-05 12:45:46";
+
+        // 定义日期时间格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        // 将字符串转换为LocalDateTime对象
+        LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
+
+        System.out.println(dateTime.getDayOfMonth());
+    }
+
     public void specifyMonth(WorkPlanInfoDto workPlanInfoCreateDto,LocalDateTime of,ExecutionDateDto dto, List<LocalDateTime> times){
         //获取月份
         int monthValue = of.getMonthValue();
         //获取日
         int dayOfMonth = of.getDayOfMonth();
 
-        if(getListStr(workPlanInfoCreateDto.getSpecifyMonth()).contains(String.valueOf(monthValue)) &&
-                getListStr(workPlanInfoCreateDto.getSpecifyDay()).contains(String.valueOf(dayOfMonth))){
+        if(getListStr(workPlanInfoCreateDto.getSpecifyMonth(),of).contains(String.valueOf(monthValue)) &&
+                getListStr(workPlanInfoCreateDto.getSpecifyDay(),of).contains(String.valueOf(dayOfMonth))){
             times.add(of);
             //启用循环
             if(workPlanInfoCreateDto.getRecurrentState().intValue()==1){
@@ -161,7 +177,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
     public  void  specifyWeek(WorkPlanInfoDto workPlanInfoCreateDto,LocalDateTime of,ExecutionDateDto dto, List<LocalDateTime> times){
         //获取时间星期几
         int value = of.getDayOfWeek().getValue();
-        if(getListStr(workPlanInfoCreateDto.getSpecifyWeek()).contains(String.valueOf(value))){
+        if(getListStr(workPlanInfoCreateDto.getSpecifyWeek(),of).contains(String.valueOf(value))){
             times.add(of);
             //启用循环
             if(workPlanInfoCreateDto.getRecurrentState().intValue()==1){
@@ -177,9 +193,13 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
     }
 
 
-    public List<String> getListStr(String str){
+    public Set<String> getListStr(String str,LocalDateTime of){
+        if (str.contains(WorkFlowConstants.LAST_DAT)) {
+            str = str.substring(0,str.length()-3)+","+of.toLocalDate().with(TemporalAdjusters.lastDayOfMonth());
+        }
         String[] items = str.split(",",-1);
-        return Arrays.asList(items);
+
+        return new HashSet<>(Arrays.asList(items));
     }
     /**
      * 指定循环天数
@@ -191,7 +211,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
     public void specifyDay(WorkPlanInfoDto workPlanInfoCreateDto,LocalDateTime of,ExecutionDateDto dto, List<LocalDateTime> times){
         if(StringUtil.isNotBlank(workPlanInfoCreateDto.getSpecifyDay())){
             String specifyDay=workPlanInfoCreateDto.getSpecifyDay();
-            if(getListStr(specifyDay).contains(String.valueOf(of.getDayOfMonth()))){
+            if(getListStr(specifyDay,of).contains(String.valueOf(of.getDayOfMonth()))){
                 times.add(of);
                 //启用循环
                 if(workPlanInfoCreateDto.getRecurrentState().intValue()==1){
@@ -287,6 +307,12 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         return cron;
     }
 
+    public String getSpecifyDat(String day){
+        if(day.contains(WorkFlowConstants.LAST_DAT)){
+            return day.substring(0,day.length()-3);
+        }
+        return "";
+    }
     /**
      * 将推送时间转成分钟
      * @param dto
@@ -306,9 +332,11 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
     public IdmResDTO<IPage<WorkPlanInfoEntity>>  queryWordPlanInfo(QueryWorkPlanInfoDto dto) {
 
         //根据组织id获取自己及下属的组织id
-        List<DepartmentDto> deptList = getDeptIds(LoginInfoHolder.getCurrentDeptId());
-        List<Long> deptIds = deptList.stream().map(DepartmentDto::getId).collect(Collectors.toList());
-        dto.setOrgIds(deptIds);
+        if(CollectionUtil.isEmpty(dto.getOrgIds())){
+            List<DepartmentDto> deptList = getDeptIds(LoginInfoHolder.getCurrentDeptId());
+            List<Long> deptIds = deptList.stream().map(DepartmentDto::getId).collect(Collectors.toList());
+            dto.setOrgIds(deptIds);
+        }
         LambdaQueryWrapper<WorkPlanInfoEntity> lw = getCondition(dto);
         Page<WorkPlanInfoEntity> workPlanInfoEntityPage = this.getBaseMapper().selectPage(new Page<>(dto.getCurrentPage(), dto.getPageSize()), lw);
         List<WorkPlanInfoEntity> records = workPlanInfoEntityPage.getRecords();
@@ -344,8 +372,8 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         lw.like(Objects.nonNull(dto.getId()),WorkPlanInfoEntity::getId,dto.getId())
         .like(Objects.nonNull(dto.getPlanName()),WorkPlanInfoEntity::getPlanName,dto.getPlanName())
          .in(CollectionUtil.isNotEmpty(dto.getOrgIds()),WorkPlanInfoEntity::getOrgId,dto.getOrgIds());
-        if(Objects.nonNull(dto.getPlanDate())){
-            lw.le(WorkPlanInfoEntity::getStartDate,dto.getPlanDate()).ge(WorkPlanInfoEntity::getEndDate,dto.getPlanDate());
+        if(Objects.nonNull(dto.getStartDate())){
+            lw.le(WorkPlanInfoEntity::getStartDate,dto.getEndDate()).ge(WorkPlanInfoEntity::getStartDate,dto.getStartDate());
         }
         if(Objects.nonNull(dto.getPlanState())){
             //未生效
@@ -407,8 +435,22 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
     public IdmResDTO<IPage<PlanWorkExecutionInfoEntity>> queryExecutionInfo(QueryPlanExecutionDto dto) {
 
         LambdaQueryWrapper<PlanWorkExecutionInfoEntity> lw = new LambdaQueryWrapper<>();
-        lw.like(PlanWorkExecutionInfoEntity::getProcInstId,dto.getProcInstId())
-                .eq(PlanWorkExecutionInfoEntity::getState,dto.getState());
+        lw.eq(PlanWorkExecutionInfoEntity::getPlanWorkId,dto.getPlanId()).like(Objects.nonNull(dto.getProcInstId()),
+                PlanWorkExecutionInfoEntity::getProcInstId,dto.getProcInstId());
+        //已生成
+        if(dto.getPageType().equals(WorkFlowConstants.RESULT_1)){
+            lw.eq(PlanWorkExecutionInfoEntity::getState,WorkFlowConstants.RESULT_1);
+        }
+
+        //未生成或生成失败
+        if(dto.getPageType().equals(WorkFlowConstants.RESULT_0)){
+            if(Objects.nonNull(dto.getState())){
+                lw.eq(PlanWorkExecutionInfoEntity::getState,dto.getState());
+            }else{
+                lw.in(PlanWorkExecutionInfoEntity::getState,Arrays.asList(WorkFlowConstants.RESULT_0, WorkFlowConstants.PARAM_2));
+            }
+
+        }
         if(Objects.nonNull(dto.getStartDate())){
             lw.ge(PlanWorkExecutionInfoEntity::getExecutionTime,dto.getStartDate()).le(PlanWorkExecutionInfoEntity::getExecutionTime,dto.getEndDate());
         }

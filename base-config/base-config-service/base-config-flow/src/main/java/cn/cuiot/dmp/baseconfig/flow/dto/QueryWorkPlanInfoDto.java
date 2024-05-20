@@ -42,6 +42,21 @@ public class QueryWorkPlanInfoDto extends PageQuery {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date  planDate;
 
+
+    /**
+     * 开始时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date  startDate;
+
+
+    /**
+     * 结束时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date  endDate;
     /**
      * 计划状态  0未开始 1进行中 2已结束
      */

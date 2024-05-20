@@ -34,7 +34,17 @@ public class QueryPlanExecutionDto extends PageQuery {
     private Date endDate;
 
     /**
-     * 1已生成 0 未生成
+     * 页面标识 1 已生成  0 未生成与生成失败
+     */
+    private Byte pageType;
+
+    /**
+     * 1已生成 0 未生成 2 生成失败
      */
     private Byte  state;
+
+    /**
+     * 计划id
+     */
+    private Long planId;
 }
