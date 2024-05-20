@@ -26,6 +26,7 @@ import cn.cuiot.dmp.system.application.service.LoginService;
 import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.system.application.service.OrganizationService;
 import cn.cuiot.dmp.system.application.service.UserService;
+import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
@@ -99,7 +100,12 @@ public class LoginServiceImpl implements LoginService {
         User userEntity = userRepository
                 .queryByUserNameOrPhoneNumberOrEmail(userAccount, phoneNumber, email);
         // 账号不存在
-        if (userEntity == null) {
+        if (userEntity == null||Objects.isNull(userEntity.getStatus())) {
+            //记录登录失败次数
+            recordLoginFailedCount(userAccount);
+        }
+        // 账号被停用
+        if (!UserStatusEnum.OPEN.getValue().equals(userEntity.getStatus().getValue())) {
             //记录登录失败次数
             recordLoginFailedCount(userAccount);
         }

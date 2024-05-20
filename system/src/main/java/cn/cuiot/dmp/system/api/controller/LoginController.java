@@ -131,7 +131,9 @@ public class LoginController extends BaseController {
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY,"请输入验证码");
         }
         //图形验证码校验
-        verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid());
+        if(!verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid())){
+            throw new BusinessException(ResultCode.KAPTCHA_TEXT_ERROR,"验证码错误");
+        }
 
         /**
          * 获取AES密钥信息
