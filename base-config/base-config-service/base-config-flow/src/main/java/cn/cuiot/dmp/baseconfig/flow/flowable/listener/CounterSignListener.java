@@ -141,20 +141,22 @@ public class CounterSignListener implements ExecutionListener {
             } else if (AssigneeTypeEnums.ROLE.getTypeName().equals(assignedType)) {
                 //指定角色
                 List<Long> roleIds = props.getAssignedUser().stream().map(e -> Long.valueOf(e.getId())).collect(Collectors.toList());
+                assigneeList.addAll(roleIds.stream().map(e -> "role_"+e).collect(Collectors.toList()));
 
-                List<Long> userIdByRole = systemToFlowService.getUserIdByRole(roleIds);
-                if (userIdByRole != null) {
-                    assigneeList.addAll(userIdByRole.stream().map(String::valueOf).collect(Collectors.toList()));
-                }
+//                List<Long> userIdByRole = systemToFlowService.getUserIdByRole(roleIds);
+//                if (userIdByRole != null) {
+//                    assigneeList.addAll(userIdByRole.stream().map(e -> String::valueOf).collect(Collectors.toList()));
+//                }
 
             } else if (AssigneeTypeEnums.DEPT.getTypeName().equals(assignedType)) {
                 //指定部门
                 List<Long> deptIds = props.getAssignedUser().stream().map(e -> Long.valueOf(e.getId())).collect(Collectors.toList());
+                assigneeList.addAll(deptIds.stream().map(e -> "dept_"+e).collect(Collectors.toList()));
 
-                List<Long> userIdByDept = systemToFlowService.getUserIdByDept(deptIds);
-                if (userIdByDept != null) {
-                    assigneeList.addAll(userIdByDept.stream().map(String::valueOf).collect(Collectors.toList()));
-                }
+//                List<Long> userIdByDept = systemToFlowService.getUserIdByDept(deptIds);
+//                if (userIdByDept != null) {
+//                    assigneeList.addAll(userIdByDept.stream().map(String::valueOf).collect(Collectors.toList()));
+//                }
 
             } else if (AssigneeTypeEnums.SELF.getTypeName().equals(assignedType)) {
                 String startUserJson = execution.getVariable(START_USER_INFO, String.class);

@@ -12,9 +12,12 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertSonDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentTreeVO;
+
 import java.util.Arrays;
 import java.util.List;
 import javax.validation.Valid;
+
+import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentUserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -121,6 +124,17 @@ public class DepartmentController extends BaseController {
     public List<DepartmentTreeVO> getAllSpaceTree() {
 
         return departmentService.getAllSpaceTree(getOrgId(), getUserId());
+    }
+
+    /**
+     * 用户组织树搜索
+     */
+    @GetMapping(value = "/getDepartmentOrUserByType", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<DepartmentUserVO> getDepartmentOrUserByType(
+            @RequestParam(value = "deptId", required = false) Long deptId,
+            @RequestParam(value = "type") String type) {
+        String orgId = getOrgId();
+        return departmentService.getDepartmentOrUserByType(Long.valueOf(orgId), deptId, type);
     }
 
 }

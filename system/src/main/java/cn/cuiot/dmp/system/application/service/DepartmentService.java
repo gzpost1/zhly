@@ -12,6 +12,8 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertSonDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentTreeVO;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentUserVO;
+
 import java.util.List;
 
 /**
@@ -25,6 +27,7 @@ public interface DepartmentService {
 
     /**
      * 新增子组织
+     *
      * @param dto
      * @return
      * @Author xieSH
@@ -35,6 +38,7 @@ public interface DepartmentService {
 
     /**
      * 新增组织属性
+     *
      * @param dto
      * @return
      * @Author wen
@@ -45,6 +49,7 @@ public interface DepartmentService {
 
     /**
      * 修改组织属性
+     *
      * @param dto
      * @return
      * @Author wen
@@ -55,6 +60,7 @@ public interface DepartmentService {
 
     /**
      * 查询组织属性
+     *
      * @param deptId
      * @param key
      * @return
@@ -66,6 +72,7 @@ public interface DepartmentService {
 
     /**
      * 修改组织
+     *
      * @param dto
      * @return
      * @Author xieSH
@@ -76,6 +83,7 @@ public interface DepartmentService {
 
     /**
      * 查询
+     *
      * @param orgId
      * @return
      * @Author xieSH
@@ -86,6 +94,7 @@ public interface DepartmentService {
 
     /**
      * 根据组织id查询组织名称
+     *
      * @param id 组织id
      * @return
      * @Author xieSH
@@ -96,6 +105,7 @@ public interface DepartmentService {
 
     /**
      * 查询组织树
+     *
      * @param orgId
      * @param userId
      * @param type
@@ -108,6 +118,7 @@ public interface DepartmentService {
 
     /**
      * 删除组织
+     *
      * @param updateDepartmentDto
      * @return
      * @Author xieSH
@@ -128,6 +139,7 @@ public interface DepartmentService {
 
     /**
      * 批量删除组织
+     *
      * @param ids
      * @param sessionOrgId
      */
@@ -143,6 +155,7 @@ public interface DepartmentService {
 
     /**
      * 根据deptId查询组织路径
+     *
      * @param deptId
      * @return
      */
@@ -167,6 +180,7 @@ public interface DepartmentService {
 
     /**
      * 组织管理 组织树懒加载
+     *
      * @param getDepartmentTreeLazyReqDto
      * @return
      */
@@ -179,8 +193,18 @@ public interface DepartmentService {
 
     /**
      * 查询子部门
+     *
      * @param query
      * @return
      */
     List<DepartmentDto> lookUpDepartmentChildList(DepartmentReqDto query);
+
+    /**
+     * 查询部门/用户列表
+     *
+     * @param orgId  企业id
+     * @param deptId 部门id
+     * @param type   查询类型
+     */
+    List<DepartmentUserVO> getDepartmentOrUserByType(Long orgId, Long deptId, String type);
 }

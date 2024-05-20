@@ -12,17 +12,20 @@ import cn.cuiot.dmp.common.constant.NumberConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.RandomCodeWorker;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.application.constant.CurrencyConst;
+import cn.cuiot.dmp.system.application.constant.DepartmentConstant;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
 import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.domain.entity.Organization;
 import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
+import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentPropertyDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameResDto;
@@ -31,6 +34,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto
 import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertSonDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentTreeVO;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentUserVO;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrganizationDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.SpaceDao;
@@ -40,6 +44,7 @@ import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +56,7 @@ import java.util.Optional;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RLock;
@@ -161,7 +167,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         //层级限制判断
         Integer parentDeptLevel = parentDept.getLevel();
-        if (parentDeptLevel >= maxDeptHigh) {
+        if ((parentDeptLevel+1) >= maxDeptHigh) {
             throw new BusinessException(ResultCode.DEPARTMENT_LEVEL_OVERRUN);
         }
 
@@ -330,7 +336,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                     .orElse(null);
             result = spaceDao.getRootDepartmentLazy(orgId, deptId.toString());
             if (!Arrays.asList(DepartmentGroupEnum.SYSTEM.getCode().toString(),
-                    DepartmentGroupEnum.TENANT.getCode().toString())
+                            DepartmentGroupEnum.TENANT.getCode().toString())
                     .contains(result.get(0).getDGroup())) {
                 DepartmentEntity pathBySpacePath = departmentDao
                         .getPathBySpacePath(result.get(0).getPath());
@@ -354,10 +360,10 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     /**
      * @param orgId -- 用户所在组织结构的Id ==对应数据表organization的id字段 ==对应site表的pk_org_id
-     * 查询site表中该orgId下所有记录，形成List，存放到redis的CacheConst.ROBOT_ORGANIZATION_REDIS_KEY_orgId中。
-     * list中元素的格式如下： { "createdBy":"admin", "createdOn":"2021-08-19T15:32:43",
-     * "id":877938137400082432, "parentId":877934713065439232, "pkOrgId":1, "siteName":"熊猫电子",
-     * "sort":0 }
+     *              查询site表中该orgId下所有记录，形成List，存放到redis的CacheConst.ROBOT_ORGANIZATION_REDIS_KEY_orgId中。
+     *              list中元素的格式如下： { "createdBy":"admin", "createdOn":"2021-08-19T15:32:43",
+     *              "id":877938137400082432, "parentId":877934713065439232, "pkOrgId":1, "siteName":"熊猫电子",
+     *              "sort":0 }
      */
     @Override
     public List<DepartmentTreeVO> getDepartmentTree(String orgId, String userId, String type) {
@@ -447,7 +453,7 @@ public class DepartmentServiceImpl implements DepartmentService {
      * 递归出组织树
      */
     private List<DepartmentTreeVO> buildTree(List<DepartmentTreeVO> robotOrganization,
-            Long parentId) {
+                                             Long parentId) {
         List<DepartmentTreeVO> trees = new ArrayList<>();
         for (int i = 0; i < robotOrganization.size(); i++) {
             DepartmentTreeVO departmentTreeVO = robotOrganization.get(i);
@@ -705,7 +711,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     /**
-     * @param dto 搜索条件
+     * @param dto                         搜索条件
      * @param getDepartmentTreeLazyResDto 用户自身的组织信息
      */
     private GetDepartmentTreeLazyByNameResDto getDepartmentTreeByNameForFloor(
@@ -828,39 +834,40 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     /**
      * 查询子部门
+     *
      * @param query
      * @return
      */
     @Override
     public List<DepartmentDto> lookUpDepartmentChildList(DepartmentReqDto query) {
-        if(Objects.isNull(query.getDeptId())){
+        if (Objects.isNull(query.getDeptId())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL);
         }
         DepartmentEntity departmentEntity = departmentDao
                 .getDepartmentById(query.getDeptId().toString());
-        if(Objects.isNull(departmentEntity)){
+        if (Objects.isNull(departmentEntity)) {
             throw new BusinessException(ResultCode.OBJECT_NOT_EXIST);
         }
         List<DepartmentEntity> childList = Lists.newArrayList();
         List<DepartmentEntity> selectList = null;
-        if(NumberConst.ONE.equals(query.getReturnType())){
+        if (NumberConst.ONE.equals(query.getReturnType())) {
             //只返回直接子部门
             selectList = departmentDao
-                    .getDepartmentListByParentIdAndPath(departmentEntity.getPkOrgId(),departmentEntity.getId(),null);
-        }else{
+                    .getDepartmentListByParentIdAndPath(departmentEntity.getPkOrgId(), departmentEntity.getId(), null);
+        } else {
             //返回所有子部门
             selectList = departmentDao
-                    .getDepartmentListByParentIdAndPath(departmentEntity.getPkOrgId(),null,departmentEntity.getPath());
+                    .getDepartmentListByParentIdAndPath(departmentEntity.getPkOrgId(), null, departmentEntity.getPath());
             //先去除自己
             selectList = Optional.ofNullable(selectList).orElse(Lists.newArrayList())
                     .stream()
-                    .filter(item->!item.getId().equals(departmentEntity.getId()))
+                    .filter(item -> !item.getId().equals(departmentEntity.getId()))
                     .collect(Collectors.toList());
         }
-        if(Boolean.TRUE.equals(query.getSelfReturn())){
+        if (Boolean.TRUE.equals(query.getSelfReturn())) {
             childList.add(departmentEntity);
         }
-        if(org.apache.commons.collections.CollectionUtils.isNotEmpty(selectList)){
+        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(selectList)) {
             childList.addAll(selectList);
         }
 
@@ -872,4 +879,54 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         return dtoList;
     }
+
+    @Override
+    public List<DepartmentUserVO> getDepartmentOrUserByType(Long orgId, Long deptId, String type) {
+        AssertUtil.notNull(orgId, "企业id不能为空");
+        AssertUtil.notBlank(type, "查询类型不能为空");
+        List<DepartmentUserVO> departmentUserVOList = new ArrayList<>();
+        List<DepartmentUserVO> departmentVOList = new ArrayList<>();
+        List<DepartmentUserVO> userVOList = new ArrayList<>();
+        List<DepartmentEntity> departmentEntityList;
+        List<UserDataEntity> userDataEntityList = new ArrayList<>();
+        if (Objects.isNull(deptId)) {
+            departmentEntityList = departmentDao.selectRootByOrgId(orgId.toString());
+            // 如果查询的类型为用户
+            if (DepartmentConstant.USER_TYPE.equals(type)) {
+                userDataEntityList = userDataDao.getUserByDeptId(orgId);
+            }
+        } else {
+            departmentEntityList = departmentDao.getDepartmentListByParentIdAndPath(orgId, deptId, null);
+            // 如果查询的类型为用户
+            if (DepartmentConstant.USER_TYPE.equals(type)) {
+                userDataEntityList = userDataDao.getUserByDeptId(deptId);
+            }
+        }
+        if (!CollectionUtils.isEmpty(departmentEntityList)) {
+            departmentVOList = departmentEntityList.stream()
+                    .map(o -> {
+                        DepartmentUserVO departmentUserVO = new DepartmentUserVO();
+                        departmentUserVO.setId(o.getId());
+                        departmentUserVO.setName(o.getDepartmentName());
+                        departmentUserVO.setType(DepartmentConstant.DEPARTMENT_TYPE);
+                        return departmentUserVO;
+                    })
+                    .collect(Collectors.toList());
+        }
+        if (!CollectionUtils.isEmpty(userDataEntityList)) {
+            userVOList = userDataEntityList.stream()
+                    .map(o -> {
+                        DepartmentUserVO departmentUserVO = new DepartmentUserVO();
+                        departmentUserVO.setId(o.getId());
+                        departmentUserVO.setName(o.getName());
+                        departmentUserVO.setType(DepartmentConstant.USER_TYPE);
+                        return departmentUserVO;
+                    })
+                    .collect(Collectors.toList());
+        }
+        departmentUserVOList.addAll(departmentVOList);
+        departmentUserVOList.addAll(userVOList);
+        return departmentUserVOList;
+    }
+
 }
