@@ -25,11 +25,6 @@ public class CodeArchivesEntity extends YjBaseEntity {
     private Long id;
 
     /**
-     * 编码
-     */
-    private String code;
-
-    /**
      * 档案ID
      */
     private Long archiveId;
