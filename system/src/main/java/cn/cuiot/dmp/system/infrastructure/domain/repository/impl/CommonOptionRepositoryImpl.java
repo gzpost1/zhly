@@ -13,6 +13,7 @@ import cn.cuiot.dmp.system.domain.repository.CommonOptionSettingRepository;
 import cn.cuiot.dmp.system.domain.repository.FormConfigRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.CommonOptionEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.CommonOptionSettingEntity;
+import cn.cuiot.dmp.system.infrastructure.entity.CustomConfigEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CommonOptionDetailQueryDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CommonOptionMapper;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CommonOptionSettingMapper;
@@ -176,8 +177,8 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int batchMoveCommonOptionDefault(List<String> typeIdList) {
-        return commonOptionMapper.batchMoveCommonOptionDefault(typeIdList);
+    public int batchMoveCommonOptionDefault(List<String> typeIdList, Long rootTypeId) {
+        return commonOptionMapper.batchMoveCommonOptionDefault(typeIdList, rootTypeId);
     }
 
     @Override
@@ -197,6 +198,7 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     @Override
     public PageResult<CommonOption> queryCommonOptionByType(CommonOptionPageQuery pageQuery) {
         LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
+                .eq(Objects.nonNull(pageQuery.getCompanyId()), CommonOptionEntity::getCompanyId, pageQuery.getCompanyId())
                 .eq(Objects.nonNull(pageQuery.getTypeId()), CommonOptionEntity::getTypeId, pageQuery.getTypeId())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), CommonOptionEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CommonOptionEntity::getStatus, pageQuery.getStatus());
