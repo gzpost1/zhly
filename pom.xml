@@ -13,6 +13,7 @@
         <module>base-config</module>
         <module>base-consumer</module>
         <module>archive</module>
+        <module>app</module>
     </modules>
 
     <parent>
