@@ -48,4 +48,9 @@ public interface CommonOptionTypeRepository {
      */
     PageResult<CommonOption> queryCommonOptionByType(CommonOptionPageQuery pageQuery);
 
+    /**
+     * 根据企业id获取根节点类型id
+     */
+    Long getRootTypeId(Long companyId);
+
 }

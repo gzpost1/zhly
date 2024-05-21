@@ -136,7 +136,8 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
         AssertUtil.notNull(commonOptionTypeTreeNodeVO, "当前节点不能为空");
         List<String> treeIdList = TreeUtil.getChildTreeIdList(commonOptionTypeTreeNodeVO);
         // 批量移动该分类及子节点下所有的表单配置到"全部"分类下
-        commonOptionRepository.batchMoveCommonOptionDefault(treeIdList);
+        Long rootTypeId = commonOptionTypeRepository.getRootTypeId(queryDTO.getCompanyId());
+        commonOptionRepository.batchMoveCommonOptionDefault(treeIdList, rootTypeId);
         return commonOptionTypeRepository.deleteCommonOptionType(treeIdList);
     }
 

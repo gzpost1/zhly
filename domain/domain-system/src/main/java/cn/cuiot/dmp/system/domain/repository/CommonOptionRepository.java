@@ -60,7 +60,7 @@ public interface CommonOptionRepository {
     /**
      * 默认批量移动分类列表下所有的表单配置到"全部"分类下
      */
-    int batchMoveCommonOptionDefault(List<String> typeIdList);
+    int batchMoveCommonOptionDefault(List<String> typeIdList, Long rootTypeId);
 
     /**
      * 批量更新状态

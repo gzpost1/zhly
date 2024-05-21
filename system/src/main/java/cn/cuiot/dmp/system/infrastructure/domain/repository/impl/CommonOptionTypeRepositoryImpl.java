@@ -122,6 +122,17 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
         return commonOptionRepository.queryCommonOptionByType(pageQuery);
     }
 
+    @Override
+    public Long getRootTypeId(Long companyId) {
+        AssertUtil.notNull(companyId, "企业id不能为空");
+        LambdaQueryWrapper<CommonOptionTypeEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionTypeEntity>()
+                .eq(CommonOptionTypeEntity::getCompanyId, companyId)
+                .eq(CommonOptionTypeEntity::getParentId, CommonOptionConstant.DEFAULT_PARENT_ID);
+        List<CommonOptionTypeEntity> commonOptionTypeEntityList = commonOptionTypeMapper.selectList(queryWrapper);
+        AssertUtil.notEmpty(commonOptionTypeEntityList, "该企业下不存在常用选项分类");
+        return commonOptionTypeEntityList.get(0).getId();
+    }
+
     private CommonOptionTypeEntity initRootNode(Long companyId) {
         CommonOptionTypeEntity commonOptionTypeEntity = new CommonOptionTypeEntity();
         commonOptionTypeEntity.setId(IdWorker.getId());

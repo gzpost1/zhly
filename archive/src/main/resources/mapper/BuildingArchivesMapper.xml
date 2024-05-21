@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMapper">
+
+    <update id="batchUpdateBuildingArchives" parameterType="java.util.List">
+        update tb_building_archives
+        <set>
+            <if test="departmentId !=null">
+                department_id = #{departmentId}
+            </if>
+        </set>
+        where id in
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+</mapper>
