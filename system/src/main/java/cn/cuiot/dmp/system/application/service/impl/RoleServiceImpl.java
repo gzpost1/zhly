@@ -2,7 +2,9 @@ package cn.cuiot.dmp.system.application.service.impl;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
@@ -40,6 +42,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
+import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -157,7 +160,7 @@ public class RoleServiceImpl implements RoleService {
         if (!CollectionUtils.isEmpty(userIdList) && userIdList.parallelStream().anyMatch(map -> {
             return null != map.get(USER_ID);
         })) {
-            throw new BusinessException(ResultCode.ROLE_USER_APP_ALREADY_BIND);
+            throw new BusinessException(ResultCode.ROLE_USER_APP_ALREADY_BIND,"该角色下存在用户，不可删除");
         }
 
         // 删除成功的角色数量
@@ -204,6 +207,7 @@ public class RoleServiceImpl implements RoleService {
         entity.setRoleName(dto.getRoleName());
         entity.setDescription(dto.getDescription());
         entity.setId(SnowflakeIdWorkerUtil.nextId());
+        entity.setStatus(EntityConstants.ENABLED);
         try {
             this.roleDao.insertRole(entity);
         } catch (Exception e) {
@@ -321,18 +325,6 @@ public class RoleServiceImpl implements RoleService {
         //更改时间
         roleBo.setUpdatedOn(LocalDateTime.now());
 
-        List<Long> idList = new ArrayList<>();
-        idList.add(roleBo.getId());
-        roleBo.setDeleteIdList(idList);
-        // 获取操作对象
-        List<RoleEntity> roleEntityList = this.roleDao
-                .selectRoleByRoleIds(roleBo.getDeleteIdList());
-        String[] operationTargetArray = new String[roleEntityList.size()];
-        for (int i = 0; i < roleEntityList.size(); i++) {
-            operationTargetArray[i] = roleEntityList.get(i).getRoleName();
-        }
-        roleBo.setOperationTarget(operationTargetArray);
-
         Organization organization = organizationRepository
                 .find(new OrganizationId(roleBo.getSessionOrgId()));
 
@@ -367,6 +359,46 @@ public class RoleServiceImpl implements RoleService {
                     return roleConverter.entityToBaseRoleDto(item);
                 }).collect(Collectors.toList());
         return dtoList;
+    }
+
+    /**
+     * 启停用
+     */
+    @Override
+    public void updateStatus(UpdateStatusParam updateStatusParam, Long sessionUserId,
+            Long sessionOrgId) {
+        Long roleId = updateStatusParam.getId();
+        RoleDTO roleDTO = this.roleDao.selectRoleById(sessionOrgId,roleId);
+        if(Objects.isNull(roleDTO)){
+            throw new BusinessException(ResultCode.ROLE_NOT_EXIST);
+        }
+        // 预置角色不能启停用
+        DEFAULT_ROLE_ID.stream().filter(s -> s.equals(roleId)).findAny().ifPresent(s -> {
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+        });
+        if(EntityConstants.DISABLED.equals(updateStatusParam.getStatus())){
+            // 查询角色关联的用户
+            List<Map<String, Long>> userIdList = this.roleDao
+                    .selectUserIdsByRoleIds(sessionOrgId.toString(),Lists.newArrayList(roleId));
+
+            if (!CollectionUtils.isEmpty(userIdList) && userIdList.parallelStream().anyMatch(map -> {
+                return null != map.get(USER_ID);
+            })) {
+                throw new BusinessException(ResultCode.ROLE_USER_APP_ALREADY_BIND,"该角色下存在用户，不可停用");
+            }
+        }
+        RoleBo roleBo = new RoleBo();
+        roleBo.setId(roleId);
+        // 修改者类型
+        roleBo.setUpdatedByType(UserSourceTypeEnum.PORTAL.getCode());
+        // 修改者
+        roleBo.setUpdatedBy(roleBo.getSessionUserId());
+        //更改时间
+        roleBo.setUpdatedOn(LocalDateTime.now());
+        //状态
+        roleBo.setStatus(updateStatusParam.getStatus());
+
+        roleDao.updateRole(roleBo);
     }
 }
 

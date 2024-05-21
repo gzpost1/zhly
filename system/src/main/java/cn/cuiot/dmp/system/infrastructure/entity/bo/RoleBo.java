@@ -114,4 +114,8 @@ public class RoleBo extends AbstractResourceParam {
      */
     private Integer updatedByType;
 
+    /**
+     * 状态 1-启用 0-停用
+     */
+    private Byte status;
 }

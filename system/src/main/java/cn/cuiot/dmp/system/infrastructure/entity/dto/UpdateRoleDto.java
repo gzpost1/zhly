@@ -3,18 +3,24 @@ package cn.cuiot.dmp.system.infrastructure.entity.dto;
 import cn.cuiot.dmp.common.log.intf.AbstractResourceParam;
 import java.util.List;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 /**
+ * 角色修改入参
  * @author wensq
  * @version 1.0
- * @description: 新建角色入参
  * @date 2022/9/14 18:06
  */
 @Data
-public class CreateRoleDto extends AbstractResourceParam {
+public class UpdateRoleDto extends AbstractResourceParam {
+
+    /**
+     * 角色主键id
+     */
+    @NotNull(message = "主键id不能为空")
+    private Long id;
 
     /**
      * 角色名称
