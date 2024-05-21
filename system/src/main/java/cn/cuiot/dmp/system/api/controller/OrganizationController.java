@@ -166,6 +166,7 @@ public class OrganizationController extends BaseController {
         if (null == organizationResDto) {
             return Const.NUMBER_0;
         }
+        LoginInfoHolder.markDeleteOperation();
         int result = organizationService.deleteAccount(accountId);
         return result;
     }

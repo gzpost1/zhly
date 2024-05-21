@@ -758,13 +758,13 @@ public class OrganizationServiceImpl implements OrganizationService {
             needDelete = organization2EntityAssembler.toDTO(organization);
             organizationRepository.remove(organization);
 
-            /*List<Long> userList = userDao.getUserId(orgId);
+            List<Long> userList = userDao.getUserId(orgId);
             userDao.deleteUserOrgByOrgId(orgId);
             if (!CollectionUtils.isEmpty(userList)) {
                 userRepository.removeList(
                         userList.stream().map(UserId::new).collect(Collectors.toList()));
                 userRepository.removeUserRelate(userList);
-            }*/
+            }
 
             DepartmentEntity communityIdByPath = departmentDao.getCommunityIdByPath(path);
             if (!ObjectUtil.isEmpty(communityIdByPath)) {
@@ -773,7 +773,6 @@ public class OrganizationServiceImpl implements OrganizationService {
             organizationDao.delOrgLab(orgId);
             organizationDao.delOrgRole(orgId);
             userDao.deleteUserGrant(Long.parseLong(orgId));
-
         } catch (Exception e) {
             log.error("账户删除失败 {}", e.getMessage());
             throw new BusinessException(ResultCode.ACCOUNT_DELETED_ERROR);

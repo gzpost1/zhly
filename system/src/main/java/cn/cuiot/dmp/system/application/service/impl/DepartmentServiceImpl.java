@@ -167,7 +167,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         //层级限制判断
         Integer parentDeptLevel = parentDept.getLevel();
-        if (parentDeptLevel >= maxDeptHigh) {
+        if ((parentDeptLevel+1) >= maxDeptHigh) {
             throw new BusinessException(ResultCode.DEPARTMENT_LEVEL_OVERRUN);
         }
 

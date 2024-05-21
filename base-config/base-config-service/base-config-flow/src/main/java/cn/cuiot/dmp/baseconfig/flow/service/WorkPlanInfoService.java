@@ -55,6 +55,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
     @Autowired
     private PlanContentService planContentService;
+
     /**
      * 创建工单计划
      * @param workPlanInfoCreateDto
@@ -343,14 +344,21 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         if(CollectionUtil.isNotEmpty(records)){
             List<Long> userIds = records.stream().map(WorkPlanInfoEntity::getCreateUser).collect(Collectors.toList());
             Map<Long, String> userMap = getUserMap(userIds);
+            List<Long> ids = records.stream().map(WorkPlanInfoEntity::getId).collect(Collectors.toList());
+            Map<Long, String> contentMap = getContent(ids);
             records.stream().forEach(item->{
                 //根据userId获取userName
                 item.setCreateName(userMap.get(item.getCreateUser()));
+                item.setStartProcessInstanceDTO(contentMap.get(item.getId()));
             });
         }
         return IdmResDTO.success(workPlanInfoEntityPage);
     }
 
+    public Map<Long, String> getContent(List<Long> ids){
+        List<PlanContentEntity> planContentEntities = planContentService.getBaseMapper().selectBatchIds(ids);
+        return planContentEntities.stream().collect(Collectors.toMap(PlanContentEntity::getId,PlanContentEntity::getContent ));
+    }
     public Map<Long,String> getUserMap(List<Long> userIds){
         BaseUserReqDto userReqDto = new BaseUserReqDto();
         userReqDto.setUserIdList(userIds);
@@ -370,6 +378,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
     public LambdaQueryWrapper getCondition(QueryWorkPlanInfoDto dto){
         LambdaQueryWrapper<WorkPlanInfoEntity> lw = new LambdaQueryWrapper<>();
         lw.like(Objects.nonNull(dto.getId()),WorkPlanInfoEntity::getId,dto.getId())
+                .eq(Objects.nonNull(dto.getState()),WorkPlanInfoEntity::getState,dto.getState())
         .like(Objects.nonNull(dto.getPlanName()),WorkPlanInfoEntity::getPlanName,dto.getPlanName())
          .in(CollectionUtil.isNotEmpty(dto.getOrgIds()),WorkPlanInfoEntity::getOrgId,dto.getOrgIds());
         if(Objects.nonNull(dto.getStartDate())){
@@ -414,12 +423,12 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         if(dto.getBusinessType().intValue()==0){
             List<WorkPlanInfoEntity> workPlanInfoEntities = this.getBaseMapper().selectBatchIds(dto.getIds());
             workPlanInfoEntities.stream().forEach(item->item.setState(Byte.parseByte("0")));
-            this.saveOrUpdateBatch(workPlanInfoEntities);
+            this.updateBatchById(workPlanInfoEntities);
         }
         if(dto.getBusinessType().intValue()==1){
             List<WorkPlanInfoEntity> workPlanInfoEntities = this.getBaseMapper().selectBatchIds(dto.getIds());
             workPlanInfoEntities.stream().forEach(item->item.setState(Byte.parseByte("1")));
-            this.saveOrUpdateBatch(workPlanInfoEntities);
+            this.updateBatchById(workPlanInfoEntities);
         }
         if(dto.getBusinessType().intValue()==2){
             this.getBaseMapper().deleteBatchIds(dto.getIds());
