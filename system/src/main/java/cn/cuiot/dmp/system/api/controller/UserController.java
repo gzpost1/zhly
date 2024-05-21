@@ -49,8 +49,11 @@ import cn.cuiot.dmp.system.infrastructure.utils.ExcelUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.github.houbb.sensitive.core.api.SensitiveUtil;
 import com.google.common.base.Splitter;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -59,12 +62,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.util.CollectionUtils;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -357,29 +361,30 @@ public class UserController extends BaseController {
         if (org.apache.commons.collections.CollectionUtils.isEmpty(importDtoList)) {
             throw new BusinessException(ResultCode.REQUEST_FORMAT_ERROR, "excel解析失败");
         }
-        for(ImportUserDto userDto:importDtoList){
-            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getUsername())){
-                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，用户名不能为空");
+        for (ImportUserDto userDto : importDtoList) {
+            if (org.apache.commons.lang3.StringUtils.isBlank(userDto.getUsername())) {
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL, "导入失败，用户名不能为空");
             }
-            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getName())){
-                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，姓名不能为空");
+            if (org.apache.commons.lang3.StringUtils.isBlank(userDto.getName())) {
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL, "导入失败，姓名不能为空");
             }
-            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getPhoneNumber())){
-                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，手机号不能为空");
+            if (org.apache.commons.lang3.StringUtils.isBlank(userDto.getPhoneNumber())) {
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL, "导入失败，手机号不能为空");
             }
-            if(org.apache.commons.lang3.StringUtils.isBlank(userDto.getRoleName())){
-                throw new BusinessException(ResultCode.PARAM_NOT_NULL,"导入失败，角色不能为空");
+            if (org.apache.commons.lang3.StringUtils.isBlank(userDto.getRoleName())) {
+                throw new BusinessException(ResultCode.PARAM_NOT_NULL, "导入失败，角色不能为空");
             }
         }
         //判断用户名是否重复
-        if(importDtoList.size()!=importDtoList.stream().map(ite->ite.getUsername()).distinct().collect(Collectors.toList()).size()){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"导入失败，文件中存在用户名重复");
+        if (importDtoList.size() != importDtoList.stream().map(ite -> ite.getUsername()).distinct()
+                .collect(Collectors.toList()).size()) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "导入失败，文件中存在用户名重复");
         }
         //判断手机号是否重复
-        if(importDtoList.size()!=importDtoList.stream().map(ite->ite.getPhoneNumber()).distinct().collect(Collectors.toList()).size()){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"导入失败，文件中存在手机号重复");
+        if (importDtoList.size() != importDtoList.stream().map(ite -> ite.getPhoneNumber())
+                .distinct().collect(Collectors.toList()).size()) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "导入失败，文件中存在手机号重复");
         }
-
 
         UserBo userBo = new UserBo();
         userBo.setOrgId(LoginInfoHolder.getCurrentOrgId().toString());
@@ -509,5 +514,33 @@ public class UserController extends BaseController {
         userService.updatePhoneNumber(userBo);
     }
 
+
+    /**
+     * 下载模板
+     */
+    @PostMapping("/downloadExcel")
+    public void downloadExcel(HttpServletResponse response)
+            throws IOException {
+        BufferedOutputStream bos = null;
+        String templatePath = "template/importUsers.xlsx";
+        try (InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(templatePath)) {
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder
+                    .encode("用户导入模板.xls", "UTF-8"));
+            bos = new BufferedOutputStream(response.getOutputStream());
+            FileCopyUtils.copy(is, bos);
+        } catch (Exception ex) {
+            log.error("download extractTemplate error", ex);
+            throw new BusinessException(ResultCode.INNER_ERROR, "下载失败");
+        } finally {
+            if (null != bos) {
+                bos.flush();
+                bos.close();
+            }
+        }
+    }
 
 }
