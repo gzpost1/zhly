@@ -53,7 +53,6 @@
         FROM role r
         LEFT JOIN org_role o ON r.id = o.pk_role_id
         <trim prefix="WHERE" prefixOverrides="AND">
-            and r.role_key != 'SUPER_ADMIN'
             <if test="orgId !=null and orgId !=-1">
                 and o.pk_org_id = #{orgId}
             </if>
