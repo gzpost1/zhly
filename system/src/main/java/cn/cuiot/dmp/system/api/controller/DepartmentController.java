@@ -127,7 +127,7 @@ public class DepartmentController extends BaseController {
     }
 
     /**
-     * 用户组织树搜索
+     * 根据类型获取部门或用户
      */
     @GetMapping(value = "/getDepartmentOrUserByType", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<DepartmentUserVO> getDepartmentOrUserByType(

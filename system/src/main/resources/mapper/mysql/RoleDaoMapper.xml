@@ -9,6 +9,7 @@
         r.description,
         r.permit,
         r.role_type AS roleType,
+        r.`status`,
         CASE r.created_by_type
         WHEN 1 THEN r.created_by
         WHEN 2 THEN (SELECT username FROM `user` WHERE id = r.created_by)
@@ -93,7 +94,7 @@
     <insert id="insertRole" parameterType="cn.cuiot.dmp.system.infrastructure.entity.RoleEntity">
         INSERT INTO `role`
         (
-            id,org_id,role_name, role_key, description, permit, role_type,
+            id,org_id,role_name, role_key, description, permit, role_type,`status`,
             created_by, created_by_type
         )
         VALUES
@@ -104,6 +105,7 @@
             #{description},
             #{permit},
             #{roleType},
+            #{status},
             #{createdBy},
             #{createdByType}
         )
@@ -115,9 +117,11 @@
             <if test="roleName != null and roleName != ''">role_name = #{roleName},</if>
             <if test="description != null">`description` = #{description},</if>
             <if test="permit != null">`permit` = #{permit},</if>
-            updated_by = #{updatedBy},
-            updated_by_type = #{updatedByType},
-            role_type = #{roleType}
+            <if test="roleType != null">role_type = #{roleType},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="updatedOn != null">updated_on = #{updatedOn},</if>
+            <if test="updatedBy != null">updated_by = #{updatedBy},</if>
+            <if test="updatedByType != null">updated_by_type = #{updatedByType}</if>
         </trim>
         WHERE id = #{id}
         and  delete_flag = 0

@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo;
@@ -85,4 +86,10 @@ public interface RoleService {
      * 查询角色
      */
     List<BaseRoleDto> lookUpRoleList(BaseRoleReqDto query);
+
+    /**
+     * 启停用
+     */
+    void updateStatus(UpdateStatusParam updateStatusParam, Long sessionUserId, Long sessionOrgId);
+
 }
