@@ -57,7 +57,7 @@ public enum ResultCode {
     DEFAULT_ROLE_NOT_OPERATE("021014", "默认管理员角色不能进行操作"),
     QUERY_ROLE_DETAILS_ERROR("060001", "查询角色详情失败"),
     OPEN_ID_NOT_EXIST("021017", "openId不存在"),
-    ROLE_NAME_ALREADY_EXIST("021020", "角色名称已存在，请更换！"),
+    ROLE_NAME_ALREADY_EXIST("021020", "角色名称已存在"),
     PAY_REQUIRED("021021","缴费管理为必选"),
     LABEL_TYPE_NOT_EXIST("021022", "标签类型不存在"),
     ONLY_DEPT_USER_CAN_INSERT_DEPT("021023", "只有组织级用户才可添加组织"),
