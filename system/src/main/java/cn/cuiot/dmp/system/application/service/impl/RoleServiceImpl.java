@@ -183,11 +183,6 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createRole(CreateRoleDto dto) {
-        RoleDTO roleDTO = this.roleDao.selectRoleByUserId(Long.parseLong(dto.getLoginOrgId()),
-                Long.parseLong(dto.getLoginUserId()));
-        if (null == roleDTO) {
-            throw new BusinessException(ResultCode.QUERY_ROLE_DETAILS_ERROR);
-        }
         if (CollectionUtils.isEmpty(dto.getMenuIds())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "请配置角色权限");
         }
