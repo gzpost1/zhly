@@ -102,7 +102,7 @@ public class BaseConfigFlowController {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
 
         IPage<TbFlowPageDto> tbFlowPageDtoIPage = tbFlowConfigService.queryForPage(query);
-//        systemUtilService.fillOrgNameAndBusinessName(tbFlowPageDtoIPage);
+        systemUtilService.fillOrgNameAndBusinessName(tbFlowPageDtoIPage);
 
         return IdmResDTO.success().body(tbFlowPageDtoIPage);
     }
