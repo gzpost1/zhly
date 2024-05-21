@@ -93,12 +93,13 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public PageResult<RoleDTO> getRoleListByPage(Map<String, Object> paramsMap) {
-        Page<RoleDTO> page = PageHelper.startPage((Integer) paramsMap.get("pageNo"),
+       PageHelper.startPage((Integer) paramsMap.get("pageNo"),
                 (Integer) paramsMap.get("pageSize"));
         // 超管要看到企业管理员的角色，在sql里面判断
         List<RoleDTO> roleDtoList = this.roleDao.selectRoleListByPage(paramsMap);
+        PageInfo<RoleDTO> page = new PageInfo<>(roleDtoList);
         if (!CollectionUtils.isEmpty(roleDtoList)) {
-            List<Long> roleIdList = new ArrayList<>(roleDtoList.size());
+            List<Long> roleIdList = Lists.newArrayList();
             roleDtoList.forEach(roleDTO -> roleIdList.add(Long.valueOf(roleDTO.getId())));
             // 查询角色关联的用户
             List<Map<String, Long>> userIdList = this.roleDao
@@ -114,8 +115,7 @@ public class RoleServiceImpl implements RoleService {
                     })
             );
         }
-        PageInfo<RoleDTO> roleDtoPageInfo = page.toPageInfo();
-        return new PageResult<>(roleDtoPageInfo);
+        return new PageResult<>(page);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class RoleServiceImpl implements RoleService {
         for (Long deleteId : deleteIdList) {
             // 预置角色不能删除
             DEFAULT_ROLE_ID.stream().filter(s -> s.equals(deleteId)).findAny().ifPresent(s -> {
-                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION,"该角色不能删除");
             });
         }
 
@@ -295,7 +295,7 @@ public class RoleServiceImpl implements RoleService {
         }*/
         // 预置角色不能编辑
         DEFAULT_ROLE_ID.stream().filter(s -> s.equals(roleBo.getId())).findAny().ifPresent(s -> {
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION,"该角色不能修改");
         });
         // 系统默认角色和只读角色不能修改
         if (DEFAULT_ROLE_KEY.equals(roleBo.getRoleKey()) || READONLY_ROLE_KEY

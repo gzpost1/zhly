@@ -110,6 +110,7 @@ public class UserController extends BaseController {
      */
     @GetMapping(value = "/user/listUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<UserDataResDTO> getPage(
+            @RequestParam(value = "username", required = false) String username,
             @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
             @RequestParam(value = "name", required = false) String name,
@@ -156,8 +157,13 @@ public class UserController extends BaseController {
         if (!StringUtils.isEmpty(name)) {
             params.put("name", name);
         }
+        if (!StringUtils.isEmpty(username)) {
+            params.put("userName", username);
+        }
         if (!StringUtils.isEmpty(userName)) {
-            params.put("userName", userName);
+            if(Objects.isNull(params.get("userName"))){
+                params.put("userName", userName);
+            }
         }
         if (!StringUtils.isEmpty(phoneNumber)) {
             String decrypt = Sm4.encryption(phoneNumber);
