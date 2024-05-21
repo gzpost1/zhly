@@ -122,6 +122,17 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
         return formConfigRepository.queryFormConfigByType(pageQuery);
     }
 
+    @Override
+    public Long getRootTypeId(Long companyId) {
+        AssertUtil.notNull(companyId, "企业id不能为空");
+        LambdaQueryWrapper<FormConfigTypeEntity> queryWrapper = new LambdaQueryWrapper<FormConfigTypeEntity>()
+                .eq(FormConfigTypeEntity::getCompanyId, companyId)
+                .eq(FormConfigTypeEntity::getParentId, FormConfigConstant.DEFAULT_PARENT_ID);
+        List<FormConfigTypeEntity> formConfigTypeEntityList = formConfigTypeMapper.selectList(queryWrapper);
+        AssertUtil.notEmpty(formConfigTypeEntityList, "该企业下不存在表单配置分类");
+        return formConfigTypeEntityList.get(0).getId();
+    }
+
     private FormConfigTypeEntity initRootNode(Long companyId) {
         FormConfigTypeEntity formConfigTypeEntity = new FormConfigTypeEntity();
         formConfigTypeEntity.setId(IdWorker.getId());
