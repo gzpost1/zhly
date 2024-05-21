@@ -98,8 +98,8 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
     }
 
     @Override
-    public int batchUpdateBuildingArchives(Long departmentId) {
-        return buildingArchivesMapper.batchUpdateBuildingArchives(departmentId);
+    public int batchUpdateBuildingArchives(Long departmentId, List<Long> idList) {
+        return buildingArchivesMapper.batchUpdateBuildingArchives(departmentId, idList);
     }
 
     @Override
