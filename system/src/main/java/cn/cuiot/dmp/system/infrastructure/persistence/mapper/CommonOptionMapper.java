@@ -27,6 +27,6 @@ public interface CommonOptionMapper extends BaseMapper<CommonOptionEntity> {
      *
      * @param typeIdList 主键ID集合
      */
-    int batchMoveCommonOptionDefault(@Param("typeIdList") List<String> typeIdList);
+    int batchMoveCommonOptionDefault(@Param("typeIdList") List<String> typeIdList, @Param("rootTypeId") Long rootTypeId);
 
 }

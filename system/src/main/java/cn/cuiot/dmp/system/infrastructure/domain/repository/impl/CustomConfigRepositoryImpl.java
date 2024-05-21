@@ -105,6 +105,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     @Override
     public PageResult<CustomConfig> queryCustomConfigByType(CustomConfigPageQuery pageQuery) {
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
+                .eq(Objects.nonNull(pageQuery.getCompanyId()), CustomConfigEntity::getCompanyId, pageQuery.getCompanyId())
                 .eq(Objects.nonNull(pageQuery.getArchiveType()), CustomConfigEntity::getArchiveType, pageQuery.getArchiveType())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), CustomConfigEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CustomConfigEntity::getStatus, pageQuery.getStatus());

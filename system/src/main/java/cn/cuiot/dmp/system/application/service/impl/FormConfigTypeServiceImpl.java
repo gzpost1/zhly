@@ -138,7 +138,8 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
         AssertUtil.notNull(formConfigTypeTreeNodeVO, "当前节点不能为空");
         List<String> treeIdList = TreeUtil.getChildTreeIdList(formConfigTypeTreeNodeVO);
         // 批量移动该分类及子节点下所有的表单配置到"全部"分类下
-        formConfigRepository.batchMoveFormConfigDefault(treeIdList);
+        Long rootTypeId = formConfigTypeRepository.getRootTypeId(queryDTO.getCompanyId());
+        formConfigRepository.batchMoveFormConfigDefault(treeIdList, rootTypeId);
         return formConfigTypeRepository.deleteFormConfigType(treeIdList);
     }
 

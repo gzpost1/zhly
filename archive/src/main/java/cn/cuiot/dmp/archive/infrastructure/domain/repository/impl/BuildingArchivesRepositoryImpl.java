@@ -99,12 +99,12 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
 
     @Override
     public int batchUpdateBuildingArchives(Long departmentId) {
-        return 0;
+        return buildingArchivesMapper.batchUpdateBuildingArchives(departmentId);
     }
 
     @Override
     public int batchDeleteBuildingArchives(List<Long> idList) {
-        return 0;
+        return buildingArchivesMapper.deleteBatchIds(idList);
     }
 
     private PageResult<BuildingArchives> buildingArchivesEntity2BuildingArchives(IPage<BuildingArchivesEntity> buildingArchivesEntityPage) {

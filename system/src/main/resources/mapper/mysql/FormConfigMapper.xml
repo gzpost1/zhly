@@ -20,7 +20,7 @@
 
     <update id="batchMoveFormConfigDefault" parameterType="java.util.List">
         update form_config
-        set type_id = 0
+        set type_id = #{rootTypeId}
         where type_id in
         <foreach collection="typeIdList" item="item" open="(" separator="," close=")">
             #{item}

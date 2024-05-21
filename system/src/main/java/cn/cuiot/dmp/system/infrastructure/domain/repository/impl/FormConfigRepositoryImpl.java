@@ -149,8 +149,9 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int batchMoveFormConfigDefault(List<String> typeIdList) {
-        return formConfigMapper.batchMoveFormConfigDefault(typeIdList);
+    public int batchMoveFormConfigDefault(List<String> typeIdList, Long rootTypeId) {
+
+        return formConfigMapper.batchMoveFormConfigDefault(typeIdList, rootTypeId);
     }
 
     @Override
@@ -173,6 +174,7 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     @Override
     public PageResult<FormConfig> queryFormConfigByType(FormConfigPageQuery pageQuery) {
         LambdaQueryWrapper<FormConfigEntity> queryWrapper = new LambdaQueryWrapper<FormConfigEntity>()
+                .eq(Objects.nonNull(pageQuery.getCompanyId()), FormConfigEntity::getCompanyId, pageQuery.getCompanyId())
                 .eq(Objects.nonNull(pageQuery.getTypeId()), FormConfigEntity::getTypeId, pageQuery.getTypeId())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), FormConfigEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), FormConfigEntity::getStatus, pageQuery.getStatus());

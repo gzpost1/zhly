@@ -20,7 +20,7 @@
 
     <update id="batchMoveCommonOptionDefault" parameterType="java.util.List">
         update common_option
-        set type_id = 0
+        set type_id = #{rootTypeId}
         where type_id in
         <foreach collection="typeIdList" item="item" open="(" separator="," close=")">
             #{item}
