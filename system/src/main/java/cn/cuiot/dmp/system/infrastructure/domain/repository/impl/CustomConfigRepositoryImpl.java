@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.domain.aggregate.*;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigDetailRepository;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigRepository;
@@ -48,6 +49,25 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         BeanUtils.copyProperties(customConfigEntity, customConfig);
         // 查询自定义配置详情
         List<CustomConfigDetail> customConfigDetails = customConfigDetailRepository.batchQueryCustomConfigDetails(id);
+        customConfig.setCustomConfigDetailList(customConfigDetails);
+        return customConfig;
+    }
+
+    @Override
+    public CustomConfig queryForDetailByName(CustomConfig customConfig) {
+        AssertUtil.notBlank(customConfig.getName(),"自定义配置名称不能为空");
+        AssertUtil.notNull(customConfig.getCompanyId(), "企业Id不能为空");
+        LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
+                .eq(CustomConfigEntity::getCompanyId, customConfig.getCompanyId())
+                .eq(CustomConfigEntity::getName, customConfig.getName());
+        List<CustomConfigEntity> customConfigEntityList = customConfigMapper.selectList(queryWrapper);
+        AssertUtil.notEmpty(customConfigEntityList, "自定义配置不存在");
+        CustomConfigEntity customConfigEntity = customConfigEntityList.get(0);
+        CustomConfig customConfigResult = new CustomConfig();
+        BeanUtils.copyProperties(customConfigEntity, customConfigResult);
+        // 查询自定义配置详情
+        List<CustomConfigDetail> customConfigDetails = customConfigDetailRepository
+                .batchQueryCustomConfigDetails(customConfigEntity.getId());
         customConfig.setCustomConfigDetailList(customConfigDetails);
         return customConfig;
     }

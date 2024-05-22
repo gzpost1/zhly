@@ -13,6 +13,13 @@ import java.util.List;
 public interface CustomConfigDetailMapper extends BaseMapper<CustomConfigDetailEntity> {
 
     /**
+     * 批量查询自定义配置详情（包含软删除数据）
+     *
+     * @param idList 自定义配置详情id列表
+     */
+    List<CustomConfigDetailEntity> batchQueryCustomConfigDetails(@Param("list") List<Long> idList);
+
+    /**
      * 批量保存自定义配置详情
      *
      * @param customConfigDetailEntityList 自定义配置详情列表

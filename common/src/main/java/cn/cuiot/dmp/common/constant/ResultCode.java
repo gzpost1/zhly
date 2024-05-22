@@ -225,6 +225,7 @@ public enum ResultCode {
     QUERY_BUSINESS_TYPE_ERROR("0100101", "查询业务类型信息异常"),
     QUERY_FORM_CONFIG_ERROR("0100201", "查询表单配置信息异常"),
     QUERY_FORM_CONFIG_DETAIL_ERROR("0100202", "查询表单配置详情异常"),
+    QUERY_CUSTOM_CONFIG_DETAIL_ERROR("0100301", "查询自定义配置详情异常"),
     ;
 
 

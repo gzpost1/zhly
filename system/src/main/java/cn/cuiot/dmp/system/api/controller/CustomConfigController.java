@@ -8,6 +8,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigCreateDTO;
+import cn.cuiot.dmp.system.application.param.dto.CustomConfigDTO;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.CustomConfigVO;
 import cn.cuiot.dmp.system.application.service.CustomConfigService;
@@ -39,6 +40,14 @@ public class CustomConfigController extends BaseController {
     @PostMapping("/queryForDetail")
     public CustomConfigVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return customConfigService.queryForDetail(idParam.getId());
+    }
+
+    /**
+     * 根据id获取详情
+     */
+    @PostMapping("/queryForDetailByName")
+    public CustomConfigVO queryForDetailByName(@RequestBody @Valid CustomConfigDTO customConfigDTO) {
+        return customConfigService.queryForDetailByName(customConfigDTO);
     }
 
     /**
