@@ -16,7 +16,6 @@
         <result column="flow_key" property="flowKey" />
         <result column="start_date" property="startDate" />
         <result column="end_date" property="endDate" />
-        <result column="push_time" property="pushTime" />
         <result column="execution_strategy" property="executionStrategy" />
         <result column="strategy_type" property="strategyType" />
         <result column="specify_day" property="specifyDay" />
@@ -34,12 +33,52 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        update_time,
-        update_user,
-        create_time,
-        create_user,
-        deleted,
-        id, plan_name, plan_desc, flow_id, flow_key, start_date, end_date, push_time, execution_strategy, strategy_type, specify_day, specify_week, specify_month, recurrent_state, recurrent_hour, recurrent_type, recurrent_over_time, task_id, org_id, state, ext
+        DISTINCT t1.id,
+        t1.update_time,
+        t1.update_user,
+        t1.create_time,
+        t1.create_user,
+        t1.deleted,t1.plan_time,
+        t1.plan_name, t1.plan_desc, t1.flow_id, t1.flow_key, t1.start_date, t1.end_date, t1.execution_strategy, t1.strategy_type, t1.specify_day, t1.specify_week,
+            t1.specify_month, t1.recurrent_state, t1.recurrent_hour, t1.recurrent_type, t1.recurrent_over_time, t1.task_id, t1.org_id, t1.state, t1.ext
     </sql>
+
+    <select id="queryWordPlanInfo" resultType="cn.cuiot.dmp.baseconfig.flow.entity.WorkPlanInfoEntity">
+            select
+                <include refid="Base_Column_List"/> from  tb_work_plan_info t1 left join tb_work_org_rel t2 on t1.id = t2.work_id
+        <where>
+            deleted =0
+            <if test="query.Id !=null">
+                and t1.id like concat('%',#{query.id},'%')
+            </if>
+            <if test="query.state !=null" >
+                and t1.state = #{query.state}
+            </if>
+            <if test="query.planName !=null and query.planName !=''" >
+                and t1.plan_name  like concat('%',#{query.planName},'%')
+            </if>
+            <if test="query.orgIds !=null and query.orgIds.size()>0">
+                and t2.org_id in
+                 <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                 </foreach>
+            </if>
+            <if test="query.startDate !=null">
+                and t1.start_date >= #{query.startDate} and t1.start_date <![CDATA[<=]]> #{query.endDate}
+            </if>
+            <if test="query.planState !=null and query.planState ==0">
+                and  t1.start_date >= now()
+            </if>
+
+            <if test="query.planState !=null and query.planState ==1">
+                and t1.start_date <![CDATA[<=]]> now() and t1.end_date >= now()
+            </if>
+
+            <if test="query.planState !=null and query.planState ==2">
+                and t1.end_date <![CDATA[<=]]> now()
+            </if>
+                order by t1.create_time desc
+        </where>
+    </select>
 
 </mapper>

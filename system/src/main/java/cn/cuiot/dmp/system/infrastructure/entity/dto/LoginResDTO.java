@@ -84,4 +84,9 @@ public class LoginResDTO {
      * 用户类型
      */
     private Integer userType;
+
+    /**
+     * 组织部门ID
+     */
+    private Long deptId;
 }

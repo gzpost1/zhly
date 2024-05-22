@@ -2,6 +2,8 @@ package cn.cuiot.dmp.baseconfig.custommenu.dto;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * 系统配置-任务配置-任务对象信息
  */
@@ -22,6 +24,7 @@ public class FlowTaskInfoInsertDto {
     /**
      * 任务表单
      */
+    @NotNull(message = "任务表单不能为空")
     private Long formId;
 
     /**
