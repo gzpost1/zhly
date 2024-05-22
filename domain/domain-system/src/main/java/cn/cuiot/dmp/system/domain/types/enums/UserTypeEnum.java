@@ -9,8 +9,8 @@ import java.util.Arrays;
  */
 public enum UserTypeEnum {
 
-    USER(1, "实体用户"),
-
+    USER(1, "员工"),
+    OWNER(2, "业主"),
     NULL(null, "userType为NULL的情况");
 
     UserTypeEnum(Integer value, String desc) {

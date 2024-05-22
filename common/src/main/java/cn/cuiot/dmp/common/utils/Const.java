@@ -17,19 +17,19 @@ public class Const {
     public static final String SECRET = "-3h2b9eEr+(Q_#z+2L@&";
 
     /**
-     * SESSION时间，单位（小时）
+     * SESSION时间，单位（秒）
      */
     public static final int SESSION_TIME = 4 * 60 * 60;
 
     /**
-     * 用户长期登录SESSION时间，单位（小时）
+     * 用户长期登录SESSION时间，单位（秒）
      */
     public static final int USER_LONG_TIME_LOGIN_SESSION_TIME = 3 * 24 * 60 * 60;
 
     /**
-     * 微信小程序SESSION时间，改成1天
+     * 微信小程序SESSION时间，单位（秒）7天
      */
-    public static final long WX_SESSION_TIME = 86400;
+    public static final long WX_SESSION_TIME = 7 * 24 * 60 * 60;
 
     /**
      * 一天的秒数
