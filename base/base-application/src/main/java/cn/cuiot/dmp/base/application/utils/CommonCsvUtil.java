@@ -45,10 +45,10 @@ public class CommonCsvUtil {
             //写入头文件
             for (Object data : head) {
                 StringBuffer sb = new StringBuffer();
-                byte[] bytes = sb.append("\"").append(data).append("\",").toString().getBytes("GBK");
+                byte[] bytes = sb.append("\"").append(data).append("\",").toString().getBytes("UTF-8");
                 outputStream.write(bytes);
             }
-            byte[] bytes = "\r\n".getBytes("GBK");
+            byte[] bytes = "\r\n".getBytes("UTF-8");
             outputStream.write(bytes);
 
             // 写入文件内容（倒叙）
@@ -69,14 +69,14 @@ public class CommonCsvUtil {
                     StringBuffer sb = new StringBuffer();
                     byte[] byteBody = null;
                     if (row.size() > num) {
-                        byteBody = sb.append("\"").append(data).append("\",").toString().getBytes("GBK");
+                        byteBody = sb.append("\"").append(data).append("\",").toString().getBytes("UTF-8");
                         num++;
                     }else if (row.size() == num) {
-                        byteBody = sb.append("\"").append(data).append("\"").toString().getBytes("GBK");
+                        byteBody = sb.append("\"").append(data).append("\"").toString().getBytes("UTF-8");
                     }
                     outputStream.write(byteBody);
                 }
-                byte[] bytesLine = "\r\n".getBytes("GBK");
+                byte[] bytesLine = "\r\n".getBytes("UTF-8");
                 outputStream.write(bytesLine);
             }
             outputStream.flush();

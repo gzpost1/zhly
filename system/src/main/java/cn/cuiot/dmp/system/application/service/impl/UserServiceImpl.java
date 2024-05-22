@@ -397,7 +397,7 @@ public class UserServiceImpl extends BaseController implements UserService {
                     userEntity.getId().getValue(),
                     Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
 
-            UserCsvDto userCsvDto = new UserCsvDto(userEntity.getUsername(), password);
+            UserCsvDto userCsvDto = new UserCsvDto(userEntity.getUsername(),phoneNumber, password);
 
             return userCsvDto;
         } catch (Exception e) {
@@ -1157,7 +1157,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         if (!userRepository.save(userDataEntity)) {
             throw new BusinessException(ResultCode.UPDATE_PASSWORD_FAIL);
         }
-        UserCsvDto userCsvDto = new UserCsvDto(userDataEntity.getUsername(), password);
+        UserCsvDto userCsvDto = new UserCsvDto(userDataEntity.getUsername(),userDataEntity.getDecryptedPhoneNumber(), password);
         return userCsvDto;
     }
 

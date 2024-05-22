@@ -212,14 +212,18 @@ public class UserController extends BaseController {
 
         // 文件流输出
         List<JSONObject> jsonList = new ArrayList<>();
-        JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSON(userInfo).toString());
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("用户名",userInfo.getUsername());
+        jsonObject.put("手机号",userInfo.getPhoneNumber());
+        jsonObject.put("密码",userInfo.getPassword());
         jsonList.add(jsonObject);
 
         List<Object> head = new ArrayList<>();
-        head.add("username");
-        head.add("password");
+        head.add("用户名");
+        head.add("手机号");
+        head.add("密码");
 
-        response.setContentType("text/csv;charset=\"GBK\"");
+        response.setContentType("text/csv;charset=\"UTF-8\"");
         response.setHeader("Content-Disposition", "attachment; filename=credentials.csv");
         String[] split = userBo.getUsername().split("@");
         String username = split[0];
