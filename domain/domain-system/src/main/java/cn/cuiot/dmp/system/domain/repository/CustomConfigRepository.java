@@ -16,6 +16,11 @@ public interface CustomConfigRepository {
     CustomConfig queryForDetail(Long id);
 
     /**
+     * 根据id获取详情
+     */
+    CustomConfig queryForDetailByName(CustomConfig customConfig);
+
+    /**
      * 保存
      */
     int saveCustomConfig(CustomConfig customConfig);

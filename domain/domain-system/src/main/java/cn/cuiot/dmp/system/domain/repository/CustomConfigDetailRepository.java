@@ -16,6 +16,11 @@ public interface CustomConfigDetailRepository {
     List<CustomConfigDetail> batchQueryCustomConfigDetails(Long customConfigId);
 
     /**
+     * 根据id集合批量查询自定义配置详情
+     */
+    List<CustomConfigDetail> batchQueryCustomConfigDetails(List<Long> idList);
+
+    /**
      * 批量保存或更新
      */
     void batchSaveOrUpdateCustomConfigDetails(Long customConfigId, List<CustomConfigDetail> customConfigDetails);

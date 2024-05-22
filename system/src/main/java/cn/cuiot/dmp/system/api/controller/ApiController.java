@@ -3,14 +3,11 @@ package cn.cuiot.dmp.system.api.controller;
 import cn.cuiot.dmp.base.application.annotation.InternalApi;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.*;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -66,6 +63,9 @@ public class ApiController {
 
     @Autowired
     private RoleService roleService;
+
+    @Autowired
+    private CustomConfigService customConfigService;
 
     /**
      * 查询角色
@@ -174,6 +174,15 @@ public class ApiController {
     public IdmResDTO<List<FormConfigRspDTO>> batchQueryFormConfig(@RequestBody @Valid FormConfigReqDTO formConfigReqDTO) {
         List<FormConfigRspDTO> formConfigRspDTOList = formConfigService.batchQueryFormConfig(formConfigReqDTO);
         return IdmResDTO.success(formConfigRspDTOList);
+    }
+
+    /**
+     * 根据id集合批量查询自定义配置详情
+     */
+    @PostMapping(value = "/batchQueryCustomConfigDetails", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<CustomConfigDetailRspDTO>> batchQueryCustomConfigDetails(@RequestBody @Valid CustomConfigDetailReqDTO customConfigDetailReqDTO) {
+        List<CustomConfigDetailRspDTO> customConfigDetailRspDTOList = customConfigService.batchQueryCustomConfigDetails(customConfigDetailReqDTO);
+        return IdmResDTO.success(customConfigDetailRspDTOList);
     }
 
 }

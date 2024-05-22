@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.domain.aggregate.CustomConfigDetail;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigDetailRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.CustomConfigDetailEntity;
@@ -35,6 +36,22 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
         LambdaQueryWrapper<CustomConfigDetailEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigDetailEntity>()
                 .eq(CustomConfigDetailEntity::getCustomConfigId, customConfigId);
         List<CustomConfigDetailEntity> customConfigDetailEntities = customConfigDetailMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(customConfigDetailEntities)) {
+            return new ArrayList<>();
+        }
+        return customConfigDetailEntities.stream()
+                .map(o -> {
+                    CustomConfigDetail customConfigDetail = new CustomConfigDetail();
+                    BeanUtils.copyProperties(o, customConfigDetail);
+                    return customConfigDetail;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CustomConfigDetail> batchQueryCustomConfigDetails(List<Long> idList) {
+        AssertUtil.notEmpty(idList, "自定义配置详情id列表");
+        List<CustomConfigDetailEntity> customConfigDetailEntities = customConfigDetailMapper.batchQueryCustomConfigDetails(idList);
         if (CollectionUtils.isEmpty(customConfigDetailEntities)) {
             return new ArrayList<>();
         }
