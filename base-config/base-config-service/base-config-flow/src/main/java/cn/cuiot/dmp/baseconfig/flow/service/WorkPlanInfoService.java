@@ -235,7 +235,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
                 LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
                 while (overTime.isAfter(localDateTime)){
                     times.add(localDateTime);
-                    localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
+                    localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
                 }
             }
         }

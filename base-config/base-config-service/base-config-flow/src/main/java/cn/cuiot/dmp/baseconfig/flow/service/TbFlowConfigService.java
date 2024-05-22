@@ -190,6 +190,8 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
                         FormObjectOperates formObjectOperates = new FormObjectOperates();
                         BeanUtils.copyProperties(formConfigRspDTO, formObjectOperates);
                     });
+
+                    childNode.getProps().setFormPerms(null);
                 }else {
                     childNode.getProps().setFormPerms(formConfigRspDTOS.stream().map(e -> {
                         FormOperates formObjectOperates = new FormOperates();
@@ -202,8 +204,11 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
             if (Objects.nonNull(childNode.getChildren())) {
                 processChildNode(childNode.getChildren());
             }
+        }else {
+            if(Objects.nonNull(childNode.getProps())){
+                childNode.getProps().setFormPerms(null);
+            }
         }
-
     }
 
 
