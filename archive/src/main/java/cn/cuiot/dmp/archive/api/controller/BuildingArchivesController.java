@@ -93,8 +93,8 @@ public class BuildingArchivesController extends BaseController {
     /**
      * 保存
      */
-//    @RequiresPermissions
-//    @LogRecord(operationCode = "saveBuildingArchives", operationName = "保存楼盘档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
+    @RequiresPermissions
+    @LogRecord(operationCode = "saveBuildingArchives", operationName = "保存楼盘档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/save")
     public int saveBuildingArchives(@RequestBody @Valid BuildingArchivesCreateDTO createDTO) {
         String orgId = getOrgId();
