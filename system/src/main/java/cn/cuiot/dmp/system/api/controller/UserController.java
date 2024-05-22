@@ -528,7 +528,7 @@ public class UserController extends BaseController {
     /**
      * 下载模板
      */
-    @PostMapping("/downloadExcel")
+    @PostMapping("/user/downloadExcel")
     public void downloadExcel(HttpServletResponse response)
             throws IOException {
         BufferedOutputStream bos = null;
