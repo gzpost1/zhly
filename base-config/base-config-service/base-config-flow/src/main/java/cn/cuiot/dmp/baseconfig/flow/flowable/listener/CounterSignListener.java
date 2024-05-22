@@ -16,6 +16,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.Process;
@@ -47,6 +48,7 @@ import static cn.cuiot.dmp.baseconfig.flow.utils.BpmnModelUtils.getChildNode;
  * @create 2022-10-15 13:35
  * @desc 本项目精髓代码实现-> 所有属性都在内存中取得,且该类最重要的一点就是  下面有一个if判断,防止人员重复解析--->
  */
+@Slf4j
 @Component
 public class CounterSignListener implements ExecutionListener {
     @Resource
@@ -102,24 +104,28 @@ public class CounterSignListener implements ExecutionListener {
                 execution.setVariable(TIME_HANDLER_TYPE, props.getTimeLimit().getHandler().getType());
             }
 
-            if (AssigneeTypeEnums.ASSIGN_USER.getTypeName().equals(assignedType)) {
+
+            if (StringUtils.equalsAnyIgnoreCase(AssigneeTypeEnums.ASSIGN_USER.getTypeName(),assignedType)) {
                 List<UserInfo> assignedUser = props.getAssignedUser();
                 for (UserInfo userInfo : assignedUser) {
                     assigneeList.add(userInfo.getId());
                 }
-            } else if (AssigneeTypeEnums.SELF_SELECT.getTypeName().equals(assignedType)) {
+
+            } else if (StringUtils.equalsAnyIgnoreCase(AssigneeTypeEnums.SELF_SELECT.getTypeName(),assignedType)) {
                 //发起人自己选择
                 List<String> assigneeUsers = (List<String>) execution.getVariable(currentActivityId);
                 if (assigneeUsers != null) {
                     assigneeList.addAll(assigneeUsers);
                 }
-            } else if (AssigneeTypeEnums.COMPLETE_SELECT.getTypeName().equals(assignedType)) {
+
+            } else if (StringUtils.equalsAnyIgnoreCase(AssigneeTypeEnums.COMPLETE_SELECT.getTypeName(),assignedType)) {
                 //完成人自己选择
                 List<String> assigneeUsers = (List<String>) execution.getVariable(currentActivityId);
                 if (assigneeUsers != null) {
                     assigneeList.addAll(assigneeUsers);
                 }
-            } else if (AssigneeTypeEnums.LEADER_TOP.getTypeName().equals(assignedType)) {
+
+            } else if (StringUtils.equalsAnyIgnoreCase(AssigneeTypeEnums.LEADER_TOP.getTypeName(),assignedType)) {
                 /**
                  endCondition: "TOP", //结束条件 TOP 直到最上级主管、
                  level 指定不超过多少级主管
@@ -155,7 +161,8 @@ public class CounterSignListener implements ExecutionListener {
 //                if(admin!=null){
 //                    assigneeList.add(admin+"");
 //                }
-            } else if (AssigneeTypeEnums.ROLE.getTypeName().equals(assignedType)) {
+
+            } else if (StringUtils.equalsAnyIgnoreCase(AssigneeTypeEnums.ROLE.getTypeName(),assignedType)) {
                 //指定角色
                 List<Long> roleIds = props.getAssignedUser().stream().map(e -> Long.valueOf(e.getId())).collect(Collectors.toList());
 
@@ -163,8 +170,8 @@ public class CounterSignListener implements ExecutionListener {
                 if (userIdByRole != null) {
                     assigneeList.addAll(userIdByRole.stream().map(String::valueOf).collect(Collectors.toList()));
                 }
-
-            } else if (AssigneeTypeEnums.DEPT.getTypeName().equals(assignedType)) {
+                log.info("-------------------------->指定角色获取审批用户{}",assigneeList);
+            } else if (StringUtils.equalsAnyIgnoreCase(AssigneeTypeEnums.DEPT.getTypeName(),assignedType)) {
                 //指定部门
                 List<Long> deptIds = props.getAssignedUser().stream().map(e -> Long.valueOf(e.getId())).collect(Collectors.toList());
 
@@ -173,12 +180,13 @@ public class CounterSignListener implements ExecutionListener {
                     assigneeList.addAll(userIdByDept.stream().map(String::valueOf).collect(Collectors.toList()));
                 }
 
-            }else if (AssigneeTypeEnums.SELF.getTypeName().equals(assignedType)) {
+            }else if (StringUtils.equalsAnyIgnoreCase(AssigneeTypeEnums.SELF.getTypeName(),assignedType)) {
                 String startUserJson = execution.getVariable(START_USER_INFO, String.class);
                 UserInfo userInfo = JSONObject.parseObject(startUserJson, new TypeReference<UserInfo>() {
                 });
                 assigneeList.add(userInfo.getId());
-            } else if (AssigneeTypeEnums.FORM_USER.getTypeName().equals(assignedType)) {
+
+            } else if (StringUtils.equalsAnyIgnoreCase(AssigneeTypeEnums.FORM_USER.getTypeName(),assignedType)) {
                 String formUser = props.getFormUser();
                 List<JSONObject> assigneeUsers = execution.getVariable(formUser, List.class);
                 if (assigneeUsers != null) {
