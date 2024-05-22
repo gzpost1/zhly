@@ -28,4 +28,9 @@ public class TbFlowTaskInfoQuery extends PageQuery {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 业务分类
+     */
+    private Long businessTypeId;
 }
