@@ -11,7 +11,7 @@ import cn.cuiot.dmp.baseconfig.flow.service.PlanContentService;
 import cn.cuiot.dmp.baseconfig.flow.service.PlanWorkExecutionInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkPlanInfoService;
-import cn.cuiot.dmp.baseconfig.flow.utils.JsonUtil;
+import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.ObjectMapper;
