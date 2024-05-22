@@ -6,13 +6,14 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 /**
  * 签名配置信息
  *
  * @author lixf
  */
-@Configuration
+@Component
 @RefreshScope
 @ConfigurationProperties(prefix = "signature")
 @Data
