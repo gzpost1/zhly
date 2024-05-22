@@ -92,7 +92,7 @@ public class TbFlowTaskInfoController {
     @PostMapping("/create")
     @LogRecord(operationCode = "taskCreate", operationName = "任务配置创建", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO create(@RequestBody @Valid FlowTaskConfigInsertDto createDto) {
-        validateBusinessAndOrg(createDto,null);
+        validateBusinessAndOrg(createDto.getName(),null);
         flowTaskConfigService.create(createDto);
         return IdmResDTO.success();
     }
