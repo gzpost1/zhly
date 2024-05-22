@@ -71,8 +71,15 @@ public class HousesArchivesController {
     public IdmResDTO<IPage<HousesArchivesEntity>> queryForPage(@RequestBody @Valid HousesArchivesQuery query) {
         LambdaQueryWrapper<HousesArchivesEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(HousesArchivesEntity::getLoupanId, query.getLoupanId());
-        wrapper.like(StringUtils.isNotBlank(query.getCode()), HousesArchivesEntity::getCode, query.getCode());
-        wrapper.like(StringUtils.isNotBlank(query.getOwnershipUnit()), HousesArchivesEntity::getOwnershipUnit, query.getOwnershipUnit());
+        wrapper.eq(Objects.nonNull(query.getHouseType()), HousesArchivesEntity::getHouseType, query.getHouseType());
+        wrapper.eq(Objects.nonNull(query.getOrientation()), HousesArchivesEntity::getOrientation, query.getOrientation());
+        wrapper.eq(Objects.nonNull(query.getPropertyType()), HousesArchivesEntity::getPropertyType, query.getPropertyType());
+        wrapper.eq(Objects.nonNull(query.getStatus()), HousesArchivesEntity::getStatus, query.getStatus());
+        wrapper.eq(Objects.nonNull(query.getOwnershipAttribute()), HousesArchivesEntity::getOwnershipAttribute, query.getOwnershipAttribute());
+        if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())){
+            wrapper.like( HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
+        }
+
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         return IdmResDTO.success(res);
     }
