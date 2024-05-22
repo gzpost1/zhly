@@ -82,7 +82,7 @@
     <sql id="queryMyNotApprovalCondition">
         <where>
             <if test="query.assignee !=null and query.assignee !=''">
-               and t1.proc_inst_id = t2.PROC_INST_ID_ and t2.PROC_INST_ID_ = t3.proc_inst_id and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'APPROVAL'
+               and t1.proc_inst_id = t2.PROC_INST_ID_ and t2.PROC_INST_ID_ = t3.proc_inst_id and t2.TASK_DEF_KEY_ = t3.node_id and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'APPROVAL'
             </if>
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}
