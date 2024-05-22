@@ -15,17 +15,17 @@ import java.util.Objects;
 @AllArgsConstructor
 public enum ArchiveTypeEnum {
 
-    BUILDING_ARCHIVE(1, "楼盘档案"),
-    HOUSE_ARCHIVE(2, "房屋档案"),
-    ROOM_ARCHIVE(3, "空间档案"),
-    PARK_ARCHIVE(4, "车位档案"),
-    DEVICE_ARCHIVE(5, "设备档案"),
-    CODE_ARCHIVE(6, "二维码/条形码档案");
+    BUILDING_ARCHIVE((byte) 1, "楼盘档案"),
+    HOUSE_ARCHIVE((byte) 2, "房屋档案"),
+    ROOM_ARCHIVE((byte) 3, "空间档案"),
+    DEVICE_ARCHIVE((byte) 4, "设备档案"),
+    PARK_ARCHIVE((byte) 5, "车位档案"),
+    CODE_ARCHIVE((byte) 6, "二维码/条形码档案");
 
-    private final Integer code;
+    private final Byte code;
     private final String message;
 
-    public static String getMessage(Integer code) {
+    public static String getMessage(Byte code) {
         if (Objects.isNull(code)) {
             return null;
         }

@@ -43,10 +43,12 @@ public class CustomConfigController extends BaseController {
     }
 
     /**
-     * 根据id获取详情
+     * 根据名称获取详情
      */
     @PostMapping("/queryForDetailByName")
     public CustomConfigVO queryForDetailByName(@RequestBody @Valid CustomConfigDTO customConfigDTO) {
+        String orgId = getOrgId();
+        customConfigDTO.setCompanyId(Long.valueOf(orgId));
         return customConfigService.queryForDetailByName(customConfigDTO);
     }
 

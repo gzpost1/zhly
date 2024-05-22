@@ -27,7 +27,7 @@ public interface CustomConfigService {
     CustomConfigVO queryForDetail(Long id);
 
     /**
-     * 根据id获取详情
+     * 根据名称获取详情
      */
     CustomConfigVO queryForDetailByName(CustomConfigDTO customConfigDTO);
 

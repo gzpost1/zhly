@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.system.application.param.dto.ArchiveTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.vo.ArchiveTypeVO;
@@ -21,7 +22,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/archiveType")
-public class ArchiveTypeController {
+public class ArchiveTypeController extends BaseController {
 
     @Autowired
     private ArchiveTypeService archiveTypeService;
@@ -39,6 +40,10 @@ public class ArchiveTypeController {
      */
     @PostMapping("/queryForList")
     public List<ArchiveTypeVO> queryForList(@RequestBody @Valid ArchiveTypeQueryDTO queryDTO) {
+        String orgId = getOrgId();
+        String userId = getUserId();
+        queryDTO.setCompanyId(Long.valueOf(orgId));
+        queryDTO.setUserId(userId);
         return archiveTypeService.queryForList(queryDTO);
     }
 

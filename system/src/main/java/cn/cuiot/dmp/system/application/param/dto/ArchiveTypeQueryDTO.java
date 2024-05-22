@@ -23,4 +23,14 @@ public class ArchiveTypeQueryDTO implements Serializable {
      */
     private Byte archiveType;
 
+    /**
+     * 企业id
+     */
+    private Long companyId;
+
+    /**
+     * 用户id
+     */
+    private String userId;
+
 }

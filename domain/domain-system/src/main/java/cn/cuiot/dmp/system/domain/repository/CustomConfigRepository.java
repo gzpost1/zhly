@@ -4,6 +4,8 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.domain.aggregate.CustomConfig;
 import cn.cuiot.dmp.system.domain.aggregate.CustomConfigPageQuery;
 
+import java.util.List;
+
 /**
  * @author caorui
  * @date 2024/5/17
@@ -48,6 +50,6 @@ public interface CustomConfigRepository {
     /**
      * 初始化常用选项
      */
-    void initCustomConfig(Long companyId, Long typeId);
+    void initCustomConfig(Long companyId, String userId);
 
 }

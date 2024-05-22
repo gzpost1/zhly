@@ -4,6 +4,8 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.system.application.constant.CustomConfigConstant;
+import cn.cuiot.dmp.system.application.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.system.domain.aggregate.*;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigDetailRepository;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigRepository;
@@ -55,7 +57,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
 
     @Override
     public CustomConfig queryForDetailByName(CustomConfig customConfig) {
-        AssertUtil.notBlank(customConfig.getName(),"自定义配置名称不能为空");
+        AssertUtil.notBlank(customConfig.getName(), "自定义配置名称不能为空");
         AssertUtil.notNull(customConfig.getCompanyId(), "企业Id不能为空");
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
                 .eq(CustomConfigEntity::getCompanyId, customConfig.getCompanyId())
@@ -138,8 +140,57 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     }
 
     @Override
-    public void initCustomConfig(Long companyId, Long typeId) {
-
+    public void initCustomConfig(Long companyId, String userId) {
+        AssertUtil.notNull(companyId, "企业ID不能为空");
+        LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
+                .eq(CustomConfigEntity::getCompanyId, companyId);
+        List<CustomConfigEntity> customConfigEntityListCurrent = customConfigMapper.selectList(queryWrapper);
+        if (CollectionUtils.isNotEmpty(customConfigEntityListCurrent)) {
+            return;
+        }
+        AssertUtil.notBlank(userId, "用户ID不能为空");
+        List<CustomConfigEntity> customConfigEntityList = new ArrayList<>();
+        // 房屋档案
+        CustomConfigConstant.HOUSES_ARCHIVES_INIT.forEach(o -> {
+            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
+            customConfigEntity.setId(IdWorker.getId());
+            customConfigEntity.setCompanyId(companyId);
+            customConfigEntity.setName(o);
+            customConfigEntity.setArchiveType(ArchiveTypeEnum.HOUSE_ARCHIVE.getCode());
+            customConfigEntity.setCreatedBy(userId);
+            customConfigEntityList.add(customConfigEntity);
+        });
+        // 空间档案
+        CustomConfigConstant.ROOM_ARCHIVES_INIT.forEach(o -> {
+            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
+            customConfigEntity.setId(IdWorker.getId());
+            customConfigEntity.setCompanyId(companyId);
+            customConfigEntity.setName(o);
+            customConfigEntity.setArchiveType(ArchiveTypeEnum.ROOM_ARCHIVE.getCode());
+            customConfigEntity.setCreatedBy(userId);
+            customConfigEntityList.add(customConfigEntity);
+        });
+        // 设备档案
+        CustomConfigConstant.DEVICE_ARCHIVES_INIT.forEach(o -> {
+            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
+            customConfigEntity.setId(IdWorker.getId());
+            customConfigEntity.setCompanyId(companyId);
+            customConfigEntity.setName(o);
+            customConfigEntity.setArchiveType(ArchiveTypeEnum.DEVICE_ARCHIVE.getCode());
+            customConfigEntity.setCreatedBy(userId);
+            customConfigEntityList.add(customConfigEntity);
+        });
+        // 车位档案
+        CustomConfigConstant.PARKING_ARCHIVES_INIT.forEach(o -> {
+            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
+            customConfigEntity.setId(IdWorker.getId());
+            customConfigEntity.setCompanyId(companyId);
+            customConfigEntity.setName(o);
+            customConfigEntity.setArchiveType(ArchiveTypeEnum.PARK_ARCHIVE.getCode());
+            customConfigEntity.setCreatedBy(userId);
+            customConfigEntityList.add(customConfigEntity);
+        });
+        customConfigMapper.batchSaveCustomConfig(customConfigEntityList);
     }
 
     private PageResult<CustomConfig> customConfigEntity2CustomConfig(IPage<CustomConfigEntity> customConfigEntityPage) {
