@@ -23,7 +23,6 @@ public class AppUserService {
     @Autowired
     private AppUserMapper appUserMapper;
 
-
     /**
      * 根据手机号和用户身份获取用户信息
      */
@@ -52,4 +51,17 @@ public class AppUserService {
         appUserMapper.updateById(updateEntity);
     }
 
+    /**
+     * 获取user对应的pk_org_id
+     */
+    public Long getOrgId(Long pkUserId) {
+        return appUserMapper.getOrgId(pkUserId);
+    }
+
+    /**
+     * 找到用户所对应的组织
+     */
+    public String getDeptId(String pkUserId, String pkOrgId) {
+        return appUserMapper.getDeptId(pkUserId,pkOrgId);
+    }
 }

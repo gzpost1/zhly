@@ -5,7 +5,6 @@ import cn.cuiot.dmp.app.dto.AppUserDto;
 import cn.cuiot.dmp.app.entity.OrganizationEntity;
 import cn.cuiot.dmp.app.entity.UserEntity;
 import cn.cuiot.dmp.app.mapper.OrganizationEntityMapper;
-import cn.cuiot.dmp.app.mapper.UserDao;
 import cn.cuiot.dmp.app.util.RandomPwUtils;
 import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
@@ -13,7 +12,6 @@ import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.SecurityConst;
-import cn.cuiot.dmp.common.enums.UserLongTimeLoginEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
@@ -29,7 +27,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
@@ -52,14 +49,8 @@ public class AppLoginService {
     @Autowired
     private AppUserConverter appUserConverter;
 
-    /**
-     * 注入密码生成类
-     */
     @Autowired
     private RandomPwUtils randomPwUtils;
-
-    @Autowired
-    private UserDao userDao;
 
     @Autowired
     private OrganizationEntityMapper organizationEntityMapper;
@@ -83,15 +74,19 @@ public class AppLoginService {
             }
             Long pkUserId = userDto.getId();
             // 获取org主键id
-            Long pkOrgId = userDao.getOrgId(pkUserId);
+            Long pkOrgId = appUserService.getOrgId(pkUserId);
             // 获取dept主键id
-            String pkDeptId = userDao.getDeptId(pkUserId.toString(), pkOrgId.toString());
+            String pkDeptId = appUserService.getDeptId(pkUserId.toString(), pkOrgId.toString());
             // 获取企业信息
             OrganizationEntity organization = organizationEntityMapper.selectById(pkOrgId);
             if (organization == null || organization.getStatus() == null || OrgStatusEnum.DISABLE
                     .getCode().equals(organization.getStatus())) {
                 throw new BusinessException(ResultCode.ORG_IS_ENABLED);
             }
+            userDto.setOrgId(pkOrgId.toString());
+            userDto.setDeptId(pkDeptId);
+            userDto.setOrgTypeId(organization.getOrgTypeId());
+
             claims.put(AuthContants.USERORG, pkOrgId);
             claims.put(AuthContants.USERORG_TYPE_ID, organization.getOrgTypeId());
             claims.put(AuthContants.DEPT_ID, pkDeptId);
@@ -147,7 +142,7 @@ public class AppLoginService {
         String refreshCode = String.valueOf(SnowflakeIdWorkerUtil.nextId());
         redisUtil.set(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt, refreshCode,
                 SecurityConst.WX_REFRESH_SESSION_TIME);
-        redisUtil.set(CacheConst.LOGIN_USERS_JWT + jwt, String.valueOf(pkUserId),
+        redisUtil.set(CacheConst.LOGIN_USERS_JWT_WX + jwt, String.valueOf(pkUserId),
                 Const.WX_SESSION_TIME);
 
         userDto.setRefreshCode(refreshCode);

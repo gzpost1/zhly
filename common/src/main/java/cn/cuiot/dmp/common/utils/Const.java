@@ -17,12 +17,12 @@ public class Const {
     public static final String SECRET = "-3h2b9eEr+(Q_#z+2L@&";
 
     /**
-     * SESSION时间，单位（秒）
+     * SESSION时间，单位（秒）8小时
      */
-    public static final int SESSION_TIME = 4 * 60 * 60;
+    public static final int SESSION_TIME = 8 * 60 * 60;
 
     /**
-     * 用户长期登录SESSION时间，单位（秒）
+     * 用户长期登录SESSION时间，单位（秒）3天
      */
     public static final int USER_LONG_TIME_LOGIN_SESSION_TIME = 3 * 24 * 60 * 60;
 

@@ -93,7 +93,7 @@ public class AppUserDto implements Serializable {
     /**
      * 企业类型
      */
-    private Integer orgTypeId;
+    private Long orgTypeId;
 
     /**
      * 组织名路径
@@ -104,7 +104,6 @@ public class AppUserDto implements Serializable {
      * 组织路径
      */
     private String deptPath;
-
 
     /**
      * token
