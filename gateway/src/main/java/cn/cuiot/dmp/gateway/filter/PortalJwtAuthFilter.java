@@ -19,11 +19,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -67,11 +69,19 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
      */
     public static final String USERID = "userId";
 
+    /**
+     * 内部token头部名称
+     */
+    public final static String INNER_TOKEN_NAME="access-token";
+
     @Autowired
     private StringRedisTemplate redisTemplate;
 
     @Autowired
     private SignatureService signatureService;
+
+    @Value("${app.accessToken}")
+    private String accessToken;
 
     private final AntPathMatcher urlMatcher = new AntPathMatcher();
 
@@ -99,6 +109,15 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         }
 
         HttpHeaders headers = serverHttpRequest.getHeaders();
+        List<String> accessTokenList = headers.get(INNER_TOKEN_NAME);
+        if(CollectionUtils.isNotEmpty(accessTokenList)){
+            String headAccessToken = accessTokenList.get(0);
+            if (accessToken.equals(headAccessToken)) {
+                return chain.filter(exchange);
+            }
+        }
+
+
         List<String> list = headers.get(TOKEN);
         if (list == null || list.isEmpty()) {
             list = headers.get(AUTHORIZATION);
