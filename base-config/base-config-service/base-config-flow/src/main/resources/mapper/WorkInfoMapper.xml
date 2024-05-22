@@ -105,6 +105,7 @@
             <if test="query.makeUserId !=null">
                 and t2.user_id = #{query.makeUserId}
             </if>
+            order by t1.create_time desc
         </where>
     </sql>
     <sql id="queryMyApprovalSql">
@@ -144,8 +145,9 @@
             <if test="query.makeUserId !=null">
                 and t2.user_id = #{query.makeUserId}
             </if>
-            and t2.NAME_ like '审批人%'
+            order by t1.create_time desc
         </where>
+
     </sql>
 
     <sql id="queryMakeApprovalSql">

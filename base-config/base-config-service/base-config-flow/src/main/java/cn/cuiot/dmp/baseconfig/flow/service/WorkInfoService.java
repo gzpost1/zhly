@@ -112,6 +112,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     @Autowired
     private NodeTypeService nodeTypeService;
+
+    @Autowired
+    private WorkOrgRelService workOrgRelService;
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO) {
         JSONObject formData = startProcessInstanceDTO.getFormData();
@@ -183,9 +186,14 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             entity.setProcInstId(task.getProcessInstanceId());
             entity.setCompanyId(flowConfig.getCompanyId());
             entity.setStatus(WorkOrderStatusEnums.progress.getStatus());
-            entity.setOrgIds(orgIds(flowConfig.getId()));
+            List<Long> orgIds = orgIds(flowConfig.getId());
+            entity.setOrgIds(orgIds.stream().map(e -> String.valueOf(e)).collect(Collectors.joining(", ")));
 //            entity.setFlowConfigId(flowConfig.getId());
             this.save(entity);
+
+            //保存工单组织信息
+            saveWorkOrg(entity.getId(),orgIds);
+
             HandleDataDTO handleDataDTO = new HandleDataDTO();
             handleDataDTO.setTaskId(task.getId());
 
@@ -197,6 +205,24 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(task.getProcessInstanceId());
     }
 
+    public void saveWorkOrg(Long workId,List<Long> orgIds){
+        if (CollectionUtils.isEmpty(orgIds)){
+            return;
+        }
+        List<WorkOrgRelEntity> relList = new ArrayList<>();
+        orgIds.stream().forEach(item->{
+            WorkOrgRelEntity rel = new WorkOrgRelEntity();
+            rel.setId(IdWorker.getId());
+            rel.setWorkId(workId);
+            rel.setOrgId(item);
+            relList.add(rel);
+        });
+
+        if(CollectionUtils.isNotEmpty(relList)){
+            workOrgRelService.saveBatch(relList);
+        }
+
+    }
 
     public void saveChildNode(ChildNode childNode,String procinstId){
         ChildNode children = childNode.getChildren();
@@ -218,14 +244,14 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return childNode;
     }
 
-    public String orgIds(Long configId){
+    public List<Long> orgIds(Long configId){
         LambdaQueryWrapper<TbFlowConfigOrg> lw = new LambdaQueryWrapper<>();
         lw.eq(TbFlowConfigOrg::getFlowConfigId,configId);
         List<TbFlowConfigOrg> list = tbFlowConfigOrgService.list(lw);
         if(CollectionUtils.isEmpty(list)){
-            return "";
+            return new ArrayList<>();
         }
-        return list.stream().map(e -> String.valueOf(e.getOrgId())).collect(Collectors.joining(", "));
+        return list.stream().map(TbFlowConfigOrg::getOrgId).collect(Collectors.toList());
     }
     public IdmResDTO<IPage<WorkInfoEntity>> processList(QueryApprovalInfoDto dto) {
         List<HistoricProcessInstance> historicProcessInstances =
@@ -590,18 +616,19 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * 查询节点属性数据,并判断是否有权限发起该流程
      * @return
      */
-    public IdmResDTO<Properties> queryFirstFormInfo(FirstFormDto dto, Long userId) {
+    public IdmResDTO queryFirstFormInfo(FirstFormDto dto, Long userId) {
         ChildNode childNodeByNodeId = getChildNodeByNodeId(dto.getProcessDefinitionId(), WorkOrderConstants.USER_ROOT);
         Properties props = childNodeByNodeId.getProps();
 
         List<String> ids = props.getAssignedUser().stream().map(UserInfo::getId).collect(Collectors.toList());
-        log.info("指定类型"+props.getAssignedType());
+        log.info("指定类型"+props.getAssignedType()+"指定人员:"+JSONObject.toJSONString(ids)+"当前人员:"+userId);
         //指定人员
         if(StringUtils.equals(props.getAssignedType(), AssigneeTypeEnums.ASSIGN_USER.getTypeName())){
-            AssertUtil.isTrue(ids.contains(userId),"没有权限发起该流程");
+            if(!ids.contains(String.valueOf(userId))){
+                return  IdmResDTO.error("00001","没有权限发起流程");
+            }
         }
-
-        return IdmResDTO.success(props);
+        return IdmResDTO.success();
     }
 
     /**
