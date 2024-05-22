@@ -53,7 +53,8 @@ public class RoleController extends BaseController {
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "roleName", required = false) String roleName,
-            @RequestParam(value = "roleKey", required = false) String roleKey
+            @RequestParam(value = "roleKey", required = false) String roleKey,
+            @RequestParam(value = "status", required = false) Byte status
     ) {
         // 参数校验
         if (null == pageNo || pageNo.compareTo(0) <= 0 ||
@@ -68,6 +69,7 @@ public class RoleController extends BaseController {
             put("pageSize", pageSize);
             put("roleName", roleName);
             put("roleKey", roleKey);
+            put("status", status);
         }};
         return roleService.getRoleListByPage(paramsMap);
     }
@@ -77,10 +79,12 @@ public class RoleController extends BaseController {
      * 角色全量列表查询(不含超管)
      */
     @GetMapping(value = "/listRolesAll", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<RoleDTO> getRoleListByPage() {
+    public List<RoleDTO> getRoleListByPage( @RequestParam(value = "status", required = false) Byte status,@RequestParam(value = "roleName", required = false) String roleName) {
         Map<String, Object> paramsMap = new HashMap<String, Object>(6) {{
             put("orgId", getOrgId());
             put("userId", getUserId());
+            put("status", status);
+            put("roleName", roleName);
         }};
         return roleService.getRoleListNotDefault(paramsMap);
     }

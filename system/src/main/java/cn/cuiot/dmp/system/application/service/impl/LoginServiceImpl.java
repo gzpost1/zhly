@@ -296,6 +296,7 @@ public class LoginServiceImpl implements LoginService {
             loginResDTO.setPostId(validateUser.getPostId());
             loginResDTO.setAvatar(validateUser.getAvatar());
             loginResDTO.setUserType(validateUser.getUserType().getValue());
+            loginResDTO.setDeptId(StringUtils.isNotBlank(pkDeptId)?Long.valueOf(pkDeptId):null);
 
             return loginResDTO;
 

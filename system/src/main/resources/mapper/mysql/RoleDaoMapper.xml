@@ -37,10 +37,13 @@
             <if test="orgId !=null and orgId !=-1">
                 and o.pk_org_id = #{orgId}
             </if>
-            <if test="roleName !=null ">
+            <if test="roleName !=null and roleName != ''">
                 and  r.role_name  like concat('%',#{roleName},'%')
             </if>
-            <if test="roleKey !=null ">
+            <if test="status !=null ">
+                and  r.`status`= #{status}
+            </if>
+            <if test="roleKey !=null and roleKey != ''">
                 and  r.role_key  like concat('%',#{roleKey},'%')
             </if>
         </trim>
@@ -58,6 +61,12 @@
             </if>
             <if test="roleType !=null ">
                 and  r.role_type = #{roleType}
+            </if>
+            <if test="status !=null ">
+                and  r.`status` = #{status}
+            </if>
+            <if test="roleName !=null and roleName != ''">
+                and  r.role_name  like concat('%',#{roleName},'%')
             </if>
         </trim>
         order by r.created_on desc,r.id desc
