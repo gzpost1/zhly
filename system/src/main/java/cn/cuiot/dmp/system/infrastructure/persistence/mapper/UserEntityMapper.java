@@ -24,7 +24,7 @@ public interface UserEntityMapper extends IotBaseMapper<UserEntity> {
 
     List<UserEntity> findDeletedUserList(@Param("idList") List<Long> idList);
 
-    int delUserLabel(List<Long> idList);
+    int delUserLabel(@Param("idList") List<Long> idList);
 
-    int delUserRole(List<Long> idList);
+    int delUserRole(@Param("idList") List<Long> idList);
 }

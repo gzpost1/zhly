@@ -206,4 +206,20 @@
           and user_type = 1
           and d.`path` LIKE concat(#{path}, '%')
     </select>
+
+    <select id="getUserByDeptId" resultType="cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity">
+        select
+        u.*
+        from
+        user u
+        left join user_org uo on
+        u.id = uo.pk_user_id
+        left join department d on
+        d.id = uo.pk_dept_id
+        where
+        uo.pk_dept_id = #{deptId}
+        and u.deleted_flag = 0
+        and u.user_type = 1
+    </select>
+
 </mapper>

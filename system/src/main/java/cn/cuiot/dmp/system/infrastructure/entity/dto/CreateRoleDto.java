@@ -5,6 +5,7 @@ import java.util.List;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 /**
  * @author wensq
@@ -19,11 +20,13 @@ public class CreateRoleDto extends AbstractResourceParam {
      * 角色名称
      */
     @NotBlank(message = "请输入角色名称")
+    @Length(max = 30,message = "角色名称不可超过30字")
     private String roleName;
 
     /**
      * 备注
      */
+    @Length(max = 200,message = "备注限200字")
     private String description;
 
     /**

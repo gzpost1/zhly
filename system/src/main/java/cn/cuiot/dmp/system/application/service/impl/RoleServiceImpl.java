@@ -2,7 +2,9 @@ package cn.cuiot.dmp.system.application.service.impl;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
@@ -40,6 +42,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
+import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,12 +93,13 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public PageResult<RoleDTO> getRoleListByPage(Map<String, Object> paramsMap) {
-        Page<RoleDTO> page = PageHelper.startPage((Integer) paramsMap.get("pageNo"),
+       PageHelper.startPage((Integer) paramsMap.get("pageNo"),
                 (Integer) paramsMap.get("pageSize"));
         // 超管要看到企业管理员的角色，在sql里面判断
         List<RoleDTO> roleDtoList = this.roleDao.selectRoleListByPage(paramsMap);
+        PageInfo<RoleDTO> page = new PageInfo<>(roleDtoList);
         if (!CollectionUtils.isEmpty(roleDtoList)) {
-            List<Long> roleIdList = new ArrayList<>(roleDtoList.size());
+            List<Long> roleIdList = Lists.newArrayList();
             roleDtoList.forEach(roleDTO -> roleIdList.add(Long.valueOf(roleDTO.getId())));
             // 查询角色关联的用户
             List<Map<String, Long>> userIdList = this.roleDao
@@ -111,8 +115,7 @@ public class RoleServiceImpl implements RoleService {
                     })
             );
         }
-        PageInfo<RoleDTO> roleDtoPageInfo = page.toPageInfo();
-        return new PageResult<>(roleDtoPageInfo);
+        return new PageResult<>(page);
     }
 
     @Override
@@ -136,7 +139,7 @@ public class RoleServiceImpl implements RoleService {
         for (Long deleteId : deleteIdList) {
             // 预置角色不能删除
             DEFAULT_ROLE_ID.stream().filter(s -> s.equals(deleteId)).findAny().ifPresent(s -> {
-                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION,"该角色不能删除");
             });
         }
 
@@ -157,7 +160,7 @@ public class RoleServiceImpl implements RoleService {
         if (!CollectionUtils.isEmpty(userIdList) && userIdList.parallelStream().anyMatch(map -> {
             return null != map.get(USER_ID);
         })) {
-            throw new BusinessException(ResultCode.ROLE_USER_APP_ALREADY_BIND);
+            throw new BusinessException(ResultCode.ROLE_USER_APP_ALREADY_BIND,"该角色下存在用户，不可删除");
         }
 
         // 删除成功的角色数量
@@ -183,11 +186,6 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createRole(CreateRoleDto dto) {
-        RoleDTO roleDTO = this.roleDao.selectRoleByUserId(Long.parseLong(dto.getLoginOrgId()),
-                Long.parseLong(dto.getLoginUserId()));
-        if (null == roleDTO) {
-            throw new BusinessException(ResultCode.QUERY_ROLE_DETAILS_ERROR);
-        }
         if (CollectionUtils.isEmpty(dto.getMenuIds())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "请配置角色权限");
         }
@@ -209,6 +207,7 @@ public class RoleServiceImpl implements RoleService {
         entity.setRoleName(dto.getRoleName());
         entity.setDescription(dto.getDescription());
         entity.setId(SnowflakeIdWorkerUtil.nextId());
+        entity.setStatus(EntityConstants.ENABLED);
         try {
             this.roleDao.insertRole(entity);
         } catch (Exception e) {
@@ -296,7 +295,7 @@ public class RoleServiceImpl implements RoleService {
         }*/
         // 预置角色不能编辑
         DEFAULT_ROLE_ID.stream().filter(s -> s.equals(roleBo.getId())).findAny().ifPresent(s -> {
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION,"该角色不能修改");
         });
         // 系统默认角色和只读角色不能修改
         if (DEFAULT_ROLE_KEY.equals(roleBo.getRoleKey()) || READONLY_ROLE_KEY
@@ -325,18 +324,6 @@ public class RoleServiceImpl implements RoleService {
         roleBo.setUpdatedBy(roleBo.getSessionUserId());
         //更改时间
         roleBo.setUpdatedOn(LocalDateTime.now());
-
-        List<Long> idList = new ArrayList<>();
-        idList.add(roleBo.getId());
-        roleBo.setDeleteIdList(idList);
-        // 获取操作对象
-        List<RoleEntity> roleEntityList = this.roleDao
-                .selectRoleByRoleIds(roleBo.getDeleteIdList());
-        String[] operationTargetArray = new String[roleEntityList.size()];
-        for (int i = 0; i < roleEntityList.size(); i++) {
-            operationTargetArray[i] = roleEntityList.get(i).getRoleName();
-        }
-        roleBo.setOperationTarget(operationTargetArray);
 
         Organization organization = organizationRepository
                 .find(new OrganizationId(roleBo.getSessionOrgId()));
@@ -372,6 +359,46 @@ public class RoleServiceImpl implements RoleService {
                     return roleConverter.entityToBaseRoleDto(item);
                 }).collect(Collectors.toList());
         return dtoList;
+    }
+
+    /**
+     * 启停用
+     */
+    @Override
+    public void updateStatus(UpdateStatusParam updateStatusParam, Long sessionUserId,
+            Long sessionOrgId) {
+        Long roleId = updateStatusParam.getId();
+        RoleDTO roleDTO = this.roleDao.selectRoleById(sessionOrgId,roleId);
+        if(Objects.isNull(roleDTO)){
+            throw new BusinessException(ResultCode.ROLE_NOT_EXIST);
+        }
+        // 预置角色不能启停用
+        DEFAULT_ROLE_ID.stream().filter(s -> s.equals(roleId)).findAny().ifPresent(s -> {
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+        });
+        if(EntityConstants.DISABLED.equals(updateStatusParam.getStatus())){
+            // 查询角色关联的用户
+            List<Map<String, Long>> userIdList = this.roleDao
+                    .selectUserIdsByRoleIds(sessionOrgId.toString(),Lists.newArrayList(roleId));
+
+            if (!CollectionUtils.isEmpty(userIdList) && userIdList.parallelStream().anyMatch(map -> {
+                return null != map.get(USER_ID);
+            })) {
+                throw new BusinessException(ResultCode.ROLE_USER_APP_ALREADY_BIND,"该角色下存在用户，不可停用");
+            }
+        }
+        RoleBo roleBo = new RoleBo();
+        roleBo.setId(roleId);
+        // 修改者类型
+        roleBo.setUpdatedByType(UserSourceTypeEnum.PORTAL.getCode());
+        // 修改者
+        roleBo.setUpdatedBy(roleBo.getSessionUserId());
+        //更改时间
+        roleBo.setUpdatedOn(LocalDateTime.now());
+        //状态
+        roleBo.setStatus(updateStatusParam.getStatus());
+
+        roleDao.updateRole(roleBo);
     }
 }
 

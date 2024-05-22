@@ -8,9 +8,7 @@ import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.xxljob.XxlJobClient;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
-import cn.cuiot.dmp.baseconfig.flow.entity.PlanContentEntity;
-import cn.cuiot.dmp.baseconfig.flow.entity.PlanWorkExecutionInfoEntity;
-import cn.cuiot.dmp.baseconfig.flow.entity.WorkPlanInfoEntity;
+import cn.cuiot.dmp.baseconfig.flow.entity.*;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkPlanInfoMapper;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.BeanMapper;
@@ -19,10 +17,13 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jodd.util.StringUtil;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +56,19 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
     @Autowired
     private PlanContentService planContentService;
+
+    @Autowired
+    private RepositoryService repositoryService;
+
+    @Autowired
+    private TbFlowConfigService flowConfigService;
+
+    @Autowired
+    private TbFlowConfigOrgService tbFlowConfigOrgService;
+
+    @Autowired
+    private WorkOrgRelService workOrgRelService;
+
     /**
      * 创建工单计划
      * @param workPlanInfoCreateDto
@@ -84,9 +98,48 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         entity.setId(map.getId());
         entity.setContent(JSONObject.toJSONString(workPlanInfoCreateDto.getStartProcessInstanceDTO()));
         planContentService.save(entity);
+
+        //保存组织信息
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
+                .processDefinitionId(workPlanInfoCreateDto.getStartProcessInstanceDTO().getProcessDefinitionId())
+                .singleResult();
+        String flowableKey = processDefinition.getKey().replaceAll("[a-zA-Z]", "");
+        TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
+                orElseThrow(()->new RuntimeException("流程配置为空"));
+
+        List<Long> orgIds = orgIds(flowConfig.getId());
+        saveWorkOrg(map.getId(),orgIds);
+
         return IdmResDTO.success();
     }
 
+    public void saveWorkOrg(Long workId,List<Long> orgIds){
+        if (CollectionUtils.isEmpty(orgIds)){
+            return;
+        }
+        List<WorkOrgRelEntity> relList = new ArrayList<>();
+        orgIds.stream().forEach(item->{
+            WorkOrgRelEntity rel = new WorkOrgRelEntity();
+            rel.setId(IdWorker.getId());
+            rel.setWorkId(workId);
+            rel.setOrgId(item);
+            relList.add(rel);
+        });
+
+        if(CollectionUtils.isNotEmpty(relList)){
+            workOrgRelService.saveBatch(relList);
+        }
+
+    }
+    public List<Long> orgIds(Long configId){
+        LambdaQueryWrapper<TbFlowConfigOrg> lw = new LambdaQueryWrapper<>();
+        lw.eq(TbFlowConfigOrg::getFlowConfigId,configId);
+        List<TbFlowConfigOrg> list = tbFlowConfigOrgService.list(lw);
+        if(CollectionUtils.isEmpty(list)){
+            return new ArrayList<>();
+        }
+        return list.stream().map(TbFlowConfigOrg::getOrgId).collect(Collectors.toList());
+    }
 
     /**
      * 保存预生成时间
@@ -234,7 +287,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
                 LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
                 while (overTime.isAfter(localDateTime)){
                     times.add(localDateTime);
-                    localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
+                    localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
                 }
             }
         }
@@ -337,20 +390,26 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             List<Long> deptIds = deptList.stream().map(DepartmentDto::getId).collect(Collectors.toList());
             dto.setOrgIds(deptIds);
         }
-        LambdaQueryWrapper<WorkPlanInfoEntity> lw = getCondition(dto);
-        Page<WorkPlanInfoEntity> workPlanInfoEntityPage = this.getBaseMapper().selectPage(new Page<>(dto.getCurrentPage(), dto.getPageSize()), lw);
+        Page<WorkPlanInfoEntity> workPlanInfoEntityPage = this.getBaseMapper().queryWordPlanInfo(new Page<>(dto.getCurrentPage(), dto.getPageSize()), dto);
         List<WorkPlanInfoEntity> records = workPlanInfoEntityPage.getRecords();
         if(CollectionUtil.isNotEmpty(records)){
             List<Long> userIds = records.stream().map(WorkPlanInfoEntity::getCreateUser).collect(Collectors.toList());
             Map<Long, String> userMap = getUserMap(userIds);
+            List<Long> ids = records.stream().map(WorkPlanInfoEntity::getId).collect(Collectors.toList());
+            Map<Long, String> contentMap = getContent(ids);
             records.stream().forEach(item->{
                 //根据userId获取userName
                 item.setCreateName(userMap.get(item.getCreateUser()));
+                item.setStartProcessInstanceDTO(contentMap.get(item.getId()));
             });
         }
         return IdmResDTO.success(workPlanInfoEntityPage);
     }
 
+    public Map<Long, String> getContent(List<Long> ids){
+        List<PlanContentEntity> planContentEntities = planContentService.getBaseMapper().selectBatchIds(ids);
+        return planContentEntities.stream().collect(Collectors.toMap(PlanContentEntity::getId,PlanContentEntity::getContent ));
+    }
     public Map<Long,String> getUserMap(List<Long> userIds){
         BaseUserReqDto userReqDto = new BaseUserReqDto();
         userReqDto.setUserIdList(userIds);
@@ -370,6 +429,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
     public LambdaQueryWrapper getCondition(QueryWorkPlanInfoDto dto){
         LambdaQueryWrapper<WorkPlanInfoEntity> lw = new LambdaQueryWrapper<>();
         lw.like(Objects.nonNull(dto.getId()),WorkPlanInfoEntity::getId,dto.getId())
+                .eq(Objects.nonNull(dto.getState()),WorkPlanInfoEntity::getState,dto.getState())
         .like(Objects.nonNull(dto.getPlanName()),WorkPlanInfoEntity::getPlanName,dto.getPlanName())
          .in(CollectionUtil.isNotEmpty(dto.getOrgIds()),WorkPlanInfoEntity::getOrgId,dto.getOrgIds());
         if(Objects.nonNull(dto.getStartDate())){
@@ -414,12 +474,12 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         if(dto.getBusinessType().intValue()==0){
             List<WorkPlanInfoEntity> workPlanInfoEntities = this.getBaseMapper().selectBatchIds(dto.getIds());
             workPlanInfoEntities.stream().forEach(item->item.setState(Byte.parseByte("0")));
-            this.saveOrUpdateBatch(workPlanInfoEntities);
+            this.updateBatchById(workPlanInfoEntities);
         }
         if(dto.getBusinessType().intValue()==1){
             List<WorkPlanInfoEntity> workPlanInfoEntities = this.getBaseMapper().selectBatchIds(dto.getIds());
             workPlanInfoEntities.stream().forEach(item->item.setState(Byte.parseByte("1")));
-            this.saveOrUpdateBatch(workPlanInfoEntities);
+            this.updateBatchById(workPlanInfoEntities);
         }
         if(dto.getBusinessType().intValue()==2){
             this.getBaseMapper().deleteBatchIds(dto.getIds());

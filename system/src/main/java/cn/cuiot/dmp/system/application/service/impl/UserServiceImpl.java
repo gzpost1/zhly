@@ -397,7 +397,7 @@ public class UserServiceImpl extends BaseController implements UserService {
                     userEntity.getId().getValue(),
                     Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
 
-            UserCsvDto userCsvDto = new UserCsvDto(userEntity.getUsername(), password);
+            UserCsvDto userCsvDto = new UserCsvDto(userEntity.getUsername(),phoneNumber, password);
 
             return userCsvDto;
         } catch (Exception e) {
@@ -976,6 +976,10 @@ public class UserServiceImpl extends BaseController implements UserService {
         // 查询用户组织的类型
         DepartmentDto userDept = departmentDao.getPathByUser(userId);
         if (userDept != null) {
+            userResDTO.setDeptId(userDept.getId());
+            userResDTO.setDeptName(userDept.getName());
+            userResDTO.setDeptPath(userDept.getPath());
+            userResDTO.setDeptPathName(userDept.getPathName());
             userResDTO.setDGroup(userDept.getDGroup());
         }
         // 获取账户信息
@@ -1157,7 +1161,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         if (!userRepository.save(userDataEntity)) {
             throw new BusinessException(ResultCode.UPDATE_PASSWORD_FAIL);
         }
-        UserCsvDto userCsvDto = new UserCsvDto(userDataEntity.getUsername(), password);
+        UserCsvDto userCsvDto = new UserCsvDto(userDataEntity.getUsername(),userDataEntity.getDecryptedPhoneNumber(), password);
         return userCsvDto;
     }
 

@@ -4,6 +4,8 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
@@ -13,6 +15,7 @@ import cn.cuiot.dmp.system.application.service.RoleService;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.RoleBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.CreateRoleDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateRoleDto;
 import com.google.common.collect.Lists;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +53,8 @@ public class RoleController extends BaseController {
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(value = "roleName", required = false) String roleName,
-            @RequestParam(value = "roleKey", required = false) String roleKey
+            @RequestParam(value = "roleKey", required = false) String roleKey,
+            @RequestParam(value = "status", required = false) Byte status
     ) {
         // 参数校验
         if (null == pageNo || pageNo.compareTo(0) <= 0 ||
@@ -65,6 +69,7 @@ public class RoleController extends BaseController {
             put("pageSize", pageSize);
             put("roleName", roleName);
             put("roleKey", roleKey);
+            put("status", status);
         }};
         return roleService.getRoleListByPage(paramsMap);
     }
@@ -74,10 +79,12 @@ public class RoleController extends BaseController {
      * 角色全量列表查询(不含超管)
      */
     @GetMapping(value = "/listRolesAll", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<RoleDTO> getRoleListByPage() {
+    public List<RoleDTO> getRoleListByPage( @RequestParam(value = "status", required = false) Byte status,@RequestParam(value = "roleName", required = false) String roleName) {
         Map<String, Object> paramsMap = new HashMap<String, Object>(6) {{
             put("orgId", getOrgId());
             put("userId", getUserId());
+            put("status", status);
+            put("roleName", roleName);
         }};
         return roleService.getRoleListNotDefault(paramsMap);
     }
@@ -140,15 +147,33 @@ public class RoleController extends BaseController {
     @RequiresPermissions
     @LogRecord(operationCode = "updateRole", operationName = "修改角色", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping(value = "/updateRole", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> updateRole(@RequestBody RoleBo roleBo) {
-        if (null == roleBo || StringUtils.isBlank(String.valueOf(roleBo.getId())) || StringUtils
-                .isBlank(roleBo.getRoleName())) {
+    public Map<String, Object> updateRole(@RequestBody @Valid UpdateRoleDto dto) {
+        if (null == dto || StringUtils.isBlank(String.valueOf(dto.getId())) || StringUtils
+                .isBlank(dto.getRoleName())) {
             throw new BusinessException(ResultCode.PARAM_CANNOT_NULL);
         }
+        RoleBo roleBo = new RoleBo();
+        roleBo.setId(dto.getId());
+        roleBo.setRoleName(dto.getRoleName());
+        roleBo.setDescription(dto.getDescription());
+        roleBo.setMenuIds(dto.getMenuIds());
         roleBo.setSessionUserId(LoginInfoHolder.getCurrentUserId().toString());
         roleBo.setSessionOrgId(LoginInfoHolder.getCurrentOrgId().toString());
         Map<String, Object> resultMap = new HashMap<>(1);
         resultMap.put("id", this.roleService.updateRole(roleBo));
         return resultMap;
+    }
+
+    /**
+     * 启停用
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "updateRoleStatus", operationName = "启停用角色", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @PostMapping("/updateStatus")
+    public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
+        Long sessionUserId = LoginInfoHolder.getCurrentUserId();
+        Long sessionOrgId = LoginInfoHolder.getCurrentOrgId();
+        roleService.updateStatus(updateStatusParam, sessionUserId, sessionOrgId);
+        return IdmResDTO.success();
     }
 }

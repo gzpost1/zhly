@@ -9,7 +9,6 @@ import lombok.Data;
  * @Date 2020/9/10
  */
 @Data
-@AllArgsConstructor
 public class UserCsvDto {
 
     /**
@@ -18,8 +17,28 @@ public class UserCsvDto {
     private String username;
 
     /**
+     * 手机号
+     */
+    private String phoneNumber;
+
+    /**
      * 密码
      */
     private String password;
 
+
+
+    public UserCsvDto() {
+    }
+
+    public UserCsvDto(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public UserCsvDto(String username, String phoneNumber, String password) {
+        this.username = username;
+        this.password = password;
+        this.phoneNumber = phoneNumber;
+    }
 }

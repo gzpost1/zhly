@@ -28,6 +28,6 @@ public interface FormConfigMapper extends BaseMapper<FormConfigEntity> {
      *
      * @param typeIdList 主键ID集合
      */
-    int batchMoveFormConfigDefault(@Param("typeIdList") List<String> typeIdList);
+    int batchMoveFormConfigDefault(@Param("typeIdList") List<String> typeIdList, @Param("rootTypeId") Long rootTypeId);
 
 }

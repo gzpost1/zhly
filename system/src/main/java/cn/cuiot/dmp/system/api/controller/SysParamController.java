@@ -55,6 +55,7 @@ public class SysParamController extends BaseController {
         if (Objects.isNull(sessionOrgId)) {
             throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
         }
+
         return sysParamService.getByPath(sessionOrgId);
     }
 

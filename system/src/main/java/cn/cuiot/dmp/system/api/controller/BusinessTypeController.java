@@ -79,7 +79,6 @@ public class BusinessTypeController {
     /**
      * 删除预校验
      */
-    @RequiresPermissions
     @PostMapping("/checkBeforeDelete")
     public void checkBeforeDelete(@RequestBody @Valid IdParam idParam) {
         businessTypeService.checkDeleteStatus(idParam.getId());
