@@ -5,6 +5,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.UserLongTimeLoginEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
+import cn.cuiot.dmp.gateway.config.AppProperties;
 import cn.cuiot.dmp.gateway.service.SignatureService;
 import cn.cuiot.dmp.gateway.utils.SecrtUtil;
 import io.jsonwebtoken.Claims;
@@ -19,11 +20,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -38,10 +41,9 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * function:
- *
- * @author wangyh
- * @date 2020/8/4 10:56 上午
+ * 网关认证过滤器
+ * @author: wuyongchong
+ * @date: 2024/5/10 15:43
  **/
 @Slf4j
 @Component
@@ -67,11 +69,19 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
      */
     public static final String USERID = "userId";
 
+    /**
+     * 内部token头部名称
+     */
+    public final static String INNER_TOKEN_NAME="access-token";
+
     @Autowired
     private StringRedisTemplate redisTemplate;
 
     @Autowired
     private SignatureService signatureService;
+
+    @Autowired
+    private AppProperties appProperties;
 
     private final AntPathMatcher urlMatcher = new AntPathMatcher();
 
@@ -97,8 +107,21 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
                 return chain.filter(exchange);
             }
         }
-
         HttpHeaders headers = serverHttpRequest.getHeaders();
+
+        //内部token校验
+        if(Boolean.TRUE.equals(appProperties.getEnableGatewayAccessTokenRequest())){
+            List<String> accessTokenList = headers.get(INNER_TOKEN_NAME);
+            if(CollectionUtils.isNotEmpty(accessTokenList)){
+                String headAccessToken = accessTokenList.get(0);
+                if (appProperties.getAccessToken().equals(headAccessToken)) {
+                    return chain.filter(exchange);
+                }
+            }
+        }
+        /**
+         * 用户token校验
+         */
         List<String> list = headers.get(TOKEN);
         if (list == null || list.isEmpty()) {
             list = headers.get(AUTHORIZATION);
@@ -166,37 +189,46 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
             String userId = claims.get(USERID).toString();
             String orgId = claims.get(USERORG).toString();
 
-            String toKick = redisTemplate.opsForValue().get(CacheConst.LOGIN_ORG_TO_KICK);
-            if (!StringUtils.isEmpty(toKick)) {
-                String[] kickOrgIdArr = toKick.split(",");
-                List<String> kickOrgIds = Arrays.asList(kickOrgIdArr);
-                if (kickOrgIds.contains(orgId)) {
-                    throw new BusinessException(ResultCode.LOGIN_INVALID);
+            //踢下线
+            if (!StringUtils.isEmpty(orgId)) {
+                String toKick = redisTemplate.opsForValue().get(CacheConst.LOGIN_ORG_TO_KICK);
+                if (!StringUtils.isEmpty(toKick)) {
+                    String[] kickOrgIdArr = toKick.split(",");
+                    List<String> kickOrgIds = Arrays.asList(kickOrgIdArr);
+                    if (kickOrgIds.contains(orgId)) {
+                        throw new BusinessException(ResultCode.LOGIN_INVALID);
+                    }
                 }
             }
 
-            //判断session 是否失效
-            // 增加微信小程序登陆校验
+            // PC端jwt缓存
             String jwtRedis = redisTemplate.opsForValue().get(CacheConst.LOGIN_USERS_JWT + jwt);
-            String jwtRedisWx = redisTemplate.opsForValue()
-                    .get(CacheConst.LOGIN_USERS_JWT_WX + jwt);
+
+            //app端jwt缓存
+            String jwtRedisWx = redisTemplate.opsForValue().get(CacheConst.LOGIN_USERS_JWT_WX + jwt);
+
             if (StringUtils.isEmpty(jwtRedis) && StringUtils.isEmpty(jwtRedisWx)) {
                 throw new BusinessException(ResultCode.LOGIN_INVALID);
             } else if (!userId.equals(jwtRedis) && !userId.equals(jwtRedisWx)) {
                 throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
             }
+
             if (!StringUtils.isEmpty(jwtRedis)) {
-                if (Objects.equals(redisTemplate.opsForValue()
-                                .get(CacheConst.USER_LONG_TIME_LOGIN + userId),
-                        UserLongTimeLoginEnum.OPEN.getCode())) {
+
+                if (Objects.equals(UserLongTimeLoginEnum.OPEN.getCode(),
+                        redisTemplate.opsForValue().get(CacheConst.USER_LONG_TIME_LOGIN + userId))) {
+
                     redisTemplate.expire(CacheConst.LOGIN_USERS_JWT + jwt,
                             Const.USER_LONG_TIME_LOGIN_SESSION_TIME, TimeUnit.SECONDS);
+
                     redisTemplate.expire(CacheConst.USER_LONG_TIME_LOGIN + userId,
                             Const.USER_LONG_TIME_LOGIN_SESSION_TIME, TimeUnit.SECONDS);
+
                 } else {
                     redisTemplate.expire(CacheConst.LOGIN_USERS_JWT + jwt, Const.SESSION_TIME,
                             TimeUnit.SECONDS);
                 }
+
             } else if (!StringUtils.isEmpty(jwtRedisWx)) {
                 redisTemplate.expire(CacheConst.LOGIN_USERS_JWT_WX + jwt, Const.WX_SESSION_TIME,
                         TimeUnit.SECONDS);

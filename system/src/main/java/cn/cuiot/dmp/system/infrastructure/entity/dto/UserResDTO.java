@@ -200,6 +200,28 @@ public class UserResDTO {
      */
     private String remark;
 
+
+    /**
+     * 部门ID
+     */
+    private Long deptId;
+
+
+    /**
+     * 部门名称
+     */
+    private String deptName;
+
+    /**
+     * 部门路径
+     */
+    private String deptPath;
+
+    /**
+     * 部门路径名称
+     */
+    private String deptPathName;
+
     /**
      * 权限标识列表
      */

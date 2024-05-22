@@ -13,13 +13,16 @@ import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskConfigInsertDto;
 import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskConfigUpdateDto;
 import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskInfoPageDto;
 import cn.cuiot.dmp.baseconfig.custommenu.dto.TbFlowTaskInfoQuery;
+import cn.cuiot.dmp.baseconfig.custommenu.entity.TbFlowTaskConfig;
 import cn.cuiot.dmp.baseconfig.custommenu.entity.TbFlowTaskInfo;
 import cn.cuiot.dmp.baseconfig.custommenu.service.TbFlowTaskConfigService;
 import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskConfigVo;
 import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
@@ -89,8 +92,25 @@ public class TbFlowTaskInfoController {
     @PostMapping("/create")
     @LogRecord(operationCode = "taskCreate", operationName = "任务配置创建", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO create(@RequestBody @Valid FlowTaskConfigInsertDto createDto) {
+        validateBusinessAndOrg(createDto.getName(),null);
         flowTaskConfigService.create(createDto);
         return IdmResDTO.success();
+    }
+
+    /**
+     * 验证任务信息
+     * @param name
+     * @param id
+     */
+    private void validateBusinessAndOrg(String name,Long id) {
+        //判断任务名称是否重复
+        LambdaQueryWrapper<TbFlowTaskConfig> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TbFlowTaskConfig::getName, name);
+        if(Objects.nonNull(id)){
+            queryWrapper.ne(TbFlowTaskConfig::getId, id);
+        }
+        long count = flowTaskConfigService.count(queryWrapper);
+        AssertUtil.isFalse(count > 0, "任务名称已存在");
     }
 
     /**
@@ -103,6 +123,7 @@ public class TbFlowTaskInfoController {
     @PostMapping("/update")
     @LogRecord(operationCode = "taskUpdate", operationName = "任务配置更新", serviceType = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO update(@RequestBody @Valid FlowTaskConfigUpdateDto updateDto) {
+        validateBusinessAndOrg(updateDto.getName(),updateDto.getId());
 
         flowTaskConfigService.updateData(updateDto);
 

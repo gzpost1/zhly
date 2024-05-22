@@ -6,10 +6,13 @@ import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowCc;
 import cn.cuiot.dmp.baseconfig.flow.enums.FlowCCEnums;
 import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
 import cn.cuiot.dmp.baseconfig.flow.service.TbFlowCcService;
+import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigOrgService;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.Process;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.delegate.DelegateExecution;
@@ -40,6 +43,8 @@ public class CcListener implements JavaDelegate {
     private TbFlowCcService flowCcService;
     @Autowired
     private SystemToFlowService systemToFlowService;
+    @Autowired
+    private TbFlowConfigOrgService flowConfigOrgService;
 
     @Override
     public void execute(DelegateExecution execution) {
@@ -48,12 +53,18 @@ public class CcListener implements JavaDelegate {
         CCInfo ccInfo = node.getProps().getCcInfo();
         String nodeId = node.getId();
 
+        String flowConfigId = StringUtils.substringBefore(execution.getProcessDefinitionId(), ":").replace(PROCESS_PREFIX, "");
+
+
         if (Objects.nonNull(ccInfo)) {
             List<Long> ccUserIds = new ArrayList<>();
             if (Objects.equals(ccInfo.getType(), FlowCCEnums.PERSON.getCode())) {
                 ccUserIds = ccInfo.getCcIds().stream().map(e -> Long.parseLong(e)).collect(Collectors.toList());
             } else if (Objects.equals(ccInfo.getType(), FlowCCEnums.ROLE.getCode())) {
-                ccUserIds = systemToFlowService.getUserIdByRole(ccInfo.getCcIds().stream().map(e -> Long.parseLong(e)).collect(Collectors.toList()));
+                List<Long> flowCOnfigDeptIds = flowConfigOrgService.queryOrgIdsByFlowConfigId(Long.valueOf(flowConfigId));
+                AssertUtil.notEmpty(flowCOnfigDeptIds, "该流程暂未配置组织,请重试");
+
+                ccUserIds = systemToFlowService.getUserIdByRole(ccInfo.getCcIds().stream().map(e -> Long.parseLong(e)).collect(Collectors.toList()),flowCOnfigDeptIds);
             } else if (Objects.equals(ccInfo.getType(), FlowCCEnums.DEPARTMENT.getCode())) {
                 ccUserIds = systemToFlowService.getUserIdByDept(ccInfo.getCcIds().stream().map(e -> Long.parseLong(e)).collect(Collectors.toList()));
             }

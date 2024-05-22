@@ -976,6 +976,10 @@ public class UserServiceImpl extends BaseController implements UserService {
         // 查询用户组织的类型
         DepartmentDto userDept = departmentDao.getPathByUser(userId);
         if (userDept != null) {
+            userResDTO.setDeptId(userDept.getId());
+            userResDTO.setDeptName(userDept.getName());
+            userResDTO.setDeptPath(userDept.getPath());
+            userResDTO.setDeptPathName(userDept.getPathName());
             userResDTO.setDGroup(userDept.getDGroup());
         }
         // 获取账户信息

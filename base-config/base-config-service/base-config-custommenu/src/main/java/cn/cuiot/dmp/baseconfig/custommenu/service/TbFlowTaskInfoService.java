@@ -40,6 +40,10 @@ public class TbFlowTaskInfoService extends ServiceImpl<TbFlowTaskInfoMapper, TbF
      */
     @Transactional(rollbackFor = Exception.class)
     public void create(Long id, List<FlowTaskInfoInsertDto> taskInfoList) {
+        for (int i = 0; i < taskInfoList.size(); i++) {
+            taskInfoList.get(i).setSort(i);
+        }
+
         List<TbFlowTaskInfo> insertList = taskInfoList.stream().map(taskInfo -> {
             TbFlowTaskInfo tbFlowTaskInfo = new TbFlowTaskInfo();
             BeanUtils.copyProperties(taskInfo, tbFlowTaskInfo);
@@ -59,6 +63,10 @@ public class TbFlowTaskInfoService extends ServiceImpl<TbFlowTaskInfoMapper, TbF
      */
     @Transactional(rollbackFor = Exception.class)
     public void updateList(Long id, List<FlowTaskInfoUpdateDto> taskInfoList) {
+        for (int i = 0; i < taskInfoList.size(); i++) {
+            taskInfoList.get(i).setSort(i);
+        }
+
         //首先删除数据
         List<FlowTaskInfoUpdateDto> existIds = taskInfoList.stream().filter(e -> Objects.nonNull(e.getId())).collect(Collectors.toList());
         if (!existIds.isEmpty()) {
