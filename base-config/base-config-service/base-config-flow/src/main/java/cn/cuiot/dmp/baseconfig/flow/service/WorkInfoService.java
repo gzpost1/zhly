@@ -411,6 +411,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //记录转办信息
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_TRANSFER.getCode());
+        businessTypeInfo.setDeliver(handleDataDTO.getUserIds().stream().map(String::valueOf).collect(Collectors.joining(",")));
         workBusinessTypeInfoService.save(businessTypeInfo);
         //更新挂起时间
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
@@ -422,7 +423,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 //        }
 //        //单个转办
 //        taskService.setAssignee(handleDataDTO.getTaskId(),handleDataDTO.getTransferUserInfo().getId());
-
+        assigneeByProcInstId(handleDataDTO);
         return IdmResDTO.success();
     }
 
@@ -622,6 +623,16 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         log.info("指定类型"+props.getAssignedType()+"指定人员:"+JSONObject.toJSONString(ids)+"当前人员:"+userId);
         //指定人员
         if(StringUtils.equals(props.getAssignedType(), AssigneeTypeEnums.ASSIGN_USER.getTypeName())){
+            if(!ids.contains(String.valueOf(userId))){
+                return  IdmResDTO.error("00001","没有权限发起流程");
+            }
+        }
+        if(StringUtils.equals(props.getAssignedType(), AssigneeTypeEnums.DEPT.getTypeName())){
+            if(!ids.contains(String.valueOf(userId))){
+                return  IdmResDTO.error("00001","没有权限发起流程");
+            }
+        }
+        if(StringUtils.equals(props.getAssignedType(), AssigneeTypeEnums.ROLE.getTypeName())){
             if(!ids.contains(String.valueOf(userId))){
                 return  IdmResDTO.error("00001","没有权限发起流程");
             }
