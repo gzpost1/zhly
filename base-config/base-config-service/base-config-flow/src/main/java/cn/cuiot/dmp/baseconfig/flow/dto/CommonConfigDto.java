@@ -20,5 +20,5 @@ public class CommonConfigDto {
     /**
      * 撤销规则-撤销节点ID
      */
-    private Long revokeNodeId;
+    private String revokeNodeId;
 }

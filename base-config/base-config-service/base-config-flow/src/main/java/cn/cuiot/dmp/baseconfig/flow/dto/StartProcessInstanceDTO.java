@@ -36,4 +36,9 @@ public class StartProcessInstanceDTO {
      * 任务id
      */
     private String taskId;
+
+    /**
+     * 定时任务的创建人
+     */
+    private Long createUserId;
 }

@@ -22,13 +22,13 @@
         id, business_type, org, work_name, work_souce, user_id, status
     </sql>
     <sql id="queryWorkOrderInfoSql">
-        t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds
+        DISTINCT t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds
 
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
             from tb_work_info t1 left join  (select business_type,proc_inst_id from tb_work_business_type_info WHERE business_type=1 group by proc_inst_id ,business_type) t2 on t1.proc_inst_id = t2.proc_inst_id
-
+            left join tb_work_org_rel t3 on t1.id = t3.work_id
           <include refid="queryWorkOrderInfoCondition"/>
     </select>
     <sql id="queryWorkOrderInfoCondition">
@@ -43,7 +43,7 @@
                 and t1.status = #{query.status}
             </if>
             <if test="query.createUser !=null">
-                and t1.create_user =#{createUser}
+                and t1.create_user =#{query.createUser}
             </if>
             <if test="query.workSouce !=null ">
                 and t1.work_souce =#{query.workSouce}
@@ -55,7 +55,7 @@
                 and t1.work_name like concat('%',#{query.workName},'%')
             </if>
             <if test="query.orgIds !=null">
-                and t1.org_id in
+                and t3.org_id in
                 <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
@@ -71,7 +71,7 @@
 
     <sql id="queryMyNotApprovalSql">
         t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.create_time,t1.create_user as userId,t1.company_id, t1.status as state, t1.org_ids,
-            t2.ID_ as task_id ,t2.TASK_DEF_ID_ as procDefId
+            t2.ID_ as task_id ,t2.PROC_DEF_ID_ as procDefId ,t2.TASK_DEF_KEY_ as taskDefKey
     </sql>
     <select id="queryMyNotApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
         select
@@ -109,8 +109,8 @@
         </where>
     </sql>
     <sql id="queryMyApprovalSql">
-        t1.proc_inst_id, t1.create_user, t1.status, t1.work_souce, t1.work_name,  t1.org_id, t1.business_type
-            ,t1.status as state, t1.org_ids,t1.create_time  ,t2.END_TIME_ as endTime
+        t1.proc_inst_id, t1.create_user as userId, t1.status, t1.work_souce, t1.work_name,  t1.org_id, t1.business_type
+            ,t1.status as state, t1.org_ids,t1.create_time  ,t2.END_TIME_ as entTime
     </sql>
     <select id="queryMyApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
         select
@@ -186,6 +186,7 @@
             <if test="query.makeUserId !=null">
                 and t2.user_id = #{query.makeUserId}
             </if>
+            order by  t1.create_time desc
         </where>
     </sql>
 
