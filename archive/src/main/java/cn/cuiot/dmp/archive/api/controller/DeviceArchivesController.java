@@ -8,6 +8,7 @@ import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.DeviceArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.dto.RoomArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.query.DeviceArchivesQuery;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.param.vo.DeviceArchivesExportVo;
 import cn.cuiot.dmp.archive.application.param.vo.RoomArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.DeviceArchivesService;
@@ -56,6 +57,14 @@ public class DeviceArchivesController {
 
     @Autowired
     private DeviceArchivesService deviceArchivesService;
+
+    /**
+     * 根据id获取详情
+     */
+    @PostMapping("/queryForDetail")
+    public DeviceArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
+        return deviceArchivesService.getById(idParam.getId());
+    }
 
     /**
      * 分页列表

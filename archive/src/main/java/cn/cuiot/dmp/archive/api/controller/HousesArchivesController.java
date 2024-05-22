@@ -9,6 +9,7 @@ import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.query.HousesArchivesQuery;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
+import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
@@ -54,6 +55,14 @@ public class HousesArchivesController {
 
     @Autowired
     private HousesArchivesService housesArchivesService;
+
+    /**
+     * 根据id获取详情
+     */
+    @PostMapping("/queryForDetail")
+    public HousesArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
+        return housesArchivesService.getById(idParam.getId());
+    }
 
     /**
      * 分页列表
