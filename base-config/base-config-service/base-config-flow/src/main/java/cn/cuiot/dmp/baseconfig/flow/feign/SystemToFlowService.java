@@ -34,6 +34,18 @@ public class SystemToFlowService {
      * 查询用户ID根据role
      * @return
      */
+    public List<Long> getUserIdByRole(List<Long> roleIdList,List<Long> deptIdList){
+        BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
+        baseUserReqDto.setRoleIdList(roleIdList);
+        baseUserReqDto.setDeptIdList(deptIdList);
+        List<BaseUserDto> baseUserDtoList = Optional.ofNullable(lookUpUserList(baseUserReqDto)).orElse(Lists.newArrayList());
+        return baseUserDtoList.stream().map(BaseUserDto::getId).collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * 查询用户ID根据role
+     * @return
+     */
     public List<Long> getUserIdByRole(List<Long> roleIdList){
         BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
         baseUserReqDto.setRoleIdList(roleIdList);

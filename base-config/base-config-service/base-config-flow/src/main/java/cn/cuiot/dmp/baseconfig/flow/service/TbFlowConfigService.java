@@ -17,11 +17,11 @@ import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
 import cn.cuiot.dmp.baseconfig.flow.enums.AssignedUserType;
 import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
 import cn.cuiot.dmp.baseconfig.flow.mapper.TbFlowConfigMapper;
-import cn.cuiot.dmp.baseconfig.flow.utils.JsonUtil;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -70,7 +70,6 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         IPage<TbFlowPageDto> tbFlowPageDtoIPage = baseMapper.queryForPage(new Page(query.getPageNo(), query.getPageSize()), query);
         return tbFlowPageDtoIPage;
     }
-
 
 
     /**
@@ -165,30 +164,46 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
 
     public void processChildNode(ChildNode childNode) {
         //处理任务表单
-        if (Objects.nonNull(childNode.getProps()) && Objects.nonNull(childNode.getProps().getFormTaskId())) {
-            FlowTaskConfigVo flowTaskConfigVo = flowTaskConfigService.queryForDetail(childNode.getProps().getFormTaskId());
-            AssertUtil.notNull(flowTaskConfigVo,"表单任务为空");
+        if (Objects.nonNull(childNode.getProps()) &&
+                (Objects.nonNull(childNode.getProps().getFormTaskId()) || CollectionUtils.isNotEmpty(childNode.getProps().getFormIds()))) {
 
-            List<Long> formIds = flowTaskConfigVo.getTaskMenuIds();
-            if(CollectionUtils.isNotEmpty(formIds)){
+            List<Long> formIds = childNode.getProps().getFormIds();
+            FlowTaskConfigVo flowTaskConfigVo = null;
+
+            if (Objects.nonNull(childNode.getProps().getFormTaskId())) {
+                flowTaskConfigVo = flowTaskConfigService.queryForDetail(childNode.getProps().getFormTaskId());
+                AssertUtil.notNull(flowTaskConfigVo, "表单任务为空");
+                formIds = flowTaskConfigVo.getTaskMenuIds();
+            }
+
+            if (CollectionUtils.isNotEmpty(formIds)) {
                 FormConfigReqDTO formConfigReqDTO = new FormConfigReqDTO();
                 formConfigReqDTO.setIdList(formIds);
                 List<FormConfigRspDTO> formConfigRspDTOS = systemToFlowService.batchQueryFormConfig(formConfigReqDTO);
-                AssertUtil.isTrue(CollectionUtils.isNotEmpty(formConfigRspDTOS) && formConfigRspDTOS.size() == formIds.size(),"表单配置为空");
+                AssertUtil.isTrue(CollectionUtils.isNotEmpty(formConfigRspDTOS) && formConfigRspDTOS.size() == formIds.size(), "表单配置为空");
 
-                //填充任务中的每个对象的表单信息
-                flowTaskConfigVo.getTaskInfoList().stream().forEach(e -> {
-                    FormConfigRspDTO formConfigRspDTO = formConfigRspDTOS.stream().filter(f -> Objects.equals(f.getId(), e.getFormId())).findFirst().orElseThrow(
-                            () -> new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,e.getName()+"对象的表单配置为空"));
-                    FormObjectOperates formObjectOperates = new FormObjectOperates();
-                    BeanUtils.copyProperties(formConfigRspDTO,formObjectOperates);
-                });
+                if(Objects.nonNull(flowTaskConfigVo)){
+                    //填充任务中的每个对象的表单信息
+                    flowTaskConfigVo.getTaskInfoList().stream().forEach(e -> {
+                        FormConfigRspDTO formConfigRspDTO = formConfigRspDTOS.stream().filter(f -> Objects.equals(f.getId(), e.getFormId())).findFirst().orElseThrow(
+                                () -> new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, e.getName() + "对象的表单配置为空"));
+                        FormObjectOperates formObjectOperates = new FormObjectOperates();
+                        BeanUtils.copyProperties(formConfigRspDTO, formObjectOperates);
+                    });
+                }else {
+                    childNode.getProps().setFormPerms(formConfigRspDTOS.stream().map(e -> {
+                        FormOperates formObjectOperates = new FormOperates();
+                        BeanUtils.copyProperties(e, formObjectOperates);
+                        return formObjectOperates;
+                    }).collect(Collectors.toList()));
+                }
             }
 
             if (Objects.nonNull(childNode.getChildren())) {
                 processChildNode(childNode.getChildren());
             }
         }
+
     }
 
 

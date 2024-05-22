@@ -3,17 +3,21 @@ package cn.cuiot.dmp.baseconfig.flow.flowable.listener;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
+import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
 import cn.cuiot.dmp.baseconfig.flow.enums.AssigneeTypeEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkBusinessEnums;
 import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
+import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigOrgService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkBusinessTypeInfoService;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.engine.RepositoryService;
@@ -23,6 +27,7 @@ import org.flowable.engine.delegate.ExecutionListener;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigService;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -53,7 +58,14 @@ public class CounterSignListener implements ExecutionListener {
     private WorkBusinessTypeInfoService workBusinessTypeInfoService;
     @Autowired
     private SystemToFlowService systemToFlowService;
+    @Autowired
+    private TbFlowConfigOrgService flowConfigOrgService;
 
+    /**
+     * 任务启动时的监听器
+     *
+     * @param execution
+     */
     @Override
     public void notify(DelegateExecution execution) {
         String currentActivityId = execution.getCurrentActivityId();
@@ -69,6 +81,11 @@ public class CounterSignListener implements ExecutionListener {
         List<String> assigneeList = new ArrayList<>();
         String variable = currentActivityId + ASSIGNEE_LIST_SUFFIX;
         List usersValue = (List) execution.getVariable(variable);
+
+        String flowConfigId = StringUtils.substringBefore(execution.getProcessDefinitionId(), ":").replace(PROCESS_PREFIX, "");
+        List<Long> flowCOnfigDeptIds = flowConfigOrgService.queryOrgIdsByFlowConfigId(Long.valueOf(flowConfigId));
+        AssertUtil.notEmpty(flowCOnfigDeptIds, "该流程暂未配置组织,请重试");
+
         if (usersValue == null) {
             ChildNode currentNode = getChildNode(childNode, currentActivityId);
             if (currentNode == null) {
@@ -142,7 +159,7 @@ public class CounterSignListener implements ExecutionListener {
                 //指定角色
                 List<Long> roleIds = props.getAssignedUser().stream().map(e -> Long.valueOf(e.getId())).collect(Collectors.toList());
 
-                List<Long> userIdByRole = systemToFlowService.getUserIdByRole(roleIds);
+                List<Long> userIdByRole = systemToFlowService.getUserIdByRole(roleIds,flowCOnfigDeptIds);
                 if (userIdByRole != null) {
                     assigneeList.addAll(userIdByRole.stream().map(String::valueOf).collect(Collectors.toList()));
                 }
