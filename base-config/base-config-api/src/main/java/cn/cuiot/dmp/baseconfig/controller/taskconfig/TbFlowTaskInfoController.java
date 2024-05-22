@@ -110,7 +110,7 @@ public class TbFlowTaskInfoController {
             queryWrapper.ne(TbFlowTaskConfig::getId, id);
         }
         long count = flowTaskConfigService.count(queryWrapper);
-        AssertUtil.isTrue(count > 0, "任务名称已存在");
+        AssertUtil.isFalse(count > 0, "任务名称已存在");
     }
 
     /**
