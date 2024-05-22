@@ -30,6 +30,11 @@ public class MyApprovalResultDto {
     private String  procDefId;
 
     /**
+     * 节点id
+     */
+    private String taskDefKey;
+
+    /**
      * 业务类型
      */
     private Long businessType;
