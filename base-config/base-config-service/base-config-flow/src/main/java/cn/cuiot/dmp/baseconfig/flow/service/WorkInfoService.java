@@ -181,6 +181,10 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             entity.setWorkName(flowConfig.getName());
             entity.setWorkSouce(startProcessInstanceDTO.getWorkSource());
             entity.setCreateUser(LoginInfoHolder.getCurrentUserId());
+            if(Objects.nonNull(startProcessInstanceDTO.getCreateUserId())){
+                entity.setCreateUser(startProcessInstanceDTO.getCreateUserId());
+            }
+
             entity.setProcInstId(task.getProcessInstanceId());
             entity.setCompanyId(flowConfig.getCompanyId());
             entity.setStatus(WorkOrderStatusEnums.progress.getStatus());
