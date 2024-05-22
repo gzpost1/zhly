@@ -40,6 +40,9 @@
       <if test="query.companyId != null">
         and company_id = #{query.companyId}
       </if>
+      <if test="query.businessTypeId != null">
+        and business_type_id = #{query.businessTypeId}
+        </if>
     </where>
     order by create_time desc
   </select>
