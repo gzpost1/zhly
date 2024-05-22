@@ -4,8 +4,6 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.domain.aggregate.CustomConfig;
 import cn.cuiot.dmp.system.domain.aggregate.CustomConfigPageQuery;
 
-import java.util.List;
-
 /**
  * @author caorui
  * @date 2024/5/17
@@ -18,7 +16,7 @@ public interface CustomConfigRepository {
     CustomConfig queryForDetail(Long id);
 
     /**
-     * 根据id获取详情
+     * 根据名称获取详情
      */
     CustomConfig queryForDetailByName(CustomConfig customConfig);
 

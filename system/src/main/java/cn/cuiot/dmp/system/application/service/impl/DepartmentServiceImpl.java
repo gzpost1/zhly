@@ -6,6 +6,7 @@ import static cn.cuiot.dmp.common.constant.CacheConst.DEPT_NAME_KEY_PREFIX;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.NumberConst;
@@ -927,6 +928,19 @@ public class DepartmentServiceImpl implements DepartmentService {
         departmentUserVOList.addAll(departmentVOList);
         departmentUserVOList.addAll(userVOList);
         return departmentUserVOList;
+    }
+
+    @Override
+    public DepartmentTreeRspDTO getDepartmentTreeRspDTO(DepartmentTreeVO rootTreeNode) {
+        DepartmentTreeRspDTO departmentTreeRspDTO = new DepartmentTreeRspDTO();
+        BeanUtils.copyProperties(rootTreeNode, departmentTreeRspDTO);
+        departmentTreeRspDTO.setChildren(new ArrayList<>());
+        if (!CollectionUtils.isEmpty(rootTreeNode.getChildren())) {
+            for (DepartmentTreeVO child : rootTreeNode.getChildren()) {
+                departmentTreeRspDTO.getChildren().add(getDepartmentTreeRspDTO(child));
+            }
+        }
+        return departmentTreeRspDTO;
     }
 
 }

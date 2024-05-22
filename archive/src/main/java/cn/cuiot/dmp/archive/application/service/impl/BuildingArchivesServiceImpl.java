@@ -1,10 +1,12 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
+import cn.cuiot.dmp.archive.application.constant.BuildingArchivesConstant;
 import cn.cuiot.dmp.archive.application.param.dto.BatchBuildingArchivesDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchiveImportDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesCreateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesExportVO;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesTreeVO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchives;
@@ -12,6 +14,7 @@ import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchivesPageQuery;
 import cn.cuiot.dmp.archive.domain.repository.BuildingArchivesRepository;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -149,4 +152,51 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
                                        Long departmentId) {
 
     }
+
+    @Override
+    public List<DepartmentTreeRspDTO> getDepartmentBuildingTree(Long orgId, Long userId) {
+        AssertUtil.notNull(orgId, "企业id不能为空");
+        AssertUtil.notNull(userId, "用户id不能为空");
+        List<DepartmentTreeRspDTO> departmentTreeRspList = apiSystemService.lookUpDepartmentTree(orgId, userId);
+        if (CollectionUtils.isEmpty(departmentTreeRspList)) {
+            return new ArrayList<>();
+        }
+        List<Long> departmentIdList = getDepartmentIdList(departmentTreeRspList.get(0));
+        BuildingArchivesPageQuery pageQuery = new BuildingArchivesPageQuery();
+        pageQuery.setDepartmentIdList(departmentIdList);
+        List<BuildingArchives> buildingArchivesList = buildingArchivesRepository.queryForList(pageQuery);
+        fillDepartmentBuildingTree(departmentTreeRspList.get(0), buildingArchivesList);
+        return departmentTreeRspList;
+    }
+
+    private List<Long> getDepartmentIdList(DepartmentTreeRspDTO rootTreeNode) {
+        List<Long> treeIdList = new ArrayList<>();
+        treeIdList.add(rootTreeNode.getId());
+        rootTreeNode.setType(BuildingArchivesConstant.DEPARTMENT_TYPE);
+        if (CollectionUtils.isNotEmpty(rootTreeNode.getChildren())) {
+            for (DepartmentTreeRspDTO child : rootTreeNode.getChildren()) {
+                treeIdList.addAll(getDepartmentIdList(child));
+            }
+        }
+        return treeIdList;
+    }
+
+    private void fillDepartmentBuildingTree(DepartmentTreeRspDTO rootTreeNode, List<BuildingArchives> buildingArchivesList) {
+        for (BuildingArchives buildingArchives : buildingArchivesList) {
+            if (rootTreeNode.getId().equals(buildingArchives.getDepartmentId())) {
+                DepartmentTreeRspDTO departmentTreeRspDTO = new DepartmentTreeRspDTO();
+                departmentTreeRspDTO.setId(buildingArchives.getId());
+                departmentTreeRspDTO.setDepartmentName(buildingArchives.getName());
+                departmentTreeRspDTO.setType(BuildingArchivesConstant.BUILDING_ARCHIVES_TYPE);
+                departmentTreeRspDTO.setParentId(rootTreeNode.getId());
+                rootTreeNode.getChildren().add(departmentTreeRspDTO);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(rootTreeNode.getChildren())) {
+            for (DepartmentTreeRspDTO child : rootTreeNode.getChildren()) {
+                fillDepartmentBuildingTree(child, buildingArchivesList);
+            }
+        }
+    }
+
 }

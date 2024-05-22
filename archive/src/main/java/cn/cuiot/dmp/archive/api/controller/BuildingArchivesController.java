@@ -17,6 +17,7 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
@@ -80,10 +81,20 @@ public class BuildingArchivesController extends BaseController {
     }
 
     /**
+     * 获取组织楼盘树
+     */
+    @PostMapping("/getDepartmentBuildingTree")
+    public List<DepartmentTreeRspDTO> getDepartmentBuildingTree() {
+        String orgId = getOrgId();
+        String userId = getUserId();
+        return buildingArchivesService.getDepartmentBuildingTree(Long.valueOf(orgId), Long.valueOf(userId));
+    }
+
+    /**
      * 保存
      */
-    @RequiresPermissions
-    @LogRecord(operationCode = "saveBuildingArchives", operationName = "保存楼盘档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
+//    @RequiresPermissions
+//    @LogRecord(operationCode = "saveBuildingArchives", operationName = "保存楼盘档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/save")
     public int saveBuildingArchives(@RequestBody @Valid BuildingArchivesCreateDTO createDTO) {
         String orgId = getOrgId();

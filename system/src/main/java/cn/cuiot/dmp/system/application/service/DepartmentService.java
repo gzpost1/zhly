@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.DepartmentPropertyDto;
@@ -207,4 +208,10 @@ public interface DepartmentService {
      * @param type   查询类型
      */
     List<DepartmentUserVO> getDepartmentOrUserByType(Long orgId, Long deptId, String type);
+
+    /**
+     * 获取部门树传输对象
+     */
+    DepartmentTreeRspDTO getDepartmentTreeRspDTO(DepartmentTreeVO rootTreeNode);
+
 }

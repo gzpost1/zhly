@@ -6,6 +6,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.*;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 
 import java.util.List;
@@ -48,6 +49,11 @@ public interface ApiSystemService {
      * 查询子部门
      */
     List<DepartmentDto> lookUpDepartmentChildList(DepartmentReqDto query);
+
+    /**
+     * 查询组织树
+     */
+    List<DepartmentTreeRspDTO> lookUpDepartmentTree(Long orgId, Long userId);
 
     /**
      * 根据业务类型id列表获取业务类型列表（流程/工单配置）

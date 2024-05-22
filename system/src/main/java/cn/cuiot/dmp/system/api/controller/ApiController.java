@@ -8,6 +8,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -18,10 +19,14 @@ import cn.cuiot.dmp.system.application.service.*;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentTreeVO;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -80,7 +85,7 @@ public class ApiController {
      * 查询部门
      */
     @PostMapping(value = "/lookUpDepartmentList", produces = MediaType.APPLICATION_JSON_VALUE)
-    public IdmResDTO<List<DepartmentDto>> lookUpDepartmentList(@RequestBody  DepartmentReqDto query) {
+    public IdmResDTO<List<DepartmentDto>> lookUpDepartmentList(@RequestBody DepartmentReqDto query) {
         List<DepartmentDto> list = departmentService.lookUpDepartmentList(query);
         return IdmResDTO.success(list);
     }
@@ -135,9 +140,26 @@ public class ApiController {
      * 查询子部门
      */
     @PostMapping(value = "/lookUpDepartmentChildList", produces = MediaType.APPLICATION_JSON_VALUE)
-    public IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList(@RequestBody  DepartmentReqDto query) {
+    public IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList(@RequestBody DepartmentReqDto query) {
         List<DepartmentDto> list = departmentService.lookUpDepartmentChildList(query);
         return IdmResDTO.success(list);
+    }
+
+    /**
+     * 查询组织树
+     */
+    @PostMapping(value = "/lookUpDepartmentTree", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<DepartmentTreeRspDTO>> lookUpDepartmentTree(
+            @RequestParam(value = "orgId", required = false) Long orgId,
+            @RequestParam(value = "userId", required = false) Long userId) {
+        List<DepartmentTreeVO> list = departmentService.getDepartmentTree(orgId.toString(), userId.toString(), null);
+        if (CollectionUtils.isEmpty(list)) {
+            return IdmResDTO.success(new ArrayList<>());
+        }
+        List<DepartmentTreeRspDTO> departmentTreeRspDTOList = new ArrayList<>();
+        DepartmentTreeRspDTO departmentTreeRspDTO = departmentService.getDepartmentTreeRspDTO(list.get(0));
+        departmentTreeRspDTOList.add(departmentTreeRspDTO);
+        return IdmResDTO.success(departmentTreeRspDTOList);
     }
 
     /**
@@ -152,7 +174,7 @@ public class ApiController {
         MenuEntity menuEntity = menuService.lookUpPermission(userId, orgId, permissionCode);
         if (Objects.nonNull(menuEntity)) {
             menuDTO = menuConverter.entityToDTO(menuEntity);
-        }else{
+        } else {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
         return IdmResDTO.success(menuDTO);
