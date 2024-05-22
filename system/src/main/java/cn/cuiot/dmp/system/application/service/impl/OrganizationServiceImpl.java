@@ -358,7 +358,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
 
         // 文件流输出
-        createCsvFile(username, password);
+        createCsvFile(username,dto.getPhoneNumber(), password);
 
         return pkOrgId;
     }
@@ -393,19 +393,20 @@ public class OrganizationServiceImpl implements OrganizationService {
      * @param username 用户名
      * @return password 未加密密码
      */
-    private void createCsvFile(String username, String password) {
+    private void createCsvFile(String username, String phoneNumber,String password) {
         List<JSONObject> jsonList = new ArrayList<>();
-        UserDataEntity userInfo = new UserDataEntity();
-        userInfo.setUsername(username);
-        userInfo.setPassword(password);
-        JSONObject jsonObject = JSON.parseObject(JSON.toJSON(userInfo).toString());
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("用户名",username);
+        jsonObject.put("手机号",phoneNumber);
+        jsonObject.put("密码",password);
         jsonList.add(jsonObject);
 
         List<Object> head = new ArrayList<>();
-        head.add("username");
-        head.add("password");
+        head.add("用户名");
+        head.add("手机号");
+        head.add("密码");
 
-        response.setContentType("text/csv;charset=\"GBK\"");
+        response.setContentType("text/csv;charset=\"UTF-8\"");
         response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
         response.setHeader("Content-Disposition", "attachment; filename=credentials.csv");
         try {
@@ -812,7 +813,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         log.info("【账户详情下用户重置密码】，redis，key：{}", CacheConst.USER_CACHE_KEY_PREFIX + userId);
         UserCsvDto userCsvDto = userService.resetPasswordWithOutSms(userBo);
         // 文件流输出
-        createCsvFile(userCsvDto.getUsername(), userCsvDto.getPassword());
+        createCsvFile(userCsvDto.getUsername(),userCsvDto.getPhoneNumber(), userCsvDto.getPassword());
     }
 
     /**
