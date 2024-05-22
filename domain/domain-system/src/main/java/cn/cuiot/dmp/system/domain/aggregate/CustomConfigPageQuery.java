@@ -4,8 +4,6 @@ import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * @author caorui
  * @date 2024/5/17
@@ -24,7 +22,6 @@ public class CustomConfigPageQuery extends PageQuery {
     /**
      * 企业ID
      */
-    @NotNull(message = "企业ID不能为空")
     private Long companyId;
 
     /**

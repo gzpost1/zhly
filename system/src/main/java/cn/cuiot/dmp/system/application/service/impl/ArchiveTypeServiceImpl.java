@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
+import cn.cuiot.dmp.system.application.param.dto.ArchiveTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.vo.ArchiveTypeVO;
 import cn.cuiot.dmp.system.application.service.ArchiveTypeService;
 import cn.cuiot.dmp.system.domain.aggregate.ArchiveType;
@@ -26,7 +27,9 @@ public class ArchiveTypeServiceImpl implements ArchiveTypeService {
     private ArchiveTypeRepository archiveTypeRepository;
 
     @Override
-    public List<ArchiveTypeVO> queryForList(ArchiveType archiveType) {
+    public List<ArchiveTypeVO> queryForList(ArchiveTypeQueryDTO queryDTO) {
+        ArchiveType archiveType = new ArchiveType();
+        BeanUtils.copyProperties(queryDTO, archiveType);
         List<ArchiveType> archiveTypeList = archiveTypeRepository.queryForList(archiveType);
         if (CollectionUtils.isEmpty(archiveTypeList)) {
             return new ArrayList<>();

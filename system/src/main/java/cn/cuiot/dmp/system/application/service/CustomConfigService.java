@@ -16,7 +16,7 @@ import cn.cuiot.dmp.system.domain.aggregate.CustomConfigPageQuery;
 public interface CustomConfigService {
 
     /**
-     * 根据id获取业务类型详情
+     * 根据id获取详情
      */
     CustomConfigVO queryForDetail(Long id);
 

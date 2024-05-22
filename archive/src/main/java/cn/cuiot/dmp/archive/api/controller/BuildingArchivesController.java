@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 档案中心-楼盘档案
+ *
  * @author caorui
  * @date 2024/5/21
  */
@@ -84,6 +86,8 @@ public class BuildingArchivesController extends BaseController {
     @LogRecord(operationCode = "saveBuildingArchives", operationName = "保存楼盘档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/save")
     public int saveBuildingArchives(@RequestBody @Valid BuildingArchivesCreateDTO createDTO) {
+        String orgId = getOrgId();
+        createDTO.setCompanyId(Long.valueOf(orgId));
         return buildingArchivesService.saveBuildingArchives(createDTO);
     }
 
