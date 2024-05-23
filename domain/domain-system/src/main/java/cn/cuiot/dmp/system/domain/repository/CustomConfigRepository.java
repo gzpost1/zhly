@@ -16,6 +16,11 @@ public interface CustomConfigRepository {
     CustomConfig queryForDetail(Long id);
 
     /**
+     * 根据名称获取详情
+     */
+    CustomConfig queryForDetailByName(CustomConfig customConfig);
+
+    /**
      * 保存
      */
     int saveCustomConfig(CustomConfig customConfig);
@@ -43,6 +48,6 @@ public interface CustomConfigRepository {
     /**
      * 初始化常用选项
      */
-    void initCustomConfig(Long companyId, Long typeId);
+    void initCustomConfig(Long companyId, String userId);
 
 }

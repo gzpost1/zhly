@@ -9,6 +9,7 @@ import cn.cuiot.dmp.archive.application.param.dto.RoomArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.query.RoomArchivesQuery;
 import cn.cuiot.dmp.archive.application.param.vo.RoomArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.RoomArchivesService;
+import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
@@ -54,6 +55,14 @@ public class RoomArchivesController {
 
     @Autowired
     private RoomArchivesService roomArchivesService;
+
+    /**
+     * 根据id获取详情
+     */
+    @PostMapping("/queryForDetail")
+    public RoomArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
+        return roomArchivesService.getById(idParam.getId());
+    }
 
     /**
      * 分页列表
