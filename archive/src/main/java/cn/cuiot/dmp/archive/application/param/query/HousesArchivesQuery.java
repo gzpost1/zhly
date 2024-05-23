@@ -21,13 +21,33 @@ public class HousesArchivesQuery extends PageQuery {
     private Long loupanId;
 
     /**
-     * 房屋编码
+     * 房屋编码, 产权单位
      */
-    private String code;
+    private String codeAndOwnershipUnit;
 
     /**
-     * 产权单位（支持输入汉字、英文、符号、数字，长度支持50字符）
+     * 房屋户型
      */
-    private String ownershipUnit;
+    private Long houseType;
+
+    /**
+     * 朝向
+     */
+    private Long orientation;
+
+    /**
+     * 物业业态
+     */
+    private Long propertyType;
+
+    /**
+     * 状态
+     */
+    private Long status;
+
+    /**
+     * 产权属性
+     */
+    private Long ownershipAttribute;
 
 }

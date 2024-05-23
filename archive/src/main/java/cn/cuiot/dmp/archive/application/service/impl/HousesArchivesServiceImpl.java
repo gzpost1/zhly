@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
+import cn.cuiot.dmp.archive.application.param.dto.DeviceArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
+import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.HousesArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
@@ -11,9 +13,11 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.DoubleValidator;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -25,6 +29,9 @@ import java.util.*;
  */
 @Service
 public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper, HousesArchivesEntity> implements HousesArchivesService {
+
+    @Autowired
+    private BuildingAndConfigCommonUtilService buildingAndConfigCommonUtilService;
 
     /**
      * 参数校验
@@ -123,7 +130,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
 
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 查询楼盘信息-用于楼盘id转换为楼盘名称-汇总成Map
-        Map<Long, String> loupanIdNameMap = new HashMap<>();
+        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(list.stream().map(HousesArchivesEntity::getLoupanId).collect(Collectors.toSet()));
         // 查询配置信息-用于配置id转换为配置名称-汇总成Map
         Map<Long, String> configIdNameMap = new HashMap<>();
 
@@ -153,7 +160,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
     public void importDataSave(List<HousesArchiveImportDto> dataList) {
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
-        Map<String, Long> nameIdMap = new HashMap<>();
+        Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(HousesArchiveImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
         Map<String, Long> nameConfigIdMap = new HashMap<>();
 

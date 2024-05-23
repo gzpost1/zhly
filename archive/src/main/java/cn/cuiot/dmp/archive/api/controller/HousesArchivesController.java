@@ -9,6 +9,7 @@ import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.query.HousesArchivesQuery;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
+import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
@@ -56,14 +57,29 @@ public class HousesArchivesController {
     private HousesArchivesService housesArchivesService;
 
     /**
+     * 根据id获取详情
+     */
+    @PostMapping("/queryForDetail")
+    public HousesArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
+        return housesArchivesService.getById(idParam.getId());
+    }
+
+    /**
      * 分页列表
      */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<HousesArchivesEntity>> queryForPage(@RequestBody @Valid HousesArchivesQuery query) {
         LambdaQueryWrapper<HousesArchivesEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(HousesArchivesEntity::getLoupanId, query.getLoupanId());
-        wrapper.like(StringUtils.isNotBlank(query.getCode()), HousesArchivesEntity::getCode, query.getCode());
-        wrapper.like(StringUtils.isNotBlank(query.getOwnershipUnit()), HousesArchivesEntity::getOwnershipUnit, query.getOwnershipUnit());
+        wrapper.eq(Objects.nonNull(query.getHouseType()), HousesArchivesEntity::getHouseType, query.getHouseType());
+        wrapper.eq(Objects.nonNull(query.getOrientation()), HousesArchivesEntity::getOrientation, query.getOrientation());
+        wrapper.eq(Objects.nonNull(query.getPropertyType()), HousesArchivesEntity::getPropertyType, query.getPropertyType());
+        wrapper.eq(Objects.nonNull(query.getStatus()), HousesArchivesEntity::getStatus, query.getStatus());
+        wrapper.eq(Objects.nonNull(query.getOwnershipAttribute()), HousesArchivesEntity::getOwnershipAttribute, query.getOwnershipAttribute());
+        if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())){
+            wrapper.like( HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
+        }
+
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         return IdmResDTO.success(res);
     }

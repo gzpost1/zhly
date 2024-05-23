@@ -1,9 +1,12 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
+import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.system.application.param.dto.ArchiveTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.vo.ArchiveTypeVO;
 import cn.cuiot.dmp.system.application.service.ArchiveTypeService;
 import cn.cuiot.dmp.system.domain.aggregate.ArchiveType;
 import cn.cuiot.dmp.system.domain.repository.ArchiveTypeRepository;
+import cn.cuiot.dmp.system.domain.repository.CustomConfigRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +28,19 @@ public class ArchiveTypeServiceImpl implements ArchiveTypeService {
     @Autowired
     private ArchiveTypeRepository archiveTypeRepository;
 
+    @Autowired
+    private CustomConfigRepository customConfigRepository;
+
     @Override
-    public List<ArchiveTypeVO> queryForList(ArchiveType archiveType) {
+    public List<ArchiveTypeVO> queryForList(ArchiveTypeQueryDTO queryDTO) {
+        ArchiveType archiveType = new ArchiveType();
+        BeanUtils.copyProperties(queryDTO, archiveType);
         List<ArchiveType> archiveTypeList = archiveTypeRepository.queryForList(archiveType);
         if (CollectionUtils.isEmpty(archiveTypeList)) {
             return new ArrayList<>();
         }
+        // 是否需要初始化自定义配置
+        customConfigRepository.initCustomConfig(queryDTO.getCompanyId(), queryDTO.getUserId());
         return archiveTypeList.stream()
                 .map(o -> {
                     ArchiveTypeVO archiveTypeVO = new ArchiveTypeVO();
