@@ -55,6 +55,20 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
     }
 
     @Override
+    public List<FormConfigTypeVO> queryForList(FormConfigTypeQueryDTO queryDTO) {
+        FormConfigType formConfigType = new FormConfigType();
+        BeanUtils.copyProperties(queryDTO, formConfigType);
+        List<FormConfigType> formConfigTypeList = formConfigTypeRepository.queryForList(formConfigType);
+        return formConfigTypeList.stream()
+                .map(o -> {
+                    FormConfigTypeVO formConfigTypeVO = new FormConfigTypeVO();
+                    BeanUtils.copyProperties(o, formConfigTypeVO);
+                    return formConfigTypeVO;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<FormConfigTypeTreeNodeVO> queryByCompany(FormConfigTypeQueryDTO queryDTO) {
         List<FormConfigType> formConfigTypeList = formConfigTypeRepository.queryByCompany(queryDTO.getCompanyId());
         List<FormConfigTypeTreeNodeVO> formConfigTypeTreeNodeVOList = formConfigTypeList.stream()

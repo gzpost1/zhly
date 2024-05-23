@@ -38,6 +38,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 /**
@@ -173,5 +175,29 @@ public class DeviceArchivesController {
         }
 
         deviceArchivesService.importDataSave(importDtoList);
+    }
+
+    /**
+     * 下载模板
+     */
+    @PostMapping("/downloadTemplate")
+    public IdmResDTO<Object> download(HttpServletResponse response) throws IOException {
+        response.setCharacterEncoding("UTF-8");
+        String fileName = "importDeviceArchives.xlsx";
+        String template;
+        template = "/template/importDeviceArchives.xlsx";
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+        try (InputStream inStream = this.getClass().getResourceAsStream(template)) {
+            OutputStream outputStream = response.getOutputStream();
+            byte[] b = new byte[1000];
+            int len;
+            if (inStream != null) {
+                while ((len = inStream.read(b)) > 0) {
+                    outputStream.write(b, 0, len);
+                }
+            }
+        }
+        return IdmResDTO.success();
     }
 }

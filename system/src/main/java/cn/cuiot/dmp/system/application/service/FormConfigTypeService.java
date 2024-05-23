@@ -25,6 +25,11 @@ public interface FormConfigTypeService {
     FormConfigTypeVO queryForDetail(Long id);
 
     /**
+     * 根据条件获取表单配置类型列表
+     */
+    List<FormConfigTypeVO> queryForList(FormConfigTypeQueryDTO queryDTO);
+
+    /**
      * 根据条件查询企业的表单配置类型
      */
     List<FormConfigTypeTreeNodeVO> queryByCompany(FormConfigTypeQueryDTO queryDTO);
