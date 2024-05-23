@@ -404,7 +404,7 @@ public class UserController extends BaseController {
 
         List<UserImportDownloadVo> dataList = userService.importUsers(userBo);
 
-        List<Map<String, Object>> sheetsList = new ArrayList<>();
+        /*List<Map<String, Object>> sheetsList = new ArrayList<>();
 
         Map<String, Object> sheet1 = ExcelUtils
                 .createSheet("用户", dataList, UserImportDownloadVo.class);
@@ -416,7 +416,32 @@ public class UserController extends BaseController {
         ExcelUtils.downLoadExcel(
                 "user-credentials-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
                 response,
-                workbook);
+                workbook);*/
+
+        // 文件流输出
+        List<JSONObject> jsonList = new ArrayList<>();
+        for(UserImportDownloadVo downloadVo:dataList){
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("用户名",downloadVo.getUsername());
+            jsonObject.put("手机号",downloadVo.getPhoneNumber());
+            jsonObject.put("密码",downloadVo.getPassword());
+            jsonList.add(jsonObject);
+        }
+
+        List<Object> head = new ArrayList<>();
+        head.add("用户名");
+        head.add("手机号");
+        head.add("密码");
+
+        response.setContentType("text/csv;charset=\"UTF-8\"");
+        response.setHeader("Content-Disposition", "attachment; filename=credentials.csv");
+        String[] split = userBo.getUsername().split("@");
+        String username = split[0];
+        try {
+            CommonCsvUtil.createCsvFile(head, jsonList, username + "credentials", response);
+        } catch (UnsupportedEncodingException e) {
+            log.error("insertUser error.", e);
+        }
 
     }
 
