@@ -148,6 +148,10 @@ public class LoginController extends BaseController {
         loginReqDTO.setPassword(aes.getDecodeValue(loginReqDTO.getPassword()));
         // 账号密码校验
         User validateUser = loginService.authDmp(loginReqDTO);
+        //设置小程序openid
+        if(StringUtils.isNotBlank(loginReqDTO.getOpenid())){
+            validateUser.setOpenid(loginReqDTO.getOpenid());
+        }
         // 短信验证码验证
         /*if (TRUE_WORD.equals(smsWord)) {
             List<String> userNameList = Arrays.asList(sidPassUserNameList.split(","));

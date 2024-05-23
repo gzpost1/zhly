@@ -65,6 +65,7 @@ public class UserConverter implements Converter<User, UserEntity> {
             user.setName(userEntity.getName());
             user.setPostId(userEntity.getPostId());
             user.setRemark(userEntity.getRemark());
+            user.setOpenid(userEntity.getOpenid());
 
             user.setLastOnlineOn(userEntity.getLastOnlineOn());
             user.setCreatedOn(userEntity.getCreatedOn());
@@ -118,6 +119,7 @@ public class UserConverter implements Converter<User, UserEntity> {
         entity.setName(user.getName());
         entity.setPostId(user.getPostId());
         entity.setRemark(user.getRemark());
+        entity.setOpenid(user.getOpenid());
 
         return entity;
     }

@@ -109,4 +109,9 @@ public class UserEntity extends BaseEntity implements Serializable {
      * 备注
      */
     private String remark;
+
+    /**
+     * 小程序openid
+     */
+    private String openid;
 }

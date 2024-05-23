@@ -144,6 +144,11 @@ public class User extends AbstractAggregate<UserId> {
     private String remark;
 
     /**
+     * 小程序openid
+     */
+    private String openid;
+
+    /**
      * 自己更新自己
      */
     public void updatedByPortal() {

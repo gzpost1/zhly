@@ -69,4 +69,15 @@ public class AuthController {
         return IdmResDTO.success(userDto);
     }
 
+    /**
+     * 用户登出
+     */
+    @PostMapping("logOut")
+    public IdmResDTO logOut() {
+        appLoginService.logOut(request);
+        return IdmResDTO.success(null);
+    }
+
+
+
 }

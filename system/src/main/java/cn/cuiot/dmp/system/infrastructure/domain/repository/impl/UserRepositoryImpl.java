@@ -152,9 +152,9 @@ public class UserRepositoryImpl extends
     }
 
     @Override
-    public User queryByUserNameOrPhoneNumberOrEmail(String userName, PhoneNumber phoneNumber, Email email) {
+    public User queryByUserNameOrPhoneNumberOrEmail(String userName, PhoneNumber phoneNumber, Email email,Integer userType) {
         QueryWrapper<UserEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(COLUMN_NAME_USER_TYPE, UserTypeEnum.USER.getValue()).and(childQueryWrapper -> {
+        queryWrapper.eq(COLUMN_NAME_USER_TYPE,userType).and(childQueryWrapper -> {
             if (StringUtils.isNotBlank(userName)) {
                 childQueryWrapper.or().eq(COLUMN_NAME_USER_NAME, userName);
             }

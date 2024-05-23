@@ -1183,6 +1183,11 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         User user = User.builder().build();
         user.setId(new UserId(updatedUser.getId()));
+
+        if(org.apache.commons.lang3.StringUtils.isNotBlank(updatedUser.getOpenid())){
+            user.setOpenid(updatedUser.getOpenid());
+        }
+
         if (updatedUser.getEmail() != null) {
             user.setEmail(new Email(updatedUser.getEmail()));
         }

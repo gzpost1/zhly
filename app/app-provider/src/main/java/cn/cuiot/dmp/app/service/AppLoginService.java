@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
+import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -151,5 +152,19 @@ public class AppLoginService {
         return userDto;
     }
 
+    /**
+     * 用户登出
+     */
+    public void logOut(HttpServletRequest request) {
+        try {
+            String jwt = request.getHeader(AuthContants.TOKEN);
+            redisUtil.del(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt);
+            redisUtil.del(CacheConst.LOGIN_USERS_JWT_WX + jwt);
+            redisUtil.del(CacheConst.LOGIN_USERS_JWT + jwt);
+        } catch (Exception e) {
+            log.error("logOut error",e);
+            throw new BusinessException(ResultCode.INNER_ERROR);
+        }
+    }
 
 }
