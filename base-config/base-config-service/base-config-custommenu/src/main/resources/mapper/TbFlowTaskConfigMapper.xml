@@ -31,8 +31,8 @@
       <if test="query.name != null and query.name != ''">
         and name like concat('%', #{query.name}, '%')
       </if>
-      <if test="query.orgId != null">
-        and id in (SELECT flow_task_id from  tb_flow_task_org where org_id like concat( #{query.orgId}, '%'))
+      <if test="query.orgPath != null">
+        and id in (SELECT flow_task_id from  tb_flow_task_org where org_id in (SELECT id from department where path like concat( #{query.orgPath}, '%') )
       </if>
       <if test="query.status != null">
         and status = #{query.status}

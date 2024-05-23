@@ -21,6 +21,11 @@ public class TbFlowConfigQuery extends PageQuery {
     private Long orgId;
 
     /**
+     * 所属组织路径
+     */
+    private String orgPath;
+
+    /**
      * 状态 0停用 1启用
      */
     private Byte status;
