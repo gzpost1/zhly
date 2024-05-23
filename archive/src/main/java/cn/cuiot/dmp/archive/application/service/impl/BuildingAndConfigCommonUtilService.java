@@ -2,11 +2,16 @@ package cn.cuiot.dmp.archive.application.service.impl;
 
 import cn.cuiot.dmp.archive.infrastructure.entity.BuildingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMapper;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
+import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +28,9 @@ public class BuildingAndConfigCommonUtilService {
 
     @Autowired
     private BuildingArchivesMapper buildingArchivesMapper;
+
+    @Autowired
+    private SystemApiFeignService systemApiFeignService;
 
     /**
      * 使用楼盘id列表查询出，对应的名称关系
@@ -52,7 +60,10 @@ public class BuildingAndConfigCommonUtilService {
      * @return
      */
     public Map<Long, String> getConfigIdNameMap(Set<Long> configIds){
-        return null;
+        CustomConfigDetailReqDTO customConfigDetailReqDTO = new CustomConfigDetailReqDTO();
+        customConfigDetailReqDTO.setCustomConfigDetailIdList(new ArrayList<>(configIds));
+        IdmResDTO<List<CustomConfigDetailRspDTO>> res = systemApiFeignService.batchQueryCustomConfigDetails(customConfigDetailReqDTO);
+        return res.getData().stream().collect(Collectors.toMap(CustomConfigDetailRspDTO::getId, CustomConfigDetailRspDTO::getName));
     }
 
     /**

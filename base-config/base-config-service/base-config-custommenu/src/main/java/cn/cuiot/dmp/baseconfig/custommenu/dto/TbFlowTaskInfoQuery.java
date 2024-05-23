@@ -20,6 +20,11 @@ public class TbFlowTaskInfoQuery extends PageQuery {
     private Long orgId;
 
     /**
+     * 所属组织路径
+     */
+    private String orgPath;
+
+    /**
      * 状态 0停用 1启用
      */
     private Byte status;
@@ -28,4 +33,9 @@ public class TbFlowTaskInfoQuery extends PageQuery {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 业务分类
+     */
+    private Long businessTypeId;
 }
