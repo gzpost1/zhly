@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,8 +58,14 @@ public class SystemUtilService {
             page.getRecords().forEach(e -> {
                 BusinessAndOrgNameDto businessAndOrgNameDto = nameDtoMap.get(e.getId());
                 if (Objects.nonNull(businessAndOrgNameDto)) {
-                    e.setBusinessTypeName(businessAndOrgNameDto.getBusinessTypeName());
-                    e.setOrgName(businessAndOrgNameDto.getOrgName());
+                    if(StringUtils.isNotEmpty(businessAndOrgNameDto.getBusinessTypeName())){
+                        e.setBusinessTypeName(StringUtils.substringBefore(businessAndOrgNameDto.getBusinessTypeName(), ">"));
+                    }
+
+                    if(StringUtils.isNotEmpty(businessAndOrgNameDto.getOrgName())){
+                        e.setBusinessTypeName(StringUtils.substringBefore(businessAndOrgNameDto.getOrgName(), ">"));
+                    }
+
                     e.setCreateUserName(businessAndOrgNameDto.getCreateUserName());
                 }
             });
