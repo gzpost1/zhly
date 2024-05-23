@@ -68,7 +68,7 @@ public class AppUserService {
     /**
      * 设置用户头像与昵称
      */
-    public void setUserInfo(Long userId, String nickName, String avatarUrl) {
+    public void setSampleUserInfo(Long userId, String nickName, String avatarUrl) {
         UserEntity updateEntity = new UserEntity();
         updateEntity.setId(userId);
         updateEntity.setName(nickName);

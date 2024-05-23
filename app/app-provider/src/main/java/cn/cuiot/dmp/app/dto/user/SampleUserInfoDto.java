@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.app.dto.login;
+package cn.cuiot.dmp.app.dto.user;
 
 import java.io.Serializable;
 import javax.validation.constraints.NotBlank;

@@ -1,10 +1,14 @@
 package cn.cuiot.dmp.app.controller;
 
 import cn.cuiot.dmp.app.dto.AppUserDto;
-import cn.cuiot.dmp.app.dto.login.Code2SessionDto;
-import cn.cuiot.dmp.app.dto.login.MiniLoginDto;
-import cn.cuiot.dmp.app.dto.login.SampleUserInfoDto;
+import cn.cuiot.dmp.app.dto.user.ChangePhoneDto;
+import cn.cuiot.dmp.app.dto.user.Code2SessionDto;
+import cn.cuiot.dmp.app.dto.user.KaptchaResDTO;
+import cn.cuiot.dmp.app.dto.user.MiniLoginDto;
+import cn.cuiot.dmp.app.dto.user.SampleUserInfoDto;
+import cn.cuiot.dmp.app.dto.user.SecretKeyResDTO;
 import cn.cuiot.dmp.app.service.AppLoginService;
+import cn.cuiot.dmp.app.service.AppVerifyService;
 import cn.cuiot.dmp.base.application.service.WeChatMiniAppService;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -37,6 +41,9 @@ public class AuthController {
 
     @Autowired
     private AppLoginService appLoginService;
+
+    @Autowired
+    private AppVerifyService appVerifyService;
 
     @Resource
     protected HttpServletRequest request;
@@ -74,10 +81,48 @@ public class AuthController {
     /**
      * 设置用户头像与昵称
      */
-    @PostMapping("setUserInfo")
-    public IdmResDTO setUserInfo(@RequestBody @Valid SampleUserInfoDto dto) {
+    @PostMapping("setSampleUserInfo")
+    public IdmResDTO setSampleUserInfo(@RequestBody @Valid SampleUserInfoDto dto) {
         dto.setUserId(LoginInfoHolder.getCurrentUserId());
-        appLoginService.setUserInfo(dto);
+        appLoginService.setSampleUserInfo(dto);
+        return IdmResDTO.success(null);
+    }
+
+    /**
+     * 获取图形验证码
+     */
+    @PostMapping("kaptcha")
+    public KaptchaResDTO createKaptcha() {
+        // 返回图形验证码
+        return appVerifyService.createKaptchaImage();
+    }
+
+    /**
+     * 获取对称密钥信息
+     */
+    @PostMapping("secretKey")
+    public SecretKeyResDTO createSecretKey() {
+        // 返回密钥信息
+        return appVerifyService.createSecretKey();
+    }
+
+    /**
+     * 发送绑定手机号验证码
+     */
+    @PostMapping("sendBindPhoneSmsCode")
+    public IdmResDTO sendBindPhoneSmsCode(@RequestBody @Valid ChangePhoneDto dto) {
+        dto.setUserId(LoginInfoHolder.getCurrentUserId());
+        appLoginService.changePhone(dto);
+        return IdmResDTO.success(null);
+    }
+
+    /**
+     * 修改手机号
+     */
+    @PostMapping("changePhone")
+    public IdmResDTO changePhone(@RequestBody @Valid ChangePhoneDto dto) {
+        dto.setUserId(LoginInfoHolder.getCurrentUserId());
+        appLoginService.changePhone(dto);
         return IdmResDTO.success(null);
     }
 
@@ -89,7 +134,6 @@ public class AuthController {
         appLoginService.logOut(request);
         return IdmResDTO.success(null);
     }
-
 
 
 }
