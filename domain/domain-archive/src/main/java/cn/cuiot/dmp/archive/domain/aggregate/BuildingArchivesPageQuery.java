@@ -4,6 +4,8 @@ import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 /**
  * @author caorui
  * @date 2024/5/20
@@ -28,5 +30,10 @@ public class BuildingArchivesPageQuery extends PageQuery {
      * 楼盘名称
      */
     private String name;
+
+    /**
+     * 部门id列表
+     */
+    private List<Long> departmentIdList;
 
 }

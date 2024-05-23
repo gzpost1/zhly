@@ -45,7 +45,7 @@ public interface BuildingArchivesRepository {
     /**
      * 批量更新
      */
-    int batchUpdateBuildingArchives(Long departmentId);
+    int batchUpdateBuildingArchives(Long departmentId, List<Long> idList);
 
     /**
      * 批量删除

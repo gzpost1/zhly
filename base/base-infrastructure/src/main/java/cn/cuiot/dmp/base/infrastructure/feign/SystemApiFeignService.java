@@ -1,12 +1,10 @@
 package cn.cuiot.dmp.base.infrastructure.feign;
 
 import cn.cuiot.dmp.base.infrastructure.dto.*;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.*;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 
@@ -68,7 +66,14 @@ public interface SystemApiFeignService {
      * 查询子部门
      */
     @PostMapping(value = "/api/lookUpDepartmentChildList", produces = MediaType.APPLICATION_JSON_VALUE)
-    IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList(@RequestBody  DepartmentReqDto query);
+    IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList(@RequestBody DepartmentReqDto query);
+
+    /**
+     * 查询组织树
+     */
+    @PostMapping(value = "/api/lookUpDepartmentTree", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<DepartmentTreeRspDTO>> lookUpDepartmentTree(@RequestParam(value = "orgId", required = false) Long orgId,
+                                                               @RequestParam(value = "userId", required = false) Long userId);
 
     /**
      * 获取权限信息
@@ -90,5 +95,11 @@ public interface SystemApiFeignService {
      */
     @PostMapping(value = "/api/batchQueryFormConfig", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<FormConfigRspDTO>> batchQueryFormConfig(@RequestBody @Valid FormConfigReqDTO formConfigReqDTO);
+
+    /**
+     * 根据id集合批量查询自定义配置详情
+     */
+    @PostMapping(value = "/api/batchQueryCustomConfigDetails", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<CustomConfigDetailRspDTO>> batchQueryCustomConfigDetails(@RequestBody @Valid CustomConfigDetailReqDTO customConfigDetailReqDTO);
 
 }

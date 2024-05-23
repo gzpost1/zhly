@@ -15,6 +15,16 @@ public class CodeArchivesCreateDTO implements Serializable {
     private static final long serialVersionUID = 7682700540459733686L;
 
     /**
+     * 企业ID
+     */
+    private Long companyId;
+
+    /**
+     * 用户ID
+     */
+    private Long userId;
+
+    /**
      * 编码类型
      */
     @NotNull(message = "编码类型不能为空")

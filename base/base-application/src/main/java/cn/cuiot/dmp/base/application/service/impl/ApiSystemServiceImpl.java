@@ -4,19 +4,19 @@ import cn.cuiot.dmp.base.application.service.ApiSystemService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.*;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+
 import java.util.List;
 import java.util.Objects;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -170,6 +170,27 @@ public class ApiSystemServiceImpl implements ApiSystemService {
     }
 
     @Override
+    public List<DepartmentTreeRspDTO> lookUpDepartmentTree(Long orgId, Long userId) {
+        try {
+            IdmResDTO<List<DepartmentTreeRspDTO>> idmResDTO = systemApiFeignService
+                    .lookUpDepartmentTree(orgId, userId);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==lookUpDepartmentTree==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_DEPT_ERROR);
+        }
+    }
+
+
+    @Override
     public List<BusinessTypeRspDTO> batchGetBusinessType(BusinessTypeReqDTO businessTypeReqDTO) {
         try {
             IdmResDTO<List<BusinessTypeRspDTO>> idmResDTO = systemApiFeignService
@@ -206,6 +227,26 @@ public class ApiSystemServiceImpl implements ApiSystemService {
         } catch (Exception ex) {
             log.info("ApiSystemServiceImpl==batchQueryFormConfig==fail", ex);
             throw new BusinessException(ResultCode.QUERY_FORM_CONFIG_ERROR);
+        }
+    }
+
+    @Override
+    public List<CustomConfigDetailRspDTO> batchQueryCustomConfigDetails(CustomConfigDetailReqDTO customConfigDetailReqDTO) {
+        try {
+            IdmResDTO<List<CustomConfigDetailRspDTO>> idmResDTO = systemApiFeignService
+                    .batchQueryCustomConfigDetails(customConfigDetailReqDTO);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==batchQueryCustomConfigDetails==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_CUSTOM_CONFIG_DETAIL_ERROR);
         }
     }
 

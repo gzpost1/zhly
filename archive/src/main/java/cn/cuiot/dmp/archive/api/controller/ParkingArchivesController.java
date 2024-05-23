@@ -9,6 +9,7 @@ import cn.cuiot.dmp.archive.application.param.dto.ParkingArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.query.ParkingArchivesQuery;
 import cn.cuiot.dmp.archive.application.param.vo.ParkingArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.ParkingArchivesService;
+import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
@@ -54,6 +55,14 @@ public class ParkingArchivesController {
 
     @Autowired
     private ParkingArchivesService parkingArchivesService;
+
+    /**
+     * 根据id获取详情
+     */
+    @PostMapping("/queryForDetail")
+    public ParkingArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
+        return parkingArchivesService.getById(idParam.getId());
+    }
 
     /**
      * 分页列表

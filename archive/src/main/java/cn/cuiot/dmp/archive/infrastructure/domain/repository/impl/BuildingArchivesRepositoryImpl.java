@@ -49,7 +49,8 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
         LambdaQueryWrapper<BuildingArchivesEntity> queryWrapper = new LambdaQueryWrapper<BuildingArchivesEntity>()
                 .eq(Objects.nonNull(pageQuery.getId()), BuildingArchivesEntity::getId, pageQuery.getId())
                 .eq(Objects.nonNull(pageQuery.getDepartmentId()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentId())
-                .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName());
+                .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName())
+                .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList());
         List<BuildingArchivesEntity> buildingArchivesEntityList = buildingArchivesMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(buildingArchivesEntityList)) {
             return new ArrayList<>();
@@ -68,7 +69,8 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
         LambdaQueryWrapper<BuildingArchivesEntity> queryWrapper = new LambdaQueryWrapper<BuildingArchivesEntity>()
                 .eq(Objects.nonNull(pageQuery.getId()), BuildingArchivesEntity::getId, pageQuery.getId())
                 .eq(Objects.nonNull(pageQuery.getDepartmentId()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentId())
-                .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName());
+                .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName())
+                .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList());;
         IPage<BuildingArchivesEntity> buildingArchivesEntityPage = buildingArchivesMapper.selectPage(
                 new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), queryWrapper);
         if (CollectionUtils.isEmpty(buildingArchivesEntityPage.getRecords())) {
@@ -98,8 +100,8 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
     }
 
     @Override
-    public int batchUpdateBuildingArchives(Long departmentId) {
-        return buildingArchivesMapper.batchUpdateBuildingArchives(departmentId);
+    public int batchUpdateBuildingArchives(Long departmentId, List<Long> idList) {
+        return buildingArchivesMapper.batchUpdateBuildingArchives(departmentId, idList);
     }
 
     @Override

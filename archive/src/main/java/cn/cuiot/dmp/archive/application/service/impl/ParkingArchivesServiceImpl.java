@@ -1,11 +1,13 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
 import cn.cuiot.dmp.archive.application.param.dto.DeviceArchivesImportDto;
+import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.dto.ParkingArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.vo.DeviceArchivesExportVo;
 import cn.cuiot.dmp.archive.application.param.vo.ParkingArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.ParkingArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
+import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ParkingArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
@@ -14,9 +16,11 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -28,6 +32,9 @@ import java.util.*;
  */
 @Service
 public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMapper, ParkingArchivesEntity> implements ParkingArchivesService {
+
+    @Autowired
+    private BuildingAndConfigCommonUtilService buildingAndConfigCommonUtilService;
 
     /**
      * 参数校验
@@ -68,7 +75,7 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
 
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 查询楼盘信息-用于楼盘id转换为楼盘名称-汇总成Map
-        Map<Long, String> loupanIdNameMap = new HashMap<>();
+        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(list.stream().map(ParkingArchivesEntity::getLoupanId).collect(Collectors.toSet()));
         // 查询配置信息-用于配置id转换为配置名称-汇总成Map
         Map<Long, String> configIdNameMap = new HashMap<>();
 
@@ -90,7 +97,7 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
     public void importDataSave(List<ParkingArchivesImportDto> dataList) {
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
-        Map<String, Long> nameIdMap = new HashMap<>();
+        Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(ParkingArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
         Map<String, Long> nameConfigIdMap = new HashMap<>();
 
@@ -102,6 +109,7 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
             entity.setCode(data.getCode());
             entity.setUsageStatus(checkConfigTypeNull(nameConfigIdMap, data.getUsageStatusName()));
             entity.setParkingType(checkConfigTypeNull(nameConfigIdMap, data.getParkingTypeName()));
+            entity.setLoupanId(nameIdMap.get(data.getLoupanName()));
             entity.setStatus(getStatusFromName(data.getStatusName()));
             // TODO: 2024/5/16 这里还需要基于不同的一级类目去查询配置
             list.add(entity);

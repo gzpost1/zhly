@@ -43,4 +43,7 @@ public class ParkingArchivesImportDto implements Serializable {
     @Excel(name = "状态", orderNum = "4")
     private String statusName;
 
+    @Excel(name = "楼盘名称", orderNum = "5")
+    private String loupanName;
+
 }
