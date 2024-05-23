@@ -53,7 +53,7 @@ public class CustomConfigController extends BaseController {
     }
 
     /**
-     * 更新
+     * 保存
      */
     @RequiresPermissions
     @LogRecord(operationCode = "saveCustomConfig", operationName = "保存自定义配置", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
@@ -63,7 +63,7 @@ public class CustomConfigController extends BaseController {
     }
 
     /**
-     * 根据id获取详情
+     * 更新
      */
     @RequiresPermissions
     @LogRecord(operationCode = "updateCustomConfig", operationName = "更新自定义配置", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
@@ -76,7 +76,7 @@ public class CustomConfigController extends BaseController {
      * 更新状态
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateCustomConfig", operationName = "更新自定义配置", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "updateCustomConfigStatus", operationName = "更新自定义配置", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/updateStatus")
     public int updateCustomConfigStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         return customConfigService.updateCustomConfigStatus(updateStatusParam);

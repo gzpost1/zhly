@@ -44,6 +44,14 @@ public class FormConfigTypeController {
     }
 
     /**
+     * 根据条件获取表单配置类型列表
+     */
+    @PostMapping("/queryForList")
+    public List<FormConfigTypeVO> queryForList(@RequestBody @Valid FormConfigTypeQueryDTO queryDTO) {
+        return formConfigTypeService.queryForList(queryDTO);
+    }
+
+    /**
      * 编辑时查询类型列表（排除当前节点）
      */
     @PostMapping("/queryExcludeChild")
