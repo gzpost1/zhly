@@ -3,10 +3,12 @@ package cn.cuiot.dmp.app.controller;
 import cn.cuiot.dmp.app.dto.AppUserDto;
 import cn.cuiot.dmp.app.dto.login.Code2SessionDto;
 import cn.cuiot.dmp.app.dto.login.MiniLoginDto;
+import cn.cuiot.dmp.app.dto.login.SampleUserInfoDto;
 import cn.cuiot.dmp.app.service.AppLoginService;
 import cn.cuiot.dmp.base.application.service.WeChatMiniAppService;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import javax.annotation.Resource;
@@ -67,6 +69,16 @@ public class AuthController {
         AppUserDto userDto = appLoginService.miniLogin(phone, userType, openid, ipAddr);
 
         return IdmResDTO.success(userDto);
+    }
+
+    /**
+     * 设置用户头像与昵称
+     */
+    @PostMapping("setUserInfo")
+    public IdmResDTO setUserInfo(@RequestBody @Valid SampleUserInfoDto dto) {
+        dto.setUserId(LoginInfoHolder.getCurrentUserId());
+        appLoginService.setUserInfo(dto);
+        return IdmResDTO.success(null);
     }
 
     /**

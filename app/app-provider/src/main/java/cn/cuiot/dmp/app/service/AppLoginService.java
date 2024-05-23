@@ -2,6 +2,7 @@ package cn.cuiot.dmp.app.service;
 
 import cn.cuiot.dmp.app.converter.AppUserConverter;
 import cn.cuiot.dmp.app.dto.AppUserDto;
+import cn.cuiot.dmp.app.dto.login.SampleUserInfoDto;
 import cn.cuiot.dmp.app.entity.OrganizationEntity;
 import cn.cuiot.dmp.app.entity.UserEntity;
 import cn.cuiot.dmp.app.mapper.OrganizationEntityMapper;
@@ -165,6 +166,13 @@ public class AppLoginService {
             log.error("logOut error",e);
             throw new BusinessException(ResultCode.INNER_ERROR);
         }
+    }
+
+    /**
+     * 设置用户头像与昵称
+     */
+    public void setUserInfo(SampleUserInfoDto dto) {
+        appUserService.setUserInfo(dto.getUserId(),dto.getNickName(),dto.getAvatarUrl());
     }
 
 }
