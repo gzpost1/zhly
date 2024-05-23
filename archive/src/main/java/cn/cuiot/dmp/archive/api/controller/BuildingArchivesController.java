@@ -175,14 +175,17 @@ public class BuildingArchivesController extends BaseController {
         AssertUtil.notNull(departmentId, "部门id不能为空");
         String orgId = getOrgId();
         AssertUtil.notBlank(orgId, "组织id不能为空");
+        String userId = getUserId();
+        AssertUtil.notBlank(userId, "用户id不能为空");
         ImportParams params = new ImportParams();
         params.setTitleRows(0);
         params.setHeadRows(1);
         params.setNeedVerify(true);
         List<BuildingArchiveImportDTO> buildingArchiveImportDTOList = ExcelImportUtil.importExcel(file.getInputStream(),
                 BuildingArchiveImportDTO.class, params);
-        AssertUtil.notEmpty(buildingArchiveImportDTOList, "导入数据不能为空");
-        buildingArchivesService.importBuildingArchives(buildingArchiveImportDTOList, Long.valueOf(orgId), departmentId);
+        AssertUtil.notEmpty(buildingArchiveImportDTOList, "导入数据为空");
+        buildingArchivesService.importBuildingArchives(buildingArchiveImportDTOList, Long.valueOf(orgId), departmentId,
+                Long.valueOf(userId));
         return IdmResDTO.success();
     }
 

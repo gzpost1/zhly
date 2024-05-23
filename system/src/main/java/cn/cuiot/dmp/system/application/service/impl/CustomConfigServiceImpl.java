@@ -2,7 +2,9 @@ package cn.cuiot.dmp.system.application.service.impl;
 
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigRspDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigDTO;
@@ -99,6 +101,22 @@ public class CustomConfigServiceImpl implements CustomConfigService {
         BeanUtils.copyProperties(customConfigPageResult, CustomConfigVOPageResult);
         CustomConfigVOPageResult.setList(CustomConfigVOList);
         return CustomConfigVOPageResult;
+    }
+
+    @Override
+    public List<CustomConfigRspDTO> batchQueryCustomConfigs(CustomConfigReqDTO customConfigReqDTO) {
+        CustomConfigPageQuery pageQuery = new CustomConfigPageQuery();
+        BeanUtils.copyProperties(customConfigReqDTO, pageQuery);
+        List<CustomConfig> customConfigList = customConfigRepository.queryForList(pageQuery);
+        if (CollectionUtils.isEmpty(customConfigList)) {
+            return new ArrayList<>();
+        }
+        return  customConfigList.stream()
+                .map(o -> {
+                    CustomConfigRspDTO customConfigRspDTO = new CustomConfigRspDTO();
+                    BeanUtils.copyProperties(o, customConfigRspDTO);
+                    return customConfigRspDTO;
+                }).collect(Collectors.toList());
     }
 
     @Override

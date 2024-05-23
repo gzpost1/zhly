@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.system.application.constant.ArchiveTypeConstant;
 import cn.cuiot.dmp.system.application.param.dto.ArchiveTypeQueryDTO;
+import cn.cuiot.dmp.system.application.param.vo.ArchiveTypeTreeNodeVO;
 import cn.cuiot.dmp.system.application.param.vo.ArchiveTypeVO;
 import cn.cuiot.dmp.system.application.service.ArchiveTypeService;
 import cn.cuiot.dmp.system.domain.aggregate.ArchiveType;
@@ -56,6 +58,35 @@ public class ArchiveTypeServiceImpl implements ArchiveTypeService {
         ArchiveTypeVO archiveTypeVO = new ArchiveTypeVO();
         BeanUtils.copyProperties(archiveType, archiveTypeVO);
         return archiveTypeVO;
+    }
+
+    @Override
+    public List<ArchiveTypeTreeNodeVO> queryForTree(ArchiveTypeQueryDTO queryDTO) {
+        ArchiveType archiveType = new ArchiveType();
+        BeanUtils.copyProperties(queryDTO, archiveType);
+        List<ArchiveType> archiveTypeList = archiveTypeRepository.queryForList(archiveType);
+        if (CollectionUtils.isEmpty(archiveTypeList)) {
+            return new ArrayList<>();
+        }
+        List<ArchiveTypeTreeNodeVO> archiveTypeTreeNodeVOList = new ArrayList<>();
+        ArchiveTypeTreeNodeVO rootArchiveTypeTreeNodeVO = initRootArchiveTypeVO();
+        List<ArchiveTypeTreeNodeVO> childrenArchiveTypeTreeNodeList = archiveTypeList.stream()
+                .map(o -> new ArchiveTypeTreeNodeVO(o.getId().toString(),
+                        o.getArchiveType(), ArchiveTypeConstant.DEFAULT_ROOT_ID, o.getName(),
+                        ArchiveTypeConstant.FIRST_LEVEL_TYPE))
+                .collect(Collectors.toList());
+        rootArchiveTypeTreeNodeVO.setChildren(childrenArchiveTypeTreeNodeList);
+        archiveTypeTreeNodeVOList.add(rootArchiveTypeTreeNodeVO);
+        return archiveTypeTreeNodeVOList;
+    }
+
+    private ArchiveTypeTreeNodeVO initRootArchiveTypeVO() {
+        ArchiveTypeTreeNodeVO rootArchiveTypeTreeNodeVO = new ArchiveTypeTreeNodeVO();
+        rootArchiveTypeTreeNodeVO.setId(ArchiveTypeConstant.DEFAULT_ROOT_ID);
+        rootArchiveTypeTreeNodeVO.setName(ArchiveTypeConstant.DEFAULT_ROOT_NAME);
+        rootArchiveTypeTreeNodeVO.setLevelType(ArchiveTypeConstant.ROOT_LEVEL_TYPE);
+        rootArchiveTypeTreeNodeVO.setParentId(String.valueOf(ArchiveTypeConstant.DEFAULT_PARENT_ID));
+        return rootArchiveTypeTreeNodeVO;
     }
 
 }

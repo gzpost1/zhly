@@ -66,7 +66,8 @@ public interface BuildingArchivesService {
     /**
      * 导入
      */
-    void importBuildingArchives(List<BuildingArchiveImportDTO> buildingArchiveImportDTOList, Long companyId, Long departmentId);
+    void importBuildingArchives(List<BuildingArchiveImportDTO> buildingArchiveImportDTOList, Long companyId,
+                                Long departmentId, Long userId);
 
     /**
      * 获取组织楼盘树
