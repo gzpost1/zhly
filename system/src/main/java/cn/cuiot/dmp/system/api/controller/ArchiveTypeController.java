@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.api.controller;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.system.application.param.dto.ArchiveTypeQueryDTO;
+import cn.cuiot.dmp.system.application.param.vo.ArchiveTypeTreeNodeVO;
 import cn.cuiot.dmp.system.application.param.vo.ArchiveTypeVO;
 import cn.cuiot.dmp.system.application.service.ArchiveTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,18 @@ public class ArchiveTypeController extends BaseController {
         queryDTO.setCompanyId(Long.valueOf(orgId));
         queryDTO.setUserId(userId);
         return archiveTypeService.queryForList(queryDTO);
+    }
+
+    /**
+     * 根据条件获取档案树
+     */
+    @PostMapping("/queryForTree")
+    public List<ArchiveTypeTreeNodeVO> queryForTree(@RequestBody @Valid ArchiveTypeQueryDTO queryDTO) {
+        String orgId = getOrgId();
+        String userId = getUserId();
+        queryDTO.setCompanyId(Long.valueOf(orgId));
+        queryDTO.setUserId(userId);
+        return archiveTypeService.queryForTree(queryDTO);
     }
 
 }

@@ -2,7 +2,9 @@ package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigRspDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigDTO;
@@ -55,6 +57,11 @@ public interface CustomConfigService {
      * 根据档案类型查询自定义配置列表
      */
     PageResult<CustomConfigVO> queryCustomConfigByType(CustomConfigPageQuery pageQuery);
+
+    /**
+     * 根据条件批量查询自定义配置列表
+     */
+    List<CustomConfigRspDTO> batchQueryCustomConfigs(CustomConfigReqDTO customConfigReqDTO);
 
     /**
      * 根据id集合批量查询自定义配置详情

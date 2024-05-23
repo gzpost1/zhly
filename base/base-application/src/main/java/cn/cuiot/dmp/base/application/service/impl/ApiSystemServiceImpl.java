@@ -5,10 +5,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.*;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.*;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -235,6 +232,26 @@ public class ApiSystemServiceImpl implements ApiSystemService {
         try {
             IdmResDTO<List<CustomConfigDetailRspDTO>> idmResDTO = systemApiFeignService
                     .batchQueryCustomConfigDetails(customConfigDetailReqDTO);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==batchQueryCustomConfigDetails==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_CUSTOM_CONFIG_DETAIL_ERROR);
+        }
+    }
+
+    @Override
+    public List<CustomConfigRspDTO> batchQueryCustomConfigs(CustomConfigReqDTO customConfigReqDTO) {
+        try {
+            IdmResDTO<List<CustomConfigRspDTO>> idmResDTO = systemApiFeignService
+                    .batchQueryCustomConfigs(customConfigReqDTO);
             if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
                     .equals(idmResDTO.getCode())) {
                 return idmResDTO.getData();

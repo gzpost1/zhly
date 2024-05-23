@@ -20,7 +20,7 @@ public enum ArchiveTypeEnum {
     ROOM_ARCHIVE((byte) 3, "空间档案"),
     DEVICE_ARCHIVE((byte) 4, "设备档案"),
     PARK_ARCHIVE((byte) 5, "车位档案"),
-    CODE_ARCHIVE((byte) 6, "二维码/条形码档案");
+    CODE_ARCHIVE((byte) 6, "二维码档案");
 
     private final Byte code;
     private final String message;

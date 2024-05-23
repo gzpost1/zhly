@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * @author liujianyu
  * @since 2024-05-15
  */
-@Service
+@Service("roomArchivesService")
 public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, RoomArchivesEntity> implements RoomArchivesService {
 
     @Autowired

@@ -8,8 +8,10 @@ import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMa
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -70,7 +72,7 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
                 .eq(Objects.nonNull(pageQuery.getId()), BuildingArchivesEntity::getId, pageQuery.getId())
                 .eq(Objects.nonNull(pageQuery.getDepartmentId()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentId())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName())
-                .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList());;
+                .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList());
         IPage<BuildingArchivesEntity> buildingArchivesEntityPage = buildingArchivesMapper.selectPage(
                 new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), queryWrapper);
         if (CollectionUtils.isEmpty(buildingArchivesEntityPage.getRecords())) {
@@ -97,6 +99,21 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
     @Override
     public int deleteBuildingArchives(Long id) {
         return buildingArchivesMapper.deleteById(id);
+    }
+
+    @Override
+    public int batchSaveBuildingArchives(List<BuildingArchives> buildingArchivesList, Long userId) {
+        AssertUtil.notNull(userId, "用户id不能为空");
+        List<BuildingArchivesEntity> buildingArchivesEntityList = buildingArchivesList.stream()
+                .map(o -> {
+                    BuildingArchivesEntity buildingArchivesEntity = new BuildingArchivesEntity();
+                    BeanUtils.copyProperties(o, buildingArchivesEntity);
+                    buildingArchivesEntity.setId(IdWorker.getId());
+                    buildingArchivesEntity.setCreateUser(userId);
+                    return buildingArchivesEntity;
+                })
+                .collect(Collectors.toList());
+        return buildingArchivesMapper.batchSaveBuildingArchives(buildingArchivesEntityList);
     }
 
     @Override

@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @author liujianyu
  * @since 2024-05-15
  */
-@Service
+@Service("deviceArchivesService")
 public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper, DeviceArchivesEntity> implements DeviceArchivesService {
 
    @Autowired
