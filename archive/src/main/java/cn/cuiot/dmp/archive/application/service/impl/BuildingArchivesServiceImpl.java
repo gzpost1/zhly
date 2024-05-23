@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * @date 2024/5/21
  */
 @Slf4j
-@Service
+@Service("buildingArchivesService")
 public class BuildingArchivesServiceImpl implements BuildingArchivesService {
 
     @Autowired
