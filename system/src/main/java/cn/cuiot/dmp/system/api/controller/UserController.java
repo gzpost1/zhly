@@ -435,10 +435,8 @@ public class UserController extends BaseController {
 
         response.setContentType("text/csv;charset=\"UTF-8\"");
         response.setHeader("Content-Disposition", "attachment; filename=credentials.csv");
-        String[] split = userBo.getUsername().split("@");
-        String username = split[0];
         try {
-            CommonCsvUtil.createCsvFile(head, jsonList, username + "credentials", response);
+            CommonCsvUtil.createCsvFile(head, jsonList, "credentials", response);
         } catch (UnsupportedEncodingException e) {
             log.error("insertUser error.", e);
         }
