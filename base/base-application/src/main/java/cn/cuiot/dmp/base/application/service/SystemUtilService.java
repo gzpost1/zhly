@@ -59,11 +59,11 @@ public class SystemUtilService {
                 BusinessAndOrgNameDto businessAndOrgNameDto = nameDtoMap.get(e.getId());
                 if (Objects.nonNull(businessAndOrgNameDto)) {
                     if(StringUtils.isNotEmpty(businessAndOrgNameDto.getBusinessTypeName())){
-                        e.setBusinessTypeName(StringUtils.substringBefore(businessAndOrgNameDto.getBusinessTypeName(), ">"));
+                        e.setBusinessTypeName(StringUtils.substringAfter(businessAndOrgNameDto.getBusinessTypeName(), ">"));
                     }
 
                     if(StringUtils.isNotEmpty(businessAndOrgNameDto.getOrgName())){
-                        e.setBusinessTypeName(StringUtils.substringBefore(businessAndOrgNameDto.getOrgName(), ">"));
+                        e.setBusinessTypeName(StringUtils.substringAfter(businessAndOrgNameDto.getOrgName(), ">"));
                     }
 
                     e.setCreateUserName(businessAndOrgNameDto.getCreateUserName());
