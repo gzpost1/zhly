@@ -4,12 +4,9 @@ import cn.cuiot.dmp.base.application.annotation.InternalApi;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.*;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.*;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.MenuDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -119,7 +116,7 @@ public class ApiController {
         DepartmentDto departmentDto = null;
         if (Objects.nonNull(deptId)) {
             DepartmentEntity departmentEntity = departmentService.getDeptById(deptId.toString());
-            if (Objects.isNull(departmentEntity)) {
+            if (Objects.nonNull(departmentEntity)) {
                 departmentDto = departmentConverter.entityToDTO(departmentEntity);
             }
         }
@@ -205,6 +202,15 @@ public class ApiController {
     public IdmResDTO<List<CustomConfigDetailRspDTO>> batchQueryCustomConfigDetails(@RequestBody @Valid CustomConfigDetailReqDTO customConfigDetailReqDTO) {
         List<CustomConfigDetailRspDTO> customConfigDetailRspDTOList = customConfigService.batchQueryCustomConfigDetails(customConfigDetailReqDTO);
         return IdmResDTO.success(customConfigDetailRspDTOList);
+    }
+
+    /**
+     * 根据条件批量查询自定义配置列表
+     */
+    @PostMapping(value = "/batchQueryCustomConfigs", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<CustomConfigRspDTO>> batchQueryCustomConfigs(@RequestBody @Valid CustomConfigReqDTO customConfigReqDTO) {
+        List<CustomConfigRspDTO> customConfigRspDTOS = customConfigService.batchQueryCustomConfigs(customConfigReqDTO);
+        return IdmResDTO.success(customConfigRspDTOS);
     }
 
 }

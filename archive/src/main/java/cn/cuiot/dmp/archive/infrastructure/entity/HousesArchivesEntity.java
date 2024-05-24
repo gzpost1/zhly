@@ -1,13 +1,21 @@
 package cn.cuiot.dmp.archive.infrastructure.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.LongListHandler;
+import com.alibaba.fastjson.annotation.JSONField;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 
@@ -150,6 +158,9 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     /**
      * 交房时间（年月日）
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @JSONField(format = "yyyy-MM-dd")
     private LocalDate handoverDate;
 
     /**
@@ -170,7 +181,8 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     /**
      * 户型图（仅限jpg, jpeg, png格式，图片大小不超过50M，5张）
      */
-    private String floorPlan;
+    @TableField(typeHandler = JsonTypeHandler.class)
+    private List<String> floorPlan;
 
     /**
      * 附件（支持png, jpg, PDF, word, excel，小于50M）
@@ -190,12 +202,14 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     /**
      * 房源图片（仅限jpg、jpeg、png格式，图片大小不超过5M，最多5张图）
      */
-    private String listingImages;
+    @TableField(typeHandler = JsonTypeHandler.class)
+    private List<String> listingImages;
 
     /**
      * 基础服务（显示自定义配置中的选项，支持多选）
      */
-    private Long basicServices;
+    @TableField(typeHandler = LongListHandler.class)
+    private List<Long> basicServices;
 
     /**
      * 房源描述（支持输入汉字、英文、符号、数字，长度支持500字符）

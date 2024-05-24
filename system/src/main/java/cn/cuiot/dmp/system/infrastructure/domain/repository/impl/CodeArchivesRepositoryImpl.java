@@ -89,8 +89,8 @@ public class CodeArchivesRepositoryImpl implements CodeArchivesRepository {
         CodeArchivesEntity codeArchivesEntity = Optional.ofNullable(codeArchivesMapper.selectById(codeArchives.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         // 目前只有描述可以修改
-        if (StringUtils.isNotBlank(codeArchives.getDesc())) {
-            codeArchivesEntity.setDesc(codeArchives.getDesc());
+        if (StringUtils.isNotBlank(codeArchives.getArchiveDesc())) {
+            codeArchivesEntity.setArchiveDesc(codeArchives.getArchiveDesc());
         }
         return codeArchivesMapper.updateById(codeArchivesEntity);
     }

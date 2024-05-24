@@ -39,5 +39,5 @@ public interface DeviceArchivesService extends IService<DeviceArchivesEntity> {
     /**
      * 导入数据
      */
-    void importDataSave(List<DeviceArchivesImportDto> dataList);
+    void importDataSave(List<DeviceArchivesImportDto> dataList, Long loupanId);
 }

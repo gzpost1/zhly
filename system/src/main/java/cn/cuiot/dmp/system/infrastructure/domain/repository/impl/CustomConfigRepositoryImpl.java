@@ -140,6 +140,29 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     }
 
     @Override
+    public List<CustomConfig> queryForList(CustomConfigPageQuery pageQuery) {
+        LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
+                .eq(Objects.nonNull(pageQuery.getCompanyId()), CustomConfigEntity::getCompanyId, pageQuery.getCompanyId())
+                .eq(Objects.nonNull(pageQuery.getArchiveType()), CustomConfigEntity::getArchiveType, pageQuery.getArchiveType())
+                .like(StringUtils.isNotBlank(pageQuery.getName()), CustomConfigEntity::getName, pageQuery.getName())
+                .eq(Objects.nonNull(pageQuery.getStatus()), CustomConfigEntity::getStatus, pageQuery.getStatus());
+        List<CustomConfigEntity> customConfigEntityList = customConfigMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(customConfigEntityList)) {
+            return new ArrayList<>();
+        }
+        return customConfigEntityList.stream()
+                .map(o -> {
+                    CustomConfig customConfig = new CustomConfig();
+                    BeanUtils.copyProperties(o, customConfig);
+                    List<CustomConfigDetail> CustomConfigDetails = customConfigDetailRepository
+                            .batchQueryCustomConfigDetails(o.getId());
+                    customConfig.setCustomConfigDetailList(CustomConfigDetails);
+                    return customConfig;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void initCustomConfig(Long companyId, String userId) {
         AssertUtil.notNull(companyId, "企业ID不能为空");
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()

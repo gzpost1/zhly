@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.system.application.param.dto.ArchiveTypeQueryDTO;
+import cn.cuiot.dmp.system.application.param.vo.ArchiveTypeTreeNodeVO;
 import cn.cuiot.dmp.system.application.param.vo.ArchiveTypeVO;
 
 import java.util.List;
@@ -20,5 +21,10 @@ public interface ArchiveTypeService {
      * 根据id获取档案类型详情
      */
     ArchiveTypeVO queryForDetail(Long id);
+
+    /**
+     * 根据条件获取自定义配置档案类型树
+     */
+    List<ArchiveTypeTreeNodeVO> queryForTree(ArchiveTypeQueryDTO queryDTO);
 
 }
