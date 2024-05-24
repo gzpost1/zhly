@@ -19,4 +19,9 @@ public interface CodeArchivesMapper extends BaseMapper<CodeArchivesEntity> {
      */
     int batchSaveCodeArchives(@Param("list") List<CodeArchivesEntity> codeArchivesEntityList);
 
+    /**
+     * 根据档案id获取档案名称
+     */
+    List<String> queryArchiveNameById(@Param("archiveId") Long archiveId);
+
 }

@@ -10,6 +10,7 @@ import cn.cuiot.dmp.system.domain.repository.CodeArchivesRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.CodeArchivesEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CodeArchivesMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -120,6 +121,19 @@ public class CodeArchivesRepositoryImpl implements CodeArchivesRepository {
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         codeArchivesEntity.setArchiveId(codeArchives.getArchiveId());
         codeArchivesEntity.setArchiveType(codeArchives.getArchiveType());
+        // 判断当前档案id是否关联，如果关联则需要先清空再关联
+        LambdaQueryWrapper<CodeArchivesEntity> queryWrapper = new LambdaQueryWrapper<CodeArchivesEntity>()
+                .eq(CodeArchivesEntity::getArchiveId, codeArchives.getArchiveId())
+                .eq(CodeArchivesEntity::getArchiveType, codeArchives.getArchiveType());
+        List<CodeArchivesEntity> codeArchivesEntityList = codeArchivesMapper.selectList(queryWrapper);
+        if (CollectionUtils.isNotEmpty(codeArchivesEntityList)) {
+            CodeArchivesEntity source = codeArchivesEntityList.get(0);
+            LambdaUpdateWrapper<CodeArchivesEntity> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(CodeArchivesEntity::getId, source.getId());
+            updateWrapper.set(CodeArchivesEntity::getArchiveId, null);
+            updateWrapper.set(CodeArchivesEntity::getArchiveType, null);
+            codeArchivesMapper.update(source, updateWrapper);
+        }
         return codeArchivesMapper.updateById(codeArchivesEntity);
     }
 
@@ -129,6 +143,13 @@ public class CodeArchivesRepositoryImpl implements CodeArchivesRepository {
                 .map(o -> {
                     CodeArchives codeArchives = new CodeArchives();
                     BeanUtils.copyProperties(o, codeArchives);
+                    // 如果已经绑定上档案，则需要查找档案名称
+                    if (Objects.nonNull(o.getArchiveId())) {
+                        List<String> archiveNameList = codeArchivesMapper.queryArchiveNameById(o.getArchiveId());
+                        if (CollectionUtils.isNotEmpty(archiveNameList)) {
+                            codeArchives.setArchiveName(archiveNameList.get(0));
+                        }
+                    }
                     return codeArchives;
                 })
                 .collect(Collectors.toList());

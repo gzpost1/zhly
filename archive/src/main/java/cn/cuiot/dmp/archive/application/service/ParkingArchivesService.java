@@ -39,5 +39,5 @@ public interface ParkingArchivesService extends IService<ParkingArchivesEntity> 
     /**
      * 导入数据
      */
-    void importDataSave(List<ParkingArchivesImportDto> dataList, Long loupanId);
+    void importDataSave(List<ParkingArchivesImportDto> dataList, Long loupanId, Long companyId);
 }
