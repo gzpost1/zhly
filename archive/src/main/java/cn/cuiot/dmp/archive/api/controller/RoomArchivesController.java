@@ -190,7 +190,7 @@ public class RoomArchivesController extends BaseController {
             roomArchivesService.checkParamsImport(dto);
         }
 
-        roomArchivesService.importDataSave(importDtoList, loupanId);
+        roomArchivesService.importDataSave(importDtoList, loupanId, Long.valueOf(getOrgId()));
     }
 
     /**
