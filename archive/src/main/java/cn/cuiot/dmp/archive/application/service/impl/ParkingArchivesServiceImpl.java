@@ -42,23 +42,23 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
     @Override
     public void checkParams(ParkingArchivesEntity entity) {
         // 必填判断
-        if (StringUtils.isBlank(entity.getCode())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"车位编号不可为空");
+        if (StringUtils.isBlank(entity.getCode())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "车位编号不可为空");
         }
-        if (Objects.isNull(entity.getLoupanId())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"所属楼盘不可为空");
+        if (Objects.isNull(entity.getLoupanId())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "所属楼盘不可为空");
         }
-        if (Objects.isNull(entity.getArea())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"所属区域不可为空");
+        if (Objects.isNull(entity.getArea())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "所属区域不可为空");
         }
-        if (Objects.isNull(entity.getUsageStatus())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"使用情况不可为空");
+        if (Objects.isNull(entity.getUsageStatus())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "使用情况不可为空");
         }
-        if (Objects.isNull(entity.getStatus())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"状态不可为空");
+        if (Objects.isNull(entity.getStatus())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "状态不可为空");
         }
-        if (Objects.isNull(entity.getParkingType())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"车位类型不可为空");
+        if (Objects.isNull(entity.getParkingType())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "车位类型不可为空");
         }
     }
 
@@ -121,14 +121,14 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
     /**
      * 获取状态名称
      */
-    private String getStatusName(Byte status){
-        if (Objects.isNull(status)){
+    private String getStatusName(Byte status) {
+        if (Objects.isNull(status)) {
             return "";
         }
-        if (EntityConstants.ENABLED.equals(status)){
+        if (EntityConstants.ENABLED.equals(status)) {
             return "启用";
         }
-        if (EntityConstants.DISABLED.equals(status)){
+        if (EntityConstants.DISABLED.equals(status)) {
             return "禁用";
         }
         return "";
@@ -137,8 +137,8 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
     /**
      * 从名称获取状态
      */
-    private Byte getStatusFromName(String name){
-        if (StringUtils.isBlank(name) || "启用".equals(name)){
+    private Byte getStatusFromName(String name) {
+        if (StringUtils.isBlank(name) || "启用".equals(name)) {
             return EntityConstants.ENABLED;
         }
         return EntityConstants.DISABLED;
@@ -147,11 +147,16 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
     /**
      * 处理使用名称获取配置类型
      */
-    private Long checkConfigTypeNull(Map<String, Long> nameConfigIdMap, String configName){
+    private Long checkConfigTypeNull(Map<String, Long> nameConfigIdMap, String configName) {
         Long typeId = nameConfigIdMap.get(configName);
-        if (Objects.isNull(typeId)){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"配置类型" + configName + "不存在");
+        if (Objects.isNull(typeId)) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "配置类型" + configName + "不存在");
         }
         return typeId;
     }
+
+    public ParkingArchivesEntity queryForDetail(Long id) {
+        return getById(id);
+    }
+
 }

@@ -23,7 +23,7 @@ import java.util.List;
  * @date: 2024/4/1 20:46
  */
 @Component
-@FeignClient(value = "community-system")
+@FeignClient(value = "community-system", url = "localhost:8080")
 public interface SystemApiFeignService {
 
     /**

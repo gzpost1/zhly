@@ -39,83 +39,83 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
     @Override
     public void checkParams(HousesArchivesEntity entity) {
         // 必填判断
-        if (StringUtils.isBlank(entity.getName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"房屋名称不可为空");
+        if (StringUtils.isBlank(entity.getName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "房屋名称不可为空");
         }
-        if (StringUtils.isBlank(entity.getRoomNum())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"房号不可为空");
+        if (StringUtils.isBlank(entity.getRoomNum())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "房号不可为空");
         }
-        if (Objects.isNull(entity.getLoupanId())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"所属楼盘不可为空");
+        if (Objects.isNull(entity.getLoupanId())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "所属楼盘不可为空");
         }
-        if (StringUtils.isBlank(entity.getCode())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"房屋编码不可为空");
+        if (StringUtils.isBlank(entity.getCode())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "房屋编码不可为空");
         }
 
         // 规则判断
-        if (entity.getName().length() > 30){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"房屋名称长度不可超过30");
+        if (entity.getName().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "房屋名称长度不可超过30");
         }
-        if (entity.getRoomNum().length() > 30){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"房号长度不可超过30");
+        if (entity.getRoomNum().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "房号长度不可超过30");
         }
-        if (entity.getCode().length() > 15){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"房屋编码长度不可超过30");
+        if (entity.getCode().length() > 15) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "房屋编码长度不可超过30");
         }
-        if (StringUtils.isNotBlank(entity.getFloorAlias()) && entity.getFloorAlias().length() > 4){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"楼层别名长度不可超过4");
+        if (StringUtils.isNotBlank(entity.getFloorAlias()) && entity.getFloorAlias().length() > 4) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "楼层别名长度不可超过4");
         }
-        if (StringUtils.isNotBlank(entity.getFloorName()) &&entity.getFloorName().length() > 7){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"楼层别名长度不可超过7");
+        if (StringUtils.isNotBlank(entity.getFloorName()) && entity.getFloorName().length() > 7) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "楼层别名长度不可超过7");
         }
-        if (StringUtils.isNotBlank(entity.getCapacity()) &&entity.getCapacity().length() > 9){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"容量长度不可超过9");
+        if (StringUtils.isNotBlank(entity.getCapacity()) && entity.getCapacity().length() > 9) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "容量长度不可超过9");
         }
-        if (StringUtils.isNotBlank(entity.getQibie()) && entity.getQibie().length() > 11){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"期别长度不可超过11");
+        if (StringUtils.isNotBlank(entity.getQibie()) && entity.getQibie().length() > 11) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "期别长度不可超过11");
         }
-        if (Objects.nonNull(entity.getFloorCoefficient()) && (entity.getFloorCoefficient() < 0.0 || entity.getFloorCoefficient() > 9999.99)){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"楼层系数区间0-9999.99");
+        if (Objects.nonNull(entity.getFloorCoefficient()) && (entity.getFloorCoefficient() < 0.0 || entity.getFloorCoefficient() > 9999.99)) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "楼层系数区间0-9999.99");
         }
-        if (Objects.nonNull(entity.getBuildingArea()) && !DoubleValidator.validateDouble(entity.getBuildingArea(), 15, 4)){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"建筑面积支持4位小数，最长可输入15位");
+        if (Objects.nonNull(entity.getBuildingArea()) && !DoubleValidator.validateDouble(entity.getBuildingArea(), 15, 4)) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "建筑面积支持4位小数，最长可输入15位");
         }
-        if (Objects.nonNull(entity.getUsableArea()) && !DoubleValidator.validateDouble(entity.getUsableArea(), 15, 4)){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"使用面积支持4位小数，最长可输入15位");
+        if (Objects.nonNull(entity.getUsableArea()) && !DoubleValidator.validateDouble(entity.getUsableArea(), 15, 4)) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "使用面积支持4位小数，最长可输入15位");
         }
-        if (Objects.nonNull(entity.getChargeArea()) && !DoubleValidator.validateDouble(entity.getChargeArea(), 15, 4)){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"收费面积支持4位小数，最长可输入15位");
+        if (Objects.nonNull(entity.getChargeArea()) && !DoubleValidator.validateDouble(entity.getChargeArea(), 15, 4)) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "收费面积支持4位小数，最长可输入15位");
         }
-        if (Objects.nonNull(entity.getSharedArea()) && !DoubleValidator.validateDouble(entity.getSharedArea(), 15, 4)){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"公摊面积支持4位小数，最长可输入15位");
+        if (Objects.nonNull(entity.getSharedArea()) && !DoubleValidator.validateDouble(entity.getSharedArea(), 15, 4)) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "公摊面积支持4位小数，最长可输入15位");
         }
-        if (StringUtils.isNotBlank(entity.getOwnershipUnit()) && entity.getOwnershipUnit().length() > 50){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"产权单位长度不可超过50");
+        if (StringUtils.isNotBlank(entity.getOwnershipUnit()) && entity.getOwnershipUnit().length() > 50) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "产权单位长度不可超过50");
         }
     }
 
     @Override
     public void checkParamsImport(HousesArchiveImportDto entity) {
         // 必填判断
-        if (StringUtils.isBlank(entity.getName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"房屋名称不可为空");
+        if (StringUtils.isBlank(entity.getName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "房屋名称不可为空");
         }
-        if (StringUtils.isBlank(entity.getRoomNum())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"房号不可为空");
+        if (StringUtils.isBlank(entity.getRoomNum())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "房号不可为空");
         }
-        if (StringUtils.isBlank(entity.getCode())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"房屋编码不可为空");
+        if (StringUtils.isBlank(entity.getCode())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "房屋编码不可为空");
         }
 
         // 规则判断
-        if (entity.getName().length() > 30){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"房屋名称长度不可超过30");
+        if (entity.getName().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "房屋名称长度不可超过30");
         }
-        if (entity.getRoomNum().length() > 30){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"房号长度不可超过30");
+        if (entity.getRoomNum().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "房号长度不可超过30");
         }
-        if (entity.getCode().length() > 15){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"房屋编码长度不可超过30");
+        if (entity.getCode().length() > 15) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "房屋编码长度不可超过30");
         }
     }
 
@@ -176,10 +176,15 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         this.saveBatch(list);
     }
 
-    private String getFiledForExport(Object value){
-        if (Objects.isNull(value)){
+    private String getFiledForExport(Object value) {
+        if (Objects.isNull(value)) {
             return "";
         }
         return value.toString();
     }
+
+    public HousesArchivesEntity queryForDetail(Long id) {
+        return getById(id);
+    }
+
 }

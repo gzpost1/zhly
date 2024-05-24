@@ -2,9 +2,7 @@ package cn.cuiot.dmp.archive.api.controller;
 
 import cn.cuiot.dmp.archive.application.param.dto.ArchivesApiQueryDTO;
 import cn.cuiot.dmp.archive.application.param.vo.BaseArchivesVO;
-import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.service.ArchivesApiService;
-import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

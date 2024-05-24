@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 @Service("deviceArchivesService")
 public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper, DeviceArchivesEntity> implements DeviceArchivesService {
 
-   @Autowired
-   private BuildingAndConfigCommonUtilService buildingAndConfigCommonUtilService;
+    @Autowired
+    private BuildingAndConfigCommonUtilService buildingAndConfigCommonUtilService;
 
     /**
      * 参数校验
@@ -41,37 +41,37 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
     @Override
     public void checkParams(DeviceArchivesEntity entity) {
         // 必填判断
-        if (StringUtils.isBlank(entity.getDeviceName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"设备名称不可为空");
+        if (StringUtils.isBlank(entity.getDeviceName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "设备名称不可为空");
         }
-        if (Objects.isNull(entity.getLoupanId())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"所属楼盘不可为空");
+        if (Objects.isNull(entity.getLoupanId())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "所属楼盘不可为空");
         }
-        if (Objects.isNull(entity.getDeviceCategory())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"设备类别不可为空");
+        if (Objects.isNull(entity.getDeviceCategory())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "设备类别不可为空");
         }
-        if (StringUtils.isBlank(entity.getInstallationLocation())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"安装位置不可为空");
+        if (StringUtils.isBlank(entity.getInstallationLocation())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装位置不可为空");
         }
-        if (Objects.isNull(entity.getInstallationDate())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"安装日期不可为空");
+        if (Objects.isNull(entity.getInstallationDate())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不可为空");
         }
     }
 
     @Override
     public void checkParamsImport(DeviceArchivesImportDto entity) {
         // 必填判断
-        if (StringUtils.isBlank(entity.getDeviceName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"设备名称不可为空");
+        if (StringUtils.isBlank(entity.getDeviceName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "设备名称不可为空");
         }
-        if (StringUtils.isBlank(entity.getDeviceCategoryName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"设备类别不可为空");
+        if (StringUtils.isBlank(entity.getDeviceCategoryName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "设备类别不可为空");
         }
-        if (StringUtils.isBlank(entity.getInstallationLocation())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"安装位置不可为空");
+        if (StringUtils.isBlank(entity.getInstallationLocation())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装位置不可为空");
         }
-        if (StringUtils.isBlank(entity.getInstallationDateName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"安装日期不可为空");
+        if (StringUtils.isBlank(entity.getInstallationDateName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不可为空");
         }
     }
 
@@ -130,18 +130,23 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
     /**
      * 处理使用名称获取配置类型
      */
-    private Long checkConfigTypeNull(Map<String, Long> nameConfigIdMap, String configName){
+    private Long checkConfigTypeNull(Map<String, Long> nameConfigIdMap, String configName) {
         Long typeId = nameConfigIdMap.get(configName);
-        if (Objects.isNull(typeId)){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"配置类型" + configName + "不存在");
+        if (Objects.isNull(typeId)) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "配置类型" + configName + "不存在");
         }
         return typeId;
     }
 
-    private LocalDate getDate(String dateStr){
-        if (StringUtils.isBlank(dateStr)){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"安装日期不存在");
+    private LocalDate getDate(String dateStr) {
+        if (StringUtils.isBlank(dateStr)) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不存在");
         }
         return LocalDate.parse(dateStr);
     }
+
+    public DeviceArchivesEntity queryForDetail(Long id) {
+        return getById(id);
+    }
+
 }
