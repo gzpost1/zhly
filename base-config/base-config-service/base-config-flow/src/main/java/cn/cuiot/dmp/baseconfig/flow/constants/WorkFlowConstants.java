@@ -48,7 +48,7 @@ public interface WorkFlowConstants {
     /**
      * 挂起
      */
-    Byte BUSINESS_BYPE_PENDING=1;
+    Byte BUSINESS_BYPE_PENDING=0;
 
     /**
      * 定时任务状态
