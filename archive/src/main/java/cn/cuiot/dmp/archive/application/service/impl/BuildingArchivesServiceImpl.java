@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * @date 2024/5/21
  */
 @Slf4j
-@Service
+@Service("buildingArchivesService")
 public class BuildingArchivesServiceImpl implements BuildingArchivesService {
 
     @Autowired
@@ -149,8 +149,22 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
 
     @Override
     public void importBuildingArchives(List<BuildingArchiveImportDTO> buildingArchiveImportDTOList, Long companyId,
-                                       Long departmentId) {
-
+                                       Long departmentId, Long userId) {
+        AssertUtil.notNull(companyId, "企业ID不能为空");
+        AssertUtil.notNull(departmentId, "部门ID不能为空");
+        List<BuildingArchives> buildingArchivesList = buildingArchiveImportDTOList.stream()
+                .map(o -> {
+                    BuildingArchives buildingArchives = new BuildingArchives();
+                    BeanUtils.copyProperties(o, buildingArchives);
+                    // 导入的楼盘默认为北京朝阳区
+                    buildingArchives.setAreaCode("110105000000");
+                    buildingArchives.setAreaName("北京市市辖区朝阳区");
+                    buildingArchives.setCompanyId(companyId);
+                    buildingArchives.setDepartmentId(departmentId);
+                    return buildingArchives;
+                })
+                .collect(Collectors.toList());
+        buildingArchivesRepository.batchSaveBuildingArchives(buildingArchivesList, userId);
     }
 
     @Override

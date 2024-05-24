@@ -29,11 +29,11 @@ import java.util.stream.Collectors;
  * @author liujianyu
  * @since 2024-05-15
  */
-@Service
+@Service("deviceArchivesService")
 public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper, DeviceArchivesEntity> implements DeviceArchivesService {
 
-   @Autowired
-   private BuildingAndConfigCommonUtilService buildingAndConfigCommonUtilService;
+    @Autowired
+    private BuildingAndConfigCommonUtilService buildingAndConfigCommonUtilService;
 
     /**
      * 参数校验
@@ -41,37 +41,37 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
     @Override
     public void checkParams(DeviceArchivesEntity entity) {
         // 必填判断
-        if (StringUtils.isBlank(entity.getDeviceName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"设备名称不可为空");
+        if (StringUtils.isBlank(entity.getDeviceName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "设备名称不可为空");
         }
-        if (Objects.isNull(entity.getLoupanId())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"所属楼盘不可为空");
+        if (Objects.isNull(entity.getLoupanId())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "所属楼盘不可为空");
         }
-        if (Objects.isNull(entity.getDeviceCategory())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"设备类别不可为空");
+        if (Objects.isNull(entity.getDeviceCategory())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "设备类别不可为空");
         }
-        if (StringUtils.isBlank(entity.getInstallationLocation())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"安装位置不可为空");
+        if (StringUtils.isBlank(entity.getInstallationLocation())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装位置不可为空");
         }
-        if (Objects.isNull(entity.getInstallationDate())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"安装日期不可为空");
+        if (Objects.isNull(entity.getInstallationDate())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不可为空");
         }
     }
 
     @Override
     public void checkParamsImport(DeviceArchivesImportDto entity) {
         // 必填判断
-        if (StringUtils.isBlank(entity.getDeviceName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"设备名称不可为空");
+        if (StringUtils.isBlank(entity.getDeviceName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "设备名称不可为空");
         }
-        if (StringUtils.isBlank(entity.getDeviceCategoryName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"设备类别不可为空");
+        if (StringUtils.isBlank(entity.getDeviceCategoryName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "设备类别不可为空");
         }
-        if (StringUtils.isBlank(entity.getInstallationLocation())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"安装位置不可为空");
+        if (StringUtils.isBlank(entity.getInstallationLocation())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装位置不可为空");
         }
-        if (StringUtils.isBlank(entity.getInstallationDateName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"安装日期不可为空");
+        if (StringUtils.isBlank(entity.getInstallationDateName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不可为空");
         }
     }
 
@@ -104,10 +104,10 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
     }
 
     @Override
-    public void importDataSave(List<DeviceArchivesImportDto> dataList) {
+    public void importDataSave(List<DeviceArchivesImportDto> dataList, Long loupanId) {
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
-        Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(DeviceArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
+        //Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(DeviceArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
         Map<String, Long> nameConfigIdMap = new HashMap<>();
 
@@ -119,7 +119,7 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
             entity.setDeviceCategory(checkConfigTypeNull(nameConfigIdMap, data.getDeviceCategoryName()));
             entity.setInstallationLocation(data.getInstallationLocation());
             entity.setInstallationDate(getDate(data.getInstallationDateName()));
-            entity.setLoupanId(nameIdMap.get(data.getLoupanName()));
+            entity.setLoupanId(loupanId);
             // TODO: 2024/5/16 这里还需要基于不同的一级类目去查询配置
             list.add(entity);
         });
@@ -130,18 +130,23 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
     /**
      * 处理使用名称获取配置类型
      */
-    private Long checkConfigTypeNull(Map<String, Long> nameConfigIdMap, String configName){
+    private Long checkConfigTypeNull(Map<String, Long> nameConfigIdMap, String configName) {
         Long typeId = nameConfigIdMap.get(configName);
-        if (Objects.isNull(typeId)){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"配置类型" + configName + "不存在");
+        if (Objects.isNull(typeId)) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "配置类型" + configName + "不存在");
         }
         return typeId;
     }
 
-    private LocalDate getDate(String dateStr){
-        if (StringUtils.isBlank(dateStr)){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"安装日期不存在");
+    private LocalDate getDate(String dateStr) {
+        if (StringUtils.isBlank(dateStr)) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不存在");
         }
         return LocalDate.parse(dateStr);
     }
+
+    public DeviceArchivesEntity queryForDetail(Long id) {
+        return getById(id);
+    }
+
 }

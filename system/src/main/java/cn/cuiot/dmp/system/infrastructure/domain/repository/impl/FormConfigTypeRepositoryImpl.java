@@ -53,10 +53,30 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
     }
 
     @Override
+    public List<FormConfigType> queryForList(FormConfigType formConfigType) {
+        LambdaQueryWrapper<FormConfigTypeEntity> queryWrapper = new LambdaQueryWrapper<FormConfigTypeEntity>()
+                .eq(Objects.nonNull(formConfigType.getCompanyId()), FormConfigTypeEntity::getCompanyId, formConfigType.getCompanyId());
+        List<FormConfigTypeEntity> formConfigTypeEntityList = formConfigTypeMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(formConfigTypeEntityList)) {
+            return new ArrayList<>();
+        }
+        return formConfigTypeEntityList.stream()
+                .map(o -> {
+                    FormConfigType formConfigTypeResult = new FormConfigType();
+                    BeanUtils.copyProperties(o, formConfigTypeResult);
+                    return formConfigTypeResult;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<FormConfigType> queryForList(List<Long> idList) {
         LambdaQueryWrapper<FormConfigTypeEntity> queryWrapper = new LambdaQueryWrapper<FormConfigTypeEntity>()
                 .in(FormConfigTypeEntity::getId, idList);
         List<FormConfigTypeEntity> formConfigTypeEntityList = formConfigTypeMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(formConfigTypeEntityList)) {
+            return new ArrayList<>();
+        }
         return formConfigTypeEntityList.stream()
                 .map(o -> {
                     FormConfigType formConfigType = new FormConfigType();

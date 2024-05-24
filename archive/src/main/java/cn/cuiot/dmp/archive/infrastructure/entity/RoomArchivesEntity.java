@@ -3,9 +3,13 @@ package cn.cuiot.dmp.archive.infrastructure.entity;
 import java.math.BigDecimal;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+import java.util.List;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -117,7 +121,8 @@ public class RoomArchivesEntity extends YjBaseEntity implements Serializable {
     /**
      * 图片（支持png/jpg/jpeg，小于50M，最多上传3张）
      */
-    private String images;
+    @TableField(typeHandler = JsonTypeHandler.class)
+    private List<String> images;
 
 
 }

@@ -2,10 +2,7 @@ package cn.cuiot.dmp.base.infrastructure.feign;
 
 import cn.cuiot.dmp.base.infrastructure.dto.*;
 import cn.cuiot.dmp.base.infrastructure.dto.req.*;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.*;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 
 import org.springframework.cloud.openfeign.FeignClient;
@@ -101,5 +98,11 @@ public interface SystemApiFeignService {
      */
     @PostMapping(value = "/api/batchQueryCustomConfigDetails", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<CustomConfigDetailRspDTO>> batchQueryCustomConfigDetails(@RequestBody @Valid CustomConfigDetailReqDTO customConfigDetailReqDTO);
+
+    /**
+     * 根据条件批量查询自定义配置列表
+     */
+    @PostMapping(value = "/api/batchQueryCustomConfigs", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<CustomConfigRspDTO>> batchQueryCustomConfigs(@RequestBody @Valid CustomConfigReqDTO customConfigReqDTO);
 
 }

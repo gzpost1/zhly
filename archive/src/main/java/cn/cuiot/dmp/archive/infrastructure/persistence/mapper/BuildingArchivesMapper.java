@@ -20,4 +20,11 @@ public interface BuildingArchivesMapper extends BaseMapper<BuildingArchivesEntit
      */
     int batchUpdateBuildingArchives(@Param("departmentId") Long departmentId, @Param("idList") List<Long> idList);
 
+    /**
+     * 批量保存楼盘档案列表
+     *
+     * @param buildingArchivesEntityList 楼盘档案列表
+     */
+    int batchSaveBuildingArchives(@Param("list") List<BuildingArchivesEntity> buildingArchivesEntityList);
+
 }

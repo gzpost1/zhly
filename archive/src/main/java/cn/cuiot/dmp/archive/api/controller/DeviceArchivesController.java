@@ -6,19 +6,18 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.DeviceArchivesImportDto;
-import cn.cuiot.dmp.archive.application.param.dto.RoomArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.query.DeviceArchivesQuery;
-import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.param.vo.DeviceArchivesExportVo;
-import cn.cuiot.dmp.archive.application.param.vo.RoomArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.DeviceArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -38,6 +37,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 /**
@@ -85,6 +86,7 @@ public class DeviceArchivesController {
      * 创建
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "saveDeviceArchives", operationName = "保存设备档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/create")
     public IdmResDTO create(@RequestBody DeviceArchivesEntity entity) {
         // 校验参数合法性，写在service层，用于导入的时候使用
@@ -98,6 +100,7 @@ public class DeviceArchivesController {
      * 修改
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateDeviceArchives", operationName = "修改设备档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/update")
     public IdmResDTO update(@RequestBody DeviceArchivesEntity entity) {
         deviceArchivesService.updateById(entity);
@@ -108,6 +111,7 @@ public class DeviceArchivesController {
      * 删除
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "deleteDeviceArchives", operationName = "删除设备档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/delete")
     public IdmResDTO delete(@RequestBody @Valid IdParam idParam) {
         deviceArchivesService.removeById(idParam.getId());
@@ -118,6 +122,7 @@ public class DeviceArchivesController {
      * 批量修改
      */
     @RequiresPermissions
+    @LogRecord(operationCode = "updateByIdsDeviceArchives", operationName = "批量修改房屋档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/updateByIds")
     public IdmResDTO updateByIds(@RequestBody @Valid ArchiveBatchUpdateDTO param) {
         LambdaQueryWrapper<DeviceArchivesEntity> wrapper = new LambdaQueryWrapper<>();
@@ -155,9 +160,10 @@ public class DeviceArchivesController {
      */
     @RequiresPermissions
     @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void importData(@RequestParam("file") MultipartFile file) throws Exception {
+    public void importData(@RequestParam("file") MultipartFile file, @RequestParam(value = "loupanId", required = true) Long loupanId) throws Exception {
 
         AssertUtil.isFalse((null == file || file.isEmpty()), "上传文件为空");
+        AssertUtil.isFalse((null == loupanId), "楼盘id为空");
 
         ImportParams params = new ImportParams();
         params.setHeadRows(1);
@@ -172,6 +178,30 @@ public class DeviceArchivesController {
             deviceArchivesService.checkParamsImport(dto);
         }
 
-        deviceArchivesService.importDataSave(importDtoList);
+        deviceArchivesService.importDataSave(importDtoList, loupanId);
+    }
+
+    /**
+     * 下载模板
+     */
+    @PostMapping("/downloadTemplate")
+    public IdmResDTO<Object> download(HttpServletResponse response) throws IOException {
+        response.setCharacterEncoding("UTF-8");
+        String fileName = "importDeviceArchives.xlsx";
+        String template;
+        template = "/template/importDeviceArchives.xlsx";
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+        try (InputStream inStream = this.getClass().getResourceAsStream(template)) {
+            OutputStream outputStream = response.getOutputStream();
+            byte[] b = new byte[1000];
+            int len;
+            if (inStream != null) {
+                while ((len = inStream.read(b)) > 0) {
+                    outputStream.write(b, 0, len);
+                }
+            }
+        }
+        return IdmResDTO.success();
     }
 }

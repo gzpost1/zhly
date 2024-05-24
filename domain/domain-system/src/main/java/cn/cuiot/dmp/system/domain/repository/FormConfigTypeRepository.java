@@ -21,6 +21,11 @@ public interface FormConfigTypeRepository {
     /**
      * 获取表单配置类型列表
      */
+    List<FormConfigType> queryForList(FormConfigType formConfigType);
+
+    /**
+     * 获取表单配置类型列表
+     */
     List<FormConfigType> queryForList(List<Long> idList);
 
     /**

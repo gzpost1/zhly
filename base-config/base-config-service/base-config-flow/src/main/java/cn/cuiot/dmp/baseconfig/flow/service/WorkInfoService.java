@@ -1138,9 +1138,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
             Map<Long, String> busiMap = getBusiMap(busiTypes);
 
-            //获取节点按钮
-            ChildNode childNodeByNodeId = getChildNodeByNodeId(records.get(0).getProcDefId(), records.get(0).getTaskDefKey());
-            List<NodeButton> buttons = childNodeByNodeId.getProps().getButtons();
             //userIds
             List<Long> usreIds = records.stream().map(MyApprovalResultDto::getUserId).collect(Collectors.toList());
             Map<Long, String> userMap = getUserMap(usreIds);
@@ -1153,6 +1150,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 // 发起人
                 item.setUserName(userMap.get(item.getUserId()));
                 //按钮
+                ChildNode childNodeByNodeId = getChildNodeByNodeId(item.getProcDefId(), item.getTaskDefKey());
+                List<NodeButton> buttons = childNodeByNodeId.getProps().getButtons();
                 item.setButtons(buttons);
 
             });

@@ -69,6 +69,8 @@ public class BuildingArchivesController extends BaseController {
      */
     @PostMapping("/queryForList")
     public List<BuildingArchivesVO> queryForList(@RequestBody @Valid BuildingArchivesPageQuery pageQuery) {
+        String orgId = getOrgId();
+        pageQuery.setCompanyId(Long.valueOf(orgId));
         return buildingArchivesService.queryForList(pageQuery);
     }
 
@@ -77,6 +79,8 @@ public class BuildingArchivesController extends BaseController {
      */
     @PostMapping("/queryForPage")
     public PageResult<BuildingArchivesVO> queryForPage(@RequestBody @Valid BuildingArchivesPageQuery pageQuery) {
+        String orgId = getOrgId();
+        pageQuery.setCompanyId(Long.valueOf(orgId));
         return buildingArchivesService.queryForPage(pageQuery);
     }
 
@@ -175,21 +179,24 @@ public class BuildingArchivesController extends BaseController {
         AssertUtil.notNull(departmentId, "部门id不能为空");
         String orgId = getOrgId();
         AssertUtil.notBlank(orgId, "组织id不能为空");
+        String userId = getUserId();
+        AssertUtil.notBlank(userId, "用户id不能为空");
         ImportParams params = new ImportParams();
         params.setTitleRows(0);
         params.setHeadRows(1);
         params.setNeedVerify(true);
         List<BuildingArchiveImportDTO> buildingArchiveImportDTOList = ExcelImportUtil.importExcel(file.getInputStream(),
                 BuildingArchiveImportDTO.class, params);
-        AssertUtil.notEmpty(buildingArchiveImportDTOList, "导入数据不能为空");
-        buildingArchivesService.importBuildingArchives(buildingArchiveImportDTOList, Long.valueOf(orgId), departmentId);
+        AssertUtil.notEmpty(buildingArchiveImportDTOList, "导入数据为空");
+        buildingArchivesService.importBuildingArchives(buildingArchiveImportDTOList, Long.valueOf(orgId), departmentId,
+                Long.valueOf(userId));
         return IdmResDTO.success();
     }
 
     /**
      * 导出
      */
-    @PostMapping(value = "/export", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/export")
     public IdmResDTO<Object> exportBuildingArchives(@RequestBody @Valid BuildingArchivesPageQuery pageQuery) throws IOException {
         List<BuildingArchivesExportVO> buildingArchivesExportVOList = buildingArchivesService.queryForExportList(pageQuery);
         List<Map<String, Object>> sheetsList = new ArrayList<>();
