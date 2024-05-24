@@ -449,7 +449,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO assigneeByProcInstId(HandleDataDTO handleDataDTO){
 
         Map<String,Object> variableMap= new HashMap<>();
-        variableMap.put("assigneeName","1792754241521627138");
+        variableMap.put("assigneeName","1232132");
         runtimeService.addMultiInstanceExecution("node_783297952551","1793093386617548801", variableMap);
         // 查询与流程实例ID相关联的所有任务
 //        List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
