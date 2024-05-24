@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.entity;
 
 import cn.cuiot.dmp.base.infrastructure.persistence.mapper.BaseEntity;
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,7 +29,7 @@ public class CustomConfigEntity extends BaseEntity {
 
     /**
      * 档案类型
-     * @see cn.cuiot.dmp.system.application.enums.ArchiveTypeEnum
+     * @see ArchiveTypeEnum
      */
     private Byte archiveType;
 
