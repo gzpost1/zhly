@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
 import lombok.Data;
+import org.jpedal.parser.shape.S;
 
 /**
  * @author pengjian
@@ -12,5 +13,5 @@ public class WorkProcInstDto {
     /**
      * 实例id
      */
-    private Long procInstId;
+    private String procInstId;
 }
