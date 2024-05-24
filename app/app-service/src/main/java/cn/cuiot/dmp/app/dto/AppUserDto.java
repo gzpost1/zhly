@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.app.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import lombok.Data;
 
@@ -34,6 +35,12 @@ public class AppUserDto implements Serializable {
      * 头像
      */
     private String avatar;
+
+    /**
+     * 密码（加密）
+     */
+    @JsonIgnore
+    private String password;
 
     /**
      * 状态 1-启用 0-停用

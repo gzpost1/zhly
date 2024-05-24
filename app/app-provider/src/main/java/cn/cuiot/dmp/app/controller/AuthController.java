@@ -1,10 +1,16 @@
 package cn.cuiot.dmp.app.controller;
 
+import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
+
 import cn.cuiot.dmp.app.dto.AppUserDto;
 import cn.cuiot.dmp.app.dto.user.ChangePhoneDto;
 import cn.cuiot.dmp.app.dto.user.Code2SessionDto;
 import cn.cuiot.dmp.app.dto.user.KaptchaResDTO;
 import cn.cuiot.dmp.app.dto.user.MiniLoginDto;
+import cn.cuiot.dmp.app.dto.user.PhoneLoginDto;
+import cn.cuiot.dmp.app.dto.user.PwdChangeDto;
+import cn.cuiot.dmp.app.dto.user.PwdLoginDto;
+import cn.cuiot.dmp.app.dto.user.PwdResetDto;
 import cn.cuiot.dmp.app.dto.user.SampleUserInfoDto;
 import cn.cuiot.dmp.app.dto.user.SecretKeyResDTO;
 import cn.cuiot.dmp.app.dto.user.SmsCodeCheckReqDto;
@@ -18,7 +24,10 @@ import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.hutool.core.util.PhoneUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Optional;
@@ -104,7 +113,48 @@ public class AuthController {
         return appVerifyService.createSecretKey();
     }
 
+    /**
+     * 密码登录
+     */
+    @PostMapping("pwdLogin")
+    public IdmResDTO pwdLogin(@RequestBody @Valid PwdLoginDto dto) {
+        String ipAddr = IpUtil.getIpAddr(request);
+        dto.setIpAddr(ipAddr);
+        AppUserDto userDto = appAuthService.pwdLogin(dto);
+        return IdmResDTO.success(userDto);
+    }
 
+    /**
+     * 手机号登录
+     */
+    @PostMapping("phoneLogin")
+    public IdmResDTO phoneLogin(@RequestBody @Valid PhoneLoginDto dto) {
+        String ipAddr = IpUtil.getIpAddr(request);
+        dto.setIpAddr(ipAddr);
+        AppUserDto userDto = appAuthService.phoneLogin(dto);
+        return IdmResDTO.success(userDto);
+    }
+
+    /**
+     * 密码重置
+     */
+    @PostMapping("resetPwd")
+    public IdmResDTO resetPwd(@RequestBody @Valid PwdResetDto dto) {
+        String ipAddr = IpUtil.getIpAddr(request);
+        dto.setIpAddr(ipAddr);
+        appAuthService.resetPwd(dto);
+        return IdmResDTO.success(null);
+    }
+
+    /**
+     * 修改密码
+     */
+    @PostMapping("changePwd")
+    public IdmResDTO changePwd(@RequestBody @Valid PwdChangeDto dto) {
+        dto.setUserId(LoginInfoHolder.getCurrentUserId());
+        appAuthService.changePwd(dto);
+        return IdmResDTO.success(null);
+    }
 
     /**
      * 获得登录用户信息
