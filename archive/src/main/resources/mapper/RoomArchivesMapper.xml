@@ -22,7 +22,7 @@
         <result column="location_method" property="locationMethod" />
         <result column="location_deviation" property="locationDeviation" />
         <result column="status" property="status" />
-        <result column="images" property="images" />
+        <result column="images" jdbcType="VARCHAR" property="images" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
         <result column="update_time" property="updateTime" />
         <result column="update_user" property="updateUser" />
         <result column="create_time" property="createTime" />

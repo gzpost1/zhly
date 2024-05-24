@@ -161,9 +161,10 @@ public class ParkingArchivesController {
      */
     @RequiresPermissions
     @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void importData(@RequestParam("file") MultipartFile file) throws Exception {
+    public void importData(@RequestParam("file") MultipartFile file, @RequestParam(value = "loupanId", required = true) Long loupanId) throws Exception {
 
         AssertUtil.isFalse((null == file || file.isEmpty()), "上传文件为空");
+        AssertUtil.isFalse((null == loupanId), "楼盘id为空");
 
         ImportParams params = new ImportParams();
         params.setHeadRows(1);
@@ -178,7 +179,7 @@ public class ParkingArchivesController {
             parkingArchivesService.checkParamsImport(dto);
         }
 
-        parkingArchivesService.importDataSave(importDtoList);
+        parkingArchivesService.importDataSave(importDtoList, loupanId);
     }
 
     /**

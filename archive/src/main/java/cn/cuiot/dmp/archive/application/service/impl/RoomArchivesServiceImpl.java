@@ -112,10 +112,10 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
     }
 
     @Override
-    public void importDataSave(List<RoomArchivesImportDto> dataList) {
+    public void importDataSave(List<RoomArchivesImportDto> dataList, Long loupanId) {
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
-        Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(RoomArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
+        // Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(RoomArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
         Map<String, Long> nameConfigIdMap = new HashMap<>();
 
@@ -128,7 +128,7 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
             entity.setProfessionalPurpose(checkConfigTypeNull(nameConfigIdMap, data.getProfessionalPurposeName()));
             entity.setLocationDeviation(entity.getLocationDeviation());
             entity.setStatus(getStatusFromName(data.getStatusName()));
-            entity.setLoupanId(nameIdMap.get(data.getLoupanName()));
+            entity.setLoupanId(loupanId);
             // TODO: 2024/5/16 这里还需要基于不同的一级类目去查询配置
             list.add(entity);
         });
