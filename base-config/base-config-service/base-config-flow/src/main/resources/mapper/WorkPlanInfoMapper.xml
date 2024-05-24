@@ -38,7 +38,7 @@
         t1.update_user,
         t1.create_time,
         t1.create_user,
-        t1.deleted,t1.plan_time,
+        t1.deleted,t1.plan_time,t1.push_hour,t1,push_day
         t1.plan_name, t1.plan_desc, t1.flow_id, t1.flow_key, t1.start_date, t1.end_date, t1.execution_strategy, t1.strategy_type, t1.specify_day, t1.specify_week,
             t1.specify_month, t1.recurrent_state, t1.recurrent_hour, t1.recurrent_type, t1.recurrent_over_time, t1.task_id, t1.org_id, t1.state, t1.ext
     </sql>
