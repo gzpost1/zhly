@@ -22,7 +22,7 @@
         id, business_type, org, work_name, work_souce, user_id, status
     </sql>
     <sql id="queryWorkOrderInfoSql">
-        DISTINCT t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds
+         t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds
 
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
@@ -60,6 +60,7 @@
                     #{item}
                 </foreach>
             </if>
+            group by t1.proc_inst_id
             order by t1.create_time desc
         </where>
     </sql>
@@ -190,12 +191,13 @@
             <if test="query.makeUserId !=null">
                 and t2.user_id = #{query.makeUserId}
             </if>
+            group by t1.proc_inst_id
             order by  t1.create_time desc
         </where>
     </sql>
 
     <sql id="queryMySubmitWorkInfo">
-        DISTINCT t1.id,  t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status, t1.create_time, t1.create_user ,t1.org_ids
+         t1.id,  t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status, t1.create_time, t1.create_user ,t1.org_ids
     </sql>
     <select id="queryMySubmitWorkInfo" resultType="cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity">
         select
@@ -223,7 +225,7 @@
             <if test="query.procInstId !=null">
                 and t1.proc_inst_id like concat('%',#{query.procInstId},'%')
             </if>
-
+            group by t1.proc_inst_id
             order by t1.create_time desc
         </where>
     </sql>

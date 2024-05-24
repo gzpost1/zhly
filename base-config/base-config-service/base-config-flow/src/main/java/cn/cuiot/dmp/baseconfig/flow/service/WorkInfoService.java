@@ -21,12 +21,11 @@ import cn.cuiot.dmp.baseconfig.flow.dto.vo.TaskDetailVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDTO;
 import cn.cuiot.dmp.baseconfig.flow.entity.*;
-import cn.cuiot.dmp.baseconfig.flow.enums.AssigneeTypeEnums;
-import cn.cuiot.dmp.baseconfig.flow.enums.BusinessInfoEnums;
-import cn.cuiot.dmp.baseconfig.flow.enums.WorkInfoEnums;
-import cn.cuiot.dmp.baseconfig.flow.enums.WorkOrderStatusEnums;
+import cn.cuiot.dmp.baseconfig.flow.enums.*;
+import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkInfoMapper;
 import cn.cuiot.dmp.baseconfig.flow.vo.HistoryProcessInstanceVO;
+import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
@@ -43,6 +42,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import liquibase.pro.packaged.A;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.record.DVALRecord;
@@ -112,10 +112,15 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     private ProcessEngine processEngine;
 
     @Autowired
+    private SystemToFlowService systemToFlowService;
+
+    @Autowired
     private NodeTypeService nodeTypeService;
 
     @Autowired
     private WorkOrgRelService workOrgRelService;
+
+
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO) {
         JSONObject formData = startProcessInstanceDTO.getFormData();
@@ -367,6 +372,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         List<WorkBusinessTypeInfoEntity> busiList = new ArrayList<>();
         Authentication.setAuthenticatedUserId(String.valueOf(LoginInfoHolder.getCurrentUserId()));
         for (String taskId :handleDataDTO.getTaskIds()){
+
+            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
+            if(Objects.nonNull(taskInstance.getEndTime())){
+                return IdmResDTO.error(ErrorCode.NOT_FOUND.getCode(),"节点已审批");
+            }
             HandleDataDTO dto = new HandleDataDTO();
             dto.setTaskId(taskId);
             dto.setComments(handleDataDTO.getComments());
@@ -498,7 +508,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             //更新挂起
             dto.setNodeId(workBusinessTypeInfo.getNode());
             updateBusinessPendingDate(dto);
-            taskService.complete(dto.getTaskId());
+
         }
         if(!CollectionUtils.isEmpty(buList)){
             workBusinessTypeInfoService.saveBatch(buList);
@@ -837,7 +847,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         long hourCount = restTimes/(1000*60*60);//小时
         restTimes = restTimes % (1000*60*60);
         long minuteCount = restTimes / (1000*60);
-
+        minuteCount++;
         return dayCount+"天"+hourCount+"小时"+minuteCount+"分";
     }
 
@@ -872,14 +882,21 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         TbFlowConfig flowConfig = flowConfigService.getById(processDefinitionKey.replace(PROCESS_PREFIX, ""));
 
 
+//        Process mainProcess = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess();
 
 
         Process mainProcess = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess();
+
+        String dingDing = mainProcess.getAttributeValue(FLOWABLE_NAME_SPACE, FLOWABLE_NAME_SPACE_NAME);
+        JSONObject mainJson = JSONObject.parseObject(dingDing, new TypeReference<JSONObject>() {
+        });
+        String processJson = mainJson.getString(VIEW_PROCESS_JSON_NAME);
+
         Collection<FlowElement> flowElements = mainProcess.getFlowElements();
         String instId = historicProcessInstance.getId();
-        String nodeJson = queryCCrecipient(flowConfig.getProcess(), processInstanceId);
+        String nodeJson = queryCCrecipient(processJson, processInstanceId,historicProcessInstance.getProcessDefinitionId() );
         flowConfig.setProcess(nodeJson);
-        flowConfig.setFormItems(flowConfig.getFormItems());
+//        flowConfig.setFormItems(flowConfig.getFormItems());
         HandleDataVO handleDataVO =new HandleDataVO();
         Map<String, Object> processVariables = historicProcessInstance.getProcessVariables();
 
@@ -936,9 +953,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(handleDataVO);
     }
 
-    public String queryCCrecipient(String process,String procInstId){
+    public String queryCCrecipient(String process,String procInstId ,String processDefinitionId){
 
-
+        String flowConfigId = StringUtils.substringBefore(processDefinitionId, ":").replace(PROCESS_PREFIX, "");
         //装抄送人
         ChildNode childNode = processJson(process);
         ChildNode children = childNode.getChildren();
@@ -947,21 +964,47 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 break;
             }
             if(StringUtils.equals("CC",children.getType())){
-                LambdaQueryWrapper<TbFlowCc> lw = new LambdaQueryWrapper<>();
-                lw.eq(TbFlowCc::getProcessInstanceId,procInstId).eq(TbFlowCc::getNodeId,children.getId());
-                List<TbFlowCc> list = tbFlowCcService.list(lw);
-                if(CollectionUtils.isNotEmpty(list)){
-                    List<Long> userIds = list.stream().map(TbFlowCc::getUserId).collect(Collectors.toList());
-                    Map<Long, String> userMap = getUserMap(userIds);
-                    List<UserInfo>  assignedUser = new ArrayList<>();
-                    list.stream().forEach(item->{
+                CCInfo ccInfo = children.getProps().getCcInfo();
+                List<Long> ccUserIds = new ArrayList<>();
+                List<String> ids = ccInfo.getCcIds();
+                //指定人员证明节点已经有人员数据
+                if (Objects.equals(ccInfo.getType(), FlowCCEnums.PERSON.getCode())) {
+                    ccUserIds = ccInfo.getCcIds().stream().map(e -> Long.parseLong(e)).collect(Collectors.toList());
+                }else if (Objects.equals(ccInfo.getType(), FlowCCEnums.ROLE.getCode())) {
+                    List<Long> flowCOnfigDeptIds = tbFlowConfigOrgService.queryOrgIdsByFlowConfigId(Long.valueOf(flowConfigId));
+                    AssertUtil.notEmpty(flowCOnfigDeptIds, "该流程暂未配置组织,请重试");
+                    ccUserIds = systemToFlowService.getUserIdByRole(ids.stream().map(e -> Long.parseLong(e)).collect(Collectors.toList()),flowCOnfigDeptIds);
+                }else if (Objects.equals(ccInfo.getType(), FlowCCEnums.DEPARTMENT.getCode())) {
+                    ccUserIds = systemToFlowService.getUserIdByDept(ids.stream().map(e -> Long.parseLong(e)).collect(Collectors.toList()));
+                }
+                Map<Long, String> userMap = getUserMap(ccUserIds);
+                List<UserInfo>  assignedUser = new ArrayList<>();
+                ccUserIds.stream().forEach(item->{
                         UserInfo userInfo = new UserInfo();
-                        userInfo.setId(String.valueOf(item.getUserId()));
-                        userInfo.setName(userMap.get(item.getUserId()));
+                        userInfo.setId(String.valueOf(item));
+                        userInfo.setName(userMap.get(item));
                         assignedUser.add(userInfo);
                     });
-                    children.getProps().setAssignedUser(assignedUser);
-                }
+                children.getProps().setAssignedUser(assignedUser);
+//                List<UserInfo> assignedUser1 = children.getProps().getAssignedUser();
+//                if(CollectionUtils.isNotEmpty(assignedUser1)){
+//                    continue;
+//                }
+//                LambdaQueryWrapper<TbFlowCc> lw = new LambdaQueryWrapper<>();
+//                lw.eq(TbFlowCc::getProcessInstanceId,procInstId).eq(TbFlowCc::getNodeId,children.getId());
+//                List<TbFlowCc> list = tbFlowCcService.list(lw);
+//                if(CollectionUtils.isNotEmpty(list)){
+//                    List<Long> userIds = list.stream().map(TbFlowCc::getUserId).collect(Collectors.toList());
+//                    Map<Long, String> userMap = getUserMap(userIds);
+//                    List<UserInfo>  assignedUser = new ArrayList<>();
+//                    list.stream().forEach(item->{
+//                        UserInfo userInfo = new UserInfo();
+//                        userInfo.setId(String.valueOf(item.getUserId()));
+//                        userInfo.setName(userMap.get(item.getUserId()));
+//                        assignedUser.add(userInfo);
+//                    });
+//                    children.getProps().setAssignedUser(assignedUser);
+//                }
             }
             children=children.getChildren();
         }
