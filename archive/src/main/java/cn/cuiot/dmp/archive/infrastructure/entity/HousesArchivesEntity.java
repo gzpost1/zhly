@@ -2,6 +2,7 @@ package cn.cuiot.dmp.archive.infrastructure.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.LongListHandler;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -207,7 +208,7 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     /**
      * 基础服务（显示自定义配置中的选项，支持多选）
      */
-    @TableField(typeHandler = JsonTypeHandler.class)
+    @TableField(typeHandler = LongListHandler.class)
     private List<Long> basicServices;
 
     /**
