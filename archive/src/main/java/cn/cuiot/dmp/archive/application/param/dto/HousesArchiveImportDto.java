@@ -19,9 +19,6 @@ public class HousesArchiveImportDto implements Serializable {
     @Excel(name = "房号", orderNum = "1")
     private String roomNum;
 
-    @Excel(name = "楼盘名称", orderNum = "2")
-    private String loupanName;
-
-    @Excel(name = "房屋编码", orderNum = "3")
+    @Excel(name = "房屋编码", orderNum = "2")
     private String code;
 }

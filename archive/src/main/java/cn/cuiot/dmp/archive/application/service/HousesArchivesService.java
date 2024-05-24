@@ -40,6 +40,6 @@ public interface HousesArchivesService extends IService<HousesArchivesEntity> {
     /**
      * 导入数据
      */
-    void importDataSave(List<HousesArchiveImportDto> dataList);
+    void importDataSave(List<HousesArchiveImportDto> dataList, Long loupanId);
 
 }
