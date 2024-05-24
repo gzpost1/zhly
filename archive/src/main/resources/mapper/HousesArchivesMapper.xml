@@ -37,7 +37,7 @@
         <result column="listing_title" property="listingTitle" />
         <result column="recommended" property="recommended" />
         <result column="listing_images" jdbcType="VARCHAR" property="listingImages" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
-        <result column="basic_services" jdbcType="VARCHAR" property="basicServices" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+        <result column="basic_services" jdbcType="BIGINT" property="basicServices" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.LongListHandler"/>
         <result column="listing_description" property="listingDescription" />
         <result column="update_time" property="updateTime" />
         <result column="update_user" property="updateUser" />
