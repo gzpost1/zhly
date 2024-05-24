@@ -20,21 +20,26 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -150,24 +155,27 @@ public class BuildingArchivesController extends BaseController {
      * 下载模板
      */
     @PostMapping("/downloadTemplate")
-    public IdmResDTO<Object> download(HttpServletResponse response) throws IOException {
-        response.setCharacterEncoding("UTF-8");
-        String fileName = "importBuildingArchives.xlsx";
-        String template;
-        template = "/template/importBuildingArchives.xlsx";
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
-        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
-        try (InputStream inStream = this.getClass().getResourceAsStream(template)) {
-            OutputStream outputStream = response.getOutputStream();
-            byte[] b = new byte[1000];
-            int len;
-            if (inStream != null) {
-                while ((len = inStream.read(b)) > 0) {
-                    outputStream.write(b, 0, len);
-                }
+    public void downloadTemplate(HttpServletResponse response)
+            throws IOException {
+        BufferedOutputStream bos = null;
+        String templatePath = "template/importBuildingArchives.xlsx";
+        try (InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(templatePath)) {
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder
+                    .encode("楼盘档案导入模板.xls", "UTF-8"));
+            bos = new BufferedOutputStream(response.getOutputStream());
+            FileCopyUtils.copy(is, bos);
+        } catch (Exception ex) {
+            throw new BusinessException(ResultCode.INNER_ERROR, "下载失败");
+        } finally {
+            if (null != bos) {
+                bos.flush();
+                bos.close();
             }
         }
-        return IdmResDTO.success();
     }
 
     /**
