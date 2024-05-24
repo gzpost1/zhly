@@ -58,14 +58,8 @@ public class SystemUtilService {
             page.getRecords().forEach(e -> {
                 BusinessAndOrgNameDto businessAndOrgNameDto = nameDtoMap.get(e.getId());
                 if (Objects.nonNull(businessAndOrgNameDto)) {
-                    if(StringUtils.isNotEmpty(businessAndOrgNameDto.getBusinessTypeName())){
-                        e.setBusinessTypeName(StringUtils.substringAfter(businessAndOrgNameDto.getBusinessTypeName(), ">"));
-                    }
-
-                    if(StringUtils.isNotEmpty(businessAndOrgNameDto.getOrgName())){
-                        e.setOrgName(StringUtils.substringAfter(businessAndOrgNameDto.getOrgName(), ">"));
-                    }
-
+                    e.setBusinessTypeName(businessAndOrgNameDto.getBusinessTypeName());
+                    e.setOrgName(businessAndOrgNameDto.getOrgName());
                     e.setCreateUserName(businessAndOrgNameDto.getCreateUserName());
                 }
             });
