@@ -32,12 +32,12 @@
         <result column="responsible_person" property="responsiblePerson" />
         <result column="parking_area" property="parkingArea" />
         <result column="remarks" property="remarks" />
-        <result column="floor_plan" property="floorPlan" />
+        <result column="floor_plan" jdbcType="VARCHAR" property="floorPlan" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
         <result column="attachments" property="attachments" />
         <result column="listing_title" property="listingTitle" />
         <result column="recommended" property="recommended" />
-        <result column="listing_images" property="listingImages" />
-        <result column="basic_services" property="basicServices" />
+        <result column="listing_images" jdbcType="VARCHAR" property="listingImages" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+        <result column="basic_services" jdbcType="VARCHAR" property="basicServices" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
         <result column="listing_description" property="listingDescription" />
         <result column="update_time" property="updateTime" />
         <result column="update_user" property="updateUser" />
