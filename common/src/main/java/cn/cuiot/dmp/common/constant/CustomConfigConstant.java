@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.system.application.constant;
+package cn.cuiot.dmp.common.constant;
 
 import com.google.common.collect.Lists;
 
