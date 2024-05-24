@@ -63,7 +63,7 @@ public class SystemUtilService {
                     }
 
                     if(StringUtils.isNotEmpty(businessAndOrgNameDto.getOrgName())){
-                        e.setBusinessTypeName(StringUtils.substringAfter(businessAndOrgNameDto.getOrgName(), ">"));
+                        e.setOrgName(StringUtils.substringAfter(businessAndOrgNameDto.getOrgName(), ">"));
                     }
 
                     e.setCreateUserName(businessAndOrgNameDto.getCreateUserName());
