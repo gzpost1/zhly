@@ -103,9 +103,6 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         if (StringUtils.isBlank(entity.getRoomNum())){
             throw new BusinessException(ResultCode.PARAM_NOT_NULL,"房号不可为空");
         }
-        if (StringUtils.isBlank(entity.getLoupanName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"所属楼盘不可为空");
-        }
         if (StringUtils.isBlank(entity.getCode())){
             throw new BusinessException(ResultCode.PARAM_NOT_NULL,"房屋编码不可为空");
         }
@@ -157,10 +154,10 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
     }
 
     @Override
-    public void importDataSave(List<HousesArchiveImportDto> dataList) {
+    public void importDataSave(List<HousesArchiveImportDto> dataList, Long loupanId) {
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
-        Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(HousesArchiveImportDto::getLoupanName).collect(Collectors.toSet()));
+        // Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(HousesArchiveImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
         Map<String, Long> nameConfigIdMap = new HashMap<>();
 
@@ -168,7 +165,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         List<HousesArchivesEntity> list = new ArrayList<>();
         dataList.forEach(data -> {
             HousesArchivesEntity entity = new HousesArchivesEntity();
-            entity.setLoupanId(nameIdMap.getOrDefault(data.getLoupanName(), 1L));
+            entity.setLoupanId(loupanId);
             entity.setRoomNum(data.getRoomNum());
             entity.setName(data.getName());
             entity.setCode(data.getCode());

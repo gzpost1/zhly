@@ -3,12 +3,16 @@ package cn.cuiot.dmp.archive.infrastructure.entity;
 import java.math.BigDecimal;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * <p>
@@ -158,16 +162,25 @@ public class DeviceArchivesEntity extends YjBaseEntity implements Serializable {
     /**
      * 出厂日期（支持选择年月日）
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @JSONField(format = "yyyy-MM-dd")
     private LocalDate factoryDate;
 
     /**
      * 投运日期（支持选择年月日）
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @JSONField(format = "yyyy-MM-dd")
     private LocalDate operationDate;
 
     /**
      * 质保期限（支持选择年月日）
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @JSONField(format = "yyyy-MM-dd")
     private LocalDate warrantyPeriod;
 
     /**
