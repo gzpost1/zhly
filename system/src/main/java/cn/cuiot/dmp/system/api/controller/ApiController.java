@@ -116,7 +116,7 @@ public class ApiController {
         DepartmentDto departmentDto = null;
         if (Objects.nonNull(deptId)) {
             DepartmentEntity departmentEntity = departmentService.getDeptById(deptId.toString());
-            if (Objects.isNull(departmentEntity)) {
+            if (Objects.nonNull(departmentEntity)) {
                 departmentDto = departmentConverter.entityToDTO(departmentEntity);
             }
         }

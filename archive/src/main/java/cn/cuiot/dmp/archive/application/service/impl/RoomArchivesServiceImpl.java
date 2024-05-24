@@ -35,48 +35,49 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
 
     @Autowired
     private BuildingAndConfigCommonUtilService buildingAndConfigCommonUtilService;
+
     /**
      * 参数校验
      */
     @Override
     public void checkParams(RoomArchivesEntity entity) {
         // 必填判断
-        if (StringUtils.isBlank(entity.getName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"空间名称不可为空");
+        if (StringUtils.isBlank(entity.getName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "空间名称不可为空");
         }
-        if (Objects.isNull(entity.getLoupanId())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"所属楼盘不可为空");
+        if (Objects.isNull(entity.getLoupanId())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "所属楼盘不可为空");
         }
-        if (Objects.isNull(entity.getSpaceCategory())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"空间分类不可为空");
+        if (Objects.isNull(entity.getSpaceCategory())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "空间分类不可为空");
         }
-        if (Objects.isNull(entity.getProfessionalPurpose())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"专业用途不可为空");
+        if (Objects.isNull(entity.getProfessionalPurpose())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "专业用途不可为空");
         }
-        if (StringUtils.isBlank(entity.getLocationDeviation())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"定位偏差不可为空");
+        if (StringUtils.isBlank(entity.getLocationDeviation())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "定位偏差不可为空");
         }
-        if (Objects.isNull(entity.getStatus())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"状态不可为空");
+        if (Objects.isNull(entity.getStatus())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "状态不可为空");
         }
     }
 
     @Override
     public void checkParamsImport(RoomArchivesImportDto entity) {
-        if (StringUtils.isBlank(entity.getName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"空间名称不可为空");
+        if (StringUtils.isBlank(entity.getName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "空间名称不可为空");
         }
-        if (StringUtils.isBlank(entity.getSpaceCategoryName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"空间分类不可为空");
+        if (StringUtils.isBlank(entity.getSpaceCategoryName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "空间分类不可为空");
         }
-        if (StringUtils.isBlank(entity.getProfessionalPurposeName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"专业用途不可为空");
+        if (StringUtils.isBlank(entity.getProfessionalPurposeName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "专业用途不可为空");
         }
-        if (StringUtils.isBlank(entity.getLocationDeviation())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"定位偏差不可为空");
+        if (StringUtils.isBlank(entity.getLocationDeviation())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "定位偏差不可为空");
         }
-        if (StringUtils.isBlank(entity.getStatusName())){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"状态不可为空");
+        if (StringUtils.isBlank(entity.getStatusName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "状态不可为空");
         }
     }
 
@@ -139,8 +140,8 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
     /**
      * 处理空对象造成空指针
      */
-    private String getFiledForExport(Object value){
-        if (Objects.isNull(value)){
+    private String getFiledForExport(Object value) {
+        if (Objects.isNull(value)) {
             return "";
         }
         return value.toString();
@@ -149,14 +150,14 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
     /**
      * 获取状态名称
      */
-    private String getStatusName(Byte status){
-        if (Objects.isNull(status)){
+    private String getStatusName(Byte status) {
+        if (Objects.isNull(status)) {
             return "";
         }
-        if (EntityConstants.ENABLED.equals(status)){
+        if (EntityConstants.ENABLED.equals(status)) {
             return "启用";
         }
-        if (EntityConstants.DISABLED.equals(status)){
+        if (EntityConstants.DISABLED.equals(status)) {
             return "禁用";
         }
         return "";
@@ -165,8 +166,8 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
     /**
      * 从名称获取状态
      */
-    private Byte getStatusFromName(String name){
-        if (StringUtils.isBlank(name) || "启用".equals(name)){
+    private Byte getStatusFromName(String name) {
+        if (StringUtils.isBlank(name) || "启用".equals(name)) {
             return EntityConstants.ENABLED;
         }
         return EntityConstants.DISABLED;
@@ -175,11 +176,16 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
     /**
      * 处理使用名称获取配置类型
      */
-    private Long checkConfigTypeNull(Map<String, Long> nameConfigIdMap, String configName){
+    private Long checkConfigTypeNull(Map<String, Long> nameConfigIdMap, String configName) {
         Long typeId = nameConfigIdMap.get(configName);
-        if (Objects.isNull(typeId)){
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL,"配置类型" + configName + "不存在");
+        if (Objects.isNull(typeId)) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "配置类型" + configName + "不存在");
         }
         return typeId;
     }
+
+    public RoomArchivesEntity queryForDetail(Long id) {
+        return getById(id);
+    }
+
 }

@@ -69,6 +69,8 @@ public class BuildingArchivesController extends BaseController {
      */
     @PostMapping("/queryForList")
     public List<BuildingArchivesVO> queryForList(@RequestBody @Valid BuildingArchivesPageQuery pageQuery) {
+        String orgId = getOrgId();
+        pageQuery.setCompanyId(Long.valueOf(orgId));
         return buildingArchivesService.queryForList(pageQuery);
     }
 
@@ -77,6 +79,8 @@ public class BuildingArchivesController extends BaseController {
      */
     @PostMapping("/queryForPage")
     public PageResult<BuildingArchivesVO> queryForPage(@RequestBody @Valid BuildingArchivesPageQuery pageQuery) {
+        String orgId = getOrgId();
+        pageQuery.setCompanyId(Long.valueOf(orgId));
         return buildingArchivesService.queryForPage(pageQuery);
     }
 
@@ -192,7 +196,7 @@ public class BuildingArchivesController extends BaseController {
     /**
      * 导出
      */
-    @PostMapping(value = "/export", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/export")
     public IdmResDTO<Object> exportBuildingArchives(@RequestBody @Valid BuildingArchivesPageQuery pageQuery) throws IOException {
         List<BuildingArchivesExportVO> buildingArchivesExportVOList = buildingArchivesService.queryForExportList(pageQuery);
         List<Map<String, Object>> sheetsList = new ArrayList<>();

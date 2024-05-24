@@ -50,6 +50,7 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
     public List<BuildingArchives> queryForList(BuildingArchivesPageQuery pageQuery) {
         LambdaQueryWrapper<BuildingArchivesEntity> queryWrapper = new LambdaQueryWrapper<BuildingArchivesEntity>()
                 .eq(Objects.nonNull(pageQuery.getId()), BuildingArchivesEntity::getId, pageQuery.getId())
+                .eq(Objects.nonNull(pageQuery.getCompanyId()), BuildingArchivesEntity::getCompanyId, pageQuery.getCompanyId())
                 .eq(Objects.nonNull(pageQuery.getDepartmentId()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentId())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName())
                 .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList());
@@ -70,6 +71,7 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
     public PageResult<BuildingArchives> queryForPage(BuildingArchivesPageQuery pageQuery) {
         LambdaQueryWrapper<BuildingArchivesEntity> queryWrapper = new LambdaQueryWrapper<BuildingArchivesEntity>()
                 .eq(Objects.nonNull(pageQuery.getId()), BuildingArchivesEntity::getId, pageQuery.getId())
+                .eq(Objects.nonNull(pageQuery.getCompanyId()), BuildingArchivesEntity::getCompanyId, pageQuery.getCompanyId())
                 .eq(Objects.nonNull(pageQuery.getDepartmentId()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentId())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName())
                 .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList());
