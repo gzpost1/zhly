@@ -1,9 +1,14 @@
 package cn.cuiot.dmp.app.service;
 
+import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_ERROR;
+import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_OLD_INVALID;
+import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_NOT_EXIST;
+
 import cn.cuiot.dmp.app.converter.AppUserConverter;
 import cn.cuiot.dmp.app.dto.AppUserDto;
 import cn.cuiot.dmp.app.dto.user.ChangePhoneDto;
 import cn.cuiot.dmp.app.dto.user.SampleUserInfoDto;
+import cn.cuiot.dmp.app.dto.user.SmsCodeCheckResDto;
 import cn.cuiot.dmp.app.entity.OrganizationEntity;
 import cn.cuiot.dmp.app.entity.UserEntity;
 import cn.cuiot.dmp.app.mapper.OrganizationEntityMapper;
@@ -31,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +50,10 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
-public class AppLoginService {
+public class AppAuthService {
+
+    @Autowired
+    private AppVerifyService appVerifyService;
 
     @Autowired
     private AppUserService appUserService;
@@ -121,7 +130,7 @@ public class AppLoginService {
                 userEntity.setCreatedByType(OperateByTypeEnum.SYSTEM.getValue());
                 appUserService.createAppUser(userEntity);
                 userDto = appUserConverter.toAppUserDto(userEntity);
-            }else{
+            } else {
                 //更新登录时间
                 UserEntity updateEntity = new UserEntity();
                 updateEntity.setId(userDto.getId());
@@ -131,7 +140,8 @@ public class AppLoginService {
             }
         }
         Long pkUserId = userDto.getId();
-        Date expirationDate = DateUtil.date(System.currentTimeMillis() + Const.WX_SESSION_TIME * 1000);
+        Date expirationDate = DateUtil
+                .date(System.currentTimeMillis() + Const.WX_SESSION_TIME * 1000);
         claims.put(AuthContants.CREATED, new Date());
         claims.put(AuthContants.USERID, userDto.getId());
         claims.put(AuthContants.USERNAME, userDto.getUsername());
@@ -164,7 +174,7 @@ public class AppLoginService {
             redisUtil.del(CacheConst.LOGIN_USERS_JWT_WX + jwt);
             redisUtil.del(CacheConst.LOGIN_USERS_JWT + jwt);
         } catch (Exception e) {
-            log.error("logOut error",e);
+            log.error("logOut error", e);
             throw new BusinessException(ResultCode.INNER_ERROR);
         }
     }
@@ -173,14 +183,56 @@ public class AppLoginService {
      * 设置用户头像与昵称
      */
     public void setSampleUserInfo(SampleUserInfoDto dto) {
-        appUserService.setSampleUserInfo(dto.getUserId(),dto.getNickName(),dto.getAvatarUrl());
+        appUserService.setSampleUserInfo(dto.getUserId(), dto.getNickName(), dto.getAvatarUrl());
     }
 
     /**
      * 修改手机号
      */
     public void changePhone(ChangePhoneDto dto) {
+        AppUserDto userDto = appUserService.getUserById(dto.getUserId());
+        String oldPhone = Optional.ofNullable(userDto).map(d -> d.getPhoneNumber()).orElse(null);
+        if (dto.getPhoneNumber().equals(oldPhone)) {
+            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_INVALID, "新手机号不能与旧手机号一致");
+        }
+        SmsCodeCheckResDto res = appVerifyService
+                .checkPhoneSmsCode(oldPhone, dto.getUserId(), dto.getPreSmsCode(), true);
+        if (!res.getCheckSucceed()) {
+            throw new BusinessException(SMS_TEXT_OLD_INVALID);
+        }
+        res = appVerifyService
+                .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), dto.getSmsCode(), true);
+        if (!res.getCheckSucceed()) {
+            throw new BusinessException(SMS_TEXT_ERROR);
+        }
+        appUserService.changePhone(dto.getUserId(), dto.getPhoneNumber());
+    }
 
+    /**
+     * 获得登录用户信息
+     */
+    public AppUserDto getLoginUserInfo(Long sessionUserId, Long sessionOrgId) {
+        AppUserDto userDto = appUserService.getUserById(sessionUserId);
+        if (userDto == null) {
+            throw new BusinessException(USER_ACCOUNT_NOT_EXIST, "用户信息获取失败");
+        }
+        if (UserTypeEnum.USER.getValue().equals(userDto.getUserType())) {
+            Long pkUserId = userDto.getId();
+            // 获取org主键id
+            Long pkOrgId = appUserService.getOrgId(pkUserId);
+            // 获取dept主键id
+            String pkDeptId = appUserService.getDeptId(pkUserId.toString(), pkOrgId.toString());
+            // 获取企业信息
+            OrganizationEntity organization = organizationEntityMapper.selectById(pkOrgId);
+            if (organization == null || organization.getStatus() == null || OrgStatusEnum.DISABLE
+                    .getCode().equals(organization.getStatus())) {
+                throw new BusinessException(ResultCode.ORG_IS_ENABLED);
+            }
+            userDto.setOrgId(pkOrgId.toString());
+            userDto.setDeptId(pkDeptId);
+            userDto.setOrgTypeId(organization.getOrgTypeId());
+        }
+        return userDto;
     }
 
 }

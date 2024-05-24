@@ -7,18 +7,26 @@ import cn.cuiot.dmp.app.dto.user.KaptchaResDTO;
 import cn.cuiot.dmp.app.dto.user.MiniLoginDto;
 import cn.cuiot.dmp.app.dto.user.SampleUserInfoDto;
 import cn.cuiot.dmp.app.dto.user.SecretKeyResDTO;
-import cn.cuiot.dmp.app.service.AppLoginService;
+import cn.cuiot.dmp.app.dto.user.SmsCodeCheckReqDto;
+import cn.cuiot.dmp.app.dto.user.SmsCodeCheckResDto;
+import cn.cuiot.dmp.app.dto.user.SmsCodeReqDto;
+import cn.cuiot.dmp.app.dto.user.SmsCodeResDto;
+import cn.cuiot.dmp.app.service.AppAuthService;
 import cn.cuiot.dmp.app.service.AppVerifyService;
 import cn.cuiot.dmp.base.application.service.WeChatMiniAppService;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.google.common.collect.Maps;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * App认证接口
+ * App认证与用户接口
  *
  * @author: wuyongchong
  * @date: 2024/5/22 11:44
@@ -40,7 +48,7 @@ public class AuthController {
     private WeChatMiniAppService weChatMiniAppService;
 
     @Autowired
-    private AppLoginService appLoginService;
+    private AppAuthService appAuthService;
 
     @Autowired
     private AppVerifyService appVerifyService;
@@ -73,19 +81,9 @@ public class AuthController {
 
         String ipAddr = IpUtil.getIpAddr(request);
 
-        AppUserDto userDto = appLoginService.miniLogin(phone, userType, openid, ipAddr);
+        AppUserDto userDto = appAuthService.miniLogin(phone, userType, openid, ipAddr);
 
         return IdmResDTO.success(userDto);
-    }
-
-    /**
-     * 设置用户头像与昵称
-     */
-    @PostMapping("setSampleUserInfo")
-    public IdmResDTO setSampleUserInfo(@RequestBody @Valid SampleUserInfoDto dto) {
-        dto.setUserId(LoginInfoHolder.getCurrentUserId());
-        appLoginService.setSampleUserInfo(dto);
-        return IdmResDTO.success(null);
     }
 
     /**
@@ -106,14 +104,70 @@ public class AuthController {
         return appVerifyService.createSecretKey();
     }
 
+
+
     /**
-     * 发送绑定手机号验证码
+     * 获得登录用户信息
      */
-    @PostMapping("sendBindPhoneSmsCode")
-    public IdmResDTO sendBindPhoneSmsCode(@RequestBody @Valid ChangePhoneDto dto) {
+    @PostMapping("loginUserInfo")
+    public IdmResDTO<AppUserDto> loginUserInfo() {
+        Long sessionUserId = LoginInfoHolder.getCurrentUserId();
+        Long sessionOrgId = LoginInfoHolder.getCurrentOrgId();
+        AppUserDto userDto = appAuthService.getLoginUserInfo(sessionUserId,sessionOrgId);
+        return IdmResDTO.success(userDto);
+    }
+
+    /**
+     * 设置用户头像与昵称
+     */
+    @PostMapping("setSampleUserInfo")
+    public IdmResDTO setSampleUserInfo(@RequestBody @Valid SampleUserInfoDto dto) {
         dto.setUserId(LoginInfoHolder.getCurrentUserId());
-        appLoginService.changePhone(dto);
+        appAuthService.setSampleUserInfo(dto);
         return IdmResDTO.success(null);
+    }
+
+    /**
+     * 发送手机号验证码
+     */
+    @PostMapping("sendPhoneSmsCode")
+    public IdmResDTO<SmsCodeResDto> sendPhoneSmsCode(@RequestBody @Valid SmsCodeReqDto dto) {
+        dto.setUserId(LoginInfoHolder.getCurrentUserId());
+        // 验证码ID参数校验
+        if (StringUtils.isBlank(dto.getSid())) {
+            throw new BusinessException(ResultCode.ACCESS_ERROR, "图形验证码ID参数为空");
+        }
+        // 验证码参数校验
+        if (StringUtils.isBlank(dto.getKaptchaText())) {
+            throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY, "请输入图形验证码");
+        }
+        //图形验证码校验
+        if (!appVerifyService.checkKaptchaText(dto.getKaptchaText(), dto.getSid())) {
+            throw new BusinessException(ResultCode.KAPTCHA_TEXT_ERROR, "图形验证码错误");
+        }
+        SmsCodeResDto res = appVerifyService
+                .sendPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId());
+        return IdmResDTO.success(res);
+    }
+
+    /**
+     * 校验短信验证码
+     */
+    @PostMapping("checkPhoneSmsCode")
+    public IdmResDTO<SmsCodeCheckResDto> checkPhoneSmsCode(
+            @RequestBody @Valid SmsCodeCheckReqDto dto) {
+        dto.setUserId(LoginInfoHolder.getCurrentUserId());
+        String phoneNumber = Optional.ofNullable(dto).map(d -> d.getPhoneNumber()).orElse(null);
+        if (StringUtils.isBlank(phoneNumber)) {
+            throw new BusinessException(ResultCode.PARAM_CANNOT_NULL, "手机号不能为空");
+        }
+        String smsCode = Optional.ofNullable(dto).map(d -> d.getSmsCode()).orElse(null);
+        if (StringUtils.isBlank(smsCode)) {
+            throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY, "短信验证码不能为空");
+        }
+        SmsCodeCheckResDto res = appVerifyService
+                .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), smsCode, false);
+        return IdmResDTO.success(res);
     }
 
     /**
@@ -122,7 +176,7 @@ public class AuthController {
     @PostMapping("changePhone")
     public IdmResDTO changePhone(@RequestBody @Valid ChangePhoneDto dto) {
         dto.setUserId(LoginInfoHolder.getCurrentUserId());
-        appLoginService.changePhone(dto);
+        appAuthService.changePhone(dto);
         return IdmResDTO.success(null);
     }
 
@@ -131,9 +185,8 @@ public class AuthController {
      */
     @PostMapping("logOut")
     public IdmResDTO logOut() {
-        appLoginService.logOut(request);
+        appAuthService.logOut(request);
         return IdmResDTO.success(null);
     }
-
 
 }

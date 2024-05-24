@@ -20,13 +20,13 @@ public class ChangePhoneDto implements Serializable {
     /**
      * 新手机号
      */
-    @NotBlank(message = "新手机号不能为空")
-    private String phone;
+    @NotBlank(message = "手机号不能为空")
+    private String phoneNumber;
 
     /**
      * 新手机号验证码
      */
-    @NotBlank(message = "新手机号验证码不能为空")
+    @NotBlank(message = "手机号验证码不能为空")
     private String smsCode;
 
     /**

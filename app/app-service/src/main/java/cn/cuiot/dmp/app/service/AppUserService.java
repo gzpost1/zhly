@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.app.service;
 
+import cn.cuiot.dmp.app.converter.AppUserConverter;
 import cn.cuiot.dmp.app.dto.AppUserDto;
 import cn.cuiot.dmp.app.entity.UserEntity;
 import cn.cuiot.dmp.app.mapper.AppUserMapper;
@@ -23,6 +24,9 @@ public class AppUserService {
     @Autowired
     private AppUserMapper appUserMapper;
 
+    @Autowired
+    private AppUserConverter appUserConverter;
+
     /**
      * 根据手机号和用户身份获取用户信息
      */
@@ -30,6 +34,21 @@ public class AppUserService {
         String encryptedPhone = Sm4.encryption(phone);
         AppUserDto dto = appUserMapper.getUserByPhoneAndUserType(encryptedPhone, userType);
         if (Objects.nonNull(dto)) {
+            if (StringUtils.isNotBlank(dto.getPhoneNumber())) {
+                dto.setPhoneNumber(Sm4.decrypt(dto.getPhoneNumber()));
+            }
+        }
+        return dto;
+    }
+
+    /**
+     * 根据ID获取用户信息
+     */
+    public AppUserDto getUserById(Long userId) {
+        AppUserDto dto = null;
+        UserEntity userEntity = appUserMapper.selectById(userId);
+        if (Objects.nonNull(userEntity)) {
+            dto = appUserConverter.toAppUserDto(userEntity);
             if (StringUtils.isNotBlank(dto.getPhoneNumber())) {
                 dto.setPhoneNumber(Sm4.decrypt(dto.getPhoneNumber()));
             }
@@ -73,6 +92,17 @@ public class AppUserService {
         updateEntity.setId(userId);
         updateEntity.setName(nickName);
         updateEntity.setAvatar(avatarUrl);
+        appUserMapper.updateById(updateEntity);
+    }
+
+    /**
+     * 修改手机号
+     */
+    public void changePhone(Long userId, String phoneNumber) {
+        String encryptedPhone = Sm4.encryption(phoneNumber);
+        UserEntity updateEntity = new UserEntity();
+        updateEntity.setId(userId);
+        updateEntity.setPhoneNumber(encryptedPhone);
         appUserMapper.updateById(updateEntity);
     }
 
