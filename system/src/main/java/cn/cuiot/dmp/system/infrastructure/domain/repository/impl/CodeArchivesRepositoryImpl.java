@@ -129,6 +129,13 @@ public class CodeArchivesRepositoryImpl implements CodeArchivesRepository {
                 .map(o -> {
                     CodeArchives codeArchives = new CodeArchives();
                     BeanUtils.copyProperties(o, codeArchives);
+                    // 如果已经绑定上档案，则需要查找档案名称
+                    if (Objects.nonNull(o.getArchiveId())) {
+                        List<String> archiveNameList = codeArchivesMapper.queryArchiveNameById(o.getArchiveId());
+                        if (CollectionUtils.isNotEmpty(archiveNameList)) {
+                            codeArchives.setArchiveName(archiveNameList.get(0));
+                        }
+                    }
                     return codeArchives;
                 })
                 .collect(Collectors.toList());
