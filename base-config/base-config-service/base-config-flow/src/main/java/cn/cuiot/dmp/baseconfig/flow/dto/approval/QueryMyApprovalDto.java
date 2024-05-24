@@ -17,7 +17,7 @@ public class QueryMyApprovalDto extends PageQuery {
     /**
      * 业务类型
      */
-    private Byte businessType;
+    private Long businessType;
 
     /**
      * 审批人id

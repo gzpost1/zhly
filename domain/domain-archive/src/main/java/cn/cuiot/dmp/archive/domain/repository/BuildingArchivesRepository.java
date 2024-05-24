@@ -43,9 +43,14 @@ public interface BuildingArchivesRepository {
     int deleteBuildingArchives(Long id);
 
     /**
+     * 批量保存
+     */
+    int batchSaveBuildingArchives(List<BuildingArchives> buildingArchivesList, Long userId);
+
+    /**
      * 批量更新
      */
-    int batchUpdateBuildingArchives(Long departmentId);
+    int batchUpdateBuildingArchives(Long departmentId, List<Long> idList);
 
     /**
      * 批量删除

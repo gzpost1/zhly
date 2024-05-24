@@ -2,14 +2,9 @@ package cn.cuiot.dmp.base.application.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.*;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.*;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 
 import java.util.List;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,6 +48,11 @@ public interface ApiSystemService {
     List<DepartmentDto> lookUpDepartmentChildList(DepartmentReqDto query);
 
     /**
+     * 查询组织树
+     */
+    List<DepartmentTreeRspDTO> lookUpDepartmentTree(Long orgId, Long userId);
+
+    /**
      * 根据业务类型id列表获取业务类型列表（流程/工单配置）
      */
     List<BusinessTypeRspDTO> batchGetBusinessType(BusinessTypeReqDTO businessTypeReqDTO);
@@ -61,5 +61,15 @@ public interface ApiSystemService {
      * 批量查询表单配置
      */
     List<FormConfigRspDTO> batchQueryFormConfig(FormConfigReqDTO formConfigReqDTO);
+
+    /**
+     * 根据id集合批量查询自定义配置详情
+     */
+    List<CustomConfigDetailRspDTO> batchQueryCustomConfigDetails(CustomConfigDetailReqDTO customConfigDetailReqDTO);
+
+    /**
+     * 根据条件批量查询自定义配置列表
+     */
+    List<CustomConfigRspDTO> batchQueryCustomConfigs(CustomConfigReqDTO customConfigReqDTO);
 
 }

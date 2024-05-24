@@ -89,6 +89,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     private TaskService taskService;
     @Autowired
     private TbFlowConfigService flowConfigService;
+
+    @Autowired
+    private TbFlowCcService tbFlowCcService;
     @Autowired
     private RepositoryService repositoryService;
 
@@ -632,12 +635,16 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             }
         }
         if(StringUtils.equals(props.getAssignedType(), AssigneeTypeEnums.DEPT.getTypeName())){
-            if(!ids.contains(String.valueOf(userId))){
+            if(!ids.contains(String.valueOf(LoginInfoHolder.getCurrentDeptId()))){
                 return  IdmResDTO.error("00001","没有权限发起流程");
             }
         }
         if(StringUtils.equals(props.getAssignedType(), AssigneeTypeEnums.ROLE.getTypeName())){
-            if(!ids.contains(String.valueOf(userId))){
+            BaseUserReqDto query = new BaseUserReqDto();
+            query.setUserId(LoginInfoHolder.getCurrentUserId());
+            IdmResDTO<BaseUserDto> baseUserDtoIdmResDTO = systemApiFeignService.lookUpUserInfo(query);
+            BaseUserDto data = baseUserDtoIdmResDTO.getData();
+            if(!ids.contains(String.valueOf(data.getRoleId()))){
                 return  IdmResDTO.error("00001","没有权限发起流程");
             }
         }
@@ -835,6 +842,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return null;
     }
 
+
     public IdmResDTO<HandleDataVO> instanceInfo(HandleDataDTO HandleDataDTO) {
         String processInstanceId = HandleDataDTO.getProcessInstanceId();
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
@@ -845,10 +853,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
 
 
+
         Process mainProcess = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess();
         Collection<FlowElement> flowElements = mainProcess.getFlowElements();
         String instId = historicProcessInstance.getId();
-        flowConfig.setProcess(flowConfig.getProcess());
+        String nodeJson = queryCCrecipient(flowConfig.getProcess(), processInstanceId);
+        flowConfig.setProcess(nodeJson);
         flowConfig.setFormItems(flowConfig.getFormItems());
         HandleDataVO handleDataVO =new HandleDataVO();
         Map<String, Object> processVariables = historicProcessInstance.getProcessVariables();
@@ -896,6 +906,38 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         handleDataVO.setNodeList(pamaMap);
 //        handleDataVO.setDetailVOList(deatailMap);
         return IdmResDTO.success(handleDataVO);
+    }
+
+    public String queryCCrecipient(String process,String procInstId){
+
+
+        //装抄送人
+        ChildNode childNode = processJson(process);
+        ChildNode children = childNode.getChildren();
+        while (true){
+            if(StringUtils.isEmpty(children.getId())){
+                break;
+            }
+            if(StringUtils.equals("CC",children.getType())){
+                LambdaQueryWrapper<TbFlowCc> lw = new LambdaQueryWrapper<>();
+                lw.eq(TbFlowCc::getProcessInstanceId,procInstId).eq(TbFlowCc::getNodeId,children.getId());
+                List<TbFlowCc> list = tbFlowCcService.list(lw);
+                if(CollectionUtils.isNotEmpty(list)){
+                    List<Long> userIds = list.stream().map(TbFlowCc::getUserId).collect(Collectors.toList());
+                    Map<Long, String> userMap = getUserMap(userIds);
+                    List<UserInfo>  assignedUser = new ArrayList<>();
+                    list.stream().forEach(item->{
+                        UserInfo userInfo = new UserInfo();
+                        userInfo.setId(String.valueOf(item.getUserId()));
+                        userInfo.setName(userMap.get(item.getUserId()));
+                        assignedUser.add(userInfo);
+                    });
+                    children.getProps().setAssignedUser(assignedUser);
+                }
+            }
+            children=children.getChildren();
+        }
+        return JsonUtil.writeValueAsString(childNode);
     }
 
     /**
@@ -1138,9 +1180,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
             Map<Long, String> busiMap = getBusiMap(busiTypes);
 
-            //获取节点按钮
-            ChildNode childNodeByNodeId = getChildNodeByNodeId(records.get(0).getProcDefId(), records.get(0).getTaskDefKey());
-            List<NodeButton> buttons = childNodeByNodeId.getProps().getButtons();
             //userIds
             List<Long> usreIds = records.stream().map(MyApprovalResultDto::getUserId).collect(Collectors.toList());
             Map<Long, String> userMap = getUserMap(usreIds);
@@ -1153,6 +1192,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 // 发起人
                 item.setUserName(userMap.get(item.getUserId()));
                 //按钮
+                ChildNode childNodeByNodeId = getChildNodeByNodeId(item.getProcDefId(), item.getTaskDefKey());
+                List<NodeButton> buttons = childNodeByNodeId.getProps().getButtons();
                 item.setButtons(buttons);
 
             });

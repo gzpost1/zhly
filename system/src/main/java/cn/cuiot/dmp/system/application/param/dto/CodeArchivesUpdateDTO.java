@@ -24,7 +24,11 @@ public class CodeArchivesUpdateDTO implements Serializable {
     /**
      * 描述
      */
-    @NotBlank(message = "描述不能为空")
-    private String desc;
+    private String archiveDesc;
+
+    /**
+     * 档案类型(1:楼盘,2:房屋,3:空间,4:车位,5:设备)
+     */
+    private Byte archiveType;
 
 }

@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -33,13 +35,19 @@ public class ArchivesTest {
     @Test
     public void testCURD(){
         HousesArchivesEntity entity = new HousesArchivesEntity();
-        entity.setName("测试第一个房屋修改");
-        entity.setId(1790993009622487041L);
-
-        ArchiveBatchUpdateDTO dto = new ArchiveBatchUpdateDTO();
-        dto.setLoupanId(2L);
-        dto.setIds(Collections.singletonList(1790993009622487041L));
-        housesArchivesController.updateByIds(dto);
+        entity.setName("测试第二个房屋修改");
+        entity.setLoupanId(1L);
+        entity.setCode("liujianyu3");
+        entity.setRoomNum("10010");
+        List<String> image = new ArrayList<>();
+        image.add("123.jpg");
+        image.add("234.jpg");
+        entity.setListingImages(image);
+        List<Long> basic = new ArrayList<>();
+        basic.add(1L);
+        basic.add(2L);
+        entity.setBasicServices(basic);
+        housesArchivesController.create(entity);
     }
 
     /**

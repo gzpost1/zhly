@@ -27,6 +27,11 @@ public class FlowTaskInfoVo {
     private Long formId;
 
     /**
+     * 表单名称
+     */
+    private String formName;
+    
+    /**
      * 任务配置id
      */
     private Long taskConfigId;

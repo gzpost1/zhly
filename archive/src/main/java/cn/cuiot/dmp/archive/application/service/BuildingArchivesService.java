@@ -1,8 +1,13 @@
 package cn.cuiot.dmp.archive.application.service;
 
+import cn.cuiot.dmp.archive.application.param.dto.BatchBuildingArchivesDTO;
+import cn.cuiot.dmp.archive.application.param.dto.BuildingArchiveImportDTO;
+import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesCreateDTO;
+import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesUpdateDTO;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesExportVO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
-import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchives;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchivesPageQuery;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 
 import java.util.List;
@@ -24,6 +29,11 @@ public interface BuildingArchivesService {
     List<BuildingArchivesVO> queryForList(BuildingArchivesPageQuery pageQuery);
 
     /**
+     * 根据条件获取楼盘档案导出详情列表
+     */
+    List<BuildingArchivesExportVO> queryForExportList(BuildingArchivesPageQuery pageQuery);
+
+    /**
      * 根据条件获取楼盘档案详情分页列表
      */
     PageResult<BuildingArchivesVO> queryForPage(BuildingArchivesPageQuery pageQuery);
@@ -31,12 +41,12 @@ public interface BuildingArchivesService {
     /**
      * 保存
      */
-    int saveBuildingArchives(BuildingArchives buildingArchives);
+    int saveBuildingArchives(BuildingArchivesCreateDTO createDTO);
 
     /**
      * 更新
      */
-    int updateBuildingArchives(BuildingArchives buildingArchives);
+    int updateBuildingArchives(BuildingArchivesUpdateDTO updateDTO);
 
     /**
      * 删除
@@ -46,11 +56,22 @@ public interface BuildingArchivesService {
     /**
      * 批量更新
      */
-    int batchUpdateBuildingArchives(Long departmentId);
+    int batchUpdateBuildingArchives(BatchBuildingArchivesDTO batchBuildingArchivesDTO);
 
     /**
      * 批量删除
      */
     int batchDeleteBuildingArchives(List<Long> idList);
+
+    /**
+     * 导入
+     */
+    void importBuildingArchives(List<BuildingArchiveImportDTO> buildingArchiveImportDTOList, Long companyId,
+                                Long departmentId, Long userId);
+
+    /**
+     * 获取组织楼盘树
+     */
+    List<DepartmentTreeRspDTO> getDepartmentBuildingTree(Long orgId, Long userId);
 
 }

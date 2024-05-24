@@ -4,6 +4,8 @@ import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 /**
  * @author caorui
  * @date 2024/5/20
@@ -13,6 +15,11 @@ import lombok.EqualsAndHashCode;
 public class BuildingArchivesPageQuery extends PageQuery {
 
     private static final long serialVersionUID = -5291447441996967650L;
+
+    /**
+     * 企业id
+     */
+    private Long companyId;
 
     /**
      * 部门id
@@ -28,5 +35,10 @@ public class BuildingArchivesPageQuery extends PageQuery {
      * 楼盘名称
      */
     private String name;
+
+    /**
+     * 部门id列表
+     */
+    private List<Long> departmentIdList;
 
 }

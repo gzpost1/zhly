@@ -60,6 +60,7 @@ public class CodeArchivesServiceImpl implements CodeArchivesService {
     public int saveCodeArchives(CodeArchivesCreateDTO createDTO) {
         CodeArchives codeArchives = new CodeArchives();
         BeanUtils.copyProperties(createDTO, codeArchives);
+        codeArchives.setCreateUser(createDTO.getUserId());
         return codeArchivesRepository.saveCodeArchives(codeArchives);
     }
 

@@ -15,4 +15,41 @@
         </foreach>
     </update>
 
+    <insert id="batchSaveBuildingArchives" parameterType="java.util.List">
+        INSERT INTO tb_building_archives
+        (
+        id,
+        name,
+        area_code,
+        area_name,
+        area_detail,
+        company_id,
+        department_id,
+        building_num,
+        house_num,
+        park_num,
+        staff_phone,
+        create_user,
+        create_time
+        )
+        values
+        <foreach collection="list" separator="," item="item">
+            (
+            #{item.id},
+            #{item.name},
+            #{item.areaCode},
+            #{item.areaName},
+            #{item.areaDetail},
+            #{item.companyId},
+            #{item.departmentId},
+            #{item.buildingNum},
+            #{item.houseNum},
+            #{item.parkNum},
+            #{item.staffPhone},
+            #{item.createUser},
+            now()
+            )
+        </foreach>
+    </insert>
+
 </mapper>
