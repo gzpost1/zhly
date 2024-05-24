@@ -373,6 +373,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             dto.setReason(handleDataDTO.getReason());
             WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dto);
             businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_AGREE.getCode());
+            //防止是挂起状态
+            updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
+
             taskService.complete(taskId);
             busiList.add(businessTypeInfo);
             //如果节点存在挂起数据，将挂起数据结束
@@ -414,6 +417,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param handleDataDTO
      * @return
      */
+//    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO assignee(HandleDataDTO handleDataDTO) {
         //记录转办信息
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
@@ -423,6 +427,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //更新挂起时间
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
+        updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
         assigneeByProcInstId(handleDataDTO);
 //        if(CollectionUtils.isNotEmpty(handleDataDTO.getUserIds())){
 //            //批量转办
@@ -430,7 +435,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 //        }
 //        //单个转办
 //        taskService.setAssignee(handleDataDTO.getTaskId(),handleDataDTO.getTransferUserInfo().getId());
-        assigneeByProcInstId(handleDataDTO);
         return IdmResDTO.success();
     }
 
@@ -443,29 +447,34 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
 
     public IdmResDTO assigneeByProcInstId(HandleDataDTO handleDataDTO){
+
+        Map<String,Object> variableMap= new HashMap<>();
+        variableMap.put("assigneeName","1792754241521627138");
+        runtimeService.addMultiInstanceExecution("node_783297952551","1793093386617548801", variableMap);
         // 查询与流程实例ID相关联的所有任务
-        List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
-                .orElseThrow(()->new RuntimeException("任务信息不存在"));
-        //加签
-        List<Long> assignees = tasks.stream().map(item->Long.parseLong(item.getAssignee())).collect(Collectors.toList());
-        List<Long> countSigeList =handleDataDTO.getUserIds().stream().filter(item->!assignees.contains(item)).collect(Collectors.toList());
-        if(CollectionUtils.isNotEmpty(countSigeList)){
-            countSigeList.stream().forEach(item->{
-                Map<String,Object> variableMap= new HashMap<>();
-                variableMap.put("assigneeName",String.valueOf(item));
-                runtimeService.addMultiInstanceExecution(tasks.get(0).getTaskDefinitionKey(), tasks.get(0).getProcessInstanceId(), variableMap);
-            });
-        }
+//        List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
+//                .orElseThrow(()->new RuntimeException("任务信息不存在"));
+//        //加签
+//        List<Long> assignees = tasks.stream().map(item->Long.parseLong(item.getAssignee())).collect(Collectors.toList());
+//        List<Long> countSigeList =handleDataDTO.getUserIds().stream().filter(item->!assignees.contains(item)).collect(Collectors.toList());
+//        if(CollectionUtils.isNotEmpty(countSigeList)){
+//            countSigeList.stream().forEach(item->{
+//                Map<String,Object> variableMap= new HashMap<>();
+//                variableMap.put("assigneeName",String.valueOf(item));
+//                runtimeService.addMultiInstanceExecution(tasks.get(0).getTaskDefinitionKey(), tasks.get(0).getProcessInstanceId(), variableMap);
+//            });
+//        }
 
         if(StringUtils.isNotEmpty(handleDataDTO.getTaskId())){
-            Task task = taskService.createTaskQuery().taskId(handleDataDTO.getTaskId()).singleResult();
-            runtimeService.deleteMultiInstanceExecution(task.getExecutionId(),true);
+//            Task task = taskService.createTaskQuery().taskId(handleDataDTO.getTaskId()).singleResult();
+//            List<Task> collect = tasks.stream().filter(item -> Objects.equals(handleDataDTO.getTaskId(), item.getId())).collect(Collectors.toList());
+//            runtimeService.deleteMultiInstanceExecution(collect.get(0).getExecutionId(),true);
         }else{
             //减签
-            tasks.stream().filter(item->!handleDataDTO.getUserIds().contains(Long.parseLong(item.getAssignee())))
-                    .forEach(it->{
-                        runtimeService.deleteMultiInstanceExecution(it.getExecutionId(),true);
-                    });
+//            tasks.stream().filter(item->!handleDataDTO.getUserIds().contains(Long.parseLong(item.getAssignee())))
+//                    .forEach(it->{
+//                        runtimeService.deleteMultiInstanceExecution(it.getExecutionId(),true);
+//                    });
         }
         return IdmResDTO.success();
     }
@@ -484,6 +493,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(dto);
             workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_REFUSE.getCode());
             buList.add(workBusinessTypeInfo);
+
+            updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), workBusinessTypeInfo.getProcInstId());
+
             //更新挂起
             dto.setNodeId(workBusinessTypeInfo.getNode());
             updateBusinessPendingDate(dto);
@@ -532,6 +544,13 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     }
 
 
+    /**
+     * 回退
+     * @param handleDataDTO
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+
     public IdmResDTO rollback(HandleDataDTO handleDataDTO) {
         UserInfo currentUserInfo = handleDataDTO.getCurrentUserInfo();
 //        Authentication.setAuthenticatedUserIddsacurrentUserInfo.getId());
@@ -542,6 +561,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //更新挂起时间
         updateBusinessPendingDate(handleDataDTO);
 
+        //更新主流程状态
+        updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), workBusinessTypeInfo.getProcInstId());
         List<HistoricTaskInstance> taskInstances = historyService.createHistoricTaskInstanceQuery()
                 .processInstanceId(handleDataDTO.getProcessInstanceId()).orderByTaskId().desc().list();
 
@@ -872,6 +893,14 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 //        if(CollectionUtils.isEmpty(list)){
 //            return IdmResDTO.success();
 //        }
+
+
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        if(CollectionUtils.isNotEmpty(taskList)){
+            handleDataVO.setCurrentNode(taskList.get(0).getTaskDefinitionKey());
+        }
+
+
         Map<String,NodeDetailDto> pamaMap = new HashMap<>();
         //已经运行完成的节点
         List<String> endNodes = new ArrayList<>();
@@ -1145,7 +1174,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     public WorkBusinessTypeInfoEntity queryWorkBusinessById(String nodeId,Long procInstId){
         LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
-        lw.eq(Objects.nonNull(nodeId),WorkBusinessTypeInfoEntity::getNode,nodeId).eq(WorkBusinessTypeInfoEntity::getProcInstId,procInstId)
+        lw.eq(Objects.nonNull(nodeId),WorkBusinessTypeInfoEntity::getNode,nodeId)
+                .eq(WorkBusinessTypeInfoEntity::getProcInstId,procInstId)
                 .eq(WorkBusinessTypeInfoEntity::getBusinessType,RESULT_0).isNull(WorkBusinessTypeInfoEntity::getEndTime);
         List<WorkBusinessTypeInfoEntity> list = workBusinessTypeInfoService.list(lw);
         return CollectionUtils.isEmpty(list)?null:list.get(0);
