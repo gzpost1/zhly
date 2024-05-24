@@ -221,6 +221,8 @@
             <if test="query.procInstId !=null">
                 and t1.proc_inst_id like concat('%',#{query.procInstId},'%')
             </if>
+
+            order by t1.create_time desc
         </where>
     </sql>
 </mapper>
