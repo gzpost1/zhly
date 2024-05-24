@@ -17,6 +17,7 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -205,7 +206,9 @@ public class BuildingArchivesController extends BaseController {
      * 导出
      */
     @PostMapping(value = "/export")
-    public IdmResDTO<Object> exportBuildingArchives(@RequestBody @Valid BuildingArchivesPageQuery pageQuery) throws IOException {
+    public IdmResDTO<Object> exportBuildingArchives(@RequestBody @Valid IdsParam param) throws IOException {
+        BuildingArchivesPageQuery pageQuery = new BuildingArchivesPageQuery();
+        pageQuery.setIdList(param.getIds());
         List<BuildingArchivesExportVO> buildingArchivesExportVOList = buildingArchivesService.queryForExportList(pageQuery);
         List<Map<String, Object>> sheetsList = new ArrayList<>();
         Map<String, Object> sheet1 = ExcelUtils.createSheet("楼盘档案", buildingArchivesExportVOList, BuildingArchivesExportVO.class);

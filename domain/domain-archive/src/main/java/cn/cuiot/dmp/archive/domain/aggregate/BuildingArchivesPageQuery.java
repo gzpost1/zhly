@@ -41,4 +41,9 @@ public class BuildingArchivesPageQuery extends PageQuery {
      */
     private List<Long> departmentIdList;
 
+    /**
+     * 楼盘id列表
+     */
+    private List<Long> idList;
+
 }

@@ -53,7 +53,8 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
                 .eq(Objects.nonNull(pageQuery.getCompanyId()), BuildingArchivesEntity::getCompanyId, pageQuery.getCompanyId())
                 .eq(Objects.nonNull(pageQuery.getDepartmentId()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentId())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName())
-                .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList());
+                .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList())
+                .in(CollectionUtils.isNotEmpty(pageQuery.getIdList()), BuildingArchivesEntity::getId, pageQuery.getIdList());
         List<BuildingArchivesEntity> buildingArchivesEntityList = buildingArchivesMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(buildingArchivesEntityList)) {
             return new ArrayList<>();
@@ -74,7 +75,8 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
                 .eq(Objects.nonNull(pageQuery.getCompanyId()), BuildingArchivesEntity::getCompanyId, pageQuery.getCompanyId())
                 .eq(Objects.nonNull(pageQuery.getDepartmentId()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentId())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName())
-                .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList());
+                .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList())
+                .in(CollectionUtils.isNotEmpty(pageQuery.getIdList()), BuildingArchivesEntity::getId, pageQuery.getIdList());
         IPage<BuildingArchivesEntity> buildingArchivesEntityPage = buildingArchivesMapper.selectPage(
                 new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), queryWrapper);
         if (CollectionUtils.isEmpty(buildingArchivesEntityPage.getRecords())) {

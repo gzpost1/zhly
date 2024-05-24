@@ -78,4 +78,9 @@ public class BuildingArchivesVO implements Serializable {
      */
     private Byte status;
 
+    /**
+     * 档案二维码id
+     */
+    private Long qrCodeId;
+
 }
