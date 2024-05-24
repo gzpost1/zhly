@@ -156,7 +156,31 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
     }
 
     public ParkingArchivesEntity queryForDetail(Long id) {
-        return getById(id);
+        // 查询当前id的信息
+        ParkingArchivesEntity entity = getById(id);
+        Set<Long> configIdList = new HashSet<>();
+        addListCanNull(configIdList, entity.getArea());
+        addListCanNull(configIdList, entity.getUsageStatus() );
+        addListCanNull(configIdList, entity.getParkingType());
+
+        // 查询楼盘名称
+        Set<Long> loupanIdSet = new HashSet<>();
+        loupanIdSet.add(entity.getLoupanId());
+        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(loupanIdSet);
+        entity.setLoupanIdName(loupanIdNameMap.get(entity.getLoupanId()));
+
+        // 查询对应的配置名称，做配置名称匹配
+        final Map<Long, String> configIdNameMap = buildingAndConfigCommonUtilService.getConfigIdNameMap(configIdList);
+        entity.setAreaName(configIdNameMap.get(entity.getArea()));
+        entity.setUsageStatusName(configIdNameMap.get(entity.getUsageStatus()));
+        entity.setParkingTypeName(configIdNameMap.get(entity.getParkingType()));
+        return entity;
+    }
+
+    private void addListCanNull(Set<Long> configIdList, Long configId){
+        if (Objects.nonNull(configId)){
+            configIdList.add(configId);
+        }
     }
 
 }
