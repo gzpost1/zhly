@@ -120,6 +120,17 @@ public class CodeArchivesRepositoryImpl implements CodeArchivesRepository {
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         codeArchivesEntity.setArchiveId(codeArchives.getArchiveId());
         codeArchivesEntity.setArchiveType(codeArchives.getArchiveType());
+        // 判断当前档案id是否关联，如果关联则需要先清空再关联
+        LambdaQueryWrapper<CodeArchivesEntity> queryWrapper = new LambdaQueryWrapper<CodeArchivesEntity>()
+                .eq(CodeArchivesEntity::getArchiveId, codeArchives.getArchiveId())
+                .eq(CodeArchivesEntity::getArchiveType, codeArchives.getArchiveType());
+        List<CodeArchivesEntity> codeArchivesEntityList = codeArchivesMapper.selectList(queryWrapper);
+        if (CollectionUtils.isNotEmpty(codeArchivesEntityList)) {
+            CodeArchivesEntity source = codeArchivesEntityList.get(0);
+            source.setArchiveId(null);
+            source.setArchiveType(null);
+            codeArchivesMapper.updateById(source);
+        }
         return codeArchivesMapper.updateById(codeArchivesEntity);
     }
 
