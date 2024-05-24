@@ -92,7 +92,12 @@ public class UserController extends BaseController {
     /**
      * 最大分页数
      */
-    private static final int MAX_PAGE_SIZE = 100;
+    private static final int MAX_PAGE_SIZE = 2000;
+
+    /**
+     * 不限制的特殊值
+     */
+    private static final String UNLIMIT_VAL = "-1";
 
     @Autowired
     private UserService userService;
@@ -140,10 +145,13 @@ public class UserController extends BaseController {
         }
         // 获取子组织
         if (deptId != null) {
-            DepartmentEntity departmentEntity = departmentService
-                    .getDeptById(String.valueOf(deptId));
-            if (departmentEntity != null) {
-                params.put("path", departmentEntity.getPath());
+            //deptId参数为-1则不过滤当前登录部门的数据权限
+            if(!UNLIMIT_VAL.equals(deptId.toString())){
+                DepartmentEntity departmentEntity = departmentService
+                        .getDeptById(String.valueOf(deptId));
+                if (departmentEntity != null) {
+                    params.put("path", departmentEntity.getPath());
+                }
             }
         }
 
