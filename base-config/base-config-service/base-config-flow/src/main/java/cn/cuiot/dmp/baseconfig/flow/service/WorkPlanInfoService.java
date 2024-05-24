@@ -46,7 +46,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
 
     @Autowired
-    private XxlJobClient xxlJobClient;
+    private WorkInfoService workInfoService;
 
     @Autowired
     private PlanWorkExecutionInfoService planWorkExecutionInfoService;
@@ -214,16 +214,17 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
         if(getListStr(workPlanInfoCreateDto.getSpecifyMonth(),of).contains(String.valueOf(monthValue)) &&
                 getListStr(workPlanInfoCreateDto.getSpecifyDay(),of).contains(String.valueOf(dayOfMonth))){
-            times.add(of);
             //启用循环
             if(workPlanInfoCreateDto.getRecurrentState().intValue()==1){
                 //获取循环结束时间
                 LocalDateTime overTime = getOverTime(dto.getExecutionDate(), workPlanInfoCreateDto);
-                LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
+                LocalDateTime localDateTime = of;
                 while (overTime.isAfter(localDateTime)){
                     times.add(localDateTime);
-                    localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
+                    localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
                 }
+            }else{
+                times.add(of);
             }
         }
     }
@@ -231,16 +232,17 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         //获取时间星期几
         int value = of.getDayOfWeek().getValue();
         if(getListStr(workPlanInfoCreateDto.getSpecifyWeek(),of).contains(String.valueOf(value))){
-            times.add(of);
             //启用循环
             if(workPlanInfoCreateDto.getRecurrentState().intValue()==1){
                 //获取循环结束时间
                 LocalDateTime overTime = getOverTime(dto.getExecutionDate(), workPlanInfoCreateDto);
-                LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
+                LocalDateTime localDateTime = of;
                 while (overTime.isAfter(localDateTime)){
                     times.add(localDateTime);
-                    localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
+                    localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
                 }
+            }else{
+                times.add(of);
             }
         }
     }
@@ -265,15 +267,14 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         if(StringUtil.isNotBlank(workPlanInfoCreateDto.getSpecifyDay())){
             String specifyDay=workPlanInfoCreateDto.getSpecifyDay();
             if(getListStr(specifyDay,of).contains(String.valueOf(of.getDayOfMonth()))){
-                times.add(of);
                 //启用循环
                 if(workPlanInfoCreateDto.getRecurrentState().intValue()==1){
                     //获取循环结束时间
                     LocalDateTime overTime = getOverTime(dto.getExecutionDate(), workPlanInfoCreateDto);
-                    LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
+                    LocalDateTime localDateTime = of;
                     while (overTime.isAfter(localDateTime)){
                         times.add(localDateTime);
-                        localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
+                        localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
                     }
                 }
             }
@@ -284,11 +285,14 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             if(workPlanInfoCreateDto.getRecurrentState().intValue()==1){
                 //获取循环结束时间
                 LocalDateTime overTime = getOverTime(dto.getExecutionDate(), workPlanInfoCreateDto);
-                LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
+//                LocalDateTime localDateTime = of.plusMinutes(Math.round(workPlanInfoCreateDto.getPushHour() * 60));
+                LocalDateTime localDateTime =of;
                 while (overTime.isAfter(localDateTime)){
                     times.add(localDateTime);
                     localDateTime = localDateTime.plusMinutes(Math.round(workPlanInfoCreateDto.getRecurrentHour() * 60));
                 }
+            }else{
+                times.add(of);
             }
         }
 
@@ -465,11 +469,53 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         return IdmResDTO.success();
     }
 
+
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO deleteWorkPlan(QueryWorkPlanInfoDto dto) {
         this.removeById(dto.getId());
+
+        LambdaQueryWrapper<PlanWorkExecutionInfoEntity> exLw = new LambdaQueryWrapper<>();
+        exLw.eq(PlanWorkExecutionInfoEntity::getPlanWorkId,dto.getId());
+
+        List<PlanWorkExecutionInfoEntity> exList = planWorkExecutionInfoService.list(exLw);
+        List<Long> procIds = exList.stream().map(PlanWorkExecutionInfoEntity::getProcInstId).collect(Collectors.toList());
+
+        //删除工单信息,单个删除时只有一个id
+        if(CollectionUtils.isNotEmpty(procIds)){
+            deleteWorkInfo(procIds.get(0));
+
+
+        }
+
+        //删除对应的时间信息
+        planWorkExecutionInfoService.remove(exLw);
+
+        //删除对应的组织信息
+        deleteOrgs(dto.getId());
         return IdmResDTO.success();
     }
 
+
+    /**
+     * 删除计划工单关联的组织信息
+     * @param ids
+     */
+    private void deleteOrgs(Long ids){
+        LambdaQueryWrapper<WorkOrgRelEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkOrgRelEntity::getWorkId,ids);
+        workOrgRelService.remove(lw);
+
+    }
+    /**
+     * 删除对应的工单信息
+     * @param prodInstId
+     */
+    public void deleteWorkInfo(Long prodInstId){
+        LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkInfoEntity::getProcInstId,prodInstId);
+        workInfoService.remove(lw);
+    }
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO batchBusinessWorkInfo(BatchBusinessWorkDto dto) {
         if(dto.getBusinessType().intValue()==0){
             List<WorkPlanInfoEntity> workPlanInfoEntities = this.getBaseMapper().selectBatchIds(dto.getIds());
@@ -483,10 +529,39 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         }
         if(dto.getBusinessType().intValue()==2){
             this.getBaseMapper().deleteBatchIds(dto.getIds());
+
+            BatchDetelePlanRel(dto.getIds());
         }
         return IdmResDTO.success();
     }
 
+
+    /**
+     * 删除计划工单关联的信息
+     * @param ids
+     */
+    public void BatchDetelePlanRel(List<Long> ids){
+
+        ids.stream().forEach(item->{
+            LambdaQueryWrapper<PlanWorkExecutionInfoEntity> exLw = new LambdaQueryWrapper<>();
+            exLw.eq(PlanWorkExecutionInfoEntity::getPlanWorkId,item);
+
+            List<PlanWorkExecutionInfoEntity> exList = planWorkExecutionInfoService.list(exLw);
+            List<Long> procIds = exList.stream().filter(e->Objects.nonNull(e)).map(PlanWorkExecutionInfoEntity::getProcInstId).collect(Collectors.toList());
+
+            //删除工单信息,单个删除时只有一个id
+            if(CollectionUtils.isNotEmpty(procIds)){
+                deleteWorkInfo(procIds.get(0));
+            }
+
+            //删除对应的时间信息
+            planWorkExecutionInfoService.remove(exLw);
+
+            //删除对应的组织信息
+            deleteOrgs(item);
+        });
+
+    }
     /**
      * cha
      * @param dto

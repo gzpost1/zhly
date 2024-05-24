@@ -11,7 +11,7 @@ public enum  AssigneeTypeEnums {
   SELF_SELECT("SELF_SELECT","发起人自己选择"),
   LEADER_TOP("LEADER_TOP","连续主管"),
   LEADER("LEADER","指定主管审批"),
-  ROLE("ROLE","系统角色"),
+  ROLE("role","系统角色"),
   DEPT("dept","系统部门"),
   SELF("SELF","发起人自己"),
   FORM_USER("FORM_USER","表单人员"),

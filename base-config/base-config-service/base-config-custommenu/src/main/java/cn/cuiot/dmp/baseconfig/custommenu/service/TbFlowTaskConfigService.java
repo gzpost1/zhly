@@ -167,7 +167,7 @@ public class TbFlowTaskConfigService extends ServiceImpl<TbFlowTaskConfigMapper,
                 //根据sort排序
                 flowTaskInfoVos = flowTaskInfoVos.stream().sorted((e1, e2) -> e1.getSort().compareTo(e2.getSort())).collect(Collectors.toList());
 
-                List<Long> taskMenuIds = flowTaskInfoVos.stream().map(FlowTaskInfoVo::getFormId).collect(Collectors.toList());
+                List<Long> taskMenuIds = flowTaskInfoVos.stream().map(FlowTaskInfoVo::getFormId).distinct().collect(Collectors.toList());
                 flowTaskConfigVo.setTaskMenuIds(taskMenuIds);
             }
             flowTaskConfigVo.setTaskInfoList(flowTaskInfoVos);
