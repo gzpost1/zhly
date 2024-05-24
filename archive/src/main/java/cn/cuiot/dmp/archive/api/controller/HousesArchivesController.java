@@ -9,7 +9,6 @@ import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.query.HousesArchivesQuery;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
-import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
@@ -43,8 +42,8 @@ import java.io.OutputStream;
 import java.util.*;
 
 /**
+ * 房屋档案
  * @author liujianyu
- * @description 房屋档案
  * @since 2024-05-15 10:30
  */
 @RestController
@@ -184,7 +183,7 @@ public class HousesArchivesController {
             housesArchivesService.checkParamsImport(dto);
         }
 
-        housesArchivesService.importDataSave(importDtoList);
+        housesArchivesService.importDataSave(importDtoList, loupanId);
     }
 
     /**
