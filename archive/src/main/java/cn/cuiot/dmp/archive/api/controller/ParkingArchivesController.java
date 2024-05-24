@@ -11,6 +11,7 @@ import cn.cuiot.dmp.archive.application.param.vo.ParkingArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.ParkingArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
+import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
@@ -20,6 +21,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -57,13 +59,17 @@ public class ParkingArchivesController extends BaseController {
 
     @Autowired
     private ParkingArchivesService parkingArchivesService;
+    @Autowired
+    private ArchivesApiMapper archivesApiMapper;
 
     /**
      * 根据id获取详情
      */
     @PostMapping("/queryForDetail")
     public ParkingArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
-        return parkingArchivesService.getById(idParam.getId());
+        ParkingArchivesEntity res = parkingArchivesService.getById(idParam.getId());
+        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.PARK_ARCHIVE.getCode()));
+        return res;
     }
 
     /**

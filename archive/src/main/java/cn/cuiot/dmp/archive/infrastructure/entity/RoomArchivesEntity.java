@@ -172,5 +172,9 @@ public class RoomArchivesEntity extends YjBaseEntity implements Serializable {
     @TableField(typeHandler = JsonTypeHandler.class)
     private List<String> images;
 
-
+    /**
+     * 档案二维码id
+     */
+    @TableField(exist = false)
+    private Long qrCodeId;
 }

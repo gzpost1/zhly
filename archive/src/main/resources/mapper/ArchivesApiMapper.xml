@@ -32,4 +32,8 @@
         tpa.loupan_id = #{buildingId}
     </select>
 
+    <select id="getCodeId" resultType="java.lang.Long">
+        select id from tb_code_archives where archive_id = #{archiveId} and archive_type = #{archiveType}
+    </select>
+
 </mapper>

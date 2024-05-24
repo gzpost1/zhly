@@ -282,6 +282,10 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
      */
     private String listingDescription;
 
-
+    /**
+     * 档案二维码id
+     */
+    @TableField(exist = false)
+    private Long qrCodeId;
 
 }

@@ -228,5 +228,11 @@ public class DeviceArchivesEntity extends YjBaseEntity implements Serializable {
      */
     private String image;
 
+    /**
+     * 档案二维码id
+     */
+    @TableField(exist = false)
+    private Long qrCodeId;
+
 
 }
