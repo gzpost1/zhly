@@ -9,6 +9,8 @@ import cn.cuiot.dmp.base.infrastructure.dto.BatcheOperation;
 import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskConfigInsertDto;
 import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskConfigUpdateDto;
 import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskInfoPageDto;
@@ -17,7 +19,9 @@ import cn.cuiot.dmp.baseconfig.custommenu.entity.TbFlowTaskConfig;
 import cn.cuiot.dmp.baseconfig.custommenu.entity.TbFlowTaskInfo;
 import cn.cuiot.dmp.baseconfig.custommenu.service.TbFlowTaskConfigService;
 import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskConfigVo;
+import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskInfoVo;
 import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto;
+import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.utils.AssertUtil;
@@ -53,6 +57,8 @@ public class TbFlowTaskInfoController {
     private TbFlowTaskConfigService flowTaskConfigService;
     @Resource
     private SystemUtilService systemUtilService;
+    @Autowired
+    private SystemToFlowService systemToFlowService;
 
     /**
      * 获取分页
@@ -78,7 +84,27 @@ public class TbFlowTaskInfoController {
      */
     @PostMapping("/queryForDetail")
     public IdmResDTO<FlowTaskConfigVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
-        return IdmResDTO.success().body(flowTaskConfigService.queryForDetail(idParam.getId()));
+        FlowTaskConfigVo flowTaskConfigVo = flowTaskConfigService.queryForDetail(idParam.getId());
+
+        //填充表单名称
+        if(Objects.nonNull(flowTaskConfigVo) && CollectionUtils.isNotEmpty(flowTaskConfigVo.getTaskInfoList())){
+            List<Long> taskMenuIds = flowTaskConfigVo.getTaskMenuIds();
+            FormConfigReqDTO formConfigReqDTO = new FormConfigReqDTO();
+            formConfigReqDTO.setIdList(taskMenuIds);
+            List<FormConfigRspDTO> formConfigRspDTOS = systemToFlowService.batchQueryFormConfig(formConfigReqDTO);
+            AssertUtil.isTrue(CollectionUtils.isNotEmpty(formConfigRspDTOS) && formConfigRspDTOS.size() == taskMenuIds.size(), "表单配置为空");
+
+            //填充 flowTaskConfigVo.getTaskMenuIds()的名称
+            for (FlowTaskInfoVo flowTaskInfoVo : flowTaskConfigVo.getTaskInfoList()) {
+                for (FormConfigRspDTO formConfigRspDTO : formConfigRspDTOS) {
+                    if (Objects.equals(flowTaskInfoVo.getFormId(), formConfigRspDTO.getId())) {
+                        flowTaskInfoVo.setFormName(formConfigRspDTO.getName());
+                        break;
+                    }
+                }
+            }
+        }
+        return IdmResDTO.success().body(flowTaskConfigVo);
     }
 
 

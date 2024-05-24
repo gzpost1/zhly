@@ -1,9 +1,18 @@
 package cn.cuiot.dmp.archive;
 
+import cn.cuiot.dmp.archive.api.controller.DeviceArchivesController;
 import cn.cuiot.dmp.archive.api.controller.HousesArchivesController;
+import cn.cuiot.dmp.archive.api.controller.ParkingArchivesController;
+import cn.cuiot.dmp.archive.api.controller.RoomArchivesController;
 import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
+import cn.cuiot.dmp.archive.application.param.query.HousesArchivesQuery;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
+import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
+import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
+import cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,9 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
 
 /**
@@ -32,22 +40,38 @@ public class ArchivesTest {
     @Autowired
     private HousesArchivesController housesArchivesController;
 
+    @Autowired
+    private RoomArchivesController roomArchivesController;
+
+    @Autowired
+    private ParkingArchivesController parkingArchivesController;
+
+    @Autowired
+    private DeviceArchivesController deviceArchivesController;
+
     @Test
     public void testCURD(){
         HousesArchivesEntity entity = new HousesArchivesEntity();
-        entity.setName("测试第二个房屋修改");
+        entity.setName("测试第二");
         entity.setLoupanId(1L);
-        entity.setCode("liujianyu3");
-        entity.setRoomNum("10010");
+        entity.setRoomNum("dsafkd");
+        entity.setCode("liujianyu5");
         List<String> image = new ArrayList<>();
         image.add("123.jpg");
         image.add("234.jpg");
         entity.setListingImages(image);
-        List<Long> basic = new ArrayList<>();
-        basic.add(1L);
-        basic.add(2L);
-        entity.setBasicServices(basic);
+        List<Long> list = new ArrayList<>();
+        list.add(2L);
+        list.add(3L);
+        entity.setBasicServices(list);
         housesArchivesController.create(entity);
+
+        HousesArchivesQuery query = new HousesArchivesQuery();
+        query.setLoupanId(1L);
+        IdmResDTO<IPage<HousesArchivesEntity>> res = housesArchivesController.queryForPage(query);
+        Long r = res.getData().getRecords().get(1).getBasicServices().get(0)+res.getData().getRecords().get(1).getBasicServices().get(1);
+        System.out.println(r);
+        System.out.println(res);
     }
 
     /**
@@ -55,7 +79,13 @@ public class ArchivesTest {
      */
     @Test
     public void testHousesCheckParams(){
-        HousesArchivesEntity entity = new HousesArchivesEntity();
-        housesArchivesService.checkParams(entity);
+        Set<Long> cur = new HashSet<>();
+        cur.add(1L);
+        cur.add(2L);
+        List<Long> list = new ArrayList<>();
+        list.add(3L);
+        list.add(4L);
+        cur.addAll(list);
+        System.out.println(cur);
     }
 }

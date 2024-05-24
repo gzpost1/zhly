@@ -9,7 +9,6 @@ import cn.cuiot.dmp.archive.application.param.vo.BaseArchivesVO;
  */
 public interface ArchivesApiService {
 
-
     /**
      * 二维码档案-根据档案id和类型获取详情
      */

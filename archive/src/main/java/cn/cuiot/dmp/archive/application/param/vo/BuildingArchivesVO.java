@@ -49,6 +49,11 @@ public class BuildingArchivesVO implements Serializable {
     private Long departmentId;
 
     /**
+     * 部门名称(路径)
+     */
+    private String departmentName;
+
+    /**
      * 楼栋数
      */
     private Integer buildingNum;
@@ -72,5 +77,10 @@ public class BuildingArchivesVO implements Serializable {
      * 停启用状态（0停用，1启用）
      */
     private Byte status;
+
+    /**
+     * 档案二维码id
+     */
+    private Long qrCodeId;
 
 }

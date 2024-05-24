@@ -4,11 +4,10 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.dto.BusinessAndOrgDto;
 import cn.cuiot.dmp.base.application.dto.BusinessAndOrgNameDto;
+import cn.cuiot.dmp.base.application.service.ApiSystemService;
 import cn.cuiot.dmp.base.application.service.SystemUtilService;
-import cn.cuiot.dmp.base.infrastructure.dto.BatcheOperation;
-import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
-import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
-import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.dto.*;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
 import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -52,6 +51,9 @@ public class BaseConfigFlowController {
     private TbFlowConfigService tbFlowConfigService;
     @Resource
     private RepositoryService repositoryService;
+    @Autowired
+    private ApiSystemService apiSystemService;
+
 
     /**
      * 工单获取流程分页
@@ -62,6 +64,11 @@ public class BaseConfigFlowController {
     @PostMapping("/queryForWorkOrderPage")
     public IdmResDTO<IPage<TbFlowPageDto>> queryForWorkOrderPage(@RequestBody TbFlowConfigQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+
+        DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(LoginInfoHolder.getCurrentDeptId(), null, null);
+        AssertUtil.notNull(departmentDto,"部门不存在");
+        query.setOrgPath(departmentDto.getPath());
+
         IPage<TbFlowPageDto> tbFlowPageDtoIPage = tbFlowConfigService.queryForWorkOrderPage(query);
         if(Objects.nonNull(tbFlowPageDtoIPage) && CollectionUtils.isNotEmpty(tbFlowPageDtoIPage.getRecords())){
             tbFlowPageDtoIPage.getRecords().stream().forEach(e -> {

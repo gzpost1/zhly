@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -36,7 +37,7 @@ public class CodeArchivesEntity extends YjBaseEntity {
 
     /**
      * 档案类型(1:楼盘,2:房屋,3:空间,4:车位,5:设备)
-     * @see cn.cuiot.dmp.system.application.enums.ArchiveTypeEnum
+     * @see ArchiveTypeEnum
      */
     private Byte archiveType;
 

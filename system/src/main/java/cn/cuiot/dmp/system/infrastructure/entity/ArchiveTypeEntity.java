@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.entity;
 
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -29,7 +30,7 @@ public class ArchiveTypeEntity implements Serializable {
 
     /**
      * 档案类型
-     * @see cn.cuiot.dmp.system.application.enums.ArchiveTypeEnum
+     * @see ArchiveTypeEnum
      */
     private Byte archiveType;
 

@@ -39,7 +39,7 @@ public class HandleDataVO {
     /**
      * 当前节点json数据 如果有taskId的话才返回
      */
-    private ChildNode currentNode;
+    private String currentNode;
     /**
      * 任务详情
      */

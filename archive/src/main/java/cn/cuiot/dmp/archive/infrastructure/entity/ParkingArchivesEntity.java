@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.archive.infrastructure.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import java.io.Serializable;
@@ -38,14 +39,32 @@ public class ParkingArchivesEntity extends YjBaseEntity implements Serializable 
     private Long loupanId;
 
     /**
+     * 所属楼盘名称
+     */
+    @TableField(exist = false)
+    private String loupanIdName;
+
+    /**
      * 所属区域（下拉选择自定义配置中数据）
      */
     private Long area;
 
     /**
+     * 所属区域（下拉选择自定义配置中数据）
+     */
+    @TableField(exist = false)
+    private String areaName;
+
+    /**
      * 使用情况（下拉选择自定义配置中数据）
      */
     private Long usageStatus;
+
+    /**
+     * 使用情况（下拉选择自定义配置中数据）
+     */
+    @TableField(exist = false)
+    private String usageStatusName;
 
     /**
      * 状态
@@ -58,6 +77,12 @@ public class ParkingArchivesEntity extends YjBaseEntity implements Serializable 
     private Long parkingType;
 
     /**
+     * 车位类型（下拉选择自定义配置中数据）
+     */
+    @TableField(exist = false)
+    private String parkingTypeName;
+
+    /**
      * 备注（支持输入汉字、数字、符号，最长长度为100位字符）
      */
     private String remarks;
@@ -67,6 +92,10 @@ public class ParkingArchivesEntity extends YjBaseEntity implements Serializable 
      */
     private String image;
 
-
+    /**
+     * 档案二维码id
+     */
+    @TableField(exist = false)
+    private Long qrCodeId;
 
 }

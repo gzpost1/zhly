@@ -31,6 +31,11 @@ public class CodeArchives implements Serializable {
     private Long archiveId;
 
     /**
+     * 档案名称
+     */
+    private String archiveName;
+
+    /**
      * 档案类型(1:楼盘,2:房屋,3:空间,4:车位,5:设备)
      */
     private Byte archiveType;
