@@ -12,10 +12,12 @@ import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchives;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchivesPageQuery;
 import cn.cuiot.dmp.archive.domain.repository.BuildingArchivesRepository;
+import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -42,11 +44,15 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
     @Autowired
     private ApiSystemService apiSystemService;
 
+    @Autowired
+    private ArchivesApiMapper archivesApiMapper;
+
     @Override
     public BuildingArchivesVO queryForDetail(Long id) {
         BuildingArchives buildingArchives = buildingArchivesRepository.queryForDetail(id);
         BuildingArchivesVO buildingArchivesVO = new BuildingArchivesVO();
         BeanUtils.copyProperties(buildingArchives, buildingArchivesVO);
+        buildingArchivesVO.setQrCodeId(archivesApiMapper.getCodeId(id, ArchiveTypeEnum.BUILDING_ARCHIVE.getCode()));
         return buildingArchivesVO;
     }
 
@@ -67,12 +73,11 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
 
     @Override
     public List<BuildingArchivesExportVO> queryForExportList(BuildingArchivesPageQuery pageQuery) {
-        AssertUtil.notNull(pageQuery.getDepartmentId(), "部门id不能为空");
         List<BuildingArchives> buildingArchivesList = buildingArchivesRepository.queryForList(pageQuery);
         if (CollectionUtils.isEmpty(buildingArchivesList)) {
             return new ArrayList<>();
         }
-        DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(pageQuery.getDepartmentId(), null, null);
+        DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(buildingArchivesList.get(0).getDepartmentId(), null, null);
         AssertUtil.notNull(departmentDto, "部门不存在");
         String departmentName = departmentDto.getPathName();
         return buildingArchivesList.stream()
@@ -104,10 +109,14 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
             return new PageResult<>();
         }
         PageResult<BuildingArchivesVO> buildingArchivesVOPageResult = new PageResult<>();
+        DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(pageQuery.getDepartmentId(), null, null);
+        AssertUtil.notNull(departmentDto, "部门不存在");
+        String departmentName = departmentDto.getPathName();
         List<BuildingArchivesVO> buildingArchivesVOS = buildingArchivesPageResult.getList().stream()
                 .map(o -> {
                     BuildingArchivesVO buildingArchivesVO = new BuildingArchivesVO();
                     BeanUtils.copyProperties(o, buildingArchivesVO);
+                    buildingArchivesVO.setDepartmentName(departmentName);
                     return buildingArchivesVO;
                 })
                 .collect(Collectors.toList());
@@ -132,6 +141,7 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
 
     @Override
     public int deleteBuildingArchives(Long id) {
+        checkDelete(id);
         return buildingArchivesRepository.deleteBuildingArchives(id);
     }
 
@@ -210,6 +220,13 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
             for (DepartmentTreeRspDTO child : rootTreeNode.getChildren()) {
                 fillDepartmentBuildingTree(child, buildingArchivesList);
             }
+        }
+    }
+
+    private void checkDelete(Long buildingId) {
+        List<Integer> countList = archivesApiMapper.countArchiveByBuildingId(buildingId);
+        for (Integer count : countList) {
+            AssertUtil.isTrue(count == 0, "楼盘档案下存在关联的房屋/空间/设备/车位档案，不能删除");
         }
     }
 

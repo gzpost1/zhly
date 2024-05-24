@@ -21,4 +21,41 @@
             )
         </foreach>
     </insert>
+
+    <select id="queryArchiveNameById" resultType="java.lang.String">
+        select
+        tba.name
+        from
+        tb_building_archives tba
+        where
+        tba.id = #{archiveId}
+        union all
+        select
+        tha.name
+        from
+        tb_houses_archives tha
+        where
+        tha.id = #{archiveId}
+        union all
+        select
+        tra.name
+        from
+        tb_room_archives tra
+        where
+        tra.id = #{archiveId}
+        union all
+        select
+        tda.device_name as name
+        from
+        tb_device_archives tda
+        where
+        tda.id = #{archiveId}
+        union all
+        select
+        tpa.code as name
+        from
+        tb_parking_archives tpa
+        where
+        tpa.id = #{archiveId}
+    </select>
 </mapper>

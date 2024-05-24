@@ -38,7 +38,4 @@ public class DeviceArchivesImportDto implements Serializable {
     @Excel(name = "安装日期", orderNum = "3")
     private String installationDateName;
 
-    @Excel(name = "楼盘名称", orderNum = "4")
-    private String loupanName;
-
 }

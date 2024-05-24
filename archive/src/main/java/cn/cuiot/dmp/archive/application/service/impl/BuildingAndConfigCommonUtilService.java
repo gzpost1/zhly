@@ -3,7 +3,9 @@ package cn.cuiot.dmp.archive.application.service.impl;
 import cn.cuiot.dmp.archive.infrastructure.entity.BuildingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -11,10 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -68,11 +67,17 @@ public class BuildingAndConfigCommonUtilService {
 
     /**
      * 使用配置名称查询出，对应的id关系
-     * @param names
      * @return
      */
-    public Map<String, Long> getConfigNameIdMap(Set<String> names){
-        return null;
+    public Map<String, Map<String, Long>> getConfigNameIdMap(Long companyId, Byte type){
+        CustomConfigReqDTO customConfigReqDTO = new CustomConfigReqDTO();
+        customConfigReqDTO.setCompanyId(companyId);
+        customConfigReqDTO.setArchiveType(type);
+        IdmResDTO<List<CustomConfigRspDTO>> res = systemApiFeignService.batchQueryCustomConfigs(customConfigReqDTO);
+        Map<String, Map<String, Long>> map = res.getData().stream()
+                .collect(Collectors.toMap(CustomConfigRspDTO::getName, dto -> dto.getCustomConfigDetailList().stream()
+                .collect(Collectors.toMap(CustomConfigDetailRspDTO::getName, CustomConfigDetailRspDTO::getId))));
+        return map;
     }
 
 }

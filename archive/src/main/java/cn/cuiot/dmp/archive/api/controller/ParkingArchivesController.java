@@ -11,14 +11,17 @@ import cn.cuiot.dmp.archive.application.param.vo.ParkingArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.ParkingArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
+import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -30,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,9 +41,11 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -49,23 +55,21 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/parking")
-public class ParkingArchivesController {
-
-    @Resource
-    protected HttpServletRequest request;
-
-    @Resource
-    protected HttpServletResponse response;
+public class ParkingArchivesController extends BaseController {
 
     @Autowired
     private ParkingArchivesService parkingArchivesService;
+    @Autowired
+    private ArchivesApiMapper archivesApiMapper;
 
     /**
      * 根据id获取详情
      */
     @PostMapping("/queryForDetail")
     public ParkingArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
-        return parkingArchivesService.getById(idParam.getId());
+        ParkingArchivesEntity res = parkingArchivesService.getById(idParam.getId());
+        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.PARK_ARCHIVE.getCode()));
+        return res;
     }
 
     /**
@@ -134,6 +138,16 @@ public class ParkingArchivesController {
         parkingArchivesService.update(entity, wrapper);
         return IdmResDTO.success();
     }
+    /**
+     * 批量删除
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "deleteByIdsParkingArchives", operationName = "批量删除车位档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
+    @PostMapping("/deleteByIds")
+    public IdmResDTO deleteByIds(@RequestBody @Valid IdsParam param) {
+        parkingArchivesService.removeByIds(param.getIds());
+        return IdmResDTO.success();
+    }
 
     /**
      * 导出,按照id列表
@@ -179,30 +193,34 @@ public class ParkingArchivesController {
             parkingArchivesService.checkParamsImport(dto);
         }
 
-        parkingArchivesService.importDataSave(importDtoList, loupanId);
+        parkingArchivesService.importDataSave(importDtoList, loupanId, Long.valueOf(getOrgId()));
     }
 
     /**
      * 下载模板
      */
     @PostMapping("/downloadTemplate")
-    public IdmResDTO<Object> download(HttpServletResponse response) throws IOException {
-        response.setCharacterEncoding("UTF-8");
-        String fileName = "importparkingArchives.xlsx";
-        String template;
-        template = "/template/importparkingArchives.xlsx";
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
-        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
-        try (InputStream inStream = this.getClass().getResourceAsStream(template)) {
-            OutputStream outputStream = response.getOutputStream();
-            byte[] b = new byte[1000];
-            int len;
-            if (inStream != null) {
-                while ((len = inStream.read(b)) > 0) {
-                    outputStream.write(b, 0, len);
-                }
+    public void downloadTemplate(HttpServletResponse response)
+            throws IOException {
+        BufferedOutputStream bos = null;
+        String templatePath = "template/importparkingArchives.xlsx";
+        try (InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(templatePath)) {
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder
+                    .encode("车位档案导入模板.xls", "UTF-8"));
+            bos = new BufferedOutputStream(response.getOutputStream());
+            FileCopyUtils.copy(is, bos);
+        } catch (Exception ex) {
+            throw new BusinessException(ResultCode.INNER_ERROR, "下载失败");
+        } finally {
+            if (null != bos) {
+                bos.flush();
+                bos.close();
             }
         }
-        return IdmResDTO.success();
     }
+
 }

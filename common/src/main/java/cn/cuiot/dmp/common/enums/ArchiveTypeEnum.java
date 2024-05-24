@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.system.application.enums;
+package cn.cuiot.dmp.common.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

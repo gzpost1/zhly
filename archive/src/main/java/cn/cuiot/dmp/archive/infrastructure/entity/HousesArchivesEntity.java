@@ -56,6 +56,12 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     private Long loupanId;
 
     /**
+     * 所属楼盘名称
+     */
+    @TableField(exist = false)
+    private String loupanIdName;
+
+    /**
      * 房屋编码
      */
     private String code;
@@ -91,9 +97,21 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     private Long houseType;
 
     /**
+     * 房屋户型
+     */
+    @TableField(exist = false)
+    private String houseTypeName;
+
+    /**
      * 朝向
      */
     private Long orientation;
+
+    /**
+     * 朝向
+     */
+    @TableField(exist = false)
+    private String orientationName;
 
     /**
      * 建筑面积（支持4位小数，最长可输入15位）
@@ -126,9 +144,21 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     private Long propertyType;
 
     /**
+     * 物业业态
+     */
+    @TableField(exist = false)
+    private String propertyTypeName;
+
+    /**
      * 状态
      */
     private Long status;
+
+    /**
+     * 状态
+     */
+    @TableField(exist = false)
+    private String statusName;
 
     /**
      * 用途
@@ -136,14 +166,32 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     private Long usageType;
 
     /**
+     * 用途
+     */
+    @TableField(exist = false)
+    private String usageTypeName;
+
+    /**
      * 经营性质
      */
     private Long businessNature;
 
     /**
+     * 经营性质
+     */
+    @TableField(exist = false)
+    private String businessNatureName;
+
+    /**
      * 资源类型
      */
     private Long resourceType;
+
+    /**
+     * 资源类型
+     */
+    @TableField(exist = false)
+    private String resourceTypeName;
 
     /**
      * 产权单位（支持输入汉字、英文、符号、数字，长度支持50字符）
@@ -154,6 +202,12 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
      * 产权属性
      */
     private Long ownershipAttribute;
+
+    /**
+     * 产权属性
+     */
+    @TableField(exist = false)
+    private String ownershipAttributeName;
 
     /**
      * 交房时间（年月日）
@@ -172,6 +226,12 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
      * 停车区域
      */
     private Long parkingArea;
+
+    /**
+     * 停车区域
+     */
+    @TableField(exist = false)
+    private String parkingAreaName;
 
     /**
      * 请填写备注（支持输入汉字、英文、符号、数字，长度支持200字符）
@@ -212,10 +272,20 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     private List<Long> basicServices;
 
     /**
+     * 基础服务（显示自定义配置中的选项，支持多选）
+     */
+    @TableField(exist = false)
+    private List<String> basicServicesName;
+
+    /**
      * 房源描述（支持输入汉字、英文、符号、数字，长度支持500字符）
      */
     private String listingDescription;
 
-
+    /**
+     * 档案二维码id
+     */
+    @TableField(exist = false)
+    private Long qrCodeId;
 
 }
