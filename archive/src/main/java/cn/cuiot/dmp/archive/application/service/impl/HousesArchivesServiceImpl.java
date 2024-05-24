@@ -12,6 +12,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.DoubleValidator;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -184,7 +185,54 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
     }
 
     public HousesArchivesEntity queryForDetail(Long id) {
-        return getById(id);
+        // 查询当前id的信息
+        HousesArchivesEntity entity = getById(id);
+        Set<Long> configIdList = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
+            configIdList.addAll(entity.getBasicServices());
+        }
+
+        addListCanNull(configIdList, entity.getHouseType());
+        addListCanNull(configIdList, entity.getOrientation());
+        addListCanNull(configIdList, entity.getPropertyType());
+        addListCanNull(configIdList, entity.getStatus());
+        addListCanNull(configIdList, entity.getUsageType());
+        addListCanNull(configIdList, entity.getBusinessNature());
+        addListCanNull(configIdList, entity.getResourceType());
+        addListCanNull(configIdList, entity.getParkingArea());
+
+        // 查询楼盘名称
+        Set<Long> loupanIdSet = new HashSet<>();
+        loupanIdSet.add(entity.getLoupanId());
+        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(loupanIdSet);
+        entity.setLoupanIdName(loupanIdNameMap.get(entity.getLoupanId()));
+
+        // 查询对应的配置名称，做配置名称匹配
+        final Map<Long, String> configIdNameMap = buildingAndConfigCommonUtilService.getConfigIdNameMap(configIdList);
+        entity.setHouseTypeName(configIdNameMap.get(entity.getHouseType()));
+        entity.setOrientationName(configIdNameMap.get(entity.getOrientation()));
+        entity.setPropertyTypeName(configIdNameMap.get(entity.getPropertyType()));
+        entity.setStatusName(configIdNameMap.get(entity.getStatus()));
+        entity.setUsageTypeName(configIdNameMap.get(entity.getUsageType()));
+        entity.setBusinessNatureName(configIdNameMap.get(entity.getBusinessNature()));
+        entity.setResourceTypeName(configIdNameMap.get(entity.getResourceType()));
+        entity.setParkingAreaName(configIdNameMap.get(entity.getParkingArea()));
+        if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
+            List<String> basicServices = new ArrayList<>();
+            entity.getBasicServices().forEach(configId -> {
+                basicServices.add(configIdNameMap.get(configId));
+            });
+            entity.setBasicServicesName(basicServices);
+        }
+
+
+        return entity;
+    }
+
+    private void addListCanNull(Set<Long> configIdList, Long configId){
+        if (Objects.nonNull(configId)){
+            configIdList.add(configId);
+        }
     }
 
 }

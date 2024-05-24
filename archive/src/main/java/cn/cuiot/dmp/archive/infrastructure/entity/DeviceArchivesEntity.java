@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import com.alibaba.fastjson.annotation.JSONField;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,6 +41,12 @@ public class DeviceArchivesEntity extends YjBaseEntity implements Serializable {
     private Long loupanId;
 
     /**
+     * 所属楼盘名称
+     */
+    @TableField(exist = false)
+    private String loupanIdName;
+
+    /**
      * 设备名称（支持输入汉字、英文、符号、数字，长度支持30字符）
      */
     private String deviceName;
@@ -48,6 +55,12 @@ public class DeviceArchivesEntity extends YjBaseEntity implements Serializable {
      * 设备类别（下拉选择自定义配置中数据）
      */
     private Long deviceCategory;
+
+    /**
+     * 设备类别（下拉选择自定义配置中数据）
+     */
+    @TableField(exist = false)
+    private String deviceCategoryName;
 
     /**
      * 设备系统（支持输入汉字、英文、符号、数字，长度支持30字符）
@@ -95,9 +108,21 @@ public class DeviceArchivesEntity extends YjBaseEntity implements Serializable {
     private Long deviceStatus;
 
     /**
+     * 设备状态（具体选项）
+     */
+    @TableField(exist = false)
+    private String deviceStatusName;
+
+    /**
      * 物业服务档次（下拉选项）
      */
     private Long propertyServiceLevel;
+
+    /**
+     * 物业服务档次（下拉选项）
+     */
+    @TableField(exist = false)
+    private String propertyServiceLevelName;
 
     /**
      * 品牌（支持输入汉字、数字、符号，最长长度为30位字符）

@@ -146,7 +146,31 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
     }
 
     public DeviceArchivesEntity queryForDetail(Long id) {
-        return getById(id);
+        // 查询当前id的信息
+        DeviceArchivesEntity entity = getById(id);
+        Set<Long> configIdList = new HashSet<>();
+        addListCanNull(configIdList, entity.getDeviceCategory());
+        addListCanNull(configIdList, entity.getDeviceStatus());
+        addListCanNull(configIdList, entity.getPropertyServiceLevel());
+
+        // 查询楼盘名称
+        Set<Long> loupanIdSet = new HashSet<>();
+        loupanIdSet.add(entity.getLoupanId());
+        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(loupanIdSet);
+        entity.setLoupanIdName(loupanIdNameMap.get(entity.getLoupanId()));
+
+        // 查询对应的配置名称，做配置名称匹配
+        final Map<Long, String> configIdNameMap = buildingAndConfigCommonUtilService.getConfigIdNameMap(configIdList);
+        entity.setDeviceCategoryName(configIdNameMap.get(entity.getDeviceCategory()));
+        entity.setDeviceStatusName(configIdNameMap.get(entity.getDeviceStatus()));
+        entity.setPropertyServiceLevelName(configIdNameMap.get(entity.getPropertyServiceLevel()));
+        return entity;
+    }
+
+    private void addListCanNull(Set<Long> configIdList, Long configId){
+        if (Objects.nonNull(configId)){
+            configIdList.add(configId);
+        }
     }
 
 }

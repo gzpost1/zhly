@@ -185,7 +185,40 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
     }
 
     public RoomArchivesEntity queryForDetail(Long id) {
-        return getById(id);
+        // 查询当前id的信息
+        RoomArchivesEntity entity = getById(id);
+        Set<Long> configIdList = new HashSet<>();
+        addListCanNull(configIdList, entity.getSpaceCategory());
+        addListCanNull(configIdList, entity.getProfessionalPurpose());
+        addListCanNull(configIdList, entity.getBusinessNature());
+        addListCanNull(configIdList, entity.getOwnershipAttribute());
+        addListCanNull(configIdList, entity.getResourceType());
+        addListCanNull(configIdList, entity.getPropertyServiceLevel());
+        addListCanNull(configIdList, entity.getLocationMethod());
+
+        // 查询楼盘名称
+        Set<Long> loupanIdSet = new HashSet<>();
+        loupanIdSet.add(entity.getLoupanId());
+        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(loupanIdSet);
+        entity.setLoupanIdName(loupanIdNameMap.get(entity.getLoupanId()));
+
+        // 查询对应的配置名称，做配置名称匹配
+        final Map<Long, String> configIdNameMap = buildingAndConfigCommonUtilService.getConfigIdNameMap(configIdList);
+        entity.setSpaceCategoryName(configIdNameMap.get(entity.getSpaceCategory()));
+        entity.setProfessionalPurposeName(configIdNameMap.get(entity.getProfessionalPurpose()));
+        entity.setBusinessNatureName(configIdNameMap.get(entity.getBusinessNature()));
+        entity.setOwnershipAttributeName(configIdNameMap.get(entity.getOwnershipAttribute()));
+        entity.setResourceTypeName(configIdNameMap.get(entity.getResourceType()));
+        entity.setPropertyServiceLevelName(configIdNameMap.get(entity.getPropertyServiceLevel()));
+        entity.setLocationMethodName(configIdNameMap.get(entity.getLocationMethod()));
+
+        return entity;
+    }
+
+    private void addListCanNull(Set<Long> configIdList, Long configId){
+        if (Objects.nonNull(configId)){
+            configIdList.add(configId);
+        }
     }
 
 }

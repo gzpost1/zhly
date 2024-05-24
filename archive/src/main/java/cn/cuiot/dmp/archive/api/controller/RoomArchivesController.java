@@ -141,6 +141,17 @@ public class RoomArchivesController {
     }
 
     /**
+     * 批量删除
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "deleteByIdsRoomArchives", operationName = "批量删除空间档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
+    @PostMapping("/deleteByIds")
+    public IdmResDTO deleteByIds(@RequestBody @Valid IdsParam param) {
+        roomArchivesService.removeByIds(param.getIds());
+        return IdmResDTO.success();
+    }
+
+    /**
      * 导出,按照id列表
      */
     @RequiresPermissions

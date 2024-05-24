@@ -140,6 +140,17 @@ public class HousesArchivesController {
     }
 
     /**
+     * 批量删除
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "deleteByIdsHousesArchives", operationName = "批量删除房屋档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
+    @PostMapping("/deleteByIds")
+    public IdmResDTO deleteByIds(@RequestBody @Valid IdsParam param) {
+        housesArchivesService.removeByIds(param.getIds());
+        return IdmResDTO.success();
+    }
+
+    /**
      * 导出,按照id列表
      */
     @RequiresPermissions
