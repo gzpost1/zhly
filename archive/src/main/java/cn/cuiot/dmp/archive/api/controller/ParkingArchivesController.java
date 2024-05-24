@@ -14,6 +14,7 @@ import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -49,13 +50,7 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/parking")
-public class ParkingArchivesController {
-
-    @Resource
-    protected HttpServletRequest request;
-
-    @Resource
-    protected HttpServletResponse response;
+public class ParkingArchivesController extends BaseController {
 
     @Autowired
     private ParkingArchivesService parkingArchivesService;

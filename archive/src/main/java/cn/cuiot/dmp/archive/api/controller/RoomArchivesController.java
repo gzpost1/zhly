@@ -14,6 +14,7 @@ import cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -49,13 +50,7 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/room")
-public class RoomArchivesController {
-
-    @Resource
-    protected HttpServletRequest request;
-
-    @Resource
-    protected HttpServletResponse response;
+public class RoomArchivesController extends BaseController {
 
     @Autowired
     private RoomArchivesService roomArchivesService;

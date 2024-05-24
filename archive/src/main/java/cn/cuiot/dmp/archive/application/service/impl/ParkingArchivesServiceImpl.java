@@ -11,8 +11,10 @@ import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ParkingArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
+import cn.cuiot.dmp.common.constant.CustomConfigConstant;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
@@ -77,7 +79,11 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
         // 查询楼盘信息-用于楼盘id转换为楼盘名称-汇总成Map
         Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(list.stream().map(ParkingArchivesEntity::getLoupanId).collect(Collectors.toSet()));
         // 查询配置信息-用于配置id转换为配置名称-汇总成Map
-        Map<Long, String> configIdNameMap = new HashMap<>();
+        Set<Long> configIdList = new HashSet<>();
+        list.forEach(entity -> {
+            getConfigIdFromEntity(entity, configIdList);
+        });
+        Map<Long, String> configIdNameMap = buildingAndConfigCommonUtilService.getConfigIdNameMap(configIdList);
 
         // 构造导出列表
         list.forEach(entity -> {
@@ -94,21 +100,21 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
     }
 
     @Override
-    public void importDataSave(List<ParkingArchivesImportDto> dataList, Long loupanId) {
+    public void importDataSave(List<ParkingArchivesImportDto> dataList, Long loupanId, Long companyId) {
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         // Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(ParkingArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
-        Map<String, Long> nameConfigIdMap = new HashMap<>();
+        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.DEVICE_ARCHIVE.getCode());
 
         // 构造插入列表进行保存
         List<ParkingArchivesEntity> list = new ArrayList<>();
         dataList.forEach(data -> {
             ParkingArchivesEntity entity = new ParkingArchivesEntity();
-            entity.setArea(checkConfigTypeNull(nameConfigIdMap, data.getAreaName()));
+            entity.setArea(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.PARKING_ARCHIVES_INIT.get(0)), data.getAreaName()));
             entity.setCode(data.getCode());
-            entity.setUsageStatus(checkConfigTypeNull(nameConfigIdMap, data.getUsageStatusName()));
-            entity.setParkingType(checkConfigTypeNull(nameConfigIdMap, data.getParkingTypeName()));
+            entity.setUsageStatus(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.PARKING_ARCHIVES_INIT.get(1)), data.getUsageStatusName()));
+            entity.setParkingType(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.PARKING_ARCHIVES_INIT.get(2)), data.getParkingTypeName()));
             entity.setLoupanId(loupanId);
             entity.setStatus(getStatusFromName(data.getStatusName()));
             // TODO: 2024/5/16 这里还需要基于不同的一级类目去查询配置
@@ -181,6 +187,12 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
         if (Objects.nonNull(configId)){
             configIdList.add(configId);
         }
+    }
+
+    private void getConfigIdFromEntity(ParkingArchivesEntity entity, Set<Long> configIdList){
+        addListCanNull(configIdList, entity.getArea());
+        addListCanNull(configIdList, entity.getUsageStatus() );
+        addListCanNull(configIdList, entity.getParkingType());
     }
 
 }

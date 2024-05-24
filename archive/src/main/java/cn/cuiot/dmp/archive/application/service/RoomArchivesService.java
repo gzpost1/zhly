@@ -36,5 +36,5 @@ public interface RoomArchivesService extends IService<RoomArchivesEntity> {
     /**
      * 导入数据
      */
-    void importDataSave(List<RoomArchivesImportDto> dataList, Long loupanId);
+    void importDataSave(List<RoomArchivesImportDto> dataList, Long loupanId, Long companyId);
 }
