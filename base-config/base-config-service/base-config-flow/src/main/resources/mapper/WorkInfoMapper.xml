@@ -71,7 +71,7 @@
     </select>
 
     <sql id="queryMyNotApprovalSql">
-        DISTINCT  t1.id ,t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.create_time,t1.create_user as userId,t1.company_id, t1.status as state, t1.org_ids,
+          t1.id ,t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.create_time,t1.create_user as userId,t1.company_id, t1.status as state, t1.org_ids,
             t2.ID_ as task_id ,t2.PROC_DEF_ID_ as procDefId ,t2.TASK_DEF_KEY_ as taskDefKey
     </sql>
     <select id="queryMyNotApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
@@ -107,11 +107,12 @@
             <if test="query.makeUserId !=null">
                 and t2.user_id = #{query.makeUserId}
             </if>
+            group by t1.proc_inst_id
             order by t1.create_time desc
         </where>
     </sql>
     <sql id="queryMyApprovalSql">
-        DISTINCT t1.id,t1.proc_inst_id, t1.create_user as userId, t1.status, t1.work_souce, t1.work_name,  t1.org_id, t1.business_type
+         t1.proc_inst_id, t1.id, t1.create_user as userId, t1.status, t1.work_souce, t1.work_name,  t1.org_id, t1.business_type
             ,t1.status as state, t1.org_ids,t1.create_time  ,t2.END_TIME_ as entTime
     </sql>
     <select id="queryMyApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
@@ -147,6 +148,7 @@
             <if test="query.makeUserId !=null">
                 and t2.user_id = #{query.makeUserId}
             </if>
+            group by t1.proc_inst_id
             order by t1.create_time desc
         </where>
 
