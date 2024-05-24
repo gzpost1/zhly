@@ -629,17 +629,17 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         List<String> ids = props.getAssignedUser().stream().map(UserInfo::getId).collect(Collectors.toList());
         log.info("指定类型"+props.getAssignedType()+"指定人员:"+JSONObject.toJSONString(ids)+"当前人员:"+userId);
         //指定人员
-        if(StringUtils.equals(props.getAssignedType(), AssigneeTypeEnums.ASSIGN_USER.getTypeName())){
+        if(StringUtils.equalsAnyIgnoreCase(props.getAssignedType(), AssigneeTypeEnums.ASSIGN_USER.getTypeName())){
             if(!ids.contains(String.valueOf(userId))){
                 return  IdmResDTO.error("00001","没有权限发起流程");
             }
         }
-        if(StringUtils.equals(props.getAssignedType(), AssigneeTypeEnums.DEPT.getTypeName())){
+        if(StringUtils.equalsAnyIgnoreCase(props.getAssignedType(), AssigneeTypeEnums.DEPT.getTypeName())){
             if(!ids.contains(String.valueOf(LoginInfoHolder.getCurrentDeptId()))){
                 return  IdmResDTO.error("00001","没有权限发起流程");
             }
         }
-        if(StringUtils.equals(props.getAssignedType(), AssigneeTypeEnums.ROLE.getTypeName())){
+        if(StringUtils.equalsAnyIgnoreCase(props.getAssignedType(), AssigneeTypeEnums.ROLE.getTypeName())){
             BaseUserReqDto query = new BaseUserReqDto();
             query.setUserId(LoginInfoHolder.getCurrentUserId());
             IdmResDTO<BaseUserDto> baseUserDtoIdmResDTO = systemApiFeignService.lookUpUserInfo(query);
