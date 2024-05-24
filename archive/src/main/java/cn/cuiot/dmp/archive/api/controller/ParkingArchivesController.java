@@ -134,6 +134,16 @@ public class ParkingArchivesController {
         parkingArchivesService.update(entity, wrapper);
         return IdmResDTO.success();
     }
+    /**
+     * 批量删除
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "deleteByIdsParkingArchives", operationName = "批量删除车位档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
+    @PostMapping("/deleteByIds")
+    public IdmResDTO deleteByIds(@RequestBody @Valid IdsParam param) {
+        parkingArchivesService.removeByIds(param.getIds());
+        return IdmResDTO.success();
+    }
 
     /**
      * 导出,按照id列表

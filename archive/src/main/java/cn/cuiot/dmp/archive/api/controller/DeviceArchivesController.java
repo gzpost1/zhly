@@ -122,7 +122,7 @@ public class DeviceArchivesController {
      * 批量修改
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateByIdsDeviceArchives", operationName = "批量修改房屋档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
+    @LogRecord(operationCode = "updateByIdsDeviceArchives", operationName = "批量修改设备档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/updateByIds")
     public IdmResDTO updateByIds(@RequestBody @Valid ArchiveBatchUpdateDTO param) {
         LambdaQueryWrapper<DeviceArchivesEntity> wrapper = new LambdaQueryWrapper<>();
@@ -131,6 +131,17 @@ public class DeviceArchivesController {
         DeviceArchivesEntity entity = new DeviceArchivesEntity();
         entity.setLoupanId(param.getLoupanId());
         deviceArchivesService.update(entity, wrapper);
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 批量删除
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "deleteByIdsDeviceArchives", operationName = "批量删除设备档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
+    @PostMapping("/deleteByIds")
+    public IdmResDTO deleteByIds(@RequestBody @Valid IdsParam param) {
+        deviceArchivesService.removeByIds(param.getIds());
         return IdmResDTO.success();
     }
 
