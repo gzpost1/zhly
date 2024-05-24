@@ -10,6 +10,7 @@ import cn.cuiot.dmp.system.domain.repository.CodeArchivesRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.CodeArchivesEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CodeArchivesMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -127,9 +128,11 @@ public class CodeArchivesRepositoryImpl implements CodeArchivesRepository {
         List<CodeArchivesEntity> codeArchivesEntityList = codeArchivesMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(codeArchivesEntityList)) {
             CodeArchivesEntity source = codeArchivesEntityList.get(0);
-            source.setArchiveId(null);
-            source.setArchiveType(null);
-            codeArchivesMapper.updateById(source);
+            LambdaUpdateWrapper<CodeArchivesEntity> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(CodeArchivesEntity::getId, source.getId());
+            updateWrapper.set(CodeArchivesEntity::getArchiveId, null);
+            updateWrapper.set(CodeArchivesEntity::getArchiveType, null);
+            codeArchivesMapper.update(source, updateWrapper);
         }
         return codeArchivesMapper.updateById(codeArchivesEntity);
     }
