@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * @author liujianyu
  * @since 2024-05-15
  */
-@Service
+@Service("housesArchivesService")
 public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper, HousesArchivesEntity> implements HousesArchivesService {
 
     @Autowired
