@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper">
+
+    <select id="countArchiveByBuildingId" resultType="java.lang.Integer">
+        select
+        count(1) as num
+        from
+        tb_houses_archives tha
+        where
+        tha.loupan_id = #{buildingId}
+        union all
+        select
+        count(1) as num
+        from
+        tb_room_archives tra
+        where
+        tra.loupan_id = #{buildingId}
+        union all
+        select
+        count(1) as num
+        from
+        tb_device_archives tda
+        where
+        tda.loupan_id = #{buildingId}
+        union all
+        select
+        count(1) as num
+        from
+        tb_parking_archives tpa
+        where
+        tpa.loupan_id = #{buildingId}
+    </select>
+
+    <select id="getCodeId" resultType="java.lang.Long">
+        select id from tb_code_archives where archive_id = #{archiveId} and archive_type = #{archiveType}
+    </select>
+
+</mapper>

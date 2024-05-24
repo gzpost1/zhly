@@ -11,6 +11,7 @@ import cn.cuiot.dmp.archive.application.param.vo.RoomArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.RoomArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity;
+import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
@@ -20,6 +21,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -57,13 +59,17 @@ public class RoomArchivesController extends BaseController {
 
     @Autowired
     private RoomArchivesService roomArchivesService;
+    @Autowired
+    private ArchivesApiMapper archivesApiMapper;
 
     /**
      * 根据id获取详情
      */
     @PostMapping("/queryForDetail")
     public RoomArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
-        return roomArchivesService.getById(idParam.getId());
+        RoomArchivesEntity res = roomArchivesService.getById(idParam.getId());
+        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.ROOM_ARCHIVE.getCode()));
+        return res;
     }
 
     /**

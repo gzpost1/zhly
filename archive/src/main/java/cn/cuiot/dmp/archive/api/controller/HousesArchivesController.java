@@ -10,6 +10,7 @@ import cn.cuiot.dmp.archive.application.param.query.HousesArchivesQuery;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
+import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
@@ -19,6 +20,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -57,12 +59,17 @@ public class HousesArchivesController extends BaseController {
     @Autowired
     private HousesArchivesService housesArchivesService;
 
+    @Autowired
+    private ArchivesApiMapper archivesApiMapper;
+
     /**
      * 根据id获取详情
      */
     @PostMapping("/queryForDetail")
     public HousesArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
-        return housesArchivesService.getById(idParam.getId());
+        HousesArchivesEntity res = housesArchivesService.getById(idParam.getId());
+        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.HOUSE_ARCHIVE.getCode()));
+        return res;
     }
 
     /**
