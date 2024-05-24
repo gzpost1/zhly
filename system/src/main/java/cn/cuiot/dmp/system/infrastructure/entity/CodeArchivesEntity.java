@@ -43,7 +43,7 @@ public class CodeArchivesEntity extends YjBaseEntity {
     /**
      * 描述
      */
-    private String desc;
+    private String archiveDesc;
 
     /**
      * 码类型（1:二维码）
