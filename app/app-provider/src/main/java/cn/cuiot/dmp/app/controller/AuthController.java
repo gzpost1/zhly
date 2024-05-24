@@ -1,7 +1,5 @@
 package cn.cuiot.dmp.app.controller;
 
-import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
-
 import cn.cuiot.dmp.app.dto.AppUserDto;
 import cn.cuiot.dmp.app.dto.user.ChangePhoneDto;
 import cn.cuiot.dmp.app.dto.user.Code2SessionDto;
@@ -17,6 +15,7 @@ import cn.cuiot.dmp.app.dto.user.SmsCodeCheckReqDto;
 import cn.cuiot.dmp.app.dto.user.SmsCodeCheckResDto;
 import cn.cuiot.dmp.app.dto.user.SmsCodeReqDto;
 import cn.cuiot.dmp.app.dto.user.SmsCodeResDto;
+import cn.cuiot.dmp.app.dto.user.SwitchUserTypeDto;
 import cn.cuiot.dmp.app.service.AppAuthService;
 import cn.cuiot.dmp.app.service.AppVerifyService;
 import cn.cuiot.dmp.base.application.service.WeChatMiniAppService;
@@ -24,10 +23,7 @@ import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.hutool.core.util.PhoneUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Optional;
@@ -163,7 +159,7 @@ public class AuthController {
     public IdmResDTO<AppUserDto> loginUserInfo() {
         Long sessionUserId = LoginInfoHolder.getCurrentUserId();
         Long sessionOrgId = LoginInfoHolder.getCurrentOrgId();
-        AppUserDto userDto = appAuthService.getLoginUserInfo(sessionUserId,sessionOrgId);
+        AppUserDto userDto = appAuthService.getLoginUserInfo(sessionUserId);
         return IdmResDTO.success(userDto);
     }
 
@@ -228,6 +224,16 @@ public class AuthController {
         dto.setUserId(LoginInfoHolder.getCurrentUserId());
         appAuthService.changePhone(dto);
         return IdmResDTO.success(null);
+    }
+
+    /**
+     * 切换身份
+     */
+    @PostMapping("switchUserType")
+    public IdmResDTO<AppUserDto> switchUserType(@RequestBody @Valid SwitchUserTypeDto dto) {
+        dto.setUserId(LoginInfoHolder.getCurrentUserId());
+        AppUserDto userDto = appAuthService.switchUserType(dto);
+        return IdmResDTO.success(userDto);
     }
 
     /**

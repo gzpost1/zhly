@@ -16,6 +16,7 @@ import cn.cuiot.dmp.app.dto.user.PwdLoginDto;
 import cn.cuiot.dmp.app.dto.user.PwdResetDto;
 import cn.cuiot.dmp.app.dto.user.SampleUserInfoDto;
 import cn.cuiot.dmp.app.dto.user.SmsCodeCheckResDto;
+import cn.cuiot.dmp.app.dto.user.SwitchUserTypeDto;
 import cn.cuiot.dmp.app.entity.OrganizationEntity;
 import cn.cuiot.dmp.app.entity.UserEntity;
 import cn.cuiot.dmp.app.mapper.OrganizationEntityMapper;
@@ -49,7 +50,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -522,7 +522,7 @@ public class AppAuthService {
     /**
      * 获得登录用户信息
      */
-    public AppUserDto getLoginUserInfo(Long sessionUserId, Long sessionOrgId) {
+    public AppUserDto getLoginUserInfo(Long sessionUserId) {
         AppUserDto userDto = appUserService.getUserById(sessionUserId);
         if (userDto == null) {
             throw new BusinessException(USER_ACCOUNT_NOT_EXIST, "用户信息获取失败");
@@ -595,7 +595,7 @@ public class AppAuthService {
         String password = dto.getPassword();
 
         AppUserDto userDto = appUserService.getUserByPhoneAndUserType(userAccount, userType);
-        if(Objects.isNull(userDto)){
+        if (Objects.isNull(userDto)) {
             throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
         }
         //修改密码
@@ -653,7 +653,7 @@ public class AppAuthService {
         String password = dto.getPassword();
 
         AppUserDto userDto = appUserService.getUserById(dto.getUserId());
-        if(Objects.isNull(userDto)){
+        if (Objects.isNull(userDto)) {
             throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
         }
         String oldPhone = Optional.ofNullable(userDto).map(d -> d.getPhoneNumber()).orElse(null);
@@ -666,6 +666,104 @@ public class AppAuthService {
         updateEntity.setPassword(new Password(password).getHashEncryptValue());
         updateEntity.setUpdatedOn(LocalDateTime.now());
         appUserService.updateAppUser(updateEntity);
+    }
+
+    /**
+     * 切换身份
+     */
+    public AppUserDto switchUserType(SwitchUserTypeDto dto) {
+        AppUserDto currentUser = appUserService.getUserById(dto.getUserId());
+        if (Objects.isNull(currentUser)) {
+            throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
+        }
+        String ipAddr = dto.getIpAddr();
+        String openid = dto.getOpenid();
+        Integer userType = dto.getUserType();
+        AppUserDto userDto = null;
+        //员工
+        if (UserTypeEnum.USER.getValue().equals(userType)) {
+            userDto = appUserService
+                    .getUserByPhoneAndUserType(currentUser.getPhoneNumber(), userType);
+            if (Objects.isNull(userDto)) {
+                throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST, "用户不存在");
+            }
+            if (EntityConstants.DISABLED.equals(userDto.getStatus())) {
+                throw new BusinessException(ResultCode.PHONE_NUMBER_IS_INVALID, "用户已被禁用");
+            }
+            Long pkUserId = userDto.getId();
+            // 获取org主键id
+            Long pkOrgId = appUserService.getOrgId(pkUserId);
+            // 获取dept主键id
+            String pkDeptId = appUserService.getDeptId(pkUserId.toString(), pkOrgId.toString());
+            // 获取企业信息
+            OrganizationEntity organization = organizationEntityMapper.selectById(pkOrgId);
+            if (organization == null || organization.getStatus() == null || OrgStatusEnum.DISABLE
+                    .getCode().equals(organization.getStatus())) {
+                throw new BusinessException(ResultCode.ORG_IS_ENABLED);
+            }
+            userDto.setOrgId(pkOrgId.toString());
+            userDto.setDeptId(pkDeptId);
+            userDto.setOrgTypeId(organization.getOrgTypeId());
+
+            //更新登录时间
+            UserEntity updateEntity = new UserEntity();
+            updateEntity.setId(userDto.getId());
+            updateEntity.setLastOnlineIp(ipAddr);
+            updateEntity.setLastOnlineOn(LocalDateTime.now());
+            appUserService.updateAppUser(updateEntity);
+        } else {
+            userDto = appUserService
+                    .getUserByPhoneAndUserType(currentUser.getPhoneNumber(), userType);
+            //非员工
+            if (Objects.isNull(userDto)) {
+                String password = randomPwUtils
+                        .getRandomPassword((int) (8 + Math.random() * (20 - 8 + 1)));
+                UserEntity userEntity = new UserEntity();
+                userEntity.setName("用户昵称");
+                userEntity.setUsername(userDto.getPhoneNumber() + userType);
+                userEntity.setPassword(new Password(password).getHashEncryptValue());
+                userEntity.setPhoneNumber(
+                        new PhoneNumber(userDto.getPhoneNumber()).getEncryptedValue());
+                userEntity.setStatus(UserStatusEnum.OPEN.getValue());
+                userEntity.setUserType(userType);
+                userEntity.setOpenid(openid);
+                userEntity.setDeletedFlag(EntityConstants.NOT_DELETED.intValue());
+                userEntity.setLastOnlineIp(ipAddr);
+                userEntity.setLastOnlineOn(LocalDateTime.now());
+                userEntity.setCreatedOn(LocalDateTime.now());
+                userEntity.setCreatedBy(OperateByTypeEnum.SYSTEM.name().toLowerCase());
+                userEntity.setCreatedByType(OperateByTypeEnum.SYSTEM.getValue());
+                appUserService.createAppUser(userEntity);
+                userDto = appUserConverter.toAppUserDto(userEntity);
+            } else {
+                //更新登录时间
+                UserEntity updateEntity = new UserEntity();
+                updateEntity.setId(userDto.getId());
+                updateEntity.setLastOnlineIp(ipAddr);
+                updateEntity.setLastOnlineOn(LocalDateTime.now());
+                appUserService.updateAppUser(updateEntity);
+            }
+        }
+        Long pkUserId = userDto.getId();
+
+        Date expirationDate = DateUtil
+                .date(System.currentTimeMillis() + Const.WX_SESSION_TIME * 1000);
+
+        Map<String, Object> claims = generateClaims(userDto);
+
+        String jwt = Jwts.builder().setClaims(claims).setExpiration(expirationDate)
+                .signWith(SignatureAlgorithm.HS512, Const.SECRET).compact();
+
+        String refreshCode = String.valueOf(SnowflakeIdWorkerUtil.nextId());
+        redisUtil.set(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt, refreshCode,
+                SecurityConst.WX_REFRESH_SESSION_TIME);
+        redisUtil.set(CacheConst.LOGIN_USERS_JWT_WX + jwt, String.valueOf(pkUserId),
+                Const.WX_SESSION_TIME);
+
+        userDto.setRefreshCode(refreshCode);
+        userDto.setToken(jwt);
+
+        return userDto;
     }
 
 }
