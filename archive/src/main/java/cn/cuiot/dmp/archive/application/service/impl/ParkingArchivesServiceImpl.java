@@ -77,7 +77,11 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
         // 查询楼盘信息-用于楼盘id转换为楼盘名称-汇总成Map
         Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(list.stream().map(ParkingArchivesEntity::getLoupanId).collect(Collectors.toSet()));
         // 查询配置信息-用于配置id转换为配置名称-汇总成Map
-        Map<Long, String> configIdNameMap = new HashMap<>();
+        Set<Long> configIdList = new HashSet<>();
+        list.forEach(entity -> {
+            getConfigIdFromEntity(entity, configIdList);
+        });
+        Map<Long, String> configIdNameMap = buildingAndConfigCommonUtilService.getConfigIdNameMap(configIdList);
 
         // 构造导出列表
         list.forEach(entity -> {
@@ -94,7 +98,7 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
     }
 
     @Override
-    public void importDataSave(List<ParkingArchivesImportDto> dataList, Long loupanId) {
+    public void importDataSave(List<ParkingArchivesImportDto> dataList, Long loupanId, Long companyId) {
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         // Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(ParkingArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
@@ -181,6 +185,12 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
         if (Objects.nonNull(configId)){
             configIdList.add(configId);
         }
+    }
+
+    private void getConfigIdFromEntity(ParkingArchivesEntity entity, Set<Long> configIdList){
+        addListCanNull(configIdList, entity.getArea());
+        addListCanNull(configIdList, entity.getUsageStatus() );
+        addListCanNull(configIdList, entity.getParkingType());
     }
 
 }

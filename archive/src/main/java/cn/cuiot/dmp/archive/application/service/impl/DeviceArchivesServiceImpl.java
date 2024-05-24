@@ -6,6 +6,7 @@ import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.DeviceArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.BuildingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
+import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMapper;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.DeviceArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
@@ -13,6 +14,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,7 +87,11 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         // 查询楼盘信息-用于楼盘id转换为楼盘名称-汇总成Map
         Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(list.stream().map(DeviceArchivesEntity::getLoupanId).collect(Collectors.toSet()));
         // 查询配置信息-用于配置id转换为配置名称-汇总成Map
-        Map<Long, String> configIdNameMap = new HashMap<>();
+        Set<Long> configIdList = new HashSet<>();
+        list.forEach(entity -> {
+            getConfigIdFromEntity(entity, configIdList);
+        });
+        Map<Long, String> configIdNameMap = buildingAndConfigCommonUtilService.getConfigIdNameMap(configIdList);
 
         // 构造导出列表
         list.forEach(entity -> {
@@ -104,7 +110,7 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
     }
 
     @Override
-    public void importDataSave(List<DeviceArchivesImportDto> dataList, Long loupanId) {
+    public void importDataSave(List<DeviceArchivesImportDto> dataList, Long loupanId, Long companyId) {
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         //Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(DeviceArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
@@ -171,6 +177,12 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         if (Objects.nonNull(configId)){
             configIdList.add(configId);
         }
+    }
+
+    private void getConfigIdFromEntity(DeviceArchivesEntity entity, Set<Long> configIdList){
+        addListCanNull(configIdList, entity.getDeviceCategory());
+        addListCanNull(configIdList, entity.getDeviceStatus());
+        addListCanNull(configIdList, entity.getPropertyServiceLevel());
     }
 
 }
