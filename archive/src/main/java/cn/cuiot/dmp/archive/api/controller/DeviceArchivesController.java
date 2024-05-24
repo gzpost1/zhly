@@ -184,7 +184,7 @@ public class DeviceArchivesController extends BaseController {
             deviceArchivesService.checkParamsImport(dto);
         }
 
-        deviceArchivesService.importDataSave(importDtoList, loupanId);
+        deviceArchivesService.importDataSave(importDtoList, loupanId, Long.valueOf(getOrgId()));
     }
 
     /**

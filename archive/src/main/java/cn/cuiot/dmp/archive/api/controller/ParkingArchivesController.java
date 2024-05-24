@@ -184,7 +184,7 @@ public class ParkingArchivesController extends BaseController {
             parkingArchivesService.checkParamsImport(dto);
         }
 
-        parkingArchivesService.importDataSave(importDtoList, loupanId);
+        parkingArchivesService.importDataSave(importDtoList, loupanId, Long.valueOf(getOrgId()));
     }
 
     /**

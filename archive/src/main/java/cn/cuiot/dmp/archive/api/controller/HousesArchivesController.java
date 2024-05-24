@@ -189,7 +189,7 @@ public class HousesArchivesController extends BaseController {
             housesArchivesService.checkParamsImport(dto);
         }
 
-        housesArchivesService.importDataSave(importDtoList, loupanId);
+        housesArchivesService.importDataSave(importDtoList, loupanId, Long.valueOf(getOrgId()));
     }
 
     /**
