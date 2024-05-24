@@ -831,7 +831,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(CollectionUtils.isNotEmpty(workList)){
             workList.stream().forEach(item->{
                 long totalTimes = item.getEndTime()==null?
-                        (Calendar.getInstance().getTimeInMillis()-item.getStartTime().getTime()):
+                        (new Date().getTime()-item.getStartTime().getTime()):
                         (item.getEndTime().getTime()-item.getStartTime().getTime());
                 times.add(totalTimes);
             });
