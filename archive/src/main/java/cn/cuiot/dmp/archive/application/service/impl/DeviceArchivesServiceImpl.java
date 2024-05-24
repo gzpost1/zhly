@@ -10,7 +10,9 @@ import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMapper;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.DeviceArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
+import cn.cuiot.dmp.common.constant.CustomConfigConstant;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -115,18 +117,17 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         //Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(DeviceArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
-        Map<String, Long> nameConfigIdMap = new HashMap<>();
+        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.DEVICE_ARCHIVE.getCode());
 
         // 构造插入列表进行保存
         List<DeviceArchivesEntity> list = new ArrayList<>();
         dataList.forEach(data -> {
             DeviceArchivesEntity entity = new DeviceArchivesEntity();
             entity.setDeviceName(data.getDeviceName());
-            entity.setDeviceCategory(checkConfigTypeNull(nameConfigIdMap, data.getDeviceCategoryName()));
+            entity.setDeviceCategory(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.DEVICE_ARCHIVES_INIT.get(0)), data.getDeviceCategoryName()));
             entity.setInstallationLocation(data.getInstallationLocation());
             entity.setInstallationDate(getDate(data.getInstallationDateName()));
             entity.setLoupanId(loupanId);
-            // TODO: 2024/5/16 这里还需要基于不同的一级类目去查询配置
             list.add(entity);
         });
 

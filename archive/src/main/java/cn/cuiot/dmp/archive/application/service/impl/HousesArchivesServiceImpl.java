@@ -9,6 +9,7 @@ import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.HousesArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.DoubleValidator;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -164,7 +165,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         // Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(HousesArchiveImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
-        Map<String, Long> nameConfigIdMap = new HashMap<>();
+        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.HOUSE_ARCHIVE.getCode());
 
         // 构造插入列表进行保存
         List<HousesArchivesEntity> list = new ArrayList<>();
