@@ -96,6 +96,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
         PlanContentEntity entity = new PlanContentEntity();
         entity.setId(map.getId());
+        workPlanInfoCreateDto.getStartProcessInstanceDTO().setCreateUserId(LoginInfoHolder.getCurrentUserId());
         entity.setContent(JSONObject.toJSONString(workPlanInfoCreateDto.getStartProcessInstanceDTO()));
         planContentService.save(entity);
 
@@ -478,11 +479,11 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         exLw.eq(PlanWorkExecutionInfoEntity::getPlanWorkId,dto.getId());
 
         List<PlanWorkExecutionInfoEntity> exList = planWorkExecutionInfoService.list(exLw);
-        List<Long> procIds = exList.stream().map(PlanWorkExecutionInfoEntity::getProcInstId).collect(Collectors.toList());
+        List<Long> procIds = exList.stream().filter(e->Objects.nonNull(e.getProcInstId())).map(PlanWorkExecutionInfoEntity::getProcInstId).collect(Collectors.toList());
 
         //删除工单信息,单个删除时只有一个id
         if(CollectionUtils.isNotEmpty(procIds)){
-            deleteWorkInfo(procIds.get(0));
+            deleteWorkInfo(procIds);
         }
 
         //删除对应的时间信息
@@ -508,9 +509,9 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
      * 删除对应的工单信息
      * @param prodInstId
      */
-    public void deleteWorkInfo(Long prodInstId){
+    public void deleteWorkInfo(List<Long> prodInstId){
         LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
-        lw.eq(WorkInfoEntity::getProcInstId,prodInstId);
+        lw.in(WorkInfoEntity::getProcInstId,prodInstId);
         workInfoService.remove(lw);
     }
     @Transactional(rollbackFor = Exception.class)
@@ -549,7 +550,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
             //删除工单信息,单个删除时只有一个id
             if(CollectionUtils.isNotEmpty(procIds)){
-                deleteWorkInfo(procIds.get(0));
+                deleteWorkInfo(procIds);
             }
 
             //删除对应的时间信息

@@ -785,7 +785,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         WorkInfoDto resultDto = getBaseMapper().queryWorkOrderDetailInfo(dto);
         //填充组织名称
         Map<Long, String> deptMap = getDeptMap(Arrays.asList(resultDto.getOrg()));
-        resultDto.setOrgPath(deptMap.get(resultDto.getOrg()));
+        resultDto.setOrgPath(getOrgPath(resultDto.getDeptIds()));
         // 业务类型后返回数据
         Map<Long, String> busiMap = getBusiMap(Arrays.asList(resultDto.getBusinessType()));
         resultDto.setBusinessTypeName(busiMap.get(resultDto.getBusinessType()));
