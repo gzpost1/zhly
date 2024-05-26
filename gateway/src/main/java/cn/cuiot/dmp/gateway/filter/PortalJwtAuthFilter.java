@@ -6,11 +6,13 @@ import cn.cuiot.dmp.common.enums.UserLongTimeLoginEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.gateway.config.AppProperties;
+import cn.cuiot.dmp.gateway.config.IgnoreAuthProperties;
 import cn.cuiot.dmp.gateway.service.SignatureService;
 import cn.cuiot.dmp.gateway.utils.SecrtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -19,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.dom4j.Document;
@@ -36,12 +39,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.util.PathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
  * 网关认证过滤器
+ *
  * @author: wuyongchong
  * @date: 2024/5/10 15:43
  **/
@@ -72,7 +77,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
     /**
      * 内部token头部名称
      */
-    public final static String INNER_TOKEN_NAME="access-token";
+    public final static String INNER_TOKEN_NAME = "access-token";
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -82,6 +87,9 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
 
     @Autowired
     private AppProperties appProperties;
+
+    @Autowired
+    private IgnoreAuthProperties ignoreAuthProperties;
 
     private final AntPathMatcher urlMatcher = new AntPathMatcher();
 
@@ -110,9 +118,9 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         HttpHeaders headers = serverHttpRequest.getHeaders();
 
         //内部token校验
-        if(Boolean.TRUE.equals(appProperties.getEnableGatewayAccessTokenRequest())){
+        if (Boolean.TRUE.equals(appProperties.getEnableGatewayAccessTokenRequest())) {
             List<String> accessTokenList = headers.get(INNER_TOKEN_NAME);
-            if(CollectionUtils.isNotEmpty(accessTokenList)){
+            if (CollectionUtils.isNotEmpty(accessTokenList)) {
                 String headAccessToken = accessTokenList.get(0);
                 if (appProperties.getAccessToken().equals(headAccessToken)) {
                     return chain.filter(exchange);
@@ -122,6 +130,11 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         /**
          * 用户token校验
          */
+        // 如果当前url跳过鉴权，则不进行token校验
+        String currentUrl = uri.getPath();
+        if (shouldIgnoreAuth(currentUrl)) {
+            return chain.filter(exchange);
+        }
         List<String> list = headers.get(TOKEN);
         if (list == null || list.isEmpty()) {
             list = headers.get(AUTHORIZATION);
@@ -242,4 +255,20 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
             }
         }
     }
+
+    /**
+     * 跳过鉴权的路径
+     *
+     * @param currentUrl 当前请求路径
+     */
+    private boolean shouldIgnoreAuth(String currentUrl) {
+        PathMatcher pathMatcher = new AntPathMatcher();
+        for (String ignoreAuthPath : ignoreAuthProperties.getUrls()) {
+            if (pathMatcher.match(ignoreAuthPath, currentUrl)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
