@@ -2,6 +2,7 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.StreamUtil;
 import cn.cuiot.dmp.system.domain.aggregate.CustomConfigDetail;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigDetailRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.CustomConfigDetailEntity;
@@ -70,6 +71,7 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
         if (Objects.isNull(customConfigId) || CollectionUtils.isEmpty(customConfigDetails)) {
             return;
         }
+        checkSave(customConfigDetails);
         LambdaQueryWrapper<CustomConfigDetailEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigDetailEntity>()
                 .eq(CustomConfigDetailEntity::getCustomConfigId, customConfigId);
         List<CustomConfigDetailEntity> customConfigDetailEntities = customConfigDetailMapper.selectList(queryWrapper);
@@ -149,6 +151,15 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
                     .map(CustomConfigDetailEntity::getId)
                     .collect(Collectors.toList()));
         }
+    }
+
+    private void checkSave(List<CustomConfigDetail> customConfigDetails) {
+        List<CustomConfigDetail> customConfigDistinctDetails = new ArrayList<>();
+        customConfigDetails.stream()
+                .filter(StreamUtil.distinctByKey(CustomConfigDetail::getName))
+                .forEach(customConfigDistinctDetails::add);
+        AssertUtil.isTrue(customConfigDetails.size() == customConfigDistinctDetails.size(),
+                "自定义选项设置存在重复选项");
     }
 
 }
