@@ -16,6 +16,7 @@ import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
@@ -53,6 +54,12 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
         BuildingArchivesVO buildingArchivesVO = new BuildingArchivesVO();
         BeanUtils.copyProperties(buildingArchives, buildingArchivesVO);
         buildingArchivesVO.setQrCodeId(archivesApiMapper.getCodeId(id, ArchiveTypeEnum.BUILDING_ARCHIVE.getCode()));
+        buildingArchivesVO.setStatusName(EntityConstants.ENABLED.equals(buildingArchives.getStatus()) ?
+                "启用" : "停用");
+        DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(buildingArchives.getDepartmentId(),
+                null, null);
+        AssertUtil.notNull(departmentDto, "部门不存在");
+        buildingArchivesVO.setDepartmentName(departmentDto.getPathName());
         return buildingArchivesVO;
     }
 
