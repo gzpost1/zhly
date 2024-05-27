@@ -139,7 +139,7 @@ public class UserController extends BaseController {
         params.put("loginUserId", getUserId());
 
         // 组织为空则使用当前登陆用户的组织
-        if (deptId == null) {
+        if (deptId == null&&StringUtils.isEmpty(deptIds)) {
             deptId = Optional.ofNullable(userService.getDeptId(getUserId(), sessionOrgId))
                     .map(Long::valueOf).orElse(null);
         }

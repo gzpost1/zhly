@@ -11,6 +11,7 @@ import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.enums.EventActionEnum;
 import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
@@ -878,7 +879,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public void recordOrganizationChange(OrganizationActionEvent event) {
         Long pkOrgId = event.getId();
         String changeType = event.getAction();
-        String changeName = event.getAction() + "企业";
+        String changeName = EventActionEnum.parseDesc(event.getAction()) + "企业";
 
         Date changeDate = Objects.nonNull(event.getUpdatedOn())
                 ? DateTimeUtil.localDateTimeToDate(event.getUpdatedOn())

@@ -1,8 +1,12 @@
 package cn.cuiot.dmp.system.infrastructure.entity.dto;
 
+import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import lombok.Data;
 
 /**
@@ -168,4 +172,35 @@ public class OrganizationResDTO {
      * 密码
      */
     private String password;
+
+
+    /**
+     * 企业有效期-开始时间
+     */
+    private Date expStartDate;
+
+    /**
+     * 企业有效期-结束时间
+     */
+    private Date expEndDate;
+
+
+    /**
+     * 计算企业状态
+     */
+    public Byte getOrgStatus() {
+        if (Objects.nonNull(expStartDate)) {
+            if (LocalDateTime.now().isBefore(DateTimeUtil.dateToLocalDateTime(expStartDate))) {
+                return EntityConstants.NOT_EFFECTIVE;
+            }
+        }
+        if (Objects.nonNull(expEndDate)) {
+            if (LocalDateTime.now()
+                    .isBefore(DateTimeUtil.dateToLocalDateTime(expEndDate).plusDays(1))) {
+                return EntityConstants.NORMAL;
+            }
+            return EntityConstants.EXPIRE;
+        }
+        return EntityConstants.NORMAL;
+    }
 }
