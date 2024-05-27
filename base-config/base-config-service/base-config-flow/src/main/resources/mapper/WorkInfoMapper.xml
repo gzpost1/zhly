@@ -162,7 +162,7 @@
     </sql>
 
     <sql id="queryMakeApprovalSql">
-       DISTINCT t1.id, t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.status as state, t1.org_ids,t2.user_id
+        t1.id, t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.status as state, t1.org_ids,t1.create_user as userId
     </sql>
     <select id="queryMakeApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
         select
