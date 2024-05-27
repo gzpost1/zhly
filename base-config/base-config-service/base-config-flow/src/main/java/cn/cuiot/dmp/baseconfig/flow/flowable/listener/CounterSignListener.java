@@ -5,6 +5,7 @@ import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
 import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
 import cn.cuiot.dmp.baseconfig.flow.enums.AssigneeTypeEnums;
+import cn.cuiot.dmp.baseconfig.flow.enums.TimeLimitHandleEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkBusinessEnums;
 import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
 import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigOrgService;
@@ -101,7 +102,7 @@ public class CounterSignListener implements ExecutionListener {
                     Objects.nonNull(props.getTimeLimit().getHandler()) &&
                     Objects.nonNull(props.getTimeLimit().getHandler().getType())
             ) {
-                execution.setVariable(TIME_HANDLER_TYPE, props.getTimeLimit().getHandler().getType());
+                execution.setVariable(TIME_HANDLER_TYPE, TimeLimitHandleEnums.getCodeByValue(Integer.valueOf(props.getTimeLimit().getHandler().getType())));
             }
 
 

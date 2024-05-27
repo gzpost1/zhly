@@ -628,6 +628,25 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success();
     }
 
+
+    /**
+     * 根据实列id获取挂起的任务信息
+     * @param procInstId
+     * @return
+     */
+    public List<Long> querySuspendTaskIds(String procInstId){
+            LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkInfoEntity::getProcInstId,procInstId).eq(WorkInfoEntity::getStatus,WorkOrderStatusEnums.Suspended.getStatus());
+        Long aLong = this.getBaseMapper().selectCount(lw);
+        if(aLong>0){
+            List<Task> list = taskService.createTaskQuery().processInstanceId(procInstId).list();
+            if(CollectionUtils.isNotEmpty(list)){
+                return list.stream().map(e->Long.parseLong(e.getId())).collect(Collectors.toList());
+            }
+        }
+        return new ArrayList<>();
+    }
+
     /**
      * 获取最新的任务信息
      */
