@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.StreamUtil;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOptionSetting;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionSettingRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.CommonOptionSettingEntity;
@@ -53,6 +55,7 @@ public class CommonOptionSettingRepositoryImpl implements CommonOptionSettingRep
         if (Objects.isNull(commonOptionId) || CollectionUtils.isEmpty(commonOptionSettings)) {
             return;
         }
+        checkSave(commonOptionSettings);
         LambdaQueryWrapper<CommonOptionSettingEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionSettingEntity>()
                 .eq(CommonOptionSettingEntity::getCommonOptionId, commonOptionId);
         List<CommonOptionSettingEntity> commonOptionSettingEntities = commonOptionSettingMapper.selectList(queryWrapper);
@@ -132,6 +135,15 @@ public class CommonOptionSettingRepositoryImpl implements CommonOptionSettingRep
                     .map(CommonOptionSettingEntity::getId)
                     .collect(Collectors.toList()));
         }
+    }
+
+    private void checkSave(List<CommonOptionSetting> commonOptionSettings) {
+        List<CommonOptionSetting> commonOptionDistinctSettings = new ArrayList<>();
+        commonOptionSettings.stream()
+                .filter(StreamUtil.distinctByKey(CommonOptionSetting::getName))
+                .forEach(commonOptionDistinctSettings::add);
+        AssertUtil.isTrue(commonOptionSettings.size() == commonOptionDistinctSettings.size(),
+                "常用选项存在重复选项");
     }
 
 }

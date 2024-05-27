@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
+import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.application.constant.ArchiveTypeConstant;
 import cn.cuiot.dmp.system.application.param.dto.ArchiveTypeQueryDTO;
@@ -44,6 +45,8 @@ public class ArchiveTypeServiceImpl implements ArchiveTypeService {
         // 是否需要初始化自定义配置
         customConfigRepository.initCustomConfig(queryDTO.getCompanyId(), queryDTO.getUserId());
         return archiveTypeList.stream()
+                // 前端筛选需要过滤二维码档案
+                .filter(item -> !ArchiveTypeEnum.CODE_ARCHIVE.getCode().equals(item.getArchiveType()))
                 .map(o -> {
                     ArchiveTypeVO archiveTypeVO = new ArchiveTypeVO();
                     BeanUtils.copyProperties(o, archiveTypeVO);
