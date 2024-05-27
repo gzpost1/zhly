@@ -48,14 +48,14 @@ public enum TimeLimitHandleEnums {
     }
 
     /**
-     * 根据code获取value
+     * 根据value获取code
      */
-    public static Integer getValueByCode(String code) {
-        for (TimeLimitHandleEnums value : TimeLimitHandleEnums.values()) {
-            if (StringUtils.equals(value.getCode(), code)) {
-                return value.getValue();
+    public static String getCodeByValue(Integer value) {
+        for (TimeLimitHandleEnums e : TimeLimitHandleEnums.values()) {
+            if (e.getValue().equals(value)) {
+                return e.getCode();
             }
         }
-        return -1;
+        return StringUtils.EMPTY;
     }
 }

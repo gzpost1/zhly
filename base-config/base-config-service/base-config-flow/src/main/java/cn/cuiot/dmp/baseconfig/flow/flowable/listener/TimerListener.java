@@ -3,10 +3,13 @@ package cn.cuiot.dmp.baseconfig.flow.flowable.listener;
 import cn.cuiot.dmp.base.infrastructure.utils.SpringContextHolder;
 import cn.cuiot.dmp.baseconfig.flow.enums.TimeLimitHandleEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkBusinessEnums;
+import cn.cuiot.dmp.baseconfig.flow.enums.WorkOrderStatusEnums;
+import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.hutool.core.collection.CollUtil;
 
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.BoundaryEvent;
 import org.flowable.bpmn.model.UserTask;
@@ -40,6 +43,8 @@ public class TimerListener implements ExecutionListener {
     private TaskService taskService;
     @Autowired
     private WorkBusinessTypeInfoService workBusinessTypeInfoService;
+    @Autowired
+    private WorkInfoService workInfoService;
 
     @Override
     public void notify(DelegateExecution execution) {
@@ -72,6 +77,9 @@ public class TimerListener implements ExecutionListener {
                 RuntimeService runtimeService = SpringContextHolder.getBean(RuntimeService.class);
                 runtimeService.deleteProcessInstance(execution.getProcessInstanceId(), TimeLimitHandleEnums.TO_END.getProcessComment());
 
+                //更新工单信息
+                workInfoService.updateWorkInfo(WorkOrderStatusEnums.completed.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
+
             } else if (StringUtils.equals(handlerType, TimeLimitHandleEnums.TO_SUSPEND.getCode())) {
 
                 //挂起流程
@@ -81,6 +89,10 @@ public class TimerListener implements ExecutionListener {
                     //保存超时信息和挂起信息
                     workBusinessTypeInfoService.saveBusinessInfo(task, userTask, WorkBusinessEnums.SUSPEND,null);
                 }
+
+                //更新工单信息
+                workInfoService.updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
+
             } else if (StringUtils.equals(handlerType, TimeLimitHandleEnums.TO_APPROVE.getCode())) {
                 //自动通过
                 for (Task task : list) {
