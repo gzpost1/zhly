@@ -113,8 +113,8 @@
         </where>
     </sql>
 
-    <select id="queryMyNotApprocalCount" resultType="java.lang.Integer">
-        select count(*) as number from act_ru_task t1 , tb_node_type t2
+    <select id="queryMyNotApprocalCount" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto">
+        select '待审批' as name count(*) as number from act_ru_task t1 , tb_node_type t2
         where t1.PROC_INST_ID_ = t2.proc_inst_id and t1.TASK_DEF_KEY_ = t2.node_id  and t2.node_type = 'APPROVAL' and  t1.ASSIGNEE_ = #{query.assignee}
     </select>
     <sql id="queryMyApprovalSql">
@@ -235,4 +235,9 @@
             order by t1.create_time desc
         </where>
     </sql>
+
+
+    <select id="queryPendProcessList" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto">
+
+    </select>
 </mapper>

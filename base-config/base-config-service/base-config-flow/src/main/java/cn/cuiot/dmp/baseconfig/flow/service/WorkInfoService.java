@@ -10,6 +10,8 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.query.PendingProcessQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.*;
@@ -1418,4 +1420,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         return IdmResDTO.success();
     }
+
+
+
 }
