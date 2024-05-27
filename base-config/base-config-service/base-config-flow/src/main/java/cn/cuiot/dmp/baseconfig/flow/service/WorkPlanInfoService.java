@@ -96,6 +96,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
         PlanContentEntity entity = new PlanContentEntity();
         entity.setId(map.getId());
+        workPlanInfoCreateDto.getStartProcessInstanceDTO().setCreateUserId(LoginInfoHolder.getCurrentUserId());
         entity.setContent(JSONObject.toJSONString(workPlanInfoCreateDto.getStartProcessInstanceDTO()));
         planContentService.save(entity);
 
@@ -478,13 +479,11 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         exLw.eq(PlanWorkExecutionInfoEntity::getPlanWorkId,dto.getId());
 
         List<PlanWorkExecutionInfoEntity> exList = planWorkExecutionInfoService.list(exLw);
-        List<Long> procIds = exList.stream().map(PlanWorkExecutionInfoEntity::getProcInstId).collect(Collectors.toList());
+        List<Long> procIds = exList.stream().filter(e->Objects.nonNull(e.getProcInstId())).map(PlanWorkExecutionInfoEntity::getProcInstId).collect(Collectors.toList());
 
         //删除工单信息,单个删除时只有一个id
         if(CollectionUtils.isNotEmpty(procIds)){
-            deleteWorkInfo(procIds.get(0));
-
-
+            deleteWorkInfo(procIds);
         }
 
         //删除对应的时间信息
@@ -510,9 +509,9 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
      * 删除对应的工单信息
      * @param prodInstId
      */
-    public void deleteWorkInfo(Long prodInstId){
+    public void deleteWorkInfo(List<Long> prodInstId){
         LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
-        lw.eq(WorkInfoEntity::getProcInstId,prodInstId);
+        lw.in(WorkInfoEntity::getProcInstId,prodInstId);
         workInfoService.remove(lw);
     }
     @Transactional(rollbackFor = Exception.class)
@@ -547,11 +546,11 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             exLw.eq(PlanWorkExecutionInfoEntity::getPlanWorkId,item);
 
             List<PlanWorkExecutionInfoEntity> exList = planWorkExecutionInfoService.list(exLw);
-            List<Long> procIds = exList.stream().filter(e->Objects.nonNull(e)).map(PlanWorkExecutionInfoEntity::getProcInstId).collect(Collectors.toList());
+            List<Long> procIds = exList.stream().filter(e->Objects.nonNull(e.getProcInstId())).map(PlanWorkExecutionInfoEntity::getProcInstId).collect(Collectors.toList());
 
             //删除工单信息,单个删除时只有一个id
             if(CollectionUtils.isNotEmpty(procIds)){
-                deleteWorkInfo(procIds.get(0));
+                deleteWorkInfo(procIds);
             }
 
             //删除对应的时间信息
@@ -572,9 +571,14 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
         LambdaQueryWrapper<PlanWorkExecutionInfoEntity> lw = new LambdaQueryWrapper<>();
         lw.eq(PlanWorkExecutionInfoEntity::getPlanWorkId,dto.getPlanId()).like(Objects.nonNull(dto.getProcInstId()),
                 PlanWorkExecutionInfoEntity::getProcInstId,dto.getProcInstId());
+
+        if(Objects.nonNull(dto.getStartDate())){
+            lw.ge(PlanWorkExecutionInfoEntity::getExecutionTime,dto.getStartDate()).le(PlanWorkExecutionInfoEntity::getExecutionTime,dto.getEndDate());
+        }
         //已生成
         if(dto.getPageType().equals(WorkFlowConstants.RESULT_1)){
             lw.eq(PlanWorkExecutionInfoEntity::getState,WorkFlowConstants.RESULT_1);
+            lw.orderByDesc(PlanWorkExecutionInfoEntity::getExecutionTime);
         }
 
         //未生成或生成失败
@@ -584,11 +588,9 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             }else{
                 lw.in(PlanWorkExecutionInfoEntity::getState,Arrays.asList(WorkFlowConstants.RESULT_0, WorkFlowConstants.PARAM_2));
             }
+            lw.orderByAsc(PlanWorkExecutionInfoEntity::getExecutionTime);
+        }
 
-        }
-        if(Objects.nonNull(dto.getStartDate())){
-            lw.ge(PlanWorkExecutionInfoEntity::getExecutionTime,dto.getStartDate()).le(PlanWorkExecutionInfoEntity::getExecutionTime,dto.getEndDate());
-        }
         Page<PlanWorkExecutionInfoEntity> page = planWorkExecutionInfoService.getBaseMapper().
                 selectPage(new Page<>(dto.getCurrentPage(), dto.getPageSize()), lw);
         return IdmResDTO.success(page);
