@@ -417,7 +417,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param handleDataDTO
      * @return
      */
-//    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO assignee(HandleDataDTO handleDataDTO) {
         //记录转办信息
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
@@ -439,7 +439,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     }
 
 
-
     /**
      * 批量转办
      * @param handleDataDTO
@@ -448,10 +447,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     public IdmResDTO assigneeByProcInstId(HandleDataDTO handleDataDTO){
 
-        Map<String,Object> variableMap= new HashMap<>();
-        variableMap.put("assigneeName","1232132");
-        runtimeService.addMultiInstanceExecution("node_783297952551","1793093386617548801", variableMap);
-        // 查询与流程实例ID相关联的所有任务
+        taskService.setAssignee(handleDataDTO.getTaskId(),String.valueOf(handleDataDTO.getUserIds().get(0)));
+
+//        // 查询与流程实例ID相关联的所有任务
 //        List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
 //                .orElseThrow(()->new RuntimeException("任务信息不存在"));
 //        //加签
@@ -464,18 +462,18 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 //                runtimeService.addMultiInstanceExecution(tasks.get(0).getTaskDefinitionKey(), tasks.get(0).getProcessInstanceId(), variableMap);
 //            });
 //        }
-
-        if(StringUtils.isNotEmpty(handleDataDTO.getTaskId())){
+//
+//        if(StringUtils.isNotEmpty(handleDataDTO.getTaskId())){
 //            Task task = taskService.createTaskQuery().taskId(handleDataDTO.getTaskId()).singleResult();
 //            List<Task> collect = tasks.stream().filter(item -> Objects.equals(handleDataDTO.getTaskId(), item.getId())).collect(Collectors.toList());
 //            runtimeService.deleteMultiInstanceExecution(collect.get(0).getExecutionId(),true);
-        }else{
-            //减签
+//        }else{
+//            //减签
 //            tasks.stream().filter(item->!handleDataDTO.getUserIds().contains(Long.parseLong(item.getAssignee())))
 //                    .forEach(it->{
 //                        runtimeService.deleteMultiInstanceExecution(it.getExecutionId(),true);
 //                    });
-        }
+//        }
         return IdmResDTO.success();
     }
     /**
@@ -483,6 +481,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param handleDataDTO
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO refuse(BatchBusinessDto handleDataDTO) {
         List<WorkBusinessTypeInfoEntity> buList = new ArrayList<>();
         for(String tasId : handleDataDTO.getTaskIds()){
@@ -494,8 +493,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_REFUSE.getCode());
             buList.add(workBusinessTypeInfo);
 
-            updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), workBusinessTypeInfo.getProcInstId());
-
+            updateWorkInfo(WorkOrderStatusEnums.completed.getStatus(), workBusinessTypeInfo.getProcInstId());
+            runtimeService.deleteProcessInstance(String.valueOf(workBusinessTypeInfo.getProcInstId()), handleDataDTO.getComments()); // 终止
             //更新挂起
             dto.setNodeId(workBusinessTypeInfo.getNode());
             updateBusinessPendingDate(dto);

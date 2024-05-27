@@ -4,6 +4,7 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
+import cn.cuiot.dmp.archive.application.constant.ArchivesApiConstant;
 import cn.cuiot.dmp.archive.application.param.dto.BatchBuildingArchivesDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchiveImportDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesCreateDTO;
@@ -197,6 +198,8 @@ public class BuildingArchivesController extends BaseController {
         List<BuildingArchiveImportDTO> buildingArchiveImportDTOList = ExcelImportUtil.importExcel(file.getInputStream(),
                 BuildingArchiveImportDTO.class, params);
         AssertUtil.notEmpty(buildingArchiveImportDTOList, "导入数据为空");
+        AssertUtil.isFalse(buildingArchiveImportDTOList.size() > ArchivesApiConstant.ARCHIVES_IMPORT_MAX_NUM,
+                "数据量超过5000条，导入失败");
         buildingArchivesService.importBuildingArchives(buildingArchiveImportDTOList, Long.valueOf(orgId), departmentId,
                 Long.valueOf(userId));
         return IdmResDTO.success();
