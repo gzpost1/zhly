@@ -42,4 +42,9 @@ public final class EntityConstants {
      * 已过期
      */
     public static final Byte EXPIRE = 2;
+
+    /**
+     * 未生效
+     */
+    public static final Byte NOT_EFFECTIVE = 0;
 }

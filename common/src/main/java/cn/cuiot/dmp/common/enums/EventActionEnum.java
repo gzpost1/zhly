@@ -26,4 +26,13 @@ public enum EventActionEnum {
     public String getDesc() {
         return desc;
     }
+
+    public static String parseDesc(String val) {
+        for (EventActionEnum value : values()) {
+            if (value.getValue().equals(val)) {
+                return value.getDesc();
+            }
+        }
+        return null;
+    }
 }
