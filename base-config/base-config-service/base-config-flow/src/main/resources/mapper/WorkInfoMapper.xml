@@ -149,6 +149,7 @@
             <if test="query.makeUserId !=null">
                 and t2.user_id = #{query.makeUserId}
             </if>
+            and t2.END_TIME_ is not null
             group by t1.proc_inst_id
             order by t1.create_time desc
         </where>

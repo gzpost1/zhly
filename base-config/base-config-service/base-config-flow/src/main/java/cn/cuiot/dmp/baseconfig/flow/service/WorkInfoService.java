@@ -72,6 +72,7 @@ import java.util.stream.Collectors;
 import static cn.cuiot.dmp.baseconfig.flow.constants.CommonConstants.*;
 import static cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants.*;
 import static cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants.USER_TASK;
+import static cn.cuiot.dmp.baseconfig.flow.enums.BusinessInfoEnums.BUSINESS_TIME_OUT;
 import static cn.cuiot.dmp.baseconfig.flow.utils.BpmnModelUtils.getChildNodeByNodeId;
 
 /**
@@ -189,6 +190,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             entity.setWorkName(flowConfig.getName());
             entity.setWorkSouce(startProcessInstanceDTO.getWorkSource());
             entity.setCreateUser(LoginInfoHolder.getCurrentUserId());
+
             if(Objects.nonNull(startProcessInstanceDTO.getCreateUserId())){
                 entity.setCreateUser(startProcessInstanceDTO.getCreateUserId());
             }
@@ -639,6 +641,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             if(CollUtil.isNotEmpty(list)){
                 task = list.get(0);
             }
+            handleDataDTO.setTaskId(task.getId());
         }else {
             task = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
             handleDataDTO.setProcessInstanceId(task.getProcessInstanceId());
@@ -1017,7 +1020,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     public List<WorkBusinessTypeInfoEntity> queryNodeBusiness(String nodeId,String procinstId){
         LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
-        lw.eq(WorkBusinessTypeInfoEntity::getNode,nodeId).eq(WorkBusinessTypeInfoEntity::getProcInstId,Long.parseLong(procinstId))
+        lw.eq(WorkBusinessTypeInfoEntity::getNode,nodeId).ne(WorkBusinessTypeInfoEntity::getBusinessType,BUSINESS_TIME_OUT.getCode()).eq(WorkBusinessTypeInfoEntity::getProcInstId,Long.parseLong(procinstId))
                 .orderByAsc(WorkBusinessTypeInfoEntity::getStartTime);
         List<WorkBusinessTypeInfoEntity> list = workBusinessTypeInfoService.list(lw);
         if(CollectionUtils.isEmpty(list)){
