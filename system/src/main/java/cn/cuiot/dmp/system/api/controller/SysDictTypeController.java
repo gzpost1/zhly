@@ -14,6 +14,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.SysDictType;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SysDictTypeParam;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SysDictTypeQuery;
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -46,9 +47,9 @@ public class SysDictTypeController {
      * 字典类型列表
      */
     @PostMapping("/list")
-    public IdmResDTO<List<SysDictType>> list(@RequestBody SysDictTypeQuery sysDictTypeQuery) {
-        List<SysDictType> list = sysDictTypeService.list(sysDictTypeQuery);
-        return IdmResDTO.success(list);
+    public IdmResDTO<IPage<SysDictType>> list(@RequestBody SysDictTypeQuery sysDictTypeQuery) {
+        IPage<SysDictType> pageList = sysDictTypeService.pageList(sysDictTypeQuery);
+        return IdmResDTO.success(pageList);
     }
 
     /**
