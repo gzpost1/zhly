@@ -4,6 +4,7 @@ import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkInfoEnums;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.ExecutionListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import static cn.cuiot.dmp.baseconfig.flow.constants.CommonConstants.PROCESS_STA
  * @author LoveMyOrange
  * @create 2022-10-15 19:47
  */
+@Slf4j
 @Component
 public class ProcessListener implements ExecutionListener {
     @Autowired
@@ -30,5 +32,7 @@ public class ProcessListener implements ExecutionListener {
         updateWrapper.eq(WorkInfoEntity::getProcInstId, Long.parseLong(execution.getProcessInstanceId()));
         updateWrapper.set(WorkInfoEntity::getStatus, WorkInfoEnums.FINISH.getCode());
         workInfoService.update(updateWrapper);
+
+        log.info("流程正常结束监听器---------------->"+execution.getProcessInstanceId()+"<------------------------");
     }
 }
