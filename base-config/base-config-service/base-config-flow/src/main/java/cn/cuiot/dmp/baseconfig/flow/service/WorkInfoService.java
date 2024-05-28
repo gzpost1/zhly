@@ -204,7 +204,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
               saveWorkOrg(entity.getId(),orgIds);
 //            entity.setFlowConfigId(flowConfig.getId());
                 this.save(entity);
-                taskService.complete(task.getId());
+
             }
 
             HandleDataDTO handleDataDTO = new HandleDataDTO();
@@ -213,6 +213,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
             workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_START.getCode());
             workBusinessTypeInfoService.save(workBusinessTypeInfo);
+
+            taskService.complete(task.getId());
 
         }
         return IdmResDTO.success(task.getProcessInstanceId());
