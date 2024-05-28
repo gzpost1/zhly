@@ -628,6 +628,19 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success();
     }
 
+
+    /**
+     * 查询本实例节点是否被手动挂起
+     * @param procInstId
+     * @return
+     */
+    public boolean querySuspendTaskIds(String procInstId){
+            LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkInfoEntity::getProcInstId,procInstId).eq(WorkInfoEntity::getStatus,WorkOrderStatusEnums.Suspended.getStatus());
+        Long aLong = this.getBaseMapper().selectCount(lw);
+        return aLong>0;
+    }
+
     /**
      * 获取最新的任务信息
      */
