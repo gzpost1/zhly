@@ -63,11 +63,11 @@ public class TimerListener implements ExecutionListener {
                 .taskDefinitionKey(userTask.getId())
                 .list();
 
-        if (StringUtils.isNotBlank(handlerType) && CollUtil.isNotEmpty(list)) {
+        boolean nodeSupend = workInfoService.querySuspendTaskIds(execution.getProcessInstanceId());
+
+        if (StringUtils.isNotBlank(handlerType) && CollUtil.isNotEmpty(list) && !nodeSupend) {
             //保存超时信息
-            for (Task task : list) {
-                workBusinessTypeInfoService.saveBusinessInfo(task, userTask, WorkBusinessEnums.TIMEOUT,null);
-            }
+            workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.TIMEOUT,null);
 
             if (StringUtils.equals(handlerType, TimeLimitHandleEnums.DO_NOTHING.getCode())) {
                 //什么都不做
@@ -85,10 +85,10 @@ public class TimerListener implements ExecutionListener {
                 //挂起流程
                 for (Task task : list) {
                     taskService.addComment(task.getId(), execution.getProcessInstanceId(), BUSINESS_PENDING, TimeLimitHandleEnums.TO_SUSPEND.getProcessComment());
-
-                    //保存超时信息和挂起信息
-                    workBusinessTypeInfoService.saveBusinessInfo(task, userTask, WorkBusinessEnums.SUSPEND,null);
                 }
+
+                //保存超时信息和挂起信息
+                workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.SUSPEND,null);
 
                 //更新工单信息
                 workInfoService.updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
