@@ -169,42 +169,43 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             //手动完成第一个任务
             task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             if(task!=null){
-                taskService.complete(task.getId());
-            }
-            //保存工单信息
-            ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
-                    .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
-                    .singleResult();
-            String flowableKey = processDefinition.getKey().replaceAll("[a-zA-Z]", "");
-            TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
-                    orElseThrow(()->new RuntimeException("流程配置为空"));
 
-            //保存节点类型
-            saveChildNode(processJson(flowConfig.getProcess()),task.getProcessInstanceId());
-            //保存工单信息
-            WorkInfoEntity entity = new WorkInfoEntity();
-            entity.setId(IdWorker.getId());
-            entity.setBusinessType(flowConfig.getBusinessTypeId());
-            entity.setOrgId(LoginInfoHolder.getCurrentDeptId());
-            entity.setCreateTime(new Date());
-            entity.setWorkName(flowConfig.getName());
-            entity.setWorkSouce(startProcessInstanceDTO.getWorkSource());
-            entity.setCreateUser(LoginInfoHolder.getCurrentUserId());
+                //保存工单信息
+                ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
+                        .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
+                        .singleResult();
+                String flowableKey = processDefinition.getKey().replaceAll("[a-zA-Z]", "");
+                TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
+                        orElseThrow(()->new RuntimeException("流程配置为空"));
 
-            if(Objects.nonNull(startProcessInstanceDTO.getCreateUserId())){
-                entity.setCreateUser(startProcessInstanceDTO.getCreateUserId());
-            }
+                //保存节点类型
+                saveChildNode(processJson(flowConfig.getProcess()),task.getProcessInstanceId());
+                //保存工单信息
+                WorkInfoEntity entity = new WorkInfoEntity();
+                entity.setId(IdWorker.getId());
+                entity.setBusinessType(flowConfig.getBusinessTypeId());
+                entity.setOrgId(LoginInfoHolder.getCurrentDeptId());
+                entity.setCreateTime(processInstance.getStartTime());
+                entity.setWorkName(flowConfig.getName());
+                entity.setWorkSouce(startProcessInstanceDTO.getWorkSource());
+                entity.setCreateUser(LoginInfoHolder.getCurrentUserId());
 
-            entity.setProcInstId(task.getProcessInstanceId());
-            entity.setCompanyId(flowConfig.getCompanyId());
-            entity.setStatus(WorkOrderStatusEnums.progress.getStatus());
-            List<Long> orgIds = orgIds(flowConfig.getId());
-            entity.setOrgIds(orgIds.stream().map(e -> String.valueOf(e)).collect(Collectors.joining(", ")));
+                if(Objects.nonNull(startProcessInstanceDTO.getCreateUserId())){
+                    entity.setCreateUser(startProcessInstanceDTO.getCreateUserId());
+                }
+
+                entity.setProcInstId(task.getProcessInstanceId());
+                entity.setCompanyId(flowConfig.getCompanyId());
+                entity.setStatus(WorkOrderStatusEnums.progress.getStatus());
+                List<Long> orgIds = orgIds(flowConfig.getId());
+                entity.setOrgIds(orgIds.stream().map(e -> String.valueOf(e)).collect(Collectors.joining(", ")));
+
+                //保存工单组织信息
+              saveWorkOrg(entity.getId(),orgIds);
 //            entity.setFlowConfigId(flowConfig.getId());
-            this.save(entity);
+                this.save(entity);
 
-            //保存工单组织信息
-            saveWorkOrg(entity.getId(),orgIds);
+            }
 
             HandleDataDTO handleDataDTO = new HandleDataDTO();
             handleDataDTO.setTaskId(task.getId());
@@ -212,6 +213,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
             workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_START.getCode());
             workBusinessTypeInfoService.save(workBusinessTypeInfo);
+
+            taskService.complete(task.getId());
 
         }
         return IdmResDTO.success(task.getProcessInstanceId());
