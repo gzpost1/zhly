@@ -144,7 +144,7 @@ public class OssTemplateTest {
     void getPresignedObjectUrl() {
         String bucketName = "zhlypt";
         String objectName = "img/202405/1788411614841638914.jpg";
-        String presignedObjectUrl = ossTemplate.getPresignedObjectUrl(bucketName, objectName, 60);
+        String presignedObjectUrl = ossTemplate.getPresignedObjectUrl(bucketName, objectName, 600);
         log.info("presignedObjectUrl:{}", presignedObjectUrl);
     }
 
