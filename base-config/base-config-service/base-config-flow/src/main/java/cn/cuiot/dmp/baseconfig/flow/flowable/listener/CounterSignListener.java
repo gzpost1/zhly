@@ -97,6 +97,10 @@ public class CounterSignListener implements ExecutionListener {
             Properties props = currentNode.getProps();
             String assignedType = props.getAssignedType();
             Map<String, Object> nobody = props.getNobody();
+            if(Objects.isNull(nobody) || (nobody.size() == 0)){
+                nobody = MapUtil.newHashMap();
+                nobody.put(ASSIGNEE_NULL_ACTION_NAME,TO_PASS_ACTION);
+            }
 
             if (Objects.nonNull(props.getTimeLimit()) &&
                     Objects.nonNull(props.getTimeLimit().getHandler()) &&
@@ -200,6 +204,7 @@ public class CounterSignListener implements ExecutionListener {
 
             if (CollUtil.isEmpty(assigneeList)) {
                 String handler = MapUtil.getStr(nobody, ASSIGNEE_NULL_ACTION_NAME);
+
                 if (TO_PASS_ACTION.equals(handler)) {
                     assigneeList.add(DEFAULT_NULL_ASSIGNEE);
                     execution.setVariable(variable, assigneeList);
