@@ -29,10 +29,10 @@ public class ProcessListener implements ExecutionListener {
     public void notify(DelegateExecution execution) {
         execution.setVariable(PROCESS_STATUS, BUSINESS_STATUS_4);
         LambdaUpdateWrapper<WorkInfoEntity> updateWrapper = new LambdaUpdateWrapper();
-        updateWrapper.eq(WorkInfoEntity::getProcInstId, Long.parseLong(execution.getProcessInstanceId()));
+        updateWrapper.eq(WorkInfoEntity::getProcInstId, execution.getProcessInstanceId());
         updateWrapper.set(WorkInfoEntity::getStatus, WorkInfoEnums.FINISH.getCode());
-        workInfoService.update(updateWrapper);
+        boolean update = workInfoService.update(updateWrapper);
 
-        log.info("流程正常结束监听器---------------->"+execution.getProcessInstanceId()+"<------------------------");
+        log.info("流程正常结束监听器---------------->"+execution.getProcessInstanceId()+update+"<------------------------");
     }
 }
