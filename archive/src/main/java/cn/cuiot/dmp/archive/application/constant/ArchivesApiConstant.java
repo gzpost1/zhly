@@ -49,4 +49,9 @@ public class ArchivesApiConstant {
         return name;
     }
 
+    /**
+     * 导入相关校验
+     */
+    public static final Integer ARCHIVES_IMPORT_MAX_NUM = 5000;
+
 }

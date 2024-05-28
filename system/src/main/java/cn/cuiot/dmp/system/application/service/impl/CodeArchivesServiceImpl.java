@@ -75,7 +75,7 @@ public class CodeArchivesServiceImpl implements CodeArchivesService {
     public int updateCodeArchivesStatus(UpdateStatusParam updateStatusParam) {
         CodeArchives codeArchives = new CodeArchives();
         BeanUtils.copyProperties(updateStatusParam, codeArchives);
-        return codeArchivesRepository.updateCodeArchives(codeArchives);
+        return codeArchivesRepository.updateCodeArchivesStatus(codeArchives);
     }
 
     @Override

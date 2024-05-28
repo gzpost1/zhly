@@ -75,7 +75,6 @@ public class WorkPlanInfoTask {
                 StartProcessInstanceDTO startProcessInstanceDTO = JSONObject.parseObject(planContentEntity.getContent(), new TypeReference<StartProcessInstanceDTO>() {
                 });
                 startProcessInstanceDTO.setWorkSource(WorkOrderConstants.WORK_SOURCE_PLAN);
-                startProcessInstanceDTO.setCreateUserId(LoginInfoHolder.getCurrentUserId());
                 IdmResDTO start = workInfoService.start(startProcessInstanceDTO);
                 Long data =Long.parseLong(String.valueOf(start.getData())) ;
                 entity.setProcInstId(data);

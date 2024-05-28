@@ -79,12 +79,12 @@ public class ListOrganizationVO {
     private Byte orgStatus;
 
     /**
-     *  orgTypeId
+     * orgTypeId
      **/
     private Integer orgTypeId;
 
     /**
-     *  orgTypeName
+     * orgTypeName
      **/
     private String orgTypeName;
 
@@ -103,14 +103,22 @@ public class ListOrganizationVO {
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date expEndDate;
 
-
+    /**
+     * 计算企业状态
+     */
     public Byte getOrgStatus() {
-        if(Objects.nonNull(expEndDate)){
-            if(LocalDateTime.now().isBefore(DateTimeUtil.dateToLocalDateTime(expEndDate).plusDays(1))){
+        if (Objects.nonNull(expStartDate)) {
+            if (LocalDateTime.now().isBefore(DateTimeUtil.dateToLocalDateTime(expStartDate))) {
+                return EntityConstants.NOT_EFFECTIVE;
+            }
+        }
+        if (Objects.nonNull(expEndDate)) {
+            if (LocalDateTime.now()
+                    .isBefore(DateTimeUtil.dateToLocalDateTime(expEndDate).plusDays(1))) {
                 return EntityConstants.NORMAL;
             }
             return EntityConstants.EXPIRE;
         }
-        return orgStatus;
+        return EntityConstants.NORMAL;
     }
 }

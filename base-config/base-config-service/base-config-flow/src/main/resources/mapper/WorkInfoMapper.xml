@@ -22,7 +22,7 @@
         id, business_type, org, work_name, work_souce, user_id, status
     </sql>
     <sql id="queryWorkOrderInfoSql">
-        DISTINCT t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds
+         t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds
 
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
@@ -34,7 +34,7 @@
     <sql id="queryWorkOrderInfoCondition">
         <where>
             <if test="query.id !=null">
-                and t1.id like concat('%',#{query.id},'%')
+                and t1.proc_inst_id like concat('%',#{query.id},'%')
             </if>
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}
@@ -60,6 +60,7 @@
                     #{item}
                 </foreach>
             </if>
+            group by t1.proc_inst_id
             order by t1.create_time desc
         </where>
     </sql>
@@ -111,6 +112,11 @@
             order by t1.create_time desc
         </where>
     </sql>
+
+    <select id="queryMyNotApprocalCount" resultType="java.lang.Integer">
+        select count(*) as number from act_ru_task t1 , tb_node_type t2
+        where t1.PROC_INST_ID_ = t2.proc_inst_id and t1.TASK_DEF_KEY_ = t2.node_id  and t2.node_type = 'APPROVAL' and  t1.ASSIGNEE_ = #{query.assignee}
+    </select>
     <sql id="queryMyApprovalSql">
          t1.proc_inst_id, t1.id, t1.create_user as userId, t1.status, t1.work_souce, t1.work_name,  t1.org_id, t1.business_type
             ,t1.status as state, t1.org_ids,t1.create_time  ,t2.END_TIME_ as entTime
@@ -148,6 +154,7 @@
             <if test="query.makeUserId !=null">
                 and t2.user_id = #{query.makeUserId}
             </if>
+            and t2.END_TIME_ is not null
             group by t1.proc_inst_id
             order by t1.create_time desc
         </where>
@@ -155,7 +162,7 @@
     </sql>
 
     <sql id="queryMakeApprovalSql">
-       DISTINCT t1.id, t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.status as state, t1.org_ids,t2.user_id
+        t1.id, t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.status as state, t1.org_ids,t1.create_user as userId
     </sql>
     <select id="queryMakeApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
         select
@@ -190,12 +197,13 @@
             <if test="query.makeUserId !=null">
                 and t2.user_id = #{query.makeUserId}
             </if>
+            group by t1.proc_inst_id
             order by  t1.create_time desc
         </where>
     </sql>
 
     <sql id="queryMySubmitWorkInfo">
-        DISTINCT t1.id,  t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status, t1.create_time, t1.create_user ,t1.org_ids
+         t1.id,  t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status, t1.create_time, t1.create_user ,t1.org_ids
     </sql>
     <select id="queryMySubmitWorkInfo" resultType="cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity">
         select
@@ -223,7 +231,7 @@
             <if test="query.procInstId !=null">
                 and t1.proc_inst_id like concat('%',#{query.procInstId},'%')
             </if>
-
+            group by t1.proc_inst_id
             order by t1.create_time desc
         </where>
     </sql>

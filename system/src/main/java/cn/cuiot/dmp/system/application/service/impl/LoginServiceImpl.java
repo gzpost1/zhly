@@ -9,6 +9,7 @@ import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.SecurityConst;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
@@ -315,6 +316,9 @@ public class LoginServiceImpl implements LoginService {
         if (DeletedFlagEnum.DELETED.getCode().equals(organization.getDeletedFlag())
                 || DeletedFlagEnum.DELETED.getCode().equals(validateUser.getDeletedFlag())) {
             throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
+        }
+        if(!EntityConstants.NORMAL.equals(organization.getOrgStatus())){
+            throw new BusinessException(ResultCode.ORG_IS_ENABLED,"企业不在有效期内");
         }
     }
 

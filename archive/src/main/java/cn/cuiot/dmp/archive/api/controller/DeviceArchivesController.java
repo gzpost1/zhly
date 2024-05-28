@@ -4,6 +4,7 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
+import cn.cuiot.dmp.archive.application.constant.ArchivesApiConstant;
 import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.DeviceArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.query.DeviceArchivesQuery;
@@ -189,6 +190,8 @@ public class DeviceArchivesController extends BaseController {
         if(CollectionUtils.isEmpty(importDtoList)){
             throw new BusinessException(ResultCode.REQUEST_FORMAT_ERROR, "excel解析失败");
         }
+        AssertUtil.isFalse(importDtoList.size() > ArchivesApiConstant.ARCHIVES_IMPORT_MAX_NUM,
+                "数据量超过5000条，导入失败");
         for (DeviceArchivesImportDto dto : importDtoList){
             deviceArchivesService.checkParamsImport(dto);
         }
