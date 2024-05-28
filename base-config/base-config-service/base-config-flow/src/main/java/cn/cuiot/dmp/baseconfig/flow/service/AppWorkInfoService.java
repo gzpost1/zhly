@@ -40,6 +40,6 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public IdmResDTO<List<BaseDto>> queryPendProcessList(PendingProcessQuery query) {
         query.setAssignee(LoginInfoHolder.getCurrentUserId());
         List<BaseDto> dtos = getBaseMapper().queryPendProcessList(query);
-        return null;
+        return IdmResDTO.success(dtos);
     }
 }

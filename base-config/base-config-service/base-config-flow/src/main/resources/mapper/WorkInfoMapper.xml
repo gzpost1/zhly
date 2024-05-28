@@ -78,14 +78,14 @@
     <select id="queryMyNotApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
         select
             <include refid="queryMyNotApprovalSql"/>
-        from tb_work_info t1 , act_ru_task t2 , tb_node_type t3 ,tb_work_org_rel t4
+        from tb_work_info t1 , act_ru_task t2 , tb_node_type t3 ,tb_process_dept_rel t4
             <include refid="queryMyNotApprovalCondition"/>
     </select>
     <sql id="queryMyNotApprovalCondition">
         <where>
             <if test="query.assignee !=null and query.assignee !=''">
                and t1.proc_inst_id = t2.PROC_INST_ID_ and t2.PROC_INST_ID_ = t3.proc_inst_id and t2.TASK_DEF_KEY_ = t3.node_id and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'APPROVAL'
-               and t1.id = t4.work_id
+               and t1.process_definition_id = t4.process_definition_id
             </if>
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}
@@ -238,6 +238,16 @@
 
 
     <select id="queryPendProcessList" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto">
-
+        SELECT
+            t1.NAME_ AS name ,count(*) AS number
+        FROM
+            act_ru_task t1,
+            tb_node_type t2
+        WHERE
+            t1.PROC_INST_ID_ = t2.proc_inst_id
+          AND t1.TASK_DEF_KEY_ = t2.node_id
+          AND t1.ASSIGNEE_ = #{query.assignee}
+          AND t2.node_type = 'APPROVAL'
+        group by t1.NAME_
     </select>
 </mapper>

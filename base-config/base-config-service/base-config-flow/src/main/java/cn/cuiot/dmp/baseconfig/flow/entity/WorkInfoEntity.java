@@ -51,9 +51,9 @@ public class WorkInfoEntity implements Serializable {
     private String orgPath;
 
     /**
-     * 企业ID
+     * 楼盘id
      */
-    private Long companyId;
+    private Long propertyId;
 
 
     /**
@@ -63,7 +63,7 @@ public class WorkInfoEntity implements Serializable {
 
 
     /**
-     * 工单来源
+     * 工单来源 0 计划生成  1 自查报事2客户提单3代录工单
      */
     private Byte workSouce;
 
@@ -102,5 +102,13 @@ public class WorkInfoEntity implements Serializable {
      */
     private String orgIds;
 
+    /**
+     * 流程定义id
+     */
+    private  String ProcessDefinitionId;
 
+    /**
+     * 保单客户id
+     */
+    private Long actualUserId;
 }
