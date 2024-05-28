@@ -54,4 +54,9 @@ public class DepartmentTreeVO {
      */
     private List<DepartmentTreeVO> children;
 
+    /**
+     * 是否可用
+     */
+    private Boolean disabled=false;
+
 }

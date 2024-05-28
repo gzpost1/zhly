@@ -108,6 +108,11 @@ public class DepartmentServiceImpl implements DepartmentService {
     public static final String INIT = "init";
 
     /**
+     * 全部类型
+     */
+    public static final String ALL_TYPE = "all";
+
+    /**
      * dgroup排序列表
      */
     private static final List<Integer> SPACE_GROUP_LIST = Lists.newArrayList(7, 4, 6, 3, 2, 1);
@@ -372,47 +377,10 @@ public class DepartmentServiceImpl implements DepartmentService {
         Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
                 .orElse(null);
 
-        DepartmentEntity department = departmentDao.selectByPrimary(deptId);
+        //DepartmentEntity department = departmentDao.selectByPrimary(deptId);
 
         // 初始化departmentTreeList
         List<DepartmentTreeVO> departmentTreeList = new ArrayList<>();
-
-        //用户所在组织为组织级以下（小区，区域等），则只返回用户所在组织
-        if (!StringUtils.isEmpty(type) && type.equals(CurrencyConst.SPACE)) {
-            List<Integer> dgroups = Arrays.asList(
-                    //小区
-                    DepartmentGroupEnum.COMMUNITY.getCode(),
-                    //楼栋
-                    DepartmentGroupEnum.BUILDING.getCode(),
-                    //房屋
-                    DepartmentGroupEnum.HOUSE.getCode(),
-                    //区域
-                    DepartmentGroupEnum.REGION.getCode(),
-                    //楼层
-                    DepartmentGroupEnum.FLOOR.getCode());
-
-            if (dgroups.contains(department.getDGroup())) {
-                DepartmentTreeVO vo = new DepartmentTreeVO();
-                DepartmentEntity entity = departmentDao.getPathBySpacePath(department.getPath());
-                BeanUtils.copyProperties(entity, vo);
-                vo.setType(CurrencyConst.SPACE);
-                departmentTreeList.add(vo);
-            }
-            return departmentTreeList;
-
-        } else if (department.getDGroup().equals(DepartmentGroupEnum.BUILDING.getCode())
-                || department.getDGroup().equals(DepartmentGroupEnum.FLOOR.getCode())) {
-            List<DepartmentTreeVO> children = new ArrayList();
-            DepartmentTreeVO vo = new DepartmentTreeVO();
-            BeanUtils.copyProperties(department, vo);
-            vo.setChildren(children);
-            departmentTreeList.add(vo);
-            return departmentTreeList;
-        }
-
-        if (department.getDGroup().equals(DepartmentGroupEnum.COMMUNITY.getCode())) {
-            deptId = departmentDao.selectByPrimary(department.getParentId()).getId();
-        }
 
         List<DepartmentEntity> siteList = departmentDao.selectByOrgId(orgId);
 
@@ -424,9 +392,17 @@ public class DepartmentServiceImpl implements DepartmentService {
                 departmentTreeListTemp.add(vo);
             }
 
-            if (deptId != null) {
+            if(ALL_TYPE.equals(type)){
                 for (DepartmentTreeVO departmentTreeVO : departmentTreeListTemp) {
+                    departmentTreeVO.setDisabled(true);
                     if (deptId.equals(departmentTreeVO.getId())) {
+                        departmentTreeVO.setDisabled(false);
+                    }
+                }
+                //返回全部
+                for (DepartmentTreeVO departmentTreeVO : departmentTreeListTemp) {
+                    if (departmentTreeVO.getParentId() == null
+                            || departmentTreeVO.getParentId() == 0) {
                         List<DepartmentTreeVO> childList = buildTree(departmentTreeListTemp,
                                 departmentTreeVO.getId());
                         departmentTreeVO.setChildren(childList);
@@ -434,10 +410,13 @@ public class DepartmentServiceImpl implements DepartmentService {
                         break;
                     }
                 }
-            } else {
+            }else{
                 for (DepartmentTreeVO departmentTreeVO : departmentTreeListTemp) {
-                    if (departmentTreeVO.getParentId() == null
-                            || departmentTreeVO.getParentId() == 0) {
+                    departmentTreeVO.setDisabled(false);
+                }
+                //只返回当前所属组织以及下级
+                for (DepartmentTreeVO departmentTreeVO : departmentTreeListTemp) {
+                    if (deptId.equals(departmentTreeVO.getId())) {
                         List<DepartmentTreeVO> childList = buildTree(departmentTreeListTemp,
                                 departmentTreeVO.getId());
                         departmentTreeVO.setChildren(childList);
