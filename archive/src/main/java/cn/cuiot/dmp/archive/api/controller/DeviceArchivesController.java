@@ -81,6 +81,7 @@ public class DeviceArchivesController extends BaseController {
         wrapper.eq(Objects.nonNull(query.getId()), DeviceArchivesEntity::getId, query.getId());
         wrapper.eq(DeviceArchivesEntity::getLoupanId, query.getLoupanId());
         wrapper.like(StringUtils.isNotBlank(query.getDeviceName()), DeviceArchivesEntity::getDeviceName, query.getDeviceName());
+        wrapper.like(StringUtils.isNotBlank(query.getDeviceProfessional()), DeviceArchivesEntity::getDeviceProfessional, query.getDeviceProfessional());
         wrapper.like(StringUtils.isNotBlank(query.getInstallationLocation()), DeviceArchivesEntity::getInstallationLocation, query.getInstallationLocation());
         wrapper.eq(Objects.nonNull(query.getDeviceStatus()), DeviceArchivesEntity::getDeviceStatus, query.getDeviceStatus());
         wrapper.eq(Objects.nonNull(query.getDeviceCategory()), DeviceArchivesEntity::getDeviceCategory, query.getDeviceCategory());
