@@ -77,6 +77,7 @@ public class DeviceArchivesController extends BaseController {
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<DeviceArchivesEntity>> queryForPage(@RequestBody @Valid DeviceArchivesQuery query) {
         LambdaQueryWrapper<DeviceArchivesEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Objects.nonNull(query.getId()), DeviceArchivesEntity::getId, query.getId());
         wrapper.eq(DeviceArchivesEntity::getLoupanId, query.getLoupanId());
         wrapper.like(StringUtils.isNotBlank(query.getDeviceName()), DeviceArchivesEntity::getDeviceName, query.getDeviceName());
         wrapper.like(StringUtils.isNotBlank(query.getInstallationLocation()), DeviceArchivesEntity::getInstallationLocation, query.getInstallationLocation());

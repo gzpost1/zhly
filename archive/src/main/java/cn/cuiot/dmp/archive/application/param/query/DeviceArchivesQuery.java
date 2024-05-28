@@ -20,6 +20,11 @@ public class DeviceArchivesQuery extends PageQuery {
     private Long loupanId;
 
     /**
+     * id
+     */
+    private Long id;
+
+    /**
      * 设备名称（支持输入汉字、英文、符号、数字，长度支持30字符）
      */
     private String deviceName;
