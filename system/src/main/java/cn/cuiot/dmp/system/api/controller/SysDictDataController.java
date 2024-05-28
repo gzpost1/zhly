@@ -14,6 +14,7 @@ import cn.cuiot.dmp.system.application.service.SysDictDataService;
 import cn.cuiot.dmp.system.infrastructure.entity.SysDictData;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SysDictDataParam;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SysDictDataQuery;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -43,10 +44,10 @@ public class SysDictDataController {
      * 字典项列表
      */
     @PostMapping("/list")
-    public IdmResDTO<List<SysDictData>> list(
+    public IdmResDTO<IPage<SysDictData>> list(
             @RequestBody @Valid SysDictDataQuery sysDictDataQuery) {
-        List<SysDictData> list = sysDictDataService.list(sysDictDataQuery);
-        return IdmResDTO.success(list);
+        IPage<SysDictData> page = sysDictDataService.pageList(sysDictDataQuery);
+        return IdmResDTO.success(page);
     }
 
     /**
