@@ -246,7 +246,10 @@ public class CounterSignListener implements ExecutionListener {
                         }
                     }
                 } else {
-                    throw new BusinessException(ResultCode.PARAM_CANNOT_NULL, "找不到审批人,请检查配置!!!");
+
+                    assigneeList.add(DEFAULT_NULL_ASSIGNEE);
+                    execution.setVariable(variable, assigneeList);
+
                 }
             } else {
                 execution.setVariable(variable, assigneeList);
