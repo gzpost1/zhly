@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author pengjian
@@ -66,5 +67,10 @@ public class QueryMyApprovalDto extends PageQuery {
      * 抄送人userId
      */
     private Long makeUserId;
+
+    /**
+     * 批量组织信息
+     */
+    private List<Long> orgIds;
 
 }

@@ -22,6 +22,8 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
 
     Page<WorkInfoDto> queryWorkOrderInfo(Page<WorkInfoDto> page, @Param("query") WorkInfoDto dto);
 
+    Page<WorkInfoDto> queryCustomerWorkOrderInfo(Page<WorkInfoDto> page, @Param("query") WorkInfoDto dto);
+
     WorkInfoDto queryWorkOrderDetailInfo(@Param("query") WorkProcInstDto dto);
 
     Page<MyApprovalResultDto> queryMyNotApproval(Page<MyApprovalResultDto> myApprovalResultDtoPage,@Param("query") QueryMyApprovalDto dto);

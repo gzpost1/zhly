@@ -47,7 +47,7 @@ public class WorkInfoDto extends PageQuery {
 
 
     /**
-     * 工单来源 0 计划生成  1 自查报事
+     * 工单来源 0 计划生成  1 自查报事2客户提单3代录工单
      */
     private Byte workSouce;
 
@@ -83,6 +83,21 @@ public class WorkInfoDto extends PageQuery {
     private String userName;
 
     /**
+     * 保单人id
+     */
+    private Long actualUserId;
+
+    /**
+     * 报单人名称
+     */
+    private String actualUserName;
+
+    /**
+     * 报单人名称
+     */
+    private String actualUserPhone;
+
+    /**
      * 流程实例id
      */
     private String procInstId;
@@ -112,4 +127,14 @@ public class WorkInfoDto extends PageQuery {
      * 部门
      */
     private String deptIds;
+
+    /**
+     * 楼盘名称
+     */
+    private String propertyName;
+
+    /**
+     * 楼盘id
+     */
+    private String propertyId;
 }

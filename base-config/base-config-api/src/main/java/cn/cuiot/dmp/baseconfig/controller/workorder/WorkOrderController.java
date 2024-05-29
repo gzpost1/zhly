@@ -55,6 +55,16 @@ public class WorkOrderController extends BaseController {
     }
 
     /**
+     * 客户工单列表
+     * @param dto
+     * @return
+     */
+    @PostMapping("queryCustomerWorkOrderInfo")
+    public IdmResDTO<IPage<WorkInfoDto>> queryCustomerWorkOrderInfo(@RequestBody WorkInfoDto dto){
+        return workInfoService.queryCustomerWorkOrderInfo(dto );
+    }
+
+    /**
      * 所属组织
      * @param dto
      * @return

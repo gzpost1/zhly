@@ -22,13 +22,13 @@
         id, business_type, org, work_name, work_souce, user_id, status
     </sql>
     <sql id="queryWorkOrderInfoSql">
-         t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds
-
+         t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds,
+         t1.actual_user_id
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
             from tb_work_info t1 left join  (select business_type,proc_inst_id from tb_work_business_type_info WHERE business_type=1 group by proc_inst_id ,business_type) t2 on t1.proc_inst_id = t2.proc_inst_id
-            left join tb_work_org_rel t3 on t1.id = t3.work_id
+            left join tb_process_dept_rel t3 on t1.process_definition_id = t3.process_definition_id
           <include refid="queryWorkOrderInfoCondition"/>
     </select>
     <sql id="queryWorkOrderInfoCondition">
@@ -65,6 +65,60 @@
         </where>
     </sql>
 
+
+
+    <sql id="queryCustomerWorkOrderInfoSql">
+        t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds
+        t1.property_id , t1.actual_user_id
+    </sql>
+    <select id="queryCustomerWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
+        select  <include refid="queryWorkOrderInfoSql"/>
+        from tb_work_info t1 left join  (select business_type,proc_inst_id from tb_work_business_type_info WHERE business_type=1 group by proc_inst_id ,business_type) t2 on t1.proc_inst_id = t2.proc_inst_id
+        left join tb_process_dept_rel t3 on t1.process_definition_id = t3.process_definition_id
+        <include refid="queryWorkOrderInfoCondition"/>
+    </select>
+
+    <sql id="queryCustomerWorkOrderInfoCondition">
+        <where>
+            <if test="query.id !=null">
+                and t1.proc_inst_id like concat('%',#{query.id},'%')
+            </if>
+            <if test="query.businessType !=null">
+                and t1.business_type = #{query.businessType}
+            </if>
+            <if test="query.status !=null">
+                and t1.status = #{query.status}
+            </if>
+            <if test="query.createUser !=null">
+                and t1.create_user =#{query.createUser}
+            </if>
+            <if test="query.workSouce !=null ">
+                and t1.work_souce =#{query.workSouce}
+            </if>
+            <if test="query.workSouce ==null ">
+                and t1.work_souce in(2,3)
+            </if>
+
+            <if test="query.timeOut !=null and query.timeOut==1">
+                and t2.business_type =#{query.timeOut}
+            </if>
+            <if test="query.workName !=null">
+                and t1.work_name like concat('%',#{query.workName},'%')
+            </if>
+            <if test="query.orgIds !=null">
+                and t3.org_id in
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            group by t1.proc_inst_id
+            order by t1.create_time desc
+        </where>
+    </sql>
+
+
+
+
     <select id="queryWorkOrderDetailInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
             from tb_work_info t1
@@ -84,14 +138,11 @@
     <sql id="queryMyNotApprovalCondition">
         <where>
             <if test="query.assignee !=null and query.assignee !=''">
-               and t1.proc_inst_id = t2.PROC_INST_ID_ and t2.PROC_INST_ID_ = t3.proc_inst_id and t2.TASK_DEF_KEY_ = t3.node_id and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'APPROVAL'
+               and t1.proc_inst_id = t2.PROC_INST_ID_ and t1.process_definition_id = t3.process_definition_id and t2.TASK_DEF_KEY_ = t3.node_id and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'APPROVAL'
                and t1.process_definition_id = t4.process_definition_id
             </if>
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}
-            </if>
-            <if test="query.orgId !=null">
-                and t4.org_id = #{query.orgId}
             </if>
             <if test="query.workName !=null and query.workName !=''">
                 and t1.work_name like concat('%',#{query.workName},'%')
@@ -104,6 +155,12 @@
             </if>
             <if test="query.procInstId !=null">
                 and t1.proc_inst_id like concat('%',#{query.procInstId},'%')
+            </if>
+            <if test="query.orgIds !=null">
+                and t4.org_id in
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.makeUserId !=null">
                 and t2.user_id = #{query.makeUserId}
@@ -124,21 +181,20 @@
     <select id="queryMyApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
         select
             <include refid="queryMyApprovalSql"/>
-        from  tb_work_info t1 , act_hi_taskinst t2 ,tb_node_type t3 , tb_work_org_rel t4
+        from  tb_work_info t1 , act_hi_taskinst t2 ,tb_node_type t3 , tb_process_dept_rel t4
         <include refid="queryMyApprovalSqlCondition"/>
     </select>
 
     <sql id="queryMyApprovalSqlCondition">
         <where>
             <if test="query.assignee !=null and query.assignee !=''">
-                and t2.ASSIGNEE_ = #{query.assignee} and t1.proc_inst_id = t2.PROC_INST_ID_ and t2.TASK_DEF_KEY_ = t3.node_id and t2.PROC_INST_ID_ = t3.proc_inst_id  and t3.node_type = 'APPROVAL'
+                 and t1.proc_inst_id = t2.PROC_INST_ID_ and t2.TASK_DEF_KEY_ = t3.node_id and t1.process_definition_id = t3.process_definition_id  and t3.node_type = 'APPROVAL' and t2.ASSIGNEE_ = #{query.assignee}
+                 and t1.process_definition_id = t4.process_definition_id
             </if>
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}
             </if>
-            <if test="query.orgId !=null">
-                and t4.org_id = #{query.orgId}
-            </if>
+
             <if test="query.workName !=null and query.workName !=''">
                 and t1.work_name like concat('%',#{query.workName},'%')
             </if>
@@ -147,6 +203,12 @@
             </if>
             <if test="query.startTime !=null">
                 and t1.create_time >= #{query.startTime} and t1.create_time <![CDATA[<=]]> #{query.endTime}
+            </if>
+            <if test="query.orgIds !=null">
+                and t4.org_id in
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.procInstId !=null">
                 and t1.proc_inst_id like concat('%',#{query.procInstId},'%')
@@ -167,7 +229,7 @@
     <select id="queryMakeApproval" resultType="cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto">
         select
             <include refid="queryMakeApprovalSql"/>
-        from tb_work_info t1 left JOIN tb_flow_cc t2 on t1.proc_inst_id = t2.process_instance_id left join tb_work_org_rel t3 on t1.id = t3.work_id
+        from tb_work_info t1 left JOIN tb_flow_cc t2 on t1.proc_inst_id = t2.process_instance_id left join tb_process_dept_rel t3 on t1.process_definition_id = t3.process_definition_id
         <include refid="queryMakeApprovalSqlCondition"/>
     </select>
 
@@ -179,9 +241,7 @@
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}
             </if>
-            <if test="query.orgId !=null">
-                and t3.org_id = #{query.orgId}
-            </if>
+
             <if test="query.workName !=null and query.workName !=''">
                 and t1.work_name like concat('%',#{query.workName},'%')
             </if>
@@ -194,6 +254,13 @@
             <if test="query.procInstId !=null">
                 and t1.proc_inst_id like concat('%',#{query.procInstId},'%')
             </if>
+            <if test="query.orgIds !=null">
+                and t3.org_id in
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+
             <if test="query.makeUserId !=null">
                 and t2.user_id = #{query.makeUserId}
             </if>
@@ -208,7 +275,7 @@
     <select id="queryMySubmitWorkInfo" resultType="cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity">
         select
         <include refid="queryMySubmitWorkInfo"/>
-        from tb_work_info t1 left join tb_work_org_rel t2 on t1.id = t2.work_id
+        from tb_work_info t1 left join tb_process_dept_rel t2 on t1.process_definition_id = t2.process_definition_id
         <include refid="queryMySubmitWorkInfoContidition"/>
     </select>
     <sql id="queryMySubmitWorkInfoContidition">
@@ -216,9 +283,7 @@
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}
             </if>
-            <if test="query.orgId !=null">
-                and t2.org_id = #{query.orgId}
-            </if>
+
             <if test="query.workName !=null and query.workName !=''">
                 and t1.work_name like concat('%',#{query.workName},'%')
             </if>
@@ -227,6 +292,12 @@
             </if>
             <if test="query.startTime !=null">
                 and t1.create_time >= #{query.startTime} and t1.create_time <![CDATA[<=]]> #{query.endTime}
+            </if>
+            <if test="query.orgIds !=null">
+                and t2.org_id in
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.procInstId !=null">
                 and t1.proc_inst_id like concat('%',#{query.procInstId},'%')
