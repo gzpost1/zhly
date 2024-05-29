@@ -38,13 +38,15 @@ public class DefaultXssCleaner implements XssCleaner {
         if (!StringUtils.hasText(bodyHtml)) {
             return bodyHtml;
         }
+
         Mode mode = properties.getMode();
         if (Mode.ESCAPE == mode) {
             // html 转义
             return HtmlUtils.htmlEscape(bodyHtml, StandardCharsets.UTF_8.name());
         } else if (Mode.VALIDATE == mode) {
             // 校验
-            if (Jsoup.isValid(bodyHtml, JsoupXssUtil.WHITE_LIST)) {
+            String validHtml = bodyHtml.replaceAll("\\\\\\\"", "\"");
+            if (Jsoup.isValid(validHtml, JsoupXssUtil.WHITE_LIST)) {
                 return bodyHtml;
             }
             throw type
