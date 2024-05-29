@@ -43,4 +43,10 @@ public class ParkingArchivesExportVo implements Serializable {
      */
     @Excel(name = "使用情况", orderNum = "4", width = 20)
     private String usageStatusName;
+
+    /**
+     * 备注（支持输入汉字、数字、符号，最长长度为100位字符）
+     */
+    @Excel(name = "备注", orderNum = "5", width = 20)
+    private String remarks;
 }
