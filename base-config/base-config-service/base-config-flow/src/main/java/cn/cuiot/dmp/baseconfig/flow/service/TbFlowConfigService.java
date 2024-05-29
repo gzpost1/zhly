@@ -347,7 +347,6 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
     public void delete(List<Long> ids) {
         this.removeByIds(ids);
 
-        //删除流程和组织的中间表
         flowConfigOrgService.deleteByFlowConfigIds(ids);
     }
 

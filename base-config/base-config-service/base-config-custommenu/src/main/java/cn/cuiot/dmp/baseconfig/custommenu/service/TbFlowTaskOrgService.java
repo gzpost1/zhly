@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.baseconfig.custommenu.service;
 
 import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskOrgDto;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,13 +27,14 @@ public class TbFlowTaskOrgService extends ServiceImpl<TbFlowTaskOrgMapper, TbFlo
      */
     @Transactional(rollbackFor = Exception.class)
     public void saveFlowOrg(Long id, List<Long> orgIds) {
-        List<TbFlowTaskOrg> configOrgs = orgIds.stream().map(e -> {
+        List<TbFlowTaskOrg> configOrgs = orgIds.stream().filter(e -> Objects.nonNull(e)).map(e -> {
             TbFlowTaskOrg TbFlowTaskOrg = new TbFlowTaskOrg();
             TbFlowTaskOrg.setFlowTaskId(id);
             TbFlowTaskOrg.setOrgId(e);
             return TbFlowTaskOrg;
         }).collect(Collectors.toList());
 
+        AssertUtil.notEmpty(configOrgs,"所属组织未选中");
         baseMapper.insertList(configOrgs);
     }
 
