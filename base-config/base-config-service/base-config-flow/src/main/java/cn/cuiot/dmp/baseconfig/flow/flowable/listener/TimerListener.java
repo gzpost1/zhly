@@ -78,7 +78,7 @@ public class TimerListener implements ExecutionListener {
                 runtimeService.deleteProcessInstance(execution.getProcessInstanceId(), TimeLimitHandleEnums.TO_END.getProcessComment());
 
                 //更新工单信息
-                workInfoService.updateWorkInfo(WorkOrderStatusEnums.completed.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
+                workInfoService.updateWorkInfo(WorkOrderStatusEnums.terminated.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
 
             } else if (StringUtils.equals(handlerType, TimeLimitHandleEnums.TO_SUSPEND.getCode())) {
 

@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.service;
 
 import cn.cuiot.dmp.baseconfig.flow.dto.FlowConfigOrgDto;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.collect.Lists;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -26,13 +28,14 @@ public class TbFlowConfigOrgService extends ServiceImpl<TbFlowConfigOrgMapper, T
      */
     @Transactional(rollbackFor = Exception.class)
     public void saveFlowOrg(Long id, List<Long> orgIds) {
-        List<TbFlowConfigOrg> configOrgs = orgIds.stream().map(e -> {
+        List<TbFlowConfigOrg> configOrgs = orgIds.stream().filter(e -> Objects.nonNull(e)).map(e -> {
             TbFlowConfigOrg tbFlowConfigOrg = new TbFlowConfigOrg();
             tbFlowConfigOrg.setFlowConfigId(id);
             tbFlowConfigOrg.setOrgId(e);
             return tbFlowConfigOrg;
         }).collect(Collectors.toList());
 
+        AssertUtil.notEmpty(configOrgs,"所属组织未选中");
         baseMapper.insertList(configOrgs);
     }
 
