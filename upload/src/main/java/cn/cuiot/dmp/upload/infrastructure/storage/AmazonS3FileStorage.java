@@ -25,6 +25,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.AbortMultipartUploadRequest;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.BucketPolicy;
@@ -98,6 +99,7 @@ public class AmazonS3FileStorage extends FileStorage {
         clientBuilder.setClientConfiguration(config);
         clientBuilder.setCredentials(acrep);
         clientBuilder.setEndpointConfiguration(econfig);
+        clientBuilder.enablePathStyleAccess();
         this.ossClient = clientBuilder.build();
     }
 
@@ -159,7 +161,7 @@ public class AmazonS3FileStorage extends FileStorage {
         log.info("putObject putObjectResult:{}", JSON.toJSONString(putObjectResult));
         String url = ossClient.getUrl(bucketName, objectName).toString();
         log.info("putObject url:{}", url);
-        //String url = url.replace(ossProperties.getEndpoint(), ossProperties.getDomainUrl());
+        //url = ossProperties.getDomainUrl()+"/"+bucketName+"/"+objectName;
         //log.info("putObject replaceUrl:{}", url);
         return url;
     }
@@ -178,7 +180,7 @@ public class AmazonS3FileStorage extends FileStorage {
             url = getPresignedObjectUrl(bucketName, objectName, expires);
         } else {
             url = ossClient.getUrl(bucketName, objectName).toString();
-            //url = url.replace(ossProperties.getEndpoint(), ossProperties.getDomainUrl());
+            //url = ossProperties.getDomainUrl()+"/"+bucketName+"/"+objectName;
         }
         log.info("getObjectUrl url:{}", url);
         return url;
@@ -215,6 +217,8 @@ public class AmazonS3FileStorage extends FileStorage {
         String url = urlResult.toString();
         log.info("getPresignedObjectUrl url:{}", url);
         //url = url.replace(ossProperties.getEndpoint(), ossProperties.getDomainUrl());
+        //log.info("getPresignedObjectUrl replaced url:{}", url);
+        //url = ossProperties.getDomainUrl()+"/"+bucketName+urlResult.getFile();
         //log.info("getPresignedObjectUrl replaced url:{}", url);
         return url;
     }

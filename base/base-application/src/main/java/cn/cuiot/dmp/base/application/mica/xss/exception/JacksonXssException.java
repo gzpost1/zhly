@@ -9,7 +9,7 @@ import lombok.Getter;
  * @date: 2024/5/16 10:28
  */
 @Getter
-public class JacksonXssException extends IllegalStateException implements XssException {
+public class JacksonXssException extends XssException {
     private final String name;
     private final String input;
 

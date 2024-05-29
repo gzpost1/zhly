@@ -6,7 +6,9 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.SysDictTypeQuery;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.SysDictTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,27 @@ public class SysDictTypeService {
         queryWrapper.orderByAsc(SysDictType::getSort);
         List<SysDictType> list = sysDictTypeMapper.selectList(queryWrapper);
         return list;
+    }
+
+    /**
+     * 分页查询
+     * @param sysDictTypeQuery
+     * @return
+     */
+    public IPage<SysDictType> pageList(SysDictTypeQuery sysDictTypeQuery) {
+        LambdaQueryWrapper<SysDictType> queryWrapper = Wrappers.lambdaQuery();
+        if (StringUtils.isNotBlank(sysDictTypeQuery.getKeyword())) {
+            queryWrapper.like(SysDictType::getDictName,sysDictTypeQuery.getKeyword());
+        }
+        if (StringUtils.isNotBlank(sysDictTypeQuery.getDictName())) {
+            queryWrapper.like(SysDictType::getDictName,sysDictTypeQuery.getDictName());
+        }
+        if (StringUtils.isNotBlank(sysDictTypeQuery.getDictCode())) {
+            queryWrapper.like(SysDictType::getDictCode,sysDictTypeQuery.getDictCode());
+        }
+        queryWrapper.orderByDesc(SysDictType::getCreateTime);
+        IPage<SysDictType> page = sysDictTypeMapper.selectPage(new Page<SysDictType>(sysDictTypeQuery.getPageNo(),sysDictTypeQuery.getPageSize()),queryWrapper);
+        return page;
     }
 
     public SysDictType getById(Long id) {
