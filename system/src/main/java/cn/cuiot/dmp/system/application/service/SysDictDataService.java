@@ -52,7 +52,7 @@ public class SysDictDataService {
      */
     public List<SysDictData> list(SysDictDataQuery sysDictDataQuery) {
         LambdaQueryWrapper<SysDictData> lambdaQueryWrapper = Wrappers.lambdaQuery();
-        lambdaQueryWrapper.eq(SysDictData::getDataId, Long.valueOf(sysDictDataQuery.getDictId()));
+        lambdaQueryWrapper.eq(SysDictData::getDictId, Long.valueOf(sysDictDataQuery.getDictId()));
         if (StringUtils.isNotBlank(sysDictDataQuery.getDataName())) {
             lambdaQueryWrapper.like(SysDictData::getDataName, sysDictDataQuery.getDataName().trim());
         }
