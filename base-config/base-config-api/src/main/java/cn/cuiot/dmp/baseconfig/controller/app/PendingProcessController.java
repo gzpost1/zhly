@@ -5,6 +5,8 @@ import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.PendingProcessQuery;
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
+import cn.cuiot.dmp.baseconfig.flow.entity.UserEntity;
 import cn.cuiot.dmp.baseconfig.flow.service.AppWorkInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -64,4 +66,5 @@ public class PendingProcessController {
         startProcessInstanceDTO.setWorkSource(WorkOrderConstants.WORK_SOURCE_MAKE);
         return workInfoService.start(startProcessInstanceDTO);
     }
+
 }
