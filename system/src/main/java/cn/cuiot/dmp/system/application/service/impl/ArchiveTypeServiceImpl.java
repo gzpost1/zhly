@@ -71,6 +71,8 @@ public class ArchiveTypeServiceImpl implements ArchiveTypeService {
         if (CollectionUtils.isEmpty(archiveTypeList)) {
             return new ArrayList<>();
         }
+        // 是否需要初始化自定义配置
+        customConfigRepository.initCustomConfig(queryDTO.getCompanyId(), queryDTO.getUserId());
         List<ArchiveTypeTreeNodeVO> archiveTypeTreeNodeVOList = new ArrayList<>();
         ArchiveTypeTreeNodeVO rootArchiveTypeTreeNodeVO = initRootArchiveTypeVO();
         List<ArchiveTypeTreeNodeVO> childrenArchiveTypeTreeNodeList = archiveTypeList.stream()
