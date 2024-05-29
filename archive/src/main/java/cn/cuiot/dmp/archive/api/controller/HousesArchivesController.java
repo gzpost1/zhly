@@ -85,7 +85,7 @@ public class HousesArchivesController extends BaseController {
         if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())){
             wrapper.like( HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
         }
-
+        wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         return IdmResDTO.success(res);
     }

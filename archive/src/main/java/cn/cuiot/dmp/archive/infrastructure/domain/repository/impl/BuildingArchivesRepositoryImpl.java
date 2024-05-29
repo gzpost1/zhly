@@ -77,6 +77,11 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
                 .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName())
                 .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList())
                 .in(CollectionUtils.isNotEmpty(pageQuery.getIdList()), BuildingArchivesEntity::getId, pageQuery.getIdList());
+        if (StringUtils.isNotBlank(pageQuery.getKeyword())) {
+            queryWrapper.and(eqw -> eqw.eq(BuildingArchivesEntity::getId, pageQuery.getKeyword())
+                    .or().like(BuildingArchivesEntity::getName, pageQuery.getKeyword()));
+        }
+        queryWrapper.orderByDesc(BuildingArchivesEntity::getCreateTime);
         IPage<BuildingArchivesEntity> buildingArchivesEntityPage = buildingArchivesMapper.selectPage(
                 new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), queryWrapper);
         if (CollectionUtils.isEmpty(buildingArchivesEntityPage.getRecords())) {
