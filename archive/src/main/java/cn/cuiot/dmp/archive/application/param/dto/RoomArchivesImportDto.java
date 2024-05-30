@@ -36,10 +36,4 @@ public class RoomArchivesImportDto implements Serializable {
      */
     @Excel(name = "定位偏差", orderNum = "3")
     private String locationDeviation;
-
-    /**
-     * 状态（默认启用，点击关闭）
-     */
-    @Excel(name = "状态", orderNum = "4")
-    private String statusName;
 }
