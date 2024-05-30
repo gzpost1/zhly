@@ -195,6 +195,10 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
         addListCanNull(configIdList, entity.getUsageStatus() );
         addListCanNull(configIdList, entity.getParkingType());
 
+        if (StringUtils.isNotBlank(entity.getImage())) {
+            entity.setImageList(Collections.singletonList(entity.getImage()));
+        }
+
         // 查询楼盘名称
         Set<Long> loupanIdSet = new HashSet<>();
         loupanIdSet.add(entity.getLoupanId());
