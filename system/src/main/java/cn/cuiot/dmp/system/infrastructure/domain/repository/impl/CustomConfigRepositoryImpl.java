@@ -77,6 +77,8 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int saveCustomConfig(CustomConfig customConfig) {
+        // 保存校验
+        checkSave(customConfig);
         customConfig.setId(IdWorker.getId());
         CustomConfigEntity customConfigEntity = new CustomConfigEntity();
         BeanUtils.copyProperties(customConfig, customConfigEntity);
@@ -93,6 +95,8 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     public int updateCustomConfig(CustomConfig customConfig) {
         CustomConfigEntity customConfigEntity = Optional.ofNullable(customConfigMapper.selectById(customConfig.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        // 保存校验
+        checkSave(customConfig);
         BeanUtils.copyProperties(customConfig, customConfigEntity);
         // 如果传入的自定义配置设置不为空，则执行保存更新操作
         if (CollectionUtils.isNotEmpty(customConfig.getCustomConfigDetailList())) {
@@ -233,6 +237,23 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         customConfigPageResult.setPageSize((int) customConfigEntityPage.getSize());
         customConfigPageResult.setTotal(customConfigEntityPage.getTotal());
         return customConfigPageResult;
+    }
+
+    private void checkSave(CustomConfig customConfig) {
+        AssertUtil.notNull(customConfig.getCompanyId(), "企业ID不能为空");
+        AssertUtil.notBlank(customConfig.getName(), "自定义配置名称不能为空");
+        LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
+                .eq(CustomConfigEntity::getCompanyId, customConfig.getCompanyId())
+                // 更新的话排除自身
+                .ne(Objects.nonNull(customConfig.getId()), CustomConfigEntity::getId, customConfig.getId());
+        List<CustomConfigEntity> customConfigEntityList = customConfigMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(customConfigEntityList)) {
+            return;
+        }
+        List<String> customConfigNameList = customConfigEntityList.stream()
+                .map(CustomConfigEntity::getName)
+                .collect(Collectors.toList());
+        AssertUtil.isFalse(customConfigNameList.contains(customConfig.getName()), "自定义配置名称已存在");
     }
 
 }
