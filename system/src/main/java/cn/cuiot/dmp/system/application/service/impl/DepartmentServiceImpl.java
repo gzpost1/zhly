@@ -43,6 +43,7 @@ import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDataDao;
 import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 
@@ -923,6 +924,14 @@ public class DepartmentServiceImpl implements DepartmentService {
             }
         }
         return departmentTreeRspDTO;
+    }
+
+    @Override
+    public List<DepartmentDto> lookUpDepartmentChildList2(DepartmentReqDto query) {
+        if (CollUtil.isEmpty(query.getDeptIdList())){
+            return new ArrayList<>();
+        }
+        return departmentDao.querySubDepartment(query);
     }
 
 }

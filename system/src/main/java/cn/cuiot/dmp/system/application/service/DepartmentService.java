@@ -214,4 +214,10 @@ public interface DepartmentService {
      */
     DepartmentTreeRspDTO getDepartmentTreeRspDTO(DepartmentTreeVO rootTreeNode);
 
+    /**
+     * 查询子部门(可多部门查询)
+     * @param query
+     * @return
+     */
+    List<DepartmentDto> lookUpDepartmentChildList2(DepartmentReqDto query);
 }
