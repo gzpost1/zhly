@@ -10,6 +10,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.AppTransferTaskDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.PendingProcessQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
@@ -1512,6 +1513,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(page);
     }
 
+
     /**
      * 获取部门信息
      * @param dto
@@ -1540,5 +1542,33 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     }
 
 
+    /**
+     * app端任务转办
+     * @param appTransferTaskDto
+     * @return
+     */
+    public IdmResDTO appTransfer(AppTransferTaskDto appTransferTaskDto) {
+        List<TaskUserInfoDto> userInfos = Optional.ofNullable(appTransferTaskDto.getTaskUserInfos())
+                .orElseThrow(()->new RuntimeException("转办任务数不能为空"));
+        //保存转办信息
+        HandleDataDTO handleDataDTO = new HandleDataDTO();
+        handleDataDTO.setTaskId(String.valueOf(userInfos.get(0).getTaskId()));
+        WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
+        businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_TRANSFER.getCode());
+        businessTypeInfo.setDeliver(userInfos.stream().map(e->String.valueOf(e.getUserId())).collect(Collectors.joining(",")));
+        workBusinessTypeInfoService.save(businessTypeInfo);
 
+        handleDataDTO.setNodeId(businessTypeInfo.getNode());
+        updateBusinessPendingDate(handleDataDTO);
+        updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
+        assigneeByProcInstId(handleDataDTO);
+
+        //转办
+        userInfos.stream().forEach(item->{
+            taskService.setAssignee(String.valueOf(item.getTaskId()),
+                    String.valueOf(item.getUserId()));
+        });
+
+        return IdmResDTO.success();
+    }
 }

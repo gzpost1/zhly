@@ -1,9 +1,13 @@
 package cn.cuiot.dmp.baseconfig.flow.mapper;
 
+import cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.PendingProcessQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.QueryTaskUserInfoDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.TaskUserInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkProcInstDto;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
@@ -37,4 +41,9 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
     Page<WorkInfoEntity> queryMySubmitWorkInfo(Page<WorkInfoEntity> workInfoEntityPage, @Param("query") QueryMyApprovalDto dto);
 
     List<BaseDto> queryPendProcessList(@Param("query") PendingProcessQuery query);
+
+    List<TaskUserInfoDto> queryTaskUserInfo(@Param("query") QueryTaskUserInfoDto dto);
+
+
+    Page<AppWorkInfoDto> queryAppMySubmitWorkInfo(Page<AppWorkInfoDto> workInfoEntityPage , @Param("query") QueryMyApprovalDto dto);
 }

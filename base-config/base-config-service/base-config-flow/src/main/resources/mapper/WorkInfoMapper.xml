@@ -307,6 +307,43 @@
         </where>
     </sql>
 
+    <sql id="queryAppMySubmitWorkInfoSql">
+        t1.proc_inst_id,t1.work_name,t1.create_user.t1.create_time,t1.status
+    </sql>
+    <select id="queryAppMySubmitWorkInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
+        SELECT
+            <include refid="queryAppMySubmitWorkInfoSql"/>
+        FROM
+            tb_work_info t1
+                LEFT JOIN ( SELECT business_type, proc_inst_id FROM tb_work_business_type_info WHERE business_type = 1 GROUP BY proc_inst_id, business_type ) t2
+                on t1.proc_inst_id = t2.proc_inst_id
+            <include refid="queryAppMySubmitWorkInfoCondition"/>
+    </select>
+
+    <sql id="queryAppMySubmitWorkInfoCondition">
+        <where>
+            <if test="query.businessType != null">
+                and t1.business_type = #{query.businessType}
+            </if>
+
+            <if test="query.workName != null and query.workName !=''">
+                and t1.work_name like concat('%',#{query.workName},'%')
+            </if>
+            <if test="query.createUser != null">
+                and t1.create_user = #{query.createUser}
+            </if>
+
+            <if test="query.status != null">
+                and t1.status = #{query.status}
+            </if>
+            <if test="query.timeOut !=null and query.timeOut==1">
+                t2.business_type = #{query.timeOut}
+            </if>
+        </where>
+        group by t1.proc_inst_id
+        order by t1.create_time desc
+    </sql>
+
 
     <select id="queryPendProcessList" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto">
         SELECT
@@ -320,5 +357,9 @@
           AND t1.ASSIGNEE_ = #{query.assignee}
           AND t2.node_type = 'APPROVAL'
         group by t1.NAME_
+    </select>
+
+    <select id="queryTaskUserInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.TaskUserInfoDto">
+        select ID_  as taskId,ASSIGNEE_ as userId from  act_ru_task where PROC_INST_ID_= #{query.processInstanceId}
     </select>
 </mapper>
