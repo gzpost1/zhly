@@ -84,6 +84,7 @@ public class ParkingArchivesController extends BaseController {
         wrapper.eq(Objects.nonNull(query.getStatus()), ParkingArchivesEntity::getStatus, query.getStatus());
         wrapper.eq(Objects.nonNull(query.getUsageStatus()), ParkingArchivesEntity::getUsageStatus, query.getUsageStatus());
         wrapper.eq(Objects.nonNull(query.getParkingType()), ParkingArchivesEntity::getParkingType, query.getParkingType());
+        wrapper.orderByDesc(ParkingArchivesEntity::getCreateTime);
         IPage<ParkingArchivesEntity> res = parkingArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         return IdmResDTO.success(res);
     }

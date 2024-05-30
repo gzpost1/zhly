@@ -78,9 +78,6 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
         if (StringUtils.isBlank(entity.getLocationDeviation())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "定位偏差不可为空");
         }
-        if (StringUtils.isBlank(entity.getStatusName())) {
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "状态不可为空");
-        }
     }
 
     @Override
@@ -134,7 +131,6 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
             entity.setSpaceCategory(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.ROOM_ARCHIVES_INIT.get(0)), data.getSpaceCategoryName()));
             entity.setProfessionalPurpose(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.ROOM_ARCHIVES_INIT.get(1)), data.getProfessionalPurposeName()));
             entity.setLocationDeviation(entity.getLocationDeviation());
-            entity.setStatus(getStatusFromName(data.getStatusName()));
             entity.setLoupanId(loupanId);
             // TODO: 2024/5/16 这里还需要基于不同的一级类目去查询配置
             list.add(entity);
