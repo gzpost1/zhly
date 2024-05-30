@@ -292,7 +292,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         flowConfigOrgService.updateFlowOrg(updateDto.getId(), updateDto.getOrgId());
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("processJson", updateDto.getProcess());
+        jsonObject.put("processJson", processJson);
         BpmnModel bpmnModel = assemBpmnModel(jsonObject, childNode, updateDto.getRemark(), updateDto.getName(), StringUtils.join(updateDto.getOrgId(), ","),
                 updateDto.getId().toString());
         repositoryService.createDeployment()
