@@ -211,12 +211,23 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         entity.setBusinessNatureName(configIdNameMap.get(entity.getBusinessNature()));
         entity.setResourceTypeName(configIdNameMap.get(entity.getResourceType()));
         entity.setParkingAreaName(configIdNameMap.get(entity.getParkingArea()));
+        if (Objects.nonNull(entity.getRecommended())){
+            if (entity.getRecommended() == (byte)0){
+                entity.setResourceTypeName("否");
+            } else {
+                entity.setRecommendedName("是");
+            }
+        }
         if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
-            List<String> basicServices = new ArrayList<>();
-            entity.getBasicServices().forEach(configId -> {
-                basicServices.add(configIdNameMap.get(configId));
-            });
-            entity.setBasicServicesName(basicServices);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i< entity.getBasicServices().size(); i++){
+                if (i == entity.getBasicServices().size()-1){
+                    sb.append(configIdNameMap.get(entity.getBasicServices().get(i)));
+                } else {
+                    sb.append(configIdNameMap.get(entity.getBasicServices().get(i))).append("，");
+                }
+            }
+            entity.setBasicServicesName(sb.toString());
         }
 
 
