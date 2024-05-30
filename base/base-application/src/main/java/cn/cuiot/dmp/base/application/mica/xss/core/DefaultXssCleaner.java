@@ -46,7 +46,7 @@ public class DefaultXssCleaner implements XssCleaner {
         } else if (Mode.VALIDATE == mode) {
             // 校验
             String validHtml = bodyHtml.replaceAll("\\\\\\\\\\\\\\\"", "\"");
-            validHtml = bodyHtml.replaceAll("\\\\\\\"", "\"");
+            validHtml = validHtml.replaceAll("\\\\\\\"", "\"");
             if (Jsoup.isValid(validHtml, JsoupXssUtil.WHITE_LIST)) {
                 return bodyHtml;
             }
