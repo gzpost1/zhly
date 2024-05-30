@@ -69,6 +69,9 @@ public class DeviceArchivesController extends BaseController {
     public DeviceArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
         DeviceArchivesEntity res = deviceArchivesService.getById(idParam.getId());
         res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.DEVICE_ARCHIVE.getCode()));
+        if (StringUtils.isNotBlank(res.getImage())) {
+            res.setImageList(Collections.singletonList(res.getImage()));
+        }
         return res;
     }
 
