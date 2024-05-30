@@ -69,6 +69,7 @@ public class DeviceArchivesController extends BaseController {
     public DeviceArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
         DeviceArchivesEntity res = deviceArchivesService.getById(idParam.getId());
         res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.DEVICE_ARCHIVE.getCode()));
+
         return res;
     }
 
@@ -85,6 +86,7 @@ public class DeviceArchivesController extends BaseController {
         wrapper.like(StringUtils.isNotBlank(query.getInstallationLocation()), DeviceArchivesEntity::getInstallationLocation, query.getInstallationLocation());
         wrapper.eq(Objects.nonNull(query.getDeviceStatus()), DeviceArchivesEntity::getDeviceStatus, query.getDeviceStatus());
         wrapper.eq(Objects.nonNull(query.getDeviceCategory()), DeviceArchivesEntity::getDeviceCategory, query.getDeviceCategory());
+        wrapper.orderByDesc(DeviceArchivesEntity::getCreateTime);
         IPage<DeviceArchivesEntity> res = deviceArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         return IdmResDTO.success(res);
     }
@@ -95,7 +97,7 @@ public class DeviceArchivesController extends BaseController {
     @RequiresPermissions
     @LogRecord(operationCode = "saveDeviceArchives", operationName = "保存设备档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/create")
-    public IdmResDTO create(@RequestBody DeviceArchivesEntity entity) {
+    public IdmResDTO create(@RequestBody @Valid DeviceArchivesEntity entity) {
         // 校验参数合法性，写在service层，用于导入的时候使用
         deviceArchivesService.checkParams(entity);
         // 保存数据

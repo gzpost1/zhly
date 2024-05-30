@@ -78,8 +78,13 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
         if (StringUtils.isBlank(entity.getLocationDeviation())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "定位偏差不可为空");
         }
-        if (StringUtils.isBlank(entity.getStatusName())) {
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "状态不可为空");
+
+        // 规则判断
+        if (entity.getName().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "空间名称长度不可超过30");
+        }
+        if (entity.getLocationDeviation().length() > 3) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "定位偏差长度不可超过3");
         }
     }
 
@@ -124,7 +129,7 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         // Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(RoomArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
-        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.DEVICE_ARCHIVE.getCode());
+        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.ROOM_ARCHIVE.getCode());
 
         // 构造插入列表进行保存
         List<RoomArchivesEntity> list = new ArrayList<>();
@@ -133,8 +138,7 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
             entity.setName(data.getName());
             entity.setSpaceCategory(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.ROOM_ARCHIVES_INIT.get(0)), data.getSpaceCategoryName()));
             entity.setProfessionalPurpose(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.ROOM_ARCHIVES_INIT.get(1)), data.getProfessionalPurposeName()));
-            entity.setLocationDeviation(entity.getLocationDeviation());
-            entity.setStatus(getStatusFromName(data.getStatusName()));
+            entity.setLocationDeviation(data.getLocationDeviation());
             entity.setLoupanId(loupanId);
             // TODO: 2024/5/16 这里还需要基于不同的一级类目去查询配置
             list.add(entity);

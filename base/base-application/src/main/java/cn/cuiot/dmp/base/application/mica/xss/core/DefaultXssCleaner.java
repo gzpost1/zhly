@@ -45,7 +45,8 @@ public class DefaultXssCleaner implements XssCleaner {
             return HtmlUtils.htmlEscape(bodyHtml, StandardCharsets.UTF_8.name());
         } else if (Mode.VALIDATE == mode) {
             // 校验
-            String validHtml = bodyHtml.replaceAll("\\\\\\\"", "\"");
+            String validHtml = bodyHtml.replaceAll("\\\\\\\\\\\\\\\"", "\"");
+            validHtml = validHtml.replaceAll("\\\\\\\"", "\"");
             if (Jsoup.isValid(validHtml, JsoupXssUtil.WHITE_LIST)) {
                 return bodyHtml;
             }
