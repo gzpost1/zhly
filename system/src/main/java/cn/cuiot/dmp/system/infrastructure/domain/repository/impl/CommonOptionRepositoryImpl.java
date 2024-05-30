@@ -71,7 +71,7 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
 
     @Override
     public CommonOption queryForDetailByName(CommonOption commonOption) {
-        AssertUtil.notBlank(commonOption.getName(),"常用选项名称不能为空");
+        AssertUtil.notBlank(commonOption.getName(), "常用选项名称不能为空");
         AssertUtil.notNull(commonOption.getCompanyId(), "企业Id不能为空");
         // 获取常用选项
         LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
@@ -92,6 +92,8 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int saveCommonOption(CommonOption commonOption) {
+        // 保存校验
+        checkSave(commonOption);
         commonOption.setId(IdWorker.getId());
         CommonOptionEntity commonOptionEntity = new CommonOptionEntity();
         BeanUtils.copyProperties(commonOption, commonOptionEntity);
@@ -106,6 +108,8 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int updateCommonOption(CommonOption commonOption) {
+        // 保存校验
+        checkSave(commonOption);
         CommonOptionEntity commonOptionEntity = Optional.ofNullable(commonOptionMapper.selectById(commonOption.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(commonOption, commonOptionEntity);
@@ -318,6 +322,23 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     private void checkDelete(Long id) {
         // 该选项已被表单引用，不可删除
         AssertUtil.isFalse(formConfigRepository.useCommonOptionByFormConfig(id), "该选项已被表单引用，不可删除");
+    }
+
+    private void checkSave(CommonOption commonOption) {
+        AssertUtil.notNull(commonOption.getCompanyId(), "企业ID不能为空");
+        AssertUtil.notBlank(commonOption.getName(), "常用选项名称不能为空");
+        LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
+                .eq(CommonOptionEntity::getCompanyId, commonOption.getCompanyId())
+                // 更新的话排除自身
+                .ne(Objects.nonNull(commonOption.getId()), CommonOptionEntity::getId, commonOption.getId());
+        List<CommonOptionEntity> commonOptionEntityList = commonOptionMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(commonOptionEntityList)) {
+            return;
+        }
+        List<String> commonOptionNameList = commonOptionEntityList.stream()
+                .map(CommonOptionEntity::getName)
+                .collect(Collectors.toList());
+        AssertUtil.isFalse(commonOptionNameList.contains(commonOption.getName()), "常用选项名称已存在");
     }
 
 }
