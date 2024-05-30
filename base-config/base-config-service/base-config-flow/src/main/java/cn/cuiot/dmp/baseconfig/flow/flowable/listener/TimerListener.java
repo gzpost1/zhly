@@ -61,6 +61,7 @@ public class TimerListener implements ExecutionListener {
         List<Task> list = taskService.createTaskQuery()
                 .processDefinitionId(execution.getProcessDefinitionId())
                 .taskDefinitionKey(userTask.getId())
+                .processInstanceId(execution.getProcessInstanceId())
                 .list();
 
         boolean nodeSupend = workInfoService.querySuspendTaskIds(execution.getProcessInstanceId());
