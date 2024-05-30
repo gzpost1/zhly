@@ -33,9 +33,9 @@ public class WorkBusinessTypeInfoService extends ServiceImpl<WorkBusinessTypeInf
         workBusinessTypeInfoEntity.setId(IdWorker.getId());
         workBusinessTypeInfoEntity.setTaskId(Long.valueOf(task.getId()));
         workBusinessTypeInfoEntity.setProcInstId(Long.valueOf(task.getProcessInstanceId()));
-        if (StringUtils.isNotBlank(task.getAssignee()) && Objects.equals(workBusinessEnums, WorkBusinessEnums.SUSPEND)) {
-            workBusinessTypeInfoEntity.setUserId(Long.valueOf(task.getAssignee()));
-        }
+
+        workBusinessTypeInfoEntity.setUserId(2L);
+
         workBusinessTypeInfoEntity.setStartTime(new Date());
         workBusinessTypeInfoEntity.setBusinessType(workBusinessEnums.getCode());
 
