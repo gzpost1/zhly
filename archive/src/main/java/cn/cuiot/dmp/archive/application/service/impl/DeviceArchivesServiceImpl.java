@@ -60,6 +60,27 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         if (Objects.isNull(entity.getInstallationDate())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不可为空");
         }
+
+        // 规则判断
+        if (entity.getDeviceName().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "设备名称长度不可超过30");
+        }
+        if (entity.getInstallationLocation().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "安装位置长度不可超过30");
+        }
+        if (entity.getDeviceSystem().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "设备系统长度不可超过30");
+        }
+
+        if (entity.getDeviceProfessional().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "设备专业长度不可超过30");
+        }
+
+        if (entity.getLocationDetails().length() > 30){
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "详细位置长度不可超过30");
+        }
+
+
     }
 
     @Override
@@ -76,6 +97,14 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         }
         if (StringUtils.isBlank(entity.getInstallationDateName())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不可为空");
+        }
+
+        // 规则判断
+        if (entity.getDeviceName().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "设备名称长度不可超过30");
+        }
+        if (entity.getInstallationLocation().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "安装位置长度不可超过30");
         }
     }
 

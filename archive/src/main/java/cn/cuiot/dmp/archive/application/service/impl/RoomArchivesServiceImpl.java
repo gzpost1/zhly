@@ -78,6 +78,14 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
         if (StringUtils.isBlank(entity.getLocationDeviation())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "定位偏差不可为空");
         }
+
+        // 规则判断
+        if (entity.getName().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "空间名称长度不可超过30");
+        }
+        if (entity.getLocationDeviation().length() > 3) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "定位偏差长度不可超过3");
+        }
     }
 
     @Override
