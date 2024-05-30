@@ -244,8 +244,6 @@ public class CounterSignListener implements ExecutionListener {
                     //挂起流程
                     if (CollectionUtils.isNotEmpty(list)) {
                         for (Task task : list) {
-                            taskService.addComment(task.getId(), execution.getProcessInstanceId(), BUSINESS_PENDING, "处理人为空，系统自动挂起");
-
                             //保存超时信息和挂起信息
                             workBusinessTypeInfoService.saveBusinessInfo(task, userTask, WorkBusinessEnums.SUSPEND, "处理人为空，系统自动挂起");
                         }
