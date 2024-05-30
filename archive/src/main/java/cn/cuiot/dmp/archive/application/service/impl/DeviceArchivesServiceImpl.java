@@ -178,7 +178,11 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         if (StringUtils.isBlank(dateStr)) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不存在");
         }
-        return LocalDate.parse(dateStr);
+        try {
+            return LocalDate.parse(dateStr);
+        } catch (Exception e){
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "安装日期格式不对");
+        }
     }
 
     public DeviceArchivesEntity queryForDetail(Long id) {
