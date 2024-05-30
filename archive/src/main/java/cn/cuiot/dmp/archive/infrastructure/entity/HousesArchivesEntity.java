@@ -139,6 +139,12 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     private Double utilizationRate;
 
     /**
+     * 使用率（自动计算） + 百分号
+     */
+    @TableField(exist = false)
+    private String utilizationRateName;
+
+    /**
      * 物业业态
      */
     private Long propertyType;
