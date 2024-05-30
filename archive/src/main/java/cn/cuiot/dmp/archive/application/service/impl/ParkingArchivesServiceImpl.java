@@ -62,11 +62,36 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
         if (Objects.isNull(entity.getParkingType())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "车位类型不可为空");
         }
+
+        // 规则判断
+        if (entity.getCode().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "车位编号长度不可超过30");
+        }
+        if (entity.getRemarks().length() > 100){
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "备注长度不可超过30");
+        }
     }
 
     @Override
     public void checkParamsImport(ParkingArchivesImportDto entity) {
+        // 必填判断
+        if (StringUtils.isBlank(entity.getCode())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "车位编号不可为空");
+        }
+        if (StringUtils.isBlank(entity.getAreaName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "区域不可为空");
+        }
+        if (StringUtils.isBlank(entity.getParkingTypeName())) {
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "车位类型不可为空");
+        }
+        if (StringUtils.isBlank(entity.getUsageStatusName())){
+            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "使用情况不可为空");
+        }
 
+        // 规则判断
+        if (entity.getCode().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "车位编号长度不可超过30");
+        }
     }
 
     @Override

@@ -96,7 +96,7 @@ public class DeviceArchivesController extends BaseController {
     @RequiresPermissions
     @LogRecord(operationCode = "saveDeviceArchives", operationName = "保存设备档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/create")
-    public IdmResDTO create(@RequestBody DeviceArchivesEntity entity) {
+    public IdmResDTO create(@RequestBody @Valid DeviceArchivesEntity entity) {
         // 校验参数合法性，写在service层，用于导入的时候使用
         deviceArchivesService.checkParams(entity);
         // 保存数据
