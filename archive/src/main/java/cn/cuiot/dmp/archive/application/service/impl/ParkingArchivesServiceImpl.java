@@ -106,7 +106,7 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         // Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(ParkingArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
-        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.DEVICE_ARCHIVE.getCode());
+        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.PARK_ARCHIVE.getCode());
 
         // 构造插入列表进行保存
         List<ParkingArchivesEntity> list = new ArrayList<>();
