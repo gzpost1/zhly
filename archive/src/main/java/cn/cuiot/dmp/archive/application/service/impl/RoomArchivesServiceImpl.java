@@ -138,7 +138,7 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
             entity.setName(data.getName());
             entity.setSpaceCategory(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.ROOM_ARCHIVES_INIT.get(0)), data.getSpaceCategoryName()));
             entity.setProfessionalPurpose(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.ROOM_ARCHIVES_INIT.get(1)), data.getProfessionalPurposeName()));
-            entity.setLocationDeviation(entity.getLocationDeviation());
+            entity.setLocationDeviation(data.getLocationDeviation());
             entity.setLoupanId(loupanId);
             // TODO: 2024/5/16 这里还需要基于不同的一级类目去查询配置
             list.add(entity);
