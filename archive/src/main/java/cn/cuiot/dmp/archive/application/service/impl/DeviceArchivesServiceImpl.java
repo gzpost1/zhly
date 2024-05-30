@@ -192,6 +192,9 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         addListCanNull(configIdList, entity.getDeviceCategory());
         addListCanNull(configIdList, entity.getDeviceStatus());
         addListCanNull(configIdList, entity.getPropertyServiceLevel());
+        if (StringUtils.isNotBlank(entity.getImage())) {
+            entity.setImageList(Collections.singletonList(entity.getImage()));
+        }
 
         // 查询楼盘名称
         Set<Long> loupanIdSet = new HashSet<>();

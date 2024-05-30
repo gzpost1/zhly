@@ -70,9 +70,6 @@ public class ParkingArchivesController extends BaseController {
     public ParkingArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
         ParkingArchivesEntity res = parkingArchivesService.getById(idParam.getId());
         res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.PARK_ARCHIVE.getCode()));
-        if (StringUtils.isNotBlank(res.getImage())) {
-            res.setImageList(Collections.singletonList(res.getImage()));
-        }
         return res;
     }
 
