@@ -143,6 +143,15 @@ public class ApiController {
     }
 
     /**
+     * 查询子部门(可多部门查询)
+     */
+    @PostMapping(value = "/lookUpDepartmentChildList2", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList2(@RequestBody DepartmentReqDto query) {
+        List<DepartmentDto> list = departmentService.lookUpDepartmentChildList2(query);
+        return IdmResDTO.success(list);
+    }
+
+    /**
      * 查询组织树
      */
     @PostMapping(value = "/lookUpDepartmentTree", produces = MediaType.APPLICATION_JSON_VALUE)

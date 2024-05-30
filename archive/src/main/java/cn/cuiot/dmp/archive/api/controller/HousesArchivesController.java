@@ -37,14 +37,11 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -88,7 +85,7 @@ public class HousesArchivesController extends BaseController {
         if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())){
             wrapper.like( HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
         }
-
+        wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         return IdmResDTO.success(res);
     }
@@ -212,7 +209,7 @@ public class HousesArchivesController extends BaseController {
     public void downloadTemplate(HttpServletResponse response)
             throws IOException {
         BufferedOutputStream bos = null;
-        String templatePath = "template/importHouseesArchives.xlsx";
+        String templatePath = "template/importHousesArchives.xlsx";
         try (InputStream is = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(templatePath)) {
             response.setCharacterEncoding("UTF-8");

@@ -14,6 +14,8 @@
         <module>base-consumer</module>
         <module>archive</module>
         <module>app</module>
+        <module>message</module>
+        <module>content-manage</module>
     </modules>
 
     <parent>

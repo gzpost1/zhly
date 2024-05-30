@@ -56,5 +56,11 @@ public class ServiceTypeConst {
      * 档案中心
      */
     public static final String ARCHIVE_CENTER = "103";
+    //----------------------------------内容中心----------------------------------end
+    /**
+     * 平台日志
+     * 内容中心
+     */
+    public static final String CONTENT_MANAGE = "104";
 
 }

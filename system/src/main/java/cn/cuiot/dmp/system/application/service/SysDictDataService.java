@@ -6,7 +6,11 @@ import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.infrastructure.entity.SysDictData;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SysDictDataQuery;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.SysDictDataMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Optional;
@@ -41,15 +45,38 @@ public class SysDictDataService {
         return Lists.newArrayList();
     }
 
+    /**
+     * 列表查询
+     * @param sysDictDataQuery
+     * @return
+     */
     public List<SysDictData> list(SysDictDataQuery sysDictDataQuery) {
-        QueryWrapper<SysDictData> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("dict_id", Long.valueOf(sysDictDataQuery.getDictId()));
+        LambdaQueryWrapper<SysDictData> lambdaQueryWrapper = Wrappers.lambdaQuery();
+        lambdaQueryWrapper.eq(SysDictData::getDictId, Long.valueOf(sysDictDataQuery.getDictId()));
         if (StringUtils.isNotBlank(sysDictDataQuery.getDataName())) {
-            queryWrapper.like("data_name", sysDictDataQuery.getDataName().trim());
+            lambdaQueryWrapper.like(SysDictData::getDataName, sysDictDataQuery.getDataName().trim());
         }
-        queryWrapper.orderByAsc("sort");
-        List<SysDictData> list = sysDictDataMapper.selectList(queryWrapper);
+        lambdaQueryWrapper.orderByAsc(SysDictData::getSort);
+        lambdaQueryWrapper.orderByDesc(SysDictData::getCreateTime);
+        List<SysDictData> list = sysDictDataMapper.selectList(lambdaQueryWrapper);
         return list;
+    }
+
+    /**
+     * 分页查询
+     * @param sysDictDataQuery
+     * @return
+     */
+    public IPage<SysDictData> pageList(SysDictDataQuery sysDictDataQuery) {
+        LambdaQueryWrapper<SysDictData> lambdaQueryWrapper = Wrappers.lambdaQuery();
+        lambdaQueryWrapper.eq(SysDictData::getDictId, Long.valueOf(sysDictDataQuery.getDictId()));
+        if (StringUtils.isNotBlank(sysDictDataQuery.getDataName())) {
+            lambdaQueryWrapper.like(SysDictData::getDataName, sysDictDataQuery.getDataName().trim());
+        }
+        lambdaQueryWrapper.orderByAsc(SysDictData::getSort);
+        lambdaQueryWrapper.orderByDesc(SysDictData::getCreateTime);
+        IPage<SysDictData> page = sysDictDataMapper.selectPage(new Page<>(sysDictDataQuery.getPageNo(),sysDictDataQuery.getPageSize()),lambdaQueryWrapper);
+        return page;
     }
 
     public boolean valueExists(Long dictId, String dataValue, Long dataId) {

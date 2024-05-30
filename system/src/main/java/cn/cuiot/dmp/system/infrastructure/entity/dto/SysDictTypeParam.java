@@ -37,7 +37,7 @@ public class SysDictTypeParam implements Serializable {
   /**
    * 备注
    */
-  @Length(max = 100, message = "备注长度不能大于100个字符")
+  @Length(max = 200, message = "备注长度不能大于200个字符")
   private String remark;
 
 }

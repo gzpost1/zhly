@@ -111,10 +111,21 @@ public class CustomConfigServiceImpl implements CustomConfigService {
         if (CollectionUtils.isEmpty(customConfigList)) {
             return new ArrayList<>();
         }
-        return  customConfigList.stream()
+        return customConfigList.stream()
                 .map(o -> {
                     CustomConfigRspDTO customConfigRspDTO = new CustomConfigRspDTO();
                     BeanUtils.copyProperties(o, customConfigRspDTO);
+                    if (CollectionUtils.isNotEmpty(o.getCustomConfigDetailList())) {
+                        List<CustomConfigDetailRspDTO> customConfigDetailRspDTOList = o.getCustomConfigDetailList()
+                                .stream()
+                                .map(item -> {
+                                    CustomConfigDetailRspDTO customConfigDetailRspDTO = new CustomConfigDetailRspDTO();
+                                    BeanUtils.copyProperties(item, customConfigDetailRspDTO);
+                                    return customConfigDetailRspDTO;
+                                })
+                                .collect(Collectors.toList());
+                        customConfigRspDTO.setCustomConfigDetailList(customConfigDetailRspDTOList);
+                    }
                     return customConfigRspDTO;
                 }).collect(Collectors.toList());
     }

@@ -93,6 +93,7 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
             vo.setParkingTypeName(configIdNameMap.getOrDefault(entity.getParkingType(), ""));
             vo.setStatusName(getStatusName(entity.getStatus()));
             vo.setUsageStatusName(configIdNameMap.getOrDefault(entity.getUsageStatus(), ""));
+            vo.setRemarks(entity.getRemarks());
             res.add(vo);
         });
 

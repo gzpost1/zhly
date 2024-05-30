@@ -43,6 +43,7 @@ import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDataDao;
 import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 
@@ -377,7 +378,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
                 .orElse(null);
 
-        //DepartmentEntity department = departmentDao.selectByPrimary(deptId);
+        DepartmentEntity department = departmentDao.selectByPrimary(deptId);
 
         // 初始化departmentTreeList
         List<DepartmentTreeVO> departmentTreeList = new ArrayList<>();
@@ -396,6 +397,9 @@ public class DepartmentServiceImpl implements DepartmentService {
                 for (DepartmentTreeVO departmentTreeVO : departmentTreeListTemp) {
                     departmentTreeVO.setDisabled(true);
                     if (deptId.equals(departmentTreeVO.getId())) {
+                        departmentTreeVO.setDisabled(false);
+                    }
+                    if (departmentTreeVO.getPath().startsWith(department.getPath())) {
                         departmentTreeVO.setDisabled(false);
                     }
                 }
@@ -920,6 +924,14 @@ public class DepartmentServiceImpl implements DepartmentService {
             }
         }
         return departmentTreeRspDTO;
+    }
+
+    @Override
+    public List<DepartmentDto> lookUpDepartmentChildList2(DepartmentReqDto query) {
+        if (CollUtil.isEmpty(query.getDeptIdList())){
+            return new ArrayList<>();
+        }
+        return departmentDao.querySubDepartment(query);
     }
 
 }

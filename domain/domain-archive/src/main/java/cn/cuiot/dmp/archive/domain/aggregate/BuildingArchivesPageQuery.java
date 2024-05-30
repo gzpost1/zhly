@@ -37,6 +37,11 @@ public class BuildingArchivesPageQuery extends PageQuery {
     private String name;
 
     /**
+     * 关键字
+     */
+    private String keyword;
+
+    /**
      * 部门id列表
      */
     private List<Long> departmentIdList;
