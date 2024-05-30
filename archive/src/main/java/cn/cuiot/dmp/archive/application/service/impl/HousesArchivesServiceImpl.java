@@ -255,6 +255,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         addListCanNull(configIdList, entity.getBusinessNature());
         addListCanNull(configIdList, entity.getResourceType());
         addListCanNull(configIdList, entity.getParkingArea());
+        addListCanNull(configIdList, entity.getOwnershipAttribute());
         if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
             configIdList.addAll(entity.getBasicServices());
         }
