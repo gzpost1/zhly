@@ -85,7 +85,7 @@ public class HousesArchivesController extends BaseController {
         if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())){
             wrapper.like( HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
         }
-
+        wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         return IdmResDTO.success(res);
     }
@@ -100,6 +100,10 @@ public class HousesArchivesController extends BaseController {
         // 校验参数合法性，写在service层，用于导入的时候使用
         housesArchivesService.checkParams(entity);
         // 保存数据
+        // 计算使用率 公式：使用面积/建筑面积的结果，显示百分数，精确小数点后两位
+        if (Objects.nonNull(entity.getUsableArea()) && Objects.nonNull(entity.getBuildingArea()) && entity.getBuildingArea() > 0.0){
+            entity.setUtilizationRate(entity.getUsableArea()/entity.getBuildingArea());
+        }
         housesArchivesService.save(entity);
         return IdmResDTO.success();
     }
@@ -111,6 +115,10 @@ public class HousesArchivesController extends BaseController {
     @LogRecord(operationCode = "updateHousesArchives", operationName = "编辑房屋档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/update")
     public IdmResDTO update(@RequestBody HousesArchivesEntity entity) {
+        // 计算使用率 公式：使用面积/建筑面积的结果，显示百分数，精确小数点后两位
+        if (Objects.nonNull(entity.getUsableArea()) && Objects.nonNull(entity.getBuildingArea()) && entity.getBuildingArea() > 0.0){
+            entity.setUtilizationRate(entity.getUsableArea()/entity.getBuildingArea());
+        }
         housesArchivesService.updateById(entity);
         return IdmResDTO.success();
     }

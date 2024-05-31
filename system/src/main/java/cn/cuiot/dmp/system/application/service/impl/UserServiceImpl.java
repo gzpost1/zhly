@@ -330,9 +330,9 @@ public class UserServiceImpl extends BaseController implements UserService {
 
         //用户名正则校验
         String userName = userBo.getUsername();
-        if (!userName.matches(RegexConst.USERNAME_REGEX)) {
+        /*if (!userName.matches(RegexConst.USERNAME_REGEX)) {
             throw new BusinessException(ResultCode.USERNAME_SEARCH_IN_INVALID);
-        }
+        }*/
 
         //判断用户名是否已经存在
         if (Objects.nonNull(userRepository
@@ -470,9 +470,9 @@ public class UserServiceImpl extends BaseController implements UserService {
 
         //用户名正则校验
         String username = userBo.getUsername();
-        if (!username.matches(RegexConst.USERNAME_REGEX)) {
+        /*if (!username.matches(RegexConst.USERNAME_REGEX)) {
             throw new BusinessException(ResultCode.USERNAME_SEARCH_IN_INVALID);
-        }
+        }*/
 
         //判断用户名是否已经存在
         User userByUsername = userRepository

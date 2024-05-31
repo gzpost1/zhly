@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+import java.util.List;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -97,5 +99,9 @@ public class ParkingArchivesEntity extends YjBaseEntity implements Serializable 
      */
     @TableField(exist = false)
     private Long qrCodeId;
-
+    /**
+     * 给前端装图片
+     */
+    @TableField(exist = false)
+    private List<String> imageList;
 }

@@ -89,6 +89,7 @@ public class RoomArchivesController extends BaseController {
         wrapper.eq(Objects.nonNull(query.getSpaceCategory()), RoomArchivesEntity::getSpaceCategory, query.getSpaceCategory());
         wrapper.eq(Objects.nonNull(query.getBusinessNature()), RoomArchivesEntity::getBusinessNature, query.getBusinessNature());
         wrapper.eq(Objects.nonNull(query.getOwnershipAttribute()), RoomArchivesEntity::getOwnershipAttribute, query.getOwnershipAttribute());
+        wrapper.orderByDesc(RoomArchivesEntity::getCreateTime);
         IPage<RoomArchivesEntity> res = roomArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         return IdmResDTO.success(res);
     }

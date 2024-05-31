@@ -41,7 +41,7 @@ public enum ResultCode {
 
     SERVER_BUSY("011002", "服务繁忙，请稍后核对或者重试。"),
 
-    CONTAIN_SENSITIVITY_ERROR("011020","文本包含敏感词："),
+    CONTAIN_SENSITIVITY_ERROR("011020","文本包含敏感词"),
 
 
 

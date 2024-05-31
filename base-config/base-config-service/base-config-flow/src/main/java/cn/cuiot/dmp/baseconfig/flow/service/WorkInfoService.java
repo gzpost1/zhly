@@ -898,7 +898,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 .includeProcessVariables().singleResult();
         String processDefinitionKey = historicProcessInstance.getProcessDefinitionKey();
 
-        TbFlowConfig flowConfig = flowConfigService.getById(processDefinitionKey.replace(PROCESS_PREFIX, ""));
+        TbFlowConfig flowConfig = new TbFlowConfig();//flowConfigService.getById(processDefinitionKey.replace(PROCESS_PREFIX, ""));
 
 
 //        Process mainProcess = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess();
@@ -1047,7 +1047,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         List<Long> userIds = list.stream().map(WorkBusinessTypeInfoEntity::getUserId).collect(Collectors.toList());
         Map<Long, String> userMap = getUserMap(userIds);
         list.stream().forEach(item->{
-            item.setUserName(userMap.get(item.getUserId()));
+            if(Objects.nonNull(item.getUserId()) && item.getUserId().intValue()==2){
+                item.setUserName("系统");
+            }else{
+                item.setUserName(userMap.get(item.getUserId()));
+            }
+
             if(StringUtils.isNotEmpty(item.getDeliver())){
                 String deliverNames = getDeliverNames(item.getDeliver());
                 item.setDeliverName(deliverNames);

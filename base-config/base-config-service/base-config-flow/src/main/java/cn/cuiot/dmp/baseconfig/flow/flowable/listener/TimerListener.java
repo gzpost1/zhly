@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.flowable.listener;
 
 import cn.cuiot.dmp.base.infrastructure.utils.SpringContextHolder;
+import cn.cuiot.dmp.baseconfig.flow.enums.BusinessInfoEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.TimeLimitHandleEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkBusinessEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkOrderStatusEnums;
@@ -17,7 +18,10 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.ExecutionListener;
+import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.task.api.Task;
+import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkBusinessTypeInfoService;
@@ -61,6 +65,7 @@ public class TimerListener implements ExecutionListener {
         List<Task> list = taskService.createTaskQuery()
                 .processDefinitionId(execution.getProcessDefinitionId())
                 .taskDefinitionKey(userTask.getId())
+                .processInstanceId(execution.getProcessInstanceId())
                 .list();
 
         boolean nodeSupend = workInfoService.querySuspendTaskIds(execution.getProcessInstanceId());
@@ -76,16 +81,11 @@ public class TimerListener implements ExecutionListener {
                 //结束流程
                 RuntimeService runtimeService = SpringContextHolder.getBean(RuntimeService.class);
                 runtimeService.deleteProcessInstance(execution.getProcessInstanceId(), TimeLimitHandleEnums.TO_END.getProcessComment());
-
+                workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.CLOSE,null);
                 //更新工单信息
-                workInfoService.updateWorkInfo(WorkOrderStatusEnums.completed.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
+                workInfoService.updateWorkInfo(WorkOrderStatusEnums.terminated.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
 
             } else if (StringUtils.equals(handlerType, TimeLimitHandleEnums.TO_SUSPEND.getCode())) {
-
-                //挂起流程
-                for (Task task : list) {
-                    taskService.addComment(task.getId(), execution.getProcessInstanceId(), BUSINESS_PENDING, TimeLimitHandleEnums.TO_SUSPEND.getProcessComment());
-                }
 
                 //保存超时信息和挂起信息
                 workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.SUSPEND,null);
@@ -94,11 +94,18 @@ public class TimerListener implements ExecutionListener {
                 workInfoService.updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
 
             } else if (StringUtils.equals(handlerType, TimeLimitHandleEnums.TO_APPROVE.getCode())) {
+
+                ProcessEngineConfigurationImpl processEngineConfiguration = CommandContextUtil.getProcessEngineConfiguration();
+
                 //自动通过
                 for (Task task : list) {
-                    taskService.addComment(execution.getSuperExecutionId(), execution.getProcessInstanceId(), OPINION_COMMENT, TimeLimitHandleEnums.TO_APPROVE.getProcessComment());
-                    taskService.complete(task.getId());
+                    TaskEntity taskEntity = processEngineConfiguration.getTaskServiceConfiguration().getTaskService().getTask(task.getId());
+                    if(!taskEntity.isDeleted()){
+                        taskService.complete(task.getId());
+                    }
                 }
+
+                workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.BUSINESS_AGREE,null);
             }else {
 
             }

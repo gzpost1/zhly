@@ -152,7 +152,7 @@ public class IdmExceptionAdvice {
      */
     @ExceptionHandler(value = ConstraintViolationException.class)
     public Object defaultErrorHandler(ConstraintViolationException exception) {
-        log.error("", exception);
+        log.error(ResultCode.INVALID_PARAM_TYPE.getMessage(), exception);
         String message = exception.getMessage();
         return new IdmResDTO<>(ResultCode.INVALID_PARAM_TYPE, message);
     }
@@ -194,6 +194,11 @@ public class IdmExceptionAdvice {
     @ExceptionHandler(value = HttpMessageNotReadableException.class)
     public Object defaultErrorHandler(HttpMessageNotReadableException e) {
         Throwable rootCause = e.getRootCause();
+        if (rootCause instanceof XssException) {
+            log.error(ResultCode.CONTAIN_SENSITIVITY_ERROR.getMessage(), e);
+            return new IdmResDTO<>(ResultCode.CONTAIN_SENSITIVITY_ERROR);
+        }
+        log.error(ResultCode.INVALID_PARAM_TYPE.getMessage(), e);
         if (rootCause instanceof BusinessException) {
             BusinessException businessException = (BusinessException) rootCause;
             return new IdmResDTO<>(businessException.getErrorCode(),businessException.getMessage()+businessException.getErrorMessage());
