@@ -18,7 +18,10 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.ExecutionListener;
+import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.task.api.Task;
+import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkBusinessTypeInfoService;
@@ -91,10 +94,17 @@ public class TimerListener implements ExecutionListener {
                 workInfoService.updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
 
             } else if (StringUtils.equals(handlerType, TimeLimitHandleEnums.TO_APPROVE.getCode())) {
+
+                ProcessEngineConfigurationImpl processEngineConfiguration = CommandContextUtil.getProcessEngineConfiguration();
+
                 //自动通过
                 for (Task task : list) {
-                    taskService.complete(task.getId());
+                    TaskEntity taskEntity = processEngineConfiguration.getTaskServiceConfiguration().getTaskService().getTask(task.getId());
+                    if(!taskEntity.isDeleted()){
+                        taskService.complete(task.getId());
+                    }
                 }
+
                 workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.BUSINESS_AGREE,null);
             }else {
 
