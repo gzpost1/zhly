@@ -39,13 +39,12 @@ public class WorkBusinessTypeInfoService extends ServiceImpl<WorkBusinessTypeInf
         workBusinessTypeInfoEntity.setStartTime(new Date());
         workBusinessTypeInfoEntity.setBusinessType(workBusinessEnums.getCode());
 
-        if (Objects.equals(workBusinessEnums, WorkBusinessEnums.SUSPEND)) {
-            if (StringUtils.isNotBlank(comment)) {
-                workBusinessTypeInfoEntity.setComments(comment);
-            } else {
-                workBusinessTypeInfoEntity.setComments(TimeLimitHandleEnums.TO_SUSPEND.getProcessComment());
-            }
+        if (StringUtils.isNotBlank(comment)) {
+            workBusinessTypeInfoEntity.setComments(comment);
+        }else {
+            workBusinessTypeInfoEntity.setComments(workBusinessEnums.getMessage());
         }
+
         workBusinessTypeInfoEntity.setNode(userTask.getId());
         workBusinessTypeInfoEntity.setUserId(task.getAssignee() == null ? null : Long.valueOf(task.getAssignee()));
         this.save(workBusinessTypeInfoEntity);
