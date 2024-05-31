@@ -292,7 +292,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         flowConfigOrgService.updateFlowOrg(updateDto.getId(), updateDto.getOrgId());
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("processJson", updateDto.getProcess());
+        jsonObject.put("processJson", processJson);
         BpmnModel bpmnModel = assemBpmnModel(jsonObject, childNode, updateDto.getRemark(), updateDto.getName(), StringUtils.join(updateDto.getOrgId(), ","),
                 updateDto.getId().toString());
         repositoryService.createDeployment()
@@ -347,7 +347,6 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
     public void delete(List<Long> ids) {
         this.removeByIds(ids);
 
-        //删除流程和组织的中间表
         flowConfigOrgService.deleteByFlowConfigIds(ids);
     }
 

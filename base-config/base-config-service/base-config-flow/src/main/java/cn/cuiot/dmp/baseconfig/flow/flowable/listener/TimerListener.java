@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.flowable.listener;
 
 import cn.cuiot.dmp.base.infrastructure.utils.SpringContextHolder;
+import cn.cuiot.dmp.baseconfig.flow.enums.BusinessInfoEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.TimeLimitHandleEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkBusinessEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkOrderStatusEnums;
@@ -61,13 +62,14 @@ public class TimerListener implements ExecutionListener {
         List<Task> list = taskService.createTaskQuery()
                 .processDefinitionId(execution.getProcessDefinitionId())
                 .taskDefinitionKey(userTask.getId())
+                .processInstanceId(execution.getProcessInstanceId())
                 .list();
 
-        if (StringUtils.isNotBlank(handlerType) && CollUtil.isNotEmpty(list)) {
+        boolean nodeSupend = workInfoService.querySuspendTaskIds(execution.getProcessInstanceId());
+
+        if (StringUtils.isNotBlank(handlerType) && CollUtil.isNotEmpty(list) && !nodeSupend) {
             //保存超时信息
-            for (Task task : list) {
-                workBusinessTypeInfoService.saveBusinessInfo(task, userTask, WorkBusinessEnums.TIMEOUT,null);
-            }
+            workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.TIMEOUT,null);
 
             if (StringUtils.equals(handlerType, TimeLimitHandleEnums.DO_NOTHING.getCode())) {
                 //什么都不做
@@ -76,19 +78,14 @@ public class TimerListener implements ExecutionListener {
                 //结束流程
                 RuntimeService runtimeService = SpringContextHolder.getBean(RuntimeService.class);
                 runtimeService.deleteProcessInstance(execution.getProcessInstanceId(), TimeLimitHandleEnums.TO_END.getProcessComment());
-
+                workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.CLOSE,null);
                 //更新工单信息
-                workInfoService.updateWorkInfo(WorkOrderStatusEnums.completed.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
+                workInfoService.updateWorkInfo(WorkOrderStatusEnums.terminated.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
 
             } else if (StringUtils.equals(handlerType, TimeLimitHandleEnums.TO_SUSPEND.getCode())) {
 
-                //挂起流程
-                for (Task task : list) {
-                    taskService.addComment(task.getId(), execution.getProcessInstanceId(), BUSINESS_PENDING, TimeLimitHandleEnums.TO_SUSPEND.getProcessComment());
-
-                    //保存超时信息和挂起信息
-                    workBusinessTypeInfoService.saveBusinessInfo(task, userTask, WorkBusinessEnums.SUSPEND,null);
-                }
+                //保存超时信息和挂起信息
+                workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.SUSPEND,null);
 
                 //更新工单信息
                 workInfoService.updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
@@ -96,9 +93,9 @@ public class TimerListener implements ExecutionListener {
             } else if (StringUtils.equals(handlerType, TimeLimitHandleEnums.TO_APPROVE.getCode())) {
                 //自动通过
                 for (Task task : list) {
-                    taskService.addComment(execution.getSuperExecutionId(), execution.getProcessInstanceId(), OPINION_COMMENT, TimeLimitHandleEnums.TO_APPROVE.getProcessComment());
                     taskService.complete(task.getId());
                 }
+                workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.BUSINESS_AGREE,null);
             }else {
 
             }
