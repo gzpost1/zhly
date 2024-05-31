@@ -67,8 +67,8 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
         if (entity.getCode().length() > 30) {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "车位编号长度不可超过30");
         }
-        if (entity.getRemarks().length() > 100){
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "备注长度不可超过30");
+        if (StringUtils.isNotBlank(entity.getRemarks()) && entity.getRemarks().length() > 100){
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "备注长度不可超过100");
         }
     }
 
