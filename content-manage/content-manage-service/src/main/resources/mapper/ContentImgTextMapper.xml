@@ -5,27 +5,22 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity">
         <result column="id" property="id" />
-        <result column="deparments" property="deparments" />
+        <result column="departments" property="departments" />
         <result column="buildings" property="buildings" />
         <result column="title" property="title" />
         <result column="type" property="type" />
         <result column="cover_pci" property="coverPic" />
-        <result column="abstract" property="digest" />
+        <result column="digest" property="digest" />
         <result column="detail" property="detail" />
         <result column="status" property="status" />
         <result column="audit_status" property="auditStatus" />
         <result column="audit_time" property="auditTime" />
         <result column="publish_status" property="publishStatus" />
-        <result column="created_on" property="createdOn" />
-        <result column="created_by" property="createdBy" />
-        <result column="updated_on" property="updatedOn" />
-        <result column="updated_by" property="updatedBy" />
-        <result column="deleted_flag" property="deletedFlag" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, deparments, buildings, title, type, cover_pci, abstract, detail, status, audit_status, audit_time, publish_status, created_on, created_by, updated_on, updated_by, deleted_flag
+        id, departments, buildings, title, `type`, cover_pci, digest, detail, status, audit_status, audit_time, publish_status, create_user, create_time, update_user, update_time
     </sql>
 
 </mapper>

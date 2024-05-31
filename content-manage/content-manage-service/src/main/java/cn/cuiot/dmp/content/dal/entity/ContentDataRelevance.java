@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.content.dal.entity;//	模板
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,7 +15,7 @@ import lombok.EqualsAndHashCode;
 @TableName("tb_content_data_relevance")
 public class ContentDataRelevance {
 
-
+    @TableId("id")
     private Long id;
 
     /**

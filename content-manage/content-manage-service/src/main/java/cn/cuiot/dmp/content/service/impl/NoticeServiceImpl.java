@@ -1,21 +1,29 @@
 package cn.cuiot.dmp.content.service.impl;//	模板
 
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
-import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
-import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.content.constant.ContentConstans;
-import cn.cuiot.dmp.content.conver.NoticeConver;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
+import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.content.constant.ContentConstants;
+import cn.cuiot.dmp.content.conver.NoticeConvert;
 import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.dal.mapper.ContentNoticeMapper;
+import cn.cuiot.dmp.content.feign.ArchiveConverService;
+import cn.cuiot.dmp.content.feign.SystemConverService;
+import cn.cuiot.dmp.content.param.dto.AuditResultDto;
 import cn.cuiot.dmp.content.param.dto.NoticeCreateDto;
 import cn.cuiot.dmp.content.param.dto.NoticeUpdateDto;
 import cn.cuiot.dmp.content.param.query.NoticPageQuery;
+import cn.cuiot.dmp.content.param.req.PublishReqVo;
 import cn.cuiot.dmp.content.param.vo.NoticeVo;
 import cn.cuiot.dmp.content.service.ContentDataRelevanceService;
 import cn.cuiot.dmp.content.service.NoticeService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -23,9 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -33,44 +39,48 @@ import java.util.stream.Collectors;
  * @Description
  * @data 2024/5/29 14:35
  */
-@Service
+@Service("noticeService")
 public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentNoticeEntity> implements NoticeService {
 
     @Autowired
     private ContentDataRelevanceService contentDataRelevanceService;
     @Autowired
-    private SystemApiFeignService systemApiFeignService;
+    private SystemConverService systemConverService;
+    @Autowired
+    private ArchiveConverService archiveConverService;
 
     @Override
     public NoticeVo queryForDetail(Long id) {
         ContentNoticeEntity contentNoticeEntity = this.baseMapper.selectById(id);
-        NoticeVo noticeVo = NoticeConver.INSTANCE.conver(contentNoticeEntity);
+        NoticeVo noticeVo = NoticeConvert.INSTANCE.convert(contentNoticeEntity);
         return noticeVo;
     }
 
     @Override
     @Transactional
     public int saveNotice(NoticeCreateDto createDTO) {
-        ContentNoticeEntity contentNoticeEntity = NoticeConver.INSTANCE.conver(createDTO);
+        ContentNoticeEntity contentNoticeEntity = NoticeConvert.INSTANCE.convert(createDTO);
+        contentNoticeEntity.setStatus(EntityConstants.ENABLED);
         int insert = this.baseMapper.insert(contentNoticeEntity);
-        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstans.DataType.NOTICE, createDTO.getDepartments(), createDTO.getBuildings(), contentNoticeEntity.getId());
+        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, createDTO.getDepartments(), createDTO.getBuildings(), contentNoticeEntity.getId());
         return insert;
     }
 
     @Override
     @Transactional
     public int updateNotice(NoticeUpdateDto updateDtO) {
-        ContentNoticeEntity contentNoticeEntity = NoticeConver.INSTANCE.conver(updateDtO);
+        ContentNoticeEntity contentNoticeEntity = NoticeConvert.INSTANCE.convert(updateDtO);
         contentNoticeEntity.setId(updateDtO.getId());
         int update = this.baseMapper.updateById(contentNoticeEntity);
-        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstans.DataType.NOTICE, updateDtO.getDepartments(), updateDtO.getBuildings(), contentNoticeEntity.getId());
+        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, updateDtO.getDepartments(), updateDtO.getBuildings(), contentNoticeEntity.getId());
         return update;
     }
 
     @Override
     public List<NoticeVo> queryForList(NoticPageQuery pageQuery) {
         initQuery(pageQuery);
-        return null;
+        List<ContentNoticeEntity> noticeEntityList = this.baseMapper.queryForList(pageQuery, ContentConstants.DataType.NOTICE);
+        return NoticeConvert.INSTANCE.convert(noticeEntityList);
     }
 
     private void initQuery(NoticPageQuery pageQuery) {
@@ -81,25 +91,56 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
             }
             DepartmentReqDto query = new DepartmentReqDto();
             query.setDeptIdList(pageQuery.getDepartments());
-            IdmResDTO<List<DepartmentDto>> listIdmResDTO = systemApiFeignService.lookUpDepartmentChildList2(query);
-            Optional.ofNullable(listIdmResDTO.getData()).ifPresent(departmentDtos -> {
-                List<Long> deptIds = departmentDtos.stream().map(DepartmentDto::getId).distinct().collect(Collectors.toList());
-                pageQuery.setDepartments(deptIds);
-            });
+            pageQuery.setDepartments(systemConverService.getDeptIds(query));
         }
     }
 
     @Override
     public IPage<NoticeVo> queryForPage(NoticPageQuery pageQuery) {
         initQuery(pageQuery);
-        IPage<ContentNoticeEntity> noticeEntityIPage = this.baseMapper.queryForPage(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery, ContentConstans.DataType.NOTICE);
+        IPage<ContentNoticeEntity> noticeEntityIPage = this.baseMapper.queryForPage(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery, ContentConstants.DataType.NOTICE);
+        IPage<NoticeVo> pageResult = new Page<>();
         if (CollUtil.isNotEmpty(noticeEntityIPage.getRecords())) {
-            List<Long> departmentIds = noticeEntityIPage.getRecords().stream().map(ContentNoticeEntity::getDepartments).flatMap(List::stream).map(Long::parseLong).collect(Collectors.toList());
-            List<Long> buildingIds = noticeEntityIPage.getRecords().stream().map(ContentNoticeEntity::getBuildings).flatMap(List::stream).map(Long::parseLong).collect(Collectors.toList());
-            IdmResDTO<List<DepartmentDto>> listIdmResDTO = systemApiFeignService.lookUpDepartmentList(new DepartmentReqDto().setDeptIdList(departmentIds));
-
+            List<Long> departmentIds = new ArrayList<>();
+            List<Long> buildingIds = new ArrayList<>();
+            List<Long> creatUserIds = new ArrayList<>();
+            noticeEntityIPage.getRecords().forEach(contentNoticeEntity -> {
+                creatUserIds.add(contentNoticeEntity.getCreateUser());
+                departmentIds.addAll(Optional.ofNullable(contentNoticeEntity.getDepartments()).orElse(new ArrayList<>()).stream().map(Long::parseLong).collect(Collectors.toList()));
+                buildingIds.addAll(Optional.ofNullable(contentNoticeEntity.getBuildings()).orElse(new ArrayList<>()).stream().map(Long::parseLong).collect(Collectors.toList()));
+            });
+            HashMap<Long, DepartmentDto> departmentMapByIds = systemConverService.getDepartmentMapByIds(departmentIds);
+            HashMap<Long, BuildingArchive> buildingMapByIds = archiveConverService.getBuildingArchiveMapByIds(buildingIds);
+            HashMap<Long, BaseUserDto> userMapByIds = systemConverService.getUserMapByIds(creatUserIds);
+            pageResult = NoticeConvert.INSTANCE.convert(noticeEntityIPage, departmentMapByIds, buildingMapByIds, userMapByIds);
         }
-        return null;
+        return pageResult;
     }
 
+    @Override
+    public Boolean publish(PublishReqVo publishReqVo) {
+        ContentNoticeEntity contentNoticeEntity = this.baseMapper.selectById(publishReqVo.getId());
+        if (contentNoticeEntity != null) {
+            if (ContentConstants.PublishStatus.PUBLISHED.equals(publishReqVo.getPublishStatus())) {
+                if (DateUtil.compare(contentNoticeEntity.getEffectiveEndTime(), new Date()) < 0) {
+                    throw new BusinessException(ResultCode.EFFECTIVE_TIME_EXPIRED);
+                }
+            }
+            contentNoticeEntity.setPublishStatus(publishReqVo.getPublishStatus());
+            this.baseMapper.updateById(contentNoticeEntity);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Boolean dealAuditResult(AuditResultDto auditResultDto) {
+        ContentNoticeEntity contentNoticeEntity = this.baseMapper.selectById(auditResultDto.getId());
+        if (contentNoticeEntity != null) {
+            contentNoticeEntity.setAuditStatus(auditResultDto.getAuditStatus());
+            this.baseMapper.updateById(contentNoticeEntity);
+            return true;
+        }
+        return false;
+    }
 }

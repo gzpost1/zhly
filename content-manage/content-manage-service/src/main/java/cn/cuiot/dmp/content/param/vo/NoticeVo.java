@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.content.param.vo;//	模板
 
+import cn.cuiot.dmp.content.dal.entity.ContentAudit;
 import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,5 +19,11 @@ public class NoticeVo extends ContentNoticeEntity {
     private List<String> departmentNames;
 
     private List<String> buildingNames;
+
+    private String creatUserName;
+
+    private Byte publishStatus;
+
+    private ContentAudit contentAudit;
 
 }

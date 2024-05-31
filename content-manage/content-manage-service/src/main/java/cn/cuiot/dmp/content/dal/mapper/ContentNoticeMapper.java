@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * <p>
  * 公告管理 Mapper 接口
@@ -18,4 +20,6 @@ import org.apache.ibatis.annotations.Param;
 public interface ContentNoticeMapper extends BaseMapper<ContentNoticeEntity> {
 
     IPage<ContentNoticeEntity> queryForPage(IPage<ContentNoticeEntity> page, @Param("param") NoticPageQuery pageQuery, @Param("dataType") Byte dataType);
+
+    List<ContentNoticeEntity> queryForList(@Param("param") NoticPageQuery pageQuery, @Param("dataType") Byte dataType);
 }

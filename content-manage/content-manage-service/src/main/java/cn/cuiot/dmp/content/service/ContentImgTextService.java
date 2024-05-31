@@ -1,10 +1,14 @@
 package cn.cuiot.dmp.content.service;//	模板
 
 import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity;
+import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
+import cn.cuiot.dmp.content.param.req.PublishReqVo;
 import cn.cuiot.dmp.content.param.vo.ContentImgTextVo;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 
@@ -13,7 +17,7 @@ import java.util.List;
  * @Description
  * @data 2024/5/28 14:42
  */
-public interface ContentImgTextService {
+public interface ContentImgTextService extends AuditResultDealService, IService<ContentImgTextEntity> {
 
     /**
      * 根据id获取详情
@@ -50,10 +54,4 @@ public interface ContentImgTextService {
      */
     int updateContentImgText(ContentImgTextUpdateDto updateDTO);
 
-    /**
-     * 删除
-     * @param id
-     * @return
-     */
-    int deleteContentImgText(Long id);
 }

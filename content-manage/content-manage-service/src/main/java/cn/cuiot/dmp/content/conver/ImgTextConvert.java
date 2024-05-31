@@ -11,9 +11,9 @@ import org.mapstruct.factory.Mappers;
  * @data 2024/5/29 14:29
  */
 @Mapper
-public interface ImgTextConver {
+public interface ImgTextConvert {
 
-    ImgTextConver INSTANCE = Mappers.getMapper(ImgTextConver.class);
+    ImgTextConvert INSTANCE = Mappers.getMapper(ImgTextConvert.class);
 
-    ContentImgTextVo conver(ContentImgTextEntity contentImgTextEntity);
+    ContentImgTextVo convert(ContentImgTextEntity contentImgTextEntity);
 }

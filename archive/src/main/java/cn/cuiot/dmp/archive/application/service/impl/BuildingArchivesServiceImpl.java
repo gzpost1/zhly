@@ -6,20 +6,25 @@ import cn.cuiot.dmp.archive.application.param.dto.BuildingArchiveImportDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesCreateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesExportVO;
-import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesTreeVO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchives;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchivesPageQuery;
 import cn.cuiot.dmp.archive.domain.repository.BuildingArchivesRepository;
+import cn.cuiot.dmp.archive.infrastructure.entity.BuildingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
+import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMapper;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -47,6 +52,8 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
 
     @Autowired
     private ArchivesApiMapper archivesApiMapper;
+    @Autowired
+    private BuildingArchivesMapper buildingArchivesMapper;
 
     @Override
     public BuildingArchivesVO queryForDetail(Long id) {
@@ -198,6 +205,21 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
         List<BuildingArchives> buildingArchivesList = buildingArchivesRepository.queryForList(pageQuery);
         fillDepartmentBuildingTree(departmentTreeRspList.get(0), buildingArchivesList);
         return departmentTreeRspList;
+    }
+
+    @Override
+    public List<BuildingArchive> apiQueryForList(BuildingArchiveReq buildingArchiveReq) {
+        LambdaQueryWrapper<BuildingArchivesEntity> queryWrapper = new LambdaQueryWrapper<BuildingArchivesEntity>()
+                .in(CollectionUtils.isNotEmpty(buildingArchiveReq.getIdList()), BuildingArchivesEntity::getId, buildingArchiveReq.getIdList());
+        List<BuildingArchivesEntity> buildingArchivesEntityList = buildingArchivesMapper.selectList(queryWrapper);
+        if (CollUtil.isEmpty(buildingArchivesEntityList)) {
+            return new ArrayList<>();
+        }
+        return buildingArchivesEntityList.stream().map(item -> {
+            BuildingArchive buildingArchive = new BuildingArchive();
+            BeanUtils.copyProperties(item, buildingArchive);
+            return buildingArchive;
+        }).collect(Collectors.toList());
     }
 
     private List<Long> getDepartmentIdList(DepartmentTreeRspDTO rootTreeNode) {

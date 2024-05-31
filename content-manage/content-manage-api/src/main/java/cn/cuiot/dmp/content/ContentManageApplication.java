@@ -19,9 +19,9 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackages = {"cn.cuiot.dmp"})
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 @EnableFeignClients(basePackages = {"cn.cuiot.dmp"})
-public class ContentMessageApplication {
+public class ContentManageApplication {
     public static void main(String[] args) {
         JSONFactory.setUseJacksonAnnotation(false);
-        SpringApplication.run(ContentMessageApplication.class);
+        SpringApplication.run(ContentManageApplication.class);
     }
 }

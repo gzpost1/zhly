@@ -1,15 +1,19 @@
 package cn.cuiot.dmp.base.infrastructure.dto.req;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+
 import java.io.Serializable;
 import java.util.List;
-import lombok.Data;
 
 /**
  * 用户查询参数
+ *
  * @author: wuyongchong
  * @date: 2024/5/10 10:08
  */
 @Data
+@Accessors(chain = true)
 public class BaseUserReqDto implements Serializable {
 
     /**

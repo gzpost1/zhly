@@ -68,11 +68,6 @@ public class ContentImgTextEntity extends YjBaseEntity implements Serializable {
     private Byte auditStatus;
 
     /**
-     * 审核时间
-     */
-    private Date auditTime;
-
-    /**
      * 发布状态
      */
     private Byte publishStatus;

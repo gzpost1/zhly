@@ -5,15 +5,17 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.content.conver.NoticeConver;
+import cn.cuiot.dmp.content.constant.ContentConstants;
+import cn.cuiot.dmp.content.conver.NoticeConvert;
+import cn.cuiot.dmp.content.dal.entity.ContentAudit;
 import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.param.dto.NoticeCreateDto;
 import cn.cuiot.dmp.content.param.dto.NoticeUpdateDto;
-import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
 import cn.cuiot.dmp.content.param.query.NoticPageQuery;
+import cn.cuiot.dmp.content.param.req.PublishReqVo;
 import cn.cuiot.dmp.content.param.vo.NoticeVo;
+import cn.cuiot.dmp.content.service.ContentAuditService;
 import cn.cuiot.dmp.content.service.NoticeService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,8 @@ public class NoticeController extends BaseController {
 
     @Autowired
     private NoticeService noticeService;
+    @Autowired
+    private ContentAuditService contentAuditService;
 
     /**
      * 根据id获取详情
@@ -45,8 +49,12 @@ public class NoticeController extends BaseController {
     @PostMapping("/queryForDetail")
     public IdmResDTO<NoticeVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
         ContentNoticeEntity contentNoticeEntity = noticeService.getById(idParam.getId());
-        NoticeVo NoticeVo = NoticeConver.INSTANCE.conver(contentNoticeEntity);
-        return IdmResDTO.success(NoticeVo);
+        NoticeVo noticeVo = NoticeConvert.INSTANCE.convert(contentNoticeEntity);
+        if (!ContentConstants.AuditStatus.AUDIT_ING.equals(contentNoticeEntity.getAuditStatus())) {
+            ContentAudit lastAuditResult = contentAuditService.getLastAuditResult(contentNoticeEntity.getId());
+            noticeVo.setContentAudit(lastAuditResult);
+        }
+        return IdmResDTO.success(noticeVo);
     }
 
     /**
@@ -95,9 +103,17 @@ public class NoticeController extends BaseController {
      * 删除
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "deleteNotice", operationName = "删除公告", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
+    @LogRecord(operationCode = "deleteNotice", operationName = "删除公告", serviceType = ServiceTypeConst.CONTENT_MANAGE)
     @PostMapping("/delete")
     public Boolean deleteContentImgText(@RequestBody @Valid IdParam idParam) {
         return noticeService.removeById(idParam.getId());
     }
+
+    @RequiresPermissions
+    @LogRecord(operationCode = "publishNotice", operationName = "发布公告", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @PostMapping("/publish")
+    public Boolean publish(@RequestBody @Valid PublishReqVo publishReqVo) {
+        return noticeService.publish(publishReqVo);
+    }
+
 }

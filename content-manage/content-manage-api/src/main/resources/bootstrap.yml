@@ -2,13 +2,13 @@ logging:
   config: classpath:log4j2.xml
 
 server:
-  port: 8080
+  port: 8090
   tomcat:
     basedir: /home/temp
 
 spring:
   application:
-    name: community-system
+    name: community-content
   profiles:
     active: local
   main:

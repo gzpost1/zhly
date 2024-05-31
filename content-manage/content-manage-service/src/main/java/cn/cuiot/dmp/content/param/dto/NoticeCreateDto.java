@@ -2,6 +2,7 @@ package cn.cuiot.dmp.content.param.dto;//	模板
 
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
@@ -46,11 +47,13 @@ public class NoticeCreateDto {
     /**
      * 生效开始时间
      */
+    @NotNull(message = "生效开始时间不能为空")
     private Date effectiveStartTime;
 
     /**
      * 生效结束时间
      */
+    @NotNull(message = "生效结束时间不能为空")
     private Date effectiveEndTime;
 
     /**
@@ -67,16 +70,6 @@ public class NoticeCreateDto {
      * 状态
      */
     private Byte status;
-
-    /**
-     * 审核状态
-     */
-    private Byte auditStatus;
-
-    /**
-     * 审核时间
-     */
-    private Date auditTime;
 
     /**
      * 发布状态

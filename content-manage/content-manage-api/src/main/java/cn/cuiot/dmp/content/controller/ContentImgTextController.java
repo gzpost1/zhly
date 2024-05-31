@@ -90,7 +90,8 @@ public class ContentImgTextController extends BaseController {
     @RequiresPermissions
     @LogRecord(operationCode = "deleteContentImgText", operationName = "删除图文", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/delete")
-    public int deleteContentImgText(@RequestBody @Valid IdParam idParam) {
-        return contentImgTextService.deleteContentImgText(idParam.getId());
+    public Boolean deleteContentImgText(@RequestBody @Valid IdParam idParam) {
+        return contentImgTextService.removeById(idParam.getId());
     }
+
 }

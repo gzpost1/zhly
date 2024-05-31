@@ -1,11 +1,12 @@
 package cn.cuiot.dmp.content.service;//	模板
 
 
-import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.param.dto.NoticeCreateDto;
 import cn.cuiot.dmp.content.param.dto.NoticeUpdateDto;
 import cn.cuiot.dmp.content.param.query.NoticPageQuery;
+import cn.cuiot.dmp.content.param.req.AuditReqVo;
+import cn.cuiot.dmp.content.param.req.PublishReqVo;
 import cn.cuiot.dmp.content.param.vo.NoticeVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -17,7 +18,7 @@ import java.util.List;
  * @Description
  * @data 2024/5/29 14:34
  */
-public interface NoticeService extends IService<ContentNoticeEntity> {
+public interface NoticeService extends IService<ContentNoticeEntity>, AuditResultDealService {
     /**
      * 查询公告详情
      *
@@ -57,4 +58,11 @@ public interface NoticeService extends IService<ContentNoticeEntity> {
      * @return
      */
     IPage<NoticeVo> queryForPage(NoticPageQuery pageQuery);
+
+    /**
+     * 发布
+     * @param publishReqVo
+     * @return
+     */
+    Boolean publish(PublishReqVo publishReqVo);
 }
