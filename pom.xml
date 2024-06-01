@@ -16,6 +16,7 @@
         <module>app</module>
         <module>message</module>
         <module>content-manage</module>
+        <module>lease</module>
     </modules>
 
     <parent>
