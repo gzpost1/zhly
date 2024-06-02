@@ -1,34 +1,74 @@
 package cn.cuiot.dmp.lease.service;
 
-import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.lease.dto.ClueDTO;
-import cn.cuiot.dmp.lease.entity.ClueEntity;
-import cn.cuiot.dmp.lease.mapper.ClueMapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
+import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.lease.dto.clue.*;
 
-import java.util.Optional;
+import java.util.List;
 
 /**
  * @author caorui
- * @date 2024/6/1
+ * @date 2024/6/2
  */
-@Slf4j
-@Service
-public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
+public interface ClueService {
 
     /**
      * 查询详情
      */
-    public ClueDTO queryForDetail(Long id) {
-        ClueEntity clueEntity = Optional.ofNullable(getById(id))
-                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
-        ClueDTO clueDTO = new ClueDTO();
-        BeanUtils.copyProperties(clueEntity, clueDTO);
-        return clueDTO;
-    }
+    ClueDTO queryForDetail(Long id);
+
+    /**
+     * 查询列表
+     */
+    List<ClueDTO> queryForList(CluePageQueryDTO queryDTO);
+
+    /**
+     * 查询列表
+     */
+    PageResult<ClueDTO> queryForPage(CluePageQueryDTO queryDTO);
+
+    /**
+     * 保存
+     */
+    int saveClue(ClueCreateDTO createDTO);
+
+    /**
+     * 更新
+     */
+    int updateClue(ClueUpdateDTO updateDTO);
+
+    /**
+     * 分配
+     */
+    int distributeClue(Long currentFollowerId);
+
+    /**
+     * 跟进
+     */
+    int followClue(ClueFollowDTO followDTO);
+
+    /**
+     * 完成
+     */
+    int finishClue(ClueFinishDTO finishDTO);
+
+    /**
+     * 删除
+     */
+    int deleteClue(Long id);
+
+    /**
+     * 批量分配
+     */
+    int batchDistributeClue(ClueBatchUpdateDTO batchUpdateDTO);
+
+    /**
+     * 批量完成
+     */
+    int batchFinishClue(ClueBatchUpdateDTO batchUpdateDTO);
+
+    /**
+     * 批量删除
+     */
+    int batchDeleteClue(List<Long> idList);
 
 }

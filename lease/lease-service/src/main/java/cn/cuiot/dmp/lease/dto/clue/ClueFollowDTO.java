@@ -1,34 +1,30 @@
-package cn.cuiot.dmp.lease.vo;
+package cn.cuiot.dmp.lease.dto.clue;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
 /**
  * @author caorui
- * @date 2024/6/1
+ * @date 2024/6/2
  */
 @Data
-public class ClueRecordVO implements Serializable {
+public class ClueFollowDTO implements Serializable {
 
-    private static final long serialVersionUID = -1951007842465335574L;
+    private static final long serialVersionUID = -561752869274727868L;
 
     /**
-     * 主键ID
+     * 线索跟进id
      */
     private Long id;
 
     /**
-     * 线索ID
-     */
-    private Long clueId;
-
-    /**
      * 跟进人ID
      */
-    private Long followUserId;
+    private Long followerId;
 
     /**
      * 跟进时间
@@ -39,10 +35,11 @@ public class ClueRecordVO implements Serializable {
     /**
      * 跟进状态（系统配置自定义）
      */
+    @NotNull(message = "跟进状态不能为空")
     private Long followStatusId;
 
     /**
-     * 表单配置详情
+     * 线索跟进表单详情
      */
     private String formConfigDetail;
 

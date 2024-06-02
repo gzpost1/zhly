@@ -1,12 +1,11 @@
 package cn.cuiot.dmp.lease.entity;
 
+import cn.cuiot.dmp.base.infrastructure.persistence.mapper.BaseEntity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -18,15 +17,9 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @TableName(value = "clue_record", autoResultMap = true)
-public class ClueRecordEntity implements Serializable {
+public class ClueRecordEntity extends BaseEntity {
 
     private static final long serialVersionUID = 6790695408753991678L;
-
-    /**
-     * 主键ID
-     */
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
-    private Long id;
 
     /**
      * 线索ID
@@ -36,7 +29,7 @@ public class ClueRecordEntity implements Serializable {
     /**
      * 跟进人ID
      */
-    private Long followUserId;
+    private Long followerId;
 
     /**
      * 跟进时间
@@ -53,13 +46,5 @@ public class ClueRecordEntity implements Serializable {
      * 表单配置详情
      */
     private String formConfigDetail;
-
-    /**
-     * 逻辑删除，1已删除，0未删除
-     */
-    @TableLogic
-    @TableField(fill = FieldFill.INSERT)
-    @JsonIgnore
-    private Integer deletedFlag;
 
 }

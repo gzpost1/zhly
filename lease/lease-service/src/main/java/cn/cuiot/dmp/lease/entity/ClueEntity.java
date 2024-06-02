@@ -47,25 +47,25 @@ public class ClueEntity extends BaseEntity {
     private Long sourceId;
 
     /**
-     * 跟进人ID
+     * 当前跟进人ID
      */
-    private Long followUserId;
-
-    /**
-     * 跟进时间
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date followTime;
-
-    /**
-     * 跟进状态（系统配置自定义）
-     */
-    private Long followStatusId;
+    private Long currentFollowerId;
 
     /**
      * 关联客户ID
      */
     private Long customerUserId;
+
+    /**
+     * 完成人ID
+     */
+    private Long finishUserId;
+
+    /**
+     * 完成时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date finishTime;
 
     /**
      * 线索结果（系统配置自定义）
@@ -76,6 +76,11 @@ public class ClueEntity extends BaseEntity {
      * 表单配置详情
      */
     private String formConfigDetail;
+
+    /**
+     * 线索备注
+     */
+    private String remark;
 
     /**
      * 线索状态（1待分配，2跟进中，3已完成）

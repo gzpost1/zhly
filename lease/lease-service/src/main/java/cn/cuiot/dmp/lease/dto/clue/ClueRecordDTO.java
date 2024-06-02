@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.lease.dto;
+package cn.cuiot.dmp.lease.dto.clue;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -28,7 +28,7 @@ public class ClueRecordDTO implements Serializable {
     /**
      * 跟进人ID
      */
-    private Long followUserId;
+    private Long followerId;
 
     /**
      * 跟进时间
