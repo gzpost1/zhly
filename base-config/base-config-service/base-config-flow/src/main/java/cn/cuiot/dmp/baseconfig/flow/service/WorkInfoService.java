@@ -1385,7 +1385,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public IdmResDTO<IPage<MyApprovalResultDto>> queryMyNotApproval(QueryMyApprovalDto dto) {
-        dto.setAssignee(String.valueOf(LoginInfoHolder.getCurrentUserId()));
+        dto.setAssignee(LoginInfoHolder.getCurrentUserId());
 
         Page<MyApprovalResultDto> pages = baseMapper.queryMyNotApproval(new Page<MyApprovalResultDto>(dto.getCurrentPage()
                 ,dto.getPageSize()),dto);
@@ -1424,7 +1424,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public IdmResDTO<IPage<MyApprovalResultDto>> queryMyApproval(QueryMyApprovalDto dto) {
-        dto.setAssignee(String.valueOf(LoginInfoHolder.getCurrentUserId()));
+        dto.setAssignee(LoginInfoHolder.getCurrentUserId());
         Page<MyApprovalResultDto> page=baseMapper.
                 queryMyApproval(new Page<MyApprovalResultDto>(dto.getCurrentPage(),dto.getPageSize()),dto);
         List<MyApprovalResultDto> records = page.getRecords();
@@ -1561,7 +1561,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
-        assigneeByProcInstId(handleDataDTO);
 
         //转办
         userInfos.stream().forEach(item->{

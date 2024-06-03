@@ -30,7 +30,7 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/app/pend")
+@RequestMapping("/app/work")
 public class PendingProcessController {
 
     @Autowired
@@ -93,7 +93,7 @@ public class PendingProcessController {
 
 
     /**
-     * 小程序 - 我提交的
+     * 小程序 - 3.6.3我提交的
      * @param dto
      * @return
      */
