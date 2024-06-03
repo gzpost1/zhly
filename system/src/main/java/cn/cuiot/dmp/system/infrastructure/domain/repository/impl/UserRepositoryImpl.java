@@ -17,7 +17,7 @@ import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntityMapper;
 import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.domain.entity.UserDepartmentInfo;
-import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
