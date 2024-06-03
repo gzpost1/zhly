@@ -15,6 +15,12 @@ public class AuthContants {
      * 请求头
      */
     public static final String AUTHORIZATION = "Authorization";
+
+    /**
+     * 小区请求头
+     */
+    public static final String COMMUNITY = "community";
+
     
     /**
      * 用户名称
