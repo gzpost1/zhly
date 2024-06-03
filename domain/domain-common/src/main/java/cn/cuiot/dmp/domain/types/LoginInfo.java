@@ -35,12 +35,12 @@ public class LoginInfo implements Serializable {
     private String name;
 
     /**
-     * 账户ID
+     * 企业ID
      */
     private Long orgId;
 
     /**
-     * 账户类型（1：个人账户、2：企业账户、3：子账户、4：超级账户、5：省份账户）
+     * 企业类型（5:平台 11:企业）
      */
     private Integer orgTypeId;
 
@@ -56,7 +56,7 @@ public class LoginInfo implements Serializable {
 
 
     /**
-     * 用户类型
+     * 用户类型(1:员工 2：业主）
      */
     private Integer userType;
 
