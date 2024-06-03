@@ -49,7 +49,7 @@ public class LoginInfoHolder {
     }
 
     /**
-     * 账户ID
+     * 企业ID
      */
     public static Long getCurrentOrgId() {
         return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getOrgId() : null;
