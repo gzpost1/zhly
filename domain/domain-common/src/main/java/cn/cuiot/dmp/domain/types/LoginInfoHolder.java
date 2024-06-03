@@ -83,6 +83,13 @@ public class LoginInfoHolder {
         return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getUserType() : null;
     }
 
+    /**
+     * 获得小区ID
+     */
+    public static Long getCommunityId(){
+        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getCommunityId() : null;
+    }
+
     public static OperateInfo getCurrentLoginOperateInfo() {
         return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getOperateInfo() : null;
     }

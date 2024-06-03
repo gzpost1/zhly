@@ -61,6 +61,11 @@ public class LoginInfo implements Serializable {
     private Integer userType;
 
     /**
+     * 小区ID
+     */
+    private Long communityId;
+
+    /**
      * 操作信息
      */
     private OperateInfo operateInfo;
