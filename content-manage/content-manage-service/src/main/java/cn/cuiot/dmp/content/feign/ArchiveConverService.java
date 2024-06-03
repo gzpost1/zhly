@@ -26,7 +26,7 @@ public class ArchiveConverService {
         if (buildingIds == null || buildingIds.isEmpty()) {
             return new HashMap<>();
         }
-        List<BuildingArchive> buildingArchives = archiveFeignService.buildingArchiveQueryForList(new BuildingArchiveReq().setIdList(buildingIds));
+        List<BuildingArchive> buildingArchives = archiveFeignService.buildingArchiveQueryForList(new BuildingArchiveReq().setIdList(buildingIds)).getData();
         if (buildingArchives == null || buildingArchives.isEmpty()) {
             return new HashMap<>();
         }
