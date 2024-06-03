@@ -6,6 +6,7 @@ import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.PendingProcessQuery;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.query.WorkOrderSuperQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.QueryTaskUserInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.TaskUserInfoDto;
@@ -92,7 +93,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     }
 
     /**
-     * app端获取工单信息
+     * app端获取我提交的工单信息
      * @param dto
      * @return
      */
@@ -111,5 +112,12 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         });
 
         return IdmResDTO.success(page);
+    }
+
+    public IdmResDTO<IPage<AppWorkInfoDto>> queryWorkOrderSuper(WorkOrderSuperQuery query) {
+
+       IPage<AppWorkInfoDto> workInfoDtoPage = baseMapper.queryWorkOrderSuper(new Page<>(query.getPageNo(),query.getPageSize()),query);
+
+       return null;
     }
 }

@@ -3,6 +3,7 @@ package cn.cuiot.dmp.baseconfig.flow.mapper;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.PendingProcessQuery;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.query.WorkOrderSuperQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
@@ -46,4 +47,6 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
 
 
     Page<AppWorkInfoDto> queryAppMySubmitWorkInfo(Page<AppWorkInfoDto> workInfoEntityPage , @Param("query") QueryMyApprovalDto dto);
+
+    IPage<AppWorkInfoDto> queryWorkOrderSuper(Page<AppWorkInfoDto> objectPage, @Param("query") WorkOrderSuperQuery query);
 }

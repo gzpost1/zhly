@@ -694,17 +694,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param procInstId
      * @return
      */
-    public List<Long> querySuspendTaskIds(String procInstId){
-            LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
+    public boolean querySuspendTaskIds(String procInstId){
+        LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
         lw.eq(WorkInfoEntity::getProcInstId,procInstId).eq(WorkInfoEntity::getStatus,WorkOrderStatusEnums.Suspended.getStatus());
         Long aLong = this.getBaseMapper().selectCount(lw);
-        if(aLong>0){
-            List<Task> list = taskService.createTaskQuery().processInstanceId(procInstId).list();
-            if(CollectionUtils.isNotEmpty(list)){
-                return list.stream().map(e->Long.parseLong(e.getId())).collect(Collectors.toList());
-            }
-        }
-        return new ArrayList<>();
+        return aLong>0;
     }
 
     /**

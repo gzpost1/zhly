@@ -11,7 +11,7 @@ import java.util.Date;
  * @create 2024/5/29 16:17
  */
 @Data
-public class AppWorkInfoDto {
+public class  AppWorkInfoDto {
 
     /**
      * 工单id

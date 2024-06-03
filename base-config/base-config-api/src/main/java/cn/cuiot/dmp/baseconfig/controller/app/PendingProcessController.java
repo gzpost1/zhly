@@ -7,6 +7,7 @@ import cn.cuiot.dmp.baseconfig.flow.dto.app.AppTransferTaskDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.PendingProcessQuery;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.query.WorkOrderSuperQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.QueryTaskUserInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.TaskUserInfoDto;
@@ -82,7 +83,16 @@ public class PendingProcessController {
     }
 
     /**
-     * 单监管-工单进度-转办
+     * 工单监管--3.6.2列表查询
+     * @return
+     */
+    @PostMapping("queryWorkOrderSuper")
+    public IdmResDTO<IPage<AppWorkInfoDto>> queryWorkOrderSuper(@RequestBody WorkOrderSuperQuery query){
+        return appWorkInfoService.queryWorkOrderSuper(query);
+    }
+
+    /**
+     * 工单监管-工单进度-转办
      * @param appTransferTaskDto
      * @return
      */

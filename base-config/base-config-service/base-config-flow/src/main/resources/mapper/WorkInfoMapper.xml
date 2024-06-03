@@ -269,12 +269,12 @@
         </where>
     </sql>
 
-    <sql id="queryMySubmitWorkInfo">
+    <sql id="queryWorkInfo">
          t1.id,  t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status, t1.create_time, t1.create_user ,t1.org_ids
     </sql>
     <select id="queryMySubmitWorkInfo" resultType="cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity">
         select
-        <include refid="queryMySubmitWorkInfo"/>
+        <include refid="queryWorkInfo"/>
         from tb_work_info t1 left join tb_process_dept_rel t2 on t1.process_definition_id = t2.process_definition_id
         <include refid="queryMySubmitWorkInfoContidition"/>
     </select>
@@ -308,7 +308,7 @@
     </sql>
 
     <sql id="queryAppMySubmitWorkInfoSql">
-        t1.proc_inst_id,t1.work_name,t1.create_user.t1.create_time,t1.status,IFNULL(t2.business_type,0) as outTime
+        t1.proc_inst_id,t1.work_name,t1.create_user,t1.create_time,t1.status,IFNULL(t2.business_type,0) as outTime
     </sql>
     <select id="queryAppMySubmitWorkInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
         SELECT
@@ -329,8 +329,8 @@
             <if test="query.workName != null and query.workName !=''">
                 and t1.work_name like concat('%',#{query.workName},'%')
             </if>
-            <if test="query.createUser != null">
-                and t1.create_user = #{query.createUser}
+            <if test="query.assignee != null">
+                and t1.create_user = #{query.assignee}
             </if>
 
             <if test="query.status != null">
@@ -344,6 +344,39 @@
         order by t1.create_time desc
     </sql>
 
+
+    <select id="queryWorkOrderSuper" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
+        select
+        <include refid="queryWorkInfo"/> from tb_work_info t1 left join tb_process_dept_rel t2
+        on t1.process_definition_id = t2.process_definition_id  left join ( SELECT business_type, proc_inst_id FROM tb_work_business_type_info WHERE business_type = 1 GROUP BY proc_inst_id, business_type ) t3
+        on t1.proc_inst_id = t3.proc_inst_id
+
+    </select>
+    <sql id="queryWorkOrderSuperCondition">
+        <where>
+            <if test="query.workName !=null and query.workName !=''">
+                and t1.work_name like concat('%',#{query.workName},'%')
+            </if>
+            <if test="query.businessType !=null">
+                and t1.business_type = #{query.businessType}
+            </if>
+            <if test="query.orgIds !=null and query.orgIds.size()>0">
+                and t2.org_id in
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.status !=null">
+                and t1.status = #{query.status}
+            </if>
+            <if test="query.workSource !=null" >
+                and t1.work_souce = #{query.workSource}
+            </if>
+            <if test="query.timeOut !=null and query.timeOut==1">
+                and t1.proc_inst_id in
+            </if>
+        </where>
+    </sql>
 
     <select id="queryPendProcessList" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto">
         SELECT
