@@ -25,16 +25,15 @@ import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author caorui
@@ -259,4 +258,19 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
         }
     }
 
+    /**
+     * 根据ID获取楼盘信息
+     * @param id
+     * @return
+     */
+    @Override
+    public BuildingArchive lookupBuildingArchiveInfo(Long id) {
+        BuildingArchives buildingArchives = buildingArchivesRepository.queryForDetail(id);
+        if(Objects.nonNull(buildingArchives)){
+            BuildingArchive result = new BuildingArchive();
+            BeanUtils.copyProperties(buildingArchives, result);
+            return result;
+        }
+        return null;
+    }
 }

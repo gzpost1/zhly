@@ -77,4 +77,11 @@ public interface BuildingArchivesService {
     List<DepartmentTreeRspDTO> getDepartmentBuildingTree(Long orgId, Long userId);
 
     List<BuildingArchive> apiQueryForList(BuildingArchiveReq buildingArchiveReq);
+
+    /**
+     * 根据ID获取楼盘信息
+     * @param id
+     * @return
+     */
+    BuildingArchive lookupBuildingArchiveInfo(Long id);
 }
