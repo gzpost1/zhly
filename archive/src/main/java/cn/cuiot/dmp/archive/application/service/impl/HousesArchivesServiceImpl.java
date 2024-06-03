@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -211,12 +212,17 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         entity.setBusinessNatureName(configIdNameMap.get(entity.getBusinessNature()));
         entity.setResourceTypeName(configIdNameMap.get(entity.getResourceType()));
         entity.setParkingAreaName(configIdNameMap.get(entity.getParkingArea()));
+        entity.setOwnershipAttributeName(configIdNameMap.get(entity.getOwnershipAttribute()));
         if (Objects.nonNull(entity.getRecommended())){
             if (entity.getRecommended() == (byte)0){
                 entity.setResourceTypeName("否");
             } else {
                 entity.setRecommendedName("是");
             }
+        }
+        if (Objects.nonNull(entity.getUtilizationRate())){
+            DecimalFormat df = new DecimalFormat("0.00%");
+            entity.setUtilizationRateName(df.format(entity.getUtilizationRate()));
         }
         if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
             StringBuilder sb = new StringBuilder();
@@ -249,6 +255,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         addListCanNull(configIdList, entity.getBusinessNature());
         addListCanNull(configIdList, entity.getResourceType());
         addListCanNull(configIdList, entity.getParkingArea());
+        addListCanNull(configIdList, entity.getOwnershipAttribute());
         if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
             configIdList.addAll(entity.getBasicServices());
         }

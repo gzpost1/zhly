@@ -38,7 +38,7 @@ spring:
           - dataId: community-common.properties
             refresh: true
         extension-configs:
-          - dataId: community-system.yaml
+          - dataId: community-archive.yaml
             refresh: true
       discovery:
         server-addr: http://nacos-server:8848

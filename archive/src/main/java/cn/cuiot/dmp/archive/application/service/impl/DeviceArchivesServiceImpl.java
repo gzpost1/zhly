@@ -68,15 +68,15 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         if (entity.getInstallationLocation().length() > 30) {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "安装位置长度不可超过30");
         }
-        if (entity.getDeviceSystem().length() > 30) {
+        if (StringUtils.isNotBlank(entity.getDeviceSystem()) && entity.getDeviceSystem().length() > 30) {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "设备系统长度不可超过30");
         }
 
-        if (entity.getDeviceProfessional().length() > 30) {
+        if (StringUtils.isNotBlank(entity.getDeviceProfessional()) && entity.getDeviceProfessional().length() > 30) {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "设备专业长度不可超过30");
         }
 
-        if (entity.getLocationDetails().length() > 30){
+        if (StringUtils.isNotBlank(entity.getLocationDetails()) && entity.getLocationDetails().length() > 30){
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "详细位置长度不可超过30");
         }
 
