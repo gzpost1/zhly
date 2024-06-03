@@ -2,7 +2,7 @@ package cn.cuiot.dmp.system.domain.service;
 
 import cn.cuiot.dmp.domain.service.DomainService;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
-import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import lombok.NonNull;
 
 /**

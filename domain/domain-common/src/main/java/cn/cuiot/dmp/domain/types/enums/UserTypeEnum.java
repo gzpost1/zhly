@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.system.domain.types.enums;
+package cn.cuiot.dmp.domain.types.enums;
 
 import java.util.Arrays;
 

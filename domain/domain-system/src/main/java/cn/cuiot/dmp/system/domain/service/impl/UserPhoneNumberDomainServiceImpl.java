@@ -3,7 +3,7 @@ package cn.cuiot.dmp.system.domain.service.impl;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
-import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import java.util.Arrays;
