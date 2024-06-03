@@ -41,4 +41,9 @@ public class AppWorkInfoDto {
      *1已完结2进行中3已终止4已挂起5已撤回
      */
     private Byte status;
+
+    /**
+     * 是否超时 0未超时 1 已超时
+     */
+    private Byte outTime;
 }

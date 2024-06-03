@@ -308,7 +308,7 @@
     </sql>
 
     <sql id="queryAppMySubmitWorkInfoSql">
-        t1.proc_inst_id,t1.work_name,t1.create_user.t1.create_time,t1.status
+        t1.proc_inst_id,t1.work_name,t1.create_user.t1.create_time,t1.status,IFNULL(t2.business_type,0) as outTime
     </sql>
     <select id="queryAppMySubmitWorkInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
         SELECT

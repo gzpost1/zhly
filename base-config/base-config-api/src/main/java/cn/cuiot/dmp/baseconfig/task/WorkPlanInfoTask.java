@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.task;
 
+import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
@@ -7,6 +8,7 @@ import cn.cuiot.dmp.baseconfig.flow.entity.PlanContentEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.PlanWorkExecutionInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkPlanInfoEntity;
+import cn.cuiot.dmp.baseconfig.flow.enums.WorkOrderResultEnums;
 import cn.cuiot.dmp.baseconfig.flow.service.PlanContentService;
 import cn.cuiot.dmp.baseconfig.flow.service.PlanWorkExecutionInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
@@ -67,10 +69,11 @@ public class WorkPlanInfoTask {
         for(PlanWorkExecutionInfoEntity entity : executionList){
             //查询工单信息
             WorkPlanInfoEntity planEntity = Optional.ofNullable(workPlanInfoService.getById(entity.getPlanWorkId())).orElse(new WorkPlanInfoEntity());
-
-            if(planEntity.getState().equals(WorkFlowConstants.RESULT_0)){
-                entity.setState( WorkFlowConstants.PARAM_2);
-            }else if (planEntity.getState().equals(WorkFlowConstants.RESULT_1)){
+            //停用
+            if(planEntity.getState().equals(OrgStatusEnum.DISABLE.getCode())){
+                entity.setState(WorkOrderResultEnums.GENERATION_FAILED.getCode());
+            }else if (planEntity.getState().equals(OrgStatusEnum.ENABLE.getCode())){
+                //启用
                 PlanContentEntity planContentEntity = planContentService.getById(entity.getPlanWorkId());
                 StartProcessInstanceDTO startProcessInstanceDTO = JSONObject.parseObject(planContentEntity.getContent(), new TypeReference<StartProcessInstanceDTO>() {
                 });
@@ -78,7 +81,7 @@ public class WorkPlanInfoTask {
                 IdmResDTO start = workInfoService.start(startProcessInstanceDTO);
                 Long data =Long.parseLong(String.valueOf(start.getData())) ;
                 entity.setProcInstId(data);
-                entity.setState( WorkFlowConstants.RESULT_1);
+                entity.setState( WorkOrderResultEnums.GENERATED.getCode());
             }
             exList.add(entity);
         }
@@ -89,38 +92,6 @@ public class WorkPlanInfoTask {
 
 
         return ReturnT.SUCCESS;
-    }
-
-
-    public void updatePlanWorkExecutionInfo(String param,Long data){
-        LambdaQueryWrapper<PlanWorkExecutionInfoEntity> lw = new LambdaQueryWrapper<>();
-        lw.eq(PlanWorkExecutionInfoEntity::getPlanWorkId, Long.parseLong(param)).eq(PlanWorkExecutionInfoEntity::getState
-                , WorkFlowConstants.RESULT_0).orderByAsc(PlanWorkExecutionInfoEntity::getExecutionTime).last("limit 1");
-        List<PlanWorkExecutionInfoEntity> list = planWorkExecutionInfoService.list(lw);
-        if(CollectionUtil.isNotEmpty(list)){
-            PlanWorkExecutionInfoEntity executionInfo = list.get(0);
-            executionInfo.setState(WorkFlowConstants.RESULT_1);
-            executionInfo.setProcInstId(data);
-            planWorkExecutionInfoService.updateById(executionInfo);
-        }
-    }
-    public boolean checkExpire( WorkPlanInfoEntity entity){
-        LocalDateTime date = LocalDateTime.now();
-        Instant startInstant = entity.getStartDate().toInstant();
-        LocalDateTime startDate = LocalDateTime.ofInstant(startInstant, ZoneId.systemDefault()).minusDays(entity.getPushDay());
-
-
-        Instant endInstant = entity.getEndDate().toInstant();
-        LocalDateTime endDate = LocalDateTime.ofInstant(endInstant, ZoneId.systemDefault()).minusDays(entity.getPushDay());;
-        if(date.isAfter(startDate) && date.isBefore(endDate)){
-            return false;
-        }
-
-        if(!getOverTime(entity).isBefore(date)){
-            return false;
-        }
-
-        return true;
     }
 
     public LocalDateTime getOverTime(WorkPlanInfoEntity entity){
