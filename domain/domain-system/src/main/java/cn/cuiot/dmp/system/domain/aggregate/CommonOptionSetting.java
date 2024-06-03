@@ -23,4 +23,9 @@ public class CommonOptionSetting implements Serializable {
      */
     private String name;
 
+    /**
+     * 排序
+     */
+    private Byte sort;
+
 }

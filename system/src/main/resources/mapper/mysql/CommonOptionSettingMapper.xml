@@ -8,6 +8,7 @@
         id,
         `name`,
         common_option_id,
+        sort,
         deleted_flag
         )
         values
@@ -16,6 +17,7 @@
             #{item.id},
             #{item.name},
             #{item.commonOptionId},
+            #{item.sort},
             0
             )
         </foreach>
@@ -30,6 +32,9 @@
                 </if>
                 <if test="item.deletedFlag != null">
                     deleted_flag = #{item.deletedFlag}
+                </if>
+                <if test="item.sort != null">
+                    sort = #{item.sort}
                 </if>
             </set>
             where id = #{item.id}

@@ -40,4 +40,9 @@ public class CommonOptionSettingEntity implements Serializable {
     @JsonIgnore
     private Integer deletedFlag;
 
+    /**
+     * 排序
+     */
+    private Byte sort;
+
 }

@@ -9,7 +9,6 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigDTO;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigUpdateDTO;
-import cn.cuiot.dmp.system.application.param.vo.CustomConfigDetailVO;
 import cn.cuiot.dmp.system.application.param.vo.CustomConfigVO;
 import cn.cuiot.dmp.system.application.service.CustomConfigService;
 import cn.cuiot.dmp.system.domain.aggregate.CustomConfig;

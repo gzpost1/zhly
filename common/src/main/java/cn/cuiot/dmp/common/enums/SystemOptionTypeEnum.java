@@ -22,7 +22,10 @@ public enum SystemOptionTypeEnum {
     ROOM_ARCHIVE((byte) 3, "空间档案"),
     DEVICE_ARCHIVE((byte) 4, "设备档案"),
     PARK_ARCHIVE((byte) 5, "车位档案"),
-    CODE_ARCHIVE((byte) 6, "二维码档案");
+    CODE_ARCHIVE((byte) 6, "二维码档案"),
+    CUSTOMER_INFO((byte) 7, "客户信息"),
+    WORK_OPTION((byte) 8, "工单选项"),
+    CLUE_OPTION((byte) 9, "线索选项");
 
     private final Byte code;
     private final String message;
