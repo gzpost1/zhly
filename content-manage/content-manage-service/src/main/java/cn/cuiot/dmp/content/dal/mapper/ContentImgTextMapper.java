@@ -2,7 +2,12 @@ package cn.cuiot.dmp.content.dal.mapper;
 
 
 import cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity;
+import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -14,4 +19,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface ContentImgTextMapper extends BaseMapper<ContentImgTextEntity> {
 
+    List<ContentImgTextEntity> queryForList(@Param("param") ContentImgTextPageQuery pageQuery, @Param("dataType") Byte dataType);
+
+    IPage<ContentImgTextEntity> queryForPage(IPage<ContentImgTextEntity> page, @Param("param") ContentImgTextPageQuery pageQuery, @Param("dataType") Byte dataType);
 }

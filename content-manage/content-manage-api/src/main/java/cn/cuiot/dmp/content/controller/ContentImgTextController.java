@@ -10,8 +10,9 @@ import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
-import cn.cuiot.dmp.content.param.vo.ContentImgTextVo;
+import cn.cuiot.dmp.content.param.vo.ImgTextVo;
 import cn.cuiot.dmp.content.service.ContentImgTextService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,16 +40,16 @@ public class ContentImgTextController extends BaseController {
      * 根据id获取详情
      */
     @PostMapping("/queryForDetail")
-    public IdmResDTO<ContentImgTextVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
-        ContentImgTextVo contentImgTextVo = contentImgTextService.queryForDetail(idParam.getId());
-        return IdmResDTO.success(contentImgTextVo);
+    public IdmResDTO<ImgTextVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
+        ImgTextVo imgTextVo = contentImgTextService.queryForDetail(idParam.getId());
+        return IdmResDTO.success(imgTextVo);
     }
 
     /**
      * 列表
      */
     @PostMapping("/queryForList")
-    public List<ContentImgTextVo> queryForList(@RequestBody @Valid ContentImgTextPageQuery pageQuery) {
+    public List<ImgTextVo> queryForList(@RequestBody @Valid ContentImgTextPageQuery pageQuery) {
         String orgId = getOrgId();
         pageQuery.setCompanyId(Long.valueOf(orgId));
         return contentImgTextService.queryForList(pageQuery);
@@ -58,7 +59,7 @@ public class ContentImgTextController extends BaseController {
      * 分页列表
      */
     @PostMapping("/queryForPage")
-    public PageResult<ContentImgTextVo> queryForPage(@RequestBody @Valid ContentImgTextPageQuery pageQuery) {
+    public IPage<ImgTextVo> queryForPage(@RequestBody @Valid ContentImgTextPageQuery pageQuery) {
         String orgId = getOrgId();
         pageQuery.setCompanyId(Long.valueOf(orgId));
         return contentImgTextService.queryForPage(pageQuery);

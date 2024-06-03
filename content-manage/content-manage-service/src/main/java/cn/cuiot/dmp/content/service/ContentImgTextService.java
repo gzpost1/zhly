@@ -2,12 +2,11 @@ package cn.cuiot.dmp.content.service;//	模板
 
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity;
-import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
-import cn.cuiot.dmp.content.param.req.PublishReqVo;
-import cn.cuiot.dmp.content.param.vo.ContentImgTextVo;
+import cn.cuiot.dmp.content.param.vo.ImgTextVo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -24,21 +23,21 @@ public interface ContentImgTextService extends AuditResultDealService, IService<
      * @param id
      * @return
      */
-    ContentImgTextVo queryForDetail(Long id);
+    ImgTextVo queryForDetail(Long id);
 
     /**
      * 列表
      * @param pageQuery
      * @return
      */
-    List<ContentImgTextVo> queryForList(ContentImgTextPageQuery pageQuery);
+    List<ImgTextVo> queryForList(ContentImgTextPageQuery pageQuery);
 
     /**
      * 分页列表
      * @param pageQuery
      * @return
      */
-    PageResult<ContentImgTextVo> queryForPage(ContentImgTextPageQuery pageQuery);
+    IPage<ImgTextVo> queryForPage(ContentImgTextPageQuery pageQuery);
 
     /**
      * 保存

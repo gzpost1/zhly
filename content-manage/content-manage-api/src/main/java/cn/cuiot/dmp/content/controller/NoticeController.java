@@ -40,20 +40,14 @@ public class NoticeController extends BaseController {
 
     @Autowired
     private NoticeService noticeService;
-    @Autowired
-    private ContentAuditService contentAuditService;
+
 
     /**
      * 根据id获取详情
      */
     @PostMapping("/queryForDetail")
     public IdmResDTO<NoticeVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
-        ContentNoticeEntity contentNoticeEntity = noticeService.getById(idParam.getId());
-        NoticeVo noticeVo = NoticeConvert.INSTANCE.convert(contentNoticeEntity);
-        if (!ContentConstants.AuditStatus.AUDIT_ING.equals(contentNoticeEntity.getAuditStatus())) {
-            ContentAudit lastAuditResult = contentAuditService.getLastAuditResult(contentNoticeEntity.getId());
-            noticeVo.setContentAudit(lastAuditResult);
-        }
+        NoticeVo noticeVo = noticeService.queryForDetail(idParam.getId());
         return IdmResDTO.success(noticeVo);
     }
 
@@ -95,7 +89,7 @@ public class NoticeController extends BaseController {
     @RequiresPermissions
     @LogRecord(operationCode = "updateNotice", operationName = "更新公告", serviceType = ServiceTypeConst.CONTENT_MANAGE)
     @PostMapping("/update")
-    public int updateContentImgText(@RequestBody @Valid NoticeUpdateDto updateDtO) {
+    public int updateNotice(@RequestBody @Valid NoticeUpdateDto updateDtO) {
         return noticeService.updateNotice(updateDtO);
     }
 
@@ -105,7 +99,7 @@ public class NoticeController extends BaseController {
     @RequiresPermissions
     @LogRecord(operationCode = "deleteNotice", operationName = "删除公告", serviceType = ServiceTypeConst.CONTENT_MANAGE)
     @PostMapping("/delete")
-    public Boolean deleteContentImgText(@RequestBody @Valid IdParam idParam) {
+    public Boolean deleteNotice(@RequestBody @Valid IdParam idParam) {
         return noticeService.removeById(idParam.getId());
     }
 

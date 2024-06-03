@@ -17,13 +17,12 @@
         <result column="detail" property="detail" />
         <result column="status" property="status" />
         <result column="audit_status" property="auditStatus" />
-        <result column="audit_time" property="auditTime" />
         <result column="publish_status" property="publishStatus" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, publish_source, departments, buildings, title, `type`, digest, effective_start_time, effective_end_time, inform, detail, status, audit_status, audit_time, publish_status, create_user, create_time, update_user, update_time
+        id, publish_source, departments, buildings, title, `type`, digest, effective_start_time, effective_end_time, inform, detail, status, audit_status, publish_status, create_user, create_time, update_user, update_time
     </sql>
     <select id="queryForPage" resultType="cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity">
         select
@@ -45,6 +44,9 @@
 
     <sql id="condition_sql_where">
         deleted = 0
+        <if test="param.companyId != null">
+            and company_id = #{param.companyId}
+        </if>
         <if test="param.title != null and param.title != ''">
             and title like concat('%', #{param.title}, '%')
         </if>
@@ -52,7 +54,7 @@
             and type = #{param.type}
         </if>
         <if test="param.status != null and param.status != ''">
-            and status = #{status}
+            and status = #{param.status}
         </if>
         <if test="param.auditStatus != null and param.auditStatus != ''">
             and audit_status = #{param.auditStatus}

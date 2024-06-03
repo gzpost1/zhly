@@ -1,12 +1,15 @@
 package cn.cuiot.dmp.content.dal.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
-import java.io.Serializable;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author hantingyao
@@ -15,22 +18,25 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("tb_content_img_text")
+@TableName(value = "tb_content_img_text", autoResultMap = true)
 public class ContentImgTextEntity extends YjBaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @TableId("id")
     private Long id;
 
     /**
      * 组织
      */
-    private String departments;
+    @TableField(typeHandler = JsonTypeHandler.class)
+    private List<String> departments;
 
     /**
      * 楼盘
      */
-    private String buildings;
+    @TableField(typeHandler = JsonTypeHandler.class)
+    private List<String> buildings;
 
     /**
      * 图文标题
@@ -40,7 +46,7 @@ public class ContentImgTextEntity extends YjBaseEntity implements Serializable {
     /**
      * 图文类型
      */
-    private Byte type;
+    private Long type;
 
     /**
      * 图文封面
@@ -66,11 +72,6 @@ public class ContentImgTextEntity extends YjBaseEntity implements Serializable {
      * 审核状态
      */
     private Byte auditStatus;
-
-    /**
-     * 发布状态
-     */
-    private Byte publishStatus;
 
     /**
      * 企业ID

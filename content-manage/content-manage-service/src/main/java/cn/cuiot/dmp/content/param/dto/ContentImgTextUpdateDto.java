@@ -10,5 +10,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ContentImgTextUpdateDto extends ContentImgTextCreateDto{
+public class ContentImgTextUpdateDto extends ContentImgTextCreateDto {
+
+    private Long id;
 }
