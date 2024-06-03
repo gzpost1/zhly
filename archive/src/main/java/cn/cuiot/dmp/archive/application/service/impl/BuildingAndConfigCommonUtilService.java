@@ -74,7 +74,7 @@ public class BuildingAndConfigCommonUtilService {
     public Map<String, Map<String, Long>> getConfigNameIdMap(Long companyId, Byte type){
         CustomConfigReqDTO customConfigReqDTO = new CustomConfigReqDTO();
         customConfigReqDTO.setCompanyId(companyId);
-        customConfigReqDTO.setArchiveType(type);
+        customConfigReqDTO.setSystemOptionType(type);
         log.info("查询自定义配置的公司id:{}和type:{}", companyId, type);
         IdmResDTO<List<CustomConfigRspDTO>> res = systemApiFeignService.batchQueryCustomConfigs(customConfigReqDTO);
         log.info("查询自定义配置的返回结果{}", JSONObject.toJSONString(res));

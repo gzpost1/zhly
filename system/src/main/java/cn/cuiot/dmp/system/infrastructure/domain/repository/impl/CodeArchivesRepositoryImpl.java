@@ -44,7 +44,7 @@ public class CodeArchivesRepositoryImpl implements CodeArchivesRepository {
         LambdaQueryWrapper<CodeArchivesEntity> queryWrapper = new LambdaQueryWrapper<CodeArchivesEntity>()
                 .eq(Objects.nonNull(pageQuery.getId()), CodeArchivesEntity::getId, pageQuery.getId())
                 .eq(Objects.nonNull(pageQuery.getArchiveType()), CodeArchivesEntity::getArchiveType, pageQuery.getArchiveType())
-                .eq(Objects.nonNull(pageQuery.getCodeType()), CodeArchivesEntity::getCodeType, pageQuery.getArchiveType())
+                .eq(Objects.nonNull(pageQuery.getCodeType()), CodeArchivesEntity::getCodeType, pageQuery.getCodeType())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CodeArchivesEntity::getStatus, pageQuery.getStatus())
                 .ge(Objects.nonNull(pageQuery.getBeginTime()), CodeArchivesEntity::getCreateTime, pageQuery.getBeginTime())
                 .le(Objects.nonNull(pageQuery.getEndTime()), CodeArchivesEntity::getCreateTime, pageQuery.getEndTime());

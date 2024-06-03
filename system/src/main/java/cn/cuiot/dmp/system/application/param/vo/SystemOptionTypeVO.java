@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @date 2024/5/20
  */
 @Data
-public class ArchiveTypeVO implements Serializable {
+public class SystemOptionTypeVO implements Serializable {
 
     private static final long serialVersionUID = -7575184364510905465L;
 
@@ -19,13 +19,13 @@ public class ArchiveTypeVO implements Serializable {
     private Long id;
 
     /**
-     * 档案类型名称
+     * 系统选项类型名称
      */
     private String name;
 
     /**
-     * 档案类型
+     * 系统选项类型
      */
-    private Byte archiveType;
+    private Byte systemOptionType;
 
 }

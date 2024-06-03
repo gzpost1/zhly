@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.common.enums;
 
+import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -13,7 +15,7 @@ import java.util.Objects;
  */
 @Getter
 @AllArgsConstructor
-public enum ArchiveTypeEnum {
+public enum SystemOptionTypeEnum {
 
     BUILDING_ARCHIVE((byte) 1, "楼盘档案"),
     HOUSE_ARCHIVE((byte) 2, "房屋档案"),
@@ -25,13 +27,27 @@ public enum ArchiveTypeEnum {
     private final Byte code;
     private final String message;
 
+    /**
+     * 档案类型
+     */
+    private static final List<Byte> archiveTypeList = Lists.newArrayList(
+            BUILDING_ARCHIVE.getCode(), HOUSE_ARCHIVE.getCode(), ROOM_ARCHIVE.getCode(),
+            DEVICE_ARCHIVE.getCode(), PARK_ARCHIVE.getCode(), CODE_ARCHIVE.getCode());
+
+    /**
+     * 是否为档案类型
+     */
+    public static boolean archiveTypeFlag(Byte status) {
+        return archiveTypeList.contains(status);
+    }
+
     public static String getMessage(Byte code) {
         if (Objects.isNull(code)) {
             return null;
         }
-        for (ArchiveTypeEnum archiveTypeEnum : values()) {
-            if (archiveTypeEnum.getCode().equals(code)) {
-                return archiveTypeEnum.getMessage();
+        for (SystemOptionTypeEnum systemOptionTypeEnum : values()) {
+            if (systemOptionTypeEnum.getCode().equals(code)) {
+                return systemOptionTypeEnum.getMessage();
             }
         }
         return null;

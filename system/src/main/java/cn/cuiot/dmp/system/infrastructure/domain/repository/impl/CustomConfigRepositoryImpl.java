@@ -5,7 +5,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.constant.CustomConfigConstant;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.system.domain.aggregate.*;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigDetailRepository;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigRepository;
@@ -132,7 +132,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     public PageResult<CustomConfig> queryCustomConfigByType(CustomConfigPageQuery pageQuery) {
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
                 .eq(Objects.nonNull(pageQuery.getCompanyId()), CustomConfigEntity::getCompanyId, pageQuery.getCompanyId())
-                .eq(Objects.nonNull(pageQuery.getArchiveType()), CustomConfigEntity::getArchiveType, pageQuery.getArchiveType())
+                .eq(Objects.nonNull(pageQuery.getSystemOptionType()), CustomConfigEntity::getSystemOptionType, pageQuery.getSystemOptionType())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), CustomConfigEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CustomConfigEntity::getStatus, pageQuery.getStatus());
         IPage<CustomConfigEntity> customConfigEntityPage = customConfigMapper.selectPage(
@@ -147,7 +147,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     public List<CustomConfig> queryForList(CustomConfigPageQuery pageQuery) {
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
                 .eq(Objects.nonNull(pageQuery.getCompanyId()), CustomConfigEntity::getCompanyId, pageQuery.getCompanyId())
-                .eq(Objects.nonNull(pageQuery.getArchiveType()), CustomConfigEntity::getArchiveType, pageQuery.getArchiveType())
+                .eq(Objects.nonNull(pageQuery.getSystemOptionType()), CustomConfigEntity::getSystemOptionType, pageQuery.getSystemOptionType())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), CustomConfigEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CustomConfigEntity::getStatus, pageQuery.getStatus());
         List<CustomConfigEntity> customConfigEntityList = customConfigMapper.selectList(queryWrapper);
@@ -183,7 +183,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setId(IdWorker.getId());
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.HOUSE_ARCHIVE.getCode());
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.HOUSE_ARCHIVE.getCode());
             customConfigEntity.setCreatedBy(userId);
             customConfigEntityList.add(customConfigEntity);
         });
@@ -193,7 +193,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setId(IdWorker.getId());
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.ROOM_ARCHIVE.getCode());
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.ROOM_ARCHIVE.getCode());
             customConfigEntity.setCreatedBy(userId);
             customConfigEntityList.add(customConfigEntity);
         });
@@ -203,7 +203,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setId(IdWorker.getId());
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.DEVICE_ARCHIVE.getCode());
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.DEVICE_ARCHIVE.getCode());
             customConfigEntity.setCreatedBy(userId);
             customConfigEntityList.add(customConfigEntity);
         });
@@ -213,7 +213,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setId(IdWorker.getId());
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.PARK_ARCHIVE.getCode());
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.PARK_ARCHIVE.getCode());
             customConfigEntity.setCreatedBy(userId);
             customConfigEntityList.add(customConfigEntity);
         });

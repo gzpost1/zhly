@@ -2,21 +2,15 @@ package cn.cuiot.dmp.archive.application.service.impl;
 
 import cn.cuiot.dmp.archive.application.param.dto.DeviceArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.vo.DeviceArchivesExportVo;
-import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.DeviceArchivesService;
-import cn.cuiot.dmp.archive.infrastructure.entity.BuildingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
-import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
-import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMapper;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.DeviceArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.CustomConfigConstant;
 import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -146,7 +140,7 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         //Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(DeviceArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
-        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.DEVICE_ARCHIVE.getCode());
+        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, SystemOptionTypeEnum.DEVICE_ARCHIVE.getCode());
 
         // 构造插入列表进行保存
         List<DeviceArchivesEntity> list = new ArrayList<>();

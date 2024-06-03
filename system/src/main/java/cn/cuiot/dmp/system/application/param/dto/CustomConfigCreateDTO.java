@@ -30,10 +30,10 @@ public class CustomConfigCreateDTO implements Serializable {
     private Long companyId;
 
     /**
-     * 档案类型
+     * 系统选项类型
      */
-    @NotNull(message = "档案类型不能为空")
-    private Byte archiveType;
+    @NotNull(message = "系统选项类型不能为空")
+    private Byte systemOptionType;
 
     /**
      * 自定义配置详情列表

@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.entity;
 
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -8,12 +8,14 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
+ * 系统配置-常用选项-系统选项
+ *
  * @author caorui
  * @date 2024/5/19
  */
 @Data
-@TableName(value = "archive_type", autoResultMap = true)
-public class ArchiveTypeEntity implements Serializable {
+@TableName(value = "system_option_type", autoResultMap = true)
+public class SystemOptionTypeEntity implements Serializable {
 
     private static final long serialVersionUID = 1268785109881572935L;
 
@@ -24,15 +26,15 @@ public class ArchiveTypeEntity implements Serializable {
     private Long id;
 
     /**
-     * 档案类型名称
+     * 系统选项类型名称
      */
     private String name;
 
     /**
-     * 档案类型
-     * @see ArchiveTypeEnum
+     * 系统选项类型
+     * @see SystemOptionTypeEnum
      */
-    private Byte archiveType;
+    private Byte systemOptionType;
 
     /**
      * 逻辑删除，1已删除，0未删除

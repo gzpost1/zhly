@@ -21,7 +21,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -66,7 +66,7 @@ public class HousesArchivesController extends BaseController {
     @PostMapping("/queryForDetail")
     public HousesArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
         HousesArchivesEntity res = housesArchivesService.getById(idParam.getId());
-        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.HOUSE_ARCHIVE.getCode()));
+        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), SystemOptionTypeEnum.HOUSE_ARCHIVE.getCode()));
         return res;
     }
 

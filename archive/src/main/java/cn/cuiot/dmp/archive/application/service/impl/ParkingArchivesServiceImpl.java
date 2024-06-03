@@ -1,20 +1,15 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
-import cn.cuiot.dmp.archive.application.param.dto.DeviceArchivesImportDto;
-import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.dto.ParkingArchivesImportDto;
-import cn.cuiot.dmp.archive.application.param.vo.DeviceArchivesExportVo;
 import cn.cuiot.dmp.archive.application.param.vo.ParkingArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.ParkingArchivesService;
-import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
-import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ParkingArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.CustomConfigConstant;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
@@ -131,7 +126,7 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         // Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(ParkingArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
-        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.PARK_ARCHIVE.getCode());
+        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, SystemOptionTypeEnum.PARK_ARCHIVE.getCode());
 
         // 构造插入列表进行保存
         List<ParkingArchivesEntity> list = new ArrayList<>();

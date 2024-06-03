@@ -22,6 +22,12 @@ public class ClueFollowDTO implements Serializable {
     private Long id;
 
     /**
+     * 线索id
+     */
+    @NotNull(message = "线索id不能为空")
+    private Long clueId;
+
+    /**
      * 跟进人ID
      */
     private Long followerId;

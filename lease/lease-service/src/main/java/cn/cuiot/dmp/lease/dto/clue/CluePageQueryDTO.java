@@ -49,4 +49,19 @@ public class CluePageQueryDTO extends PageQuery {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endTime;
 
+    /**
+     * 线索状态（1待分配，2跟进中，3已完成）
+     */
+    private Byte status;
+
+    /**
+     * 当前登录人ID（我的线索需要筛选）
+     */
+    private Long currentUserId;
+
+    /**
+     * 当前跟进人ID（我的跟进需要筛选）
+     */
+    private Long currentFollowerId;
+
 }

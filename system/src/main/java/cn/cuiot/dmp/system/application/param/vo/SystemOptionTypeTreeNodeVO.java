@@ -14,31 +14,31 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArchiveTypeTreeNodeVO extends TreeNode<ArchiveTypeTreeNodeVO> {
+public class SystemOptionTypeTreeNodeVO extends TreeNode<SystemOptionTypeTreeNodeVO> {
 
     private static final long serialVersionUID = -2105149593272419028L;
 
     /**
-     * 档案名称
+     * 系统选项名称
      */
     private String name;
 
     /**
-     * 档案类型
+     * 系统选项类型
      */
-    private Byte archiveType;
+    private Byte systemOptionType;
 
     /**
      * 层级类型
      */
     private Byte levelType;
 
-    public ArchiveTypeTreeNodeVO(String id, Byte archiveType, String parentId,
-                                 String name, Byte levelType) {
+    public SystemOptionTypeTreeNodeVO(String id, Byte systemOptionType, String parentId,
+                                      String name, Byte levelType) {
         super(id, parentId, name);
         this.name = name;
         this.levelType = levelType;
-        this.archiveType = archiveType;
+        this.systemOptionType = systemOptionType;
     }
 
 }

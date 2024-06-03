@@ -21,7 +21,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -59,7 +59,7 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
         BuildingArchives buildingArchives = buildingArchivesRepository.queryForDetail(id);
         BuildingArchivesVO buildingArchivesVO = new BuildingArchivesVO();
         BeanUtils.copyProperties(buildingArchives, buildingArchivesVO);
-        buildingArchivesVO.setQrCodeId(archivesApiMapper.getCodeId(id, ArchiveTypeEnum.BUILDING_ARCHIVE.getCode()));
+        buildingArchivesVO.setQrCodeId(archivesApiMapper.getCodeId(id, SystemOptionTypeEnum.BUILDING_ARCHIVE.getCode()));
         buildingArchivesVO.setStatusName(EntityConstants.ENABLED.equals(buildingArchives.getStatus()) ?
                 "启用" : "停用");
         DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(buildingArchives.getDepartmentId(),

@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.entity;
 
 import cn.cuiot.dmp.base.infrastructure.persistence.mapper.BaseEntity;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,10 +28,10 @@ public class CustomConfigEntity extends BaseEntity {
     private Long companyId;
 
     /**
-     * 档案类型
-     * @see ArchiveTypeEnum
+     * 系统选项类型
+     * @see SystemOptionTypeEnum
      */
-    private Byte archiveType;
+    private Byte systemOptionType;
 
     /**
      * 状态(0:禁用,1:正常)
