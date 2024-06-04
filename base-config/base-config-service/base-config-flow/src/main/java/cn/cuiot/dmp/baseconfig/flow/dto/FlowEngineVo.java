@@ -60,4 +60,9 @@ public class FlowEngineVo {
      * 流程定义ID
      */
     private String processDefinitionId;
+
+    /**
+     * 是否允许客户端发起工单 0否 1是
+     */
+    private Byte isSelectAppUser;
 }
