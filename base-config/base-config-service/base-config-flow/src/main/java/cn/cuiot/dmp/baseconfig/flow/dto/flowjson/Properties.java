@@ -132,4 +132,14 @@ public class Properties {
    * 撤销配置
    */
   private CancelInfo cancelInfo;
+
+  /**
+   * 处理节点类型
+   */
+  private String processNodeType;
+
+  /**
+   * 是否允许客户端发起工单 0否 1是
+   */
+  private Byte isSelectAppUser;
 }
