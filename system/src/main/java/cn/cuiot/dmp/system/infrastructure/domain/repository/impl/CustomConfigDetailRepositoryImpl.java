@@ -35,7 +35,8 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
     @Override
     public List<CustomConfigDetail> batchQueryCustomConfigDetails(Long customConfigId) {
         LambdaQueryWrapper<CustomConfigDetailEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigDetailEntity>()
-                .eq(CustomConfigDetailEntity::getCustomConfigId, customConfigId);
+                .eq(CustomConfigDetailEntity::getCustomConfigId, customConfigId)
+                .orderByAsc(CustomConfigDetailEntity::getSort);
         List<CustomConfigDetailEntity> customConfigDetailEntities = customConfigDetailMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(customConfigDetailEntities)) {
             return new ArrayList<>();

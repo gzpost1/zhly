@@ -35,7 +35,8 @@ public class CommonOptionSettingRepositoryImpl implements CommonOptionSettingRep
     @Override
     public List<CommonOptionSetting> batchQueryCommonOptionSettings(Long commonOptionId) {
         LambdaQueryWrapper<CommonOptionSettingEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionSettingEntity>()
-                .eq(CommonOptionSettingEntity::getCommonOptionId, commonOptionId);
+                .eq(CommonOptionSettingEntity::getCommonOptionId, commonOptionId)
+                .orderByAsc(CommonOptionSettingEntity::getSort);
         List<CommonOptionSettingEntity> commonOptionSettingEntities = commonOptionSettingMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(commonOptionSettingEntities)) {
             return new ArrayList<>();
