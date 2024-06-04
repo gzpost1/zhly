@@ -90,4 +90,9 @@ public class TbFlowConfig extends YjBaseEntity {
      * 发起人配置id
      */
     private String assignedUserId;
+
+    /**
+     * 是否允许客户端发起工单 0否 1是
+     */
+    private Byte isSelectAppUser;
 }
