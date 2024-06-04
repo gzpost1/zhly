@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -185,6 +186,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setName(o);
             customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.HOUSE_ARCHIVE.getCode());
             customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
         // 空间档案
@@ -195,6 +197,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setName(o);
             customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.ROOM_ARCHIVE.getCode());
             customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
         // 设备档案
@@ -205,6 +208,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setName(o);
             customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.DEVICE_ARCHIVE.getCode());
             customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
         // 车位档案
@@ -215,6 +219,40 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setName(o);
             customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.PARK_ARCHIVE.getCode());
             customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
+            customConfigEntityList.add(customConfigEntity);
+        });
+        // 客户信息
+        CustomConfigConstant.CUSTOMER_INFO_INIT.forEach(o -> {
+            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
+            customConfigEntity.setId(IdWorker.getId());
+            customConfigEntity.setCompanyId(companyId);
+            customConfigEntity.setName(o);
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.CUSTOMER_INFO.getCode());
+            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
+            customConfigEntityList.add(customConfigEntity);
+        });
+        // 工单选项
+        CustomConfigConstant.WORK_OPTION_INIT.forEach(o -> {
+            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
+            customConfigEntity.setId(IdWorker.getId());
+            customConfigEntity.setCompanyId(companyId);
+            customConfigEntity.setName(o);
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.WORK_OPTION.getCode());
+            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
+            customConfigEntityList.add(customConfigEntity);
+        });
+        // 线索选项
+        CustomConfigConstant.CLUE_OPTION_INIT.forEach(o -> {
+            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
+            customConfigEntity.setId(IdWorker.getId());
+            customConfigEntity.setCompanyId(companyId);
+            customConfigEntity.setName(o);
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.CLUE_OPTION.getCode());
+            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
         customConfigMapper.batchSaveCustomConfig(customConfigEntityList);
