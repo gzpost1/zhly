@@ -4,6 +4,7 @@ import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.google.common.collect.Maps;
 import java.util.Map;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ public class StreamMessageSender {
         headers.put(MessageConst.PROPERTY_KEYS, KEY_PREFIX + messageId);
         headers.put(MessageConst.PROPERTY_ORIGIN_MESSAGE_ID, messageId);
         headers.put(MessageConst.PROPERTY_TAGS, msg.getOperateTag());
+        if(Objects.nonNull(msg.getDelayTimeLevel())){
+            headers.put(MessageConst.PROPERTY_DELAY_TIME_LEVEL,msg.getDelayTimeLevel());
+        }
         Message<SimpleMsg<T>> data = new GenericMessage(msg, headers);
         streamBridge.send(bindingName, data);
     }
