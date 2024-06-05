@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 系统管理Feign服务
@@ -24,7 +25,7 @@ import java.util.List;
  */
 @Component
 //@FeignClient(value = "community-system")
-@FeignClient(value = "community-system",url = "http://220.197.15.115:9050/gateway/community-system")
+@FeignClient(value = "community-system", url = "http://220.197.15.115:9050/gateway/community-system")
 public interface SystemApiFeignService {
 
     /**
@@ -105,6 +106,12 @@ public interface SystemApiFeignService {
      */
     @PostMapping(value = "/api/batchQueryCustomConfigDetails", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<CustomConfigDetailRspDTO>> batchQueryCustomConfigDetails(@RequestBody @Valid CustomConfigDetailReqDTO customConfigDetailReqDTO);
+
+    /**
+     * 根据id集合批量查询自定义配置详情，并返回对应的名称关系map
+     */
+    @PostMapping(value = "/api/batchQueryCustomConfigDetailsForMap", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<Map<Long, String>> batchQueryCustomConfigDetailsForMap(@RequestBody @Valid CustomConfigDetailReqDTO customConfigDetailReqDTO);
 
     /**
      * 根据条件批量查询自定义配置列表

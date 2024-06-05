@@ -7,6 +7,8 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.*;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**
@@ -66,6 +68,11 @@ public interface ApiSystemService {
      * 根据id集合批量查询自定义配置详情
      */
     List<CustomConfigDetailRspDTO> batchQueryCustomConfigDetails(CustomConfigDetailReqDTO customConfigDetailReqDTO);
+
+    /**
+     * 根据id集合批量查询自定义配置详情，并返回对应的名称关系map
+     */
+    Map<Long, String> batchQueryCustomConfigDetailsForMap(CustomConfigDetailReqDTO customConfigDetailReqDTO);
 
     /**
      * 根据条件批量查询自定义配置列表
