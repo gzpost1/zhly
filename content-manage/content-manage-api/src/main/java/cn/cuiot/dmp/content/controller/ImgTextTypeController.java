@@ -35,7 +35,7 @@ public class ImgTextTypeController extends BaseController {
      */
     @RequiresPermissions
     @LogRecord(operationCode = "saveImgTextType", operationName = "保存图文类型", serviceType = ServiceTypeConst.CONTENT_MANAGE)
-    @PostMapping("/save")
+    @PostMapping("/create")
     public Boolean saveImgTextType(@RequestBody @Valid ImgTextType imgTextType) {
         String orgId = getOrgId();
         imgTextType.setCompanyId(Long.valueOf(orgId));
@@ -72,4 +72,5 @@ public class ImgTextTypeController extends BaseController {
         String orgId = getOrgId();
         return imgTextTypeService.queryForList(orgId);
     }
+
 }

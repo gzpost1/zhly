@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.app.controller;
+package cn.cuiot.dmp.app.controller.app;
 
 import cn.cuiot.dmp.app.dto.AppUserDto;
 import cn.cuiot.dmp.app.dto.user.ChangePhoneDto;
@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/app/auth")
-public class AuthController {
+public class AppAuthController {
 
     @Autowired
     private WeChatMiniAppService weChatMiniAppService;

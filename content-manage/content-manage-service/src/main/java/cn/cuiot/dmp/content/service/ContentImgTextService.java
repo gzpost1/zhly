@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.content.service;//	模板
 
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
@@ -53,4 +54,10 @@ public interface ContentImgTextService extends AuditResultDealService, IService<
      */
     int updateContentImgText(ContentImgTextUpdateDto updateDTO);
 
+    /**
+     * 停启用
+     * @param updateStatusParam
+     * @return
+     */
+    Boolean updateStatus(UpdateStatusParam updateStatusParam);
 }

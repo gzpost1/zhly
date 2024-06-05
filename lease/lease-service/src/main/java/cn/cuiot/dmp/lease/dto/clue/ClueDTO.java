@@ -46,6 +46,11 @@ public class ClueDTO implements Serializable {
     private Long sourceId;
 
     /**
+     * 线索来源名称
+     */
+    private String sourceIdName;
+
+    /**
      * 关联客户ID
      */
     private Long customerUserId;
@@ -65,6 +70,11 @@ public class ClueDTO implements Serializable {
      * 线索结果（系统配置自定义）
      */
     private Long resultId;
+
+    /**
+     * 线索结果名称
+     */
+    private String resultIdName;
 
     /**
      * 表单配置详情

@@ -3,10 +3,10 @@ package cn.cuiot.dmp.content.service.impl;//	模板
 
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
-import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.conver.ImgTextConvert;
 import cn.cuiot.dmp.content.dal.entity.ContentAudit;
@@ -19,7 +19,6 @@ import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
 import cn.cuiot.dmp.content.param.vo.ImgTextVo;
-import cn.cuiot.dmp.content.param.vo.NoticeVo;
 import cn.cuiot.dmp.content.service.ContentAuditService;
 import cn.cuiot.dmp.content.service.ContentDataRelevanceService;
 import cn.cuiot.dmp.content.service.ContentImgTextService;
@@ -98,7 +97,7 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
         ContentImgTextEntity imgTextEntity = ImgTextConvert.INSTANCE.convert(createDTO);
         imgTextEntity.setStatus(EntityConstants.ENABLED);
         int insert = this.baseMapper.insert(imgTextEntity);
-        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, createDTO.getDepartments(), createDTO.getBuildings(), imgTextEntity.getId());
+        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.IMG_TEXT, createDTO.getDepartments(), createDTO.getBuildings(), imgTextEntity.getId());
         return insert;
     }
 
@@ -108,8 +107,19 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
         ContentImgTextEntity imgTextEntity = ImgTextConvert.INSTANCE.convert(updateDtO);
         imgTextEntity.setId(updateDtO.getId());
         int update = this.baseMapper.updateById(imgTextEntity);
-        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, updateDtO.getDepartments(), updateDtO.getBuildings(), imgTextEntity.getId());
+        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.IMG_TEXT, updateDtO.getDepartments(), updateDtO.getBuildings(), imgTextEntity.getId());
         return update;
+    }
+
+    @Override
+    public Boolean updateStatus(UpdateStatusParam updateStatusParam) {
+        ContentImgTextEntity imgTextEntity = this.getById(updateStatusParam.getId());
+        if (imgTextEntity != null) {
+            imgTextEntity.setStatus(updateStatusParam.getStatus());
+            this.updateById(imgTextEntity);
+            return true;
+        }
+        return false;
     }
 
     @Override

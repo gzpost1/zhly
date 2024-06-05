@@ -42,6 +42,11 @@ public class ClueRecordDTO implements Serializable {
     private Long followStatusId;
 
     /**
+     * 跟进状态名称
+     */
+    private String followStatusIdName;
+
+    /**
      * 表单配置详情
      */
     private String formConfigDetail;

@@ -22,9 +22,13 @@ public class ClueCreateDTO implements Serializable {
     private String name;
 
     /**
+     * 企业ID
+     */
+    private Long companyId;
+
+    /**
      * 部门ID
      */
-    @NotNull(message = "部门ID不能为空")
     private Long departmentId;
 
     /**

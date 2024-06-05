@@ -18,6 +18,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -211,6 +212,15 @@ public class ApiController {
     public IdmResDTO<List<CustomConfigDetailRspDTO>> batchQueryCustomConfigDetails(@RequestBody @Valid CustomConfigDetailReqDTO customConfigDetailReqDTO) {
         List<CustomConfigDetailRspDTO> customConfigDetailRspDTOList = customConfigService.batchQueryCustomConfigDetails(customConfigDetailReqDTO);
         return IdmResDTO.success(customConfigDetailRspDTOList);
+    }
+
+    /**
+     * 根据id集合批量查询自定义配置详情，并返回对应的名称关系map
+     */
+    @PostMapping(value = "/batchQueryCustomConfigDetailsForMap", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<Map<Long, String>> batchQueryCustomConfigDetailsForMap(@RequestBody @Valid CustomConfigDetailReqDTO customConfigDetailReqDTO) {
+        List<CustomConfigDetailRspDTO> customConfigDetailRspDTOList = customConfigService.batchQueryCustomConfigDetails(customConfigDetailReqDTO);
+        return IdmResDTO.success(customConfigDetailRspDTOList.stream().collect(Collectors.toMap(CustomConfigDetailRspDTO::getId, CustomConfigDetailRspDTO::getName)));
     }
 
     /**

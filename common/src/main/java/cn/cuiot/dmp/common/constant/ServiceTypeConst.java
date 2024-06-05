@@ -62,5 +62,11 @@ public class ServiceTypeConst {
      * 内容中心
      */
     public static final String CONTENT_MANAGE = "104";
+    //----------------------------------线索管理----------------------------------end
+    /**
+     * 平台日志
+     * 线索管理
+     */
+    public static final String CLUE_MANAGEMENT = "105";
 
 }
