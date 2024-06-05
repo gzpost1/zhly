@@ -73,4 +73,17 @@ public class ContentConstants {
          */
         public static final Byte NOT_PASSED = 3;
     }
+
+    public static class ShowStatus {
+        /**
+         * 不展示
+         */
+        public static final Byte NOT_SHOW = 0;
+
+        /**
+         * 展示
+         */
+        public static final Byte SHOW = 1;
+    }
+
 }

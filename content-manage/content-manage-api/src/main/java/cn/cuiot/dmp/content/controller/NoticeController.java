@@ -76,7 +76,7 @@ public class NoticeController extends BaseController {
      */
     @RequiresPermissions
     @LogRecord(operationCode = "saveNotice", operationName = "保存公告", serviceType = ServiceTypeConst.CONTENT_MANAGE)
-    @PostMapping("/save")
+    @PostMapping("/create")
     public int saveNotice(@RequestBody @Valid NoticeCreateDto createDTO) {
         String orgId = getOrgId();
         createDTO.setCompanyId(Long.valueOf(orgId));
@@ -103,6 +103,11 @@ public class NoticeController extends BaseController {
         return noticeService.removeById(idParam.getId());
     }
 
+    /**
+     * 发布公告
+     * @param publishReqVo
+     * @return
+     */
     @RequiresPermissions
     @LogRecord(operationCode = "publishNotice", operationName = "发布公告", serviceType = ServiceTypeConst.CONTENT_MANAGE)
     @PostMapping("/publish")

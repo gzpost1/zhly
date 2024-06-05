@@ -4,8 +4,8 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
@@ -70,7 +70,7 @@ public class ContentImgTextController extends BaseController {
      */
     @RequiresPermissions
     @LogRecord(operationCode = "saveContentImgText", operationName = "保存图文", serviceType = ServiceTypeConst.CONTENT_MANAGE)
-    @PostMapping("/save")
+    @PostMapping("/create")
     public int saveContentImgText(@RequestBody @Valid ContentImgTextCreateDto createDTO) {
         return contentImgTextService.saveContentImgText(createDTO);
     }
@@ -95,4 +95,15 @@ public class ContentImgTextController extends BaseController {
         return contentImgTextService.removeById(idParam.getId());
     }
 
+    /**
+     * 停启用
+     *
+     * @param updateStatusParam
+     * @return
+     */
+    @PostMapping("/updateStatus")
+    @LogRecord(operationCode = "updateStatusImgText", operationName = "停启用图文", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    public Boolean updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
+        return contentImgTextService.updateStatus(updateStatusParam);
+    }
 }
