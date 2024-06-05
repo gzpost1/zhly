@@ -5,7 +5,11 @@ import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_ALREADY_EXIST
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
 import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
+import cn.cuiot.dmp.base.infrastructure.constants.MsgBindingNameConstants;
+import cn.cuiot.dmp.base.infrastructure.constants.MsgTagConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.stream.StreamMessageSender;
+import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -161,6 +165,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private SystemEventSendAdapter systemEventSendAdapter;
+
+    @Autowired
+    private StreamMessageSender streamMessageSender;
 
     @Autowired
     private DeptTreePathUtils deptTreePathUtils;
@@ -343,21 +350,31 @@ public class OrganizationServiceImpl implements OrganizationService {
                 dto.getDeptId().toString(), null);
 
         //发送事件
+        OrganizationEntity toDTO = organization2EntityAssembler.toDTO(organization);
         if(TransactionSynchronizationManager.isActualTransactionActive()){
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    systemEventSendAdapter.sendOrganizationCreateActionEvent(
-                            organization2EntityAssembler.toDTO(organization));
+                    systemEventSendAdapter.sendOrganizationCreateActionEvent(toDTO);
                 }
             });
         }else {
-            systemEventSendAdapter.sendOrganizationCreateActionEvent(
-                    organization2EntityAssembler.toDTO(organization));
+            systemEventSendAdapter.sendOrganizationCreateActionEvent(toDTO);
         }
 
         // 文件流输出
         createCsvFile(username,dto.getPhoneNumber(), password);
+
+        //发送MQ消息
+        streamMessageSender.sendGenericMessage(
+                MsgBindingNameConstants.SYSTEM_PRODUCER,
+                SimpleMsg.builder()
+                        .delayTimeLevel(2)
+                        .operateTag(MsgTagConstants.ORGANIZATION_ADD)
+                        .data(toDTO)
+                        .dataId(toDTO.getId())
+                        .info("创建企业")
+                        .build());
 
         return pkOrgId;
     }
@@ -547,18 +564,28 @@ public class OrganizationServiceImpl implements OrganizationService {
         updatePasswordIfNeed(dto);
 
         //发送事件
+        OrganizationEntity toDTO = organization2EntityAssembler.toDTO(organization);
         if(TransactionSynchronizationManager.isActualTransactionActive()){
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    systemEventSendAdapter.sendOrganizationUpdateActionEvent(
-                            organization2EntityAssembler.toDTO(organization));
+                    systemEventSendAdapter.sendOrganizationUpdateActionEvent(toDTO);
                 }
             });
         }else {
-            systemEventSendAdapter.sendOrganizationUpdateActionEvent(
-                    organization2EntityAssembler.toDTO(organization));
+            systemEventSendAdapter.sendOrganizationUpdateActionEvent(toDTO);
         }
+
+        //发送MQ消息
+        streamMessageSender.sendGenericMessage(
+                MsgBindingNameConstants.SYSTEM_PRODUCER,
+                SimpleMsg.builder()
+                        .delayTimeLevel(2)
+                        .operateTag(MsgTagConstants.ORGANIZATION_UPDATE)
+                        .data(toDTO)
+                        .dataId(toDTO.getId())
+                        .info("修改企业")
+                        .build());
     }
 
     /**
@@ -751,11 +778,11 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw new BusinessException(ResultCode.ACCOUNT_HAS_COMMUNITY);
         }*/
 
-        OrganizationEntity needDelete = null;
+        OrganizationEntity toDTO = null;
         try {
             Organization organization = organizationRepository
                     .find(new OrganizationId(Long.valueOf(orgId)));
-            needDelete = organization2EntityAssembler.toDTO(organization);
+            toDTO = organization2EntityAssembler.toDTO(organization);
             organizationRepository.remove(organization);
 
             List<Long> userList = userDao.getUserId(orgId);
@@ -779,17 +806,26 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
         //发送事件
         if(TransactionSynchronizationManager.isActualTransactionActive()){
-            OrganizationEntity finalNeedDelete = needDelete;
+            OrganizationEntity finalDTO = toDTO;
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    systemEventSendAdapter.sendOrganizationDeleteActionEvent(finalNeedDelete);
+                    systemEventSendAdapter.sendOrganizationDeleteActionEvent(finalDTO);
                 }
             });
         }else {
-            systemEventSendAdapter.sendOrganizationDeleteActionEvent(needDelete);
+            systemEventSendAdapter.sendOrganizationDeleteActionEvent(toDTO);
         }
-
+        //发送MQ消息
+        streamMessageSender.sendGenericMessage(
+                MsgBindingNameConstants.SYSTEM_PRODUCER,
+                SimpleMsg.builder()
+                        .delayTimeLevel(2)
+                        .operateTag(MsgTagConstants.ORGANIZATION_DELETE)
+                        .data(toDTO)
+                        .dataId(toDTO.getId())
+                        .info("删除企业")
+                        .build());
         return 1;
     }
 
@@ -819,6 +855,7 @@ public class OrganizationServiceImpl implements OrganizationService {
      * 启停用
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateStatus(UpdateStatusParam updateStatusParam, String sessionUserId,
             String sessionOrgId) {
         Long pkOrgId = updateStatusParam.getId();
@@ -845,29 +882,35 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
 
         //发送事件
+        OrganizationEntity toDTO = organization2EntityAssembler.toDTO(organization);
         if(TransactionSynchronizationManager.isActualTransactionActive()){
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
                     if (OrgStatusEnum.DISABLE.getCode().equals(organization.getStatus().getValue())) {
-                        systemEventSendAdapter.sendOrganizationDisableActionEvent(
-                                organization2EntityAssembler.toDTO(organization));
+                        systemEventSendAdapter.sendOrganizationDisableActionEvent(toDTO);
                     } else {
-                        systemEventSendAdapter.sendOrganizationEnableActionEvent(
-                                organization2EntityAssembler.toDTO(organization));
+                        systemEventSendAdapter.sendOrganizationEnableActionEvent(toDTO);
                     }
                 }
             });
         }else {
             if (OrgStatusEnum.DISABLE.getCode().equals(organization.getStatus().getValue())) {
-                systemEventSendAdapter.sendOrganizationDisableActionEvent(
-                        organization2EntityAssembler.toDTO(organization));
+                systemEventSendAdapter.sendOrganizationDisableActionEvent(toDTO);
             } else {
-                systemEventSendAdapter.sendOrganizationEnableActionEvent(
-                        organization2EntityAssembler.toDTO(organization));
+                systemEventSendAdapter.sendOrganizationEnableActionEvent(toDTO);
             }
         }
-
+        //发送MQ消息
+        streamMessageSender.sendGenericMessage(
+                MsgBindingNameConstants.SYSTEM_PRODUCER,
+                SimpleMsg.builder()
+                        .delayTimeLevel(2)
+                        .operateTag(MsgTagConstants.ORGANIZATION_UPDATE)
+                        .data(toDTO)
+                        .dataId(toDTO.getId())
+                        .info("修改企业")
+                        .build());
     }
 
     /**

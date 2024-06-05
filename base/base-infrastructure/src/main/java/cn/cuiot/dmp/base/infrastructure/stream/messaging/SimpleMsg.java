@@ -42,7 +42,17 @@ public class SimpleMsg<T> implements Serializable {
     private Integer delayTimeLevel;
 
     /**
+     * 数据ID
+     */
+    private Object dataId;
+
+    /**
      * 数据
      */
     private T data;
+
+    /**
+     * 提示信息
+     */
+    private String info;
 }
