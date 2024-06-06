@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * App认证与用户接口
+ * 【APP】认证与用户接口
  *
  * @author: wuyongchong
  * @date: 2024/5/22 11:44
