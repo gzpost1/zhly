@@ -21,6 +21,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -88,6 +89,7 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
     /**
      * 更新
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateClueRecord(ClueRecordUpdateDTO updateDTO) {
         ClueRecordEntity clueRecordEntity = Optional.ofNullable(getById(updateDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
@@ -98,12 +100,13 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
     /**
      * 删除
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteClueRecord(Long id) {
         return removeById(id);
     }
 
     /**
-     * 删除
+     * 根据线索ID删除
      */
     public boolean deleteClueRecordByClueId(Long clueId) {
         LambdaUpdateWrapper<ClueRecordEntity> updateWrapper = new LambdaUpdateWrapper<ClueRecordEntity>()

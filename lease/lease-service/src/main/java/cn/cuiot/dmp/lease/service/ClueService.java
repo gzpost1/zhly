@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -108,6 +109,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     /**
      * 保存
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean saveClue(ClueCreateDTO createDTO) {
         ClueEntity clueEntity = new ClueEntity();
         BeanUtils.copyProperties(createDTO, clueEntity);
@@ -117,6 +119,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     /**
      * 更新
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateClue(ClueUpdateDTO updateDTO) {
         ClueEntity clueEntity = Optional.ofNullable(getById(updateDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
@@ -127,6 +130,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     /**
      * 分配
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean distributeClue(ClueDistributeDTO distributeDTO) {
         ClueEntity clueEntity = Optional.ofNullable(getById(distributeDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
@@ -137,6 +141,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     /**
      * 跟进
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean followClue(ClueFollowDTO followDTO) {
         ClueRecordEntity clueRecord = new ClueRecordEntity();
         BeanUtils.copyProperties(followDTO, clueRecord);
@@ -147,6 +152,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     /**
      * 完成
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean finishClue(ClueFinishDTO finishDTO) {
         ClueEntity clueEntity = Optional.ofNullable(getById(finishDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
@@ -158,6 +164,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     /**
      * 删除
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteClue(Long id) {
         // 删除关联的线索记录
         clueRecordService.deleteClueRecordByClueId(id);
@@ -167,6 +174,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     /**
      * 批量分配
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean batchDistributeClue(ClueBatchUpdateDTO batchUpdateDTO) {
         AssertUtil.notNull(batchUpdateDTO.getCurrentFollowerId(), "当前跟进人ID不能为空");
         LambdaQueryWrapper<ClueEntity> queryWrapper = new LambdaQueryWrapper<ClueEntity>()
@@ -182,6 +190,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     /**
      * 批量完成
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean batchFinishClue(ClueBatchUpdateDTO batchUpdateDTO) {
         AssertUtil.notNull(batchUpdateDTO.getResultId(), "线索结果不能为空");
         LambdaQueryWrapper<ClueEntity> queryWrapper = new LambdaQueryWrapper<ClueEntity>()
@@ -203,6 +212,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     /**
      * 批量删除
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean batchDeleteClue(List<Long> idList) {
         return removeByIds(idList);
     }

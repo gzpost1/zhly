@@ -168,7 +168,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     }
 
     @Override
-    public void initCustomConfig(Long companyId, String userId) {
+    public void initCustomConfig(Long companyId) {
         AssertUtil.notNull(companyId, "企业ID不能为空");
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
                 .eq(CustomConfigEntity::getCompanyId, companyId);
@@ -176,7 +176,6 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         if (CollectionUtils.isNotEmpty(customConfigEntityListCurrent)) {
             return;
         }
-        AssertUtil.notBlank(userId, "用户ID不能为空");
         List<CustomConfigEntity> customConfigEntityList = new ArrayList<>();
         // 房屋档案
         CustomConfigConstant.HOUSES_ARCHIVES_INIT.forEach(o -> {
@@ -185,7 +184,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
             customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.HOUSE_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
             customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
@@ -196,7 +195,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
             customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.ROOM_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
             customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
@@ -207,7 +206,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
             customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.DEVICE_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
             customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
@@ -218,7 +217,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
             customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.PARK_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
             customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
@@ -229,7 +228,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
             customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.CUSTOMER_INFO.getCode());
-            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
             customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
@@ -240,7 +239,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
             customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.WORK_OPTION.getCode());
-            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
             customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
@@ -251,7 +250,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
             customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.CLUE_OPTION.getCode());
-            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
             customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });

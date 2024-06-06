@@ -15,9 +15,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +79,7 @@ public class VisitorRecordService extends ServiceImpl<VisitorRecordMapper, Visit
     /**
      * 保存
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean saveVisitorRecord(VisitorRecordCreateDTO createDTO) {
         VisitorRecordEntity visitorRecordEntity = new VisitorRecordEntity();
         BeanUtils.copyProperties(createDTO, visitorRecordEntity);
@@ -88,6 +89,7 @@ public class VisitorRecordService extends ServiceImpl<VisitorRecordMapper, Visit
     /**
      * 更新
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateVisitorRecord(VisitorRecordUpdateDTO updateDTO) {
         VisitorRecordEntity visitorRecordEntity = Optional.ofNullable(getById(updateDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
@@ -98,6 +100,7 @@ public class VisitorRecordService extends ServiceImpl<VisitorRecordMapper, Visit
     /**
      * 删除
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteVisitorRecord(Long id) {
         return removeById(id);
     }

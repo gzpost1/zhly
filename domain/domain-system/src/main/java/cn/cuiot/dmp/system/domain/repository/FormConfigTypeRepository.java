@@ -31,7 +31,7 @@ public interface FormConfigTypeRepository {
     /**
      * 根据企业id获取表单配置类型
      */
-    List<FormConfigType> queryByCompany(Long companyId);
+    List<FormConfigType> queryByCompany(Long companyId, Byte initFlag);
 
     /**
      * 保存

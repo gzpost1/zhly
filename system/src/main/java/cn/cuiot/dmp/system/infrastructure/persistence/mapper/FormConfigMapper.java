@@ -14,6 +14,13 @@ import java.util.List;
 public interface FormConfigMapper extends BaseMapper<FormConfigEntity> {
 
     /**
+     * 批量保存表单配置
+     *
+     * @param formConfigEntityList 表单配置列表
+     */
+    int batchSaveFormConfig(@Param("list") List<FormConfigEntity> formConfigEntityList);
+
+    /**
      * 根据id批量更新表单配置的分类或者状态
      *
      * @param typeId 分类ID

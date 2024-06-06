@@ -42,7 +42,7 @@ public class SystemOptionTypeServiceImpl implements SystemOptionTypeService {
             return new ArrayList<>();
         }
         // 是否需要初始化自定义配置
-        customConfigRepository.initCustomConfig(queryDTO.getCompanyId(), queryDTO.getUserId());
+        customConfigRepository.initCustomConfig(queryDTO.getCompanyId());
         return systemOptionTypeList.stream()
                 // 前端筛选需要过滤二维码档案
                 .filter(item -> SystemOptionTypeEnum.archiveTypeFlag(item.getSystemOptionType()) &&
@@ -72,7 +72,7 @@ public class SystemOptionTypeServiceImpl implements SystemOptionTypeService {
             return new ArrayList<>();
         }
         // 是否需要初始化自定义配置
-        customConfigRepository.initCustomConfig(queryDTO.getCompanyId(), queryDTO.getUserId());
+        customConfigRepository.initCustomConfig(queryDTO.getCompanyId());
         List<SystemOptionTypeTreeNodeVO> systemOptionTypeTreeNodeVOList = new ArrayList<>();
         SystemOptionTypeTreeNodeVO rootSystemOptionTypeTreeNodeVO = initRootArchiveTypeVO();
         List<SystemOptionTypeTreeNodeVO> childrenArchiveTypeTreeNodeList = systemOptionTypeList.stream()
