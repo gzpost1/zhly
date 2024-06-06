@@ -2,6 +2,29 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.FormConfigMapper">
 
+    <insert id="batchSaveFormConfig" parameterType="java.util.List">
+        INSERT INTO form_config
+        (
+        id,
+        name,
+        company_id,
+        type_id,
+        created_by,
+        created_on
+        )
+        values
+        <foreach collection="list" separator="," item="item">
+            (
+            #{item.id},
+            #{item.name},
+            #{item.companyId},
+            #{item.typeId},
+            #{item.createdBy},
+            now()
+            )
+        </foreach>
+    </insert>
+
     <update id="batchUpdateFormConfigById" parameterType="java.util.List">
         update form_config
         <set>

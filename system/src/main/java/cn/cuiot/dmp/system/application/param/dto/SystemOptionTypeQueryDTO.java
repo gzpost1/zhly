@@ -28,9 +28,4 @@ public class SystemOptionTypeQueryDTO implements Serializable {
      */
     private Long companyId;
 
-    /**
-     * 用户id
-     */
-    private String userId;
-
 }

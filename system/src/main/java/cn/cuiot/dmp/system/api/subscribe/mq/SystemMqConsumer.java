@@ -1,10 +1,11 @@
 package cn.cuiot.dmp.system.api.subscribe.mq;
 
 import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
-import java.util.function.Consumer;
+import cn.cuiot.dmp.system.infrastructure.config.SystemMsgChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.message.MessageConst;
-import org.springframework.context.annotation.Bean;
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
@@ -16,20 +17,15 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
+@EnableBinding(value = {SystemMsgChannel.class})
 public class SystemMqConsumer {
 
-    /**
-     * 消息处理
-     */
-    @Bean
-    public Consumer<Message<SimpleMsg>> systemConsumer() {
-        return msg -> {
-            log.info(Thread.currentThread().getName()
-                            + "systemConsumer Receive Messages,tag:{},messageId:{},payload:{}",
-                    msg.getHeaders().get(MessageConst.PROPERTY_TAGS),
-                    msg.getHeaders().get(MessageConst.PROPERTY_ORIGIN_MESSAGE_ID),
-                    msg.getPayload());
-        };
+    @StreamListener(SystemMsgChannel.SYSTEM_INPUT)
+    public <T> void systemInputProccess(Message<SimpleMsg<T>> message) {
+        log.info("SystemMqConsumer systemInputProccess,tag:{},messageId:{},payload:{}",
+                message.getHeaders().get(MessageConst.PROPERTY_TAGS),
+                message.getHeaders().get(MessageConst.PROPERTY_ORIGIN_MESSAGE_ID),
+                message.getPayload());
     }
 
 }

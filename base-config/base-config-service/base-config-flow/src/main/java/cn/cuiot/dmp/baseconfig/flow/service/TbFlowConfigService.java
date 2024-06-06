@@ -146,6 +146,9 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("processJson", processJson);
+        tbFlowConfig.setProcess(null);
+        jsonObject.put("flowconfig", JsonUtil.writeValueAsString(tbFlowConfig));
+
         BpmnModel bpmnModel = assemBpmnModel(jsonObject, childNode, createDto.getRemark(), createDto.getName(), StringUtils.join(createDto.getOrgId(), ","),
                 tbFlowConfig.getId().toString());
         repositoryService.createDeployment()
@@ -300,6 +303,9 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("processJson", processJson);
+        config.setProcess(null);
+        jsonObject.put("flowconfig", JsonUtil.writeValueAsString(config));
+
         BpmnModel bpmnModel = assemBpmnModel(jsonObject, childNode, updateDto.getRemark(), updateDto.getName(), StringUtils.join(updateDto.getOrgId(), ","),
                 updateDto.getId().toString());
         repositoryService.createDeployment()

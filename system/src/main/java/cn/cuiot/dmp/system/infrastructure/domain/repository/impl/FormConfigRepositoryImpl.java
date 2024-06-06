@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.SystemFormConfigConstant;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -32,10 +33,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -230,6 +228,23 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
             }
         }
         return false;
+    }
+
+    @Override
+    public void initSystemFormConfig(Long companyId, Map<String, Long> systemFormConfigTypeMap) {
+        AssertUtil.notNull(companyId, "企业ID不能为空");
+        List<FormConfigEntity> formConfigEntityList = new ArrayList<>();
+        // 线索相关
+        SystemFormConfigConstant.CLUE_FORM_CONFIG.forEach(o -> {
+            FormConfigEntity formConfigEntity = new FormConfigEntity();
+            formConfigEntity.setId(IdWorker.getId());
+            formConfigEntity.setName(o);
+            formConfigEntity.setCompanyId(companyId);
+            formConfigEntity.setTypeId(systemFormConfigTypeMap.get(SystemFormConfigConstant.FORM_CONFIG_TYPE_LIST.get(0)));
+            formConfigEntity.setCreatedBy(SystemFormConfigConstant.DEFAULT_USER_ID.toString());
+            formConfigEntityList.add(formConfigEntity);
+        });
+        formConfigMapper.batchSaveFormConfig(formConfigEntityList);
     }
 
     private Query getQuery(FormConfigDetailQueryDTO formConfigDetailQueryDTO) {

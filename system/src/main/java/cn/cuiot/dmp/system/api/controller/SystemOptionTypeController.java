@@ -42,9 +42,7 @@ public class SystemOptionTypeController extends BaseController {
     @PostMapping("/queryForList")
     public List<SystemOptionTypeVO> queryForList(@RequestBody @Valid SystemOptionTypeQueryDTO queryDTO) {
         String orgId = getOrgId();
-        String userId = getUserId();
         queryDTO.setCompanyId(Long.valueOf(orgId));
-        queryDTO.setUserId(userId);
         return systemOptionTypeService.queryForList(queryDTO);
     }
 
@@ -54,9 +52,7 @@ public class SystemOptionTypeController extends BaseController {
     @PostMapping("/queryForTree")
     public List<SystemOptionTypeTreeNodeVO> queryForTree(@RequestBody @Valid SystemOptionTypeQueryDTO queryDTO) {
         String orgId = getOrgId();
-        String userId = getUserId();
         queryDTO.setCompanyId(Long.valueOf(orgId));
-        queryDTO.setUserId(userId);
         return systemOptionTypeService.queryForTree(queryDTO);
     }
 

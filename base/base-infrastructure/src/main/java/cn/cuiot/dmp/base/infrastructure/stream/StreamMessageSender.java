@@ -34,15 +34,14 @@ public class StreamMessageSender {
      */
     public <T> void sendGenericMessage(String bindingName, SimpleMsg<T> msg) {
         String messageId = IdWorker.get32UUID();
-        Map<String, Object> headers = Maps.newHashMap();
-        headers.put(MessageConst.PROPERTY_KEYS, KEY_PREFIX + messageId);
-        headers.put(MessageConst.PROPERTY_ORIGIN_MESSAGE_ID, messageId);
-        headers.put(MessageConst.PROPERTY_TAGS, msg.getOperateTag());
+        MessageBuilder<SimpleMsg<T>> builder = MessageBuilder.withPayload(msg);
+        builder.setHeader(MessageConst.PROPERTY_KEYS, KEY_PREFIX + messageId);
+        builder.setHeader(MessageConst.PROPERTY_ORIGIN_MESSAGE_ID, messageId);
+        builder.setHeader(MessageConst.PROPERTY_TAGS, msg.getOperateTag());
         if(Objects.nonNull(msg.getDelayTimeLevel())){
-            headers.put(MessageConst.PROPERTY_DELAY_TIME_LEVEL,msg.getDelayTimeLevel());
+            builder.setHeader(MessageConst.PROPERTY_DELAY_TIME_LEVEL,msg.getDelayTimeLevel());
         }
-        Message<SimpleMsg<T>> data = new GenericMessage(msg, headers);
-        streamBridge.send(bindingName, data);
+        streamBridge.send(bindingName, builder.build());
     }
 
 }
