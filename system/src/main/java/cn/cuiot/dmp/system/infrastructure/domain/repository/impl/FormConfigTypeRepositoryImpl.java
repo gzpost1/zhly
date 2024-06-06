@@ -54,7 +54,8 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
     @Override
     public List<FormConfigType> queryForList(FormConfigType formConfigType) {
         LambdaQueryWrapper<FormConfigTypeEntity> queryWrapper = new LambdaQueryWrapper<FormConfigTypeEntity>()
-                .eq(Objects.nonNull(formConfigType.getCompanyId()), FormConfigTypeEntity::getCompanyId, formConfigType.getCompanyId());
+                .eq(Objects.nonNull(formConfigType.getCompanyId()), FormConfigTypeEntity::getCompanyId, formConfigType.getCompanyId())
+                .eq(Objects.nonNull(formConfigType.getInitFlag()), FormConfigTypeEntity::getInitFlag, formConfigType.getInitFlag());
         List<FormConfigTypeEntity> formConfigTypeEntityList = formConfigTypeMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(formConfigTypeEntityList)) {
             return new ArrayList<>();
