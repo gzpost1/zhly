@@ -10,6 +10,6 @@ public class MsgBindingNameConstants {
     /**
      * 系统管理消息发送绑定
      */
-    public final static String SYSTEM_PRODUCER="systemProducer-out-0";
+    public final static String SYSTEM_PRODUCER="systemOutput";
 
 }
