@@ -12,6 +12,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
@@ -243,6 +244,26 @@ public class ApiSystemServiceImpl implements ApiSystemService {
             throw new RuntimeException(message);
         } catch (Exception ex) {
             log.info("ApiSystemServiceImpl==batchQueryCustomConfigDetails==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_CUSTOM_CONFIG_DETAIL_ERROR);
+        }
+    }
+
+    @Override
+    public Map<Long, String> batchQueryCustomConfigDetailsForMap(CustomConfigDetailReqDTO customConfigDetailReqDTO) {
+        try {
+            IdmResDTO<Map<Long, String>> idmResDTO = systemApiFeignService
+                    .batchQueryCustomConfigDetailsForMap(customConfigDetailReqDTO);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==batchQueryCustomConfigDetailsForMap==fail", ex);
             throw new BusinessException(ResultCode.QUERY_CUSTOM_CONFIG_DETAIL_ERROR);
         }
     }

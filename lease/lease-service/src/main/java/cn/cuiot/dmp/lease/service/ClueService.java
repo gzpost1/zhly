@@ -1,5 +1,9 @@
 package cn.cuiot.dmp.lease.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
+import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -12,6 +16,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +38,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     @Autowired
     private ClueRecordService clueRecordService;
 
+    @Autowired
+    private SystemApiFeignService systemApiFeignService;
+
     /**
      * 查询详情
      */
@@ -41,6 +49,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         ClueDTO clueDTO = new ClueDTO();
         BeanUtils.copyProperties(clueEntity, clueDTO);
+        fillSystemOptionName(Lists.newArrayList(clueDTO));
         return clueDTO;
     }
 
@@ -63,13 +72,15 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         if (CollectionUtils.isEmpty(clueEntityList)) {
             return new ArrayList<>();
         }
-        return clueEntityList.stream()
+        List<ClueDTO> clueDTOList = clueEntityList.stream()
                 .map(o -> {
                     ClueDTO clueDTO = new ClueDTO();
                     BeanUtils.copyProperties(o, clueDTO);
                     return clueDTO;
                 })
                 .collect(Collectors.toList());
+        fillSystemOptionName(clueDTOList);
+        return clueDTOList;
     }
 
     /**
@@ -148,6 +159,8 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
      * 删除
      */
     public boolean deleteClue(Long id) {
+        // 删除关联的线索记录
+        clueRecordService.deleteClueRecordByClueId(id);
         return removeById(id);
     }
 
@@ -203,11 +216,44 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                     return clueDTO;
                 })
                 .collect(Collectors.toList());
+        fillSystemOptionName(clueDTOList);
         clueDTOPageResult.setList(clueDTOList);
         clueDTOPageResult.setCurrentPage((int) clueEntityIPage.getCurrent());
         clueDTOPageResult.setPageSize((int) clueEntityIPage.getSize());
         clueDTOPageResult.setTotal(clueEntityIPage.getTotal());
         return clueDTOPageResult;
+    }
+
+    /**
+     * 使用配置id列表查询出，对应的名称关系
+     *
+     * @param clueDTOList 线索列表
+     */
+    private void fillSystemOptionName(List<ClueDTO> clueDTOList) {
+        if (CollectionUtils.isEmpty(clueDTOList)) {
+            return;
+        }
+        Set<Long> configIdList = new HashSet<>();
+        clueDTOList.forEach(o -> {
+            if (Objects.nonNull(o.getSourceId())) {
+                configIdList.add(o.getSourceId());
+            }
+            if (Objects.nonNull(o.getResultId())) {
+                configIdList.add(o.getResultId());
+            }
+        });
+        CustomConfigDetailReqDTO customConfigDetailReqDTO = new CustomConfigDetailReqDTO();
+        customConfigDetailReqDTO.setCustomConfigDetailIdList(new ArrayList<>(configIdList));
+        Map<Long, String> systemOptionMap = systemApiFeignService.batchQueryCustomConfigDetailsForMap(customConfigDetailReqDTO)
+                .getData();
+        clueDTOList.forEach(o -> {
+            if (Objects.nonNull(o.getSourceId()) && systemOptionMap.containsKey(o.getSourceId())) {
+                o.setSourceIdName(systemOptionMap.get(o.getSourceId()));
+            }
+            if (Objects.nonNull(o.getResultId()) && systemOptionMap.containsKey(o.getResultId())) {
+                o.setResultIdName(systemOptionMap.get(o.getResultId()));
+            }
+        });
     }
 
 }
