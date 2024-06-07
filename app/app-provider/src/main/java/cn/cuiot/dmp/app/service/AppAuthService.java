@@ -224,6 +224,7 @@ public class AppAuthService {
             //更新登录时间
             UserEntity updateEntity = new UserEntity();
             updateEntity.setId(userDto.getId());
+            updateEntity.setOpenid(openid);
             updateEntity.setLastOnlineIp(ipAddr);
             updateEntity.setLastOnlineOn(LocalDateTime.now());
             appUserService.updateAppUser(updateEntity);
@@ -252,6 +253,7 @@ public class AppAuthService {
                 //更新登录时间
                 UserEntity updateEntity = new UserEntity();
                 updateEntity.setId(userDto.getId());
+                updateEntity.setOpenid(openid);
                 updateEntity.setLastOnlineIp(ipAddr);
                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                 appUserService.updateAppUser(updateEntity);
@@ -339,6 +341,7 @@ public class AppAuthService {
         //更新登录时间
         UserEntity updateEntity = new UserEntity();
         updateEntity.setId(userDto.getId());
+        updateEntity.setOpenid(userDto.getOpenid());
         updateEntity.setLastOnlineIp(dto.getIpAddr());
         updateEntity.setLastOnlineOn(LocalDateTime.now());
         appUserService.updateAppUser(updateEntity);
@@ -487,6 +490,7 @@ public class AppAuthService {
         //更新登录时间
         UserEntity updateEntity = new UserEntity();
         updateEntity.setId(userDto.getId());
+        updateEntity.setOpenid(userDto.getOpenid());
         updateEntity.setLastOnlineIp(dto.getIpAddr());
         updateEntity.setLastOnlineOn(LocalDateTime.now());
         appUserService.updateAppUser(updateEntity);
