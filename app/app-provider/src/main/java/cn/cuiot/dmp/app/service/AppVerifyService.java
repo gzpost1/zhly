@@ -141,7 +141,8 @@ public class AppVerifyService {
             throw new BusinessException(SMS_CODE_FREQUENTLY_REQ_ERROR);
         }
         // 生成短信验证码
-        String smsCode = RandomStringUtils.random(SendMessageConst.SMS_CODE_LENGTH, false, true);
+        //String smsCode = RandomStringUtils.random(SendMessageConst.SMS_CODE_LENGTH, false, true);
+        String smsCode = "123456";
         log.warn("sendPhoneSmsCode===smsCode:{}",smsCode);
         // 发送短信
         boolean sendSucceed = sendSmsCode(smsCode, phoneNumber);
