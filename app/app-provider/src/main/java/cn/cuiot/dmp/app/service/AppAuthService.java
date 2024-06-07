@@ -35,22 +35,25 @@ import cn.cuiot.dmp.domain.types.AuthContants;
 import cn.cuiot.dmp.domain.types.Password;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
-import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
 import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.PhoneUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -109,6 +112,84 @@ public class AppAuthService {
         claims.put(AuthContants.USER_TYPE, userDto.getUserType());
 
         return claims;
+    }
+
+    /**
+     * openid登录
+     */
+    public List<AppUserDto> openidLogin(String openid, String ipAddr) {
+        List<AppUserDto> resultList = Lists.newArrayList();
+        List<AppUserDto> appUserDtos = appUserService.selectUserByOpenid(openid);
+        if (CollectionUtils.isNotEmpty(appUserDtos)) {
+            for (AppUserDto userDto : appUserDtos) {
+
+                if (UserTypeEnum.USER.getValue().equals(userDto.getUserType())) {
+                    if (!EntityConstants.DISABLED.equals(userDto.getStatus())) {
+                        Long pkOrgId = appUserService.getOrgId(userDto.getId());
+                        if (Objects.nonNull(pkOrgId)) {
+                            OrganizationEntity organization = organizationEntityMapper
+                                    .selectById(pkOrgId);
+                            if (Objects.nonNull(organization) && !OrgStatusEnum.DISABLE.getCode()
+                                    .equals(organization.getStatus())) {
+                                String pkDeptId = appUserService
+                                        .getDeptId(userDto.getId().toString(), pkOrgId.toString());
+                                userDto.setOrgId(pkOrgId.toString());
+                                userDto.setDeptId(pkDeptId);
+                                userDto.setOrgTypeId(organization.getOrgTypeId());
+                                //更新登录时间
+                                UserEntity updateEntity = new UserEntity();
+                                updateEntity.setId(userDto.getId());
+                                updateEntity.setLastOnlineIp(ipAddr);
+                                updateEntity.setLastOnlineOn(LocalDateTime.now());
+                                appUserService.updateAppUser(updateEntity);
+
+                                //设置token
+                                genSetAppToken(userDto);
+
+                                resultList.add(userDto);
+                            }
+                        }
+                    }
+                } else {
+                    //更新登录时间
+                    UserEntity updateEntity = new UserEntity();
+                    updateEntity.setId(userDto.getId());
+                    updateEntity.setLastOnlineIp(ipAddr);
+                    updateEntity.setLastOnlineOn(LocalDateTime.now());
+                    appUserService.updateAppUser(updateEntity);
+
+                    //设置token
+                    genSetAppToken(userDto);
+
+                    resultList.add(userDto);
+                }
+
+            }
+        }
+        return resultList;
+    }
+
+    /**
+     * 设置token
+     */
+    private void genSetAppToken(AppUserDto userDto) {
+        Long pkUserId = userDto.getId();
+        Date expirationDate = DateUtil
+                .date(System.currentTimeMillis() + Const.WX_SESSION_TIME * 1000);
+
+        Map<String, Object> claims = generateClaims(userDto);
+
+        String jwt = Jwts.builder().setClaims(claims).setExpiration(expirationDate)
+                .signWith(SignatureAlgorithm.HS512, Const.SECRET).compact();
+
+        String refreshCode = String.valueOf(SnowflakeIdWorkerUtil.nextId());
+        redisUtil.set(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt, refreshCode,
+                SecurityConst.WX_REFRESH_SESSION_TIME);
+        redisUtil.set(CacheConst.LOGIN_USERS_JWT_WX + jwt, String.valueOf(pkUserId),
+                Const.WX_SESSION_TIME);
+
+        userDto.setRefreshCode(refreshCode);
+        userDto.setToken(jwt);
     }
 
     /**
@@ -176,24 +257,8 @@ public class AppAuthService {
                 appUserService.updateAppUser(updateEntity);
             }
         }
-        Long pkUserId = userDto.getId();
-
-        Date expirationDate = DateUtil
-                .date(System.currentTimeMillis() + Const.WX_SESSION_TIME * 1000);
-
-        Map<String, Object> claims = generateClaims(userDto);
-
-        String jwt = Jwts.builder().setClaims(claims).setExpiration(expirationDate)
-                .signWith(SignatureAlgorithm.HS512, Const.SECRET).compact();
-
-        String refreshCode = String.valueOf(SnowflakeIdWorkerUtil.nextId());
-        redisUtil.set(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt, refreshCode,
-                SecurityConst.WX_REFRESH_SESSION_TIME);
-        redisUtil.set(CacheConst.LOGIN_USERS_JWT_WX + jwt, String.valueOf(pkUserId),
-                Const.WX_SESSION_TIME);
-
-        userDto.setRefreshCode(refreshCode);
-        userDto.setToken(jwt);
+        //生成与设置token
+        genSetAppToken(userDto);
 
         return userDto;
     }
@@ -293,22 +358,8 @@ public class AppAuthService {
         userDto.setDeptId(pkDeptId);
         userDto.setOrgTypeId(organization.getOrgTypeId());
 
-        Date expirationDate = DateUtil
-                .date(System.currentTimeMillis() + Const.WX_SESSION_TIME * 1000);
-
-        Map<String, Object> claims = generateClaims(userDto);
-
-        String jwt = Jwts.builder().setClaims(claims).setExpiration(expirationDate)
-                .signWith(SignatureAlgorithm.HS512, Const.SECRET).compact();
-
-        String refreshCode = String.valueOf(SnowflakeIdWorkerUtil.nextId());
-        redisUtil.set(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt, refreshCode,
-                SecurityConst.WX_REFRESH_SESSION_TIME);
-        redisUtil.set(CacheConst.LOGIN_USERS_JWT_WX + jwt, String.valueOf(userDto.getId()),
-                Const.WX_SESSION_TIME);
-
-        userDto.setRefreshCode(refreshCode);
-        userDto.setToken(jwt);
+        //生成与设置token
+        genSetAppToken(userDto);
 
         return userDto;
     }
@@ -455,22 +506,8 @@ public class AppAuthService {
         userDto.setDeptId(pkDeptId);
         userDto.setOrgTypeId(organization.getOrgTypeId());
 
-        Date expirationDate = DateUtil
-                .date(System.currentTimeMillis() + Const.WX_SESSION_TIME * 1000);
-
-        Map<String, Object> claims = generateClaims(userDto);
-
-        String jwt = Jwts.builder().setClaims(claims).setExpiration(expirationDate)
-                .signWith(SignatureAlgorithm.HS512, Const.SECRET).compact();
-
-        String refreshCode = String.valueOf(SnowflakeIdWorkerUtil.nextId());
-        redisUtil.set(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt, refreshCode,
-                SecurityConst.WX_REFRESH_SESSION_TIME);
-        redisUtil.set(CacheConst.LOGIN_USERS_JWT_WX + jwt, String.valueOf(userDto.getId()),
-                Const.WX_SESSION_TIME);
-
-        userDto.setRefreshCode(refreshCode);
-        userDto.setToken(jwt);
+        //生成与设置token
+        genSetAppToken(userDto);
 
         return userDto;
     }
@@ -744,24 +781,8 @@ public class AppAuthService {
                 appUserService.updateAppUser(updateEntity);
             }
         }
-        Long pkUserId = userDto.getId();
-
-        Date expirationDate = DateUtil
-                .date(System.currentTimeMillis() + Const.WX_SESSION_TIME * 1000);
-
-        Map<String, Object> claims = generateClaims(userDto);
-
-        String jwt = Jwts.builder().setClaims(claims).setExpiration(expirationDate)
-                .signWith(SignatureAlgorithm.HS512, Const.SECRET).compact();
-
-        String refreshCode = String.valueOf(SnowflakeIdWorkerUtil.nextId());
-        redisUtil.set(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt, refreshCode,
-                SecurityConst.WX_REFRESH_SESSION_TIME);
-        redisUtil.set(CacheConst.LOGIN_USERS_JWT_WX + jwt, String.valueOf(pkUserId),
-                Const.WX_SESSION_TIME);
-
-        userDto.setRefreshCode(refreshCode);
-        userDto.setToken(jwt);
+        //生成与设置token
+        genSetAppToken(userDto);
 
         return userDto;
     }

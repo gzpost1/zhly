@@ -106,4 +106,8 @@ public interface AppUserMapper extends IotBaseMapper<UserEntity> {
      */
     @Select("select org_owner from organization where id = #{id} limit 1")
     Long findOrgOwner(@Param("id") String sessionOrgId);
+
+
+    List<AppUserDto> selectUserByOpenid(@Param("openid") String openid);
+
 }

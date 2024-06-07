@@ -5,8 +5,11 @@ import cn.cuiot.dmp.app.dto.AppUserDto;
 import cn.cuiot.dmp.app.entity.UserEntity;
 import cn.cuiot.dmp.app.mapper.AppUserMapper;
 import cn.cuiot.dmp.util.Sm4;
+import com.google.common.collect.Lists;
+import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +42,22 @@ public class AppUserService {
             }
         }
         return dto;
+    }
+
+    /**
+     * 根据openid获取用户列表
+     */
+    public List<AppUserDto> selectUserByOpenid(String openid) {
+        List<AppUserDto> list = appUserMapper.selectUserByOpenid(openid);
+        if (CollectionUtils.isNotEmpty(list)) {
+            for(AppUserDto dto:list){
+                if (StringUtils.isNotBlank(dto.getPhoneNumber())) {
+                    dto.setPhoneNumber(Sm4.decrypt(dto.getPhoneNumber()));
+                }
+            }
+            return list;
+        }
+        return Lists.newArrayList();
     }
 
     /**
