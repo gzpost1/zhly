@@ -17,6 +17,19 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface HouseKeeperMapper extends BaseMapper<HouseKeeperEntity> {
 
-    IPage<HouseKeeperEntity> queryForList(Page<HouseKeeperEntity> page,@Param("companyId") Long companyId,
-            @Param("deptPath") String deptPath,@Param("communityId")  Long communityId,@Param("communityIdList")  List<Long> communityIdList,@Param("status")  Byte status);
+    /**
+     * 分页查询
+     */
+    IPage<HouseKeeperEntity> queryForList(Page<HouseKeeperEntity> page,
+            @Param("companyId") Long companyId,
+            @Param("deptPath") String deptPath, @Param("communityId") Long communityId,
+            @Param("communityIdList") List<Long> communityIdList, @Param("status") Byte status);
+
+    /**
+     * 列表查询
+     */
+    List<HouseKeeperEntity> queryForList(@Param("companyId") Long companyId,
+            @Param("deptPath") String deptPath, @Param("communityId") Long communityId,
+            @Param("communityIdList") List<Long> communityIdList, @Param("status") Byte status);
+
 }
