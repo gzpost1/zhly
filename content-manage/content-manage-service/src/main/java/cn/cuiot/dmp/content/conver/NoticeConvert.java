@@ -63,4 +63,6 @@ public interface NoticeConvert {
     }
 
     List<NoticeVo> convert(List<ContentNoticeEntity> noticeEntityList);
+
+    IPage<NoticeVo> convert(IPage<ContentNoticeEntity> noticeEntityIPage);
 }

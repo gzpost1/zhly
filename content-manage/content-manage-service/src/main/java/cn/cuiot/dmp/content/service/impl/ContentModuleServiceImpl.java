@@ -98,4 +98,14 @@ public class ContentModuleServiceImpl implements ContentModuleService {
         contentModuleMapper.updateById(contentModule);
         return true;
     }
+
+    @Override
+    public List<ContentModule> getAppHomeModule(String systemModule) {
+        LambdaQueryWrapper<ContentModule> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ContentModule::getCompanyId, LoginInfoHolder.getCurrentOrgId());
+        queryWrapper.eq(ContentModule::getSystemModule, systemModule);
+        queryWrapper.eq(ContentModule::getShowed, ContentConstants.ShowStatus.SHOW);
+        queryWrapper.orderByAsc(ContentModule::getSort);
+        return contentModuleMapper.selectList(queryWrapper);
+    }
 }

@@ -65,4 +65,11 @@ public interface NoticeService extends IService<ContentNoticeEntity>, AuditResul
      * @return
      */
     Boolean publish(PublishReqVo publishReqVo);
+
+    /**
+     * 小程序端获取公告列表
+     * @param pageQuery
+     * @return
+     */
+    IPage<NoticeVo> getAppNoticePage(NoticPageQuery pageQuery);
 }

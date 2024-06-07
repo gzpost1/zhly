@@ -10,6 +10,7 @@ import cn.cuiot.dmp.content.param.dto.ModuleBannerUpdateDto;
 import cn.cuiot.dmp.content.param.query.ModuleBannerPageQuery;
 import cn.cuiot.dmp.content.service.ContentModuleBannerService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -18,9 +19,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author hantingyao
@@ -76,6 +76,21 @@ public class ContentModuleBannerServiceImpl extends ServiceImpl<ContentModuleBan
         return list(queryWrapper);
     }
 
+    @Override
+    public Map<Long, List<ContentModuleBanner>> getByModuleIdsAndSort(List<Long> bannerIds) {
+        LambdaQueryWrapper<ContentModuleBanner> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(ContentModuleBanner::getModuleId, bannerIds);
+        queryWrapper.le(ContentModuleBanner::getEffectiveStartTime, new Date());
+        queryWrapper.ge(ContentModuleBanner::getEffectiveEndTime, new Date());
+        queryWrapper.eq(ContentModuleBanner::getStatus, EntityConstants.ENABLED);
+        queryWrapper.orderByAsc(ContentModuleBanner::getEffectiveStartTime);
+        List<ContentModuleBanner> moduleBannerList = list(queryWrapper);
+        if (CollUtil.isNotEmpty(moduleBannerList)) {
+            return moduleBannerList.stream().collect(Collectors.groupingBy(ContentModuleBanner::getModuleId, LinkedHashMap::new, Collectors.toList()));
+        }
+        return new HashMap<>();
+    }
+
     private static LambdaQueryWrapper<ContentModuleBanner> buildCommonQueryWrapper(ModuleBannerPageQuery pageQuery) {
         LambdaQueryWrapper<ContentModuleBanner> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ContentModuleBanner::getCompanyId, LoginInfoHolder.getCurrentOrgId());
@@ -86,7 +101,7 @@ public class ContentModuleBannerServiceImpl extends ServiceImpl<ContentModuleBan
             queryWrapper.lt(ContentModuleBanner::getEffectiveEndTime, new Date());
         } else if (EntityConstants.NOT_EFFECTIVE.equals(pageQuery.getEffectiveState())) {
             queryWrapper.gt(ContentModuleBanner::getEffectiveStartTime, new Date());
-        } else if (EntityConstants.NORMAL.equals(pageQuery.getEffectiveState())){
+        } else if (EntityConstants.NORMAL.equals(pageQuery.getEffectiveState())) {
             queryWrapper.le(ContentModuleBanner::getEffectiveStartTime, new Date());
             queryWrapper.ge(ContentModuleBanner::getEffectiveEndTime, new Date());
         }
