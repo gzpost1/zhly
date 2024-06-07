@@ -5,11 +5,11 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity">
         <result column="id" property="id" />
-        <result column="departments" property="departments" />
-        <result column="buildings" property="buildings" />
+        <result column="departments" property="departments" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+        <result column="buildings" property="buildings" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
         <result column="title" property="title" />
         <result column="type" property="type" />
-        <result column="cover_pci" property="coverPic" />
+        <result column="cover_pic" property="coverPic" />
         <result column="digest" property="digest" />
         <result column="detail" property="detail" />
         <result column="status" property="status" />
@@ -18,12 +18,12 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, departments, buildings, title, `type`, cover_pci, digest, detail, status, audit_status, audit_time, create_user, create_time, update_user, update_time
+        id, departments, buildings, title, `type`, cover_pic, digest, detail, status, audit_status, create_user, create_time, update_user, update_time
     </sql>
     <select id="queryForList" resultType="cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity">
         select
         <include refid="Base_Column_List"/>
-        from tb_content_notice
+        from tb_content_img_text
         <trim prefix="WHERE" prefixOverrides="AND |OR ">
             <include refid="condition_sql_where"/>
         </trim>

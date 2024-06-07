@@ -9,7 +9,6 @@ import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.conver.ImgTextConvert;
-import cn.cuiot.dmp.content.dal.entity.ContentAudit;
 import cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity;
 import cn.cuiot.dmp.content.dal.mapper.ContentImgTextMapper;
 import cn.cuiot.dmp.content.feign.ArchiveConverService;
@@ -19,7 +18,6 @@ import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
 import cn.cuiot.dmp.content.param.vo.ImgTextVo;
-import cn.cuiot.dmp.content.service.ContentAuditService;
 import cn.cuiot.dmp.content.service.ContentDataRelevanceService;
 import cn.cuiot.dmp.content.service.ContentImgTextService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -48,17 +46,12 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
     private SystemConverService systemConverService;
     @Autowired
     private ArchiveConverService archiveConverService;
-    @Autowired
-    private ContentAuditService contentAuditService;
+
 
     @Override
     public ImgTextVo queryForDetail(Long id) {
         ContentImgTextEntity contentImgTextEntity = this.baseMapper.selectById(id);
         ImgTextVo imgTextVo = ImgTextConvert.INSTANCE.convert(contentImgTextEntity);
-        if (!ContentConstants.AuditStatus.AUDIT_ING.equals(contentImgTextEntity.getAuditStatus())) {
-            ContentAudit lastAuditResult = contentAuditService.getLastAuditResult(contentImgTextEntity.getId());
-            imgTextVo.setContentAudit(lastAuditResult);
-        }
         return imgTextVo;
     }
 
@@ -96,6 +89,7 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
     public int saveContentImgText(ContentImgTextCreateDto createDTO) {
         ContentImgTextEntity imgTextEntity = ImgTextConvert.INSTANCE.convert(createDTO);
         imgTextEntity.setStatus(EntityConstants.ENABLED);
+        imgTextEntity.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         int insert = this.baseMapper.insert(imgTextEntity);
         contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.IMG_TEXT, createDTO.getDepartments(), createDTO.getBuildings(), imgTextEntity.getId());
         return insert;
@@ -116,8 +110,7 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
         ContentImgTextEntity imgTextEntity = this.getById(updateStatusParam.getId());
         if (imgTextEntity != null) {
             imgTextEntity.setStatus(updateStatusParam.getStatus());
-            this.updateById(imgTextEntity);
-            return true;
+            return this.updateById(imgTextEntity);
         }
         return false;
     }

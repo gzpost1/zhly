@@ -50,17 +50,11 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     private SystemConverService systemConverService;
     @Autowired
     private ArchiveConverService archiveConverService;
-    @Autowired
-    private ContentAuditService contentAuditService;
 
     @Override
     public NoticeVo queryForDetail(Long id) {
         ContentNoticeEntity contentNoticeEntity = this.baseMapper.selectById(id);
         NoticeVo noticeVo = NoticeConvert.INSTANCE.convert(contentNoticeEntity);
-        if (!ContentConstants.AuditStatus.AUDIT_ING.equals(contentNoticeEntity.getAuditStatus())) {
-            ContentAudit lastAuditResult = contentAuditService.getLastAuditResult(contentNoticeEntity.getId());
-            noticeVo.setContentAudit(lastAuditResult);
-        }
         return noticeVo;
     }
 
