@@ -35,36 +35,36 @@ public class ContentModuleServiceImpl implements ContentModuleService {
         }
         // 初始化管理端首页模块
         ContentModule contentModule = new ContentModule().setCompanyId(orgId).setSystemModule(ApplicationConfigConstants.SystemModule.MANAGEMENT_HOME)
-                .setModuleType(ApplicationConfigConstants.ModuleType.TOP_BANNER).setShow(ContentConstants.ShowStatus.NOT_SHOW).setSort(1);
+                .setModuleType(ApplicationConfigConstants.ModuleType.TOP_BANNER).setShowed(ContentConstants.ShowStatus.NOT_SHOW).setSort(1);
         contentModuleMapper.insert(contentModule);
         contentModule = new ContentModule().setCompanyId(orgId).setSystemModule(ApplicationConfigConstants.SystemModule.MANAGEMENT_HOME)
-                .setModuleType(ApplicationConfigConstants.ModuleType.NOTICE).setShow(ContentConstants.ShowStatus.NOT_SHOW).setSort(2);
+                .setModuleType(ApplicationConfigConstants.ModuleType.NOTICE).setShowed(ContentConstants.ShowStatus.NOT_SHOW).setSort(2);
         contentModuleMapper.insert(contentModule);
         for (int i = 3; i <= 20; i++) {
             contentModule = new ContentModule().setCompanyId(orgId).setSystemModule(ApplicationConfigConstants.SystemModule.MANAGEMENT_HOME)
-                    .setModuleType(ApplicationConfigConstants.ModuleType.APPLICATION).setShow(ContentConstants.ShowStatus.NOT_SHOW).setSort(i);
+                    .setModuleType(ApplicationConfigConstants.ModuleType.APPLICATION).setShowed(ContentConstants.ShowStatus.NOT_SHOW).setSort(i);
             contentModuleMapper.insert(contentModule);
         }
         // 初始化客户端首页模块
         contentModule = new ContentModule().setCompanyId(orgId).setSystemModule(ApplicationConfigConstants.SystemModule.CLIENT_HOME)
-                .setModuleType(ApplicationConfigConstants.ModuleType.TOP_BANNER).setShow(ContentConstants.ShowStatus.NOT_SHOW).setSort(1);
+                .setModuleType(ApplicationConfigConstants.ModuleType.TOP_BANNER).setShowed(ContentConstants.ShowStatus.NOT_SHOW).setSort(1);
         contentModuleMapper.insert(contentModule);
         contentModule = new ContentModule().setCompanyId(orgId).setSystemModule(ApplicationConfigConstants.SystemModule.CLIENT_HOME)
-                .setModuleType(ApplicationConfigConstants.ModuleType.NOTICE).setShow(ContentConstants.ShowStatus.NOT_SHOW).setSort(2);
+                .setModuleType(ApplicationConfigConstants.ModuleType.NOTICE).setShowed(ContentConstants.ShowStatus.NOT_SHOW).setSort(2);
         contentModuleMapper.insert(contentModule);
         contentModule = new ContentModule().setCompanyId(orgId).setSystemModule(ApplicationConfigConstants.SystemModule.CLIENT_HOME)
-                .setModuleType(ApplicationConfigConstants.ModuleType.APPLICATION).setShow(ContentConstants.ShowStatus.NOT_SHOW).setSort(3);
+                .setModuleType(ApplicationConfigConstants.ModuleType.APPLICATION).setShowed(ContentConstants.ShowStatus.NOT_SHOW).setSort(3);
         contentModuleMapper.insert(contentModule);
         contentModule = new ContentModule().setCompanyId(orgId).setSystemModule(ApplicationConfigConstants.SystemModule.CLIENT_HOME)
-                .setModuleType(ApplicationConfigConstants.ModuleType.STEWARD_APPLICATION).setShow(ContentConstants.ShowStatus.NOT_SHOW).setSort(4);
+                .setModuleType(ApplicationConfigConstants.ModuleType.STEWARD_APPLICATION).setShowed(ContentConstants.ShowStatus.NOT_SHOW).setSort(4);
         contentModuleMapper.insert(contentModule);
         contentModule = new ContentModule().setCompanyId(orgId).setSystemModule(ApplicationConfigConstants.SystemModule.CLIENT_HOME)
-                .setModuleType(ApplicationConfigConstants.ModuleType.MIDDLE_BANNER).setShow(ContentConstants.ShowStatus.NOT_SHOW).setSort(5);
+                .setModuleType(ApplicationConfigConstants.ModuleType.MIDDLE_BANNER).setShowed(ContentConstants.ShowStatus.NOT_SHOW).setSort(5);
         contentModuleMapper.insert(contentModule);
         // 初始化客户端物业管理模块
         for (int i = 1; i <= 20; i++) {
             contentModule = new ContentModule().setCompanyId(orgId).setSystemModule(ApplicationConfigConstants.SystemModule.CLIENT_PROPERTY)
-                    .setModuleType(ApplicationConfigConstants.ModuleType.APPLICATION).setShow(ContentConstants.ShowStatus.NOT_SHOW).setSort(i);
+                    .setModuleType(ApplicationConfigConstants.ModuleType.APPLICATION).setShowed(ContentConstants.ShowStatus.NOT_SHOW).setSort(i);
             contentModuleMapper.insert(contentModule);
         }
     }
@@ -84,14 +84,15 @@ public class ContentModuleServiceImpl implements ContentModuleService {
         if (contentModule == null || !contentModule.getCompanyId().equals(LoginInfoHolder.getCurrentOrgId())) {
             return false;
         }
-        contentModule.setShow(statusParam.getStatus());
+        contentModule.setShowed(statusParam.getStatus());
         contentModuleMapper.updateById(contentModule);
         return true;
     }
 
     @Override
     public Boolean update(ContentModule contentModule) {
-        if (!contentModule.getCompanyId().equals(LoginInfoHolder.getCurrentOrgId())) {
+        ContentModule oldContentModule = contentModuleMapper.selectById(contentModule.getId());
+        if (!oldContentModule.getCompanyId().equals(LoginInfoHolder.getCurrentOrgId())) {
             return false;
         }
         contentModuleMapper.updateById(contentModule);

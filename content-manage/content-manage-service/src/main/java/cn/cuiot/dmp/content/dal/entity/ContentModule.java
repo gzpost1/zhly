@@ -47,12 +47,12 @@ public class ContentModule implements Serializable {
     /**
      * 模块名称
      */
-    private String moudleName;
+    private String moduleName;
 
     /**
      * 是否展示
      */
-    private Byte show;
+    private Byte showed;
 
     /**
      * 排序值

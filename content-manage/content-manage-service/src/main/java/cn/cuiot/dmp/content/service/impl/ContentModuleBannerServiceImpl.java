@@ -86,7 +86,7 @@ public class ContentModuleBannerServiceImpl extends ServiceImpl<ContentModuleBan
             queryWrapper.lt(ContentModuleBanner::getEffectiveEndTime, new Date());
         } else if (EntityConstants.NOT_EFFECTIVE.equals(pageQuery.getEffectiveState())) {
             queryWrapper.gt(ContentModuleBanner::getEffectiveStartTime, new Date());
-        } else {
+        } else if (EntityConstants.NORMAL.equals(pageQuery.getEffectiveState())){
             queryWrapper.le(ContentModuleBanner::getEffectiveStartTime, new Date());
             queryWrapper.ge(ContentModuleBanner::getEffectiveEndTime, new Date());
         }

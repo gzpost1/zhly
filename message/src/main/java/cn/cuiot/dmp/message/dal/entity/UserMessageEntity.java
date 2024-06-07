@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.message.dal.entity;
 
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import cn.cuiot.dmp.message.constant.StatusConstans;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -14,7 +16,7 @@ import java.util.Date;
  * @data 2024/5/24 10:29
  */
 @Data
-@TableName(value = "tb_msg_user_message")
+@TableName(value = "tb_msg_user_message", autoResultMap = true)
 public class UserMessageEntity {
 
     /**
@@ -39,6 +41,11 @@ public class UserMessageEntity {
     private Long accepter;
 
     /**
+     * 数据ID
+     */
+    private Long dataId;
+
+    /**
      * 消息
      */
     private String message;
@@ -46,6 +53,7 @@ public class UserMessageEntity {
     /**
      * 补充消息，可根据分类另行处理
      */
+    @TableField(typeHandler = JsonTypeHandler.class)
     private Object dataJson;
 
     /**
@@ -59,14 +67,14 @@ public class UserMessageEntity {
     private Byte readStatus;
 
     /**
+     * 读消息时间
+     */
+    private Date readTime;
+
+    /**
      * 创建时间
      */
     private Date createTime;
-
-    /**
-     * 修改时间
-     */
-    private Date updateTime;
 
     public void init() {
         this.createTime = new Date();

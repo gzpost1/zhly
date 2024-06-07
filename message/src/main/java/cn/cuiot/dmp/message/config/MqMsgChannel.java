@@ -11,7 +11,7 @@ import org.springframework.messaging.SubscribableChannel;
  */
 public interface MqMsgChannel {
 
-    String USERMESSAGEINPUT = "userMessageInput";
+    String USERMESSAGEINPUT = "userMessageConsumer-in-0";
 
     @Input(USERMESSAGEINPUT)
     SubscribableChannel userMessageInput();

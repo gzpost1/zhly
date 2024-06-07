@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author hantingyao
@@ -26,7 +27,7 @@ import java.util.HashMap;
 public class ContentAuditServiceImpl extends ServiceImpl<ContentAuditMapper, ContentAudit> implements ContentAuditService {
 
     @Autowired
-    private HashMap<String, AuditResultDealService> auditResultDealServiceHashMap;
+    private Map<String, AuditResultDealService> auditResultDealServiceHashMap;
 
     @Override
     @Transactional(rollbackFor = Exception.class)

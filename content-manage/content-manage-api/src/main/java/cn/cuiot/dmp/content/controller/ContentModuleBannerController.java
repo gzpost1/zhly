@@ -21,6 +21,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 /**
+ * banner管理
  * @author hantingyao
  * @Description
  * @data 2024/6/4 10:27
