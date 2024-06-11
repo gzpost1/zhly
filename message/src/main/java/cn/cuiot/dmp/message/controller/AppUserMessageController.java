@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * 用户消息
  * @author hantingyao
  * @Description
  * @data 2024/6/7 16:26
@@ -37,6 +38,12 @@ public class AppUserMessageController {
         return userMessageService.getMessage(pageQuery);
     }
 
+    /**
+     * 读消息
+     *
+     * @param idParam
+     * @return
+     */
     @PostMapping("/readMessage")
     public Boolean readMessage(@RequestBody IdParam idParam) {
         userMessageService.readMessage(idParam.getId());
