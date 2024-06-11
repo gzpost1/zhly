@@ -40,4 +40,13 @@ public class ContentImgTextPageQuery extends PageQuery {
      */
     private Byte status;
 
+    /**
+     * 图文标题
+     */
+    private String title;
+
+    /**
+     * 图文类型
+     */
+    private Long type;
 }

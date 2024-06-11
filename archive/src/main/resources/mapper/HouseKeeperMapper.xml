@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.archive.infrastructure.persistence.mapper.HouseKeeperMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.entity.HouseKeeperEntity">
+        <id column="id" property="id" />
+        <result column="company_id" property="companyId" />
+        <result column="community_id" property="communityId" />
+        <result column="staff_id" property="staffId" />
+        <result column="nick_name" property="nickName" />
+        <result column="contact_way" property="contactWay" />
+        <result column="status" property="status" />
+        <result column="remark" property="remark" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, company_id,community_id, staff_id, nick_name, contact_way, status, remark, update_time, update_user, create_time, create_user, deleted
+    </sql>
+
+    <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.entity.HouseKeeperEntity">
+        <result column="community_name" property="communityName" />
+        <result column="staff_name" property="staffName" />
+    </resultMap>
+
+    <select id="queryForList"
+            resultType="cn.cuiot.dmp.archive.infrastructure.entity.HouseKeeperEntity">
+        SELECT
+            a.*,
+            b.`name` AS community_name,
+            u.`name` as staff_name
+        FROM
+            tb_house_keeper a
+            INNER JOIN tb_building_archives b ON a.community_id = b.id
+            LEFT JOIN `user` u ON a.staff_id = u.id
+        <where>
+            <if test="companyId != null">
+                and a.company_id=#{companyId}
+            </if>
+            <if test="deptPath != null and deptPath != ''">
+               and a.community_id IN (select id from tb_building_archives where department_id in (select id from department where path like CONCAT(#{deptPath}, '%'))
+            </if>
+            <if test="communityId != null">
+                and a.community_id=#{communityId}
+            </if>
+            <if test="communityIdList != null and communityIdList.size() >0">
+                AND a.community_id in
+                <foreach collection="communityIdList" item="itemId" open="(" separator="," close=")">
+                    #{itemId}
+                </foreach>
+            </if>
+            <if test="status != null">
+                and a.status=#{status}
+            </if>
+            AND a.deleted = 0
+            AND b.deleted =0
+        </where>
+        order by a.create_time desc,a.id desc
+    </select>
+
+</mapper>

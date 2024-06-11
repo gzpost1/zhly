@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author hantingyao
@@ -59,4 +60,11 @@ public interface ContentModuleApplicationService extends IService<ContentModuleA
      * @return
      */
     List<ContentModuleApplication> queryForList(ModuleApplicationPageQuery pageQuery);
+
+    /**
+     * 获取对应系统模块下应用
+     * @param applicationIds
+     * @return
+     */
+    Map<Long, List<ContentModuleApplication>> getByModuleIdsAndSort(List<Long> applicationIds);
 }

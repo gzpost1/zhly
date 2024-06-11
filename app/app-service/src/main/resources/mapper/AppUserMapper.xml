@@ -16,4 +16,13 @@
         </trim>
     </select>
 
+    <select id="selectUserByOpenid" resultType="cn.cuiot.dmp.app.dto.AppUserDto">
+        SELECT u.*
+        FROM user u
+        <trim prefix="WHERE" prefixOverrides="AND">
+            AND u.openid = #{openid}
+            AND u.deleted_flag = 0
+        </trim>
+    </select>
+
 </mapper>

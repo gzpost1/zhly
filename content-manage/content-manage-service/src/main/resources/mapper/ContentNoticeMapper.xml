@@ -31,7 +31,6 @@
         <trim prefix="WHERE" prefixOverrides="AND |OR ">
             <include refid="condition_sql_where"/>
         </trim>
-        order by create_time desc
     </select>
     <select id="queryForList" resultType="cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity">
         select

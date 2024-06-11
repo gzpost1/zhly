@@ -7,10 +7,13 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.content.constant.ContentConstants;
+import cn.cuiot.dmp.content.dal.entity.ContentAudit;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
 import cn.cuiot.dmp.content.param.vo.ImgTextVo;
+import cn.cuiot.dmp.content.service.ContentAuditService;
 import cn.cuiot.dmp.content.service.ContentImgTextService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +38,8 @@ public class ContentImgTextController extends BaseController {
 
     @Autowired
     private ContentImgTextService contentImgTextService;
+    @Autowired
+    private ContentAuditService contentAuditService;
 
     /**
      * 根据id获取详情
@@ -42,6 +47,10 @@ public class ContentImgTextController extends BaseController {
     @PostMapping("/queryForDetail")
     public IdmResDTO<ImgTextVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
         ImgTextVo imgTextVo = contentImgTextService.queryForDetail(idParam.getId());
+        if (!ContentConstants.AuditStatus.AUDIT_ING.equals(imgTextVo.getAuditStatus())) {
+            ContentAudit lastAuditResult = contentAuditService.getLastAuditResult(imgTextVo.getId());
+            imgTextVo.setContentAudit(lastAuditResult);
+        }
         return IdmResDTO.success(imgTextVo);
     }
 

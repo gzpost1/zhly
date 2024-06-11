@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author hantingyao
@@ -58,4 +59,11 @@ public interface ContentModuleBannerService extends IService<ContentModuleBanner
      * @return
      */
     List<ContentModuleBanner> queryForList(ModuleBannerPageQuery pageQuery);
+
+    /**
+     *  根据模块id查询banner
+     * @param bannerIds
+     * @return
+     */
+    Map<Long, List<ContentModuleBanner>> getByModuleIdsAndSort(List<Long> bannerIds);
 }

@@ -25,6 +25,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.google.common.collect.Maps;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Resource;
@@ -69,6 +70,9 @@ public class AppAuthController {
         String openid = weChatMiniAppService.code2Session(dto.getCode());
         Map<String, Object> data = Maps.newHashMap();
         data.put("openid", openid);
+        String ipAddr = IpUtil.getIpAddr(request);
+        List<AppUserDto> userList = appAuthService.openidLogin(openid, ipAddr);
+        data.put("userList", userList);
         return IdmResDTO.success(data);
     }
 

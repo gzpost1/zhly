@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.content.service.impl;//	模板
 
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.content.conver.ModuleApplicationConvert;
 import cn.cuiot.dmp.content.dal.entity.ContentModuleApplication;
 import cn.cuiot.dmp.content.dal.mapper.ContentModuleApplicationMapper;
@@ -9,15 +10,17 @@ import cn.cuiot.dmp.content.param.dto.ModuleApplicationUpdateDto;
 import cn.cuiot.dmp.content.param.query.ModuleApplicationPageQuery;
 import cn.cuiot.dmp.content.service.ContentModuleApplicationService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author hantingyao
@@ -67,6 +70,19 @@ public class ContentModuleApplicationServiceImpl extends ServiceImpl<ContentModu
     @Override
     public List<ContentModuleApplication> queryForList(ModuleApplicationPageQuery pageQuery) {
         return list(buildCommonQueryWrapper(pageQuery));
+    }
+
+    @Override
+    public Map<Long, List<ContentModuleApplication>> getByModuleIdsAndSort(List<Long> applicationIds) {
+        LambdaQueryWrapper<ContentModuleApplication> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(ContentModuleApplication::getModuleId, applicationIds);
+        queryWrapper.eq(ContentModuleApplication::getStatus, EntityConstants.ENABLED);
+        queryWrapper.orderByAsc(ContentModuleApplication::getSort);
+        List<ContentModuleApplication> applicationList = list(queryWrapper);
+        if (CollUtil.isNotEmpty(applicationList)) {
+            return applicationList.stream().collect(Collectors.groupingBy(ContentModuleApplication::getModuleId, LinkedHashMap::new, Collectors.toList()));
+        }
+        return new HashMap<>();
     }
 
     private LambdaUpdateWrapper<ContentModuleApplication> buildCommonQueryWrapper(ModuleApplicationPageQuery pageQuery) {

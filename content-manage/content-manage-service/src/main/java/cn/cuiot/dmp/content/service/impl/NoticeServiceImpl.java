@@ -9,7 +9,6 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.conver.NoticeConvert;
-import cn.cuiot.dmp.content.dal.entity.ContentAudit;
 import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.dal.mapper.ContentNoticeMapper;
 import cn.cuiot.dmp.content.feign.ArchiveConverService;
@@ -20,7 +19,6 @@ import cn.cuiot.dmp.content.param.dto.NoticeUpdateDto;
 import cn.cuiot.dmp.content.param.query.NoticPageQuery;
 import cn.cuiot.dmp.content.param.req.PublishReqVo;
 import cn.cuiot.dmp.content.param.vo.NoticeVo;
-import cn.cuiot.dmp.content.service.ContentAuditService;
 import cn.cuiot.dmp.content.service.ContentDataRelevanceService;
 import cn.cuiot.dmp.content.service.NoticeService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -50,17 +48,11 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     private SystemConverService systemConverService;
     @Autowired
     private ArchiveConverService archiveConverService;
-    @Autowired
-    private ContentAuditService contentAuditService;
 
     @Override
     public NoticeVo queryForDetail(Long id) {
         ContentNoticeEntity contentNoticeEntity = this.baseMapper.selectById(id);
         NoticeVo noticeVo = NoticeConvert.INSTANCE.convert(contentNoticeEntity);
-        if (!ContentConstants.AuditStatus.AUDIT_ING.equals(contentNoticeEntity.getAuditStatus())) {
-            ContentAudit lastAuditResult = contentAuditService.getLastAuditResult(contentNoticeEntity.getId());
-            noticeVo.setContentAudit(lastAuditResult);
-        }
         return noticeVo;
     }
 
@@ -106,6 +98,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     @Override
     public IPage<NoticeVo> queryForPage(NoticPageQuery pageQuery) {
         initQuery(pageQuery);
+        pageQuery.setDescs(new String[]{"create_time"});
         IPage<ContentNoticeEntity> noticeEntityIPage = this.baseMapper.queryForPage(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery, ContentConstants.DataType.NOTICE);
         IPage<NoticeVo> pageResult = new Page<>();
         if (CollUtil.isNotEmpty(noticeEntityIPage.getRecords())) {
@@ -139,6 +132,16 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
             return true;
         }
         return false;
+    }
+
+    @Override
+    public IPage<NoticeVo> getAppNoticePage(NoticPageQuery pageQuery) {
+        pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        initQuery(pageQuery);
+        pageQuery.setPublishStatus(ContentConstants.PublishStatus.PUBLISHED);
+        pageQuery.setAscs(new String[]{"effective_start_time"});
+        IPage<ContentNoticeEntity> noticeEntityIPage = this.baseMapper.queryForPage(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery, ContentConstants.DataType.NOTICE);
+        return NoticeConvert.INSTANCE.convert(noticeEntityIPage);
     }
 
     @Override

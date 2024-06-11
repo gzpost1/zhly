@@ -40,4 +40,11 @@ public interface ContentModuleService {
      * @return
      */
     Boolean update(ContentModule contentModule);
+
+    /**
+     * 获取小程序首页模块
+     * @param orgId
+     * @return
+     */
+    List<ContentModule> getAppHomeModule(String systemModule);
 }

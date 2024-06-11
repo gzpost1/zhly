@@ -1,8 +1,9 @@
-package cn.cuiot.dmp.message.param;//	模板
+package cn.cuiot.dmp.common.bean.dto;//	模板
 
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 用户消息消费接收参数
@@ -15,6 +16,7 @@ public class UserMessageAcceptDto {
 
     /**
      * 消息分类
+     * @see cn.cuiot.dmp.common.constant.MsgTypeConstant
      */
     private String msgType;
 
@@ -26,7 +28,12 @@ public class UserMessageAcceptDto {
     /**
      * 接受人
      */
-    private Long accepter;
+    private List<Long> acceptors;
+
+    /**
+     * 数据ID
+     */
+    private Long dataId;
 
     /**
      * 消息

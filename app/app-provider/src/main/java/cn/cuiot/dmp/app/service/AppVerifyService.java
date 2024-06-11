@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -35,6 +36,7 @@ import org.springframework.util.StringUtils;
  * @author: wuyongchong
  * @date: 2024/5/23 15:23
  */
+@Slf4j
 @Service
 public class AppVerifyService {
 
@@ -139,10 +141,11 @@ public class AppVerifyService {
             throw new BusinessException(SMS_CODE_FREQUENTLY_REQ_ERROR);
         }
         // 生成短信验证码
-        String smsCode = RandomStringUtils.random(SendMessageConst.SMS_CODE_LENGTH, false, true);
+        //String smsCode = RandomStringUtils.random(SendMessageConst.SMS_CODE_LENGTH, false, true);
+        String smsCode = "123456";
+        log.warn("sendPhoneSmsCode===smsCode:{}",smsCode);
         // 发送短信
-        //boolean sendSucceed = verifyUnit.sendSmsCode(String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber);
-        boolean sendSucceed = true;
+        boolean sendSucceed = sendSmsCode(smsCode, phoneNumber);
         // 发送成功
         if (sendSucceed) {
             // 存入redis并设置过期时间
@@ -184,5 +187,17 @@ public class AppVerifyService {
         return new SmsCodeCheckResDto(checkSucceed, "校验失败");
     }
 
+    /**
+     * 发送短信验证码
+     *
+     * @param smsCode     验证码
+     * @param phoneNumber 手机号
+     * @return
+     */
+    public boolean sendSmsCode(String smsCode, String phoneNumber) {
+        //String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber
+
+        return true;
+    }
 
 }

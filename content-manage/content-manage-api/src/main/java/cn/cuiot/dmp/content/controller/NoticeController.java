@@ -40,7 +40,8 @@ public class NoticeController extends BaseController {
 
     @Autowired
     private NoticeService noticeService;
-
+    @Autowired
+    private ContentAuditService contentAuditService;
 
     /**
      * 根据id获取详情
@@ -48,6 +49,10 @@ public class NoticeController extends BaseController {
     @PostMapping("/queryForDetail")
     public IdmResDTO<NoticeVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
         NoticeVo noticeVo = noticeService.queryForDetail(idParam.getId());
+        if (!ContentConstants.AuditStatus.AUDIT_ING.equals(noticeVo.getAuditStatus())) {
+            ContentAudit lastAuditResult = contentAuditService.getLastAuditResult(noticeVo.getId());
+            noticeVo.setContentAudit(lastAuditResult);
+        }
         return IdmResDTO.success(noticeVo);
     }
 
