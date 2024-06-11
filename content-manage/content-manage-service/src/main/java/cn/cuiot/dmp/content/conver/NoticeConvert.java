@@ -64,5 +64,7 @@ public interface NoticeConvert {
 
     List<NoticeVo> convert(List<ContentNoticeEntity> noticeEntityList);
 
-    IPage<NoticeVo> convert(IPage<ContentNoticeEntity> noticeEntityIPage);
+    default IPage<NoticeVo> convert(IPage<ContentNoticeEntity> noticeEntityIPage){
+        return noticeEntityIPage.convert(this::convert);
+    }
 }

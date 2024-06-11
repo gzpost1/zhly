@@ -39,7 +39,7 @@ public class ImgTextTypeController extends BaseController {
     public Boolean saveImgTextType(@RequestBody @Valid ImgTextType imgTextType) {
         String orgId = getOrgId();
         imgTextType.setCompanyId(Long.valueOf(orgId));
-        return imgTextTypeService.save(imgTextType);
+        return imgTextTypeService.create(imgTextType);
     }
 
     /**
@@ -49,7 +49,7 @@ public class ImgTextTypeController extends BaseController {
     @LogRecord(operationCode = "updateImgTextType", operationName = "更新图文类型", serviceType = ServiceTypeConst.CONTENT_MANAGE)
     @PostMapping("/update")
     public Boolean updateImgTextType(@RequestBody @Valid ImgTextType imgTextType) {
-        return imgTextTypeService.updateById(imgTextType);
+        return imgTextTypeService.update(imgTextType);
     }
 
     /**
@@ -59,7 +59,7 @@ public class ImgTextTypeController extends BaseController {
     @LogRecord(operationCode = "deleteImgTextType", operationName = "删除图文类型", serviceType = ServiceTypeConst.CONTENT_MANAGE)
     @PostMapping("/delete")
     public Boolean deleteImgTextType(@RequestBody @Valid IdParam idParam) {
-        return imgTextTypeService.removeById(idParam.getId());
+        return imgTextTypeService.remove(idParam.getId());
     }
 
     /**

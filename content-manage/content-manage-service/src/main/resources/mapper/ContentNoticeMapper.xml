@@ -58,6 +58,9 @@
         <if test="param.auditStatus != null and param.auditStatus != ''">
             and audit_status = #{param.auditStatus}
         </if>
+        <if test="param.publishSource != null ">
+            and publish_source = #{param.publishSource}
+        </if>
         <if test="param.publishStatus != null and param.publishStatus != ''">
             <if test="param.publishStatus == 1">
                and publish_status = #{param.publishStatus} and effective_start_time &gt;= now()

@@ -27,6 +27,7 @@ import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,7 +99,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     @Override
     public IPage<NoticeVo> queryForPage(NoticPageQuery pageQuery) {
         initQuery(pageQuery);
-        pageQuery.setDescs(new String[]{"create_time"});
+        PageHelper.orderBy("create_time desc");
         IPage<ContentNoticeEntity> noticeEntityIPage = this.baseMapper.queryForPage(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery, ContentConstants.DataType.NOTICE);
         IPage<NoticeVo> pageResult = new Page<>();
         if (CollUtil.isNotEmpty(noticeEntityIPage.getRecords())) {
@@ -139,7 +140,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         initQuery(pageQuery);
         pageQuery.setPublishStatus(ContentConstants.PublishStatus.PUBLISHED);
-        pageQuery.setAscs(new String[]{"effective_start_time"});
+        PageHelper.orderBy("effective_start_time asc");
         IPage<ContentNoticeEntity> noticeEntityIPage = this.baseMapper.queryForPage(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery, ContentConstants.DataType.NOTICE);
         return NoticeConvert.INSTANCE.convert(noticeEntityIPage);
     }
