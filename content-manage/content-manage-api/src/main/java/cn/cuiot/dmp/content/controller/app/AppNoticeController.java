@@ -6,13 +6,9 @@ import cn.cuiot.dmp.content.param.vo.NoticeVo;
 import cn.cuiot.dmp.content.service.NoticeService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 /**
  * app-公告
@@ -34,7 +30,7 @@ public class AppNoticeController {
      *
      * @return
      */
-    @GetMapping("/getNoticeList")
+    @PostMapping("/getNoticeList")
     public IPage<NoticeVo> getAppNoticePage(@RequestBody @Valid NoticPageQuery pageQuery) {
         return noticeService.getAppNoticePage(pageQuery);
     }

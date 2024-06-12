@@ -32,7 +32,7 @@ public class UserMsgConsumer {
     @Autowired
     private UserMessageService userMessageService;
 
-//    @StreamListener(MqMsgChannel.USERMESSAGEINPUT)
+    @StreamListener(MqMsgChannel.USERMESSAGEINPUT)
     public void userMessageConsumer(@Payload UserMessageAcceptDto userMessageAcceptDto) {
         log.info("userMessageInput:{}", userMessageAcceptDto);
         UserMessageEntity userMessage = UserMessageConvert.INSTANCE.concert(userMessageAcceptDto);

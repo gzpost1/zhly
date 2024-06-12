@@ -5,6 +5,7 @@ import cn.cuiot.dmp.content.dal.entity.ContentModuleApplication;
 import cn.cuiot.dmp.content.dal.entity.ContentModuleBanner;
 import lombok.Data;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,4 +30,10 @@ public class AppHomeModuleVo {
      */
     private Map<Long, List<ContentModuleApplication>> applicationMap;
 
+    public Map<Long, List<ContentModuleBanner>> getBannerMap() {
+        if (bannerMap == null) {
+            bannerMap = new HashMap<>();
+        }
+        return bannerMap;
+    }
 }

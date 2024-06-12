@@ -55,4 +55,9 @@ public class NoticPageQuery extends PageQuery {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 发布端
+     */
+    private Byte publishSource;
 }
