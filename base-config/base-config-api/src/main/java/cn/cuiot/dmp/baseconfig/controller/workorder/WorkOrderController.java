@@ -84,7 +84,7 @@ public class WorkOrderController extends BaseController {
      * @return
      */
     @PostMapping("instanceInfo")
-    public IdmResDTO<HandleDataVO>  instanceInfo(@RequestBody HandleDataDto HandleDataDTO){
+    public IdmResDTO<HandleDataVO>  instanceInfo(@RequestBody HandleDataDTO HandleDataDTO){
 
         return workInfoService.instanceInfo(HandleDataDTO);
     }
@@ -95,7 +95,7 @@ public class WorkOrderController extends BaseController {
      * @return
      */
     @PostMapping("queryDataForm")
-    public IdmResDTO queryDataForm(@RequestBody HandleDataDto HandleDataDTO){
+    public IdmResDTO queryDataForm(@RequestBody HandleDataDTO HandleDataDTO){
         return workInfoService.queryDataForm(HandleDataDTO);
     }
 

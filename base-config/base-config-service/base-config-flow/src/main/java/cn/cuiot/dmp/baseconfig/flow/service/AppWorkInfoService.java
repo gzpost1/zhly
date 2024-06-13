@@ -542,7 +542,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
         }
         //保存操作记录
-        HandleDataDto dto = new HandleDataDto();
+        HandleDataDTO dto = new HandleDataDTO();
         dto.setTaskId(String.valueOf(taskDto.getTaskId()));
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dto);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_COMPLETED.getCode());
@@ -589,7 +589,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         wrapper.eq(WorkInfoEntity::getProcInstId,procInstId).set(WorkInfoEntity::getWorkTimeOut,state);
         this.update(wrapper);
     }
-    public WorkBusinessTypeInfoEntity getWorkBusinessTypeInfo(HandleDataDto handleDataDTO){
+    public WorkBusinessTypeInfoEntity getWorkBusinessTypeInfo(HandleDataDTO handleDataDTO){
 
         HistoricTaskInstance hisTaskInfo = getHisTaskInfo(handleDataDTO);
         WorkBusinessTypeInfoEntity businessTypeInfo = new WorkBusinessTypeInfoEntity();
@@ -608,7 +608,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         return businessTypeInfo;
     }
 
-    public HistoricTaskInstance getHisTaskInfo(HandleDataDto handleDataDTO){
+    public HistoricTaskInstance getHisTaskInfo(HandleDataDTO handleDataDTO){
         String taskId = handleDataDTO.getTaskId();
         HistoricTaskInstance task = null;
         if(null == taskId){
@@ -718,7 +718,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      */
     public IdmResDTO clientBack(ClientOperationDto operationDto) {
         //回退留痕
-        HandleDataDto handleDataDTO = new HandleDataDto();
+        HandleDataDTO handleDataDTO = new HandleDataDTO();
         handleDataDTO.setTaskId(String.valueOf(operationDto.getTaskId()));
         handleDataDTO.setReason(operationDto.getReason());
         handleDataDTO.setComments(operationDto.getComments());
@@ -760,7 +760,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * 更新挂起时间
      * @param handleDataDTO
      */
-    public void updateBusinessPendingDate(HandleDataDto handleDataDTO){
+    public void updateBusinessPendingDate(HandleDataDTO handleDataDTO){
         LambdaUpdateWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaUpdateWrapper<>();
         lw.eq(WorkBusinessTypeInfoEntity::getProcInstId,handleDataDTO.getProcessInstanceId())
                 .eq(WorkBusinessTypeInfoEntity::getBusinessType,BUSINESS_BYPE_PENDING)
@@ -837,7 +837,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO appAssignee(AppAssigneeDto assigneeDto) {
 
-        HandleDataDto handleDataDTO = new HandleDataDto();
+        HandleDataDTO handleDataDTO = new HandleDataDTO();
         handleDataDTO.setTaskId(String.valueOf(assigneeDto.getTaskId()));
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_TRANSFER.getCode());
@@ -861,7 +861,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      */
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO clientCloseFlow(ClientOperationDto operationDto) {
-        HandleDataDto dataDTO = new HandleDataDto();
+        HandleDataDTO dataDTO = new HandleDataDTO();
         dataDTO.setProcessInstanceId(String.valueOf(operationDto.getProcessInstanceId()));
         dataDTO.setComments(operationDto.getComments());
         dataDTO.setReason(operationDto.getReason());
@@ -892,7 +892,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         if(Objects.nonNull(entity)){
             return IdmResDTO.error(ErrorCode.SUSPENDED.getCode(), ErrorCode.SUSPENDED.getMessage());
         }
-        HandleDataDto dataDTO = new HandleDataDto();
+        HandleDataDTO dataDTO = new HandleDataDTO();
         dataDTO.setProcessInstanceId(String.valueOf(operationDto.getProcessInstanceId()));
         dataDTO.setComments(operationDto.getComments());
         dataDTO.setReason(operationDto.getReason());
@@ -910,7 +910,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @return
      */
     public IdmResDTO clientComment(TaskBusinessDto dto) {
-        HandleDataDto dataDTO = new HandleDataDto();
+        HandleDataDTO dataDTO = new HandleDataDTO();
         dataDTO.setTaskId(String.valueOf(dto.getTaskId()));
         dataDTO.setComments(dto.getComments());
         dataDTO.setReason(dto.getReason());
@@ -1023,7 +1023,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
                 throw new BusinessException(ErrorCode.NOT_OPERATION.getCode(), ErrorCode.NOT_OPERATION.getMessage());
             }
             runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
-            HandleDataDto handleDataDTO = new HandleDataDto();
+            HandleDataDTO handleDataDTO = new HandleDataDTO();
             handleDataDTO.setTaskId(task.getId());
             //保存操作信息
             WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
@@ -1244,7 +1244,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @return
      */
     public IdmResDTO workOrderSuper(ProcessBusinessDto processBusinessDto) {
-        HandleDataDto dataDTO = new HandleDataDto();
+        HandleDataDTO dataDTO = new HandleDataDTO();
         dataDTO.setProcessInstanceId(String.valueOf(processBusinessDto.getProcessInstanceId()));
         dataDTO.setComments(processBusinessDto.getComments());
         dataDTO.setReason(processBusinessDto.getReason());
@@ -1276,7 +1276,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
         }
         //记录撤销
-        HandleDataDto handleDataDTO =new HandleDataDto();
+        HandleDataDTO handleDataDTO =new HandleDataDTO();
         handleDataDTO.setProcessInstanceId(String.valueOf(businessDto.getProcessInstanceId()));
         handleDataDTO.setComments(businessDto.getComments());
         handleDataDTO.setReason(businessDto.getReason());
@@ -1333,7 +1333,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         }
 
         //保存操作信息
-        HandleDataDto dto = new HandleDataDto();
+        HandleDataDTO dto = new HandleDataDTO();
         dto.setTaskId(String.valueOf(approvalDto.getTaskId()));
         dto.setComments(approvalDto.getComments());
         dto.setReason(approvalDto.getReason());
@@ -1362,7 +1362,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      */
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO approvalRejection(ApprovalDto approvalDto) {
-        HandleDataDto dto = new HandleDataDto();
+        HandleDataDTO dto = new HandleDataDTO();
         dto.setTaskId(String.valueOf(approvalDto.getTaskId()));
         dto.setReason(approvalDto.getReason());
         dto.setComments(approvalDto.getComments());
@@ -1453,7 +1453,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             task =initiateProcess(startProcessInstanceDTO,processVariables);
         }
         if(task!=null){
-            HandleDataDto handleDataDTO = new HandleDataDto();
+            HandleDataDTO handleDataDTO = new HandleDataDTO();
             handleDataDTO.setTaskId(task.getId());
             //保存操作信息
             WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
@@ -1690,7 +1690,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public IdmResDTO evaluate(CompleteTaskDto taskDto) {
         Task task = taskService.createTaskQuery().taskId(String.valueOf(taskDto.getTaskId())).singleResult();
         //保存操作记录
-        HandleDataDto dto = new HandleDataDto();
+        HandleDataDTO dto = new HandleDataDTO();
         dto.setTaskId(String.valueOf(taskDto.getTaskId()));
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dto);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_COMPLETED.getCode());

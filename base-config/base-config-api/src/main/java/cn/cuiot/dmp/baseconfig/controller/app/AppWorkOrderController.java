@@ -106,7 +106,7 @@ public class AppWorkOrderController {
      */
     @PostMapping("instanceInfo")
 //    @RequiresPermissions("allowUserType=all")
-    public IdmResDTO<HandleDataVO>  instanceInfo(@RequestBody HandleDataDto HandleDataDTO){
+    public IdmResDTO<HandleDataVO>  instanceInfo(@RequestBody HandleDataDTO HandleDataDTO){
 
         return workInfoService.instanceInfo(HandleDataDTO);
     }

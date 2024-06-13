@@ -6,7 +6,7 @@ import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.BatchBusinessDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDTO;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 
@@ -52,7 +52,7 @@ public class BaseApprovalCenterController extends BaseController {
     @PostMapping("complete")
     @RequiresPermissions
     @LogRecord(operationCode = "complete", operationName = "完成任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO complete(@RequestBody HandleDataDto handleDataDTO){
+    public IdmResDTO complete(@RequestBody HandleDataDTO handleDataDTO){
         return workInfoService.complete(handleDataDTO);
     }
 
@@ -76,7 +76,7 @@ public class BaseApprovalCenterController extends BaseController {
     @PostMapping("assignee")
     @RequiresPermissions
     @LogRecord(operationCode = "assignee", operationName = "转办", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO assignee(@RequestBody HandleDataDto handleDataDTO){
+    public IdmResDTO assignee(@RequestBody HandleDataDTO handleDataDTO){
         return workInfoService.assignee(handleDataDTO);
     }
 
@@ -125,7 +125,7 @@ public class BaseApprovalCenterController extends BaseController {
     @PostMapping("rollback")
     @RequiresPermissions
     @LogRecord(operationCode = "rollback", operationName = "回退", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO rollback(@RequestBody HandleDataDto handleDataDTO){
+    public IdmResDTO rollback(@RequestBody HandleDataDTO handleDataDTO){
         return workInfoService.rollback(handleDataDTO);
     }
 
