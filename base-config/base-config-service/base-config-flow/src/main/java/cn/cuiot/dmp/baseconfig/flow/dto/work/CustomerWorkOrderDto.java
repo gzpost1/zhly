@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
@@ -21,7 +23,15 @@ public class CustomerWorkOrderDto {
      */
     private String businessTypeName;
 
+    /**
+     * 业务类型
+     */
+    private Long businessType;
 
+    /**
+     * 楼盘id
+     */
+    private Long propertyId;
     /**
      * 楼盘名称
      */
@@ -38,6 +48,11 @@ public class CustomerWorkOrderDto {
     private Byte workSource;
 
     /**
+     * 发起人
+     */
+    private Long createUser;
+
+    /**
      * 发起人名称
      */
     private String createUserName;
@@ -45,11 +60,27 @@ public class CustomerWorkOrderDto {
     /**
      * 创建时间
      */
-
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
+
+    /**
+     * 被报单人
+     */
+    private Long actualUserId;
+
+    /**
+     * 报单人名称
+     */
+    private String actualUserName;
 
     /**
      * 状态 1已完结2进行中3已终止4已挂起5已撤回
      */
     private Byte status;
+
+    /**
+     * 0未超时 1超时
+     */
+    private Byte timeOut;
 }

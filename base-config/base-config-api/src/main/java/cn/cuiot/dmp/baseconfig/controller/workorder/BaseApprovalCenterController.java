@@ -7,6 +7,7 @@ import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.BatchBusinessDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDTO;
+import cn.cuiot.dmp.baseconfig.flow.enums.WorkSourceEnums;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 
@@ -39,7 +40,7 @@ public class BaseApprovalCenterController extends BaseController {
     @RequiresPermissions
     @LogRecord(operationCode = "startWork", operationName = "启动工单", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO start(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
-        startProcessInstanceDTO.setWorkSource(WorkOrderConstants.WORK_SOURCE_MAKE);
+        startProcessInstanceDTO.setWorkSource(WorkSourceEnums.WORK_SOURCE_MAKE.getCode());
         return workInfoService.start(startProcessInstanceDTO);
     }
 

@@ -123,7 +123,7 @@ public class WorkInfoEntity implements Serializable {
     private Long companyId;
 
     /**
-     * 撤销规则
+     * 撤销规则 0不可撤回 1 可撤回
      */
     private Byte revokeType;
 
@@ -131,4 +131,11 @@ public class WorkInfoEntity implements Serializable {
      * 撤销的节点id
      */
     private String revokeNodeId;
+
+    /**
+     * 1 重新提交
+     */
+    @TableField(exist = false)
+    private Byte resubmit;
+
 }

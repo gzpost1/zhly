@@ -560,7 +560,7 @@
         order by create_time desc
     </sql>
     <sql id="queryCustomerWorkOrderSql">
-        business_type,work_name,work_source,status,create_time,actual_user_id,create_user,proc_inst_id,property_id,work_time_out as timeOut
+        business_type,work_name,work_source as workSource,status,create_time,actual_user_id,create_user,proc_inst_id,property_id,work_time_out as timeOut
     </sql>
     <select id="queryCustomerWorkOrder" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.CustomerWorkOrderDto">
         select
@@ -584,6 +584,20 @@
             <if test="query.procInstId !=null and query.procInstId !=''">
                 and proc_inst_id like concat('%',#{query.procInstId},'%')
             </if>
+            <if test="query.createUser!=null">
+                and create_user = #{query.createUser}
+            </if>
+            <if test="query.timeOut != null">
+                and work_time_out = #{query.timeOut}
+            </if>
+            <if test="query.propertyId !=null">
+                and property_id in
+                <foreach collection="query.propertyIds" item = "item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
+        group by proc_inst_id
+        order by create_time desc
     </sql>
 </mapper>
