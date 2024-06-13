@@ -36,4 +36,10 @@ public class MsgTagConstants {
      */
     public final static String DEPARTMENT_DELETE="department_delete";
 
+
+    /**
+     * 客户删除
+     */
+    public final static String CUSTOMER_DELETE="customer_delete";
+
 }
