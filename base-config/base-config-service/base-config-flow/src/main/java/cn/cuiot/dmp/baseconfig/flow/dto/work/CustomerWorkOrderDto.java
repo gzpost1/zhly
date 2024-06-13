@@ -21,29 +21,11 @@ public class CustomerWorkOrderDto {
      */
     private String businessTypeName;
 
-    /**
-     * 业务类型
-     */
-    private Long businessType;
 
-    /**
-     * 楼盘id
-     */
-    private Long propertyId;
     /**
      * 楼盘名称
      */
     private String propertyName;
-
-    /**
-     * 报单客户id
-     */
-    private Long actualUserId;
-
-    /**
-     * 报单客户名称
-     */
-    private String actualUserName;
 
     /**
      * 工单名称
@@ -51,14 +33,9 @@ public class CustomerWorkOrderDto {
     private String workName;
 
     /**
-     * 工单来源 2客户提单3代录工单
+     * 工单来源 0 计划生成  1 自查报事2客户提单3代录工单
      */
     private Byte workSource;
-
-    /**
-     * 创建人名称
-     */
-    private Long createUser;
 
     /**
      * 发起人名称

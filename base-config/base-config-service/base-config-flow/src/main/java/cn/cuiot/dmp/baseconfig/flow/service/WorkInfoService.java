@@ -396,46 +396,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     }
 
     /**
-     * 转办
-     * @param handleDataDTO
-     * @return
-     */
-    public IdmResDTO delegateTask(HandleDataDto handleDataDTO) {
-        UserInfo currentUserInfo = handleDataDTO.getCurrentUserInfo();
-        List<AttachmentDTO> attachments = handleDataDTO.getAttachments();
-        String comments = handleDataDTO.getComments();
-        JSONObject formData = handleDataDTO.getFormData();
-        String taskId = handleDataDTO.getTaskId();
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        Map<String,Object> map=new HashMap<>();
-        if(formData!=null &&formData.size()>0){
-            Map formValue = JSONObject.parseObject(formData.toJSONString(), new TypeReference<Map>() {
-            });
-            map.putAll(formValue);
-            map.put(FORM_VAR,formData);
-        }
-
-        runtimeService.setVariables(task.getProcessInstanceId(),map);
-        if(StringUtils.isNotBlank(comments)){
-            taskService.addComment(task.getId(),task.getProcessInstanceId(),OPINION_COMMENT,comments);
-        }
-        if(attachments!=null && attachments.size()>0){
-            for (AttachmentDTO attachment : attachments) {
-                taskService.createAttachment(OPTION_COMMENT,taskId,task.getProcessInstanceId(),attachment.getName(),attachment.getName(),attachment.getUrl());
-            }
-        }
-
-        if(StringUtils.isNotBlank(handleDataDTO.getSignInfo())){
-            taskService.addComment(task.getId(),task.getProcessInstanceId(),SIGN_COMMENT,handleDataDTO.getSignInfo());
-        }
-
-        UserInfo delegateUserInfo = handleDataDTO.getDelegateUserInfo();
-        taskService.delegateTask(task.getId(),delegateUserInfo.getId());
-
-        return IdmResDTO.success();
-    }
-
-    /**
      * 同意
      * @param handleDataDTO
      * @return

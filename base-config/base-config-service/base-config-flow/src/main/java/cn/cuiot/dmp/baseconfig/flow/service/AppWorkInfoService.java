@@ -1360,6 +1360,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @param approvalDto
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO approvalRejection(ApprovalDto approvalDto) {
         HandleDataDto dto = new HandleDataDto();
         dto.setTaskId(String.valueOf(approvalDto.getTaskId()));
