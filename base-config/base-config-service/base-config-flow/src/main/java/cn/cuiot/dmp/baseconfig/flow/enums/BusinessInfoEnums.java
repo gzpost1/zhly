@@ -59,7 +59,9 @@ public enum BusinessInfoEnums {
     /**
      * 审批同意
      */
-    BUSINESS_AGREE((byte)10,"审批同意");
+    BUSINESS_AGREE((byte)10,"审批同意"),
+
+    BUSINESS_REVOKE((byte) 11,"撤销");
     private byte code;
     private String desc;
 

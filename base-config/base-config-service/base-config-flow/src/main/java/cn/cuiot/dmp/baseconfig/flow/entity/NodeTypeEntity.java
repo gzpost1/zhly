@@ -46,4 +46,9 @@ public class NodeTypeEntity implements Serializable {
      */
     private String processDefinitionId;
 
+    /**
+     * 处理节点类型
+     */
+    private String processNodeType;
+
 }

@@ -1,8 +1,11 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.flowjson;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -46,6 +49,13 @@ public class ChildNode {
      * 节点描述
      */
     private String desc;
+
+    /**
+     * 创建时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date createTime;
     /**
      * 节点属性
      */
@@ -70,5 +80,15 @@ public class ChildNode {
      * 是否为else节点
      */
     private Boolean typeElse;
+
+    /**
+     * 处理节点类型
+     */
+    private String processNodeType;
+
+    /**
+     * 通过
+     */
+    private Integer formTaskAccessRate;
 }
 

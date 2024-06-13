@@ -13,6 +13,11 @@ import java.util.List;
 public class WorkOrderSuperQuery extends PageQuery {
 
     /**
+     *审批人
+     */
+    private Long assignee;
+
+    /**
      * 流程名称
      */
     private String workName;
@@ -33,7 +38,7 @@ public class WorkOrderSuperQuery extends PageQuery {
     private Byte status;
 
     /**
-     * 工单来源
+     * 工单来源 0 计划生成  1 自查报事2客户提单3代录工单
      */
     private Byte  workSource;
 
@@ -41,5 +46,15 @@ public class WorkOrderSuperQuery extends PageQuery {
      * 是否超时 是否超时 0 未超时  1 已超时
      */
     private Byte timeOut;
+
+    /**
+     * 节点类型
+     */
+    private String nodeType;
+
+    /**
+     * 0 未处理 1已处理
+     */
+    private String queryType;
 
 }

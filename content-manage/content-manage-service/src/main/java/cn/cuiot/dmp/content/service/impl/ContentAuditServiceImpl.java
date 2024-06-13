@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -54,7 +53,7 @@ public class ContentAuditServiceImpl extends ServiceImpl<ContentAuditMapper, Con
         LambdaQueryWrapper<ContentAudit> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ContentAudit::getDataId, id);
         queryWrapper.orderByDesc(ContentAudit::getAuditTime);
-        queryWrapper.apply("limit 1");
+        queryWrapper.last("limit 1");
         return this.baseMapper.selectOne(queryWrapper);
     }
 }

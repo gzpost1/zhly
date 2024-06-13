@@ -1,11 +1,11 @@
 package cn.cuiot.dmp.content.service;//	模板
 
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
-import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
+import cn.cuiot.dmp.content.param.vo.AuditStatusNumVo;
 import cn.cuiot.dmp.content.param.vo.ImgTextVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -21,6 +21,7 @@ public interface ContentImgTextService extends AuditResultDealService, IService<
 
     /**
      * 根据id获取详情
+     *
      * @param id
      * @return
      */
@@ -28,6 +29,7 @@ public interface ContentImgTextService extends AuditResultDealService, IService<
 
     /**
      * 列表
+     *
      * @param pageQuery
      * @return
      */
@@ -35,6 +37,7 @@ public interface ContentImgTextService extends AuditResultDealService, IService<
 
     /**
      * 分页列表
+     *
      * @param pageQuery
      * @return
      */
@@ -42,6 +45,7 @@ public interface ContentImgTextService extends AuditResultDealService, IService<
 
     /**
      * 保存
+     *
      * @param createDTO
      * @return
      */
@@ -49,6 +53,7 @@ public interface ContentImgTextService extends AuditResultDealService, IService<
 
     /**
      * 更新
+     *
      * @param updateDTO
      * @return
      */
@@ -56,8 +61,24 @@ public interface ContentImgTextService extends AuditResultDealService, IService<
 
     /**
      * 停启用
+     *
      * @param updateStatusParam
      * @return
      */
     Boolean updateStatus(UpdateStatusParam updateStatusParam);
+
+    /**
+     * 根据类型id获取
+     *
+     * @param id
+     * @return
+     */
+    List<ContentImgTextEntity> getByTypeId(Long id);
+
+    /**
+     * 获取审核状态数量
+     *
+     * @return
+     */
+    List<AuditStatusNumVo> getAuditStatusNum();
 }

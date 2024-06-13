@@ -46,6 +46,11 @@ public class UserMessageEntity {
     private Long dataId;
 
     /**
+     * 数据类型
+     */
+    private String dataType;
+
+    /**
      * 消息
      */
     private String message;
