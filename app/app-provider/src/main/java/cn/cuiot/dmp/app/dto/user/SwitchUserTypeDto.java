@@ -16,6 +16,7 @@ public class SwitchUserTypeDto implements Serializable {
     /**
      * 小程序openid
      */
+    @NotNull(message = "小程序openid参数不能为空")
     private String openid;
 
     /**
