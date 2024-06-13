@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.common.bean.dto;//	模板
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.Date;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
  * @data 2024/5/27 10:36
  */
 @Data
+@Accessors(chain = true)
 public class UserMessageAcceptDto {
 
     /**
@@ -34,6 +36,11 @@ public class UserMessageAcceptDto {
      * 数据ID
      */
     private Long dataId;
+
+    /**
+     * 数据类型
+     */
+    private String dataType;
 
     /**
      * 消息

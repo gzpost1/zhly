@@ -46,7 +46,7 @@ public class ContentImgTextEntity extends YjBaseEntity implements Serializable {
     /**
      * 图文类型
      */
-    private Long type;
+    private Long typeId;
 
     /**
      * 图文封面

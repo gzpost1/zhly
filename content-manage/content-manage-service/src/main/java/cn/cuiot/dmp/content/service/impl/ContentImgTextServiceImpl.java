@@ -17,11 +17,13 @@ import cn.cuiot.dmp.content.param.dto.AuditResultDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
+import cn.cuiot.dmp.content.param.vo.AuditStatusNumVo;
 import cn.cuiot.dmp.content.param.vo.ImgTextVo;
 import cn.cuiot.dmp.content.service.ContentDataRelevanceService;
 import cn.cuiot.dmp.content.service.ContentImgTextService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -89,9 +91,10 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
     public int saveContentImgText(ContentImgTextCreateDto createDTO) {
         ContentImgTextEntity imgTextEntity = ImgTextConvert.INSTANCE.convert(createDTO);
         imgTextEntity.setStatus(EntityConstants.ENABLED);
+        imgTextEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_ING);
         imgTextEntity.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         int insert = this.baseMapper.insert(imgTextEntity);
-        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.IMG_TEXT, createDTO.getDepartments(), createDTO.getBuildings(), imgTextEntity.getId());
+        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.IMG_TEXT, LoginInfoHolder.getCurrentDeptId(), createDTO.getBuildings(), imgTextEntity.getId());
         return insert;
     }
 
@@ -101,7 +104,7 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
         ContentImgTextEntity imgTextEntity = ImgTextConvert.INSTANCE.convert(updateDtO);
         imgTextEntity.setId(updateDtO.getId());
         int update = this.baseMapper.updateById(imgTextEntity);
-        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.IMG_TEXT, updateDtO.getDepartments(), updateDtO.getBuildings(), imgTextEntity.getId());
+        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.IMG_TEXT, LoginInfoHolder.getCurrentDeptId(), updateDtO.getBuildings(), imgTextEntity.getId());
         return update;
     }
 
@@ -113,6 +116,21 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
             return this.updateById(imgTextEntity);
         }
         return false;
+    }
+
+    @Override
+    public List<ContentImgTextEntity> getByTypeId(Long typeId) {
+        LambdaQueryWrapper<ContentImgTextEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ContentImgTextEntity::getTypeId, typeId);
+        return list(queryWrapper);
+    }
+
+    @Override
+    public List<AuditStatusNumVo> getAuditStatusNum() {
+        ContentImgTextPageQuery pageQuery = new ContentImgTextPageQuery();
+        initQuery(pageQuery);
+        pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        return this.baseMapper.getAuditStatusNum(pageQuery);
     }
 
     @Override

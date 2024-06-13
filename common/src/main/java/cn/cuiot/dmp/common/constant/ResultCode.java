@@ -224,6 +224,8 @@ public enum ResultCode {
      * 内容中心
      */
     EFFECTIVE_TIME_EXPIRED("1800001", "已过生效时间"),
+    IMG_TEXT_TYPE_EXISTS("1800002", "类型名称已存在"),
+    IMG_TEXT_TYPE_EXISTS_DATA("1800003", "该类型下存在图文，不可删除"),
 
     ;
 

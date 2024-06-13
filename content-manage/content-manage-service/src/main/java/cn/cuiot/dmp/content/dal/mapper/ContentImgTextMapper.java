@@ -3,6 +3,7 @@ package cn.cuiot.dmp.content.dal.mapper;
 
 import cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
+import cn.cuiot.dmp.content.param.vo.AuditStatusNumVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.ibatis.annotations.Param;
@@ -22,4 +23,6 @@ public interface ContentImgTextMapper extends BaseMapper<ContentImgTextEntity> {
     List<ContentImgTextEntity> queryForList(@Param("param") ContentImgTextPageQuery pageQuery, @Param("dataType") Byte dataType);
 
     IPage<ContentImgTextEntity> queryForPage(IPage<ContentImgTextEntity> page, @Param("param") ContentImgTextPageQuery pageQuery, @Param("dataType") Byte dataType);
+
+    List<AuditStatusNumVo> getAuditStatusNum(ContentImgTextPageQuery pageQuery);
 }
