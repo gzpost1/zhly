@@ -288,4 +288,24 @@ public class ApiSystemServiceImpl implements ApiSystemService {
         }
     }
 
+    @Override
+    public List<AuditConfigTypeRspDTO> lookUpAuditConfig(AuditConfigTypeReqDTO queryDTO) {
+        try {
+            IdmResDTO<List<AuditConfigTypeRspDTO>> idmResDTO = systemApiFeignService
+                    .lookUpAuditConfig(queryDTO);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==lookUpAuditConfig==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_AUDIT_CONFIG_DETAIL_ERROR);
+        }
+    }
+
 }
