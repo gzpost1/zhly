@@ -1,11 +1,17 @@
 package cn.cuiot.dmp.baseconfig.controller.workorder;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
+import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
+import cn.cuiot.dmp.baseconfig.flow.enums.WorkSourceEnums;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,5 +113,19 @@ public class WorkOrderController extends BaseController {
     @PostMapping("queryCustomerWorkOrder")
     public IdmResDTO<IPage<CustomerWorkOrderDto>> queryCustomerWorkOrder(@RequestBody QueryCustomerWorkOrderDto req){
         return workInfoService.queryCustomerWorkOrder(req);
+    }
+
+
+    /**
+     * 4.2.1-客户工单-代录客单
+     * @param startProcessInstanceDTO
+     * @return
+     */
+    @PostMapping("proxyRecordStart")
+    @RequiresPermissions
+    @LogRecord(operationCode = "proxyRecordStart", operationName = "代录工单", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
+    public IdmResDTO proxyRecordStart(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
+        startProcessInstanceDTO.setWorkSource(WorkSourceEnums.PROXY_CUSTOMER_RECORD.getCode());
+        return workInfoService.start(startProcessInstanceDTO);
     }
 }
