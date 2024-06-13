@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.TbChargeManagerMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.TbChargeManager">
+    <!--@mbg.generated-->
+    <!--@Table tb_charge_manager-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="customer_user_id" jdbcType="BIGINT" property="customerUserId" />
+    <result column="house_id" jdbcType="BIGINT" property="houseId" />
+    <result column="charge_item_id" jdbcType="BIGINT" property="chargeItemId" />
+    <result column="charge_standard" jdbcType="TINYINT" property="chargeStandard" />
+    <result column="receivable_amount" jdbcType="INTEGER" property="receivableAmount" />
+    <result column="charge_type" jdbcType="TINYINT" property="chargeType" />
+    <result column="ownership_period_begin" jdbcType="DATE" property="ownershipPeriodBegin" />
+    <result column="ownership_period_end" jdbcType="DATE" property="ownershipPeriodEnd" />
+    <result column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="update_user" jdbcType="BIGINT" property="updateUser" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_user" jdbcType="BIGINT" property="createUser" />
+    <result column="deleted" jdbcType="TINYINT" property="deleted" />
+    <result column="due_date" jdbcType="TIMESTAMP" property="dueDate" />
+    <result column="create_type" jdbcType="TINYINT" property="createType" />
+    <result column="receivble_plan_id" jdbcType="BIGINT" property="receivblePlanId" />
+    <result column="receivble_status" jdbcType="TINYINT" property="receivbleStatus" />
+    <result column="hang_up_status" jdbcType="TINYINT" property="hangUpStatus" />
+    <result column="abrogate_status" jdbcType="TINYINT" property="abrogateStatus" />
+    <result column="receivable_amount_rate" jdbcType="DECIMAL" property="receivableAmountRate" />
+    <result column="receivable_amount_received" jdbcType="INTEGER" property="receivableAmountReceived" />
+    <result column="liquidated_damages_need" jdbcType="INTEGER" property="liquidatedDamagesNeed" />
+    <result column="liquidated_damages_received" jdbcType="INTEGER" property="liquidatedDamagesReceived" />
+    <result column="liquidated_damages_tax" jdbcType="INTEGER" property="liquidatedDamagesTax" />
+    <result column="liquidated_damages_not_tax" jdbcType="INTEGER" property="liquidatedDamagesNotTax" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, customer_user_id, house_id, charge_item_id, charge_standard, receivable_amount, 
+    charge_type, ownership_period_begin, ownership_period_end, company_id, update_time, 
+    update_user, create_time, create_user, deleted, due_date, create_type, receivble_plan_id, 
+    receivble_status, hang_up_status, abrogate_status, receivable_amount_rate, receivable_amount_received, 
+    liquidated_damages_need, liquidated_damages_received, liquidated_damages_tax, liquidated_damages_not_tax
+  </sql>
+</mapper>
