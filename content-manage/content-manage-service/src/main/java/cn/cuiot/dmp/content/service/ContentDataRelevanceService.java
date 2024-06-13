@@ -19,4 +19,13 @@ public interface ContentDataRelevanceService extends IService<ContentDataRelevan
      * @param id
      */
     void batchSaveContentDataRelevance(Byte dataType,List<Long> departments, List<Long> buildings, Long id);
+
+    /**
+     * 批量保存内容数据关联
+     * @param dataType
+     * @param deptId
+     * @param buildings
+     * @param id
+     */
+    void batchSaveContentDataRelevance(Byte dataType,Long deptId, List<Long> buildings, Long id);
 }

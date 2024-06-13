@@ -37,8 +37,6 @@ public class ImgTextTypeController extends BaseController {
     @LogRecord(operationCode = "saveImgTextType", operationName = "保存图文类型", serviceType = ServiceTypeConst.CONTENT_MANAGE)
     @PostMapping("/create")
     public Boolean saveImgTextType(@RequestBody @Valid ImgTextType imgTextType) {
-        String orgId = getOrgId();
-        imgTextType.setCompanyId(Long.valueOf(orgId));
         return imgTextTypeService.create(imgTextType);
     }
 

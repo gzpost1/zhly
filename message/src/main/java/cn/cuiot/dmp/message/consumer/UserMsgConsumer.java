@@ -37,25 +37,9 @@ public class UserMsgConsumer {
         log.info("userMessageInput:{}", userMessageAcceptDto);
         UserMessageEntity userMessage = UserMessageConvert.INSTANCE.concert(userMessageAcceptDto);
         userMessage.init();
-//        List<UserMessageEntity> userMessageEntities = dealMsgByType(userMessage, userMessageAcceptDto);
-//        userMessageService.saveBatch(userMessageEntities);
+        List<UserMessageEntity> userMessageEntities = dealMsgByType(userMessage, userMessageAcceptDto);
+        userMessageService.saveBatch(userMessageEntities);
     }
-
-    //    @Bean
-//    public Consumer<Message<SimpleMsg>> userMessageConsumer() {
-//        return userMessageAcceptDto -> {
-//            log.info("userMessageInput:{}", userMessageAcceptDto);
-////            UserMessageEntity userMessage = UserMessageConvert.INSTANCE.concert(userMessageAcceptDto);
-////            userMessage.init();
-////            dealMsgByType(userMessage, userMessageAcceptDto);
-//        };
-    @Bean
-    public Consumer<Message<SimpleMsg>> userMessageConsumer() {
-        return msg -> {
-            log.info(Thread.currentThread().getName() + " Consumer1 Receive New Messages: " + msg.getPayload().getData());
-        };
-    }
-
 
     //TODO
     private List<UserMessageEntity> dealMsgByType(UserMessageEntity userMessage, UserMessageAcceptDto userMessageAcceptDto) {

@@ -20,7 +20,7 @@ import java.util.List;
 public class ContentDataRelevanceServiceImpl extends ServiceImpl<ContentDataRelevanceMapper, ContentDataRelevance> implements ContentDataRelevanceService {
 
     @Override
-    @Transactional(rollbackFor = Exception.class,propagation = Propagation.REQUIRED)
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void batchSaveContentDataRelevance(Byte dataType, List<Long> departments, List<Long> buildings, Long id) {
         LambdaQueryWrapper<ContentDataRelevance> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContentDataRelevance::getDataId, id);
@@ -44,6 +44,24 @@ public class ContentDataRelevanceServiceImpl extends ServiceImpl<ContentDataRele
                     save(contentDataRelevance);
                 });
             }
+        }
+    }
+
+    @Override
+    public void batchSaveContentDataRelevance(Byte dataType, Long deptId, List<Long> buildings, Long id) {
+        LambdaQueryWrapper<ContentDataRelevance> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ContentDataRelevance::getDataId, id);
+        wrapper.eq(ContentDataRelevance::getDataType, dataType);
+        this.baseMapper.delete(wrapper);
+        if (buildings != null && !buildings.isEmpty()) {
+            buildings.forEach(building -> {
+                ContentDataRelevance contentDataRelevance = new ContentDataRelevance();
+                contentDataRelevance.setBuildId(building);
+                contentDataRelevance.setDataId(id);
+                contentDataRelevance.setDataType(dataType);
+                contentDataRelevance.setDepartmentId(deptId);
+                save(contentDataRelevance);
+            });
         }
     }
 }

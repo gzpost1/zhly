@@ -201,7 +201,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
             Claims claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt).getBody();
 
             String userId = claims.get(USERID).toString();
-            String orgId = claims.get(USERORG).toString();
+            String orgId = Objects.nonNull(claims.get(USERORG))?claims.get(USERORG).toString():null;
 
             //踢下线
             if (!StringUtils.isEmpty(orgId)) {

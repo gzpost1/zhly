@@ -36,7 +36,7 @@ public class WorkInfoEntity implements Serializable {
     /**
      * 业务类型名称
      */
-    @TableField(value = "company_id")
+    @TableField(exist = false)
     private String businessTypeName;
 
     /**
@@ -108,7 +108,27 @@ public class WorkInfoEntity implements Serializable {
     private  String ProcessDefinitionId;
 
     /**
-     * 保单客户id
+     * 报单客户id
      */
     private Long actualUserId;
+
+    /**
+     * 工单是否超时0未超时1已超时
+     */
+    private Byte workTimeOut;
+
+    /**
+     * 企业id
+     */
+    private Long companyId;
+
+    /**
+     * 撤销规则
+     */
+    private Byte revokeType;
+
+    /**
+     * 撤销的节点id
+     */
+    private String revokeNodeId;
 }

@@ -1,16 +1,15 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
+import lombok.Data;
 import cn.cuiot.dmp.baseconfig.flow.dto.AttachmentDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
 import com.alibaba.fastjson.JSONObject;
 
-import lombok.Data;
-
 import java.util.List;
 
 /**
- * @author LoveMyOrange
- * @create 2022-10-15 16:27
+ * @author pengjian
+ * @create 2024/6/13 11:16
  */
 @Data
 public class HandleDataDTO {
@@ -21,13 +20,17 @@ public class HandleDataDTO {
     private String comments;
     private String signInfo;
     /**
-     * 单个转办是存的用户信息
+     * 保存的是用户信息
      */
+
     private UserInfo transferUserInfo;
     private UserInfo multiAddUserInfo;
     private String rollbackId;
     private UserInfo currentUserInfo;
     private UserInfo delegateUserInfo;
+
+
+
 
     private Byte BusinessType;
 

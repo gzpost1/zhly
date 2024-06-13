@@ -10,6 +10,7 @@ public enum WorkOrderStatusEnums {
     terminated( (byte) 3, "已终止"),
     Suspended( (byte) 4, "已挂起"),
 
+    revoke( (byte) 5, "已撤销")
     ;
 
     private Byte status;

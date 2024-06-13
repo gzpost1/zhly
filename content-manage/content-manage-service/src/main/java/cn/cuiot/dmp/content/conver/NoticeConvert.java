@@ -32,8 +32,7 @@ public interface NoticeConvert {
 //    })
     ContentNoticeEntity convert(NoticeCreateDto createDto);
 
-    default IPage<NoticeVo> convert(IPage<ContentNoticeEntity> noticeEntityIPage, HashMap<Long, DepartmentDto> departmentMapByIds,
-                                    HashMap<Long, BuildingArchive> buildingMapByIds, HashMap<Long, BaseUserDto> userMapByIds) {
+    default IPage<NoticeVo> convert(IPage<ContentNoticeEntity> noticeEntityIPage, HashMap<Long, DepartmentDto> departmentMapByIds, HashMap<Long, BuildingArchive> buildingMapByIds, HashMap<Long, BaseUserDto> userMapByIds) {
         return noticeEntityIPage.convert(contentNoticeEntity -> {
             NoticeVo noticeVo = convert(contentNoticeEntity);
             List<String> departmentNames = new ArrayList<>();
@@ -53,7 +52,9 @@ public interface NoticeConvert {
     }
 
     default Byte checkEffectiveStatus(ContentNoticeEntity contentNoticeEntity) {
-        if (DateUtil.compare(new Date(), contentNoticeEntity.getEffectiveStartTime()) < 0) {
+        if (ContentConstants.PublishStatus.STOP_PUBLISH.equals(contentNoticeEntity.getPublishStatus())) {
+            return ContentConstants.PublishStatus.STOP_PUBLISH;
+        } else if (DateUtil.compare(new Date(), contentNoticeEntity.getEffectiveStartTime()) < 0) {
             return ContentConstants.PublishStatus.UNPUBLISHED;
         } else if (DateUtil.compare(new Date(), contentNoticeEntity.getEffectiveEndTime()) > 0) {
             return ContentConstants.PublishStatus.EXPIRED;
@@ -64,7 +65,7 @@ public interface NoticeConvert {
 
     List<NoticeVo> convert(List<ContentNoticeEntity> noticeEntityList);
 
-    default IPage<NoticeVo> convert(IPage<ContentNoticeEntity> noticeEntityIPage){
+    default IPage<NoticeVo> convert(IPage<ContentNoticeEntity> noticeEntityIPage) {
         return noticeEntityIPage.convert(this::convert);
     }
 }

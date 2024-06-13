@@ -74,6 +74,8 @@ public class TimerListener implements ExecutionListener {
             //保存超时信息
             workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.TIMEOUT,null);
 
+            //更新工单主表超时信息
+            workInfoService.updateWorkTimeOutInfo(WorkBusinessEnums.TIMEOUT.getCode(),Long.valueOf(execution.getProcessInstanceId()));
             if (StringUtils.equals(handlerType, TimeLimitHandleEnums.DO_NOTHING.getCode())) {
                 //什么都不做
 

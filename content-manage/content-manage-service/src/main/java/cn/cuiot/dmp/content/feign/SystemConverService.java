@@ -57,4 +57,16 @@ public class SystemConverService {
         }
         return data.stream().collect(Collectors.toMap(BaseUserDto::getId, baseUserDto -> baseUserDto, (k1, k2) -> k1, HashMap::new));
     }
+
+    public List<BaseUserDto> lookUpUserList(BaseUserReqDto reqDto) {
+        return systemApiFeignService.lookUpUserList(reqDto).getData();
+    }
+
+    public List<Long> lookUpUserIds(BaseUserReqDto reqDto) {
+        List<BaseUserDto> userDtoList = systemApiFeignService.lookUpUserList(reqDto).getData();
+        if (CollUtil.isNotEmpty(userDtoList)) {
+            return userDtoList.stream().map(BaseUserDto::getId).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
+    }
 }

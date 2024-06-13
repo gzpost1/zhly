@@ -23,7 +23,7 @@
     </sql>
     <sql id="queryWorkOrderInfoSql">
          t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds,
-         t1.actual_user_id
+         t1.actual_user_id,t1.revoke_type,t1.revoke_node_id
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
@@ -116,9 +116,6 @@
         </where>
     </sql>
 
-
-
-
     <select id="queryWorkOrderDetailInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
             from tb_work_info t1
@@ -171,7 +168,7 @@
     </sql>
 
     <select id="queryMyNotApprocalCount" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto">
-        select '待审批' as name count(*) as number from act_ru_task t1 , tb_node_type t2
+        select '待审批' as name ,count(*) as number from act_ru_task t1 , tb_node_type t2
         where t1.PROC_INST_ID_ = t2.proc_inst_id and t1.TASK_DEF_KEY_ = t2.node_id  and t2.node_type = 'APPROVAL' and  t1.ASSIGNEE_ = #{query.assignee}
     </select>
     <sql id="queryMyApprovalSql">
@@ -236,7 +233,7 @@
     <sql id="queryMakeApprovalSqlCondition">
         <where>
             <if test="query.assignee !=null and query.assignee !=''">
-                and t2.ASSIGNEE_ = #{query.assignee}
+                and t2.user_id = #{query.assignee}
             </if>
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}
@@ -307,16 +304,14 @@
         </where>
     </sql>
 
-    <sql id="queryAppMySubmitWorkInfoSql">
-        t1.proc_inst_id,t1.work_name,t1.create_user,t1.create_time,t1.status,IFNULL(t2.business_type,0) as outTime
+    <sql id="queryAppWorkInfoSql">
+        t1.proc_inst_id,t1.work_name,t1.create_user,t1.create_time,t1.status,t1.work_time_out as outTime
     </sql>
     <select id="queryAppMySubmitWorkInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
         SELECT
-            <include refid="queryAppMySubmitWorkInfoSql"/>
+            <include refid="queryAppWorkInfoSql"/>
         FROM
             tb_work_info t1
-                LEFT JOIN ( SELECT business_type, proc_inst_id FROM tb_work_business_type_info WHERE business_type = 1 GROUP BY proc_inst_id, business_type ) t2
-                on t1.proc_inst_id = t2.proc_inst_id
             <include refid="queryAppMySubmitWorkInfoCondition"/>
     </select>
 
@@ -337,7 +332,7 @@
                 and t1.status = #{query.status}
             </if>
             <if test="query.timeOut !=null and query.timeOut==1">
-                t2.business_type = #{query.timeOut}
+                t1.work_time_out = #{query.timeOut}
             </if>
         </where>
         group by t1.proc_inst_id
@@ -347,10 +342,9 @@
 
     <select id="queryWorkOrderSuper" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
         select
-        <include refid="queryWorkInfo"/> from tb_work_info t1 left join tb_process_dept_rel t2
-        on t1.process_definition_id = t2.process_definition_id  left join ( SELECT business_type, proc_inst_id FROM tb_work_business_type_info WHERE business_type = 1 GROUP BY proc_inst_id, business_type ) t3
-        on t1.proc_inst_id = t3.proc_inst_id
-
+        <include refid="queryAppWorkInfoSql"/> from tb_work_info t1 left join tb_process_dept_rel t2
+        on t1.process_definition_id = t2.process_definition_id
+        <include refid="queryWorkOrderSuperCondition"/>
     </select>
     <sql id="queryWorkOrderSuperCondition">
         <where>
@@ -372,27 +366,224 @@
             <if test="query.workSource !=null" >
                 and t1.work_souce = #{query.workSource}
             </if>
-            <if test="query.timeOut !=null and query.timeOut==1">
-                and t1.proc_inst_id in
+            <if test="query.timeOut !=null">
+                and t1.work_time_out = #{query.timeOut}
             </if>
         </where>
+        group by t1.proc_inst_id
+        order by t1.create_time desc
     </sql>
 
     <select id="queryPendProcessList" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto">
         SELECT
-            t1.NAME_ AS name ,count(*) AS number
+            t2.process_node_type AS name ,count(*) AS number
         FROM
             act_ru_task t1,
             tb_node_type t2
         WHERE
-            t1.PROC_INST_ID_ = t2.proc_inst_id
+            t1.PROC_DEF_ID_ = t2.process_definition_id
           AND t1.TASK_DEF_KEY_ = t2.node_id
           AND t1.ASSIGNEE_ = #{query.assignee}
           AND t2.node_type = 'APPROVAL'
-        group by t1.NAME_
+        group by t2.process_node_type
     </select>
 
     <select id="queryTaskUserInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.TaskUserInfoDto">
         select ID_  as taskId,ASSIGNEE_ as userId from  act_ru_task where PROC_INST_ID_= #{query.processInstanceId}
     </select>
+
+    <select id="queryNodeType" resultType="java.lang.String">
+        select t2.process_node_type from act_hi_taskinst t1 ,tb_node_type t2 where t1.PROC_DEF_ID_ = t2.process_definition_id and t1.ASSIGNEE_= #{query.assignee} and t2.node_type ='TASK'
+        GROUP BY t2.process_node_type
+    </select>
+
+    <sql id="queryMyHandleInfoSql">
+        t1.work_name,t1.create_user,t1.create_time,t1.work_time_out as outTime,t3.node_id,t1.proc_inst_id,t2.ID_ as taskId
+    </sql>
+    <select id="queryMyHandleInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
+        select
+            <include refid="queryMyHandleInfoSql"/> from tb_work_info t1 left join act_hi_taskinst t2 on t1.proc_inst_id = t2.PROC_INST_ID_ left join
+        tb_node_type t3 on t1.process_definition_id = t3.process_definition_id left join tb_process_dept_rel t4 on t1.process_definition_id=t4.process_definition_id
+            <include refid="queryMyHandleInfoCondition"/>
+    </select>
+        <sql id="queryMyHandleInfoCondition">
+            <where>
+                <if test="query.assignee != null">
+                    and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'TASK'
+                </if>
+                <if test="query.workName !=null and query.workName !=''">
+                    and t1.work_name like concat('%',#{query.workName},'%')
+                </if>
+                <if test="query.businessType !=null">
+                    and t1.business_type = #{query.businessType}
+                </if>
+                <if test="query.status !=null">
+                    and t1.status = #{query.status}
+                </if>
+                <if test="query.workSource !=null">
+                    and t1.work_souce = #{query.workSource}
+                </if>
+                <if test="query.timeOut !=null">
+                    and t1.work_time_out = #{query.timeOut}
+                </if>
+                <if test="query.orgIds !=null and query.orgIds.size()>0">
+                    and t4.org_id in
+                    <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="query.nodeType !=null and query.nodeType!=''">
+                    and t3.process_node_type = #{query.nodeType}
+                </if>
+                <if test="query.queryType !=null and query.queryType='0'">
+                    and t2.END_TIME_ is  null
+                </if>
+                <if test="query.queryType !=null and query.queryType='1'">
+                    and t2.END_TIME_ is not null
+                </if>
+            </where>
+            group by t1.proc_inst_id
+            order by t1.create_time desc
+        </sql>
+
+    <select id="queryMyApprove" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
+        select
+        <include refid="queryMyHandleInfoSql"/>
+            from tb_work_info t1 left join act_hi_taskinst t2 on t1.proc_inst_id = t2.PROC_INST_ID_ left join
+        tb_node_type t3 on t1.process_definition_id = t3.process_definition_id left join tb_process_dept_rel t4 on t1.process_definition_id=t4.process_definition_id
+        <include refid="queryMyApproveCondition"/>
+    </select>
+
+    <sql id="queryMyApproveCondition">
+        <where>
+            <if test="query.assignee != null">
+                and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'APPROVAL'
+            </if>
+            <if test="query.workName !=null and query.workName !=''">
+                and t1.work_name like concat('%',#{query.workName},'%')
+            </if>
+            <if test="query.businessType !=null">
+                and t1.business_type = #{query.businessType}
+            </if>
+            <if test="query.status !=null">
+                and t1.status = #{query.status}
+            </if>
+            <if test="query.workSource !=null">
+                and t1.work_souce = #{query.workSource}
+            </if>
+            <if test="query.timeOut !=null">
+                and t1.work_time_out = #{query.timeOut}
+            </if>
+            <if test="query.orgIds !=null and query.orgIds.size()>0">
+                and t4.org_id in
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.queryType !=null and query.queryType='0'">
+                and t2.END_TIME_ is  null
+            </if>
+            <if test="query.queryType !=null and query.queryType='1'">
+                and t2.END_TIME_ is not null
+            </if>
+        </where>
+        group by t1.proc_inst_id
+        order by t1.create_time desc
+    </sql>
+
+    <sql id="queryMyMakeSql">
+        t1.work_name,t1.create_user,t1.create_time,t1.work_time_out as outTime,t3.node_id,t1.proc_inst_id
+    </sql>
+    <select id="queryMyMake" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
+    select
+    <include refid="queryMyMakeSql"/>
+    from tb_work_info t1 left JOIN tb_flow_cc t2 on t1.proc_inst_id = t2.process_instance_id left join tb_process_dept_rel t3 on t1.process_definition_id = t3.process_definition_id
+    <include refid="queryMyMakeCondition"/>
+    </select>
+    <sql id="queryMyMakeCondition">
+        <where>
+        <if test="query.assignee !=null">
+          and   t2.user_id = #{query.assignee}
+        </if>
+        <if test="query.workName !=null and query.workName !=''">
+            and t1.work_name like concat('%',#{query.workName},'%')
+        </if>
+        <if test="query.businessType !=null">
+            and t1.business_type = #{query.businessType}
+        </if>
+        <if test="query.status !=null">
+            and t1.status = #{query.status}
+        </if>
+        <if test="query.workSource !=null">
+            and t1.work_souce = #{query.workSource}
+        </if>
+        <if test="query.timeOut !=null">
+            and t1.work_time_out = #{query.timeOut}
+        </if>
+        <if test="query.orgIds !=null and query.orgIds.size()>0">
+            and t3.org_id in
+            <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        </where>
+        group by t1.proc_inst_id
+        order by t1.create_time desc
+    </sql>
+    <sql id="queryReportRepairsSql">
+        work_name,work_souce as workSource,create_time,actual_user_id,create_user,proc_inst_id
+    </sql>
+    <select id="queryReportRepairs" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.RepairReportDto">
+        select
+            <include refid="queryReportRepairsSql"/> from tb_work_info
+            <include refid="queryReportRepairsCondition"/>
+    </select>
+    <sql id="queryReportRepairsCondition">
+        <where>
+            <if test="query.userId !=null">
+                and actual_user_id = #{query.userId}
+            </if>
+            <if test="query.propertyId !=null">
+                and property_id = #{query.propertyId}
+            </if>
+            <if test="query.status !=null and query.status==0">
+                and status in (2,4)
+            </if>
+            <if test="query.status !=null and query.status==1">
+                and status in (1,3)
+            </if>
+            <if test="query.status !=null and query.status==2">
+                and status =5
+            </if>
+        </where>
+        group by proc_inst_id
+        order by create_time desc
+    </sql>
+    <sql id="queryCustomerWorkOrderSql">
+        business_type,work_name,work_source,status,create_time,actual_user_id,create_user,proc_inst_id,property_id,work_time_out as timeOut
+    </sql>
+    <select id="queryCustomerWorkOrder" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.CustomerWorkOrderDto">
+        select
+            <include refid="queryCustomerWorkOrderSql"/>
+        from tb_work_info
+    </select>
+    <sql id="queryCustomerWorkOrderCondition">
+        <where>
+            <if test="query.workSource !=null">
+                and work_souce = #{query.workSource}
+            </if>
+            <if test="query.businessType !=null">
+                and business_type = #{query.businessType}
+            </if>
+            <if test="query.workName !=null and query.workName !=''">
+                and work_name like  concat('%',#{query.workName},'%')
+            </if>
+            <if test="query.status != null">
+                and status = #{query.status}
+            </if>
+            <if test="query.procInstId !=null and query.procInstId !=''">
+                and proc_inst_id like concat('%',#{query.procInstId},'%')
+            </if>
+        </where>
+    </sql>
 </mapper>
