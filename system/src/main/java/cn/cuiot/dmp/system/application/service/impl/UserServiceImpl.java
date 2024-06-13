@@ -48,7 +48,7 @@ import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
 import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
-import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
@@ -330,9 +330,9 @@ public class UserServiceImpl extends BaseController implements UserService {
 
         //用户名正则校验
         String userName = userBo.getUsername();
-        if (!userName.matches(RegexConst.USERNAME_REGEX)) {
+        /*if (!userName.matches(RegexConst.USERNAME_REGEX)) {
             throw new BusinessException(ResultCode.USERNAME_SEARCH_IN_INVALID);
-        }
+        }*/
 
         //判断用户名是否已经存在
         if (Objects.nonNull(userRepository
@@ -470,9 +470,9 @@ public class UserServiceImpl extends BaseController implements UserService {
 
         //用户名正则校验
         String username = userBo.getUsername();
-        if (!username.matches(RegexConst.USERNAME_REGEX)) {
+        /*if (!username.matches(RegexConst.USERNAME_REGEX)) {
             throw new BusinessException(ResultCode.USERNAME_SEARCH_IN_INVALID);
-        }
+        }*/
 
         //判断用户名是否已经存在
         User userByUsername = userRepository
@@ -1183,6 +1183,11 @@ public class UserServiceImpl extends BaseController implements UserService {
         }
         User user = User.builder().build();
         user.setId(new UserId(updatedUser.getId()));
+
+        if(org.apache.commons.lang3.StringUtils.isNotBlank(updatedUser.getOpenid())){
+            user.setOpenid(updatedUser.getOpenid());
+        }
+
         if (updatedUser.getEmail() != null) {
             user.setEmail(new Email(updatedUser.getEmail()));
         }

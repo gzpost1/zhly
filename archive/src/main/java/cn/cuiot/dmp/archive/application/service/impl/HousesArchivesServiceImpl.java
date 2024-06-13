@@ -1,15 +1,13 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
-import cn.cuiot.dmp.archive.application.param.dto.DeviceArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
-import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.HousesArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.DoubleValidator;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -18,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -165,7 +164,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         // Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(HousesArchiveImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
-        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.HOUSE_ARCHIVE.getCode());
+        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, SystemOptionTypeEnum.HOUSE_ARCHIVE.getCode());
 
         // 构造插入列表进行保存
         List<HousesArchivesEntity> list = new ArrayList<>();
@@ -211,12 +210,28 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         entity.setBusinessNatureName(configIdNameMap.get(entity.getBusinessNature()));
         entity.setResourceTypeName(configIdNameMap.get(entity.getResourceType()));
         entity.setParkingAreaName(configIdNameMap.get(entity.getParkingArea()));
+        entity.setOwnershipAttributeName(configIdNameMap.get(entity.getOwnershipAttribute()));
+        if (Objects.nonNull(entity.getRecommended())){
+            if (entity.getRecommended() == (byte)0){
+                entity.setResourceTypeName("否");
+            } else {
+                entity.setRecommendedName("是");
+            }
+        }
+        if (Objects.nonNull(entity.getUtilizationRate())){
+            DecimalFormat df = new DecimalFormat("0.00%");
+            entity.setUtilizationRateName(df.format(entity.getUtilizationRate()));
+        }
         if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
-            List<String> basicServices = new ArrayList<>();
-            entity.getBasicServices().forEach(configId -> {
-                basicServices.add(configIdNameMap.get(configId));
-            });
-            entity.setBasicServicesName(basicServices);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i< entity.getBasicServices().size(); i++){
+                if (i == entity.getBasicServices().size()-1){
+                    sb.append(configIdNameMap.get(entity.getBasicServices().get(i)));
+                } else {
+                    sb.append(configIdNameMap.get(entity.getBasicServices().get(i))).append("，");
+                }
+            }
+            entity.setBasicServicesName(sb.toString());
         }
 
 
@@ -238,6 +253,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         addListCanNull(configIdList, entity.getBusinessNature());
         addListCanNull(configIdList, entity.getResourceType());
         addListCanNull(configIdList, entity.getParkingArea());
+        addListCanNull(configIdList, entity.getOwnershipAttribute());
         if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
             configIdList.addAll(entity.getBasicServices());
         }

@@ -12,7 +12,7 @@ import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity;
 import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
-import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -65,6 +65,7 @@ public class UserConverter implements Converter<User, UserEntity> {
             user.setName(userEntity.getName());
             user.setPostId(userEntity.getPostId());
             user.setRemark(userEntity.getRemark());
+            user.setOpenid(userEntity.getOpenid());
 
             user.setLastOnlineOn(userEntity.getLastOnlineOn());
             user.setCreatedOn(userEntity.getCreatedOn());
@@ -118,6 +119,7 @@ public class UserConverter implements Converter<User, UserEntity> {
         entity.setName(user.getName());
         entity.setPostId(user.getPostId());
         entity.setRemark(user.getRemark());
+        entity.setOpenid(user.getOpenid());
 
         return entity;
     }

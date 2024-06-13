@@ -139,6 +139,12 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     private Double utilizationRate;
 
     /**
+     * 使用率（自动计算） + 百分号
+     */
+    @TableField(exist = false)
+    private String utilizationRateName;
+
+    /**
      * 物业业态
      */
     private Long propertyType;
@@ -257,7 +263,13 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     /**
      * 是否推荐（下拉选项是、否）
      */
-    private Boolean recommended;
+    private Byte recommended;
+
+    /**
+     * 是否推荐（下拉选项是、否）
+     */
+    @TableField(exist = false)
+    private String recommendedName;
 
     /**
      * 房源图片（仅限jpg、jpeg、png格式，图片大小不超过5M，最多5张图）
@@ -275,7 +287,7 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
      * 基础服务（显示自定义配置中的选项，支持多选）
      */
     @TableField(exist = false)
-    private List<String> basicServicesName;
+    private String basicServicesName;
 
     /**
      * 房源描述（支持输入汉字、英文、符号、数字，长度支持500字符）

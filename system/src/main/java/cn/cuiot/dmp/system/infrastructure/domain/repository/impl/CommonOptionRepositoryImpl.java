@@ -71,7 +71,7 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
 
     @Override
     public CommonOption queryForDetailByName(CommonOption commonOption) {
-        AssertUtil.notBlank(commonOption.getName(),"常用选项名称不能为空");
+        AssertUtil.notBlank(commonOption.getName(), "常用选项名称不能为空");
         AssertUtil.notNull(commonOption.getCompanyId(), "企业Id不能为空");
         // 获取常用选项
         LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
@@ -92,6 +92,8 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int saveCommonOption(CommonOption commonOption) {
+        // 保存校验
+        checkSave(commonOption);
         commonOption.setId(IdWorker.getId());
         CommonOptionEntity commonOptionEntity = new CommonOptionEntity();
         BeanUtils.copyProperties(commonOption, commonOptionEntity);
@@ -106,6 +108,8 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int updateCommonOption(CommonOption commonOption) {
+        // 保存校验
+        checkSave(commonOption);
         CommonOptionEntity commonOptionEntity = Optional.ofNullable(commonOptionMapper.selectById(commonOption.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(commonOption, commonOptionEntity);
@@ -212,75 +216,6 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
 
     @Override
     public void initCommonOption(Long companyId, Long typeId) {
-        List<CommonOptionSettingEntity> commonOptionSettingEntities = new ArrayList<>();
-        // 挂起原因
-        CommonOptionEntity commonOptionSuspendEntity = new CommonOptionEntity();
-        commonOptionSuspendEntity.setId(IdWorker.getId());
-        commonOptionSuspendEntity.setName(CommonOptionConstant.COMMON_OPTION_SUSPEND);
-        commonOptionSuspendEntity.setCompanyId(companyId);
-        commonOptionSuspendEntity.setTypeId(typeId);
-        commonOptionMapper.insert(commonOptionSuspendEntity);
-        CommonOptionSettingEntity commonOptionSettingSuspend1 = new CommonOptionSettingEntity();
-        commonOptionSettingSuspend1.setId(IdWorker.getId());
-        commonOptionSettingSuspend1.setName(CommonOptionConstant.COMMON_OPTION_SETTING1);
-        commonOptionSettingSuspend1.setCommonOptionId(commonOptionSuspendEntity.getId());
-        CommonOptionSettingEntity commonOptionSettingSuspend2 = new CommonOptionSettingEntity();
-        commonOptionSettingSuspend2.setId(IdWorker.getId());
-        commonOptionSettingSuspend2.setName(CommonOptionConstant.COMMON_OPTION_SETTING2);
-        commonOptionSettingSuspend2.setCommonOptionId(commonOptionSuspendEntity.getId());
-        CommonOptionSettingEntity commonOptionSettingSuspend3 = new CommonOptionSettingEntity();
-        commonOptionSettingSuspend3.setId(IdWorker.getId());
-        commonOptionSettingSuspend3.setName(CommonOptionConstant.COMMON_OPTION_SETTING3);
-        commonOptionSettingSuspend3.setCommonOptionId(commonOptionSuspendEntity.getId());
-        // 终止原因
-        CommonOptionEntity commonOptionStopEntity = new CommonOptionEntity();
-        commonOptionStopEntity.setId(IdWorker.getId());
-        commonOptionStopEntity.setName(CommonOptionConstant.COMMON_OPTION_STOP);
-        commonOptionStopEntity.setCompanyId(companyId);
-        commonOptionStopEntity.setTypeId(typeId);
-        commonOptionMapper.insert(commonOptionStopEntity);
-        CommonOptionSettingEntity commonOptionSettingStop1 = new CommonOptionSettingEntity();
-        commonOptionSettingStop1.setId(IdWorker.getId());
-        commonOptionSettingStop1.setName(CommonOptionConstant.COMMON_OPTION_SETTING1);
-        commonOptionSettingStop1.setCommonOptionId(commonOptionStopEntity.getId());
-        CommonOptionSettingEntity commonOptionSettingStop2 = new CommonOptionSettingEntity();
-        commonOptionSettingStop2.setId(IdWorker.getId());
-        commonOptionSettingStop2.setName(CommonOptionConstant.COMMON_OPTION_SETTING2);
-        commonOptionSettingStop2.setCommonOptionId(commonOptionStopEntity.getId());
-        CommonOptionSettingEntity commonOptionSettingStop3 = new CommonOptionSettingEntity();
-        commonOptionSettingStop3.setId(IdWorker.getId());
-        commonOptionSettingStop3.setName(CommonOptionConstant.COMMON_OPTION_SETTING3);
-        commonOptionSettingStop3.setCommonOptionId(commonOptionStopEntity.getId());
-        // 退回原因
-        CommonOptionEntity commonOptionBackEntity = new CommonOptionEntity();
-        commonOptionBackEntity.setId(IdWorker.getId());
-        commonOptionBackEntity.setName(CommonOptionConstant.COMMON_OPTION_BACK);
-        commonOptionBackEntity.setCompanyId(companyId);
-        commonOptionBackEntity.setTypeId(typeId);
-        commonOptionMapper.insert(commonOptionBackEntity);
-        CommonOptionSettingEntity commonOptionSettingBack1 = new CommonOptionSettingEntity();
-        commonOptionSettingBack1.setId(IdWorker.getId());
-        commonOptionSettingBack1.setName(CommonOptionConstant.COMMON_OPTION_SETTING1);
-        commonOptionSettingBack1.setCommonOptionId(commonOptionBackEntity.getId());
-        CommonOptionSettingEntity commonOptionSettingBack2 = new CommonOptionSettingEntity();
-        commonOptionSettingBack2.setId(IdWorker.getId());
-        commonOptionSettingBack2.setName(CommonOptionConstant.COMMON_OPTION_SETTING2);
-        commonOptionSettingBack2.setCommonOptionId(commonOptionBackEntity.getId());
-        CommonOptionSettingEntity commonOptionSettingBack3 = new CommonOptionSettingEntity();
-        commonOptionSettingBack3.setId(IdWorker.getId());
-        commonOptionSettingBack3.setName(CommonOptionConstant.COMMON_OPTION_SETTING3);
-        commonOptionSettingBack3.setCommonOptionId(commonOptionBackEntity.getId());
-        // 初始化常用选项设置
-        commonOptionSettingEntities.add(commonOptionSettingSuspend1);
-        commonOptionSettingEntities.add(commonOptionSettingSuspend2);
-        commonOptionSettingEntities.add(commonOptionSettingSuspend3);
-        commonOptionSettingEntities.add(commonOptionSettingStop1);
-        commonOptionSettingEntities.add(commonOptionSettingStop2);
-        commonOptionSettingEntities.add(commonOptionSettingStop3);
-        commonOptionSettingEntities.add(commonOptionSettingBack1);
-        commonOptionSettingEntities.add(commonOptionSettingBack2);
-        commonOptionSettingEntities.add(commonOptionSettingBack3);
-        commonOptionSettingMapper.batchSaveCommonOptionSettings(commonOptionSettingEntities);
     }
 
     private Query getQuery(CommonOptionDetailQueryDTO commonOptionDetailQueryDTO) {
@@ -318,6 +253,23 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     private void checkDelete(Long id) {
         // 该选项已被表单引用，不可删除
         AssertUtil.isFalse(formConfigRepository.useCommonOptionByFormConfig(id), "该选项已被表单引用，不可删除");
+    }
+
+    private void checkSave(CommonOption commonOption) {
+        AssertUtil.notNull(commonOption.getCompanyId(), "企业ID不能为空");
+        AssertUtil.notBlank(commonOption.getName(), "常用选项名称不能为空");
+        LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
+                .eq(CommonOptionEntity::getCompanyId, commonOption.getCompanyId())
+                // 更新的话排除自身
+                .ne(Objects.nonNull(commonOption.getId()), CommonOptionEntity::getId, commonOption.getId());
+        List<CommonOptionEntity> commonOptionEntityList = commonOptionMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(commonOptionEntityList)) {
+            return;
+        }
+        List<String> commonOptionNameList = commonOptionEntityList.stream()
+                .map(CommonOptionEntity::getName)
+                .collect(Collectors.toList());
+        AssertUtil.isFalse(commonOptionNameList.contains(commonOption.getName()), "常用选项名称已存在");
     }
 
 }

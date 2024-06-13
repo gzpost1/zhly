@@ -23,11 +23,11 @@ public class NodeTypeEntity implements Serializable {
     @TableId("id")
     private Long id;
 
-
-    /**
-     * 流程实例id
-     */
-    private Long procInstId;
+//
+//    /**
+//     * 流程实例id
+//     */
+//    private Long procInstId;
 
 
     /**
@@ -41,6 +41,9 @@ public class NodeTypeEntity implements Serializable {
      */
     private String nodeType;
 
-
+    /**
+     * 流程定义id
+     */
+    private String processDefinitionId;
 
 }

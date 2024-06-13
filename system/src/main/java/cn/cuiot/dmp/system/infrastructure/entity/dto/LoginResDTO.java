@@ -89,4 +89,9 @@ public class LoginResDTO {
      * 组织部门ID
      */
     private Long deptId;
+
+    /**
+     * 小程序openid
+     */
+    private String openid;
 }

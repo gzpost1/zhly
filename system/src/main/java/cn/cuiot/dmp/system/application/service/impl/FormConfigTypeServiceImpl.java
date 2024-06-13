@@ -70,7 +70,8 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
 
     @Override
     public List<FormConfigTypeTreeNodeVO> queryByCompany(FormConfigTypeQueryDTO queryDTO) {
-        List<FormConfigType> formConfigTypeList = formConfigTypeRepository.queryByCompany(queryDTO.getCompanyId());
+        List<FormConfigType> formConfigTypeList = formConfigTypeRepository.queryByCompany(queryDTO.getCompanyId(),
+                queryDTO.getInitFlag());
         List<FormConfigTypeTreeNodeVO> formConfigTypeTreeNodeVOList = formConfigTypeList.stream()
                 .map(parent -> new FormConfigTypeTreeNodeVO(
                         parent.getId().toString(), parent.getParentId().toString(),
@@ -93,7 +94,8 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
     @Override
     public List<FormConfigTypeTreeNodeVO> queryExcludeChild(FormConfigTypeQueryDTO queryDTO) {
         AssertUtil.notNull(queryDTO.getId(), "当前节点不能为空");
-        List<FormConfigType> formConfigTypeList = formConfigTypeRepository.queryByCompany(queryDTO.getCompanyId());
+        List<FormConfigType> formConfigTypeList = formConfigTypeRepository.queryByCompany(queryDTO.getCompanyId(),
+                queryDTO.getInitFlag());
         List<FormConfigTypeTreeNodeVO> formConfigTypeTreeNodeVOList = formConfigTypeList.stream()
                 .map(parent -> new FormConfigTypeTreeNodeVO(
                         parent.getId().toString(), parent.getParentId().toString(),
@@ -140,7 +142,8 @@ public class FormConfigTypeServiceImpl implements FormConfigTypeService {
     @Override
     public int deleteFormConfigType(FormConfigTypeQueryDTO queryDTO) {
         AssertUtil.notNull(queryDTO.getId(), "当前节点不能为空");
-        List<FormConfigType> formConfigTypeList = formConfigTypeRepository.queryByCompany(queryDTO.getCompanyId());
+        List<FormConfigType> formConfigTypeList = formConfigTypeRepository.queryByCompany(queryDTO.getCompanyId(),
+                queryDTO.getInitFlag());
         List<FormConfigTypeTreeNodeVO> formConfigTypeTreeNodeVOList = formConfigTypeList.stream()
                 .map(parent -> new FormConfigTypeTreeNodeVO(
                         parent.getId().toString(), parent.getParentId().toString(),

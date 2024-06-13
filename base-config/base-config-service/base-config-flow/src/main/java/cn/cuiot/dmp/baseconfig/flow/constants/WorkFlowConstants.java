@@ -78,4 +78,5 @@ public interface WorkFlowConstants {
      * 获取待已审批列表
      */
     Integer QUERY_TYPE_APPROVAL = 1;
+
 }

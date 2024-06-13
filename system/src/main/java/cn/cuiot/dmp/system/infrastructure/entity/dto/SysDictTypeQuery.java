@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.entity.dto;
 
+import cn.cuiot.dmp.common.bean.PageQuery;
 import java.io.Serializable;
 import lombok.Data;
 
@@ -8,7 +9,7 @@ import lombok.Data;
  * Created by wuyongchong on 2019/8/28.
  */
 @Data
-public class SysDictTypeQuery implements Serializable {
+public class SysDictTypeQuery extends PageQuery {
 
   /**
    * 名称

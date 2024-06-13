@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.SystemFormConfigConstant;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -21,7 +22,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,10 +33,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -74,6 +71,8 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int saveFormConfig(FormConfig formConfig) {
+        // 保存校验
+        checkSave(formConfig);
         formConfig.setId(IdWorker.getId());
         FormConfigEntity formConfigEntity = new FormConfigEntity();
         BeanUtils.copyProperties(formConfig, formConfigEntity);
@@ -89,6 +88,8 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     public int updateFormConfig(FormConfig formConfig) {
         FormConfigEntity formConfigEntity = Optional.ofNullable(formConfigMapper.selectById(formConfig.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        // 保存校验
+        checkSave(formConfig);
         BeanUtils.copyProperties(formConfig, formConfigEntity);
         // 先删除后保存表单配置内容
         FormConfigDetailQueryDTO formConfigDetailQueryDTO = new FormConfigDetailQueryDTO();
@@ -229,6 +230,23 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
         return false;
     }
 
+    @Override
+    public void initSystemFormConfig(Long companyId, Map<String, Long> systemFormConfigTypeMap) {
+        AssertUtil.notNull(companyId, "企业ID不能为空");
+        List<FormConfigEntity> formConfigEntityList = new ArrayList<>();
+        // 线索相关
+        SystemFormConfigConstant.CLUE_FORM_CONFIG.forEach(o -> {
+            FormConfigEntity formConfigEntity = new FormConfigEntity();
+            formConfigEntity.setId(IdWorker.getId());
+            formConfigEntity.setName(o);
+            formConfigEntity.setCompanyId(companyId);
+            formConfigEntity.setTypeId(systemFormConfigTypeMap.get(SystemFormConfigConstant.FORM_CONFIG_TYPE_LIST.get(0)));
+            formConfigEntity.setCreatedBy(SystemFormConfigConstant.DEFAULT_USER_ID.toString());
+            formConfigEntityList.add(formConfigEntity);
+        });
+        formConfigMapper.batchSaveFormConfig(formConfigEntityList);
+    }
+
     private Query getQuery(FormConfigDetailQueryDTO formConfigDetailQueryDTO) {
         Query query = new Query();
         Criteria criteria = new Criteria();
@@ -278,6 +296,23 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
             formConfigList.add(formConfig);
         }
         return formConfigList;
+    }
+
+    private void checkSave(FormConfig formConfig) {
+        AssertUtil.notNull(formConfig.getCompanyId(), "企业ID不能为空");
+        AssertUtil.notBlank(formConfig.getName(), "表单名称不能为空");
+        LambdaQueryWrapper<FormConfigEntity> queryWrapper = new LambdaQueryWrapper<FormConfigEntity>()
+                .eq(FormConfigEntity::getCompanyId, formConfig.getCompanyId())
+                // 更新的话排除自身
+                .ne(Objects.nonNull(formConfig.getId()), FormConfigEntity::getId, formConfig.getId());
+        List<FormConfigEntity> formConfigEntityList = formConfigMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(formConfigEntityList)) {
+            return;
+        }
+        List<String> formConfigNameList = formConfigEntityList.stream()
+                .map(FormConfigEntity::getName)
+                .collect(Collectors.toList());
+        AssertUtil.isFalse(formConfigNameList.contains(formConfig.getName()), "表单名称已存在");
     }
 
 }

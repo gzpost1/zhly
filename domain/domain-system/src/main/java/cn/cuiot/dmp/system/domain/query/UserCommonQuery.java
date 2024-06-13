@@ -4,7 +4,7 @@ import cn.cuiot.dmp.domain.types.Email;
 import cn.cuiot.dmp.domain.types.Password;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.domain.types.id.UserId;
-import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;

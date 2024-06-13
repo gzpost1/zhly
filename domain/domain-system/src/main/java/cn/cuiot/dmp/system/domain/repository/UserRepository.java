@@ -44,7 +44,7 @@ public interface UserRepository extends Repository<User, UserId> {
     /**
      * 根据用户名、或者手机号、或者邮箱查询"实体用户"
      */
-    User queryByUserNameOrPhoneNumberOrEmail(String userName, PhoneNumber phoneNumber, Email email);
+    User queryByUserNameOrPhoneNumberOrEmail(String userName, PhoneNumber phoneNumber, Email email,Integer userType);
 
     /**
      * 查询已删除用户（正常用户也可查询）

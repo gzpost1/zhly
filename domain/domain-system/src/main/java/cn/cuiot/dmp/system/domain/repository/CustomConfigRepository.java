@@ -55,6 +55,6 @@ public interface CustomConfigRepository {
     /**
      * 初始化常用选项
      */
-    void initCustomConfig(Long companyId, String userId);
+    void initCustomConfig(Long companyId);
 
 }

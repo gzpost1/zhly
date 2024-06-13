@@ -8,8 +8,10 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,11 +74,30 @@ public class BuildingAndConfigCommonUtilService {
     public Map<String, Map<String, Long>> getConfigNameIdMap(Long companyId, Byte type){
         CustomConfigReqDTO customConfigReqDTO = new CustomConfigReqDTO();
         customConfigReqDTO.setCompanyId(companyId);
-        customConfigReqDTO.setArchiveType(type);
+        customConfigReqDTO.setSystemOptionType(type);
+        log.info("查询自定义配置的公司id:{}和type:{}", companyId, type);
         IdmResDTO<List<CustomConfigRspDTO>> res = systemApiFeignService.batchQueryCustomConfigs(customConfigReqDTO);
-        Map<String, Map<String, Long>> map = res.getData().stream()
-                .collect(Collectors.toMap(CustomConfigRspDTO::getName, dto -> dto.getCustomConfigDetailList().stream()
-                .collect(Collectors.toMap(CustomConfigDetailRspDTO::getName, CustomConfigDetailRspDTO::getId))));
+        log.info("查询自定义配置的返回结果{}", JSONObject.toJSONString(res));
+        Map<String, Map<String, Long>> map = new HashMap<>();
+        try {
+            map = res.getData().stream()
+                    .collect(Collectors.toMap(
+                            CustomConfigRspDTO::getName,
+                            dto -> {
+                                if (CollectionUtils.isEmpty(dto.getCustomConfigDetailList())) {
+                                    return new HashMap<>();
+                                } else {
+                                    return dto.getCustomConfigDetailList().stream()
+                                            .collect(Collectors.toMap(
+                                                    CustomConfigDetailRspDTO::getName,
+                                                    CustomConfigDetailRspDTO::getId
+                                            ));
+                                }
+                            }
+                    ));
+        } catch (Exception e){
+            log.error("获取自定义配置失败", e);
+        }
         return map;
     }
 

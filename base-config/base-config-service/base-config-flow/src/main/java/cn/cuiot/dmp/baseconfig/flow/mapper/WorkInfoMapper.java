@@ -1,7 +1,14 @@
 package cn.cuiot.dmp.baseconfig.flow.mapper;
 
+import cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.query.PendingProcessQuery;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.query.WorkOrderSuperQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.QueryTaskUserInfoDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.TaskUserInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkProcInstDto;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
@@ -9,6 +16,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author pengjian
@@ -18,15 +27,26 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
 
     Page<WorkInfoDto> queryWorkOrderInfo(Page<WorkInfoDto> page, @Param("query") WorkInfoDto dto);
 
+    Page<WorkInfoDto> queryCustomerWorkOrderInfo(Page<WorkInfoDto> page, @Param("query") WorkInfoDto dto);
+
     WorkInfoDto queryWorkOrderDetailInfo(@Param("query") WorkProcInstDto dto);
 
     Page<MyApprovalResultDto> queryMyNotApproval(Page<MyApprovalResultDto> myApprovalResultDtoPage,@Param("query") QueryMyApprovalDto dto);
 
-    Integer queryMyNotApprocalCount(@Param("query") QueryMyApprovalDto dto);
+    BaseDto queryMyNotApprocalCount(@Param("query") PendingProcessQuery query);
 
     Page<MyApprovalResultDto> queryMyApproval(Page<MyApprovalResultDto> page,@Param("query") QueryMyApprovalDto dto);
 
     Page<MyApprovalResultDto> queryMakeApproval(Page<MyApprovalResultDto> page,@Param("query") QueryMyApprovalDto dto);
 
     Page<WorkInfoEntity> queryMySubmitWorkInfo(Page<WorkInfoEntity> workInfoEntityPage, @Param("query") QueryMyApprovalDto dto);
+
+    List<BaseDto> queryPendProcessList(@Param("query") PendingProcessQuery query);
+
+    List<TaskUserInfoDto> queryTaskUserInfo(@Param("query") QueryTaskUserInfoDto dto);
+
+
+    Page<AppWorkInfoDto> queryAppMySubmitWorkInfo(Page<AppWorkInfoDto> workInfoEntityPage , @Param("query") QueryMyApprovalDto dto);
+
+    IPage<AppWorkInfoDto> queryWorkOrderSuper(Page<AppWorkInfoDto> objectPage, @Param("query") WorkOrderSuperQuery query);
 }

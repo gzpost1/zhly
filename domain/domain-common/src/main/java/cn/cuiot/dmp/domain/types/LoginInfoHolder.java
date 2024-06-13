@@ -49,7 +49,7 @@ public class LoginInfoHolder {
     }
 
     /**
-     * 账户ID
+     * 企业ID
      */
     public static Long getCurrentOrgId() {
         return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getOrgId() : null;
@@ -81,6 +81,13 @@ public class LoginInfoHolder {
      */
     public static Integer getCurrentUserType() {
         return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getUserType() : null;
+    }
+
+    /**
+     * 获得小区ID
+     */
+    public static Long getCommunityId(){
+        return LOCAL_OPERATOR_IDENTITY.get() != null ? LOCAL_OPERATOR_IDENTITY.get().getCommunityId() : null;
     }
 
     public static OperateInfo getCurrentLoginOperateInfo() {

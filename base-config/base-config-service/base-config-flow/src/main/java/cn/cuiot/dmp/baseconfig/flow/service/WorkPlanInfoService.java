@@ -69,6 +69,9 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
     @Autowired
     private WorkOrgRelService workOrgRelService;
 
+    @Autowired
+    private ProcessAndDeptService processAndDeptService;
+
     /**
      * 创建工单计划
      * @param workPlanInfoCreateDto
@@ -109,11 +112,43 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
                 orElseThrow(()->new RuntimeException("流程配置为空"));
 
         List<Long> orgIds = orgIds(flowConfig.getId());
-        saveWorkOrg(map.getId(),orgIds);
-
+//        saveWorkOrg(map.getId(),orgIds);
+        saveProcessDefinitionAndOrgIds(workPlanInfoCreateDto.getStartProcessInstanceDTO().getProcessDefinitionId(), orgIds);
         return IdmResDTO.success();
     }
 
+
+    /**
+     * 保存流程与组织的关联关系
+     * @param processDefinitionId
+     * @param orgIds
+     */
+
+    public void saveProcessDefinitionAndOrgIds(String processDefinitionId, List<Long> orgIds){
+        if(CollectionUtils.isEmpty(orgIds)){
+            return;
+        }
+        //判断当前流程是否已经保存了组织信息，如果保存了组织信息则不再次保存
+        LambdaQueryWrapper<ProcessAndDeptEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(ProcessAndDeptEntity::getProcessDefinitionId,processDefinitionId);
+        long count = processAndDeptService.count(lw);
+        if(count>0){
+            return;
+        }
+        List<ProcessAndDeptEntity> processAndDepts = new ArrayList<>();
+        orgIds.stream().forEach(item->{
+            ProcessAndDeptEntity entity = new ProcessAndDeptEntity();
+            entity.setId(IdWorker.getId());
+            entity.setProcessDefinitionId(processDefinitionId);
+            entity.setOrgId(item);
+            processAndDepts.add(entity);
+        });
+        if(CollectionUtils.isNotEmpty(processAndDepts)){
+            processAndDeptService.saveBatch(processAndDepts);
+        }
+
+
+    }
     public void saveWorkOrg(Long workId,List<Long> orgIds){
         if (CollectionUtils.isEmpty(orgIds)){
             return;

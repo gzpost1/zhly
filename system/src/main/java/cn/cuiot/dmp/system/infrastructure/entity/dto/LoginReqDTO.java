@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.entity.dto;
 
+import javax.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
@@ -45,4 +46,9 @@ public class LoginReqDTO {
      * 短信验证码
      */
     //private String smsCode;
+
+    /**
+     * 小程序openid
+     */
+    private String openid;
 }

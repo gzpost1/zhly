@@ -7,7 +7,9 @@ import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesExportVO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchivesPageQuery;
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.PageResult;
 
 import java.util.List;
@@ -74,4 +76,12 @@ public interface BuildingArchivesService {
      */
     List<DepartmentTreeRspDTO> getDepartmentBuildingTree(Long orgId, Long userId);
 
+    List<BuildingArchive> apiQueryForList(BuildingArchiveReq buildingArchiveReq);
+
+    /**
+     * 根据ID获取楼盘信息
+     * @param id
+     * @return
+     */
+    BuildingArchive lookupBuildingArchiveInfo(Long id);
 }

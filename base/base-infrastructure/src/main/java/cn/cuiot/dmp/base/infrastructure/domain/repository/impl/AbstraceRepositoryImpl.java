@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 
 /**
@@ -25,6 +26,7 @@ import org.apache.commons.collections4.CollectionUtils;
  * @Date 2023/10/19 17:38
  * @Version V1.0
  */
+@Slf4j
 public abstract class AbstraceRepositoryImpl<E extends BaseEntity, T extends AbstractAggregate<I>, I extends LongId, M extends IotBaseMapper<E>> implements Repository<T, I> {
 
     protected abstract M getEntityMapper();
@@ -107,6 +109,7 @@ public abstract class AbstraceRepositoryImpl<E extends BaseEntity, T extends Abs
         try {
             return getEntityMapper().update(entityClass.newInstance(), updateWrapper);
         } catch (Exception e) {
+            log.error("batchDeleteByIdList error",e);
             throw new BusinessException(ResultCode.INNER_ERROR, "batchDeleteByIdList error");
         }
     }

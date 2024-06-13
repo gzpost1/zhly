@@ -21,7 +21,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -37,14 +37,11 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -69,7 +66,7 @@ public class HousesArchivesController extends BaseController {
     @PostMapping("/queryForDetail")
     public HousesArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
         HousesArchivesEntity res = housesArchivesService.getById(idParam.getId());
-        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.HOUSE_ARCHIVE.getCode()));
+        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), SystemOptionTypeEnum.HOUSE_ARCHIVE.getCode()));
         return res;
     }
 
@@ -88,7 +85,7 @@ public class HousesArchivesController extends BaseController {
         if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())){
             wrapper.like( HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
         }
-
+        wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         return IdmResDTO.success(res);
     }
@@ -103,6 +100,10 @@ public class HousesArchivesController extends BaseController {
         // 校验参数合法性，写在service层，用于导入的时候使用
         housesArchivesService.checkParams(entity);
         // 保存数据
+        // 计算使用率 公式：使用面积/建筑面积的结果，显示百分数，精确小数点后两位
+        if (Objects.nonNull(entity.getUsableArea()) && Objects.nonNull(entity.getBuildingArea()) && entity.getBuildingArea() > 0.0){
+            entity.setUtilizationRate(entity.getUsableArea()/entity.getBuildingArea());
+        }
         housesArchivesService.save(entity);
         return IdmResDTO.success();
     }
@@ -114,6 +115,10 @@ public class HousesArchivesController extends BaseController {
     @LogRecord(operationCode = "updateHousesArchives", operationName = "编辑房屋档案", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/update")
     public IdmResDTO update(@RequestBody HousesArchivesEntity entity) {
+        // 计算使用率 公式：使用面积/建筑面积的结果，显示百分数，精确小数点后两位
+        if (Objects.nonNull(entity.getUsableArea()) && Objects.nonNull(entity.getBuildingArea()) && entity.getBuildingArea() > 0.0){
+            entity.setUtilizationRate(entity.getUsableArea()/entity.getBuildingArea());
+        }
         housesArchivesService.updateById(entity);
         return IdmResDTO.success();
     }
@@ -212,7 +217,7 @@ public class HousesArchivesController extends BaseController {
     public void downloadTemplate(HttpServletResponse response)
             throws IOException {
         BufferedOutputStream bos = null;
-        String templatePath = "template/importHouseesArchives.xlsx";
+        String templatePath = "template/importHousesArchives.xlsx";
         try (InputStream is = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(templatePath)) {
             response.setCharacterEncoding("UTF-8");

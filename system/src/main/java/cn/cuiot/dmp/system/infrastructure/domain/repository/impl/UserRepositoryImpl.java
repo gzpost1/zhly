@@ -17,7 +17,7 @@ import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntityMapper;
 import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.domain.entity.UserDepartmentInfo;
-import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.domain.query.UserCommonQuery;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -152,9 +152,9 @@ public class UserRepositoryImpl extends
     }
 
     @Override
-    public User queryByUserNameOrPhoneNumberOrEmail(String userName, PhoneNumber phoneNumber, Email email) {
+    public User queryByUserNameOrPhoneNumberOrEmail(String userName, PhoneNumber phoneNumber, Email email,Integer userType) {
         QueryWrapper<UserEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(COLUMN_NAME_USER_TYPE, UserTypeEnum.USER.getValue()).and(childQueryWrapper -> {
+        queryWrapper.eq(COLUMN_NAME_USER_TYPE,userType).and(childQueryWrapper -> {
             if (StringUtils.isNotBlank(userName)) {
                 childQueryWrapper.or().eq(COLUMN_NAME_USER_NAME, userName);
             }

@@ -459,5 +459,19 @@
             </if>
         </where>
     </select>
+    <select id="querySubDepartment" resultType="cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto">
+        <foreach collection="param.deptIdList" item="deptId" separator="UNION ALL">
+            SELECT a.id,a.department_name as name,a.code,a.d_group as dGroup
+            FROM department a,(SELECT path,`level` FROM department WHERE id = #{deptId}) b
+            WHERE a.path LIKE CONCAT(b.path,'%')
+            <if test="param.selfReturn !=null and !param.selfReturn">
+                and a.`level` &gt; b.`level`
+            </if>
+            <if test="param.returnType !=null and param.returnType == 1">
+                and a.`level` &lt;= b.`level` +1
+            </if>
+        </foreach>
+
+    </select>
 
 </mapper>

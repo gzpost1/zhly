@@ -9,6 +9,7 @@ public enum WorkOrderStatusEnums {
     progress( (byte) 2, "进行中"),
     terminated( (byte) 3, "已终止"),
     Suspended( (byte) 4, "已挂起"),
+
     ;
 
     private Byte status;

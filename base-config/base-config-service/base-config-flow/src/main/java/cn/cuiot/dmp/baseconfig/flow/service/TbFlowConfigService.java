@@ -121,6 +121,9 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         String processJson = createDto.getProcess();
         //填充每个节点的表单内容
         ChildNode childNode = processJson(processJson);
+        tbFlowConfig.setIsSelectAppUser(
+                Objects.isNull(childNode.getProps().getIsSelectAppUser()) ? Byte.valueOf("0") : childNode.getProps().getIsSelectAppUser());
+
         processJson = JsonUtil.writeValueAsString(childNode);
         tbFlowConfig.setProcess(processJson);
 
@@ -143,6 +146,9 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("processJson", processJson);
+        tbFlowConfig.setProcess(null);
+        jsonObject.put("flowconfig", JsonUtil.writeValueAsString(tbFlowConfig));
+
         BpmnModel bpmnModel = assemBpmnModel(jsonObject, childNode, createDto.getRemark(), createDto.getName(), StringUtils.join(createDto.getOrgId(), ","),
                 tbFlowConfig.getId().toString());
         repositoryService.createDeployment()
@@ -182,7 +188,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
                 List<FormConfigRspDTO> formConfigRspDTOS = systemToFlowService.batchQueryFormConfig(formConfigReqDTO);
                 AssertUtil.isTrue(CollectionUtils.isNotEmpty(formConfigRspDTOS) && formConfigRspDTOS.size() == formIds.size(), "表单配置为空");
 
-                if(Objects.nonNull(flowTaskConfigVo)){
+                if (Objects.nonNull(flowTaskConfigVo)) {
                     //填充任务中的每个对象的表单信息
                     flowTaskConfigVo.getTaskInfoList().stream().forEach(e -> {
                         FormConfigRspDTO formConfigRspDTO = formConfigRspDTOS.stream().filter(f -> Objects.equals(f.getId(), e.getFormId())).findFirst().orElseThrow(
@@ -192,7 +198,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
                     });
 
                     childNode.getProps().setFormPerms(null);
-                }else {
+                } else {
                     childNode.getProps().setFormPerms(formConfigRspDTOS.stream().map(e -> {
                         FormOperates formObjectOperates = new FormOperates();
                         BeanUtils.copyProperties(e, formObjectOperates);
@@ -204,8 +210,8 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
             if (Objects.nonNull(childNode.getChildren())) {
                 processChildNode(childNode.getChildren());
             }
-        }else {
-            if(Objects.nonNull(childNode.getProps())){
+        } else {
+            if (Objects.nonNull(childNode.getProps())) {
                 childNode.getProps().setFormPerms(null);
             }
         }
@@ -284,6 +290,10 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         //填充每个节点的表单ID
         ChildNode childNode = processJson(processJson);
         processJson = JsonUtil.writeValueAsString(childNode);
+
+        config.setIsSelectAppUser(
+                Objects.isNull(childNode.getProps().getIsSelectAppUser()) ? Byte.valueOf("0") : childNode.getProps().getIsSelectAppUser());
+
         config.setProcess(processJson);
 
         this.updateById(config);
@@ -292,7 +302,10 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         flowConfigOrgService.updateFlowOrg(updateDto.getId(), updateDto.getOrgId());
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("processJson", updateDto.getProcess());
+        jsonObject.put("processJson", processJson);
+        config.setProcess(null);
+        jsonObject.put("flowconfig", JsonUtil.writeValueAsString(config));
+
         BpmnModel bpmnModel = assemBpmnModel(jsonObject, childNode, updateDto.getRemark(), updateDto.getName(), StringUtils.join(updateDto.getOrgId(), ","),
                 updateDto.getId().toString());
         repositoryService.createDeployment()
@@ -347,7 +360,6 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
     public void delete(List<Long> ids) {
         this.removeByIds(ids);
 
-        //删除流程和组织的中间表
         flowConfigOrgService.deleteByFlowConfigIds(ids);
     }
 

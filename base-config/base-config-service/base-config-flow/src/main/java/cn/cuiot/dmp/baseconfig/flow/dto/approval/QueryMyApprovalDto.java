@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author pengjian
@@ -22,7 +23,7 @@ public class QueryMyApprovalDto extends PageQuery {
     /**
      * 审批人id
      */
-    private String assignee;
+    private Long assignee;
     /**
      * 所属组织
      */
@@ -66,5 +67,19 @@ public class QueryMyApprovalDto extends PageQuery {
      * 抄送人userId
      */
     private Long makeUserId;
+
+    /**
+     * 批量组织信息
+     */
+    private List<Long> orgIds;
+    /**
+     * 是否超时 0 未超时  1 已超时
+     */
+    private Byte timeOut;
+
+    /**
+     *1已完结2进行中3已终止4已挂起5已撤回
+     */
+    private Byte status;
 
 }

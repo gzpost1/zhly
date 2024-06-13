@@ -39,4 +39,10 @@ public class TbFlowConfigQuery extends PageQuery {
      * 业务分类
      */
     private Long businessTypeId;
+
+
+    /**
+     * 是否允许客户端发起工单 0否 1是
+     */
+    private Byte isSelectAppUser;
 }

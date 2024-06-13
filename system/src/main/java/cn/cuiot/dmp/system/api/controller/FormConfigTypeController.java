@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigTypeUpdateDTO;
@@ -64,6 +65,8 @@ public class FormConfigTypeController {
      */
     @PostMapping("/queryByCompany")
     public List<FormConfigTypeTreeNodeVO> queryByCompany(@RequestBody @Valid FormConfigTypeQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+        queryDTO.setCompanyId(companyId);
         return formConfigTypeService.queryByCompany(queryDTO);
     }
 

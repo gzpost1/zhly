@@ -1,11 +1,12 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.constant.CustomConfigConstant;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.system.domain.aggregate.*;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigDetailRepository;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigRepository;
@@ -77,6 +78,8 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int saveCustomConfig(CustomConfig customConfig) {
+        // 保存校验
+        checkSave(customConfig);
         customConfig.setId(IdWorker.getId());
         CustomConfigEntity customConfigEntity = new CustomConfigEntity();
         BeanUtils.copyProperties(customConfig, customConfigEntity);
@@ -93,6 +96,8 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     public int updateCustomConfig(CustomConfig customConfig) {
         CustomConfigEntity customConfigEntity = Optional.ofNullable(customConfigMapper.selectById(customConfig.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        // 保存校验
+        checkSave(customConfig);
         BeanUtils.copyProperties(customConfig, customConfigEntity);
         // 如果传入的自定义配置设置不为空，则执行保存更新操作
         if (CollectionUtils.isNotEmpty(customConfig.getCustomConfigDetailList())) {
@@ -128,7 +133,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     public PageResult<CustomConfig> queryCustomConfigByType(CustomConfigPageQuery pageQuery) {
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
                 .eq(Objects.nonNull(pageQuery.getCompanyId()), CustomConfigEntity::getCompanyId, pageQuery.getCompanyId())
-                .eq(Objects.nonNull(pageQuery.getArchiveType()), CustomConfigEntity::getArchiveType, pageQuery.getArchiveType())
+                .eq(Objects.nonNull(pageQuery.getSystemOptionType()), CustomConfigEntity::getSystemOptionType, pageQuery.getSystemOptionType())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), CustomConfigEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CustomConfigEntity::getStatus, pageQuery.getStatus());
         IPage<CustomConfigEntity> customConfigEntityPage = customConfigMapper.selectPage(
@@ -143,7 +148,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     public List<CustomConfig> queryForList(CustomConfigPageQuery pageQuery) {
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
                 .eq(Objects.nonNull(pageQuery.getCompanyId()), CustomConfigEntity::getCompanyId, pageQuery.getCompanyId())
-                .eq(Objects.nonNull(pageQuery.getArchiveType()), CustomConfigEntity::getArchiveType, pageQuery.getArchiveType())
+                .eq(Objects.nonNull(pageQuery.getSystemOptionType()), CustomConfigEntity::getSystemOptionType, pageQuery.getSystemOptionType())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), CustomConfigEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CustomConfigEntity::getStatus, pageQuery.getStatus());
         List<CustomConfigEntity> customConfigEntityList = customConfigMapper.selectList(queryWrapper);
@@ -163,7 +168,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     }
 
     @Override
-    public void initCustomConfig(Long companyId, String userId) {
+    public void initCustomConfig(Long companyId) {
         AssertUtil.notNull(companyId, "企业ID不能为空");
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
                 .eq(CustomConfigEntity::getCompanyId, companyId);
@@ -171,7 +176,6 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         if (CollectionUtils.isNotEmpty(customConfigEntityListCurrent)) {
             return;
         }
-        AssertUtil.notBlank(userId, "用户ID不能为空");
         List<CustomConfigEntity> customConfigEntityList = new ArrayList<>();
         // 房屋档案
         CustomConfigConstant.HOUSES_ARCHIVES_INIT.forEach(o -> {
@@ -179,8 +183,9 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setId(IdWorker.getId());
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.HOUSE_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.HOUSE_ARCHIVE.getCode());
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
         // 空间档案
@@ -189,8 +194,9 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setId(IdWorker.getId());
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.ROOM_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.ROOM_ARCHIVE.getCode());
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
         // 设备档案
@@ -199,8 +205,9 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setId(IdWorker.getId());
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.DEVICE_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.DEVICE_ARCHIVE.getCode());
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
         // 车位档案
@@ -209,8 +216,42 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
             customConfigEntity.setId(IdWorker.getId());
             customConfigEntity.setCompanyId(companyId);
             customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.PARK_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.PARK_ARCHIVE.getCode());
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
+            customConfigEntityList.add(customConfigEntity);
+        });
+        // 客户信息
+        CustomConfigConstant.CUSTOMER_INFO_INIT.forEach(o -> {
+            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
+            customConfigEntity.setId(IdWorker.getId());
+            customConfigEntity.setCompanyId(companyId);
+            customConfigEntity.setName(o);
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.CUSTOMER_INFO.getCode());
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
+            customConfigEntityList.add(customConfigEntity);
+        });
+        // 工单选项
+        CustomConfigConstant.WORK_OPTION_INIT.forEach(o -> {
+            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
+            customConfigEntity.setId(IdWorker.getId());
+            customConfigEntity.setCompanyId(companyId);
+            customConfigEntity.setName(o);
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.WORK_OPTION.getCode());
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
+            customConfigEntityList.add(customConfigEntity);
+        });
+        // 线索选项
+        CustomConfigConstant.CLUE_OPTION_INIT.forEach(o -> {
+            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
+            customConfigEntity.setId(IdWorker.getId());
+            customConfigEntity.setCompanyId(companyId);
+            customConfigEntity.setName(o);
+            customConfigEntity.setSystemOptionType(SystemOptionTypeEnum.CLUE_OPTION.getCode());
+            customConfigEntity.setCreatedBy(CustomConfigConstant.DEFAULT_USER_ID.toString());
+            customConfigEntity.setInitFlag(EntityConstants.ENABLED);
             customConfigEntityList.add(customConfigEntity);
         });
         customConfigMapper.batchSaveCustomConfig(customConfigEntityList);
@@ -233,6 +274,23 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         customConfigPageResult.setPageSize((int) customConfigEntityPage.getSize());
         customConfigPageResult.setTotal(customConfigEntityPage.getTotal());
         return customConfigPageResult;
+    }
+
+    private void checkSave(CustomConfig customConfig) {
+        AssertUtil.notNull(customConfig.getCompanyId(), "企业ID不能为空");
+        AssertUtil.notBlank(customConfig.getName(), "自定义配置名称不能为空");
+        LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
+                .eq(CustomConfigEntity::getCompanyId, customConfig.getCompanyId())
+                // 更新的话排除自身
+                .ne(Objects.nonNull(customConfig.getId()), CustomConfigEntity::getId, customConfig.getId());
+        List<CustomConfigEntity> customConfigEntityList = customConfigMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(customConfigEntityList)) {
+            return;
+        }
+        List<String> customConfigNameList = customConfigEntityList.stream()
+                .map(CustomConfigEntity::getName)
+                .collect(Collectors.toList());
+        AssertUtil.isFalse(customConfigNameList.contains(customConfig.getName()), "自定义配置名称已存在");
     }
 
 }

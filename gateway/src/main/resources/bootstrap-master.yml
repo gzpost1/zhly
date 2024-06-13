@@ -1,0 +1,13 @@
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: http://nacos-server:8848
+        username: nacos
+        password: Yjwl@20201688
+        namespace: smart-park-master
+      discovery:
+        server-addr: http://nacos-server:8848
+        username: nacos
+        password: Yjwl@20201688
+        namespace: smart-park-master

@@ -31,14 +31,19 @@ public class CustomConfigVO implements Serializable {
     private Long companyId;
 
     /**
-     * 档案类型
+     * 系统选项类型
      */
-    private Byte archiveType;
+    private Byte systemOptionType;
 
     /**
      * 状态(0:禁用,1:正常)
      */
     private Byte status;
+
+    /**
+     * 初始化标志位(0:非初始化数据,1:初始化数据)
+     */
+    private Byte initFlag;
 
     /**
      * 自定义配置详情列表

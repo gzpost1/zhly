@@ -1,21 +1,16 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
-import cn.cuiot.dmp.archive.application.param.dto.ParkingArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.dto.RoomArchivesImportDto;
-import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.application.param.vo.RoomArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.RoomArchivesService;
-import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
-import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.RoomArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.CustomConfigConstant;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.utils.DoubleValidator;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,8 +73,13 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
         if (StringUtils.isBlank(entity.getLocationDeviation())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "定位偏差不可为空");
         }
-        if (StringUtils.isBlank(entity.getStatusName())) {
-            throw new BusinessException(ResultCode.PARAM_NOT_NULL, "状态不可为空");
+
+        // 规则判断
+        if (entity.getName().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "空间名称长度不可超过30");
+        }
+        if (entity.getLocationDeviation().length() > 3) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "定位偏差长度不可超过3");
         }
     }
 
@@ -124,7 +124,7 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         // Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(RoomArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
-        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.DEVICE_ARCHIVE.getCode());
+        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, SystemOptionTypeEnum.ROOM_ARCHIVE.getCode());
 
         // 构造插入列表进行保存
         List<RoomArchivesEntity> list = new ArrayList<>();
@@ -133,8 +133,7 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
             entity.setName(data.getName());
             entity.setSpaceCategory(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.ROOM_ARCHIVES_INIT.get(0)), data.getSpaceCategoryName()));
             entity.setProfessionalPurpose(checkConfigTypeNull(nameConfigIdMap.get(CustomConfigConstant.ROOM_ARCHIVES_INIT.get(1)), data.getProfessionalPurposeName()));
-            entity.setLocationDeviation(entity.getLocationDeviation());
-            entity.setStatus(getStatusFromName(data.getStatusName()));
+            entity.setLocationDeviation(data.getLocationDeviation());
             entity.setLoupanId(loupanId);
             // TODO: 2024/5/16 这里还需要基于不同的一级类目去查询配置
             list.add(entity);

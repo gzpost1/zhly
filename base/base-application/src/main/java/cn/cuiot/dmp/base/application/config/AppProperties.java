@@ -25,4 +25,13 @@ public class AppProperties {
      */
     private Boolean enablePermission;
 
+    /**
+     * 小程序appId
+     */
+    private String appId;
+
+    /**
+     * 小程序appSecret
+     */
+    private String appSecret;
 }

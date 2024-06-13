@@ -4,9 +4,13 @@ import static cn.cuiot.dmp.common.constant.CacheConst.DEPT_CODE_KEY_PREFIX;
 import static cn.cuiot.dmp.common.constant.CacheConst.DEPT_NAME_KEY_PREFIX;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.infrastructure.constants.MsgBindingNameConstants;
+import cn.cuiot.dmp.base.infrastructure.constants.MsgTagConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.stream.StreamMessageSender;
+import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.NumberConst;
@@ -43,6 +47,7 @@ import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDataDao;
 import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 
@@ -103,6 +108,9 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Autowired
     private DepartmentUtil departmentUtil;
 
+    @Autowired
+    private StreamMessageSender streamMessageSender;
+
     public static final String NULL_WORD = "null";
 
     public static final String INIT = "init";
@@ -118,8 +126,9 @@ public class DepartmentServiceImpl implements DepartmentService {
     private static final List<Integer> SPACE_GROUP_LIST = Lists.newArrayList(7, 4, 6, 3, 2, 1);
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long insertSonDepartment(InsertSonDepartmentDto dto) {
-        Long newDeptId = null;
+        DepartmentEntity newDept = null;
         RLock disLock = redissonClient.getLock("LOCK_"
                 + CacheConst.ORGANIZATION_INSERT_REDIS_KEY + "_" + dto.getPkOrgId());
         boolean isLock;
@@ -127,8 +136,18 @@ public class DepartmentServiceImpl implements DepartmentService {
             //尝试获取分布式锁
             isLock = disLock.tryLock(1000, 1000, TimeUnit.MILLISECONDS);
             if (isLock) {
-                newDeptId = insertSonDepartmentSafe(dto);
+                newDept = insertSonDepartmentSafe(dto);
             }
+            //发送MQ消息
+            streamMessageSender.sendGenericMessage(
+                    MsgBindingNameConstants.SYSTEM_PRODUCER,
+                    SimpleMsg.builder()
+                            .delayTimeLevel(2)
+                            .operateTag(MsgTagConstants.DEPARTMENT_ADD)
+                            .data(newDept)
+                            .dataId(newDept.getId())
+                            .info("创建组织部门")
+                            .build());
         } catch (BusinessException e) {
             log.error("insertSonDepartment BusinessException error", e);
             throw e;
@@ -139,10 +158,10 @@ public class DepartmentServiceImpl implements DepartmentService {
             // 最后解锁
             disLock.forceUnlock();
         }
-        return newDeptId;
+        return newDept.getId();
     }
 
-    private Long insertSonDepartmentSafe(InsertSonDepartmentDto dto) {
+    private DepartmentEntity insertSonDepartmentSafe(InsertSonDepartmentDto dto) {
         //checkAdminUser(dto.getPkOrgId().toString(), dto.getUserId());
         final String departmentName = dto.getDepartmentName();
         final Long parentId = dto.getParentId();
@@ -207,7 +226,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         operationTarget[0] = dto.getDepartmentName();
         dto.setOperationTarget(operationTarget);
 
-        return entity.getId();
+        return entity;
     }
 
     @Override
@@ -230,6 +249,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateDepartment(UpdateDepartmentDto dto) {
         //checkAdminUser(dto.getOrgId(), dto.getUserId());
 
@@ -275,6 +295,18 @@ public class DepartmentServiceImpl implements DepartmentService {
         String[] operationTarget = new String[1];
         operationTarget[0] = dto.getDepartmentName();
         dto.setOperationTarget(operationTarget);
+
+        //发送MQ消息
+        DepartmentEntity newDept = departmentDao.selectByPrimary(id);
+        streamMessageSender.sendGenericMessage(
+                MsgBindingNameConstants.SYSTEM_PRODUCER,
+                SimpleMsg.builder()
+                        .delayTimeLevel(2)
+                        .operateTag(MsgTagConstants.DEPARTMENT_UPDATE)
+                        .data(newDept)
+                        .dataId(newDept.getId())
+                        .info("修改组织部门")
+                        .build());
 
         return result.get(0);
     }
@@ -377,7 +409,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         Long deptId = Optional.ofNullable(userDao.getDeptId(userId, orgId)).map(Long::valueOf)
                 .orElse(null);
 
-        //DepartmentEntity department = departmentDao.selectByPrimary(deptId);
+        DepartmentEntity department = departmentDao.selectByPrimary(deptId);
 
         // 初始化departmentTreeList
         List<DepartmentTreeVO> departmentTreeList = new ArrayList<>();
@@ -396,6 +428,9 @@ public class DepartmentServiceImpl implements DepartmentService {
                 for (DepartmentTreeVO departmentTreeVO : departmentTreeListTemp) {
                     departmentTreeVO.setDisabled(true);
                     if (deptId.equals(departmentTreeVO.getId())) {
+                        departmentTreeVO.setDisabled(false);
+                    }
+                    if (departmentTreeVO.getPath().startsWith(department.getPath())) {
                         departmentTreeVO.setDisabled(false);
                     }
                 }
@@ -537,6 +572,18 @@ public class DepartmentServiceImpl implements DepartmentService {
         }*/
 
         orgRedisUtil.doubleDeleteForDbOperation(() -> departmentDao.deleteByPrimaryKey(id), orgId);
+
+
+        //发送MQ消息
+        streamMessageSender.sendGenericMessage(
+                MsgBindingNameConstants.SYSTEM_PRODUCER,
+                SimpleMsg.builder()
+                        .delayTimeLevel(2)
+                        .operateTag(MsgTagConstants.DEPARTMENT_DELETE)
+                        .data(department)
+                        .dataId(department.getId())
+                        .info("删除组织部门")
+                        .build());
     }
 
     /**
@@ -920,6 +967,14 @@ public class DepartmentServiceImpl implements DepartmentService {
             }
         }
         return departmentTreeRspDTO;
+    }
+
+    @Override
+    public List<DepartmentDto> lookUpDepartmentChildList2(DepartmentReqDto query) {
+        if (CollUtil.isEmpty(query.getDeptIdList())){
+            return new ArrayList<>();
+        }
+        return departmentDao.querySubDepartment(query);
     }
 
 }

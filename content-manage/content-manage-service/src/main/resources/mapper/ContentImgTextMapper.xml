@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.content.dal.mapper.ContentImgTextMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity">
+        <result column="id" property="id" />
+        <result column="departments" property="departments" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+        <result column="buildings" property="buildings" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+        <result column="title" property="title" />
+        <result column="type" property="type" />
+        <result column="cover_pic" property="coverPic" />
+        <result column="digest" property="digest" />
+        <result column="detail" property="detail" />
+        <result column="status" property="status" />
+        <result column="audit_status" property="auditStatus" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, departments, buildings, title, `type`, cover_pic, digest, detail, status, audit_status, create_user, create_time, update_user, update_time
+    </sql>
+    <select id="queryForList" resultType="cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_content_img_text
+        <trim prefix="WHERE" prefixOverrides="AND |OR ">
+            <include refid="condition_sql_where"/>
+        </trim>
+    </select>
+    <select id="queryForPage" resultType="cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_content_notice
+        <trim prefix="WHERE" prefixOverrides="AND |OR ">
+            <include refid="condition_sql_where"/>
+        </trim>
+        order by create_time desc
+    </select>
+
+    <sql id="condition_sql_where">
+        deleted = 0
+        <if test="param.companyId != null">
+            and company_id = #{param.companyId}
+        </if>
+        <if test="param.title != null and param.title != ''">
+            and title like concat('%', #{param.title}, '%')
+        </if>
+        <if test="param.type != null and param.type != ''">
+            and type = #{param.type}
+        </if>
+        <if test="param.status != null and param.status != ''">
+            and status = #{param.status}
+        </if>
+        <if test="param.auditStatus != null and param.auditStatus != ''">
+            and audit_status = #{param.auditStatus}
+        </if>
+        <choose>
+            <when test="param.buildings !=null and param.buildings.size > 0">
+                and id in (
+                SELECT DISTINCT data_id from tb_content_data_relevance WHERE data_type = #{dataType} and build_id in
+                <foreach collection="param.buildings" item="building" open="(" close=")" separator=",">
+                    #{building}
+                </foreach>
+                )
+            </when>
+            <when test="param.departments !=null and param.departments.size > 0">
+                and id in (
+                SELECT DISTINCT data_id from tb_content_data_relevance WHERE data_type = #{dataType} and department_id
+                in
+                <foreach collection="param.departments" item="department" open="(" close=")" separator=",">
+                    #{department}
+                </foreach>
+                )
+            </when>
+            <otherwise>
+
+            </otherwise>
+        </choose>
+
+    </sql>
+</mapper>

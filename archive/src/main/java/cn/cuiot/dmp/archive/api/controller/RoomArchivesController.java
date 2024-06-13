@@ -10,7 +10,6 @@ import cn.cuiot.dmp.archive.application.param.dto.RoomArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.query.RoomArchivesQuery;
 import cn.cuiot.dmp.archive.application.param.vo.RoomArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.RoomArchivesService;
-import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
@@ -22,7 +21,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -38,14 +37,11 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -69,7 +65,7 @@ public class RoomArchivesController extends BaseController {
     @PostMapping("/queryForDetail")
     public RoomArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
         RoomArchivesEntity res = roomArchivesService.getById(idParam.getId());
-        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.ROOM_ARCHIVE.getCode()));
+        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), SystemOptionTypeEnum.ROOM_ARCHIVE.getCode()));
         return res;
     }
 
@@ -89,6 +85,7 @@ public class RoomArchivesController extends BaseController {
         wrapper.eq(Objects.nonNull(query.getSpaceCategory()), RoomArchivesEntity::getSpaceCategory, query.getSpaceCategory());
         wrapper.eq(Objects.nonNull(query.getBusinessNature()), RoomArchivesEntity::getBusinessNature, query.getBusinessNature());
         wrapper.eq(Objects.nonNull(query.getOwnershipAttribute()), RoomArchivesEntity::getOwnershipAttribute, query.getOwnershipAttribute());
+        wrapper.orderByDesc(RoomArchivesEntity::getCreateTime);
         IPage<RoomArchivesEntity> res = roomArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         return IdmResDTO.success(res);
     }

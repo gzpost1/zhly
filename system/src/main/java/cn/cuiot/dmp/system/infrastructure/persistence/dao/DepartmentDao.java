@@ -366,4 +366,6 @@ public interface DepartmentDao {
      * 查询部门
      */
     List<DepartmentEntity> lookUpDepartmentList(@Param("param") DepartmentReqDto query);
+
+    List<DepartmentDto> querySubDepartment(@Param("param") DepartmentReqDto query);
 }

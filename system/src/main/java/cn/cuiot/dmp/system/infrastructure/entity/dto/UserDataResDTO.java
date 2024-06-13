@@ -167,4 +167,9 @@ public class UserDataResDTO implements Serializable {
      * 状态
      */
     private Integer status;
+
+    /**
+     * 小程序openid
+     */
+    private String openid;
 }

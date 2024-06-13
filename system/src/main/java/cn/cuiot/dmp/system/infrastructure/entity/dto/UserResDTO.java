@@ -226,4 +226,9 @@ public class UserResDTO {
      * 权限标识列表
      */
     private List<String> permission_ids;
+
+    /**
+     * 小程序openid
+     */
+    private String openid;
 }

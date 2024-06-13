@@ -197,6 +197,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
      */
     private void checkToken(String jwt) {
         try {
+
             Claims claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt).getBody();
 
             String userId = claims.get(USERID).toString();

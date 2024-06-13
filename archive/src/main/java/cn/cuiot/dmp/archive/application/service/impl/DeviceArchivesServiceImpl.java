@@ -2,21 +2,15 @@ package cn.cuiot.dmp.archive.application.service.impl;
 
 import cn.cuiot.dmp.archive.application.param.dto.DeviceArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.vo.DeviceArchivesExportVo;
-import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.DeviceArchivesService;
-import cn.cuiot.dmp.archive.infrastructure.entity.BuildingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
-import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
-import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMapper;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.DeviceArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.CustomConfigConstant;
 import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,6 +54,27 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         if (Objects.isNull(entity.getInstallationDate())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不可为空");
         }
+
+        // 规则判断
+        if (entity.getDeviceName().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "设备名称长度不可超过30");
+        }
+        if (entity.getInstallationLocation().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "安装位置长度不可超过30");
+        }
+        if (StringUtils.isNotBlank(entity.getDeviceSystem()) && entity.getDeviceSystem().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "设备系统长度不可超过30");
+        }
+
+        if (StringUtils.isNotBlank(entity.getDeviceProfessional()) && entity.getDeviceProfessional().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "设备专业长度不可超过30");
+        }
+
+        if (StringUtils.isNotBlank(entity.getLocationDetails()) && entity.getLocationDetails().length() > 30){
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "详细位置长度不可超过30");
+        }
+
+
     }
 
     @Override
@@ -76,6 +91,14 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         }
         if (StringUtils.isBlank(entity.getInstallationDateName())) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不可为空");
+        }
+
+        // 规则判断
+        if (entity.getDeviceName().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "设备名称长度不可超过30");
+        }
+        if (entity.getInstallationLocation().length() > 30) {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "安装位置长度不可超过30");
         }
     }
 
@@ -117,7 +140,7 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         // 先查询所属楼盘，如果查不到，就报错，查到生成map-nameIdMap
         //Map<String, Long> nameIdMap = buildingAndConfigCommonUtilService.getLoupanNameIdMap(dataList.stream().map(DeviceArchivesImportDto::getLoupanName).collect(Collectors.toSet()));
         // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
-        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, ArchiveTypeEnum.DEVICE_ARCHIVE.getCode());
+        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, SystemOptionTypeEnum.DEVICE_ARCHIVE.getCode());
 
         // 构造插入列表进行保存
         List<DeviceArchivesEntity> list = new ArrayList<>();
@@ -149,7 +172,11 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         if (StringUtils.isBlank(dateStr)) {
             throw new BusinessException(ResultCode.PARAM_NOT_NULL, "安装日期不存在");
         }
-        return LocalDate.parse(dateStr);
+        try {
+            return LocalDate.parse(dateStr);
+        } catch (Exception e){
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "安装日期格式不对");
+        }
     }
 
     public DeviceArchivesEntity queryForDetail(Long id) {
@@ -159,6 +186,9 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
         addListCanNull(configIdList, entity.getDeviceCategory());
         addListCanNull(configIdList, entity.getDeviceStatus());
         addListCanNull(configIdList, entity.getPropertyServiceLevel());
+        if (StringUtils.isNotBlank(entity.getImage())) {
+            entity.setImageList(Collections.singletonList(entity.getImage()));
+        }
 
         // 查询楼盘名称
         Set<Long> loupanIdSet = new HashSet<>();
