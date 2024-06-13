@@ -1,5 +1,8 @@
 package cn.cuiot.dmp.baseconfig.flow.constants;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author pengjian
  * @create 2024/4/23 19:39
@@ -19,6 +22,16 @@ public interface WorkOrderConstants {
     String USER_ROOT = "root";
 
     /**
+     * 评价节点类型
+     */
+    String COMMENT_NODE_TYPE="COMMENT";
+
+    /**
+     * 节点前缀
+     */
+    String NODE_START="node";
+
+    /**
      * 用户任务
      */
     String USER_TASK ="userTask";
@@ -32,5 +45,7 @@ public interface WorkOrderConstants {
      * 工单来源 自查
      */
     Byte WORK_SOURCE_MAKE = 1;
+
+    List<String> nodes = Arrays.asList("ROOT","APPROVAL","TASK");
 
 }

@@ -162,6 +162,7 @@ public class TbFlowTaskConfigService extends ServiceImpl<TbFlowTaskConfigMapper,
         TbFlowTaskConfig config = this.getById(id);
         if(config != null){
             BeanUtils.copyProperties(config, flowTaskConfigVo);
+            //任务配置的对象信息
             List<FlowTaskInfoVo> flowTaskInfoVos = flowTaskInfoService.queryByTaskConfigId(id);
             if(CollectionUtils.isNotEmpty(flowTaskInfoVos)){
                 //根据sort排序

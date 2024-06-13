@@ -15,17 +15,26 @@ public class BatchBusinessDto {
     /**
      * 工单中心传
      */
-    private List<String> processInstanceId = new ArrayList<>();
+    private List<String> processInstanceId ;
 
+    /**
+     * 补充说明
+     */
     private String comments;
 
+    /**
+     * 原因
+     */
     private String reason;
 
+    /**
+     * 业务类型
+     */
     private Byte businessType;
 
     /**
      * 审批中心传
      */
-    private List<String> taskIds = new ArrayList<>();
+    private List<String> taskIds;
 
 }

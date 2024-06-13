@@ -227,6 +227,8 @@ public enum ResultCode {
     IMG_TEXT_TYPE_EXISTS("1800002", "类型名称已存在"),
     IMG_TEXT_TYPE_EXISTS_DATA("1800003", "该类型下存在图文，不可删除"),
 
+    COMPLETE_RATIO_ERROR("1900001","未达到完成比列，不能提交"),
+
     ;
 
 

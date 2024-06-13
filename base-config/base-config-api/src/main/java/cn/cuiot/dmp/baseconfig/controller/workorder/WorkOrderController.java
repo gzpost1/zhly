@@ -2,13 +2,8 @@ package cn.cuiot.dmp.baseconfig.controller.workorder;
 
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
-import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
-import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.FirstFormDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDTO;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkProcInstDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -89,7 +84,7 @@ public class WorkOrderController extends BaseController {
      * @return
      */
     @PostMapping("instanceInfo")
-    public IdmResDTO<HandleDataVO>  instanceInfo(@RequestBody HandleDataDTO HandleDataDTO){
+    public IdmResDTO<HandleDataVO>  instanceInfo(@RequestBody HandleDataDto HandleDataDTO){
 
         return workInfoService.instanceInfo(HandleDataDTO);
     }
@@ -100,7 +95,17 @@ public class WorkOrderController extends BaseController {
      * @return
      */
     @PostMapping("queryDataForm")
-    public IdmResDTO queryDataForm(@RequestBody HandleDataDTO HandleDataDTO){
+    public IdmResDTO queryDataForm(@RequestBody HandleDataDto HandleDataDTO){
         return workInfoService.queryDataForm(HandleDataDTO);
+    }
+
+    /**
+     * 4.2.1 客户工单列表查询
+     * @param req
+     * @return
+     */
+    @PostMapping("queryCustomerWorkOrder")
+    public IdmResDTO<IPage<CustomerWorkOrderDto>> queryCustomerWorkOrder(@RequestBody QueryCustomerWorkOrderDto req){
+        return workInfoService.queryCustomerWorkOrder(req);
     }
 }

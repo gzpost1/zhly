@@ -4,23 +4,18 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
-import cn.cuiot.dmp.baseconfig.flow.dto.QueryApprovalInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.BatchBusinessDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDTO;
-import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDto;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 
 /**
@@ -48,16 +43,6 @@ public class BaseApprovalCenterController extends BaseController {
         return workInfoService.start(startProcessInstanceDTO);
     }
 
-    /**
-     *
-     * @param dto
-     * @return
-     */
-    public IdmResDTO<IPage<WorkInfoEntity>> processList(@RequestBody QueryApprovalInfoDto dto){
-
-        return workInfoService. processList(dto);
-    }
-
 
     /**
      * 完成
@@ -67,7 +52,7 @@ public class BaseApprovalCenterController extends BaseController {
     @PostMapping("complete")
     @RequiresPermissions
     @LogRecord(operationCode = "complete", operationName = "完成任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO complete(@RequestBody HandleDataDTO handleDataDTO){
+    public IdmResDTO complete(@RequestBody HandleDataDto handleDataDTO){
         return workInfoService.complete(handleDataDTO);
     }
 
@@ -91,7 +76,7 @@ public class BaseApprovalCenterController extends BaseController {
     @PostMapping("assignee")
     @RequiresPermissions
     @LogRecord(operationCode = "assignee", operationName = "转办", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO assignee(@RequestBody HandleDataDTO handleDataDTO){
+    public IdmResDTO assignee(@RequestBody HandleDataDto handleDataDTO){
         return workInfoService.assignee(handleDataDTO);
     }
 
@@ -140,7 +125,7 @@ public class BaseApprovalCenterController extends BaseController {
     @PostMapping("rollback")
     @RequiresPermissions
     @LogRecord(operationCode = "rollback", operationName = "回退", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO rollback(@RequestBody HandleDataDTO handleDataDTO){
+    public IdmResDTO rollback(@RequestBody HandleDataDto handleDataDTO){
         return workInfoService.rollback(handleDataDTO);
     }
 

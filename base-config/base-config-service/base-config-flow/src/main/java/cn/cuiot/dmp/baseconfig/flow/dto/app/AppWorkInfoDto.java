@@ -1,10 +1,12 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.app;
 
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.NodeButton;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author pengjian
@@ -46,4 +48,16 @@ public class  AppWorkInfoDto {
      * 是否超时 0未超时 1 已超时
      */
     private Byte outTime;
+
+    /**
+     * 节点id
+     */
+    private String nodeId;
+
+    /**
+     * 任务id
+     */
+    private String taskId;
+
+
 }
