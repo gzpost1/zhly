@@ -7,11 +7,9 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
-import cn.cuiot.dmp.system.application.param.dto.AuditConfigTypeDTO;
-import cn.cuiot.dmp.system.application.param.dto.AuditConfigTypeQueryDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.AuditConfigEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.AuditConfigTypeEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.AuditConfigMapper;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -38,7 +36,8 @@ public class AuditConfigService extends ServiceImpl<AuditConfigMapper, AuditConf
     public List<AuditConfigEntity> queryForList(AuditConfigTypeReqDTO queryDTO) {
         LambdaQueryWrapper<AuditConfigEntity> queryWrapper = new LambdaQueryWrapper<AuditConfigEntity>()
                 .eq(Objects.nonNull(queryDTO.getCompanyId()), AuditConfigEntity::getCompanyId, queryDTO.getCompanyId())
-                .eq(Objects.nonNull(queryDTO.getAuditConfigType()), AuditConfigEntity::getAuditConfigType, queryDTO.getAuditConfigType());
+                .eq(Objects.nonNull(queryDTO.getAuditConfigType()), AuditConfigEntity::getAuditConfigType, queryDTO.getAuditConfigType())
+                .eq(StrUtil.isNotEmpty(queryDTO.getName()), AuditConfigEntity::getName, queryDTO.getName());
         return list(queryWrapper);
     }
 

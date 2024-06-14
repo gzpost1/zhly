@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.ClientUserMapper">
+
+    <select id="queryForList"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.vo.ClientUserVo">
+        SELECT
+        u.id,
+        u.username,
+        u.`name`,
+        u.email,
+        u.phone_number,
+        u.avatar,
+        u.`status`,
+        u.last_online_ip,
+        u.last_online_on,
+        u.created_on,
+        u.created_by,
+        u.updated_on,
+        u.updated_by,
+        u.user_type,
+        u.openid
+        FROM
+        `user` AS u
+        WHERE
+        u.id in(select user_id from user_house_audit where company_id=#{param.companyId} and audit_status=1)
+        <if test="param.name != null and param.name != ''">
+            AND u.name like CONCAT('%',#{param.name},'%')
+        </if>
+        <if test="param.phone != null and param.phone != ''">
+            AND u.phone_number = #{param.phone}
+        </if>
+        and u.user_type =2
+        and u.deleted_flag=0
+        order by u.created_on desc,u.id desc
+    </select>
+
+</mapper>

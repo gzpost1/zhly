@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.base.infrastructure.feign;//	模板
 
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
+import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -33,4 +35,9 @@ public interface ArchiveFeignService {
      */
     @PostMapping(value = "/api/lookupBuildingArchiveInfo", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<BuildingArchive> lookupBuildingArchiveInfo(@RequestBody @Valid IdParam idParam);
+    /**
+     * 根据ID获取房屋
+     */
+    @PostMapping(value = "/api/queryHousesList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<HousesArchivesVo>> queryHousesList(@RequestBody @Valid IdsReq ids);
 }

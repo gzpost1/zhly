@@ -8,7 +8,15 @@ package cn.cuiot.dmp.common.constant;//	模板
 public class MsgTypeConstant {
 
     /**
-     * 公告
+     * 系统消息
      */
-    public final static String NOTICE = "notice";
+    public final static byte SYS_MSG = 1;
+
+    /**
+     * 短信
+     */
+    public final static byte SMS = 2;
+
+    //短信和系统消息都发传3
+
 }
