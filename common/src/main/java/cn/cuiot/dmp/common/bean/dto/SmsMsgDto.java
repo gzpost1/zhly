@@ -17,7 +17,7 @@ public class SmsMsgDto {
     /**
      * 手机号
      */
-    java.util.List<String> telNumbers;
+    List<String> telNumbers;
 
     /**
      * 参数

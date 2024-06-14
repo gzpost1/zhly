@@ -48,7 +48,6 @@ public class UserMsgConsumer {
             userMessageEntity.setAccepter(acceptor);
             userMessageEntities.add(userMessageEntity);
         });
-
         return userMessageEntities;
     }
 }
