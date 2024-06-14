@@ -19,6 +19,11 @@ public interface FormConfigRepository {
     FormConfig queryForDetail(Long id);
 
     /**
+     * 根据名称获取详情
+     */
+    FormConfig queryForDetailByName(FormConfig formConfig);
+
+    /**
      * 保存
      */
     int saveFormConfig(FormConfig formConfig);

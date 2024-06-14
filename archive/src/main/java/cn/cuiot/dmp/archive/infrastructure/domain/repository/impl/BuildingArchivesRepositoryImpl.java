@@ -54,7 +54,8 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
                 .eq(Objects.nonNull(pageQuery.getDepartmentId()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentId())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName())
                 .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList())
-                .in(CollectionUtils.isNotEmpty(pageQuery.getIdList()), BuildingArchivesEntity::getId, pageQuery.getIdList());
+                .in(CollectionUtils.isNotEmpty(pageQuery.getIdList()), BuildingArchivesEntity::getId, pageQuery.getIdList())
+                .eq(StringUtils.isNotBlank(pageQuery.getAreaCode()), BuildingArchivesEntity::getAreaCode, pageQuery.getAreaCode());
         List<BuildingArchivesEntity> buildingArchivesEntityList = buildingArchivesMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(buildingArchivesEntityList)) {
             return new ArrayList<>();
@@ -76,7 +77,8 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
                 .eq(Objects.nonNull(pageQuery.getDepartmentId()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentId())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), BuildingArchivesEntity::getName, pageQuery.getName())
                 .in(CollectionUtils.isNotEmpty(pageQuery.getDepartmentIdList()), BuildingArchivesEntity::getDepartmentId, pageQuery.getDepartmentIdList())
-                .in(CollectionUtils.isNotEmpty(pageQuery.getIdList()), BuildingArchivesEntity::getId, pageQuery.getIdList());
+                .in(CollectionUtils.isNotEmpty(pageQuery.getIdList()), BuildingArchivesEntity::getId, pageQuery.getIdList())
+                .eq(StringUtils.isNotBlank(pageQuery.getAreaCode()), BuildingArchivesEntity::getAreaCode, pageQuery.getAreaCode());
         if (StringUtils.isNotBlank(pageQuery.getKeyword())) {
             queryWrapper.and(eqw -> eqw.eq(BuildingArchivesEntity::getId, pageQuery.getKeyword())
                     .or().like(BuildingArchivesEntity::getName, pageQuery.getKeyword()));
