@@ -964,7 +964,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         }
         //未完成就可以撤回
         if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.BUTTON.getCode())){
-            return ButtonBusinessEnums.BUTTON.getCode();
+            return ButtonBusinessEnums.NOT_BUTTON.getCode();
         }
         //同节点可以撤回
         if(Objects.equals(workInfoDto.getRevokeNodeId(),taskList.get(0).getTaskDefinitionKey())){
@@ -1005,7 +1005,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         });
         processVariables.putAll(formValue);
 
-//        String taskId = startProcessInstanceDTO.getTaskId();
+        String taskId = startProcessInstanceDTO.getTaskId();
         Task task =null;
         //再次发起
         if(StringUtils.isNotBlank(startProcessInstanceDTO.getProcessInstanceId())){
@@ -1013,7 +1013,6 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             if(Objects.isNull(tasks)){
                 throw new BusinessException(ErrorCode.NOT_FOUND.getCode(), ErrorCode.NOT_FOUND.getMessage());
             }
-            task = tasks.get(0);
             //工单创建人与当前重新发起人不一致，不能重新发起
             List<WorkInfoEntity> work = queryWorkInfo(Long.parseLong(startProcessInstanceDTO.getProcessInstanceId()));
             if(Objects.equals(work.get(0).getCreateUser(),LoginInfoHolder.getCurrentUserId())){
@@ -1037,7 +1036,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             task =initiateProcess(startProcessInstanceDTO,processVariables);
         }
 
-        if(Objects.nonNull(task)){
+        if(task!=null){
             taskService.complete(task.getId());
         }
         return IdmResDTO.success(task.getProcessInstanceId());

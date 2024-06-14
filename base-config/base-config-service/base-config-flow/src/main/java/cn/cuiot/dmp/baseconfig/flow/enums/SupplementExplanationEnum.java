@@ -21,8 +21,8 @@ public enum SupplementExplanationEnum {
     private String message;
 
     SupplementExplanationEnum(Byte code, String message){
-        code=code;
-        message=message;
+        this.code=code;
+        this.message=message;
     }
 
     public static SupplementExplanationEnum getSupplementExplanation(Byte code){

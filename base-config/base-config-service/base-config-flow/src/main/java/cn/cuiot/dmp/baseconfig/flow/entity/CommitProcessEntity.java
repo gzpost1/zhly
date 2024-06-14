@@ -44,9 +44,8 @@ public class CommitProcessEntity implements Serializable {
      */
     private String nodeId;
 
-
     /**
-     * 表单/对象id
+     * 对象id
      */
     private Long dataId;
 
