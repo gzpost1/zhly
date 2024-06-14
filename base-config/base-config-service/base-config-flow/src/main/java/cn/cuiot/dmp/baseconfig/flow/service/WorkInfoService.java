@@ -14,6 +14,8 @@ import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.AppTransferTaskDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.ClientOperationDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.ProcessBusinessDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.*;
@@ -31,6 +33,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
@@ -592,12 +595,15 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     /**
      * 回退
-     * @param handleDataDTO
+     * @param operationDto
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
-    public IdmResDTO rollback(HandleDataDTO handleDataDTO) {
-
+    public IdmResDTO rollback(ClientOperationDto operationDto) {
+        HandleDataDTO handleDataDTO = new HandleDataDTO();
+        handleDataDTO.setTaskId(String.valueOf(operationDto.getTaskId()));
+        handleDataDTO.setComments(operationDto.getComments());
+        handleDataDTO.setReason(operationDto.getReason());
         //回退留痕
         WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_ROLLBACK.getCode());
@@ -1613,5 +1619,53 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         List<BuildingArchive> archiveList = Optional.ofNullable(listIdmResDTO.getData()).orElseThrow(()->new BusinessException(ErrorCode.NOT_FOUND.getCode(),
                 ErrorCode.NOT_FOUND.getMessage()));
         return archiveList.stream().collect(Collectors.toMap(BuildingArchive::getId,BuildingArchive::getName));
+    }
+
+    public IdmResDTO revokeWorkOrder(ProcessBusinessDto businessDto) {
+
+        //获取工单信息
+        List<WorkInfoEntity> works = queryWorkInfo(businessDto.getProcessInstanceId());
+        if(Objects.isNull(works)){
+            return IdmResDTO.error(ErrorCode.NOT_FOUND.getCode(),ErrorCode.NOT_FOUND.getMessage());
+        }
+        //判断是否是本人撤销，不是本人撤销提示没有权限
+        if(!Objects.equals(LoginInfoHolder.getCurrentUserId(),works.get(0).getCreateUser())){
+            return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
+        }
+        //判断流程是否可以撤销,不可以撤销提示没有权限
+        Byte businessType = checkRevokeType(works.get(0));
+        if(Objects.equals(businessType, ButtonBusinessEnums.NOT_BUTTON)){
+            return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
+        }
+        //记录撤销
+        HandleDataDTO handleDataDTO =new HandleDataDTO();
+        handleDataDTO.setProcessInstanceId(String.valueOf(businessDto.getProcessInstanceId()));
+        handleDataDTO.setComments(businessDto.getComments());
+        handleDataDTO.setReason(businessDto.getReason());
+        WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
+        businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_REVOKE.getCode());
+        workBusinessTypeInfoService.save(businessTypeInfo);
+
+        //更新主流程为已撤销
+        //更新挂起结束时间
+        handleDataDTO.setNodeId(businessTypeInfo.getNode());
+        updateBusinessPendingDate(handleDataDTO);
+
+        //更新工单状态为撤销
+        updateWorkInfo(WorkOrderStatusEnums.revoke.getStatus(), businessTypeInfo.getProcInstId());
+        //撤销流程
+        runtimeService.deleteProcessInstance(String.valueOf(businessDto.getProcessInstanceId()),"撤销");
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 根据工单id获取工单信息
+     * @param procInstId
+     * @return
+     */
+    public List<WorkInfoEntity> queryWorkInfo(Long procInstId){
+        LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkInfoEntity::getProcInstId,String.valueOf(procInstId));
+        return baseMapper.selectList(lw);
     }
 }
