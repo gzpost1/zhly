@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.app.mapper.UserFeedbackMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.app.entity.UserFeedbackEntity">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="name" property="name" />
+        <result column="phone" property="phone" />
+        <result column="company_id" property="companyId" />
+        <result column="dept_id" property="deptId" />
+        <result column="dept_name" property="deptName" />
+        <result column="building_id" property="buildingId" />
+        <result column="building_name" property="buildingName" />
+        <result column="feedback_content" property="feedbackContent" />
+        <result column="images"
+                jdbcType="VARCHAR"
+                property="images"
+                typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+        <result column="status" property="status" />
+        <result column="reply_time" property="replyTime" />
+        <result column="reply_user_id" property="replyUserId" />
+        <result column="reply_user_name" property="replyUserName" />
+        <result column="reply_content" property="replyContent" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, user_id, name, phone, company_id, dept_id, dept_name, building_id, building_name, feedback_content, images, status, reply_time, reply_user_id, reply_user_name, reply_content, update_time, update_user, create_time, create_user
+    </sql>
+
+    <select id="queryForPage" resultType="cn.cuiot.dmp.app.entity.UserFeedbackEntity">
+        SELECT
+            t.id,
+            t.user_id,
+            t.`name`,
+            t.phone,
+            t.company_id,
+            t.dept_id,
+            t.dept_name,
+            t.building_id,
+            t.building_name,
+            t.images,
+            t.`status`,
+            t.reply_time,
+            t.reply_user_id,
+            t.reply_user_name,
+            t.update_time,
+            t.update_user,
+            t.create_time,
+            t.create_user
+        FROM tb_user_feedback AS t
+        <where>
+            <if test="param.companyId != null">
+                and t.company_id=#{param.companyId}
+            </if>
+            <if test="param.buildingId != null">
+                and t.building_id=#{param.buildingId}
+            </if>
+            <if test="param.buildingIds != null and param.buildingIds.size() >0">
+                AND t.building_id in
+                <foreach collection="param.buildingIds" item="itemBuildingId" open="(" separator="," close=")">
+                    #{itemBuildingId}
+                </foreach>
+            </if>
+            <if test="param.startReplyTime !=null">
+                and t.t.create_time <![CDATA[>=]]> #{param.startReplyTime}
+            </if>
+            <if test="param.endReplyTime !=null">
+                and t.t.create_time <![CDATA[<=]]> #{param.endReplyTime}
+            </if>
+            <if test="param.deptIds != null and param.deptIds.size() >0">
+                AND t.dept_id in
+                <foreach collection="param.deptIds" item="itemDeptId" open="(" separator="," close=")">
+                    #{itemDeptId}
+                </foreach>
+            </if>
+            <if test="param.deptPath!=null and param.deptPath != ''">
+                AND t.dept_id in (select id from department where path like concat(#{param.deptPath}, '%'))
+            </if>
+            <if test="param.status != null">
+                and t.`status`=#{param.status}
+            </if>
+        </where>
+        ORDER BY
+        t.create_time DESC,
+        t.id DESC
+    </select>
+
+</mapper>

@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.dto.clue;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -29,7 +30,7 @@ public class ClueRecordUpdateDTO implements Serializable {
     /**
      * 线索表单配置数据
      */
-    private String formData;
+    private JSONObject formData;
 
     /**
      * 当前线索表单配置快照
