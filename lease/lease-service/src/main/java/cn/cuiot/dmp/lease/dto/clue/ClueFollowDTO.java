@@ -18,6 +18,11 @@ public class ClueFollowDTO implements Serializable {
     private static final long serialVersionUID = -561752869274727868L;
 
     /**
+     * 企业ID
+     */
+    private Long companyId;
+
+    /**
      * 线索跟进id
      */
     private Long id;
