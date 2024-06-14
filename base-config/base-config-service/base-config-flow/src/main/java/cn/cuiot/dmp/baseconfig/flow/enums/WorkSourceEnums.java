@@ -20,8 +20,8 @@ public enum WorkSourceEnums {
     private String desc;
 
     WorkSourceEnums(Byte code,String desc){
-        code=code;
-        desc=desc;
+        this.code=code;
+        this.desc=desc;
     }
 
     public byte getCode() {

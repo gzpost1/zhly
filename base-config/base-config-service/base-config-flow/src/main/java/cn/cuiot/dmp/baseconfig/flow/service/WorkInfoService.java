@@ -138,6 +138,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         Authentication.setAuthenticatedUserId(startUserInfo.getId());
         Map<String,Object> processVariables= new HashMap<>();
         processVariables.put(WorkOrderConstants.FORM_VAR,formData);
+
         processVariables.put(WorkOrderConstants.PROCESS_STATUS,WorkOrderConstants.BUSINESS_STATUS_1);
         processVariables.put(WorkOrderConstants.START_USER_INFO,JSONObject.toJSONString(startUserInfo));
         processVariables.put(WorkOrderConstants.INITIATOR_ID,startUserInfo.getId());
@@ -177,6 +178,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_START.getCode());
             workBusinessTypeInfoService.save(workBusinessTypeInfo);
             //保存提交的参数
+            //组装提交信息
+            CommitProcessEntity processEntity = new CommitProcessEntity();
+            processEntity.setCommitProcess(JsonUtil.writeValueAsString(formData));
+            processEntity.setDataId(workBusinessTypeInfo.getTaskId());
+            startProcessInstanceDTO.setCommitProcess(processEntity);
             saveCommitProcess(workBusinessTypeInfo,startProcessInstanceDTO);
             taskService.complete(task.getId());
         }
@@ -202,7 +208,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         entity.setCommitProcess(commitProcess.getCommitProcess());
         entity.setCreateTime(new Date());
         entity.setBusinessTypeId(workBusinessTypeInfo.getId());
-        commitProcessService.save(commitProcess);
+        commitProcessService.save(entity);
     }
     /**
      * 启动工单
@@ -347,8 +353,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         }
         ChildNode children = childNode.getChildren();
         while (true){
-            if(Objects.isNull(children)){
-                return;
+            if(Objects.isNull(children.getId())){
+                break;
             }
             NodeTypeEntity entity = new NodeTypeEntity();
             entity.setId(IdWorker.getId());
@@ -357,7 +363,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             entity.setProcessDefinitionId(processDefinitionId);
             entity.setProcessNodeType(children.getProcessNodeType());
             nodeTypeService.save(entity);
-            children = childNode.getChildren();
+            children = children.getChildren();
         }
 
 
@@ -399,7 +405,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_AGREE.getCode());
             //防止是挂起状态
             updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
-            taskService.complete(taskId);
+
             busiList.add(businessTypeInfo);
             //如果节点存在挂起数据，将挂起数据结束
             WorkBusinessTypeInfoEntity update = queryWorkBusinessById(businessTypeInfo.getNode(), businessTypeInfo.getProcInstId());
@@ -422,7 +428,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 }
                 //保存节点审批人信息
                 runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
+
             }
+            taskService.complete(taskId);
         }
         if(!CollectionUtils.isEmpty(busiList)){
             workBusinessTypeInfoService.saveBatch(busiList);

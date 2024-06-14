@@ -54,7 +54,7 @@
             <if test="query.workName !=null">
                 and t1.work_name like concat('%',#{query.workName},'%')
             </if>
-            <if test="query.orgIds !=null">
+            <if test="query.orgIds !=null and  query.orgIds.size()>0">
                 and t3.org_id in
                 <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
                     #{item}
@@ -105,7 +105,7 @@
             <if test="query.workName !=null">
                 and t1.work_name like concat('%',#{query.workName},'%')
             </if>
-            <if test="query.orgIds !=null">
+            <if test="query.orgIds !=null and  query.orgIds.size()>0">
                 and t3.org_id in
                 <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
                     #{item}
@@ -153,7 +153,7 @@
             <if test="query.procInstId !=null">
                 and t1.proc_inst_id like concat('%',#{query.procInstId},'%')
             </if>
-            <if test="query.orgIds !=null">
+            <if test="query.orgIds !=null and query.orgIds.size()>0">
                 and t4.org_id in
                 <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
                     #{item}
@@ -201,7 +201,7 @@
             <if test="query.startTime !=null">
                 and t1.create_time >= #{query.startTime} and t1.create_time <![CDATA[<=]]> #{query.endTime}
             </if>
-            <if test="query.orgIds !=null">
+            <if test="query.orgIds !=null and  query.orgIds.size()>0">
                 and t4.org_id in
                 <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
                     #{item}
@@ -251,7 +251,7 @@
             <if test="query.procInstId !=null">
                 and t1.proc_inst_id like concat('%',#{query.procInstId},'%')
             </if>
-            <if test="query.orgIds !=null">
+            <if test="query.orgIds !=null and  query.orgIds.size()>0">
                 and t3.org_id in
                 <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
                     #{item}
@@ -290,7 +290,7 @@
             <if test="query.startTime !=null">
                 and t1.create_time >= #{query.startTime} and t1.create_time <![CDATA[<=]]> #{query.endTime}
             </if>
-            <if test="query.orgIds !=null">
+            <if test="query.orgIds !=null and  query.orgIds.size()>0">
                 and t2.org_id in
                 <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
                     #{item}
