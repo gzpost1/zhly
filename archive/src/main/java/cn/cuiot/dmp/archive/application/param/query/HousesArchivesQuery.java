@@ -49,6 +49,14 @@ public class HousesArchivesQuery extends PageQuery {
      * 产权属性
      */
     private Long ownershipAttribute;
+    /**
+     * 房号
+     */
+    private String roomNum;
+    /**
+     * 房屋编码
+     */
+    private String code;
 
     /**
      * 房屋编码

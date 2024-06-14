@@ -3,6 +3,8 @@ package cn.cuiot.dmp.common.utils;
 import com.github.dozermapper.core.DozerBeanMapperBuilder;
 import com.github.dozermapper.core.Mapper;
 import com.google.common.collect.Lists;
+import org.springframework.beans.BeanUtils;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -39,5 +41,25 @@ public class BeanMapper {
 
     public static void copy(Object source, Object destinationObject) {
         dozer.map(source, destinationObject);
+    }
+
+    /**
+     * copy类 ,可防止LocalDateTime类型复制出错
+     * @param source
+     * @param destinationClass
+     * @param <T>
+     * @return
+     */
+    public static <T> T copyBean(Object source, Class<T> destinationClass) {
+        T t = null;
+        try {
+            t = destinationClass.newInstance();
+            BeanUtils.copyProperties(source, t);
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return t;
     }
 }
