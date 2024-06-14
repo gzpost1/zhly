@@ -610,22 +610,33 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         //更新主流程状态
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), workBusinessTypeInfo.getProcInstId());
-        List<HistoricTaskInstance> taskInstances = historyService.createHistoricTaskInstanceQuery()
-                .processInstanceId(handleDataDTO.getProcessInstanceId()).orderByTaskId().desc().list();
-
-        List<String> collect = taskInstances.stream().map(HistoricTaskInstance::getTaskDefinitionKey).distinct().collect(Collectors.toList());
-
-        List<Execution> executions = runtimeService.createExecutionQuery().parentId(handleDataDTO.getProcessInstanceId()).list();
-        List<String> executionIds = new ArrayList<>();
-        executions.forEach(execution -> executionIds.add(execution.getId()));
-
-
-        runtimeService.createChangeActivityStateBuilder().moveExecutionsToSingleActivityId(executionIds,
-                collect.get(1)).changeState();
+        Task task = taskService.createTaskQuery().taskId(String.valueOf(operationDto.getTaskId())).singleResult();
+        String rollBackNode = queryRollBackNode(task);
+        runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
+                rollBackNode).changeState();
         return IdmResDTO.success();
 
     }
 
+
+
+    /**
+     * 获取回退节点
+     * @param task
+     * @return
+     */
+    public String queryRollBackNode(Task task){
+
+        ChildNode childNodeByNodeId = getChildNodeByNodeId(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+        String nodeId = childNodeByNodeId.getParentId();
+        while (true){
+            ChildNode parentIdNode = getChildNodeByNodeId(task.getProcessDefinitionId(), nodeId);
+            nodeId=parentIdNode.getParentId();
+            if(WorkOrderConstants.nodes.contains(parentIdNode.getType())){
+                return parentIdNode.getId();
+            }
+        }
+    }
     /**
      * 挂起流程
      * @param handleDataDTOs
