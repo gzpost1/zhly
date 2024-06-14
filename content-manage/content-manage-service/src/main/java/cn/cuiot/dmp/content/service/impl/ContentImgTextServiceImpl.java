@@ -4,9 +4,12 @@ package cn.cuiot.dmp.content.service.impl;//	模板
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.conver.ImgTextConvert;
 import cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity;
@@ -91,6 +94,14 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
     public int saveContentImgText(ContentImgTextCreateDto createDTO) {
         ContentImgTextEntity imgTextEntity = ImgTextConvert.INSTANCE.convert(createDTO);
         imgTextEntity.setStatus(EntityConstants.ENABLED);
+        AuditConfigTypeReqDTO reqDTO = new AuditConfigTypeReqDTO().setCompanyId(LoginInfoHolder.getCurrentOrgId())
+                .setAuditConfigType(AuditConfigTypeEnum.CONTENT_MANAGE.getCode()).setName("新增图文");
+        AuditConfigRspDTO auditConfigRspDTO = systemConverService.lookUpAuditConfig(reqDTO);
+        if (auditConfigRspDTO != null && EntityConstants.ENABLED.equals(auditConfigRspDTO.getStatus())) {
+            imgTextEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_ING);
+        } else {
+            imgTextEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_PASSED);
+        }
         imgTextEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_ING);
         imgTextEntity.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         int insert = this.baseMapper.insert(imgTextEntity);
@@ -103,6 +114,14 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
     public int updateContentImgText(ContentImgTextUpdateDto updateDtO) {
         ContentImgTextEntity imgTextEntity = ImgTextConvert.INSTANCE.convert(updateDtO);
         imgTextEntity.setId(updateDtO.getId());
+        AuditConfigTypeReqDTO reqDTO = new AuditConfigTypeReqDTO().setCompanyId(LoginInfoHolder.getCurrentOrgId())
+                .setAuditConfigType(AuditConfigTypeEnum.CONTENT_MANAGE.getCode()).setName("编辑图文");
+        AuditConfigRspDTO auditConfigRspDTO = systemConverService.lookUpAuditConfig(reqDTO);
+        if (auditConfigRspDTO != null && EntityConstants.ENABLED.equals(auditConfigRspDTO.getStatus())) {
+            imgTextEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_ING);
+        } else {
+            imgTextEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_PASSED);
+        }
         int update = this.baseMapper.updateById(imgTextEntity);
         contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.IMG_TEXT, LoginInfoHolder.getCurrentDeptId(), updateDtO.getBuildings(), imgTextEntity.getId());
         return update;
