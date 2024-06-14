@@ -161,6 +161,12 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         BeanUtils.copyProperties(followDTO, clueRecord);
         clueRecord.setFormData(String.valueOf(followDTO.getFormData()));
         clueRecord.setFollowTime(new Date());
+        // 保存跟进表单快照
+        FormConfigReqDTO formConfigReqDTO = new FormConfigReqDTO();
+        formConfigReqDTO.setCompanyId(followDTO.getCompanyId());
+        formConfigReqDTO.setName(SystemFormConfigConstant.CLUE_FORM_CONFIG.get(1));
+        FormConfigRspDTO formConfigRspDTO = systemApiFeignService.lookUpFormConfigByName(formConfigReqDTO).getData();
+        clueRecord.setFormConfigDetail(formConfigRspDTO.getFormConfigDetail());
         return clueRecordService.save(clueRecord);
     }
 
