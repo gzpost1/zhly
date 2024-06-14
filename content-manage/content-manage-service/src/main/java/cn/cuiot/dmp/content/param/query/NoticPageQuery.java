@@ -4,7 +4,6 @@ import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -60,4 +59,9 @@ public class NoticPageQuery extends PageQuery {
      * 发布端
      */
     private Byte publishSource;
+
+    /**
+     * 排除的ID
+     */
+    private List<Long> idNotIn;
 }

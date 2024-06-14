@@ -3,6 +3,7 @@ package cn.cuiot.dmp.message.consumer;//	模板
 import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
 import cn.cuiot.dmp.common.constant.MsgTypeConstant;
+import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.message.config.MqMsgChannel;
 import cn.cuiot.dmp.message.conver.UserMessageConvert;
 import cn.cuiot.dmp.message.dal.entity.UserMessageEntity;
@@ -31,7 +32,7 @@ public class UserMsgConsumer {
 
     @StreamListener(MqMsgChannel.USERMESSAGEINPUT)
     public void userMessageConsumer(@Payload UserMessageAcceptDto userMessageAcceptDto) {
-        log.info("userMessageInput:{}", userMessageAcceptDto);
+        log.info("userMessageInput:{}", JsonUtil.writeValueAsString(userMessageAcceptDto));
         UserMessageEntity userMessage = UserMessageConvert.INSTANCE.concert(userMessageAcceptDto);
         userMessage.init();
         if ((userMessageAcceptDto.getMsgType() & MsgTypeConstant.SYS_MSG) == MsgTypeConstant.SYS_MSG) {
