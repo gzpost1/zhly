@@ -1,10 +1,14 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.application.param.dto.AuditConfigTypeDTO;
+import cn.cuiot.dmp.system.application.param.dto.AuditConfigTypeQueryDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.AuditConfigEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.AuditConfigTypeEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.AuditConfigTypeMapper;
@@ -15,6 +19,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +50,34 @@ public class AuditConfigTypeService extends ServiceImpl<AuditConfigTypeMapper, A
     }
 
     /**
+     * 根据条件查询审核配置列表
+     */
+    public List<AuditConfigTypeRspDTO> queryForList(AuditConfigTypeReqDTO queryDTO) {
+        List<AuditConfigEntity> auditConfigEntityList = auditConfigService.queryForList(queryDTO);
+        if (CollectionUtils.isEmpty(auditConfigEntityList)) {
+            return new ArrayList<>();
+        }
+        List<AuditConfigRspDTO> auditConfigRspDTOList = auditConfigEntityList.stream()
+                .map(o -> {
+                    AuditConfigRspDTO auditConfigRspDTO = new AuditConfigRspDTO();
+                    BeanUtils.copyProperties(o, auditConfigRspDTO);
+                    return auditConfigRspDTO;
+                })
+                .collect(Collectors.toList());
+        Map<Byte, List<AuditConfigRspDTO>> auditConfigMap = auditConfigRspDTOList.stream()
+                .collect(Collectors.groupingBy(AuditConfigRspDTO::getAuditConfigType));
+        List<AuditConfigTypeRspDTO> auditConfigTypeDTOList = new ArrayList<>();
+        auditConfigMap.forEach((key, value) -> {
+            AuditConfigTypeDTO auditConfigTypeDTO = queryByType(key);
+            AuditConfigTypeRspDTO auditConfigTypeRspDTO = new AuditConfigTypeRspDTO();
+            BeanUtils.copyProperties(auditConfigTypeDTO, auditConfigTypeRspDTO);
+            auditConfigTypeRspDTO.setAuditConfigList(value);
+            auditConfigTypeDTOList.add(auditConfigTypeRspDTO);
+        });
+        return auditConfigTypeDTOList;
+    }
+
+    /**
      * 根据企业id查询审核配置列表
      */
     public List<AuditConfigTypeDTO> queryByCompany(Long companyId) {
@@ -63,6 +96,7 @@ public class AuditConfigTypeService extends ServiceImpl<AuditConfigTypeMapper, A
     /**
      * 更新状态
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateAuditConfigStatus(UpdateStatusParam updateStatusParam) {
         return auditConfigService.updateStatus(updateStatusParam);
     }

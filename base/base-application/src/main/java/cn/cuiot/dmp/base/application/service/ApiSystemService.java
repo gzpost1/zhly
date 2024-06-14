@@ -79,4 +79,9 @@ public interface ApiSystemService {
      */
     List<CustomConfigRspDTO> batchQueryCustomConfigs(CustomConfigReqDTO customConfigReqDTO);
 
+    /**
+     * 根据条件批量查询审核配置列表
+     */
+    List<AuditConfigTypeRspDTO> lookUpAuditConfig(AuditConfigTypeReqDTO queryDTO);
+
 }

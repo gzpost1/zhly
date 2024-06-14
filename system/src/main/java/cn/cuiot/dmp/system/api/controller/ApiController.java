@@ -70,6 +70,9 @@ public class ApiController {
     @Autowired
     private CustomConfigService customConfigService;
 
+    @Autowired
+    private AuditConfigTypeService auditConfigTypeService;
+
     /**
      * 查询角色
      */
@@ -230,6 +233,15 @@ public class ApiController {
     public IdmResDTO<List<CustomConfigRspDTO>> batchQueryCustomConfigs(@RequestBody @Valid CustomConfigReqDTO customConfigReqDTO) {
         List<CustomConfigRspDTO> customConfigRspDTOS = customConfigService.batchQueryCustomConfigs(customConfigReqDTO);
         return IdmResDTO.success(customConfigRspDTOS);
+    }
+
+    /**
+     * 根据条件批量查询审核配置列表
+     */
+    @PostMapping(value = "/lookUpAuditConfig", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<AuditConfigTypeRspDTO>> lookUpAuditConfig(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO) {
+        List<AuditConfigTypeRspDTO> auditConfigTypeRspDTOList = auditConfigTypeService.queryForList(queryDTO);
+        return IdmResDTO.success(auditConfigTypeRspDTOList);
     }
 
 }

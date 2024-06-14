@@ -63,7 +63,7 @@ public class FormConfigTypeController {
     /**
      * 根据条件查询企业的表单配置详情
      */
-    @PostMapping("/")
+    @PostMapping("/queryByCompany")
     public List<FormConfigTypeTreeNodeVO> queryByCompany(@RequestBody @Valid FormConfigTypeQueryDTO queryDTO) {
         Long companyId = LoginInfoHolder.getCurrentOrgId();
         queryDTO.setCompanyId(companyId);

@@ -139,6 +139,7 @@ public class AppAuthService {
                                 //更新登录时间
                                 UserEntity updateEntity = new UserEntity();
                                 updateEntity.setId(userDto.getId());
+                                updateEntity.setOpenid(openid);
                                 updateEntity.setLastOnlineIp(ipAddr);
                                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                                 appUserService.updateAppUser(updateEntity);
@@ -154,6 +155,7 @@ public class AppAuthService {
                     //更新登录时间
                     UserEntity updateEntity = new UserEntity();
                     updateEntity.setId(userDto.getId());
+                    updateEntity.setOpenid(openid);
                     updateEntity.setLastOnlineIp(ipAddr);
                     updateEntity.setLastOnlineOn(LocalDateTime.now());
                     appUserService.updateAppUser(updateEntity);
@@ -341,7 +343,7 @@ public class AppAuthService {
         //更新登录时间
         UserEntity updateEntity = new UserEntity();
         updateEntity.setId(userDto.getId());
-        updateEntity.setOpenid(userDto.getOpenid());
+        updateEntity.setOpenid(dto.getOpenid());
         updateEntity.setLastOnlineIp(dto.getIpAddr());
         updateEntity.setLastOnlineOn(LocalDateTime.now());
         appUserService.updateAppUser(updateEntity);
@@ -490,7 +492,7 @@ public class AppAuthService {
         //更新登录时间
         UserEntity updateEntity = new UserEntity();
         updateEntity.setId(userDto.getId());
-        updateEntity.setOpenid(userDto.getOpenid());
+        updateEntity.setOpenid(dto.getOpenid());
         updateEntity.setLastOnlineIp(dto.getIpAddr());
         updateEntity.setLastOnlineOn(LocalDateTime.now());
         appUserService.updateAppUser(updateEntity);
@@ -723,6 +725,7 @@ public class AppAuthService {
         AppUserDto userDto = null;
         //员工
         if (UserTypeEnum.USER.getValue().equals(userType)) {
+
             userDto = appUserService
                     .getUserByPhoneAndUserType(currentUser.getPhoneNumber(), userType);
             if (Objects.isNull(userDto)) {
@@ -749,6 +752,7 @@ public class AppAuthService {
             //更新登录时间
             UserEntity updateEntity = new UserEntity();
             updateEntity.setId(userDto.getId());
+            updateEntity.setOpenid(openid);
             updateEntity.setLastOnlineIp(ipAddr);
             updateEntity.setLastOnlineOn(LocalDateTime.now());
             appUserService.updateAppUser(updateEntity);
@@ -757,7 +761,7 @@ public class AppAuthService {
                     .getUserByPhoneAndUserType(currentUser.getPhoneNumber(), userType);
             //非员工
             if (Objects.isNull(userDto)) {
-                String password = randomPwUtils
+                /*String password = randomPwUtils
                         .getRandomPassword((int) (8 + Math.random() * (20 - 8 + 1)));
                 UserEntity userEntity = new UserEntity();
                 userEntity.setName("用户昵称");
@@ -775,11 +779,13 @@ public class AppAuthService {
                 userEntity.setCreatedBy(OperateByTypeEnum.SYSTEM.name().toLowerCase());
                 userEntity.setCreatedByType(OperateByTypeEnum.SYSTEM.getValue());
                 appUserService.createAppUser(userEntity);
-                userDto = appUserConverter.toAppUserDto(userEntity);
+                userDto = appUserConverter.toAppUserDto(userEntity);*/
+                throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST, "用户不存在");
             } else {
                 //更新登录时间
                 UserEntity updateEntity = new UserEntity();
                 updateEntity.setId(userDto.getId());
+                updateEntity.setOpenid(openid);
                 updateEntity.setLastOnlineIp(ipAddr);
                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                 appUserService.updateAppUser(updateEntity);

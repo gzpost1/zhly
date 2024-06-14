@@ -51,4 +51,9 @@ public class BuildingArchivesPageQuery extends PageQuery {
      */
     private List<Long> idList;
 
+    /**
+     * 区域编码
+     */
+    private String areaCode;
+
 }

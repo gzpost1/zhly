@@ -5,9 +5,11 @@ import cn.cuiot.dmp.app.dto.AppUserDto;
 import cn.cuiot.dmp.app.entity.UserEntity;
 import cn.cuiot.dmp.app.mapper.AppUserMapper;
 import cn.cuiot.dmp.util.Sm4;
+import cn.hutool.core.collection.CollectionUtil;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,6 +60,21 @@ public class AppUserService {
             return list;
         }
         return Lists.newArrayList();
+    }
+
+    /**
+     * 根据openid获取用户
+     */
+    public AppUserDto getUserByOpenid(String openid, Integer userType) {
+        List<AppUserDto> dtoList = selectUserByOpenid(openid);
+        if(CollectionUtil.isNotEmpty(dtoList)){
+            Optional<AppUserDto> optional = dtoList.stream()
+                    .filter(ite -> ite.getUserType().equals(userType)).findFirst();
+            if(optional.isPresent()){
+                return optional.get();
+            }
+        }
+        return null;
     }
 
     /**

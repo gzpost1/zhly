@@ -12,7 +12,25 @@ import lombok.Data;
 public class CustomerQuery extends PageQuery {
 
 
+    /**
+     * 客户名称
+     */
+    private String customerName;
 
+    /**
+     * 联系人
+     */
+    private String contactName;
+
+    /**
+     * 联系人手机号
+     */
+    private String contactPhone;
+
+    /**
+     * 状态
+     */
+    private Byte status;
 
 
     /**

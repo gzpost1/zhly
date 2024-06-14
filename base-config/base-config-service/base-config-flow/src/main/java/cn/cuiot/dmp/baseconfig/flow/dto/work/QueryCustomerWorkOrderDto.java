@@ -15,7 +15,7 @@ public class QueryCustomerWorkOrderDto  extends PageQuery {
     /**
      * 楼盘id
      */
-    private List<Long> propertyId;
+    private List<Long> propertyIds;
 
     /**
      * 工单来源 2客户提单3代录工单
