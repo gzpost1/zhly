@@ -37,7 +37,7 @@ public interface ApiSystemService {
     /**
      * 获取用户信息
      */
-    BaseUserDto lookUpUserInfo(@RequestBody BaseUserReqDto query);
+    BaseUserDto lookUpUserInfo(BaseUserReqDto query);
 
     /**
      * 获取部门信息
