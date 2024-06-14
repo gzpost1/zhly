@@ -93,4 +93,10 @@ public interface NoticeService extends IService<ContentNoticeEntity>, AuditResul
      * @return
      */
     NoticeVo queryForAppDetail(Long id);
+
+    /**
+     * 获取本人可看的公告
+     * @param communityId
+     */
+    void getMyNotice(Long communityId);
 }

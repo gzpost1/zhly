@@ -126,11 +126,12 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
     }
 
     @Override
-    public List<AuditStatusNumVo> getAuditStatusNum() {
+    public List<AuditStatusNumVo> getAuditStatusNum(Long typeId) {
         ContentImgTextPageQuery pageQuery = new ContentImgTextPageQuery();
         initQuery(pageQuery);
         pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
-        return this.baseMapper.getAuditStatusNum(pageQuery);
+        pageQuery.setTypeId(typeId);
+        return this.baseMapper.getAuditStatusNum(pageQuery, ContentConstants.DataType.IMG_TEXT);
     }
 
     @Override

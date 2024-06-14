@@ -45,7 +45,7 @@ public interface ImgTextConvert {
             });
             imgTextVo.setDepartmentNames(departmentNames);
             imgTextVo.setBuildingNames(buildingNames);
-            imgTextVo.setCreatUserName(Optional.ofNullable(userMapByIds.get(imgTextEntity.getCreateUser())).orElse(new BaseUserDto()).getUsername());
+            imgTextVo.setCreatUserName(Optional.ofNullable(userMapByIds.get(imgTextEntity.getCreateUser())).orElse(new BaseUserDto()).getName());
             return imgTextVo;
         });
     }
