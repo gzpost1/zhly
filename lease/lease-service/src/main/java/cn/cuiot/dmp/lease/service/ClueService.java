@@ -12,6 +12,7 @@ import cn.cuiot.dmp.lease.dto.clue.*;
 import cn.cuiot.dmp.lease.entity.ClueEntity;
 import cn.cuiot.dmp.lease.entity.ClueRecordEntity;
 import cn.cuiot.dmp.lease.mapper.ClueMapper;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -50,6 +51,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         ClueDTO clueDTO = new ClueDTO();
         BeanUtils.copyProperties(clueEntity, clueDTO);
+        clueDTO.setFormData(JSON.parseObject(clueEntity.getFormData()));
         fillSystemOptionName(Lists.newArrayList(clueDTO));
         return clueDTO;
     }
@@ -77,6 +79,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .map(o -> {
                     ClueDTO clueDTO = new ClueDTO();
                     BeanUtils.copyProperties(o, clueDTO);
+                    clueDTO.setFormData(JSON.parseObject(o.getFormData()));
                     return clueDTO;
                 })
                 .collect(Collectors.toList());
@@ -113,6 +116,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     public boolean saveClue(ClueCreateDTO createDTO) {
         ClueEntity clueEntity = new ClueEntity();
         BeanUtils.copyProperties(createDTO, clueEntity);
+        clueEntity.setFormData(String.valueOf(createDTO.getFormData()));
         return save(clueEntity);
     }
 
@@ -124,6 +128,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         ClueEntity clueEntity = Optional.ofNullable(getById(updateDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(updateDTO, clueEntity);
+        clueEntity.setFormData(String.valueOf(updateDTO.getFormData()));
         return updateById(clueEntity);
     }
 
@@ -145,6 +150,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     public boolean followClue(ClueFollowDTO followDTO) {
         ClueRecordEntity clueRecord = new ClueRecordEntity();
         BeanUtils.copyProperties(followDTO, clueRecord);
+        clueRecord.setFormData(String.valueOf(followDTO.getFormData()));
         clueRecord.setFollowTime(new Date());
         return clueRecordService.save(clueRecord);
     }
@@ -223,6 +229,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .map(o -> {
                     ClueDTO clueDTO = new ClueDTO();
                     BeanUtils.copyProperties(o, clueDTO);
+                    clueDTO.setFormData(JSON.parseObject(o.getFormData()));
                     return clueDTO;
                 })
                 .collect(Collectors.toList());

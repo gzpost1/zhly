@@ -157,6 +157,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
                 .category(createDto.getOrgId() + "")
                 .deploy();
 
+        tbFlowConfig.setProcess(processJson);
         save(tbFlowConfig);
     }
 

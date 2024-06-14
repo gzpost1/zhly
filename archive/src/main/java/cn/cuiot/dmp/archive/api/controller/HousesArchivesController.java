@@ -82,12 +82,17 @@ public class HousesArchivesController extends BaseController {
         wrapper.eq(Objects.nonNull(query.getPropertyType()), HousesArchivesEntity::getPropertyType, query.getPropertyType());
         wrapper.eq(Objects.nonNull(query.getStatus()), HousesArchivesEntity::getStatus, query.getStatus());
         wrapper.eq(Objects.nonNull(query.getOwnershipAttribute()), HousesArchivesEntity::getOwnershipAttribute, query.getOwnershipAttribute());
-        wrapper.like(StringUtils.isNotBlank(query.getCode()), HousesArchivesEntity::getCode, query.getCode());
+        wrapper.eq(Objects.nonNull(query.getRoomNum()), HousesArchivesEntity::getRoomNum, query.getRoomNum());
+        wrapper.eq(Objects.nonNull(query.getCode()), HousesArchivesEntity::getCode, query.getCode());
         if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())){
             wrapper.like( HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
         }
         wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
+        List<HousesArchivesEntity> records = res.getRecords();
+        records.forEach(h->{
+            String code = h.getCode();
+        });
         return IdmResDTO.success(res);
     }
 

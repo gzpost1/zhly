@@ -5,11 +5,15 @@ import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.HousesArchivesMapper;
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
+import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.DoubleValidator;
+import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -179,6 +183,15 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         });
 
         this.saveBatch(list);
+    }
+
+    @Override
+    public List<HousesArchivesVo> queryHousesList(IdsReq ids) {
+        LambdaQueryWrapper<HousesArchivesEntity> queryWrapper = new LambdaQueryWrapper<HousesArchivesEntity>();
+        queryWrapper.in(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(ids.getIds()),HousesArchivesEntity::getId,ids.getIds());
+        List<HousesArchivesEntity> houseList = baseMapper.selectList(queryWrapper);
+        List<HousesArchivesVo> housesArchivesVos = BeanUtil.copyToList(houseList, HousesArchivesVo.class);
+        return housesArchivesVos;
     }
 
     private String getFiledForExport(Object value) {
