@@ -23,7 +23,16 @@ public class FormConfigReqDTO implements Serializable {
     /**
      * 表单配置ID列表
      */
-    @NotEmpty(message = "表单配置ID列表")
     private List<Long> idList;
+
+    /**
+     * 表单名称
+     */
+    private String name;
+
+    /**
+     * 企业ID
+     */
+    private Long companyId;
 
 }

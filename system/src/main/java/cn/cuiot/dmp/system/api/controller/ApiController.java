@@ -12,6 +12,8 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
 import cn.cuiot.dmp.system.application.param.assembler.MenuConverter;
+import cn.cuiot.dmp.system.application.param.dto.FormConfigDTO;
+import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.application.service.*;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
@@ -197,6 +199,20 @@ public class ApiController {
     public IdmResDTO<List<BusinessTypeRspDTO>> batchGetBusinessType(@RequestBody @Valid BusinessTypeReqDTO businessTypeReqDTO) {
         List<BusinessTypeRspDTO> businessTypeRspDTOList = businessTypeService.batchGetBusinessType(businessTypeReqDTO);
         return IdmResDTO.success(businessTypeRspDTOList);
+    }
+
+    /**
+     * 通过名称查询表单配置详情
+     */
+    @PostMapping(value = "/lookUpFormConfigByName", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<FormConfigRspDTO> lookUpFormConfigByName(@RequestBody @Valid FormConfigReqDTO formConfigReqDTO) {
+        FormConfigDTO formConfigDTO = new FormConfigDTO();
+        formConfigDTO.setName(formConfigReqDTO.getName());
+        formConfigDTO.setCompanyId(formConfigReqDTO.getCompanyId());
+        FormConfigVO formConfigVO = formConfigService.queryForDetailByName(formConfigDTO);
+        FormConfigRspDTO formConfigRspDTO = new FormConfigRspDTO();
+        BeanUtils.copyProperties(formConfigVO, formConfigRspDTO);
+        return IdmResDTO.success(formConfigRspDTO);
     }
 
     /**
