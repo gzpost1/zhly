@@ -68,5 +68,11 @@ public class ServiceTypeConst {
      * 线索管理
      */
     public static final String CLUE_MANAGEMENT = "105";
+    //----------------------------------意向合同操作----------------------------------end
+    /**
+     * 平台日志
+     * 线索管理
+     */
+    public static final String CONTRACT_INTENTION = "106";
 
 }

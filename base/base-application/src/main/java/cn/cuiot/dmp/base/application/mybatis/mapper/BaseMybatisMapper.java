@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.base.application.service.impl;
+package cn.cuiot.dmp.base.application.mybatis.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

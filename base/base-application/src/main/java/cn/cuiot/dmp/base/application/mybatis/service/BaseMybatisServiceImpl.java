@@ -1,7 +1,7 @@
-package cn.cuiot.dmp.base.application.service.impl;
+package cn.cuiot.dmp.base.application.mybatis.service;
 
 import cn.cuiot.dmp.base.application.service.BaseService;
-import cn.cuiot.dmp.base.application.service.impl.BaseMybatisMapper;
+import cn.cuiot.dmp.base.application.mybatis.mapper.BaseMybatisMapper;
 import cn.cuiot.dmp.base.application.utils.NameUtils;
 import cn.cuiot.dmp.common.bean.OrderItemParam;
 import cn.cuiot.dmp.common.bean.PageQuery;
@@ -57,7 +57,6 @@ public abstract class BaseMybatisServiceImpl<M extends BaseMybatisMapper<T>,T> e
         page.setOrders(orderItems);
         T entity = BeanMapper.copyBean(param, getTClass());
         List<T> queryList = baseMapper.list(page, entity);
-        page.setRecords(queryList);
         PageResult pageResult = BeanMapper.copyBean(page, PageResult.class);
         pageResult.setList(queryList);
         return pageResult;

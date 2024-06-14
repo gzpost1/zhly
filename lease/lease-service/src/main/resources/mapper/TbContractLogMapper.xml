@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.TbContractLogMapper">
+
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.TbContractLogEntity">
+        <result column="id" property="id" />
+        <result column="operation" property="operation" />
+        <result column="operator" property="operator" />
+        <result column="oper_time" property="operTime" />
+        <result column="oper_desc" property="operDesc" />
+        <result column="path" property="path" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+<select id="list" resultMap="BaseResultMap" parameterType="cn.cuiot.dmp.lease.entity.TbContractLogEntity" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_contract_log
+    <where>
+      <include refid="dynamic_where" />
+  </where>
+</select>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, operation, operator, oper_time, oper_desc, path, create_user, create_time
+    </sql>
+
+<sql id="dynamic_where">
+    <if test="params!=null">
+    <if test=" params.id != null" >
+             and  id = #{params.id}
+    </if>
+    <if test=" params.operation != null and params.operation.trim() != ''" >
+             and operation like CONCAT('%','${params.operation}','%' )
+    </if>
+    <if test=" params.operator != null and params.operator.trim() != ''" >
+             and operator like CONCAT('%','${params.operator}','%' )
+    </if>
+    <if test=" params.operTime != null" >
+            <!--  and  oper_time between #{params.beginDate} and #{params.endDate}  -->
+             and  oper_time = #{params.operTime}
+    </if>
+    <if test=" params.operDesc != null and params.operDesc.trim() != ''" >
+             and  oper_desc = #{params.operDesc}
+    </if>
+    <if test=" params.path != null and params.path.trim() != ''" >
+             and  path = #{params.path}
+    </if>
+    <if test=" params.createUser != null" >
+             and  create_user = #{params.createUser}
+    </if>
+    <if test=" params.createTime != null" >
+            <!--  and  create_time between #{params.beginDate} and #{params.endDate}  -->
+             and  create_time = #{params.createTime}
+    </if>
+    </if>
+</sql>
+
+</mapper>

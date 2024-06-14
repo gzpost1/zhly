@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.TbContractIntentionMoneyMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.TbContractIntentionMoneyEntity">
+        <result column="id" property="id"/>
+        <result column="project" property="project"/>
+        <result column="bid" property="bid"/>
+        <result column="amount" property="amount"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <select id="list" resultMap="BaseResultMap"
+            parameterType="cn.cuiot.dmp.lease.entity.TbContractIntentionMoneyEntity">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_contract_intention_money
+        <where>
+            <include refid="dynamic_where"/>
+        </where>
+    </select>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id,
+        project,
+        bid,
+        amount,
+        remark
+    </sql>
+
+    <sql id="dynamic_where">
+        <if test="params != null">
+            <if test="params.id != null">
+                and id = #{params.id}
+            </if>
+            <if test="params.project != null and params.project.trim() != ''">
+                and project like CONCAT('%','${params.project}','%' )
+            </if>
+            <if test="params.bid != null and params.bid.trim() != ''">
+                and bid like CONCAT('%','${params.bid}','%' )
+            </if>
+            <if test="params.amount != null">
+                and amount = #{params.amount}
+            </if>
+            <if test="params.remark != null and params.remark.trim() != ''">
+                and remark = #{params.remark}
+            </if>
+        </if>
+    </sql>
+
+    <delete id="clearMoney">
+        delete
+        from tb_contract_intention_money
+        where id not in (select id
+                         from (
+                                      select m.id
+                                      from tb_contract_intention_money m
+                                                   left join tb_contract_intention_bind_info b on m.id = b.bind_id
+                                      where b.type = 2) a)
+    </delete>
+</mapper>
