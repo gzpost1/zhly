@@ -97,6 +97,8 @@ public class ClueController {
     @LogRecord(operationCode = "followClue", operationName = "跟进线索", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @PostMapping("/follow")
     public boolean followClue(@RequestBody @Valid ClueFollowDTO followDTO) {
+        Long userId = LoginInfoHolder.getCurrentUserId();
+        followDTO.setFollowerId(userId);
         return clueService.followClue(followDTO);
     }
 

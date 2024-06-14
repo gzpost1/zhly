@@ -1,16 +1,18 @@
 package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
-import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.SystemFormConfigConstant;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.lease.dto.clue.*;
 import cn.cuiot.dmp.lease.entity.ClueEntity;
 import cn.cuiot.dmp.lease.entity.ClueRecordEntity;
+import cn.cuiot.dmp.lease.enums.ClueStatusEnum;
 import cn.cuiot.dmp.lease.mapper.ClueMapper;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -117,6 +119,12 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         ClueEntity clueEntity = new ClueEntity();
         BeanUtils.copyProperties(createDTO, clueEntity);
         clueEntity.setFormData(String.valueOf(createDTO.getFormData()));
+        // 保存线索表单快照
+        FormConfigReqDTO formConfigReqDTO = new FormConfigReqDTO();
+        formConfigReqDTO.setCompanyId(createDTO.getCompanyId());
+        formConfigReqDTO.setName(SystemFormConfigConstant.CLUE_FORM_CONFIG.get(0));
+        FormConfigRspDTO formConfigRspDTO = systemApiFeignService.lookUpFormConfigByName(formConfigReqDTO).getData();
+        clueEntity.setFormConfigDetail(formConfigRspDTO.getFormConfigDetail());
         return save(clueEntity);
     }
 
@@ -140,6 +148,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         ClueEntity clueEntity = Optional.ofNullable(getById(distributeDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         clueEntity.setCurrentFollowerId(distributeDTO.getCurrentFollowerId());
+        clueEntity.setStatus(ClueStatusEnum.FOLLOW_STATUS.getCode());
         return updateById(clueEntity);
     }
 
@@ -164,6 +173,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(finishDTO, clueEntity);
         clueEntity.setFinishTime(new Date());
+        clueEntity.setStatus(ClueStatusEnum.FINISH_STATUS.getCode());
         return updateById(clueEntity);
     }
 
@@ -189,7 +199,10 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         if (CollectionUtils.isEmpty(clueEntityList)) {
             return true;
         }
-        clueEntityList.forEach(o -> o.setCurrentFollowerId(batchUpdateDTO.getCurrentFollowerId()));
+        clueEntityList.forEach(o -> {
+            o.setStatus(ClueStatusEnum.FOLLOW_STATUS.getCode());
+            o.setCurrentFollowerId(batchUpdateDTO.getCurrentFollowerId());
+        });
         return saveBatch(clueEntityList);
     }
 
@@ -208,6 +221,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         clueEntityList.forEach(o -> {
             o.setResultId(batchUpdateDTO.getResultId());
             o.setFinishTime(new Date());
+            o.setStatus(ClueStatusEnum.FINISH_STATUS.getCode());
             if (StringUtils.isNotBlank(batchUpdateDTO.getRemark())) {
                 o.setRemark(batchUpdateDTO.getRemark());
             }
