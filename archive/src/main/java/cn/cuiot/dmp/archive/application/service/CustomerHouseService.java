@@ -4,12 +4,15 @@ import cn.cuiot.dmp.archive.infrastructure.entity.CustomerHouseEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.CustomerHouseMapper;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerHouseVo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.utils.Sm4;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,7 +39,7 @@ public class CustomerHouseService extends ServiceImpl<CustomerHouseMapper, Custo
     public List<CustomerHouseVo> selectByCustomerId(List<Long> customerIdList){
         List<CustomerHouseVo> voList = customerHouseMapper
                 .selectByCustomerId(customerIdList);
-        return voList;
+        return Optional.ofNullable(voList).orElse(Lists.newArrayList());
     }
 
     /**

@@ -98,7 +98,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 .status(query.getStatus())
                 .build();
         if(StringUtils.isNotBlank(query.getContactPhone())){
-            criteriaQuery.setContactPhone(Sm4.decrypt(query.getContactPhone()));
+            criteriaQuery.setContactPhone(Sm4.encryption(query.getContactPhone()));
         }
         IPage<CustomerVo> page = customerMapper
                 .queryForList(new Page<CustomerVo>(query.getPageNo(), query.getPageSize()),
@@ -108,6 +108,14 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 .stream().map(ite -> ite.getId()).collect(
                         Collectors.toList());
         if (CollectionUtils.isNotEmpty(customerIdList)) {
+            for (CustomerVo customerVo : page.getRecords()) {
+                if(StringUtils.isNotBlank(customerVo.getContactPhone())){
+                    customerVo.setContactPhone(Sm4.decrypt(customerVo.getContactPhone()));
+                }
+                if(StringUtils.isNotBlank(customerVo.getCertificateCdoe())){
+                    customerVo.setCertificateCdoe(Sm4.decrypt(customerVo.getCertificateCdoe()));
+                }
+            }
             List<CustomerHouseVo> houseList = customerHouseService
                     .selectByCustomerId(customerIdList);
             if (CollectionUtils.isNotEmpty(houseList)) {
@@ -135,6 +143,14 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 .stream().map(ite -> ite.getId()).collect(
                         Collectors.toList());
         if (CollectionUtils.isNotEmpty(customerIdList)) {
+            for (CustomerVo customerVo : selectList) {
+                if(StringUtils.isNotBlank(customerVo.getContactPhone())){
+                    customerVo.setContactPhone(Sm4.decrypt(customerVo.getContactPhone()));
+                }
+                if(StringUtils.isNotBlank(customerVo.getCertificateCdoe())){
+                    customerVo.setCertificateCdoe(Sm4.decrypt(customerVo.getCertificateCdoe()));
+                }
+            }
             List<CustomerHouseVo> houseList = customerHouseService
                     .selectByCustomerId(customerIdList);
             if (CollectionUtils.isNotEmpty(houseList)) {
@@ -159,6 +175,13 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
             }
             CustomerVo customerVo = new CustomerVo();
             BeanUtils.copyProperties(entity, customerVo);
+
+            if(StringUtils.isNotBlank(customerVo.getContactPhone())){
+                customerVo.setContactPhone(Sm4.decrypt(customerVo.getContactPhone()));
+            }
+            if(StringUtils.isNotBlank(customerVo.getCertificateCdoe())){
+                customerVo.setCertificateCdoe(Sm4.decrypt(customerVo.getCertificateCdoe()));
+            }
 
             List<CustomerHouseVo> houseList = Optional.ofNullable(
                     customerHouseService.selectByCustomerId(Lists.newArrayList(customerVo.getId())))
