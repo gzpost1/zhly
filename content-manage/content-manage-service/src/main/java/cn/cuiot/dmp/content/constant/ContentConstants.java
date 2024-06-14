@@ -71,7 +71,7 @@ public class ContentConstants {
         /**
          * 审核通过
          */
-        public static final Byte PASSED = 2;
+        public static final Byte AUDIT_PASSED = 2;
 
         /**
          * 审核不通过

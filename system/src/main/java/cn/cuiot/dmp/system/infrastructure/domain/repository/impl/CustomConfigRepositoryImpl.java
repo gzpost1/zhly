@@ -71,8 +71,8 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         // 查询自定义配置详情
         List<CustomConfigDetail> customConfigDetails = customConfigDetailRepository
                 .batchQueryCustomConfigDetails(customConfigEntity.getId());
-        customConfig.setCustomConfigDetailList(customConfigDetails);
-        return customConfig;
+        customConfigResult.setCustomConfigDetailList(customConfigDetails);
+        return customConfigResult;
     }
 
     @Override
