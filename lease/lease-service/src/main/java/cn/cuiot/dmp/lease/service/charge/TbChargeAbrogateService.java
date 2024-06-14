@@ -19,13 +19,13 @@ public class TbChargeAbrogateService extends ServiceImpl<TbChargeAbrogateMapper,
     /**
      * 保存数据
      * @param id
-     * @param code
+     * @param dataType
      * @param abrogateDesc
      */
-    public void saveData(Long id, Byte code, String abrogateDesc) {
+    public void saveData(Long id, Byte dataType, String abrogateDesc) {
         TbChargeAbrogate tbChargeAbrogate = new TbChargeAbrogate();
         tbChargeAbrogate.setDataId(id);
-        tbChargeAbrogate.setDataType(code);
+        tbChargeAbrogate.setDataType(dataType);
         tbChargeAbrogate.setAbrogateDesc(abrogateDesc);
         tbChargeAbrogate.setCreateUser(LoginInfoHolder.getCurrentUserId());
         tbChargeAbrogate.setAbrogateTime(new Date());
@@ -40,6 +40,7 @@ public class TbChargeAbrogateService extends ServiceImpl<TbChargeAbrogateMapper,
     public IPage<TbChargeAbrogate> queryForPage(ChargeHangupQueryDto query) {
         LambdaQueryWrapper<TbChargeAbrogate> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(TbChargeAbrogate::getDataId, query.getChargeId());
+        wrapper.eq(TbChargeAbrogate::getDataType, query.getDataType());
         wrapper.orderByDesc(TbChargeAbrogate::getAbrogateTime);
         return this.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
     }

@@ -13,10 +13,7 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeAbrogate;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeHangup;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
-import cn.cuiot.dmp.lease.enums.ChargeAbrogateEnum;
-import cn.cuiot.dmp.lease.enums.ChargeHangUpEnum;
-import cn.cuiot.dmp.lease.enums.ChargeReceivbleEnum;
-import cn.cuiot.dmp.lease.enums.ChargeTypeEnum;
+import cn.cuiot.dmp.lease.enums.*;
 import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +101,8 @@ public class ChargeManagerController {
      */
     @PostMapping("/queryForAbrogatePage")
     public IdmResDTO<IPage<TbChargeAbrogate>> queryForAbrogatePage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
+        queryDto.setDataType( ChargeAbrogateTypeEnum.CHARGE.getCode());
+
         IPage<TbChargeAbrogate> tbChargeHangupIPage = tbChargeManagerService.queryForAbrogatePage(queryDto);
         //todo 填充操作人员名称
         return IdmResDTO.success().body(tbChargeHangupIPage);

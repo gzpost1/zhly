@@ -17,4 +17,9 @@ public class ChargeHangupQueryDto extends PageQuery {
      */
     @NotNull(message = "收费id不能为空")
     private Long chargeId;
+
+    /**
+     * 数据类型
+     */
+    private Byte dataType;
 }

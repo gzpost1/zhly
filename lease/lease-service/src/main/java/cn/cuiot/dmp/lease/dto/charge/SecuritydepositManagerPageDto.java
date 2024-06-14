@@ -4,56 +4,58 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 收费管理-收银台-缴费管理
+ * @Description 押金分页
+ * @Date 2024/6/14 10:31
+ * @Created by libo
  */
 @Data
-public class ChargeManagerInsertVo {
+public class SecuritydepositManagerPageDto {
+    /**
+     * id
+     */
+    private Long id;
 
     /**
      * 客户id
      */
-    @NotNull(message = "客户id不能为空")
     private Long customerUserId;
+
+    /**
+     * 客户名称
+     */
+    private Long customerUserName;
 
     /**
      * 房屋id
      */
-    @NotNull(message = "房屋id不能为空")
     private Long houseId;
+
+    /**
+     * 房屋名称
+     */
+    private String houseName;
 
     /**
      * 收费项目id
      */
-    @NotNull(message = "收费项目id不能为空")
     private Long chargeItemId;
 
     /**
      * 收费标准 0自定义金额
      */
-    @NotNull(message = "收费标准不能为空")
     private Byte chargeStandard;
 
     /**
      * 应收金额/本金
      */
-    @NotNull(message = "应收金额不能为空")
     private Integer receivableAmount;
-
-    /**
-     * 收费方式 0自然月周期 1临时收费
-     */
-    @NotNull(message = "收费方式不能为空")
-    private Byte chargeType;
 
     /**
      * 所属账期-开始时间
      */
-    @NotNull(message = "所属账期-开始时间不能为空")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date ownershipPeriodBegin;
@@ -61,25 +63,36 @@ public class ChargeManagerInsertVo {
     /**
      * 所属账期-结束时间
      */
-    @NotNull(message = "所属账期-结束时间不能为空")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date ownershipPeriodEnd;
 
     /**
-     * 应收账期月的第几日
+     * 创建时间
      */
-    private Integer dueDateNum;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date createTime;
+
 
     /**
-     * 应收日期-指定日期
+     * 应收日期
      */
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date dueDate;
 
     /**
-     * 本金税率
+     * 状态 0未交款 1已交清 2未退完 3 已退完 4作废
      */
-    private BigDecimal receivableAmountRate;
+    private Byte status;
+
+    /**
+     * 本金实收
+     */
+    private Integer receivableAmountReceived;
+
+    /**
+     * 已退金额
+     */
+    private Integer returnedAmount;
+
 }
