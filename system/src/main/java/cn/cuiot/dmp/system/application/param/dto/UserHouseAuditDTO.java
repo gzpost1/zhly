@@ -84,4 +84,24 @@ public class UserHouseAuditDTO implements Serializable {
      */
     private Byte auditStatus;
 
+    /**
+     * 驳回理由
+     */
+    private String rejectReason;
+
+    /**
+     * 绑定客户ID
+     */
+    private Long bindCustomerId;
+
+    /**
+     * 绑定客户类型(1:客户本人 2:客户家庭成员)
+     */
+    private Byte bindCustomerType;
+
+    /**
+     * 绑定客户成员ID
+     */
+    private Long bindCustomerMemberId;
+
 }
