@@ -96,6 +96,12 @@ public interface SystemApiFeignService {
     IdmResDTO<List<BusinessTypeRspDTO>> batchGetBusinessType(@RequestBody @Valid BusinessTypeReqDTO businessTypeReqDTO);
 
     /**
+     * 通过名称查询表单配置详情
+     */
+    @PostMapping(value = "/api/lookUpFormConfigByName", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<FormConfigRspDTO> lookUpFormConfigByName(@RequestBody @Valid FormConfigReqDTO formConfigReqDTO);
+
+    /**
      * 批量查询表单配置
      */
     @PostMapping(value = "/api/batchQueryFormConfig", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -60,6 +60,11 @@ public interface ApiSystemService {
     List<BusinessTypeRspDTO> batchGetBusinessType(BusinessTypeReqDTO businessTypeReqDTO);
 
     /**
+     * 通过名称查询表单配置详情
+     */
+    FormConfigRspDTO lookUpFormConfigByName(FormConfigReqDTO formConfigReqDTO);
+
+    /**
      * 批量查询表单配置
      */
     List<FormConfigRspDTO> batchQueryFormConfig(FormConfigReqDTO formConfigReqDTO);
