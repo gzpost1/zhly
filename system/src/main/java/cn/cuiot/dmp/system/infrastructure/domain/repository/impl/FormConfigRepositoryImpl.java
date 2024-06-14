@@ -69,6 +69,27 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
     }
 
     @Override
+    public FormConfig queryForDetailByName(FormConfig formConfig) {
+        AssertUtil.notBlank(formConfig.getName(), "表单配置名称不能为空");
+        AssertUtil.notNull(formConfig.getCompanyId(), "企业Id不能为空");
+        LambdaQueryWrapper<FormConfigEntity> queryWrapper = new LambdaQueryWrapper<FormConfigEntity>()
+                .eq(FormConfigEntity::getName, formConfig.getName())
+                .eq(FormConfigEntity::getCompanyId, formConfig.getCompanyId());
+        List<FormConfigEntity> formConfigEntityList = formConfigMapper.selectList(queryWrapper);
+        AssertUtil.notEmpty(formConfigEntityList, "表单配置不存在");
+        FormConfigEntity formConfigEntity = formConfigEntityList.get(0);
+        FormConfig formConfigResult = new FormConfig();
+        BeanUtils.copyProperties(formConfigEntity, formConfigResult);
+        // 查询表单详情
+        FormConfigDetailEntity formConfigDetailEntity = mongoTemplate.findById(formConfigEntity.getId(),
+                FormConfigDetailEntity.class, FormConfigConstant.FORM_CONFIG_COLLECTION);
+        if (Objects.nonNull(formConfigDetailEntity)) {
+            formConfigResult.setFormConfigDetail(formConfigDetailEntity.getFormConfigDetail());
+        }
+        return formConfigResult;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public int saveFormConfig(FormConfig formConfig) {
         // 保存校验

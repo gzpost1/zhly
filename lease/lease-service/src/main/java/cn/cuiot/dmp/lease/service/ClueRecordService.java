@@ -10,6 +10,7 @@ import cn.cuiot.dmp.lease.dto.clue.ClueRecordPageQueryDTO;
 import cn.cuiot.dmp.lease.dto.clue.ClueRecordUpdateDTO;
 import cn.cuiot.dmp.lease.entity.ClueRecordEntity;
 import cn.cuiot.dmp.lease.mapper.ClueRecordMapper;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -45,6 +46,7 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         ClueRecordDTO clueRecordDTO = new ClueRecordDTO();
         BeanUtils.copyProperties(clueRecordEntity, clueRecordDTO);
+        clueRecordDTO.setFormData(JSON.parseObject(clueRecordEntity.getFormData()));
         fillSystemOptionName(Lists.newArrayList(clueRecordDTO));
         return clueRecordDTO;
     }
@@ -64,6 +66,7 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
                 .map(o -> {
                     ClueRecordDTO clueRecordDTO = new ClueRecordDTO();
                     BeanUtils.copyProperties(o, clueRecordDTO);
+                    clueRecordDTO.setFormData(JSON.parseObject(o.getFormData()));
                     return clueRecordDTO;
                 })
                 .collect(Collectors.toList());
@@ -94,6 +97,7 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
         ClueRecordEntity clueRecordEntity = Optional.ofNullable(getById(updateDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(updateDTO, clueRecordEntity);
+        clueRecordEntity.setFormData(String.valueOf(updateDTO.getFormData()));
         return updateById(clueRecordEntity);
     }
 
@@ -120,6 +124,7 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
                 .map(o -> {
                     ClueRecordDTO clueRecordDTO = new ClueRecordDTO();
                     BeanUtils.copyProperties(o, clueRecordDTO);
+                    clueRecordDTO.setFormData(JSON.parseObject(o.getFormData()));
                     return clueRecordDTO;
                 })
                 .collect(Collectors.toList());

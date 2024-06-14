@@ -5,9 +5,8 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.system.application.param.dto.BatchFormConfigDTO;
-import cn.cuiot.dmp.system.application.param.dto.FormConfigCreateDTO;
-import cn.cuiot.dmp.system.application.param.dto.FormConfigUpdateDTO;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.system.application.param.dto.*;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.application.service.FormConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +36,16 @@ public class FormConfigController {
     @PostMapping("/queryForDetail")
     public FormConfigVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return formConfigService.queryForDetail(idParam.getId());
+    }
+
+    /**
+     * 根据名称获取详情
+     */
+    @PostMapping("/queryForDetailByName")
+    public FormConfigVO queryForDetailByName(@RequestBody @Valid FormConfigDTO formConfigDTO) {
+        Long orgId = LoginInfoHolder.getCurrentOrgId();
+        formConfigDTO.setCompanyId(orgId);
+        return formConfigService.queryForDetailByName(formConfigDTO);
     }
 
     /**

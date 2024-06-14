@@ -6,6 +6,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.application.param.dto.BatchFormConfigDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigCreateDTO;
+import cn.cuiot.dmp.system.application.param.dto.FormConfigDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.application.service.FormConfigService;
@@ -36,6 +37,16 @@ public class FormConfigServiceImpl implements FormConfigService {
         FormConfig formConfig = formConfigRepository.queryForDetail(id);
         FormConfigVO formConfigVO = new FormConfigVO();
         BeanUtils.copyProperties(formConfig, formConfigVO);
+        return formConfigVO;
+    }
+
+    @Override
+    public FormConfigVO queryForDetailByName(FormConfigDTO formConfigDTO) {
+        FormConfig formConfig = new FormConfig();
+        BeanUtils.copyProperties(formConfigDTO, formConfig);
+        FormConfig formConfigResult = formConfigRepository.queryForDetailByName(formConfig);
+        FormConfigVO formConfigVO = new FormConfigVO();
+        BeanUtils.copyProperties(formConfigResult, formConfigVO);
         return formConfigVO;
     }
 

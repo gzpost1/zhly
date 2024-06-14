@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.dto.clue;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -49,7 +50,12 @@ public class ClueCreateDTO implements Serializable {
     private Long customerUserId;
 
     /**
-     * 线索表单配置详情
+     * 线索表单配置数据
+     */
+    private JSONObject formData;
+
+    /**
+     * 当前线索表单配置快照
      */
     private String formConfigDetail;
 

@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.system.application.param.dto.BatchFormConfigDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigCreateDTO;
+import cn.cuiot.dmp.system.application.param.dto.FormConfigDTO;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 
@@ -17,9 +18,14 @@ import java.util.List;
 public interface FormConfigService {
 
     /**
-     * 根据id获取业务类型详情
+     * 根据id获取表单详情
      */
     FormConfigVO queryForDetail(Long id);
+
+    /**
+     * 根据名称获取表单详情
+     */
+    FormConfigVO queryForDetailByName(FormConfigDTO formConfigDTO);
 
     /**
      * 保存
