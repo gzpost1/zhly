@@ -209,6 +209,26 @@ public class ApiSystemServiceImpl implements ApiSystemService {
     }
 
     @Override
+    public FormConfigRspDTO lookUpFormConfigByName(FormConfigReqDTO formConfigReqDTO) {
+        try {
+            IdmResDTO<FormConfigRspDTO> idmResDTO = systemApiFeignService
+                    .lookUpFormConfigByName(formConfigReqDTO);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==batchQueryFormConfig==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_FORM_CONFIG_ERROR);
+        }
+    }
+
+    @Override
     public List<FormConfigRspDTO> batchQueryFormConfig(FormConfigReqDTO formConfigReqDTO) {
         try {
             IdmResDTO<List<FormConfigRspDTO>> idmResDTO = systemApiFeignService
