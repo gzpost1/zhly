@@ -98,7 +98,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 .status(query.getStatus())
                 .build();
         if(StringUtils.isNotBlank(query.getContactPhone())){
-            criteriaQuery.setContactPhone(Sm4.decrypt(query.getContactPhone()));
+            criteriaQuery.setContactPhone(Sm4.encryption(query.getContactPhone()));
         }
         IPage<CustomerVo> page = customerMapper
                 .queryForList(new Page<CustomerVo>(query.getPageNo(), query.getPageSize()),
