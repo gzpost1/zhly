@@ -6,10 +6,7 @@ import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditDTO;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditPageQueryDTO;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditCreateDTO;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditUpdateDTO;
+import cn.cuiot.dmp.system.application.param.dto.*;
 import cn.cuiot.dmp.system.infrastructure.entity.UserHouseAuditEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserHouseAuditMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -58,23 +55,25 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         LambdaQueryWrapper<UserHouseAuditEntity> queryWrapper = new LambdaQueryWrapper<UserHouseAuditEntity>()
                 .like(StringUtils.isNotBlank(queryDTO.getName()), UserHouseAuditEntity::getName, queryDTO.getName())
                 .like(StringUtils.isNotBlank(queryDTO.getPhoneNumber()), UserHouseAuditEntity::getPhoneNumber, queryDTO.getPhoneNumber())
+                .eq(Objects.nonNull(queryDTO.getAuditStatus()), UserHouseAuditEntity::getAuditStatus, queryDTO.getAuditStatus())
+                .eq(Objects.nonNull(queryDTO.getUserId()), UserHouseAuditEntity::getUserId, queryDTO.getUserId())
                 .eq(Objects.nonNull(queryDTO.getBuildingId()), UserHouseAuditEntity::getBuildingId, queryDTO.getBuildingId())
                 .ge(Objects.nonNull(queryDTO.getBeginTime()), UserHouseAuditEntity::getCreatedOn, queryDTO.getBeginTime())
                 .le(Objects.nonNull(queryDTO.getEndTime()), UserHouseAuditEntity::getCreatedOn, queryDTO.getEndTime())
                 .orderByDesc(UserHouseAuditEntity::getCreatedOn);
-        List<UserHouseAuditEntity> UserHouseAuditEntityList = list(queryWrapper);
-        if (CollectionUtils.isEmpty(UserHouseAuditEntityList)) {
+        List<UserHouseAuditEntity> userHouseAuditEntityList = list(queryWrapper);
+        if (CollectionUtils.isEmpty(userHouseAuditEntityList)) {
             return new ArrayList<>();
         }
-        List<UserHouseAuditDTO> UserHouseAuditDTOList = UserHouseAuditEntityList.stream()
+        List<UserHouseAuditDTO> userHouseAuditDTOList = userHouseAuditEntityList.stream()
                 .map(o -> {
-                    UserHouseAuditDTO UserHouseAuditDTO = new UserHouseAuditDTO();
-                    BeanUtils.copyProperties(o, UserHouseAuditDTO);
-                    return UserHouseAuditDTO;
+                    UserHouseAuditDTO userHouseAuditDTO = new UserHouseAuditDTO();
+                    BeanUtils.copyProperties(o, userHouseAuditDTO);
+                    return userHouseAuditDTO;
                 })
                 .collect(Collectors.toList());
-        fillSystemOptionName(UserHouseAuditDTOList);
-        return UserHouseAuditDTOList;
+        fillSystemOptionName(userHouseAuditDTOList);
+        return userHouseAuditDTOList;
     }
 
     /**
@@ -84,15 +83,17 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         LambdaQueryWrapper<UserHouseAuditEntity> queryWrapper = new LambdaQueryWrapper<UserHouseAuditEntity>()
                 .like(StringUtils.isNotBlank(queryDTO.getName()), UserHouseAuditEntity::getName, queryDTO.getName())
                 .like(StringUtils.isNotBlank(queryDTO.getPhoneNumber()), UserHouseAuditEntity::getPhoneNumber, queryDTO.getPhoneNumber())
+                .eq(Objects.nonNull(queryDTO.getAuditStatus()), UserHouseAuditEntity::getAuditStatus, queryDTO.getAuditStatus())
+                .eq(Objects.nonNull(queryDTO.getUserId()), UserHouseAuditEntity::getUserId, queryDTO.getUserId())
                 .eq(Objects.nonNull(queryDTO.getBuildingId()), UserHouseAuditEntity::getBuildingId, queryDTO.getBuildingId())
                 .ge(Objects.nonNull(queryDTO.getBeginTime()), UserHouseAuditEntity::getCreatedOn, queryDTO.getBeginTime())
                 .le(Objects.nonNull(queryDTO.getEndTime()), UserHouseAuditEntity::getCreatedOn, queryDTO.getEndTime())
                 .orderByDesc(UserHouseAuditEntity::getCreatedOn);
-        IPage<UserHouseAuditEntity> UserHouseAuditEntityIPage = page(new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize()), queryWrapper);
-        if (CollectionUtils.isEmpty(UserHouseAuditEntityIPage.getRecords())) {
+        IPage<UserHouseAuditEntity> userHouseAuditEntityIPage = page(new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize()), queryWrapper);
+        if (CollectionUtils.isEmpty(userHouseAuditEntityIPage.getRecords())) {
             return new PageResult<>();
         }
-        return userHouseAuditEntity2UserHouseAuditDTOs(UserHouseAuditEntityIPage);
+        return userHouseAuditEntity2UserHouseAuditDTOs(userHouseAuditEntityIPage);
     }
 
     /**
@@ -100,9 +101,9 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean saveUserHouseAudit(UserHouseAuditCreateDTO createDTO) {
-        UserHouseAuditEntity UserHouseAuditEntity = new UserHouseAuditEntity();
-        BeanUtils.copyProperties(createDTO, UserHouseAuditEntity);
-        return save(UserHouseAuditEntity);
+        UserHouseAuditEntity userHouseAuditEntity = new UserHouseAuditEntity();
+        BeanUtils.copyProperties(createDTO, userHouseAuditEntity);
+        return save(userHouseAuditEntity);
     }
 
     /**
@@ -110,20 +111,20 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean updateUserHouseAudit(UserHouseAuditUpdateDTO updateDTO) {
-        UserHouseAuditEntity UserHouseAuditEntity = Optional.ofNullable(getById(updateDTO.getId()))
+        UserHouseAuditEntity userHouseAuditEntity = Optional.ofNullable(getById(updateDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
-        BeanUtils.copyProperties(updateDTO, UserHouseAuditEntity);
-        return updateById(UserHouseAuditEntity);
+        BeanUtils.copyProperties(updateDTO, userHouseAuditEntity);
+        return updateById(userHouseAuditEntity);
     }
 
     /**
      * 审核
      */
-    public boolean updateAuditStatus(UpdateStatusParam updateStatusParam) {
-        UserHouseAuditEntity UserHouseAuditEntity = Optional.ofNullable(getById(updateStatusParam.getId()))
+    public boolean updateAuditStatus(UserHouseAuditStatusDTO statusDTO) {
+        UserHouseAuditEntity userHouseAuditEntity = Optional.ofNullable(getById(statusDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
-        UserHouseAuditEntity.setAuditStatus(updateStatusParam.getStatus());
-        return updateById(UserHouseAuditEntity);
+        BeanUtils.copyProperties(statusDTO, userHouseAuditEntity);
+        return updateById(userHouseAuditEntity);
     }
 
     /**
@@ -134,21 +135,21 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         return removeById(id);
     }
 
-    private PageResult<UserHouseAuditDTO> userHouseAuditEntity2UserHouseAuditDTOs(IPage<UserHouseAuditEntity> UserHouseAuditEntityIPage) {
-        PageResult<UserHouseAuditDTO> UserHouseAuditDTOPageResult = new PageResult<>();
-        List<UserHouseAuditDTO> UserHouseAuditDTOList = UserHouseAuditEntityIPage.getRecords().stream()
+    private PageResult<UserHouseAuditDTO> userHouseAuditEntity2UserHouseAuditDTOs(IPage<UserHouseAuditEntity> userHouseAuditEntityIPage) {
+        PageResult<UserHouseAuditDTO> userHouseAuditDTOPageResult = new PageResult<>();
+        List<UserHouseAuditDTO> UserHouseAuditDTOList = userHouseAuditEntityIPage.getRecords().stream()
                 .map(o -> {
-                    UserHouseAuditDTO UserHouseAuditDTO = new UserHouseAuditDTO();
-                    BeanUtils.copyProperties(o, UserHouseAuditDTO);
-                    return UserHouseAuditDTO;
+                    UserHouseAuditDTO userHouseAuditDTO = new UserHouseAuditDTO();
+                    BeanUtils.copyProperties(o, userHouseAuditDTO);
+                    return userHouseAuditDTO;
                 })
                 .collect(Collectors.toList());
         fillSystemOptionName(UserHouseAuditDTOList);
-        UserHouseAuditDTOPageResult.setList(UserHouseAuditDTOList);
-        UserHouseAuditDTOPageResult.setCurrentPage((int) UserHouseAuditEntityIPage.getCurrent());
-        UserHouseAuditDTOPageResult.setPageSize((int) UserHouseAuditEntityIPage.getSize());
-        UserHouseAuditDTOPageResult.setTotal(UserHouseAuditEntityIPage.getTotal());
-        return UserHouseAuditDTOPageResult;
+        userHouseAuditDTOPageResult.setList(UserHouseAuditDTOList);
+        userHouseAuditDTOPageResult.setCurrentPage((int) userHouseAuditEntityIPage.getCurrent());
+        userHouseAuditDTOPageResult.setPageSize((int) userHouseAuditEntityIPage.getSize());
+        userHouseAuditDTOPageResult.setTotal(userHouseAuditEntityIPage.getTotal());
+        return userHouseAuditDTOPageResult;
     }
 
     /**

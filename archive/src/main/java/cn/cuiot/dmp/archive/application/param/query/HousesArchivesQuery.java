@@ -50,4 +50,9 @@ public class HousesArchivesQuery extends PageQuery {
      */
     private Long ownershipAttribute;
 
+    /**
+     * 房屋编码
+     */
+    private String code;
+
 }

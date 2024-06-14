@@ -18,6 +18,11 @@ public class UserHouseAuditPageQueryDTO extends PageQuery {
     private static final long serialVersionUID = -6746694234972740816L;
 
     /**
+     * 用户ID
+     */
+    private Long userId;
+
+    /**
      * 楼盘ID
      */
     private Long buildingId;
@@ -31,6 +36,11 @@ public class UserHouseAuditPageQueryDTO extends PageQuery {
      * 手机号
      */
     private String phoneNumber;
+
+    /**
+     * 审核状态(0:待审核,1:审核通过,2:审核驳回)
+     */
+    private Byte auditStatus;
 
     /**
      * 开始时间
