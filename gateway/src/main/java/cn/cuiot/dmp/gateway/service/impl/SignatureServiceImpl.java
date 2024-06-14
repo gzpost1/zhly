@@ -63,8 +63,9 @@ public class SignatureServiceImpl implements SignatureService {
         if (Boolean.FALSE.equals(signatureConfig.getStatus())) {
             return false;
         }
+        return false;
 
-        ServerHttpRequest request = exchange.getRequest();
+        /*ServerHttpRequest request = exchange.getRequest();
         String contentType = request.getHeaders().getFirst(CONTENT_TYPE);
         String method = request.getMethodValue();
         String path = request.getURI().getPath();
@@ -77,7 +78,7 @@ public class SignatureServiceImpl implements SignatureService {
         return null != contentType &&
                 HttpMethod.POST.name().equalsIgnoreCase(method) &&
                 contentType.contains(APPLICATION_JSON) &&
-                (request.getHeaders().containsKey("token"));
+                (request.getHeaders().containsKey("token"));*/
     }
 
     @Override
