@@ -1,9 +1,11 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author pengjian
@@ -36,5 +38,10 @@ public class BatchBusinessDto {
      * 审批中心传
      */
     private List<String> taskIds;
+
+    /**
+     * 节点自选人
+     */
+    private Map<String, List<UserInfo>> processUsers;
 
 }

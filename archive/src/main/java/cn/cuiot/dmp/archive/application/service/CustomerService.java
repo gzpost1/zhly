@@ -1,5 +1,9 @@
 package cn.cuiot.dmp.archive.application.service;
 
+import static cn.cuiot.dmp.common.utils.DateTimeUtil.DEFAULT_DATE_FORMAT;
+import static cn.cuiot.dmp.common.utils.StreamUtil.distinctByKey;
+
+import cn.cuiot.dmp.archive.application.constant.CustomerConstants;
 import cn.cuiot.dmp.archive.application.param.dto.CustomerDto;
 import cn.cuiot.dmp.archive.application.param.dto.CustomerHouseDto;
 import cn.cuiot.dmp.archive.application.param.dto.CustomerMemberDto;
@@ -10,7 +14,12 @@ import cn.cuiot.dmp.archive.infrastructure.entity.CustomerEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.CustomerHouseEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.CustomerMemberEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.CustomerVehicleEntity;
+import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.CustomerMapper;
+import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.HousesArchivesMapper;
+import cn.cuiot.dmp.archive.infrastructure.vo.ArchiveOptionItemVo;
+import cn.cuiot.dmp.archive.infrastructure.vo.CustomerExportVo;
+import cn.cuiot.dmp.archive.infrastructure.vo.CustomerHouseExportVo;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerHouseVo;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerMemberVo;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerVehicleVo;
@@ -20,7 +29,15 @@ import cn.cuiot.dmp.base.infrastructure.constants.MsgTagConstants;
 import cn.cuiot.dmp.base.infrastructure.stream.StreamMessageSender;
 import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.CustomerIdentityTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
+import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
+import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -64,6 +81,12 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
     @Autowired
     private StreamMessageSender streamMessageSender;
 
+    @Autowired
+    private ArchiveOptionService archiveOptionService;
+
+    @Autowired
+    private HousesArchivesMapper housesArchivesMapper;
+
     /**
      * 分页查询
      */
@@ -90,6 +113,33 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
             }
         }
         return page;
+    }
+
+    /**
+     * 列表查询
+     */
+    public List<CustomerVo> queryForList(CustomerQuery query) {
+        CustomerCriteriaQuery criteriaQuery = CustomerCriteriaQuery.builder()
+                .companyId(query.getCompanyId())
+                .build();
+        List<CustomerVo> selectList = customerMapper
+                .queryForList(criteriaQuery);
+        List<Long> customerIdList = Optional.ofNullable(selectList)
+                .orElse(Lists.newArrayList())
+                .stream().map(ite -> ite.getId()).collect(
+                        Collectors.toList());
+        if (CollectionUtils.isNotEmpty(customerIdList)) {
+            List<CustomerHouseVo> houseList = customerHouseService
+                    .selectByCustomerId(customerIdList);
+            if (CollectionUtils.isNotEmpty(houseList)) {
+                for (CustomerVo customerVo : selectList) {
+                    customerVo.setHouseList(houseList.stream()
+                            .filter(ite -> customerVo.getId().equals(ite.getCustomerId())).collect(
+                                    Collectors.toList()));
+                }
+            }
+        }
+        return selectList;
     }
 
     /**
@@ -243,6 +293,315 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         lambdaUpdate.eq(CustomerEntity::getId, id);
         lambdaUpdate.eq(CustomerEntity::getCompanyId, companyId);
         customerMapper.update(null, lambdaUpdate);
+    }
+
+
+    /**
+     * 解析上传数据
+     */
+    public List<CustomerDto> analysisImportData(Long currentOrgId, List<String> headers,
+            List<List<Object>> dataList) {
+        int colSize = headers.size();
+        List<CustomerDto> resultList = Lists.newArrayList();
+        List<ArchiveOptionItemVo> optionItems = archiveOptionService
+                .getArchiveOptionItems(SystemOptionTypeEnum.CUSTOMER_INFO.getCode());
+        int houseStartColIndex = CustomerConstants.IDX_CREDIT_LEVEL + 1;
+        int row = 3;
+        for (List<Object> data : dataList) {
+            row = row + 1;
+            CustomerDto dto = new CustomerDto();
+            dto.setCompanyId(currentOrgId);
+            //客户名称
+            String customerName = StrUtil
+                    .toStringOrNull(data.get(CustomerConstants.IDX_CUSTOMER_NAME));
+            AssertUtil.notBlank(customerName,
+                    "导入失败，第" + row + "行，填写的" + headers.get(CustomerConstants.IDX_CUSTOMER_NAME)
+                            + "为空");
+            dto.setCustomerName(customerName);
+
+            //客户类型
+            Long customerType = archiveOptionService.getArchiveOptionItemId(optionItems,
+                    CustomerConstants.CONFIG_CUSTOMER_TYPE,
+                    StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_CUSTOMER_TYPE)));
+            AssertUtil.notNull(customerType,
+                    "导入失败，第" + row + "行，填写的" + headers.get(CustomerConstants.IDX_CUSTOMER_TYPE)
+                            + "为空或不存在");
+            dto.setCustomerType(customerType.toString());
+
+            //公司性质
+            if (StringUtils.isNotBlank(
+                    StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_COMPANY_NATURE)))) {
+                Long companyNature = archiveOptionService.getArchiveOptionItemId(optionItems,
+                        CustomerConstants.CONFIG_COMPANY_NATURE,
+                        StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_COMPANY_NATURE)));
+                AssertUtil.notNull(companyNature,
+                        "导入失败，第" + row + "行，填写的" + headers.get(CustomerConstants.IDX_COMPANY_NATURE)
+                                + "不存在");
+                dto.setCompanyNature(companyNature.toString());
+            }
+
+            //所属行业
+            if (StringUtils.isNotBlank(
+                    StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_COMPANY_INDUSTRY)))) {
+                Long companyIndustry = archiveOptionService.getArchiveOptionItemId(optionItems,
+                        CustomerConstants.CONFIG_COMPANY_INDUSTRY,
+                        StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_COMPANY_INDUSTRY)));
+                AssertUtil.notNull(companyIndustry, "导入失败，第" + row + "行，填写的" + headers
+                        .get(CustomerConstants.IDX_COMPANY_INDUSTRY) + "不存在");
+                dto.setCompanyIndustry(companyIndustry.toString());
+            }
+
+            //证件类型
+            if (StringUtils.isNotBlank(
+                    StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_CERTIFICATE_TYPE)))) {
+                Long certificateType = archiveOptionService.getArchiveOptionItemId(optionItems,
+                        CustomerConstants.CONFIG_CERTIFICATE_TYPE,
+                        StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_CERTIFICATE_TYPE)));
+                AssertUtil.notNull(certificateType, "导入失败，第" + row + "行，填写的" + headers
+                        .get(CustomerConstants.IDX_CERTIFICATE_TYPE) + "不存在");
+                dto.setCertificateType(certificateType.toString());
+            }
+
+            //证件号码
+            dto.setCertificateCdoe(
+                    StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_CERTIFICATE_CDOE)));
+
+            //联系人
+            String contactName = StrUtil
+                    .toStringOrNull(data.get(CustomerConstants.IDX_CONTACT_NAME));
+            AssertUtil.notBlank(contactName,
+                    "导入失败，第" + row + "行，填写的" + headers.get(CustomerConstants.IDX_CONTACT_NAME)
+                            + "为空");
+            dto.setContactName(contactName);
+
+            //联系人手机号
+            String contactPhone = StrUtil
+                    .toStringOrNull(data.get(CustomerConstants.IDX_CONTACT_PHONE));
+            AssertUtil.notBlank(contactPhone,
+                    "导入失败，第" + row + "行，填写的" + headers.get(CustomerConstants.IDX_CONTACT_PHONE)
+                            + "为空");
+            dto.setContactPhone(contactPhone);
+
+            //证件号码
+            dto.setEmail(StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_EMAIL)));
+
+            //性别
+            if (StringUtils
+                    .isNotBlank(StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_SEX)))) {
+                Long certificateType = archiveOptionService.getArchiveOptionItemId(optionItems,
+                        CustomerConstants.CONFIG_SEX,
+                        StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_SEX)));
+                AssertUtil.notNull(certificateType,
+                        "导入失败，第" + row + "行，填写的" + headers.get(CustomerConstants.IDX_SEX) + "不存在");
+                dto.setCertificateType(certificateType.toString());
+            }
+
+            //客户分类
+            if (StringUtils.isNotBlank(
+                    StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_CUSTOMER_CATE)))) {
+                Long customerCate = archiveOptionService.getArchiveOptionItemId(optionItems,
+                        CustomerConstants.CONFIG_CUSTOMER_CATE,
+                        StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_CUSTOMER_CATE)));
+                AssertUtil.notNull(customerCate,
+                        "导入失败，第" + row + "行，填写的" + headers.get(CustomerConstants.IDX_CUSTOMER_CATE)
+                                + "不存在");
+                dto.setCustomerCate(customerCate.toString());
+            }
+
+            //客户级别
+            if (StringUtils.isNotBlank(
+                    StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_CUSTOMER_LEVEL)))) {
+                Long customerLevel = archiveOptionService.getArchiveOptionItemId(optionItems,
+                        CustomerConstants.CONFIG_CUSTOMER_LEVEL,
+                        StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_CUSTOMER_LEVEL)));
+                AssertUtil.notNull(customerLevel,
+                        "导入失败，第" + row + "行，填写的" + headers.get(CustomerConstants.IDX_CUSTOMER_LEVEL)
+                                + "不存在");
+                dto.setCustomerLevel(customerLevel.toString());
+            }
+
+            //信用等级
+            if (StringUtils.isNotBlank(
+                    StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_CREDIT_LEVEL)))) {
+                Long creditLevel = archiveOptionService.getArchiveOptionItemId(optionItems,
+                        CustomerConstants.CONFIG_CREDIT_LEVEL,
+                        StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_CREDIT_LEVEL)));
+                AssertUtil.notNull(creditLevel,
+                        "导入失败，第" + row + "行，填写的" + headers.get(CustomerConstants.IDX_CREDIT_LEVEL)
+                                + "不存在");
+                dto.setCreditLevel(creditLevel.toString());
+            }
+            List<CustomerHouseDto> houseList = Lists.newArrayList();
+            while (true) {
+                if ((houseStartColIndex + 4) >= colSize) {
+                    break;
+                }
+                CustomerHouseDto houseDto = new CustomerHouseDto();
+                //房屋ID
+                Long houseId = NumberUtil
+                        .parseLong(StrUtil.toStringOrNull(data.get(houseStartColIndex)), null);
+                if(Objects.nonNull(houseId)){
+                    HousesArchivesEntity entity = housesArchivesMapper.selectById(houseId);
+                    AssertUtil.notNull(entity,
+                            "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex) + "不存在");
+                    houseDto.setHouseId(houseId);
+                    //身份
+                    String identityTypeName = StrUtil.toStringOrNull(data.get(houseStartColIndex + 1));
+                    AssertUtil.notBlank(identityTypeName,
+                            "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 1) + "为空");
+                    CustomerIdentityTypeEnum identityTypeEnum = CustomerIdentityTypeEnum
+                            .parseByName(identityTypeName);
+                    AssertUtil.notNull(identityTypeEnum,
+                            "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 1) + "不存在");
+                    houseDto.setIdentityType(identityTypeEnum.getCode());
+
+                    //迁入日期
+                    String moveInDateStr = StrUtil.toStringOrNull(data.get(houseStartColIndex + 2));
+                    AssertUtil.notBlank(moveInDateStr,
+                            "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 2) + "为空");
+                    try {
+                        houseDto.setMoveInDate(
+                                DateTimeUtil.stringToDate(moveInDateStr, DEFAULT_DATE_FORMAT));
+                    } catch (Exception ex) {
+                        throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,
+                                "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 2)
+                                        + "格式有误");
+                    }
+
+                    //迁出日期
+                    String moveOutDateStr = StrUtil.toStringOrNull(data.get(houseStartColIndex + 3));
+                    if (StringUtils.isNotBlank(moveOutDateStr)) {
+                        try {
+                            houseDto.setMoveOutDate(
+                                    DateTimeUtil.stringToDate(moveOutDateStr, DEFAULT_DATE_FORMAT));
+                        } catch (Exception ex) {
+                            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,
+                                    "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 3)
+                                            + "格式有误");
+                        }
+                    }
+                    houseList.add(houseDto);
+                }
+                houseStartColIndex = houseStartColIndex + 4;
+            }
+            //根据房屋ID去重
+            houseList = houseList.stream().filter(distinctByKey(CustomerHouseDto::getHouseId))
+                    .collect(Collectors.toList());
+            dto.setHouseList(houseList);
+            resultList.add(dto);
+        }
+        return resultList;
+    }
+
+
+    /**
+     * 保存导入客户
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveImportCustomers(List<CustomerDto> dtoList) {
+        if (CollectionUtils.isNotEmpty(dtoList)) {
+            for (CustomerDto dto : dtoList) {
+                if (StringUtils.isNotBlank(dto.getContactPhone())) {
+                    dto.setContactPhone(Sm4.encryption(dto.getContactPhone()));
+                }
+                if (StringUtils.isNotBlank(dto.getCertificateCdoe())) {
+                    dto.setCertificateCdoe(Sm4.encryption(dto.getCertificateCdoe()));
+                }
+                CustomerEntity entity = new CustomerEntity();
+                BeanUtils.copyProperties(dto, entity);
+                entity.setStatus(EntityConstants.ENABLED);
+                customerMapper.insert(entity);
+                Long customerId = entity.getId();
+                saveRelateList(customerId, dto);
+            }
+        }
+    }
+
+    /**
+     * 获得客户信息选项列表
+     * @return
+     */
+    public List<ArchiveOptionItemVo> getCustomerOptionItems(){
+        List<ArchiveOptionItemVo> optionItems = archiveOptionService
+                .getArchiveOptionItems(SystemOptionTypeEnum.CUSTOMER_INFO.getCode());
+        return optionItems;
+    }
+
+    /**
+     * 构建导出数据
+     * @param dataList
+     * @return
+     */
+    public List<CustomerExportVo> buildExportData(List<CustomerVo> dataList,List<ArchiveOptionItemVo> optionItems) {
+        List<CustomerExportVo> resultList = Lists.newArrayList();
+        for(CustomerVo vo:dataList){
+            CustomerExportVo exportVo = new CustomerExportVo();
+            exportVo.setCustomerName(vo.getCustomerName());
+            exportVo.setCustomerId(vo.getId().toString());
+            exportVo.setCustomerTypeName(getItemName(optionItems,parseLong(vo.getCustomerType())));
+            exportVo.setCompanyNatureName(getItemName(optionItems,parseLong(vo.getCompanyNature())));
+            exportVo.setCompanyIndustryName(getItemName(optionItems,parseLong(vo.getCompanyIndustry())));
+            exportVo.setCertificateTypeName(getItemName(optionItems,parseLong(vo.getCertificateType())));
+            exportVo.setCertificateCdoe(vo.getCertificateCdoe());
+            exportVo.setContactName(vo.getContactName());
+            if(StringUtils.isNotBlank(vo.getContactPhone())){
+                exportVo.setContactPhone(Sm4.decrypt(vo.getContactPhone()));
+            }
+            exportVo.setEmail(vo.getEmail());
+            exportVo.setSexName(getItemName(optionItems,parseLong(vo.getSex())));
+            exportVo.setCustomerCateName(getItemName(optionItems,parseLong(vo.getCustomerCate())));
+            exportVo.setCustomerLevelName(getItemName(optionItems,parseLong(vo.getCustomerLevel())));
+            exportVo.setCreditLevelName(getItemName(optionItems,parseLong(vo.getCreditLevel())));
+            resultList.add(exportVo);
+        }
+        return resultList;
+    }
+
+    /**
+     * 转换为Long类型
+     */
+    private Long parseLong(String idStr){
+        if(StringUtils.isBlank(idStr)){
+            return null;
+        }
+        return Long.valueOf(idStr);
+    }
+
+    /**
+     * 获得选项名
+     */
+    private String getItemName(List<ArchiveOptionItemVo> list, Long itemId) {
+        if (CollectionUtils.isEmpty(list) || Objects.isNull(itemId)) {
+            return null;
+        }
+        Optional<ArchiveOptionItemVo> findOptional = list.stream()
+                .filter(item -> item.getItemId().equals(itemId)).findFirst();
+        if (findOptional.isPresent()) {
+            return findOptional.get().getItemName();
+        }
+        return null;
+    }
+
+    /**
+     * 构建导出数据
+     * @param houseList
+     * @return
+     */
+    public List<CustomerHouseExportVo> buildHouseExportData(List<CustomerHouseVo> houseList,List<ArchiveOptionItemVo> optionItems) {
+        List<CustomerHouseExportVo> resultList = Lists.newArrayList();
+        for(CustomerHouseVo vo:houseList){
+            CustomerHouseExportVo exportVo = new CustomerHouseExportVo();
+            exportVo.setHouseId(vo.getHouseId());
+            exportVo.setIdentityTypeName(getItemName(optionItems,parseLong(vo.getIdentityType())));
+            if(Objects.nonNull(vo.getMoveInDate())){
+                exportVo.setMoveInDateStr(DateTimeUtil.dateToString(vo.getMoveInDate(),DEFAULT_DATE_FORMAT));
+            }
+            if(Objects.nonNull(vo.getMoveOutDate())){
+                exportVo.setMoveOutDateStr(DateTimeUtil.dateToString(vo.getMoveOutDate(),DEFAULT_DATE_FORMAT));
+            }
+            resultList.add(exportVo);
+        }
+        return resultList;
     }
 
 }

@@ -119,4 +119,10 @@ public interface SystemApiFeignService {
     @PostMapping(value = "/api/batchQueryCustomConfigs", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<CustomConfigRspDTO>> batchQueryCustomConfigs(@RequestBody @Valid CustomConfigReqDTO customConfigReqDTO);
 
+    /**
+     * 根据条件批量查询审核配置列表
+     */
+    @PostMapping(value = "/api/lookUpAuditConfig", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<AuditConfigTypeRspDTO>> lookUpAuditConfig(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO);
+
 }

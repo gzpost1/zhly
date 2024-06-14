@@ -6,6 +6,7 @@ import cn.cuiot.dmp.archive.infrastructure.vo.CustomerVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -19,5 +20,7 @@ import org.apache.ibatis.annotations.Param;
 public interface CustomerMapper extends BaseMapper<CustomerEntity> {
 
     IPage<CustomerVo> queryForList(Page<CustomerVo> page, @Param("param") CustomerCriteriaQuery criteriaQuery);
+
+    List<CustomerVo> queryForList(@Param("param") CustomerCriteriaQuery criteriaQuery);
 
 }

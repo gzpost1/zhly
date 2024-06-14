@@ -32,6 +32,11 @@ public class PhoneLoginDto implements Serializable {
     private Integer userType;
 
     /**
+     * 小程序openid
+     */
+    private String openid;
+
+    /**
      * IP地址-前端不用管
      */
     private String ipAddr;
