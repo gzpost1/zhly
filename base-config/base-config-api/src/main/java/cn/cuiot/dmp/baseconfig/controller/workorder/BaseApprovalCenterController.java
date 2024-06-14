@@ -32,7 +32,7 @@ public class BaseApprovalCenterController extends BaseController {
     private WorkInfoService workInfoService;
 
     /**
-     * 启动流程
+     * 启动流程-2.0-改动
      * @param startProcessInstanceDTO
      * @return
      */

@@ -56,7 +56,7 @@ public class QueryMyApprovalDto extends PageQuery {
     /**
      * 工单编号
      */
-    private Long procInstId;
+    private String procInstId;
 
     /**
      * 查询类型

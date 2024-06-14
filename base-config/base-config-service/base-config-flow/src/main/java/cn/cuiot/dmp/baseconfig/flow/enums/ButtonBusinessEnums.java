@@ -14,8 +14,8 @@ public enum ButtonBusinessEnums {
     private String desc;
 
     ButtonBusinessEnums(Byte code,String desc){
-        code=code;
-        desc=desc;
+        this.code=code;
+        this.desc=desc;
     }
     public byte getCode() {
         return code;
