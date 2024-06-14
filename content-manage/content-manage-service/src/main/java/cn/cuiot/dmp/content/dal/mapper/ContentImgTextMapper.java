@@ -24,5 +24,5 @@ public interface ContentImgTextMapper extends BaseMapper<ContentImgTextEntity> {
 
     IPage<ContentImgTextEntity> queryForPage(IPage<ContentImgTextEntity> page, @Param("param") ContentImgTextPageQuery pageQuery, @Param("dataType") Byte dataType);
 
-    List<AuditStatusNumVo> getAuditStatusNum(ContentImgTextPageQuery pageQuery);
+    List<AuditStatusNumVo> getAuditStatusNum(@Param("param") ContentImgTextPageQuery pageQuery,@Param("dataType") Byte dataType);
 }

@@ -19,10 +19,7 @@ import cn.cuiot.dmp.content.service.ContentImgTextService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Collections;
@@ -126,8 +123,8 @@ public class ContentImgTextController extends BaseController {
      * 获取审核状态数量
      * @return
      */
-    @PostMapping("/getAuditStatusNum")
-    public List<AuditStatusNumVo> getAuditStatusNum() {
-        return contentImgTextService.getAuditStatusNum();
+    @GetMapping("/getAuditStatusNum")
+    public List<AuditStatusNumVo> getAuditStatusNum(@RequestParam("typeId") Long typeId) {
+        return contentImgTextService.getAuditStatusNum(typeId);
     }
 }

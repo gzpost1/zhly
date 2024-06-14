@@ -80,5 +80,5 @@ public interface ContentImgTextService extends AuditResultDealService, IService<
      *
      * @return
      */
-    List<AuditStatusNumVo> getAuditStatusNum();
+    List<AuditStatusNumVo> getAuditStatusNum(Long typeId);
 }

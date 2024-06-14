@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.message.consumer;//	模板
 
-import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
+import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
 import cn.cuiot.dmp.common.constant.MsgTypeConstant;
 import cn.cuiot.dmp.message.config.MqMsgChannel;
@@ -11,14 +11,11 @@ import cn.hutool.core.bean.BeanUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.StreamListener;
-import org.springframework.context.annotation.Bean;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * @author hantingyao
@@ -37,30 +34,21 @@ public class UserMsgConsumer {
         log.info("userMessageInput:{}", userMessageAcceptDto);
         UserMessageEntity userMessage = UserMessageConvert.INSTANCE.concert(userMessageAcceptDto);
         userMessage.init();
-        List<UserMessageEntity> userMessageEntities = dealMsgByType(userMessage, userMessageAcceptDto);
-        userMessageService.saveBatch(userMessageEntities);
+        if ((userMessageAcceptDto.getMsgType() & MsgTypeConstant.SYS_MSG) == MsgTypeConstant.SYS_MSG) {
+            List<UserMessageEntity> userMessageEntities = dealMsgByType(userMessage, userMessageAcceptDto.getSysMsgDto());
+            userMessageService.saveBatch(userMessageEntities);
+        }
     }
 
     //TODO
-    private List<UserMessageEntity> dealMsgByType(UserMessageEntity userMessage, UserMessageAcceptDto userMessageAcceptDto) {
+    private List<UserMessageEntity> dealMsgByType(UserMessageEntity userMessage, SysMsgDto sysMsgDto) {
         List<UserMessageEntity> userMessageEntities = new ArrayList<>();
-        //根据消息类型处理消息
-        switch (userMessageAcceptDto.getMsgType()) {
-            case MsgTypeConstant.NOTICE:
-                userMessageAcceptDto.getAcceptors().forEach(acceptor -> {
-                    UserMessageEntity userMessageEntity = BeanUtil.copyProperties(userMessage, UserMessageEntity.class);
-                    userMessageEntity.setAccepter(acceptor);
-                    userMessageEntities.add(userMessageEntity);
-                });
-                break;
-            case "2":
-                //处理消息类型2
-                break;
-            default:
-                break;
-        }
+        sysMsgDto.getAcceptors().forEach(acceptor -> {
+            UserMessageEntity userMessageEntity = BeanUtil.copyProperties(userMessage, UserMessageEntity.class);
+            userMessageEntity.setAccepter(acceptor);
+            userMessageEntities.add(userMessageEntity);
+        });
+
         return userMessageEntities;
     }
-
-
 }
