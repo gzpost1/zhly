@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.message.service.impl;//	模板
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.MsgExistDataIdReqDto;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.message.constant.StatusConstans;
 import cn.cuiot.dmp.message.dal.entity.UserMessageEntity;
@@ -12,6 +13,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -38,5 +40,10 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
             messageEntity.setReadStatus(StatusConstans.READ);
             this.updateById(messageEntity);
         }
+    }
+
+    @Override
+    public List<Long> getAcceptDataIdList(MsgExistDataIdReqDto reqDto) {
+        return this.baseMapper.getAcceptDataIdList(reqDto);
     }
 }

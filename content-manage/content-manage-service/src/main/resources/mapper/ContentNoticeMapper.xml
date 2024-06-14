@@ -52,16 +52,22 @@
         <if test="param.type != null and param.type != ''">
             and type = #{param.type}
         </if>
-        <if test="param.status != null and param.status != ''">
+        <if test="param.status != null ">
             and status = #{param.status}
         </if>
-        <if test="param.auditStatus != null and param.auditStatus != ''">
+        <if test="param.auditStatus != null ">
             and audit_status = #{param.auditStatus}
         </if>
         <if test="param.publishSource != null ">
             and publish_source = #{param.publishSource}
         </if>
-        <if test="param.publishStatus != null and param.publishStatus != ''">
+        <if test="param.idNotIn != null and param.idNotIn.size > 0">
+            and id not in
+            <foreach collection="param.idNotIn" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="param.publishStatus != null ">
             <if test="param.publishStatus == 1">
                and publish_status = #{param.publishStatus} and effective_start_time &gt;= now()
             </if>

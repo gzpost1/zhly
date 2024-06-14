@@ -5,14 +5,12 @@ import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.MsgExistDataIdReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
-import cn.cuiot.dmp.common.constant.EntityConstants;
-import cn.cuiot.dmp.common.constant.MsgDataType;
-import cn.cuiot.dmp.common.constant.MsgTypeConstant;
-import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.*;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.content.config.MsgChannel;
@@ -21,6 +19,7 @@ import cn.cuiot.dmp.content.conver.NoticeConvert;
 import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.dal.mapper.ContentNoticeMapper;
 import cn.cuiot.dmp.content.feign.ArchiveConverService;
+import cn.cuiot.dmp.content.feign.MessageFeignService;
 import cn.cuiot.dmp.content.feign.SystemConverService;
 import cn.cuiot.dmp.content.param.dto.AuditResultDto;
 import cn.cuiot.dmp.content.param.dto.NoticeCreateDto;
@@ -65,6 +64,8 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     private ArchiveConverService archiveConverService;
     @Autowired
     private MsgChannel msgChannel;
+    @Autowired
+    private MessageFeignService messageFeignService;
 
     @Override
     public NoticeVo queryForDetail(Long id) {
@@ -197,13 +198,22 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                 BaseUserReqDto reqDto = new BaseUserReqDto();
                 reqDto.setDeptIdList(noticeEntity.getDepartments().stream().map(Long::parseLong).collect(Collectors.toList()));
                 List<Long> longs = systemConverService.lookUpUserIds(reqDto);
-                if (CollUtil.isNotEmpty(longs) && ContentConstants.MsgInform.SYSTEM.equals(noticeEntity.getInform())) {
+                if (CollUtil.isEmpty(longs)) {
+                    return;
+                }
+                if (ContentConstants.MsgInform.SYSTEM.equals(noticeEntity.getInform())) {
                     UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SYS_MSG).setSysMsgDto(
                             new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
                                     .setDataJson(noticeEntity).setMessageTime(new Date()));
                     msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
                             .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                             .build());
+                } else if (ContentConstants.MsgInform.SMS.equals(noticeEntity.getInform())) {
+//                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SMS).setSmsMsgDto(new SmsMsgDto()
+//                            .setTelNumbers());
+//                    msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+//                            .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
+//                            .build());
                 }
             }
         } else if (ContentConstants.PublishSource.APP.equals(noticeEntity.getPublishSource())) {
@@ -226,13 +236,25 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
 
     @Override
     public void getMyNotice(Long communityId) {
+        MsgExistDataIdReqDto reqDto = new MsgExistDataIdReqDto().setAccepter(LoginInfoHolder.getCurrentUserId()).setDataType(MsgDataType.NOTICE);
+        IdmResDTO<List<Long>> acceptDataIdList = messageFeignService.getAcceptDataIdList(reqDto);
         NoticPageQuery pageQuery = new NoticPageQuery();
+        pageQuery.setIdNotIn(acceptDataIdList.getData());
         pageQuery.setBuildings(Collections.singletonList(communityId));
         pageQuery.setPublishStatus(ContentConstants.PublishStatus.PUBLISHED);
         pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        pageQuery.setAuditStatus(ContentConstants.AuditStatus.AUDIT_PASSED);
+        pageQuery.setStatus(EntityConstants.ENABLED);
         List<ContentNoticeEntity> noticeEntityList = this.baseMapper.queryForList(pageQuery, ContentConstants.DataType.NOTICE);
         if (CollUtil.isNotEmpty(noticeEntityList)) {
-            noticeEntityList.forEach(this::sendNoticeMessage);
+            noticeEntityList.forEach(noticeEntity -> {
+                UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SYS_MSG).setSysMsgDto(
+                        new SysMsgDto().setAcceptors(Collections.singletonList(LoginInfoHolder.getCurrentUserId())).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
+                                .setDataJson(noticeEntity).setMessageTime(new Date()));
+                msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+                        .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
+                        .build());
+            });
         }
     }
 
