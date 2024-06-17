@@ -26,7 +26,7 @@ import javax.validation.Valid;
 import java.util.Objects;
 
 /**
- * 收费管理-收银台-缴费管理
+ * 收费管理-应收管理-收银台-缴费管理
  *
  * @author libo
  * @date 2024/6/12
@@ -101,7 +101,7 @@ public class ChargeManagerController {
      */
     @PostMapping("/queryForAbrogatePage")
     public IdmResDTO<IPage<TbChargeAbrogate>> queryForAbrogatePage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
-        queryDto.setDataType( ChargeAbrogateTypeEnum.CHARGE.getCode());
+        queryDto.setDataType(ChargeAbrogateTypeEnum.CHARGE.getCode());
 
         IPage<TbChargeAbrogate> tbChargeHangupIPage = tbChargeManagerService.queryForAbrogatePage(queryDto);
         //todo 填充操作人员名称

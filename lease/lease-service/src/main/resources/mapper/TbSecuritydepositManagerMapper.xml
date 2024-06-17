@@ -22,13 +22,17 @@
     <result column="status" jdbcType="TINYINT" property="status" />
     <result column="receivable_amount_received" jdbcType="INTEGER" property="receivableAmountReceived" />
     <result column="returned_amount" jdbcType="INTEGER" property="returnedAmount" />
+      <result column="transaction_mode" jdbcType="BIGINT" property="transactionMode" />
+      <result column="account_bank" jdbcType="VARCHAR" property="accountBank" />
+      <result column="account_number" jdbcType="VARCHAR" property="accountNumber" />
+      <result column="received_date" jdbcType="TIMESTAMP" property="receivedDate" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, customer_user_id, house_id, charge_item_id, charge_standard, receivable_amount, 
     ownership_period_begin, ownership_period_end, company_id, update_time, update_user, 
     create_time, create_user, deleted, due_date, `status`, receivable_amount_received, 
-    returned_amount
+    returned_amount,transaction_mode,account_bank,account_number,received_date
   </sql>
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.lease.dto.charge.SecuritydepositManagerPageDto">
@@ -56,5 +60,17 @@
       <if test="query.ownershipPeriodEnd != null">
           and ownership_period_end &lt;= #{query.ownershipPeriodEnd}
       </if>
+      <if test="query.selectReceived != null and query.selectReceived.toString() == '1'.toString() ">
+          and receivable_amount_received &gt; 0
+      </if>
   </select>
+
+  <update id="refund">
+      update tb_securitydeposit_manager
+      set returned_amount = returned_amount + #{query.refundAmount},
+          `status`        = if(receivable_amount_received > (returned_amount + #{query.refundAmount}), 2, 3)
+      where id = #{query.depositId}
+        and `status` in (1, 2)
+        and receivable_amount_received >= returned_amount + #{query.refundAmount}
+  </update>
 </mapper>

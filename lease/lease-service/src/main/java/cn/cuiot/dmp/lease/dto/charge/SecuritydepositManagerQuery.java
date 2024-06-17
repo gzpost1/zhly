@@ -52,4 +52,9 @@ public class SecuritydepositManagerQuery extends PageQuery {
      * 企业id
      */
     private Long companyId;
+    /**
+     * 是否已经实收 0未实收 1已实收
+     */
+    private Byte selectReceived;
+
 }

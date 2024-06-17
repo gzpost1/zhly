@@ -1,6 +1,5 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.math.BigDecimal;

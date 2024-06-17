@@ -28,7 +28,7 @@ import javax.validation.Valid;
 import java.util.Objects;
 
 /**
- * 应收生成明细
+ * 收费管理-应收管理-收银台-应收生成明细
  *
  * @Description 应收生成明细
  * @Date 2024/6/13 14:58

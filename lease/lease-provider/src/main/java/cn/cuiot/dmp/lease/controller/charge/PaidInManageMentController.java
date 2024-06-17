@@ -3,9 +3,7 @@ package cn.cuiot.dmp.lease.controller.charge;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.cuiot.dmp.lease.dto.charge.ChargeManagerPageDto;
 import cn.cuiot.dmp.lease.dto.charge.PaidInManageMentQuery;
-import cn.cuiot.dmp.lease.dto.charge.TbChargeManagerQuery;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.service.charge.TbChargeReceivedService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -16,7 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 实收管理
+ * 收费管理-实收管理-实收管理
+ *
  * @Description 实收管理
  * @Date 2024/6/13 15:16
  * @Created by libo

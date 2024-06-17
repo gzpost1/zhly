@@ -74,10 +74,11 @@ public class SecuritydepositManagerPageDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
-
     /**
      * 应收日期
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date dueDate;
 
     /**
@@ -95,4 +96,32 @@ public class SecuritydepositManagerPageDto {
      */
     private Integer returnedAmount;
 
+    /**
+     * 未退金额
+     */
+    private Integer unreturnedAmount;
+
+    /**
+     * 交易方式
+     */
+    private Long transactionMode;
+
+    /**
+     * 入账银行
+     */
+    private String accountBank;
+
+    /**
+     * 入账账号
+     */
+    private String accountNumber;
+
+    /**
+     * 收款时间
+     */
+    private Date receivedDate;
+
+    public Integer getUnreturnedAmount() {
+        return receivableAmount - returnedAmount;
+    }
 }

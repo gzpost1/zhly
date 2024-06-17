@@ -120,4 +120,27 @@ public class TbSecuritydepositManager {
      */
     @TableField(value = "returned_amount")
     private Integer returnedAmount;
+
+    /**
+     * 交易方式
+     */
+    @TableField(value = "transaction_mode")
+    private Long transactionMode;
+
+    /**
+     * 入账银行
+     */
+    @TableField(value = "account_bank")
+    private String accountBank;
+
+    /**
+     * 入账账号
+     */
+    @TableField(value = "account_number")
+    private String accountNumber;
+
+    /**
+     * 收款时间
+     */
+    private Date receivedDate;
 }

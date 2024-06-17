@@ -82,5 +82,11 @@ public class ServiceTypeConst {
      */
     public static final String RECEIVED_GENERATE = "121";
 
+    /**
+     * 平台日志
+     * 收费管理-收银台-押金管理
+     */
+    public static final String SECURITYDEPOSITMANAGER = "122";
+
     //----------------------------------收费管理----------------------------------end
 }
