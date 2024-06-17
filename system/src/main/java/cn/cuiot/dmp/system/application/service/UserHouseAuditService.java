@@ -1,11 +1,15 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.application.param.dto.*;
 import cn.cuiot.dmp.system.infrastructure.entity.UserHouseAuditEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserHouseAuditMapper;
@@ -35,6 +39,9 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
 
     @Autowired
     private SystemApiFeignService systemApiFeignService;
+
+    @Autowired
+    private ArchiveFeignService archiveFeignService;
 
     /**
      * 查询详情
@@ -94,6 +101,34 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
             return new PageResult<>();
         }
         return userHouseAuditEntity2UserHouseAuditDTOs(userHouseAuditEntityIPage);
+    }
+
+    /**
+     * 根据用户id查询楼盘列表
+     */
+    public List<UserHouseBuildingDTO> queryBuildingsByUser(Long userId) {
+        AssertUtil.notNull(userId, "用户id不能为空");
+        LambdaQueryWrapper<UserHouseAuditEntity> queryWrapper = new LambdaQueryWrapper<UserHouseAuditEntity>()
+                .eq(UserHouseAuditEntity::getUserId, userId);
+        List<UserHouseAuditEntity> userHouseAuditEntityList = list(queryWrapper);
+        if (CollectionUtils.isEmpty(userHouseAuditEntityList)) {
+            return new ArrayList<>();
+        }
+        Set<Long> buildingIdList = userHouseAuditEntityList.stream()
+                .map(UserHouseAuditEntity::getBuildingId)
+                .collect(Collectors.toSet());
+        return buildingIdList.stream()
+                .map(o->{
+                    UserHouseBuildingDTO userHouseBuildingDTO = new UserHouseBuildingDTO();
+                    IdParam idParam = new IdParam();
+                    idParam.setId(o);
+                    BuildingArchive buildingArchive = archiveFeignService.lookupBuildingArchiveInfo(idParam).getData();
+                    userHouseBuildingDTO.setUserId(userId);
+                    userHouseBuildingDTO.setBuildingId(o);
+                    userHouseBuildingDTO.setBuildingName(buildingArchive.getName());
+                    return userHouseBuildingDTO;
+                })
+                .collect(Collectors.toList());
     }
 
     /**
