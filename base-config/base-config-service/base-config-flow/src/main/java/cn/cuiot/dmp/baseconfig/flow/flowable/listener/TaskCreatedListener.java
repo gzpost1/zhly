@@ -1,10 +1,13 @@
 package cn.cuiot.dmp.baseconfig.flow.flowable.listener;
 
 import cn.cuiot.dmp.base.infrastructure.utils.SpringContextHolder;
+import cn.cuiot.dmp.baseconfig.flow.flowable.msg.MsgSendService;
+import cn.cuiot.dmp.common.constant.MsgDataType;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.delegate.TaskListener;
 import org.flowable.task.service.delegate.DelegateTask;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -21,6 +24,9 @@ import static cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants.*;
 public class TaskCreatedListener implements TaskListener {
     @Resource
     private TaskService taskService;
+    @Autowired
+    private MsgSendService msgSendService;
+
     @Override
     public void notify(DelegateTask delegateTask) {
             if(DEFAULT_NULL_ASSIGNEE.equals(delegateTask.getAssignee())){
@@ -33,6 +39,9 @@ public class TaskCreatedListener implements TaskListener {
                     taskService.addComment(delegateTask.getId(),delegateTask.getProcessInstanceId(),OPINION_COMMENT,"审批人为空,自动驳回");
                     RuntimeService runtimeService = SpringContextHolder.getBean(RuntimeService.class);
                     runtimeService.deleteProcessInstance(delegateTask.getProcessInstanceId(),"审批人为空,自动驳回");
+
+                    //发送消息
+                    msgSendService.sendProcess(delegateTask.getProcessInstanceId(), MsgDataType.WORK_INFO_TURNDOWN);
                 }
             }
     }
