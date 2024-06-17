@@ -3,7 +3,6 @@ package cn.cuiot.dmp.baseconfig.flow.flowable.listener;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
-import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
 import cn.cuiot.dmp.baseconfig.flow.enums.AssigneeTypeEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.TimeLimitHandleEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkBusinessEnums;
@@ -29,7 +28,6 @@ import org.flowable.engine.delegate.ExecutionListener;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigService;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;

@@ -1,16 +1,15 @@
 package cn.cuiot.dmp.baseconfig.flow.flowable.listener;
 
 import cn.cuiot.dmp.base.infrastructure.utils.SpringContextHolder;
-import cn.cuiot.dmp.baseconfig.flow.enums.BusinessInfoEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.TimeLimitHandleEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkBusinessEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkOrderStatusEnums;
+import cn.cuiot.dmp.baseconfig.flow.flowable.msg.MsgSendService;
+import cn.cuiot.dmp.baseconfig.flow.service.WorkBusinessTypeInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
+import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.hutool.core.collection.CollUtil;
-
-import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.BoundaryEvent;
 import org.flowable.bpmn.model.UserTask;
@@ -24,16 +23,11 @@ import org.flowable.task.api.Task;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import cn.cuiot.dmp.baseconfig.flow.service.WorkBusinessTypeInfoService;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
-import cn.cuiot.dmp.baseconfig.flow.entity.WorkBusinessTypeInfoEntity;
-
-import static cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants.*;
+import static cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants.TIME_HANDLER_TYPE;
 
 
 /**
@@ -49,6 +43,8 @@ public class TimerListener implements ExecutionListener {
     private WorkBusinessTypeInfoService workBusinessTypeInfoService;
     @Autowired
     private WorkInfoService workInfoService;
+    @Autowired
+    private MsgSendService msgSendService;
 
     @Override
     public void notify(DelegateExecution execution) {
@@ -86,6 +82,9 @@ public class TimerListener implements ExecutionListener {
                 workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.CLOSE,null);
                 //更新工单信息
                 workInfoService.updateWorkInfo(WorkOrderStatusEnums.terminated.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
+
+                //发送消息
+                msgSendService.sendProcess(execution.getProcessInstanceId(), MsgDataType.WORK_INFO_CANCEL);
 
             } else if (StringUtils.equals(handlerType, TimeLimitHandleEnums.TO_SUSPEND.getCode())) {
 

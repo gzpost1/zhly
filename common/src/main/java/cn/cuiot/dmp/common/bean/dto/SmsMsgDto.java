@@ -27,6 +27,6 @@ public class SmsMsgDto {
     /**
      * 模板id
      */
-    Integer templateId;
+    String templateId;
 
 }
