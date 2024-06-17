@@ -268,6 +268,7 @@
 
     <sql id="queryWorkInfo">
          t1.id,  t1.proc_inst_id,t1.business_type,t1.org_id,t1.work_name,t1.work_souce,t1.status, t1.create_time, t1.create_user ,t1.org_ids
+             ,t1.revoke_type,t1.revoke_node_id,t1.work_time_out
     </sql>
     <select id="queryMySubmitWorkInfo" resultType="cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity">
         select
@@ -600,4 +601,8 @@
         group by proc_inst_id
         order by create_time desc
     </sql>
+
+    <select id="queryHistoricTask" resultType="java.lang.String">
+        select ID_ from act_hi_taskinst where TASK_DEF_KEY_ =#{taskDefinitionKey} and PROC_INST_ID_ =#{processInstanceId}
+    </select>
 </mapper>

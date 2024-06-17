@@ -477,14 +477,31 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
-        assigneeByProcInstId(handleDataDTO);
+        if(StringUtils.isNotEmpty(handleDataDTO.getTaskId())){
+            //审批中心转办
+            assigneeByProcInstId(handleDataDTO);
+            return IdmResDTO.success();
+        }
+        //查出当前节点的所有人员信息
 
+        List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
+                .orElseThrow(()->new BusinessException(ErrorCode.NOT_FOUND.getCode(),ErrorCode.NOT_FOUND.getMessage()));
+        //查询该节点下所有任务信息
+        List<String> hisTaskIds = baseMapper.queryHistoricTask( tasks.get(0).getTaskDefinitionKey(),tasks.get(0).getProcessInstanceId());
         //执行加签操作
         AddMultiInstanceUserTaskService multiInstanceUserTaskService = new AddMultiInstanceUserTaskService(managementService);
+        Integer instance = 1;
         for (Long userId : handleDataDTO.getUserIds()) {
-            multiInstanceUserTaskService.addMultiInstanceUserTask(handleDataDTO.getTaskId(),String.valueOf(userId));
+            multiInstanceUserTaskService.addMultiInstanceUserTask(tasks.get(0).getId(),String.valueOf(userId), instance);
+            instance++;
         }
 
+        taskService.complete(tasks.get(0).getId());
+
+        //删除原来的任务id
+        hisTaskIds.stream().forEach(item->{
+            taskService.deleteTask(item, true);
+        });
         return IdmResDTO.success();
     }
 
@@ -917,7 +934,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         Long company = getCompany();
         //获取工单详情
         WorkInfoDto resultDto = getBaseMapper().queryWorkOrderDetailInfo(dto);
-        if(Objects.equals(company,resultDto.getCompanyId())){
+        if(!Objects.equals(company,resultDto.getCompanyId())){
             return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
         }
         //填充组织名称

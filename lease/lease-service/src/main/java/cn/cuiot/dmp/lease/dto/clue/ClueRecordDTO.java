@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -32,6 +33,11 @@ public class ClueRecordDTO implements Serializable {
     private Long followerId;
 
     /**
+     * 跟进人名称
+     */
+    private String followerName;
+
+    /**
      * 跟进时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -56,5 +62,37 @@ public class ClueRecordDTO implements Serializable {
      * 当前线索表单配置快照
      */
     private String formConfigDetail;
+
+    /**
+     * 创建时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createdOn;
+
+    /**
+     * 创建者。取值：SYSTEM：系统生成的；{userKey}：Portal用户创建的；{appKey}：API创建的。
+     */
+    private String createdBy;
+
+    /**
+     * 创建者名称
+     */
+    private String createdName;
+
+    /**
+     * 创建时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updatedOn;
+
+    /**
+     * 创建者。取值：SYSTEM：系统生成的；{userKey}：Portal用户创建的；{appKey}：API创建的。
+     */
+    private String updatedBy;
+
+    /**
+     * 创建者名称
+     */
+    private String updatedName;
 
 }

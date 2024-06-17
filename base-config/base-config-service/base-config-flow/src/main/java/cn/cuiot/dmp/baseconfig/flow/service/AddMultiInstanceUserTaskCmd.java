@@ -36,10 +36,12 @@ public class AddMultiInstanceUserTaskCmd implements Command, Serializable {
 
     protected String taskId;
     protected String assignee;
+    protected Integer instance ;
 
-    public AddMultiInstanceUserTaskCmd(String taskId, String assignee) {
+    public AddMultiInstanceUserTaskCmd(String taskId, String assignee,Integer instance) {
         this.taskId = taskId;
         this.assignee = assignee;
+        this.instance=instance;
     }
     @Override
     public Object execute(CommandContext commandContext) {
@@ -64,22 +66,22 @@ public class AddMultiInstanceUserTaskCmd implements Command, Serializable {
         String collectionKey = getCollectionKey(multiInstanceLoopCharacteristics);
         //查询多实例activiti:collection配置的表达式中的变量的值
         List<String> collectionValue =  (List)miExecution.getVariable(collectionKey);
-        if (collectionValue.contains(assignee)) {
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION,"加签用户 " + assignee + "已经在审批名单中");
-        }
+//        if (collectionValue.contains(assignee)) {
+//            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION,"加签用户 " + assignee + "已经在审批名单中");
+//        }
         //往变量中加入加签用户
         collectionValue.add(assignee);
         miExecution.setVariable(collectionKey, collectionValue);
 
         //更新nrOfInstances变量
         Integer currentNumberOfInstances = (Integer) miExecution.getVariable(NUMBER_OF_INSTANCES);
-        miExecution.setVariableLocal(NUMBER_OF_INSTANCES, currentNumberOfInstances + 1);
+        miExecution.setVariableLocal(NUMBER_OF_INSTANCES, instance);
 
         //如果是并行多实例还需要做额外操作
         if (!multiInstanceLoopCharacteristics.isSequential()) {
             //更新nrOfActiveInstances变量
             Integer nrOfActiveInstances = (Integer) miExecution.getVariable(NUMBER_OF_ACTIVE_INSTANCES);
-            miExecution.setVariableLocal(NUMBER_OF_ACTIVE_INSTANCES, nrOfActiveInstances + 1);
+            miExecution.setVariableLocal(NUMBER_OF_ACTIVE_INSTANCES, instance);
 
             //创建加签任务的执行实例
             ExecutionEntity childExecution = executionEntityManager.createChildExecution(miExecution);
