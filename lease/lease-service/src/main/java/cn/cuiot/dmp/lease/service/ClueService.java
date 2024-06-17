@@ -269,7 +269,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 o.setRemark(batchUpdateDTO.getRemark());
             }
         });
-        return saveBatch(clueEntityList);
+        return updateBatchById(clueEntityList);
     }
 
     /**

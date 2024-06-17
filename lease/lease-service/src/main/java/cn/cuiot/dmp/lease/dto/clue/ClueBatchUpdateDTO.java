@@ -36,4 +36,9 @@ public class ClueBatchUpdateDTO implements Serializable {
      */
     private String remark;
 
+    /**
+     * 完成人ID
+     */
+    private Long finishUserId;
+
 }

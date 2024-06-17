@@ -31,4 +31,9 @@ public class ClueFinishDTO implements Serializable {
      */
     private String remark;
 
+    /**
+     * 完成人ID
+     */
+    private Long finishUserId;
+
 }

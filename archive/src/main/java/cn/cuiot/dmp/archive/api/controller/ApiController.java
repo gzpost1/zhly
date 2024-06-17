@@ -8,6 +8,7 @@ import cn.cuiot.dmp.base.application.annotation.InternalApi;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.hutool.core.bean.BeanUtil;
@@ -65,6 +66,14 @@ public class ApiController {
     @PostMapping("/queryHousesList")
     public List<HousesArchivesVo> queryHousesList(@RequestBody @Valid IdsReq ids){
         return housesArchivesService.queryHousesList(ids);
+    }
+
+    /**
+     * 查询当前组织及下级组织下的楼盘列表
+     */
+    @PostMapping("/lookupBuildingArchiveByDepartmentList")
+    public List<BuildingArchive> lookupBuildingArchiveByDepartmentList(@RequestBody @Valid DepartmentReqDto reqDto){
+        return buildingArchivesService.lookupBuildingArchiveByDepartmentList(reqDto);
     }
 
 }
