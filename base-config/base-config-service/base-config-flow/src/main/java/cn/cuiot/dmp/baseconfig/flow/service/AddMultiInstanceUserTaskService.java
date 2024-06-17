@@ -20,9 +20,9 @@ public class AddMultiInstanceUserTaskService {
      * @param taskId     当前操作taskId
      * @param assignee   待加签用户
      */
-    public void addMultiInstanceUserTask(String taskId, String assignee) {
+    public void addMultiInstanceUserTask(String taskId, String assignee,Integer instance) {
         //实例化自定义跳转Command类
-        AddMultiInstanceUserTaskCmd addMultiInstanceUserTaskCmd = new AddMultiInstanceUserTaskCmd(taskId, assignee);
+        AddMultiInstanceUserTaskCmd addMultiInstanceUserTaskCmd = new AddMultiInstanceUserTaskCmd(taskId, assignee, instance);
         //执行加签操作
         this.managementService.executeCommand(addMultiInstanceUserTaskCmd);
     }

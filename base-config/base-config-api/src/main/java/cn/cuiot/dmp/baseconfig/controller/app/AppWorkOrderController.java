@@ -293,7 +293,7 @@ public class AppWorkOrderController {
     @PostMapping("assignee")
     @RequiresPermissions
     @LogRecord(operationCode = "appAssignee", operationName = "app转办", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO appAssignee(@RequestBody @Valid AppAssigneeDto assigneeDto){
+    public IdmResDTO appAssignee(@RequestBody AppAssigneeDto assigneeDto){
         return appWorkInfoService.appAssignee(assigneeDto);
     }
 

@@ -47,10 +47,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.impl.identity.Authentication;
-import org.flowable.engine.HistoryService;
-import org.flowable.engine.RepositoryService;
-import org.flowable.engine.RuntimeService;
-import org.flowable.engine.TaskService;
+import org.flowable.engine.*;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -108,6 +105,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
     @Autowired
     private TbFlowConfigOrgService tbFlowConfigOrgService;
+
+    @Autowired
+    private ManagementService managementService;
     /**
      * APP 获取待审批的数据
      * @param query
@@ -848,9 +848,31 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
+        //单个转办
+        if(StringUtils.isNotEmpty(assigneeDto.getTaskId())){
+            taskService.setAssignee(String.valueOf(assigneeDto.getTaskId()),String.valueOf(assigneeDto.getUserIds().get(0)));
+        }
 
-        taskService.setAssignee(String.valueOf(assigneeDto.getTaskId()),String.valueOf(assigneeDto.getUserIds().get(0)));
+        //查出当前节点的所有人员信息
 
+        List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
+                .orElseThrow(()->new BusinessException(ErrorCode.NOT_FOUND.getCode(),ErrorCode.NOT_FOUND.getMessage()));
+        //查询该节点下所有任务信息
+        List<String> hisTaskIds = baseMapper.queryHistoricTask( tasks.get(0).getTaskDefinitionKey(),tasks.get(0).getProcessInstanceId());
+        //执行加签操作
+        AddMultiInstanceUserTaskService multiInstanceUserTaskService = new AddMultiInstanceUserTaskService(managementService);
+        Integer instance = 1;
+        for (Long userId : handleDataDTO.getUserIds()) {
+            multiInstanceUserTaskService.addMultiInstanceUserTask(tasks.get(0).getId(),String.valueOf(userId), instance);
+            instance++;
+        }
+
+        taskService.complete(tasks.get(0).getId());
+
+        //删除原来的任务id
+        hisTaskIds.stream().forEach(item->{
+            taskService.deleteTask(item, true);
+        });
         return IdmResDTO.success();
     }
 

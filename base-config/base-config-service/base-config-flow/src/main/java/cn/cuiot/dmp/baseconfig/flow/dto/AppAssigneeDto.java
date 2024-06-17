@@ -12,8 +12,15 @@ import java.util.List;
 @Data
 public class AppAssigneeDto {
     @NotNull(message = "任务id不能为空")
-    private Long taskId;
+    private String taskId;
 
+    /**
+     *工单id
+     */
+    private String processInstanceId;
 
+    /**
+     * 转办人
+     */
     private List<Long> userIds;
 }
