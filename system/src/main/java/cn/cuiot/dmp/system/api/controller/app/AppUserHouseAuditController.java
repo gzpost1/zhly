@@ -7,10 +7,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditCreateDTO;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditDTO;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditPageQueryDTO;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditUpdateDTO;
+import cn.cuiot.dmp.system.application.param.dto.*;
 import cn.cuiot.dmp.system.application.service.UserHouseAuditService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,6 +53,15 @@ public class AppUserHouseAuditController {
     @PostMapping("/queryForPage")
     public PageResult<UserHouseAuditDTO> queryForPage(@RequestBody @Valid UserHouseAuditPageQueryDTO queryDTO) {
         return userHouseAuditService.queryForPage(queryDTO);
+    }
+
+    /**
+     * 根据用户id查询楼盘列表
+     */
+    @PostMapping("/queryBuildingsByUser")
+    public List<UserHouseBuildingDTO> queryBuildingsByUser(@RequestBody @Valid UserHouseAuditPageQueryDTO queryDTO) {
+        Long userId = LoginInfoHolder.getCurrentUserId();
+        return userHouseAuditService.queryBuildingsByUser(userId);
     }
 
     /**
