@@ -48,6 +48,11 @@ public class ClueDTO implements Serializable {
     private String buildingName;
 
     /**
+     * 楼盘所属部门ID
+     */
+    private Long buildingDepartmentId;
+
+    /**
      * 线索来源（系统配置自定义）
      */
     private Long sourceId;

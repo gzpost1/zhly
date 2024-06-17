@@ -246,7 +246,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
             o.setStatus(ClueStatusEnum.FOLLOW_STATUS.getCode());
             o.setCurrentFollowerId(batchUpdateDTO.getCurrentFollowerId());
         });
-        return saveBatch(clueEntityList);
+        return updateBatchById(clueEntityList);
     }
 
     /**
@@ -332,10 +332,12 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         BuildingArchiveReq buildingArchiveReq = new BuildingArchiveReq();
         buildingArchiveReq.setIdList(new ArrayList<>(buildingIdList));
         List<BuildingArchive> buildingArchiveList = archiveFeignService.buildingArchiveQueryForList(buildingArchiveReq).getData();
-        Map<Long, String> buildingMap = buildingArchiveList.stream().collect(Collectors.toMap(BuildingArchive::getId, BuildingArchive::getName));
+        Map<Long, List<BuildingArchive>> buildingMap = buildingArchiveList.stream()
+                .collect(Collectors.groupingBy(BuildingArchive::getId));
         clueDTOList.forEach(o -> {
             if (Objects.nonNull(o.getBuildingId()) && buildingMap.containsKey(o.getBuildingId())) {
-                o.setBuildingName(buildingMap.get(o.getBuildingId()));
+                o.setBuildingName(buildingMap.get(o.getBuildingId()).get(0).getName());
+                o.setBuildingDepartmentId(buildingMap.get(o.getBuildingId()).get(0).getDepartmentId());
             }
         });
     }
