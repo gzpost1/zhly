@@ -354,19 +354,19 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(count>0){
             return;
         }
-        ChildNode children = childNode.getChildren();
+        ChildNode chilNodedren = childNode.getChildren();
         while (true){
-            if(Objects.isNull(children.getId())){
+            if(Objects.isNull(chilNodedren.getId())){
                 break;
             }
             NodeTypeEntity entity = new NodeTypeEntity();
             entity.setId(IdWorker.getId());
-            entity.setNodeId(children.getId());
-            entity.setNodeType(children.getType());
+            entity.setNodeId(chilNodedren.getId());
+            entity.setNodeType(chilNodedren.getType());
             entity.setProcessDefinitionId(processDefinitionId);
-            entity.setProcessNodeType(children.getProcessNodeType());
+            entity.setProcessNodeType(chilNodedren.getProcessNodeType());
             nodeTypeService.save(entity);
-            children = children.getChildren();
+            chilNodedren = chilNodedren.getChildren();
         }
 
 
