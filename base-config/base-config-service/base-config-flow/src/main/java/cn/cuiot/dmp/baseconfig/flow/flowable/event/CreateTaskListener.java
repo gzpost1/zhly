@@ -68,7 +68,7 @@ public class CreateTaskListener extends AbstractFlowableEngineEventListener {
         //审批人
         String assignee = taskEntity.getAssignee();
         if (!StringUtils.equals(assignee, DEFAULT_NULL_ASSIGNEE)) {
-            msgSendService.sendProcess(taskEntity.getProcessInstanceId(), taskDefinitionId, rollback != null && Boolean.valueOf(rollback.toString()), assignee);
+            msgSendService.sendProcess(taskEntity.getProcessInstanceId(), taskDefinitionId, rollback != null && Boolean.valueOf(rollback.toString()), assignee,event.getProcessDefinitionId());
         }
 
 
