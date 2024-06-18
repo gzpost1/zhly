@@ -1,23 +1,26 @@
 package cn.cuiot.dmp.lease.dto.contract;
 
-import cn.cuiot.dmp.common.bean.PageQuery;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
-import lombok.experimental.Accessors;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.io.Serializable;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableField;
+import java.io.Serializable;
+import lombok.*;
+import cn.cuiot.dmp.common.bean.PageQuery;;
+import lombok.experimental.Accessors;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
 /**
- * 意向合同
+ * 退订或作废信息
  *
  * @author MJ~
- * @since 2024-06-12
+ * @since 2024-06-17
  */
 @Data
 @Builder(toBuilder = true)
@@ -26,15 +29,11 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class TbContractIntentionParam extends PageQuery implements Serializable {
+public class TbContractCancelParam extends PageQuery implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
-    /**
-     * 租赁合同id
-     */
-    private Long contractLeaseId;
 
     /**
      * 合同编号
@@ -45,47 +44,33 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
      * 合同名称
      */
     private String name;
-    /**
-     * 标签 ","分割
-     */
-    private String label;
 
     /**
-     * 签订日期
+     * 退订日期
      */
     @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern="yyyy-MM-dd")
-    private LocalDate cantractDate;
+    private LocalDate date;
 
     /**
-     * 合同开始日期
+     * 退订原因
      */
-    @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    private LocalDate beginDate;
+    private String reason;
 
     /**
-     * 合同结束日期
-     */
-    @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    private LocalDate endDate;
-
-    /**
-     * 跟进人
-
-     */
-    private String followUp;
-
-    /**
-     * 签订客户
-     */
-    private String client;
-
-    /**
-     * 意向备注
+     * 退订说明
      */
     private String remark;
+
+    /**
+     * 退订附件
+     */
+    private String path;
+
+    /**
+     * 0.退订 1.作废
+     */
+    private Integer type;
 
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
@@ -104,15 +89,6 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
     @TableLogic
     @Builder.Default
     private Byte deleted = 0;
-
-    /**
-     * 合同状态
-     */
-    private Integer contractStatus;
-    /**
-     * 审核状态
-     */
-    private Integer auditStatus;
 
 
 }

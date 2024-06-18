@@ -44,6 +44,16 @@ public class TbContractLogParam extends PageQuery implements Serializable {
     private String operator;
 
     /**
+     * 相关id
+     */
+    private String extId;
+
+    /**
+     * 操作类型
+     */
+    private String operationType;
+
+    /**
      * 操作时间
      */
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

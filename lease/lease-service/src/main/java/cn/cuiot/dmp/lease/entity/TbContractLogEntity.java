@@ -71,6 +71,16 @@ public class TbContractLogEntity extends Model<TbContractLogEntity> {
     private Long createUser;
 
     /**
+     * 相关id
+     */
+    private String extId;
+
+    /**
+     * 操作类型
+     */
+    private String operationType;
+
+    /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
