@@ -76,7 +76,8 @@ public class MsgSendService {
                 msgChannel.userMessageOutput().send(MessageBuilder.withPayload(SYS_MSG)
                         .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                         .build());
-            }else if(StringUtils.isNotBlank(flowCOnfig.getNotifySetting()) && StringUtils.contains(flowCOnfig.getNotifySetting(),"1")){
+            }
+            if(StringUtils.isNotBlank(flowCOnfig.getNotifySetting()) && StringUtils.contains(flowCOnfig.getNotifySetting(),"2")){
                 //发送短信
                 BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
                 baseUserReqDto.setUserIdList(msg.getUsers());
