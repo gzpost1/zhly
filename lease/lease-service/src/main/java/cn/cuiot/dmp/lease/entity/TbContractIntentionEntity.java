@@ -93,6 +93,8 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
     private String client;
     @TableField(exist = false)
     private String clientName;
+    @TableField(exist = false)
+    private String clientPhone;
 
     /**
      * 意向备注

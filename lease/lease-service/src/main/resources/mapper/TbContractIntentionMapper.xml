@@ -24,6 +24,7 @@
         <result column="label" property="label"/>
         <result column="customer_name" property="clientName"/>
         <result column="followUpName" property="followUpName"/>
+        <result column="contact_phone" property="clientPhone"/>
         <collection property="moneyList"
                     select="cn.cuiot.dmp.lease.mapper.TbContractIntentionBindInfoMapper.queryMoneyInfoByIntentionId"
                     column="id">
@@ -35,7 +36,7 @@
     </resultMap>
 
     <select id="selectById" resultMap="BaseResultMap">
-        select ci.*, c.customer_name customer_name,u.name followUpName
+        select ci.*, c.customer_name customer_name,u.name followUpName,c.contact_phone
         from tb_contract_intention ci
                      left join user u on ci.follow_up = u.id
                      left join tb_customer c on ci.client = c.id
@@ -70,7 +71,7 @@
         ci.update_user,
         ci.status,
         ci.deleted,
-        ci.contract_status,ci.audit_status,ci.label,c.customer_name,u.name
+        ci.contract_status,ci.audit_status,ci.label,c.customer_name,u.name followUpName,c.contact_phone
     </sql>
 
     <sql id="dynamic_where">
