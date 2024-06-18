@@ -125,6 +125,8 @@ public class MsgSendService {
      * @param flag              是否退回
      */
     public void sendProcess(String processInstanceId, String nodeType, boolean flag, String userId) {
+
+        log.info("sendProcess processInstanceId:{},nodeType:{},flag:{},userId:{}", processInstanceId, nodeType, flag, userId);
         String msgType = getTaskMsgType(nodeType, flag);
         if (StringUtils.isNotBlank(msgType)) {
             //发送消息
