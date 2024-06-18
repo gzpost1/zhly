@@ -40,11 +40,6 @@ public class CustomConfig implements Serializable {
     private Byte status;
 
     /**
-     * 初始化标志位(0:非初始化数据,1:初始化数据)
-     */
-    private Byte initFlag;
-
-    /**
      * 自定义配置详情列表
      */
     private List<CustomConfigDetail> customConfigDetailList;

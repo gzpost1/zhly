@@ -65,6 +65,8 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         ClueDTO clueDTO = new ClueDTO();
         BeanUtils.copyProperties(clueEntity, clueDTO);
         clueDTO.setFormData(JSON.parseObject(clueEntity.getFormData()));
+        fillBuildingName(Lists.newArrayList(clueDTO));
+        fillUserName(Lists.newArrayList(clueDTO));
         fillSystemOptionName(Lists.newArrayList(clueDTO));
         return clueDTO;
     }
@@ -287,20 +289,6 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                     ClueDTO clueDTO = new ClueDTO();
                     BeanUtils.copyProperties(o, clueDTO);
                     clueDTO.setFormData(JSON.parseObject(o.getFormData()));
-                    // 跟进中的线索，需要查询最新一条跟进记录作为当前跟进记录
-                    if (ClueStatusEnum.FOLLOW_STATUS.getCode().equals(clueDTO.getStatus())) {
-                        ClueRecordPageQueryDTO queryDTO = new ClueRecordPageQueryDTO();
-                        queryDTO.setClueId(o.getId());
-                        List<ClueRecordDTO> clueRecordDTOList = clueRecordService.queryForList(queryDTO);
-                        if (CollectionUtils.isNotEmpty(clueRecordDTOList)) {
-                            ClueRecordDTO clueRecordDTO = clueRecordDTOList.get(0);
-                            clueDTO.setCurrentFollowerId(clueRecordDTO.getFollowerId());
-                            clueDTO.setCurrentFollowerName(clueRecordDTO.getFollowerName());
-                            clueDTO.setCurrentFollowTime(clueRecordDTO.getFollowTime());
-                            clueDTO.setCurrentFollowStatusId(clueRecordDTO.getFollowStatusId());
-                            clueDTO.setCurrentFollowStatusIdName(clueRecordDTO.getFollowStatusIdName());
-                        }
-                    }
                     return clueDTO;
                 })
                 .collect(Collectors.toList());
@@ -356,6 +344,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
             if (StringUtils.isNotBlank(o.getCreatedBy())) {
                 userIdList.add(Long.valueOf(o.getCreatedBy()));
             }
+            if (Objects.nonNull(o.getCurrentFollowerId())) {
+                userIdList.add(o.getCurrentFollowerId());
+            }
             if (Objects.nonNull(o.getFinishUserId())) {
                 userIdList.add(o.getFinishUserId());
             }
@@ -367,6 +358,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         clueDTOList.forEach(o -> {
             if (Objects.nonNull(o.getCreatedBy()) && userMap.containsKey(Long.valueOf(o.getCreatedBy()))) {
                 o.setCreatedName(userMap.get(Long.valueOf(o.getCreatedBy())));
+            }
+            if (Objects.nonNull(o.getCurrentFollowerId()) && userMap.containsKey(o.getCurrentFollowerId())) {
+                o.setCurrentFollowerName(userMap.get(o.getCurrentFollowerId()));
             }
             if (Objects.nonNull(o.getFinishUserId()) && userMap.containsKey(o.getFinishUserId())) {
                 o.setFinishUserName(userMap.get(o.getFinishUserId()));
@@ -391,6 +385,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
             if (Objects.nonNull(o.getResultId())) {
                 configIdList.add(o.getResultId());
             }
+            if (Objects.nonNull(o.getCurrentFollowStatusId())) {
+                configIdList.add(o.getCurrentFollowStatusId());
+            }
         });
         CustomConfigDetailReqDTO customConfigDetailReqDTO = new CustomConfigDetailReqDTO();
         customConfigDetailReqDTO.setCustomConfigDetailIdList(new ArrayList<>(configIdList));
@@ -402,6 +399,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
             }
             if (Objects.nonNull(o.getResultId()) && systemOptionMap.containsKey(o.getResultId())) {
                 o.setResultIdName(systemOptionMap.get(o.getResultId()));
+            }
+            if (Objects.nonNull(o.getCurrentFollowStatusId()) && systemOptionMap.containsKey(o.getCurrentFollowStatusId())) {
+                o.setCurrentFollowStatusIdName(systemOptionMap.get(o.getCurrentFollowStatusId()));
             }
         });
     }

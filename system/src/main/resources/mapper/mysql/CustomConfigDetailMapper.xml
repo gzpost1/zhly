@@ -16,6 +16,7 @@
         INSERT INTO custom_config_detail
         (
         id,
+        company_id,
         `name`,
         custom_config_id,
         sort,
@@ -25,6 +26,7 @@
         <foreach collection="list" separator="," item="item">
             (
             #{item.id},
+            #{item.companyId},
             #{item.name},
             #{item.customConfigId},
             #{item.sort},
