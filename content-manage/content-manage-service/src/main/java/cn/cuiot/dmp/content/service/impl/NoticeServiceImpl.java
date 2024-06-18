@@ -173,7 +173,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         initQuery(pageQuery);
         pageQuery.setPublishStatus(ContentConstants.PublishStatus.PUBLISHED);
-        PageHelper.orderBy("effective_start_time asc");
+        PageHelper.orderBy("effective_start_time desc");
         IPage<ContentNoticeEntity> noticeEntityIPage = this.baseMapper.queryForPage(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery, ContentConstants.DataType.NOTICE);
         return NoticeConvert.INSTANCE.convert(noticeEntityIPage);
     }

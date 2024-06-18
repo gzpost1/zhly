@@ -12,11 +12,11 @@ import lombok.Data;
 @Data
 public class OperateLogDto implements Serializable {
 
-    private static final long serialVersionUID = 8062176683480646372L;
 
-    String operationUserId;
-
-    String serviceTypeName;
+    /**
+     * 操作端
+     */
+    private String operationSource;
 
     /**
      * 账户ID
@@ -27,11 +27,6 @@ public class OperateLogDto implements Serializable {
      * 请求时间
      */
     private String requestTime;
-
-    /**
-     * 请求ID
-     */
-    private String requestId;
 
     /**
      * 请求IP
@@ -59,9 +54,10 @@ public class OperateLogDto implements Serializable {
     private String operationByName;
 
     /**
-     * 操作对象
+     * 用户类型
      */
-    private String operationTarget;
+    private Integer userType;
+
 
     /**
      * 操作对象信息
@@ -72,6 +68,11 @@ public class OperateLogDto implements Serializable {
      * 业务类型
      */
     private String serviceType;
+
+    /**
+     * 业务类型名称
+     */
+    private String serviceTypeName;
 
     /**
      * 日志级别
@@ -97,9 +98,4 @@ public class OperateLogDto implements Serializable {
      * 响应参数
      */
     private String responseParams;
-
-    /**
-     * 文件
-     */
-    byte[] file;
 }

@@ -123,7 +123,6 @@ public class RoleServiceImpl implements RoleService {
         return this.roleDao.selectRoleList(paramsMap);
     }
 
-    @LogRecord(operationCode = "deleteRoles", operationName = "删除角色", serviceType = ServiceTypeConst.SECURITY_SETTING)
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int deleteRoles(RoleBo roleBo) {
@@ -182,7 +181,6 @@ public class RoleServiceImpl implements RoleService {
         return this.roleDao.selectRoleListByOrgId(orgId);
     }
 
-    @LogRecord(operationCode = "createRole", operationName = "新增角色", serviceType = ServiceTypeConst.SECURITY_SETTING)
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createRole(CreateRoleDto dto) {
@@ -284,7 +282,6 @@ public class RoleServiceImpl implements RoleService {
         return roleDTO;
     }
 
-    @LogRecord(operationCode = "updateRole", operationName = "修改角色", serviceType = ServiceTypeConst.SECURITY_SETTING)
     @Override
     public Long updateRole(RoleBo roleBo) {
         // 本身角色不让编辑
