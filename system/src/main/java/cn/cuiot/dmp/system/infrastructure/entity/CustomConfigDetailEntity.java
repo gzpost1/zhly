@@ -23,6 +23,11 @@ public class CustomConfigDetailEntity implements Serializable {
     private Long id;
 
     /**
+     * 企业ID
+     */
+    private Long companyId;
+
+    /**
      * 自定义配置详情名称
      */
     private String name;
