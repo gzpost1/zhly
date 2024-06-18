@@ -8,7 +8,6 @@ import cn.cuiot.dmp.system.application.param.vo.SystemOptionTypeVO;
 import cn.cuiot.dmp.system.application.service.SystemOptionTypeService;
 import cn.cuiot.dmp.system.domain.aggregate.SystemOptionType;
 import cn.cuiot.dmp.system.domain.repository.SystemOptionTypeRepository;
-import cn.cuiot.dmp.system.domain.repository.CustomConfigRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +29,6 @@ public class SystemOptionTypeServiceImpl implements SystemOptionTypeService {
     @Autowired
     private SystemOptionTypeRepository systemOptionTypeRepository;
 
-    @Autowired
-    private CustomConfigRepository customConfigRepository;
-
     @Override
     public List<SystemOptionTypeVO> queryForList(SystemOptionTypeQueryDTO queryDTO) {
         SystemOptionType systemOptionType = new SystemOptionType();
@@ -41,8 +37,6 @@ public class SystemOptionTypeServiceImpl implements SystemOptionTypeService {
         if (CollectionUtils.isEmpty(systemOptionTypeList)) {
             return new ArrayList<>();
         }
-        // 是否需要初始化自定义配置
-        customConfigRepository.initCustomConfig(queryDTO.getCompanyId());
         return systemOptionTypeList.stream()
                 // 前端筛选需要过滤二维码档案
                 .filter(item -> SystemOptionTypeEnum.archiveTypeFlag(item.getSystemOptionType()) &&
@@ -71,8 +65,6 @@ public class SystemOptionTypeServiceImpl implements SystemOptionTypeService {
         if (CollectionUtils.isEmpty(systemOptionTypeList)) {
             return new ArrayList<>();
         }
-        // 是否需要初始化自定义配置
-        customConfigRepository.initCustomConfig(queryDTO.getCompanyId());
         List<SystemOptionTypeTreeNodeVO> systemOptionTypeTreeNodeVOList = new ArrayList<>();
         SystemOptionTypeTreeNodeVO rootSystemOptionTypeTreeNodeVO = initRootArchiveTypeVO();
         List<SystemOptionTypeTreeNodeVO> childrenArchiveTypeTreeNodeList = systemOptionTypeList.stream()

@@ -40,7 +40,7 @@ public interface CustomConfigRepository {
     /**
      * 删除
      */
-    int deleteCustomConfig(Long id);
+    int deleteCustomConfig(Long id, Long companyId);
 
     /**
      * 根据档案分类查询自定义配置列表
@@ -51,10 +51,5 @@ public interface CustomConfigRepository {
      * 根据条件查询自定义配置列表
      */
     List<CustomConfig> queryForList(CustomConfigPageQuery pageQuery);
-
-    /**
-     * 初始化常用选项
-     */
-    void initCustomConfig(Long companyId);
 
 }

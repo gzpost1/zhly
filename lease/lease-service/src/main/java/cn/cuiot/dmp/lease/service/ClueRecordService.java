@@ -122,6 +122,33 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteClueRecord(Long id) {
+        // 如果删除的是最新的线索记录，则需要同步修改线索的对应字段
+        ClueRecordEntity clueRecordEntity = Optional.ofNullable(getById(id))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        ClueEntity clueEntity = Optional.ofNullable(clueMapper.selectById(clueRecordEntity.getClueId()))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        if (clueRecordEntity.getId().equals(clueEntity.getCurrentFollowRecordId())) {
+            ClueRecordPageQueryDTO queryDTO = new ClueRecordPageQueryDTO();
+            queryDTO.setClueId(clueEntity.getId());
+            List<ClueRecordDTO> clueRecordDTOList = queryForList(queryDTO);
+            // 删除后仍存在线索记录，则更新线索状态为最新的一条
+            if (CollectionUtils.isNotEmpty(clueRecordDTOList) && clueRecordDTOList.size() > 1) {
+                ClueRecordDTO clueRecordDTO = clueRecordDTOList.get(1);
+                clueEntity.setCurrentFollowRecordId(clueRecordDTO.getId());
+                clueEntity.setCurrentFollowerId(clueRecordDTO.getFollowerId());
+                clueEntity.setCurrentFollowTime(clueRecordDTO.getFollowTime());
+                clueEntity.setCurrentFollowStatusId(clueRecordDTO.getFollowStatusId());
+                clueMapper.updateById(clueEntity);
+            } else {
+                // 不存在则清空线索状态
+                LambdaUpdateWrapper<ClueEntity> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.eq(ClueEntity::getId, clueEntity.getId());
+                updateWrapper.set(ClueEntity::getCurrentFollowRecordId, null);
+                updateWrapper.set(ClueEntity::getCurrentFollowTime, null);
+                updateWrapper.set(ClueEntity::getCurrentFollowStatusId, null);
+                clueMapper.update(clueEntity, updateWrapper);
+            }
+        }
         return removeById(id);
     }
 

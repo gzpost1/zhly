@@ -23,11 +23,6 @@ public class CustomConfigEntity extends BaseEntity {
     private String name;
 
     /**
-     * 企业ID
-     */
-    private Long companyId;
-
-    /**
      * 系统选项类型
      * @see SystemOptionTypeEnum
      */
@@ -37,10 +32,5 @@ public class CustomConfigEntity extends BaseEntity {
      * 状态(0:禁用,1:正常)
      */
     private Byte status;
-
-    /**
-     * 初始化标志位(0:非初始化数据,1:初始化数据)
-     */
-    private Byte initFlag;
 
 }
