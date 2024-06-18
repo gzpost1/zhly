@@ -39,13 +39,16 @@ public class SysLogService {
                     .compile("^.*" + param.getServiceTypeName() + ".*$", Pattern.CASE_INSENSITIVE);
             query.addCriteria(Criteria.where("serviceTypeName").regex(pattern));
         }
-        if (Objects.nonNull(param.getOptStartTime())) {
-            query.addCriteria(Criteria.where("requestTime")
-                    .gte(DateTimeUtil.dateToString(param.getOptStartTime())));
-        }
-        if (Objects.nonNull(param.getOptEndTime())) {
-            query.addCriteria(Criteria.where("requestTime")
-                    .lte(DateTimeUtil.dateToString(param.getOptEndTime())));
+        //时间查询
+        if (Objects.nonNull(param.getOptStartTime())||Objects.nonNull(param.getOptEndTime())) {
+            Criteria criteria = Criteria.where("requestTime");
+            if(Objects.nonNull(param.getOptStartTime())){
+                criteria.gte(DateTimeUtil.dateToString(param.getOptStartTime()));
+            }
+            if(Objects.nonNull(param.getOptEndTime())){
+                criteria.lte(DateTimeUtil.dateToString(param.getOptEndTime()));
+            }
+            query.addCriteria(criteria);
         }
 
         //计算总数
