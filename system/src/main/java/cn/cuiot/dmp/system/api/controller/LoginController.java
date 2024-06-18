@@ -88,17 +88,9 @@ public class LoginController extends BaseController {
     private static final String TRUE_WORD = "true";
 
     /**
-     * 同意用户隐私协议
-     */
-    private static final String PRIVACY_AGREE = "1";
-
-    /**
      * 登录
-     *
-     * @param loginReqDTO 请求登录的用户信息
-     * @return
      */
-    @LogRecord(operationCode = "session", operationName = "用户登录", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "session", operationName = "登录系统", serviceType = "login",serviceTypeName = "登录")
     @PostMapping(value = "/session", produces = "application/json;charset=UTF-8")
     public LoginResDTO loginDmp(@RequestBody LoginReqDTO loginReqDTO) {
         /**
@@ -172,12 +164,9 @@ public class LoginController extends BaseController {
 
 
     /**
-     * 登出dmp
-     *
-     * @param
-     * @return
+     * 退出
      */
-    @LogRecord(operationCode = "logOut", operationName = "用户登出", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "logOut", operationName = "退出系统", serviceType = "logOut",serviceTypeName = "退出")
     @DeleteMapping(value = "/logOut", produces = "application/json;charset=UTF-8")
     public void logoutUser() {
         loginService.logoutIdentity(request, getOrgId(), getUserId(), getUserName());

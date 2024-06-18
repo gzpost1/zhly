@@ -195,7 +195,7 @@ public class LoginServiceImpl implements LoginService {
         platformOperateLogDTO.setRequestParams(requestParamJsonObject.toJSONString());
         platformOperateLogDTO.setOperationCode("session");
         platformOperateLogDTO.setOperationName("登录");
-        platformOperateLogDTO.setOperationTarget(validateUser.getUsername());
+        //platformOperateLogDTO.setOperationTarget(validateUser.getUsername());
         platformOperateLogDTO.setServiceType(ServiceTypeConst.AUDIT_MANAGEMENT);
 
         // 获取用户自增id
@@ -334,7 +334,7 @@ public class LoginServiceImpl implements LoginService {
         platformOperateLogDTO.setOrgId(orgId);
         platformOperateLogDTO.setOperationById(userId);
         platformOperateLogDTO.setOperationByName(userName);
-        platformOperateLogDTO.setOperationTarget(userName);
+        //platformOperateLogDTO.setOperationTarget(userName);
         platformOperateLogDTO.setOperationCode("session");
         platformOperateLogDTO.setOperationName("注销");
         platformOperateLogDTO.setServiceType(ServiceTypeConst.AUDIT_MANAGEMENT);
@@ -464,7 +464,7 @@ public class LoginServiceImpl implements LoginService {
         platformOperateLogDTO.setRequestParams(requestParamJsonObject.toJSONString());
         platformOperateLogDTO.setOperationCode("session");
         platformOperateLogDTO.setOperationName("模拟登录企业");
-        platformOperateLogDTO.setOperationTarget(validateUser.getUsername());
+        //platformOperateLogDTO.setOperationTarget(validateUser.getUsername());
         platformOperateLogDTO.setServiceType(ServiceTypeConst.AUDIT_MANAGEMENT);
         platformOperateLogDTO.setOrgId(pkOrgId);
         platformOperateLogDTO.setOperationById(String.valueOf(LoginInfoHolder.getCurrentUserId()));
