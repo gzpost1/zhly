@@ -83,7 +83,7 @@ public class CcListener implements JavaDelegate {
 
                 flowCcService.saveBatch(collect);
 
-                msgSendService.sendCCMsg(execution.getProcessInstanceId(), ccUserIds);
+                msgSendService.sendCCMsg(execution.getProcessInstanceId(), ccUserIds,execution.getProcessDefinitionId());
             }
         }
     }
