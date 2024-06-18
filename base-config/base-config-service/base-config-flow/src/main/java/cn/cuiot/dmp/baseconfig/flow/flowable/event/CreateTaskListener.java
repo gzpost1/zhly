@@ -17,6 +17,7 @@ import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -42,9 +43,8 @@ public class CreateTaskListener extends AbstractFlowableEngineEventListener {
     @Resource
     private RepositoryService repositoryService;
     @Autowired
+    @Lazy
     private MsgSendService msgSendService;
-    @Resource
-    private TaskService taskService;
 
     @Override
     protected void taskCreated(FlowableEngineEntityEvent event) {
