@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.base.application.aop;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.constant.OperationSourceContants;
 import cn.cuiot.dmp.base.application.dto.ResponseWrapper;
 import cn.cuiot.dmp.base.application.rocketmq.SendService;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
@@ -57,6 +58,11 @@ public class LogRecordAspect {
     @Autowired
     private SendService sendService;
 
+    /**
+     * 小程序特殊操作路径
+     */
+    private final static String APP_PATH="/app/";
+
     @Pointcut("@annotation(cn.cuiot.dmp.base.application.annotation.LogRecord)")
     public void logRecord() {
     }
@@ -96,9 +102,6 @@ public class LogRecordAspect {
 
         OperateLogDto operateLogDto = new OperateLogDto();
 
-        //操作端
-        String operationSource = request.getHeader(AuthContants.OPERATION_SOURCE);
-        operateLogDto.setOperationSource(operationSource);
         //企业ID
         operateLogDto.setOrgId(StrUtil.toStringOrNull(LoginInfoHolder.getCurrentOrgId()));
         //请求时间
@@ -118,6 +121,19 @@ public class LogRecordAspect {
         } else {
             operateLogDto
                     .setOperationByName(StrUtil.toStringOrNull(LoginInfoHolder.getCurrentName()));
+        }
+        //操作端
+        String operationSource = request.getHeader(AuthContants.OPERATION_SOURCE);
+        operateLogDto.setOperationSource(operationSource);
+        if(StringUtils.isBlank(operateLogDto.getOperationSource())){
+            operateLogDto.setOperationSource(OperationSourceContants.WEB_END);
+            if(request.getServletPath().contains(APP_PATH)){
+                if (UserTypeEnum.USER.getValue().equals(userType)) {
+                    operateLogDto.setOperationSource(OperationSourceContants.APP_MANAGE_END);
+                }else {
+                    operateLogDto.setOperationSource(OperationSourceContants.APP_CLIENT_END);
+                }
+            }
         }
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -155,6 +171,9 @@ public class LogRecordAspect {
             operateLogDto.setServiceType(logRecord.serviceType());
             //业务类型名称
             operateLogDto.setServiceTypeName(logRecord.serviceTypeName());
+            if(StringUtils.isBlank(operateLogDto.getServiceTypeName())){
+                operateLogDto.setServiceTypeName(operateLogDto.getServiceType());
+            }
         }
 
         return operateLogDto;
