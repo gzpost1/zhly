@@ -1119,7 +1119,7 @@ public class BpmnModelUtils {
         return id;
     }
 
-    private enum Type {
+    public static enum Type {
         INCLUSIVES("INCLUSIVES", InclusiveGateway.class),
         INCLUSIVE("INCLUSIVE", InclusiveGateway.class),
         /**
@@ -1166,6 +1166,9 @@ public class BpmnModelUtils {
             return this.type.equals(type);
         }
 
+        public String getType() {
+            return type;
+        }
     }
 
     public static ChildNode getChildNodeByNodeId(String processDefinitionId, String currentActivityId) {

@@ -80,8 +80,8 @@ public class CustomConfigServiceImpl implements CustomConfigService {
     }
 
     @Override
-    public int deleteCustomConfig(Long id) {
-        return customConfigRepository.deleteCustomConfig(id);
+    public int deleteCustomConfig(Long id, Long companyId) {
+        return customConfigRepository.deleteCustomConfig(id, companyId);
     }
 
     @Override

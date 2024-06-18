@@ -48,7 +48,7 @@ public interface CustomConfigService {
     /**
      * 删除
      */
-    int deleteCustomConfig(Long id);
+    int deleteCustomConfig(Long id, Long companyId);
 
     /**
      * 根据档案类型查询自定义配置列表

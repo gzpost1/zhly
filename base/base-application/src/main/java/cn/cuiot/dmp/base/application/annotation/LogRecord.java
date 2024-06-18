@@ -39,4 +39,11 @@ public @interface LogRecord {
      */
     String serviceType() default "";
 
+    /**
+     * 业务类型名称
+     *
+     * @return
+     */
+    String serviceTypeName() default "";
+
 }

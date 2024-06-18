@@ -24,9 +24,9 @@ public interface UserMessageService extends IService<UserMessageEntity> {
 
     /**
      * 标记消息已读
-     * @param id
+     * @param ids
      */
-    void readMessage(Long id);
+    void readMessage(List<Long> ids);
 
     /**
      * 获取用户已经接收的消息数据id列表
@@ -34,4 +34,10 @@ public interface UserMessageService extends IService<UserMessageEntity> {
      * @return
      */
     List<Long> getAcceptDataIdList(MsgExistDataIdReqDto reqDto);
+
+    /**
+     * 获取未读消息数量
+     * @return
+     */
+    Long getUnreadMessageCount();
 }

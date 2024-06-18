@@ -89,11 +89,12 @@ public class CustomConfigController extends BaseController {
     @LogRecord(operationCode = "deleteCustomConfig", operationName = "删除自定义配置", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public int deleteCustomConfig(@RequestBody @Valid IdParam idParam) {
-        return customConfigService.deleteCustomConfig(idParam.getId());
+        Long orgId = Long.valueOf(getOrgId());
+        return customConfigService.deleteCustomConfig(idParam.getId(), orgId);
     }
 
     /**
-     * 根据档案类型查询自定义配置列表
+     * 根据系统选项类型查询自定义配置列表
      */
     @PostMapping("/queryByType")
     public PageResult<CustomConfigVO> queryCustomConfigByType(@RequestBody @Valid CustomConfigPageQuery pageQuery) {

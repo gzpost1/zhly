@@ -21,11 +21,14 @@ import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
 import cn.cuiot.dmp.baseconfig.flow.entity.*;
 import cn.cuiot.dmp.baseconfig.flow.enums.*;
+import cn.cuiot.dmp.baseconfig.flow.flowable.msg.MsgSendService;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkInfoMapper;
 import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -47,10 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.impl.identity.Authentication;
-import org.flowable.engine.HistoryService;
-import org.flowable.engine.RepositoryService;
-import org.flowable.engine.RuntimeService;
-import org.flowable.engine.TaskService;
+import org.flowable.engine.*;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -108,6 +108,13 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
     @Autowired
     private TbFlowConfigOrgService tbFlowConfigOrgService;
+
+    @Autowired
+    private ManagementService managementService;
+
+    @Autowired
+    private MsgSendService msgSendService;
+
     /**
      * APP 获取待审批的数据
      * @param query
@@ -189,8 +196,10 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @return
      */
     public IdmResDTO<IPage<AppWorkInfoDto>> queryWorkOrderSuper(WorkOrderSuperQuery query) {
+        List<Long> deptIds = getDeptIds().stream().map(DepartmentDto::getId).collect(Collectors.toList());
+        //校验
+        checkOrgIds(query.getOrgIds(),deptIds);
         if(CollectionUtil.isEmpty(query.getOrgIds())){
-            List<Long> deptIds = getDeptIds().stream().map(DepartmentDto::getId).collect(Collectors.toList());
             query.setOrgIds(deptIds);
         }
 
@@ -207,6 +216,16 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     }
 
     /**
+     * 校验查询的组织是不是本组织及下属组织
+     * @param orgIds
+     * @param deptIds
+     */
+    public void checkOrgIds(List<Long> orgIds,List<Long> deptIds){
+        if(CollectionUtils.isNotEmpty(orgIds) && CollectionUtils.isNotEmpty(deptIds)){
+            AssertUtil.isTrue(deptIds.containsAll(orgIds),ResultCode.NO_OPERATION_PERMISSION.getMessage());
+        }
+    }
+    /**
      * 获取详情里的基础信息
      * @param dto
      * @return
@@ -217,6 +236,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     }
 
     public WorkInfoDto queryWorkInfoDto(WorkProcInstDto dto){
+       checkWorkOrder(dto.getProcInstId());
         //获取工单详情
         WorkInfoDto resultDto = getBaseMapper().queryWorkOrderDetailInfo(dto);
         //填充组织名称
@@ -254,6 +274,29 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //获取关联的工单信息
         resultDto.setWorkOrderIds(getWordOrderIds(Long.parseLong(resultDto.getProcInstId())));
         return resultDto;
+    }
+
+    /**
+     * 校验工单信息
+     * @param processInstanceId
+     */
+    public void checkWorkOrder(String processInstanceId){
+        if(Objects.nonNull(processInstanceId)){
+            WorkInfoEntity workInfo = getWorkInfo(processInstanceId);
+            AssertUtil.isTrue(Objects.equals(workInfo.getCompanyId(),LoginInfoHolder.getCurrentOrgId()),ResultCode.NO_OPERATION_PERMISSION.getMessage());
+        }
+    }
+
+    /**
+     * 获取工单信息
+     * @param processInstanceId
+     * @return
+     */
+    public WorkInfoEntity getWorkInfo(String processInstanceId){
+        LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkInfoEntity::getProcInstId,processInstanceId);
+        List<WorkInfoEntity> workInfoEntities = baseMapper.selectList(lw);
+        return CollectionUtils.isNotEmpty(workInfoEntities)?workInfoEntities.get(0):new WorkInfoEntity();
     }
     /**
      * 获取关联的工单id
@@ -736,6 +779,10 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         String rollBackNode = queryRollBackNode(task);
         runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
                 rollBackNode).changeState();
+
+        //设置回退标识
+        taskService.setVariable(String.valueOf(operationDto.getTaskId()),"rollback","true");
+
         return IdmResDTO.success();
     }
 
@@ -777,12 +824,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      */
     public IdmResDTO<WorkInfoDto> queryBasicInfo(WorkProcInstDto dto) {
 
-        Long company = getCompany();
+        checkWorkOrder(dto.getProcInstId());
         //获取工单详情
         WorkInfoDto resultDto = getBaseMapper().queryWorkOrderDetailInfo(dto);
-        if(!Objects.equals(company,resultDto.getCompanyId())){
-            return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
-        }
 
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(dto.getProcInstId()).list();
         if(CollectionUtil.isEmpty(taskList)){
@@ -848,9 +892,31 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
+        //单个转办
+        if(StringUtils.isNotEmpty(assigneeDto.getTaskId())){
+            taskService.setAssignee(String.valueOf(assigneeDto.getTaskId()),String.valueOf(assigneeDto.getUserIds().get(0)));
+        }
 
-        taskService.setAssignee(String.valueOf(assigneeDto.getTaskId()),String.valueOf(assigneeDto.getUserIds().get(0)));
+        //查出当前节点的所有人员信息
 
+        List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
+                .orElseThrow(()->new BusinessException(ErrorCode.NOT_FOUND.getCode(),ErrorCode.NOT_FOUND.getMessage()));
+        //查询该节点下所有任务信息
+        List<String> hisTaskIds = baseMapper.queryHistoricTask( tasks.get(0).getTaskDefinitionKey(),tasks.get(0).getProcessInstanceId());
+        //执行加签操作
+        AddMultiInstanceUserTaskService multiInstanceUserTaskService = new AddMultiInstanceUserTaskService(managementService);
+        Integer instance = 1;
+        for (Long userId : handleDataDTO.getUserIds()) {
+            multiInstanceUserTaskService.addMultiInstanceUserTask(tasks.get(0).getId(),String.valueOf(userId), instance);
+            instance++;
+        }
+
+        taskService.complete(tasks.get(0).getId());
+
+        //删除原来的任务id
+        hisTaskIds.stream().forEach(item->{
+            taskService.deleteTask(item, true);
+        });
         return IdmResDTO.success();
     }
 
@@ -877,6 +943,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
         //更新工单状态
         updateWorkInfo(WorkOrderStatusEnums.terminated.getStatus(), workBusinessTypeInfo.getProcInstId());
+
+        //发送消息
+        msgSendService.sendProcess(operationDto.getProcessInstanceId().toString(), MsgDataType.WORK_INFO_CANCEL);
 
         return IdmResDTO.success();
     }
@@ -1377,6 +1446,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //更新挂起
         dto.setNodeId(workBusinessTypeInfo.getNode());
         updateBusinessPendingDate(dto);
+
+        //发送消息
+        msgSendService.sendProcess(workBusinessTypeInfo.getProcInstId().toString(), MsgDataType.WORK_INFO_TURNDOWN);
         return IdmResDTO.success();
     }
 

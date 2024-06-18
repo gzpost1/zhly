@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.base.application.interceptor;
 
-import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.annotation.IgnoreAuth;
 import cn.cuiot.dmp.base.application.annotation.ResolveExtData;
 import cn.cuiot.dmp.base.application.service.ApiArchiveService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
@@ -9,7 +9,6 @@ import cn.cuiot.dmp.domain.types.AuthContants;
 import cn.cuiot.dmp.domain.types.LoginInfo;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.util.NumberUtil;
-import cn.hutool.core.util.StrUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import java.util.Objects;
@@ -35,40 +34,67 @@ public class BaseAuthInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
             Object handler) throws Exception {
 
+        if (!(handler instanceof HandlerMethod)) {
+            return true;
+        }
+
+        HandlerMethod handlerMethod = (HandlerMethod) handler;
+        IgnoreAuth ignoreAuthAnnotation = handlerMethod.getBeanType()
+                .getAnnotation(IgnoreAuth.class);
+        if (null == ignoreAuthAnnotation) {
+            ignoreAuthAnnotation = handlerMethod.getMethodAnnotation(IgnoreAuth.class);
+        }
+        if (null != ignoreAuthAnnotation) {
+            return true;
+        }
+
         String community = request.getHeader(AuthContants.COMMUNITY);
 
         String jwt = request.getHeader(AuthContants.TOKEN);
-        if(StringUtils.isBlank(jwt)){
+        if (StringUtils.isBlank(jwt)) {
             jwt = request.getHeader(AuthContants.AUTHORIZATION);
         }
         if (StringUtils.isNotBlank(jwt)) {
             try {
-                Claims claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt).getBody();
+                Claims claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt)
+                        .getBody();
                 LoginInfo loginInfo = new LoginInfo();
-                loginInfo.setUserId(claims.get(AuthContants.USERID) != null ? Long.valueOf(claims.get(AuthContants.USERID).toString()) : null);
-                loginInfo.setUsername(claims.get(AuthContants.USERNAME) != null ? claims.get(AuthContants.USERID).toString() : null);
-                loginInfo.setPhoneNumber(claims.get(AuthContants.USER_PHONE) != null ? claims.get(AuthContants.USER_PHONE).toString() : null);
-                loginInfo.setName(claims.get(AuthContants.NAME) != null ? claims.get(AuthContants.NAME).toString() : null);
-                loginInfo.setOrgId(claims.get(AuthContants.USERORG) != null ? Long.valueOf(claims.get(AuthContants.USERORG).toString()) : null);
-                loginInfo.setOrgTypeId(claims.get(AuthContants.USERORG_TYPE_ID) != null ? Integer.valueOf(claims.get(AuthContants.USERORG_TYPE_ID).toString()) : null);
-                loginInfo.setDeptId(claims.get(AuthContants.DEPT_ID) != null ? Long.valueOf(claims.get(AuthContants.DEPT_ID).toString()) : null);
-                loginInfo.setPostId(claims.get(AuthContants.POST_ID) != null ? Long.valueOf(claims.get(AuthContants.POST_ID).toString()) : null);
-                loginInfo.setUserType(claims.get(AuthContants.USER_TYPE) != null ? Integer.valueOf(claims.get(AuthContants.USER_TYPE).toString()) : null);
+                loginInfo.setUserId(claims.get(AuthContants.USERID) != null ? Long
+                        .valueOf(claims.get(AuthContants.USERID).toString()) : null);
+                loginInfo.setUsername(
+                        claims.get(AuthContants.USERNAME) != null ? claims.get(AuthContants.USERID)
+                                .toString() : null);
+                loginInfo.setPhoneNumber(claims.get(AuthContants.USER_PHONE) != null ? claims
+                        .get(AuthContants.USER_PHONE).toString() : null);
+                loginInfo.setName(
+                        claims.get(AuthContants.NAME) != null ? claims.get(AuthContants.NAME)
+                                .toString() : null);
+                loginInfo.setOrgId(claims.get(AuthContants.USERORG) != null ? Long
+                        .valueOf(claims.get(AuthContants.USERORG).toString()) : null);
+                loginInfo.setOrgTypeId(claims.get(AuthContants.USERORG_TYPE_ID) != null ? Integer
+                        .valueOf(claims.get(AuthContants.USERORG_TYPE_ID).toString()) : null);
+                loginInfo.setDeptId(claims.get(AuthContants.DEPT_ID) != null ? Long
+                        .valueOf(claims.get(AuthContants.DEPT_ID).toString()) : null);
+                loginInfo.setPostId(claims.get(AuthContants.POST_ID) != null ? Long
+                        .valueOf(claims.get(AuthContants.POST_ID).toString()) : null);
+                loginInfo.setUserType(claims.get(AuthContants.USER_TYPE) != null ? Integer
+                        .valueOf(claims.get(AuthContants.USER_TYPE).toString()) : null);
 
                 //针对业主,从头部获取小区ID
-                loginInfo.setCommunityId(NumberUtil.parseLong(community,null));
+                loginInfo.setCommunityId(NumberUtil.parseLong(community, null));
+
                 //针对业主，填充扩展信息
-                if ((handler instanceof HandlerMethod)&&Objects.nonNull(loginInfo.getCommunityId())) {
-                    HandlerMethod handlerMethod = (HandlerMethod) handler;
+                if ((handler instanceof HandlerMethod) && Objects
+                        .nonNull(loginInfo.getCommunityId())) {
                     ResolveExtData resolveExtData = handlerMethod.getBeanType()
                             .getAnnotation(ResolveExtData.class);
-                    if (resolveExtData == null) {
+                    if (null==resolveExtData) {
                         resolveExtData = handlerMethod.getMethodAnnotation(ResolveExtData.class);
                     }
-                    if(Objects.nonNull(resolveExtData)){
+                    if (Objects.nonNull(resolveExtData)) {
                         BuildingArchive buildingArchive = apiArchiveService
                                 .lookupBuildingArchiveInfo(loginInfo.getCommunityId());
-                        if(Objects.nonNull(buildingArchive)){
+                        if (Objects.nonNull(buildingArchive)) {
                             loginInfo.setOrgId(buildingArchive.getCompanyId());
                             loginInfo.setDeptId(buildingArchive.getDepartmentId());
                         }
@@ -77,7 +103,7 @@ public class BaseAuthInterceptor implements HandlerInterceptor {
                 //设置上下文信息
                 LoginInfoHolder.setLocalLoginInfo(loginInfo);
             } catch (Exception e) {
-                log.warn("BaseAuthInterceptor parse token error",e);
+                log.warn("BaseAuthInterceptor parse token error", e);
             }
         }
         return true;

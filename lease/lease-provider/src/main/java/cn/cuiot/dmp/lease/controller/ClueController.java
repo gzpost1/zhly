@@ -111,6 +111,8 @@ public class ClueController {
     @LogRecord(operationCode = "finishClue", operationName = "完成线索", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @PostMapping("/finish")
     public boolean finishClue(@RequestBody @Valid ClueFinishDTO finishDTO) {
+        Long userId = LoginInfoHolder.getCurrentUserId();
+        finishDTO.setFinishUserId(userId);
         return clueService.finishClue(finishDTO);
     }
 
@@ -131,6 +133,8 @@ public class ClueController {
     @LogRecord(operationCode = "batchDistributeClue", operationName = "批量分配线索", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @PostMapping("/batchDistribute")
     public boolean batchDistributeClue(@RequestBody @Valid ClueBatchUpdateDTO batchUpdateDTO) {
+        Long userId = LoginInfoHolder.getCurrentUserId();
+        batchUpdateDTO.setCurrentFollowerId(userId);
         return clueService.batchDistributeClue(batchUpdateDTO);
     }
 
@@ -141,6 +145,8 @@ public class ClueController {
     @LogRecord(operationCode = "batchFinishClue", operationName = "批量完成线索", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @PostMapping("/batchFinish")
     public boolean batchFinishClue(@RequestBody @Valid ClueBatchUpdateDTO batchUpdateDTO) {
+        Long userId = LoginInfoHolder.getCurrentUserId();
+        batchUpdateDTO.setFinishUserId(userId);
         return clueService.batchFinishClue(batchUpdateDTO);
     }
 
