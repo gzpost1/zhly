@@ -288,7 +288,6 @@ public class UserServiceImpl extends BaseController implements UserService {
     /**
      * 新增用户
      */
-    @LogRecord(operationCode = "insertUser", operationName = "新增用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Transactional(rollbackFor = Exception.class)
     @Override
     public UserCsvDto insertUser(UserBo userBo) {
@@ -409,7 +408,6 @@ public class UserServiceImpl extends BaseController implements UserService {
     /**
      * 更改用户
      */
-    @LogRecord(operationCode = "updateUser", operationName = "编辑用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO updateUser(UserBo userBo) {
@@ -517,7 +515,6 @@ public class UserServiceImpl extends BaseController implements UserService {
      * 批量移动用户
      */
     @Override
-    @LogRecord(operationCode = "moveUsers", operationName = "移动用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Transactional(rollbackFor = Exception.class)
     public void moveUsers(UserBo userBo) {
         String sessionOrgId = userBo.getOrgId();
@@ -588,7 +585,6 @@ public class UserServiceImpl extends BaseController implements UserService {
     /**
      * 批量启停用
      */
-    @LogRecord(operationCode = "changeUserStatus", operationName = "启停用用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeUserStatus(UserBo userBo) {
@@ -652,7 +648,6 @@ public class UserServiceImpl extends BaseController implements UserService {
     /**
      * 批量删除用户
      */
-    @LogRecord(operationCode = "deleteUsers", operationName = "删除用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int deleteUsers(UserBo userBo) {
@@ -773,7 +768,6 @@ public class UserServiceImpl extends BaseController implements UserService {
     /**
      * 导入用户
      */
-    @LogRecord(operationCode = "importUsers", operationName = "导入用户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<UserImportDownloadVo> importUsers(UserBo cmd) {
@@ -1072,7 +1066,6 @@ public class UserServiceImpl extends BaseController implements UserService {
     /**
      * 修改密码(登录人自行修改)
      */
-    @LogRecord(operationCode = "updatePassword", operationName = "修改密码（个人）", serviceType = ServiceTypeConst.SECURITY_SETTING)
     @Override
     public void updatePassword(UserDataEntity entity) {
         User user = User.builder().id(new UserId(entity.getId()))
@@ -1086,7 +1079,6 @@ public class UserServiceImpl extends BaseController implements UserService {
     /**
      * 修改手机号(登录人自行修改)
      */
-    @LogRecord(operationCode = "updatePhoneNumber", operationName = "修改手机号", serviceType = ServiceTypeConst.SECURITY_SETTING)
     @Override
     public void updatePhoneNumber(UserBo userBo) {
         String phoneNumber = userBo.getPhoneNumber();

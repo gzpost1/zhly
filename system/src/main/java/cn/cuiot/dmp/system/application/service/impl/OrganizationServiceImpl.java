@@ -8,6 +8,9 @@ import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgBindingNameConstants;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgTagConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.log.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.log.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.log.OptTargetInfo;
 import cn.cuiot.dmp.base.infrastructure.stream.StreamMessageSender;
 import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
@@ -79,6 +82,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
+import com.google.common.collect.Lists;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -214,7 +218,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     /**
      * 新增子账户
      */
-    @LogRecord(operationCode = "insertSonOrganization", operationName = "新增账户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long insertOrganization(InsertOrganizationDto dto) {
@@ -324,6 +327,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         organizationRepository.save(organization);
 
         Long pkOrgId = organization.getId().getValue();
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("企业")
+                .targetDatas(Lists.newArrayList(new OptTargetData(organization.getCompanyName(),organization.getId().toString())))
+                .build());
 
         //保存菜单权限
         if (!CollectionUtils.isEmpty(menuList)) {
@@ -436,7 +445,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     /**
      * 编辑子账户
      */
-    @LogRecord(operationCode = "updateOrganization", operationName = "更新账户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateOrganization(UpdateOrganizationDto dto) {
@@ -455,6 +463,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (oldOrganization == null) {
             throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
         }
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("企业")
+                .targetDatas(Lists.newArrayList(new OptTargetData(oldOrganization.getOrgName(),oldOrganization.getId().toString())))
+                .build());
 
         //判断登录用户是否有权限修改
         String grantDeptId = userDao.getUserGrantDeptId(pkOrgId);
@@ -864,6 +878,13 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (find == null) {
             throw new BusinessException(ResultCode.ORG_IS_NOT_EXIST);
         }
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("企业")
+                .targetDatas(Lists.newArrayList(new OptTargetData(find.getCompanyName(),find.getId().toString())))
+                .build());
+
         Organization organization = Organization.builder()
                 .id(new OrganizationId(pkOrgId))
                 .status(cn.cuiot.dmp.system.domain.types.enums.OrgStatusEnum

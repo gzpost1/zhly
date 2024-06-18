@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.baseconsumer.entity;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 
 /**
  * @Description 操作日志MongoDB实体
@@ -9,6 +10,14 @@ import lombok.Data;
  */
 @Data
 public class OperateLogEntity {
+
+    @Id
+    private String id;
+
+    /**
+     * 操作端
+     */
+    private String operationSource;
 
     /**
      * 账户ID
@@ -19,11 +28,6 @@ public class OperateLogEntity {
      * 请求时间
      */
     private String requestTime;
-
-    /**
-     * 请求ID
-     */
-    private String requestId;
 
     /**
      * 请求IP
@@ -51,9 +55,10 @@ public class OperateLogEntity {
     private String operationByName;
 
     /**
-     * 操作对象
+     * 用户类型
      */
-    private String operationTarget;
+    private Integer userType;
+
 
     /**
      * 操作对象信息
@@ -64,6 +69,11 @@ public class OperateLogEntity {
      * 业务类型
      */
     private String serviceType;
+
+    /**
+     * 业务类型名称
+     */
+    private String serviceTypeName;
 
     /**
      * 日志级别
@@ -89,9 +99,4 @@ public class OperateLogEntity {
      * 响应参数
      */
     private String responseParams;
-
-    /**
-     * 文件
-     */
-    private byte[] file;
 }
