@@ -71,6 +71,7 @@ public class AppWorkOrderController {
      */
     @PostMapping("start")
     @LogRecord(operationCode = "appStartWork", operationName = "app启动工单", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
+    @RequiresPermissions
     public IdmResDTO start(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
         startProcessInstanceDTO.setWorkSource(WorkSourceEnums.WORK_SOURCE_MAKE.getCode());
         return appWorkInfoService.start(startProcessInstanceDTO);
@@ -93,7 +94,6 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryBasicWorkOrderDetailInfo")
-//    @RequiresPermissions("allowUserType=all")
     public IdmResDTO<WorkInfoDto> queryBasicWorkOrderDetailInfo(@RequestBody @Valid WorkProcInstDto dto){
         return appWorkInfoService.queryBasicWorkOrderDetailInfo(dto);
     }
@@ -105,9 +105,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("instanceInfo")
-//    @RequiresPermissions("allowUserType=all")
     public IdmResDTO<HandleDataVO>  instanceInfo(@RequestBody HandleDataDTO HandleDataDTO){
-
         return workInfoService.instanceInfo(HandleDataDTO);
     }
 
@@ -128,6 +126,8 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("appTransfer")
+    @RequiresPermissions
+    @LogRecord(operationCode = "appTransfer", operationName = "app工单转办", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO appTransfer(@RequestBody AppTransferTaskDto appTransferTaskDto){
         return workInfoService.appTransfer(appTransferTaskDto);
     }
@@ -139,6 +139,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("workOrderSuper")
+    @RequiresPermissions
     public IdmResDTO workOrderSuper(@RequestBody @Valid ProcessBusinessDto processBusinessDto){
         return appWorkInfoService.workOrderSuper(processBusinessDto);
     }
@@ -159,7 +160,6 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryMySubmitWorkOrderDetailInfo")
-//    @RequiresPermissions("allowUserType=all")
     public IdmResDTO<WorkInfoDto> queryMySubmitWorkOrderDetailInfo(@RequestBody WorkProcInstDto dto){
         return appWorkInfoService.queryMySubmitWorkOrderDetailInfo(dto);
     }
@@ -170,6 +170,8 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("revokeWorkOrder")
+    @RequiresPermissions()
+    @LogRecord(operationCode = "revokeWorkOrder", operationName = "app工单撤回", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO revokeWorkOrder(@RequestBody ProcessBusinessDto businessDto){
         return appWorkInfoService.revokeWorkOrder(businessDto);
     }
@@ -211,6 +213,8 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("approvalConsent")
+    @RequiresPermissions()
+    @LogRecord(operationCode = "approvalConsent", operationName = "app审批同意", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO approvalConsent(@RequestBody @Valid ApprovalDto approvalDto){
         return appWorkInfoService.approvalConsent(approvalDto);
     }
@@ -221,6 +225,8 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("approvalRejection")
+    @RequiresPermissions()
+    @LogRecord(operationCode = "approvalRejection", operationName = "app审批驳回", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO approvalRejection(@RequestBody @Valid ApprovalDto approvalDto){
         return appWorkInfoService.approvalRejection(approvalDto);
     }
@@ -261,6 +267,8 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("saveOrUpdateSubmitData")
+    @LogRecord(operationCode = "saveOrUpdateSubmitData", operationName = "app完成对象任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
+    @RequiresPermissions()
     public IdmResDTO saveOrUpdateSubmitData(@RequestBody @Valid CommitProcessDto commitId){
         return appWorkInfoService.saveSubmitData(commitId);
     }
@@ -271,6 +279,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("completeTask")
+    @LogRecord(operationCode = "completeTask", operationName = "app完成任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO  completeTask(@RequestBody CompleteTaskDto taskDto){
         return appWorkInfoService.completeTask(taskDto);
     }
@@ -281,6 +290,8 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("clientBack")
+    @RequiresPermissions()
+    @LogRecord(operationCode = "clientBack", operationName = "app任务退回", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO clientBack(@RequestBody @Valid ClientOperationDto operationDto){
         return appWorkInfoService.clientBack(operationDto);
     }
@@ -348,6 +359,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("reportRepairsStart")
+    @RequiresPermissions("allowUserType=client")
     public IdmResDTO reportRepairsStart(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
         return appWorkInfoService.reportRepairsStart(startProcessInstanceDTO);
     }
@@ -358,6 +370,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryReportRepairs")
+    @RequiresPermissions("allowUserType=client")
     public IdmResDTO<IPage<RepairReportDto>> queryReportRepairs(@RequestBody @Valid RepairReportQuery query){
         return appWorkInfoService.queryReportRepairs(query);
     }

@@ -28,6 +28,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -195,8 +196,10 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @return
      */
     public IdmResDTO<IPage<AppWorkInfoDto>> queryWorkOrderSuper(WorkOrderSuperQuery query) {
+        List<Long> deptIds = getDeptIds().stream().map(DepartmentDto::getId).collect(Collectors.toList());
+        //校验
+        checkOrgIds(query.getOrgIds(),deptIds);
         if(CollectionUtil.isEmpty(query.getOrgIds())){
-            List<Long> deptIds = getDeptIds().stream().map(DepartmentDto::getId).collect(Collectors.toList());
             query.setOrgIds(deptIds);
         }
 
@@ -213,6 +216,16 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     }
 
     /**
+     * 校验查询的组织是不是本组织及下属组织
+     * @param orgIds
+     * @param deptIds
+     */
+    public void checkOrgIds(List<Long> orgIds,List<Long> deptIds){
+        if(CollectionUtils.isNotEmpty(orgIds) && CollectionUtils.isNotEmpty(deptIds)){
+            AssertUtil.isTrue(deptIds.containsAll(orgIds),ResultCode.NO_OPERATION_PERMISSION.getMessage());
+        }
+    }
+    /**
      * 获取详情里的基础信息
      * @param dto
      * @return
@@ -223,6 +236,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     }
 
     public WorkInfoDto queryWorkInfoDto(WorkProcInstDto dto){
+       checkWorkOrder(dto.getProcInstId());
         //获取工单详情
         WorkInfoDto resultDto = getBaseMapper().queryWorkOrderDetailInfo(dto);
         //填充组织名称
@@ -260,6 +274,29 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //获取关联的工单信息
         resultDto.setWorkOrderIds(getWordOrderIds(Long.parseLong(resultDto.getProcInstId())));
         return resultDto;
+    }
+
+    /**
+     * 校验工单信息
+     * @param processInstanceId
+     */
+    public void checkWorkOrder(String processInstanceId){
+        if(Objects.nonNull(processInstanceId)){
+            WorkInfoEntity workInfo = getWorkInfo(processInstanceId);
+            AssertUtil.isTrue(Objects.equals(workInfo.getCompanyId(),LoginInfoHolder.getCurrentOrgId()),ResultCode.NO_OPERATION_PERMISSION.getMessage());
+        }
+    }
+
+    /**
+     * 获取工单信息
+     * @param processInstanceId
+     * @return
+     */
+    public WorkInfoEntity getWorkInfo(String processInstanceId){
+        LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkInfoEntity::getProcInstId,processInstanceId);
+        List<WorkInfoEntity> workInfoEntities = baseMapper.selectList(lw);
+        return CollectionUtils.isNotEmpty(workInfoEntities)?workInfoEntities.get(0):new WorkInfoEntity();
     }
     /**
      * 获取关联的工单id
@@ -787,12 +824,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      */
     public IdmResDTO<WorkInfoDto> queryBasicInfo(WorkProcInstDto dto) {
 
-        Long company = getCompany();
+        checkWorkOrder(dto.getProcInstId());
         //获取工单详情
         WorkInfoDto resultDto = getBaseMapper().queryWorkOrderDetailInfo(dto);
-        if(!Objects.equals(company,resultDto.getCompanyId())){
-            return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
-        }
 
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(dto.getProcInstId()).list();
         if(CollectionUtil.isEmpty(taskList)){
