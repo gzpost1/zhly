@@ -24,6 +24,12 @@ public class CustomConfigCreateDTO implements Serializable {
     private String name;
 
     /**
+     * 企业ID
+     */
+    @NotNull(message = "企业ID不能为空")
+    private Long companyId;
+
+    /**
      * 系统选项类型
      */
     @NotNull(message = "系统选项类型不能为空")
