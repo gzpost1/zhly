@@ -144,6 +144,7 @@ public class MsgSendService {
             flowMsgDto.setMessage(noticeEntity.getWorkName());
             flowMsgDto.setUsers(Lists.newArrayList(Long.valueOf(userId)));
             flowMsgDto.setDataJson(JsonUtil.writeValueAsString(noticeEntity));
+            this.sendMsg(flowMsgDto);
         } else {
             log.error("未找到对应的消息类型,processInstanceId:{},nodeType:{},flag:{}", processInstanceId, nodeType, flag);
         }
