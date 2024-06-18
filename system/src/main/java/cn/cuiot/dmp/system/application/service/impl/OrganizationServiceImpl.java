@@ -2,22 +2,20 @@ package cn.cuiot.dmp.system.application.service.impl;
 
 import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_ALREADY_EXIST;
 
-import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
 import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgBindingNameConstants;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgTagConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
-import cn.cuiot.dmp.base.infrastructure.log.LogContextHolder;
-import cn.cuiot.dmp.base.infrastructure.log.OptTargetData;
-import cn.cuiot.dmp.base.infrastructure.log.OptTargetInfo;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.base.infrastructure.stream.StreamMessageSender;
 import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.enums.EventActionEnum;
 import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
