@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.content.param.query;//	模板
 
-import cn.cuiot.dmp.query.PageQuery;
+import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

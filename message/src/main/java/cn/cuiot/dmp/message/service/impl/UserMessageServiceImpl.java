@@ -8,11 +8,13 @@ import cn.cuiot.dmp.message.dal.mapper.UserMessageMapper;
 import cn.cuiot.dmp.message.param.MessagePageQuery;
 import cn.cuiot.dmp.message.service.UserMessageService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,21 +31,32 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
         LambdaQueryWrapper<UserMessageEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(UserMessageEntity::getAccepter, LoginInfoHolder.getCurrentUserId());
         queryWrapper.eq(Objects.nonNull(pageQuery.getReadStatus()), UserMessageEntity::getReadStatus, pageQuery.getReadStatus());
+        queryWrapper.eq(Objects.nonNull(pageQuery.getDataType()), UserMessageEntity::getDataType, pageQuery.getDataType());
+        queryWrapper.ge(Objects.nonNull(pageQuery.getMessageGtTime()), UserMessageEntity::getMessageTime, pageQuery.getMessageGtTime());
+        queryWrapper.le(Objects.nonNull(pageQuery.getMessageLeTime()), UserMessageEntity::getMessageTime, pageQuery.getMessageLeTime());
         queryWrapper.orderByDesc(UserMessageEntity::getMessageTime);
         return page(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), queryWrapper);
     }
 
     @Override
-    public void readMessage(Long id) {
-        UserMessageEntity messageEntity = this.getById(id);
-        if (Objects.nonNull(messageEntity) && StatusConstans.UNREAD.equals(messageEntity.getReadStatus())) {
-            messageEntity.setReadStatus(StatusConstans.READ);
-            this.updateById(messageEntity);
-        }
+    public void readMessage(List<Long> ids) {
+        LambdaUpdateWrapper<UserMessageEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.in(UserMessageEntity::getId, ids);
+        updateWrapper.set(UserMessageEntity::getReadStatus, StatusConstans.READ);
+        updateWrapper.set(UserMessageEntity::getReadTime, new Date());
+        update(updateWrapper);
     }
 
     @Override
     public List<Long> getAcceptDataIdList(MsgExistDataIdReqDto reqDto) {
         return this.baseMapper.getAcceptDataIdList(reqDto);
+    }
+
+    @Override
+    public Long getUnreadMessageCount() {
+        LambdaQueryWrapper<UserMessageEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserMessageEntity::getAccepter, LoginInfoHolder.getCurrentUserId());
+        queryWrapper.eq(UserMessageEntity::getReadStatus, StatusConstans.UNREAD);
+        return count(queryWrapper);
     }
 }
