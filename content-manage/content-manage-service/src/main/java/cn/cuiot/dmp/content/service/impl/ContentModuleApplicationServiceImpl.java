@@ -32,6 +32,7 @@ public class ContentModuleApplicationServiceImpl extends ServiceImpl<ContentModu
     @Override
     public Boolean create(ModuleApplicationCreateDto moduleBannerCreateDto) {
         ContentModuleApplication moduleApplication = ModuleApplicationConvert.INSTANCE.convert(moduleBannerCreateDto);
+        moduleApplication.setStatus(EntityConstants.DISABLED);
         moduleApplication.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         return save(moduleApplication);
     }
@@ -89,6 +90,7 @@ public class ContentModuleApplicationServiceImpl extends ServiceImpl<ContentModu
         LambdaUpdateWrapper<ContentModuleApplication> queryWrapper = new LambdaUpdateWrapper<>();
         queryWrapper.like(StrUtil.isNotEmpty(pageQuery.getName()), ContentModuleApplication::getName, pageQuery.getName());
         queryWrapper.eq(ContentModuleApplication::getCompanyId, LoginInfoHolder.getCurrentOrgId());
+        queryWrapper.eq(Objects.nonNull(pageQuery.getModuleId()), ContentModuleApplication::getModuleId, pageQuery.getModuleId());
         queryWrapper.eq(Objects.nonNull(pageQuery.getStatus()), ContentModuleApplication::getStatus, pageQuery.getStatus());
         queryWrapper.orderByAsc(ContentModuleApplication::getSort);
         queryWrapper.orderByDesc(ContentModuleApplication::getUpdateTime);

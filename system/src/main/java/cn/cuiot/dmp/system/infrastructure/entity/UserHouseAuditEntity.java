@@ -79,7 +79,7 @@ public class UserHouseAuditEntity extends BaseEntity {
     private List<String> remarkImages;
 
     /**
-     * 审核状态(0:待审核,1:审核通过,2:审核驳回)
+     * 审核状态(0:待审核,1:审核通过,2:审核驳回 3:认证失效)
      */
     private Byte auditStatus;
 

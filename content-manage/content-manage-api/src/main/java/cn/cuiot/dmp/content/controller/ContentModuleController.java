@@ -58,14 +58,19 @@ public class ContentModuleController extends BaseController {
      */
     @PostMapping("/updateShow")
     @RequiresPermissions
-    @LogRecord(operationCode = "updateShow", operationName = "更新显示状态", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateShow", operationName = "更新显示状态", serviceType = "contentModule", serviceTypeName = "模块管理")
     public Boolean updateShow(@RequestBody UpdateStatusParam statusParam) {
         return contentModuleService.updateShow(statusParam);
     }
 
+    /**
+     * 更新模块
+     * @param contentModule
+     * @return
+     */
     @PostMapping("/update")
     @RequiresPermissions
-    @LogRecord(operationCode = "updateContentModule", operationName = "更新模块", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateContentModule", operationName = "更新模块", serviceType = "contentModule", serviceTypeName = "模块管理")
     public Boolean updateContentModule(@RequestBody ContentModule contentModule) {
         return contentModuleService.update(contentModule);
     }

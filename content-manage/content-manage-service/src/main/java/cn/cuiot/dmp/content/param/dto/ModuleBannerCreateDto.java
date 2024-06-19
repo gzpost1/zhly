@@ -54,7 +54,7 @@ public class ModuleBannerCreateDto {
     /**
      * 资源id
      */
-    private Long sourceId;
+    private String sourceId;
 
     /**
      * 跳转资源名称

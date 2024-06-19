@@ -9,7 +9,9 @@ import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchives;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchivesPageQuery;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -91,4 +93,5 @@ public interface BuildingArchivesService {
      * 查询当前组织及下级组织下的楼盘列表
      */
     List<BuildingArchive> lookupBuildingArchiveByDepartmentList(DepartmentReqDto reqDto);
+
 }

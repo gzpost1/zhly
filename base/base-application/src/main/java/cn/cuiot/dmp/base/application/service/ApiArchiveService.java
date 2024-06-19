@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.base.application.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 
 import java.util.List;
@@ -22,5 +24,10 @@ public interface ApiArchiveService {
      * 查询当前组织及下级组织下的楼盘列表
      */
     List<BuildingArchive> lookupBuildingArchiveByDepartmentList(DepartmentReqDto reqDto);
+
+    /**
+     * 查询客户
+     */
+    List<CustomerUserRspDto> lookupCustomerUsers(CustomerUseReqDto reqDto);
 
 }
