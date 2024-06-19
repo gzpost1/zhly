@@ -39,7 +39,9 @@
     </sql>
 
     <resultMap id="DtoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.system.application.param.dto.UserHouseAuditDTO">
-
+        <result column="building_name" property="buildingName" />
+        <result column="department_id" property="departmentId" />
+        <result column="department_name" property="departmentName" />
     </resultMap>
 
     <select id="queryForList" resultMap="DtoResultMap">
@@ -70,8 +72,10 @@
             a.deleted_flag,
             a.deleted_on,
             a.deleted_by,
-            a.delete_by_type
-
+            a.delete_by_type,
+            b.`name` as building_name,
+            b.department_id as department_id,
+            c.department_name as department_name
         FROM
             user_house_audit AS a,
             tb_building_archives AS b,

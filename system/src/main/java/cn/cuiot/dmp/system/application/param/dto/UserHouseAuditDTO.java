@@ -20,4 +20,16 @@ public class UserHouseAuditDTO extends UserHouseAuditEntity {
      * 证件类型名称
      */
     private String cardTypeIdName;
+    /**
+     * 楼盘名称
+     */
+    private String buildingName;
+    /**
+     * 组织部门ID
+     */
+    private Long departmentId;
+    /**
+     *  组织部门名称
+     */
+    private String departmentName;
 }

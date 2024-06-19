@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
@@ -18,7 +19,9 @@ import cn.cuiot.dmp.system.application.param.dto.UserHouseBuildingDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.UserHouseAuditEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserHouseAuditMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
@@ -158,11 +161,24 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
     /**
      * 审核
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateAuditStatus(UserHouseAuditStatusDTO statusDTO) {
+
         UserHouseAuditEntity userHouseAuditEntity = Optional.ofNullable(getById(statusDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
-        BeanUtils.copyProperties(statusDTO, userHouseAuditEntity);
-        return updateById(userHouseAuditEntity);
+
+        LambdaUpdateWrapper<UserHouseAuditEntity> updateWrapper = Wrappers.lambdaUpdate();
+
+        updateWrapper.set(UserHouseAuditEntity::getAuditStatus, statusDTO.getAuditStatus());
+        updateWrapper.set(UserHouseAuditEntity::getRejectReason, statusDTO.getRejectReason());
+        updateWrapper.set(UserHouseAuditEntity::getBindCustomerId, statusDTO.getBindCustomerId());
+        updateWrapper
+                .set(UserHouseAuditEntity::getBindCustomerType, statusDTO.getBindCustomerType());
+        updateWrapper.set(UserHouseAuditEntity::getBindCustomerMemberId,
+                statusDTO.getBindCustomerMemberId());
+
+        updateWrapper.eq(UserHouseAuditEntity::getId, userHouseAuditEntity.getId());
+        return super.update(null, updateWrapper);
     }
 
     /**
@@ -170,7 +186,10 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteUserHouseAudit(Long id) {
-        return removeById(id);
+        LambdaUpdateWrapper<UserHouseAuditEntity> updateWrapper = Wrappers.lambdaUpdate();
+        updateWrapper.set(UserHouseAuditEntity::getDeletedFlag, EntityConstants.DELETED);
+        updateWrapper.eq(UserHouseAuditEntity::getId, id);
+        return super.update(null, updateWrapper);
     }
 
     /**
