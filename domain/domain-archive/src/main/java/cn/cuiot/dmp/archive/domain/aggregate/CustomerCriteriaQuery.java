@@ -19,6 +19,21 @@ import lombok.NoArgsConstructor;
 public class CustomerCriteriaQuery extends PageQuery {
 
     /**
+     * 客户ID
+     */
+    private Long id;
+
+    /**
+     * 关键字
+     */
+    private String keyword;
+
+    /**
+     * 关键字-手机号
+     */
+    private String keywordPhone;
+
+    /**
      * 客户名称
      */
     private String customerName;
