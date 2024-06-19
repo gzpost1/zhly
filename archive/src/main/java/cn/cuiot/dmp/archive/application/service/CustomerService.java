@@ -26,6 +26,8 @@ import cn.cuiot.dmp.archive.infrastructure.vo.CustomerVehicleVo;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerVo;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgBindingNameConstants;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgTagConstants;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.stream.StreamMessageSender;
 import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
 import cn.cuiot.dmp.common.constant.EntityConstants;
@@ -631,6 +633,13 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
             resultList.add(exportVo);
         }
         return resultList;
+    }
+
+    /**
+     * 查询客户
+     */
+    public List<CustomerUserRspDto> lookupCustomerUsers(CustomerUseReqDto reqDto) {
+        return customerMapper.lookupCustomerUsers(reqDto);
     }
 
 }
