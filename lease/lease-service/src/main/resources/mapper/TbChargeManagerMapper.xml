@@ -43,7 +43,7 @@
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeManagerPageDto">
     select
-      id, customer_user_id, charge_item_id, receivable_amount,ownership_period_begin, ownership_period_end, create_time,due_date, receivble_plan_id, receivble_status, hang_up_status, abrogate_status
+      id, customer_user_id, charge_item_id, receivable_amount,ownership_period_begin, ownership_period_end, create_time,due_date, receivble_plan_id, receivble_status, hang_up_status, abrogate_status,house_id
     from
         tb_charge_manager
         where
@@ -84,15 +84,13 @@
   </select>
 
   <select id="queryForHouseDetail" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeHouseDetailDto">
-    select
-      sum(receivable_amount_received) + sum(liquidated_damages_received) as paid_amount,
-      sum(receivable_amount) - sum(receivable_amount_received) as total_arrears
+      select house_id,
+             sum(receivable_amount_received) + sum(liquidated_damages_received) as paid_amount,
+             sum(receivable_amount) - sum(receivable_amount_received)           as total_arrears
 
-    from
-        tb_charge_manager
-        where
-        deleted = 0
-    and house_id = #{id}
+      from tb_charge_manager
+      where deleted = 0
+        and house_id = #{id}
   </select>
 
   <update id="receivedAmount">
@@ -109,4 +107,52 @@
         and abrogate_status = 0
         and receivable_amount >= receivable_amount_received + #{received.liquidatedDamagesReceived}
   </update>
+
+  <select id="getHouseInfoByIds" resultType="cn.cuiot.dmp.lease.dto.charge.HouseInfoDto">
+    select
+      id as house_id, name as house_name, code as house_code
+    from
+      tb_houses_archives
+    where deleted = 0
+    and id in
+    <foreach collection="ids" item="id" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
+  </select>
+
+  <select id="getOwnerInfo" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeHouseDetailDto">
+    SELECT
+    GROUP_CONCAT(a.contact_name) as owner_name,
+    GROUP_CONCAT(a.contact_phone) as owner_phone
+    from
+    tb_customer a
+    INNER JOIN tb_customer_house b on a.id = b.customer_id
+    where
+    a.deleted = 0
+    and b.deleted = 0
+    and b.identity_type = 1
+    and b.house_id = #{houseId}
+
+  </select>
+
+  <select id="getUserInfo" resultType="cn.cuiot.dmp.lease.dto.charge.CustomerUserInfo">
+    SELECT
+    a.id as customer_user_id,
+    a.contact_name as customer_user_name,
+    a.contact_phone as customer_user_phone,
+    b.identity_type,
+    b.house_id
+    from
+    tb_customer a
+    LEFT JOIN tb_customer_house b on a.id = b.customer_id and b.deleted = 0 and b.house_id in
+    <foreach collection="houseIds" item="houseid" open="(" close=")" separator=",">
+      #{houseid}
+    </foreach>
+    where
+    a.deleted = 0
+    and a.id in
+    <foreach collection="userIds" item="userid" open="(" close=")" separator=",">
+      #{userid}
+    </foreach>
+  </select>
 </mapper>

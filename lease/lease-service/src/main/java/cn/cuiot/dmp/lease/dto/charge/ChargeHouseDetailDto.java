@@ -9,6 +9,12 @@ import lombok.Data;
  */
 @Data
 public class ChargeHouseDetailDto {
+
+    /**
+     * 房屋主键
+     */
+    private Long houseId;
+
     /**
      * 房屋名称
      */

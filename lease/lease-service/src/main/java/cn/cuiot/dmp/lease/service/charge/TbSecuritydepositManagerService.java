@@ -94,4 +94,8 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
         dto.setSecuritydepositRefundList(securitydepositRefundService.list(refundWrapper));
         return dto;
     }
+
+    public Integer getHouseReundableAmount(Long houseId) {
+        return baseMapper.getHouseReundableAmount(houseId);
+    }
 }

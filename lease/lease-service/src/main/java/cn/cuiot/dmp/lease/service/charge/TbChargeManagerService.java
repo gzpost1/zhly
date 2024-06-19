@@ -32,6 +32,8 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
     private TbChargeHangupService tbChargeHangupService;
     @Autowired
     private TbChargeReceivedService tbChargeReceivedService;
+    @Autowired
+    private TbSecuritydepositManagerService securitydepositManagerService;
 
 
     /**
@@ -168,7 +170,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         ChargeHouseDetailDto amountDetail = Optional.ofNullable(baseMapper.queryForHouseDetail(id)).orElse(new ChargeHouseDetailDto());
         BeanUtils.copyProperties(amountDetail, chargeHouseDetailDto);
 
-        //todo 押金
+        chargeHouseDetailDto.setDepositRefundable(securitydepositManagerService.getHouseReundableAmount(chargeHouseDetailDto.getHouseId()));
         return chargeHouseDetailDto;
     }
 
@@ -274,4 +276,6 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
     public IPage<TbChargeReceived> queryForReceivedPage(ChargeHangupQueryDto queryDto) {
         return tbChargeReceivedService.queryForPage(queryDto);
     }
+
+
 }

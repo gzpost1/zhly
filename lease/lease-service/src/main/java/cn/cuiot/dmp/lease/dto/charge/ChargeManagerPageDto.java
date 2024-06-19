@@ -19,6 +19,11 @@ public class ChargeManagerPageDto {
     private Long id;
 
     /**
+     * 房屋ID
+     */
+    private Long houseId;
+
+    /**
      * 客户id
      */
     private Long customerUserId;

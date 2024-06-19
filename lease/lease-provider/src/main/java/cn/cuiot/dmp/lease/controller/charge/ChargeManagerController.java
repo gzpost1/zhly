@@ -14,8 +14,11 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeHangup;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.enums.*;
+import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,7 +26,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 收费管理-应收管理-收银台-缴费管理
@@ -37,6 +43,8 @@ public class ChargeManagerController {
 
     @Autowired
     private TbChargeManagerService tbChargeManagerService;
+    @Autowired
+    private ChargeHouseAndUserService chargeHouseAndUserService;
 
     /**
      * 获取房屋欠费等相关信息
@@ -47,7 +55,19 @@ public class ChargeManagerController {
     @PostMapping("/queryForHouseDetail")
     public IdmResDTO<ChargeHouseDetailDto> queryForHouseDetail(@RequestBody @Valid IdParam idParam) {
         ChargeHouseDetailDto chargeHouseDetailDto = tbChargeManagerService.queryForHouseDetail(idParam.getId());
-        // todo 房屋信息
+        if(Objects.nonNull(chargeHouseDetailDto) ){
+            List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(Lists.newArrayList(chargeHouseDetailDto.getHouseId()));
+            if(CollectionUtils.isNotEmpty(houseInfoDtos)){
+                chargeHouseDetailDto.setHouseCode(houseInfoDtos.get(0).getHouseCode());
+                chargeHouseDetailDto.setHouseName(houseInfoDtos.get(0).getHouseName());
+            }
+
+            ChargeHouseDetailDto ownerInfo = chargeHouseAndUserService.getOwnerInfo(chargeHouseDetailDto.getHouseId());
+            if(Objects.nonNull(ownerInfo)){
+                chargeHouseDetailDto.setOwnerName(ownerInfo.getOwnerName());
+                chargeHouseDetailDto.setOwnerPhone(ownerInfo.getOwnerPhone());
+            }
+        }
         return IdmResDTO.success().body(chargeHouseDetailDto);
     }
 
@@ -65,7 +85,26 @@ public class ChargeManagerController {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
 
         IPage<ChargeManagerPageDto> chargeManagerPageDtoIPage = tbChargeManagerService.queryForPage(query);
-        //todo 房屋信息 客户信息
+        if(Objects.nonNull(chargeManagerPageDtoIPage) && CollectionUtils.isNotEmpty(chargeManagerPageDtoIPage.getRecords())){
+            List<Long> houseIds = chargeManagerPageDtoIPage.getRecords().stream().map(ChargeManagerPageDto::getHouseId).collect(Collectors.toList());
+            List<Long> userIds = chargeManagerPageDtoIPage.getRecords().stream().map(ChargeManagerPageDto::getCustomerUserId).collect(Collectors.toList());
+
+            List<CustomerUserInfo> userInfoList = chargeHouseAndUserService.getUserInfo(houseIds,userIds);
+            if(CollectionUtils.isNotEmpty(userInfoList)){
+                for (ChargeManagerPageDto record : chargeManagerPageDtoIPage.getRecords()) {
+                    for (CustomerUserInfo userInfo : userInfoList) {
+                        if(Objects.equals(record.getCustomerUserId(),userInfo.getCustomerUserId())){
+                            record.setCustomerUserName(userInfo.getCustomerUserName());
+                            record.setCustomerUserPhone(userInfo.getCustomerUserPhone());
+
+                            if(Objects.equals(record.getHouseId(),userInfo.getHouseId())){
+//                                record.set
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return IdmResDTO.success().body(chargeManagerPageDtoIPage);
     }
 

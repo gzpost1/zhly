@@ -13,4 +13,6 @@ public interface TbSecuritydepositManagerMapper extends BaseMapper<TbSecuritydep
     IPage<SecuritydepositManagerPageDto> queryForPage(Page page, @Param("query") SecuritydepositManagerQuery query);
 
     int refund(@Param("query") SecuritydepositRefundDto refundAmount);
+
+    Integer getHouseReundableAmount(Long houseId);
 }

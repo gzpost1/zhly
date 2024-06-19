@@ -73,4 +73,8 @@
         and `status` in (1, 2)
         and receivable_amount_received >= returned_amount + #{query.refundAmount}
   </update>
+
+  <select id="getHouseReundableAmount" resultType="java.lang.Integer">
+      select sum(receivable_amount_received - returned_amount) from tb_securitydeposit_manager where house_id = #{houseId} and deleted = 0 and receivable_amount_received > 0
+    </select>
 </mapper>
