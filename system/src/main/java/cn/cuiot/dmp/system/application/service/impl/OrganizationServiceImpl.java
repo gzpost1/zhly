@@ -14,17 +14,13 @@ import cn.cuiot.dmp.base.infrastructure.stream.StreamMessageSender;
 import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.EventActionEnum;
 import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.utils.Const;
-import cn.cuiot.dmp.common.utils.DateTimeUtil;
-import cn.cuiot.dmp.common.utils.JsonUtil;
-import cn.cuiot.dmp.common.utils.RandomCodeWorker;
-import cn.cuiot.dmp.common.utils.Sm4;
-import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
+import cn.cuiot.dmp.common.utils.*;
 import cn.cuiot.dmp.domain.types.Password;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
@@ -43,6 +39,7 @@ import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.domain.entity.Organization;
 import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.domain.query.OrganizationCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.FormConfigTypeRepository;
 import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
@@ -173,6 +170,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private DeptTreePathUtils deptTreePathUtils;
+
+    @Autowired
+    private FormConfigTypeRepository formConfigTypeRepository;
 
     /**
      * 根据用户类型返回
@@ -1037,6 +1037,15 @@ public class OrganizationServiceImpl implements OrganizationService {
             }
         }
         return organizationChangeDto;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int updateInitFlag(Long companyId) {
+        AssertUtil.notNull(companyId, "企业id不能为空");
+        // 初始化表单配置
+        formConfigTypeRepository.queryByCompany(companyId, EntityConstants.ENABLED);
+        return organizationRepository.updateInitFlag(companyId, EntityConstants.ENABLED);
     }
 
 }

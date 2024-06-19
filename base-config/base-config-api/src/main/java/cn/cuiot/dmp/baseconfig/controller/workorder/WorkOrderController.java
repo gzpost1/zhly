@@ -8,6 +8,7 @@ import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
+import cn.cuiot.dmp.baseconfig.flow.entity.CommitProcessEntity;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkSourceEnums;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -51,7 +53,6 @@ public class WorkOrderController extends BaseController {
      */
     @PostMapping("queryWorkOrderInfo")
     public IdmResDTO<IPage<WorkInfoDto>> queryWorkOrderInfo(@RequestBody WorkInfoDto dto){
-
         return workInfoService.queryWorkOrderInfo(dto );
     }
 
@@ -127,5 +128,15 @@ public class WorkOrderController extends BaseController {
     public IdmResDTO proxyRecordStart(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
         startProcessInstanceDTO.setWorkSource(WorkSourceEnums.PROXY_CUSTOMER_RECORD.getCode());
         return workInfoService.start(startProcessInstanceDTO);
+    }
+
+    /**
+     * 详情-获取提交的信息
+     * @param dto
+     * @return
+     */
+    @PostMapping("queryCommitProcessInfo")
+    public List<CommitProcessEntity> queryCommitProcessInfo(@RequestBody @Valid QueryCommitProcessDto dto){
+        return workInfoService.queryCommitProcessInfo(dto);
     }
 }

@@ -22,7 +22,7 @@ public class UserHouseAuditStatusDTO extends UserHouseAuditCreateDTO {
     private Long id;
 
     /**
-     * 审核状态(0:待审核,1:审核通过,2:审核驳回)
+     * 审核状态(0:待审核,1:审核通过,2:审核驳回 3:认证失效)
      */
     @NotNull(message = "审核状态不能为空")
     private Byte auditStatus;

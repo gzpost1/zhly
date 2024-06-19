@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.archive.api.controller;//	模板
 
 import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
+import cn.cuiot.dmp.archive.application.service.CustomerService;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchivesPageQuery;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
@@ -8,7 +9,9 @@ import cn.cuiot.dmp.base.application.annotation.InternalApi;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.hutool.core.bean.BeanUtil;
@@ -44,6 +47,9 @@ public class ApiController {
     @Autowired
     private HousesArchivesService  housesArchivesService;
 
+    @Autowired
+    private CustomerService customerService;
+
     /**
      * 查询楼盘信息
      */
@@ -74,6 +80,15 @@ public class ApiController {
     @PostMapping("/lookupBuildingArchiveByDepartmentList")
     public List<BuildingArchive> lookupBuildingArchiveByDepartmentList(@RequestBody @Valid DepartmentReqDto reqDto){
         return buildingArchivesService.lookupBuildingArchiveByDepartmentList(reqDto);
+    }
+
+
+    /**
+     * 查询客户
+     */
+    @PostMapping("/lookupCustomerUsers")
+    public List<CustomerUserRspDto> lookupCustomerUsers(@RequestBody @Valid CustomerUseReqDto reqDto){
+        return customerService.lookupCustomerUsers(reqDto);
     }
 
 }

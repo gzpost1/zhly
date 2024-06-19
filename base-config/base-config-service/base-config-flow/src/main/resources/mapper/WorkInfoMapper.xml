@@ -573,6 +573,9 @@
             <if test="query.workSource !=null">
                 and work_souce = #{query.workSource}
             </if>
+            <if test="query.workSource =null">
+                and work_souce in (2,3)
+            </if>
             <if test="query.businessType !=null">
                 and business_type = #{query.businessType}
             </if>
