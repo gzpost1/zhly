@@ -278,4 +278,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
     }
 
 
+    public IPage<CustomerUserInfo> queryHouseCustmerPage(HouseCustomerQuery query) {
+        return baseMapper.queryHouseCustmerPage(new Page(query.getPageNo(), query.getPageSize()), query);
+    }
 }

@@ -153,7 +153,7 @@
     </select>
 
     <select id="getOwnerInfo" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeHouseDetailDto">
-        SELECT GROUP_CONCAT(a.contact_name)  as owner_name,
+        SELECT GROUP_CONCAT(a.customer_name) as owner_name,
                GROUP_CONCAT(a.contact_phone) as owner_phone
         from tb_customer a
                  INNER JOIN tb_customer_house b on a.id = b.customer_id
@@ -165,7 +165,7 @@
 
     <select id="getUserInfo" resultType="cn.cuiot.dmp.lease.dto.charge.CustomerUserInfo">
         SELECT a.id            as customer_user_id,
-               a.contact_name  as customer_user_name,
+               a.customer_name  as customer_user_name,
                a.contact_phone as customer_user_phone,
                b.identity_type,
                b.house_id
@@ -184,7 +184,7 @@
 
     <select id="getUserInfoByIds" resultType="cn.cuiot.dmp.lease.dto.charge.CustomerUserInfo">
         SELECT a.id            as customer_user_id,
-               a.contact_name  as customer_user_name,
+               a.customer_name  as customer_user_name,
                a.contact_phone as customer_user_phone
         from tb_customer a
         where a.deleted = 0
@@ -192,5 +192,21 @@
         <foreach collection="userIds" item="userid" open="(" close=")" separator=",">
             #{userid}
         </foreach>
+    </select>
+
+    <select id="queryHouseCustmerPage" resultType="cn.cuiot.dmp.lease.dto.charge.CustomerUserInfo">
+        SELECT a.id            as customer_user_id,
+               a.customer_name as customer_user_name,
+               a.contact_phone as customer_user_phone,
+               b.identity_type,
+               b.house_id
+        from tb_customer a
+                 INNER JOIN tb_customer_house b on a.id = b.customer_id
+        where a.deleted = 0
+          and b.deleted = 0
+          and b.house_id = #{query.houseId}
+        <if test="query.customerUserName != null">
+            and a.customer_name like concat('%', #{query.customerUserName}, '%')
+        </if>
     </select>
 </mapper>

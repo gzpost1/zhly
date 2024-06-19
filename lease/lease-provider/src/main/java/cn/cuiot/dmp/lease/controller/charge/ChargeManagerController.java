@@ -76,6 +76,15 @@ public class ChargeManagerController {
         return IdmResDTO.success().body(chargeHouseDetailDto);
     }
 
+    /**
+     * 获取房屋客户信息
+     * @param
+     * @return
+     */
+    @PostMapping("/queryHouseCustmerPage")
+    public IdmResDTO<IPage<CustomerUserInfo>> queryHouseCustmerPage(@RequestBody @Valid HouseCustomerQuery query) {
+        return IdmResDTO.success().body(tbChargeManagerService.queryHouseCustmerPage(query));
+    }
 
     /**
      * 获取分页
