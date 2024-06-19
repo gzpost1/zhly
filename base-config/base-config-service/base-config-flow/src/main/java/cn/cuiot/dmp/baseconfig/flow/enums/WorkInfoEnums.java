@@ -21,7 +21,10 @@ public enum WorkInfoEnums {
     /**
      * 4-已挂起
      */
-    SUSPEND((byte)4, "已挂起");
+    SUSPEND((byte)4, "已挂起"),
+
+    WITHDRAWN((byte) 5,"已撤回")
+    ;
 
     private byte code;
     private String desc;

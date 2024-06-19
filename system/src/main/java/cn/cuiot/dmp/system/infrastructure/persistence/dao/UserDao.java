@@ -28,7 +28,7 @@ public interface UserDao {
     Long getOrgId(@Param("pkUserId") Long pkUserId);
 
     /**
-     * 获取user对应的pk_org_id
+     * 获取pk_org_id对应的用户ID
      *
      * @param orgId
      * @return

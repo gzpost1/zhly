@@ -135,6 +135,13 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         if (shouldIgnoreAuth(currentUrl)) {
             return chain.filter(exchange);
         }
+
+        // 签名校验
+        boolean needCheckSignature = signatureService.isNeedCheckSignature(exchange);
+        if (needCheckSignature) {
+            return signatureService.checkSignature(exchange, chain);
+        }
+
         List<String> list = headers.get(TOKEN);
         if (list == null || list.isEmpty()) {
             list = headers.get(AUTHORIZATION);
@@ -150,13 +157,6 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
             //解析与校验token
             checkToken(jwt);
         }
-
-        // 签名校验
-        boolean needCheckSignature = signatureService.isNeedCheckSignature(exchange);
-        if (needCheckSignature) {
-            return signatureService.checkSignature(exchange, chain);
-        }
-
         return chain.filter(exchange);
     }
 
@@ -197,10 +197,11 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
      */
     private void checkToken(String jwt) {
         try {
+
             Claims claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt).getBody();
 
             String userId = claims.get(USERID).toString();
-            String orgId = claims.get(USERORG).toString();
+            String orgId = Objects.nonNull(claims.get(USERORG))?claims.get(USERORG).toString():null;
 
             //踢下线
             if (!StringUtils.isEmpty(orgId)) {

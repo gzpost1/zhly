@@ -61,6 +61,16 @@
             <if test="path!=null and path != ''">
                 AND d.path like concat(#{path}, '%')
             </if>
+            <if test="pathList != null and pathList.size >0">
+                AND uo.pk_dept_id in (
+                    select id
+                    from department
+                    where path in
+                    <foreach collection="pathList" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                  )
+            </if>
             <if test="roleIdList != null and roleIdList.size() >0">
                 AND r.id in
                 <foreach collection="roleIdList" item="roleId" open="(" separator="," close=")">

@@ -30,4 +30,9 @@ public class UpdateUserCommand {
      * 最后上线ip
      */
     private String lastOnlineIp;
+
+    /**
+     * 小程序openid
+     */
+    private String openid;
 }

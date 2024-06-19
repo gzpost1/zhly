@@ -247,7 +247,21 @@ public class BpmnModelUtils {
             } else {
                 return id;
             }
-        } else if (Type.ROOT.isEqual(nodeType)) {
+        }else if (Type.COMMENT.isEqual(nodeType)) {
+            childNodeMap.put(flowNode.getId(), flowNode);
+            JSONObject incoming = flowNode.getIncoming();
+            incoming.put("incoming", Collections.singletonList(fromId));
+            String id = createTask(process, flowNode, sequenceFlows, childNodeMap);
+            // 如果当前任务还有后续任务，则遍历创建后续任务
+            ChildNode children = flowNode.getChildren();
+            if (Objects.nonNull(children) && StringUtils.isNotBlank(children.getId())) {
+                return create(id, children, process, bpmnModel, sequenceFlows, childNodeMap);
+            } else {
+                return id;
+            }
+        }
+
+        else if (Type.ROOT.isEqual(nodeType)) {
             childNodeMap.put(flowNode.getId(), flowNode);
             JSONObject incoming = flowNode.getIncoming();
             incoming.put("incoming", Collections.singletonList(fromId));
@@ -1105,7 +1119,7 @@ public class BpmnModelUtils {
         return id;
     }
 
-    private enum Type {
+    public static enum Type {
         INCLUSIVES("INCLUSIVES", InclusiveGateway.class),
         INCLUSIVE("INCLUSIVE", InclusiveGateway.class),
         /**
@@ -1124,6 +1138,7 @@ public class BpmnModelUtils {
          */
         USER_TASK("APPROVAL", UserTask.class),
         APPROVE_USER_TASK("TASK", UserTask.class),
+        COMMENT("COMMENT", UserTask.class),
         EMPTY("EMPTY", Object.class),
         ROOT("ROOT", UserTask.class),
         CC("CC", ServiceTask.class),
@@ -1151,6 +1166,9 @@ public class BpmnModelUtils {
             return this.type.equals(type);
         }
 
+        public String getType() {
+            return type;
+        }
     }
 
     public static ChildNode getChildNodeByNodeId(String processDefinitionId, String currentActivityId) {

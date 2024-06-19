@@ -28,6 +28,7 @@ import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.system.application.service.OrganizationService;
 import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
@@ -99,7 +100,7 @@ public class LoginServiceImpl implements LoginService {
         }
         // 查询用户
         User userEntity = userRepository
-                .queryByUserNameOrPhoneNumberOrEmail(userAccount, phoneNumber, email);
+                .queryByUserNameOrPhoneNumberOrEmail(userAccount, phoneNumber, email, UserTypeEnum.USER.getValue());
         // 账号不存在
         if (userEntity == null||Objects.isNull(userEntity.getStatus())) {
             //记录登录失败次数
@@ -194,7 +195,7 @@ public class LoginServiceImpl implements LoginService {
         platformOperateLogDTO.setRequestParams(requestParamJsonObject.toJSONString());
         platformOperateLogDTO.setOperationCode("session");
         platformOperateLogDTO.setOperationName("登录");
-        platformOperateLogDTO.setOperationTarget(validateUser.getUsername());
+        //platformOperateLogDTO.setOperationTarget(validateUser.getUsername());
         platformOperateLogDTO.setServiceType(ServiceTypeConst.AUDIT_MANAGEMENT);
 
         // 获取用户自增id
@@ -259,7 +260,7 @@ public class LoginServiceImpl implements LoginService {
             platformOperateLogDTO.setOrgId(pkOrgId);
             platformOperateLogDTO.setOperationById(String.valueOf(pkUserId));
             platformOperateLogDTO.setOperationByName(validateUser.getUsername());
-            saveLog2Db(isSuccess, platformOperateLogDTO, request);
+            this.saveLog2Db(isSuccess, platformOperateLogDTO, request);
 
             //redis记录当前登录账号
             List<String> orgInfoList = redisUtil
@@ -282,6 +283,7 @@ public class LoginServiceImpl implements LoginService {
             UpdateUserCommand updateUserParams = new UpdateUserCommand();
             updateUserParams.setId(validateUser.getId().getValue());
             updateUserParams.setLastOnlineIp(ipAddr);
+            updateUserParams.setOpenid(validateUser.getOpenid());
             userService.updateByCommand(updateUserParams);
 
             // 初始化返回对象
@@ -298,6 +300,7 @@ public class LoginServiceImpl implements LoginService {
             loginResDTO.setAvatar(validateUser.getAvatar());
             loginResDTO.setUserType(validateUser.getUserType().getValue());
             loginResDTO.setDeptId(StringUtils.isNotBlank(pkDeptId)?Long.valueOf(pkDeptId):null);
+            loginResDTO.setOpenid(validateUser.getOpenid());
 
             return loginResDTO;
 
@@ -331,7 +334,7 @@ public class LoginServiceImpl implements LoginService {
         platformOperateLogDTO.setOrgId(orgId);
         platformOperateLogDTO.setOperationById(userId);
         platformOperateLogDTO.setOperationByName(userName);
-        platformOperateLogDTO.setOperationTarget(userName);
+        //platformOperateLogDTO.setOperationTarget(userName);
         platformOperateLogDTO.setOperationCode("session");
         platformOperateLogDTO.setOperationName("注销");
         platformOperateLogDTO.setServiceType(ServiceTypeConst.AUDIT_MANAGEMENT);
@@ -339,7 +342,7 @@ public class LoginServiceImpl implements LoginService {
             String jwt = request.getHeader(AuthContants.TOKEN);
             redisUtil.del(CacheConst.LOGIN_USERS_REFRESH_CODE + jwt);
             redisUtil.del(CacheConst.LOGIN_USERS_JWT + jwt);
-
+            redisUtil.del(CacheConst.LOGIN_USERS_JWT_WX + jwt);
             // 注销成功，发送日志
             // 发送日志至kafka
             isSuccess = true;
@@ -401,7 +404,7 @@ public class LoginServiceImpl implements LoginService {
             phoneNumber = new PhoneNumber(username);
         }
         User validateUser = userRepository
-                .queryByUserNameOrPhoneNumberOrEmail(username, phoneNumber, null);
+                .queryByUserNameOrPhoneNumberOrEmail(username, phoneNumber, null,UserTypeEnum.USER.getValue());
         // 获取用户自增id
         Long pkUserId = Optional.ofNullable(validateUser).map(u -> u.getId().getValue())
                 .orElse(null);
@@ -461,12 +464,12 @@ public class LoginServiceImpl implements LoginService {
         platformOperateLogDTO.setRequestParams(requestParamJsonObject.toJSONString());
         platformOperateLogDTO.setOperationCode("session");
         platformOperateLogDTO.setOperationName("模拟登录企业");
-        platformOperateLogDTO.setOperationTarget(validateUser.getUsername());
+        //platformOperateLogDTO.setOperationTarget(validateUser.getUsername());
         platformOperateLogDTO.setServiceType(ServiceTypeConst.AUDIT_MANAGEMENT);
         platformOperateLogDTO.setOrgId(pkOrgId);
         platformOperateLogDTO.setOperationById(String.valueOf(LoginInfoHolder.getCurrentUserId()));
         platformOperateLogDTO.setOperationByName(LoginInfoHolder.getCurrentUsername());
-        saveLog2Db(true, platformOperateLogDTO, request);
+        this.saveLog2Db(true, platformOperateLogDTO, request);
 
         //redis记录当前登录账号
         List<String> orgInfoList = redisUtil

@@ -97,4 +97,9 @@ public interface OrganizationService {
      */
     OrganizationChangeDto getOrganizationChangeById(Long id, String sessionUserId,
             String sessionOrgId);
+
+    /**
+     * 更新企业初始化状态
+     */
+    int updateInitFlag(Long companyId);
 }

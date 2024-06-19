@@ -1,17 +1,33 @@
 package cn.cuiot.dmp.base.application.aop;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
-import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.application.constant.OperationSourceContants;
 import cn.cuiot.dmp.base.application.dto.ResponseWrapper;
 import cn.cuiot.dmp.base.application.rocketmq.SendService;
-import cn.cuiot.dmp.base.application.utils.FileExportUtils;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.enums.LogLevelEnum;
 import cn.cuiot.dmp.common.enums.StatusCodeEnum;
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
+import cn.cuiot.dmp.common.utils.JsonUtil;
+import cn.cuiot.dmp.domain.types.AuthContants;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Joiner;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.commons.lang3.StringUtils;
@@ -27,15 +43,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 /**
  * @author guoying
  * @className LogRecordAspect
@@ -46,9 +53,15 @@ import java.util.Objects;
 @Order(2)
 @Aspect
 @Component
-public class LogRecordAspect extends BaseController {
+public class LogRecordAspect {
+
     @Autowired
     private SendService sendService;
+
+    /**
+     * 小程序特殊操作路径
+     */
+    private final static String APP_PATH="/app/";
 
     @Pointcut("@annotation(cn.cuiot.dmp.base.application.annotation.LogRecord)")
     public void logRecord() {
@@ -61,37 +74,67 @@ public class LogRecordAspect extends BaseController {
                 .getRequestAttributes();
         HttpServletRequest request = servletRequestAttributes.getRequest();
 
-        String header = "token";
-        if (StringUtils.isBlank(request.getHeader(header))) {
-            // openApi请求
-            return joinPoint.proceed();
-        }
-
         // 方法执行前
         OperateLogDto operateLogDto = this.beforeProceed(request, joinPoint);
 
         // 执行方法
-        Object obj = this.proceed(joinPoint, operateLogDto);
-
-        // 方法执行后
-        this.afterProceed(joinPoint, operateLogDto, obj);
-
+        Object obj = null;
+        try {
+            obj = joinPoint.proceed();
+        } catch (Throwable e) {
+            log.error("LogRecordAspect joinPoint.proceed error", e);
+            operateLogDto.setLogLevel(LogLevelEnum.ERROR.getCode());
+            operateLogDto.setStatusCode(StatusCodeEnum.FAILED.getCode());
+            operateLogDto.setStatusMsg(e.getMessage());
+            throw e;
+        } finally {
+            // 方法执行后
+            this.afterProceed(joinPoint, operateLogDto, obj);
+            LogContextHolder.remove();
+        }
         return obj;
     }
 
     /**
      * 方法执行前处理
      */
-    private OperateLogDto beforeProceed(HttpServletRequest request, ProceedingJoinPoint joinPoint)
-            throws Throwable {
-        //填充数据
+    private OperateLogDto beforeProceed(HttpServletRequest request, ProceedingJoinPoint joinPoint) {
+
         OperateLogDto operateLogDto = new OperateLogDto();
-        operateLogDto.setOrgId(getOrgId());
-        operateLogDto.setOperationById(getUserId());
-        operateLogDto.setOperationByName(getUserName());
+
+        //企业ID
+        operateLogDto.setOrgId(StrUtil.toStringOrNull(LoginInfoHolder.getCurrentOrgId()));
+        //请求时间
         operateLogDto.setRequestTime(
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+        //请求IP
         operateLogDto.setRequestIp(IpUtil.getIpAddr(request));
+        //操作者ID
+        operateLogDto.setOperationById(StrUtil.toStringOrNull(LoginInfoHolder.getCurrentUserId()));
+        //用户类型
+        Integer userType = LoginInfoHolder.getCurrentUserType();
+        operateLogDto.setUserType(userType);
+        //操作者名称
+        if (UserTypeEnum.USER.getValue().equals(userType)) {
+            operateLogDto.setOperationByName(
+                    StrUtil.toStringOrNull(LoginInfoHolder.getCurrentUsername()));
+        } else {
+            operateLogDto
+                    .setOperationByName(StrUtil.toStringOrNull(LoginInfoHolder.getCurrentName()));
+        }
+        //操作端
+        String operationSource = request.getHeader(AuthContants.OPERATION_SOURCE);
+        operateLogDto.setOperationSource(operationSource);
+        if(StringUtils.isBlank(operateLogDto.getOperationSource())){
+            operateLogDto.setOperationSource(OperationSourceContants.WEB_END);
+            if(request.getServletPath().contains(APP_PATH)){
+                if (UserTypeEnum.USER.getValue().equals(userType)) {
+                    operateLogDto.setOperationSource(OperationSourceContants.APP_MANAGE_END);
+                }else {
+                    operateLogDto.setOperationSource(OperationSourceContants.APP_CLIENT_END);
+                }
+            }
+        }
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 
@@ -120,90 +163,47 @@ public class LogRecordAspect extends BaseController {
         //注解信息
         LogRecord logRecord = signature.getMethod().getAnnotation(LogRecord.class);
         if (null != logRecord) {
+            //操作编码
             operateLogDto.setOperationCode(logRecord.operationCode());
+            //操作名称
             operateLogDto.setOperationName(logRecord.operationName());
+            //业务类型
             operateLogDto.setServiceType(logRecord.serviceType());
+            //业务类型名称
+            operateLogDto.setServiceTypeName(logRecord.serviceTypeName());
+            if(StringUtils.isBlank(operateLogDto.getServiceTypeName())){
+                operateLogDto.setServiceTypeName(operateLogDto.getServiceType());
+            }
         }
 
         return operateLogDto;
     }
 
     /**
-     * 执行方法
-     */
-    private Object proceed(ProceedingJoinPoint joinPoint, OperateLogDto operateLogDto)
-            throws Throwable {
-        //方法执行异常处理
-        Object obj = null;
-        try {
-            obj = joinPoint.proceed();
-        } catch (Exception e) {
-            log.error("LogRecordAspect joinPoint.proceed error", e);
-
-
-            operateLogDto.setLogLevel(LogLevelEnum.ERROR.getCode());
-            operateLogDto.setStatusCode(StatusCodeEnum.FAILED.getCode());
-            operateLogDto.setStatusMsg(StatusCodeEnum.FAILED.getName());
-
-            //发生异常记录日志
-            sendService.sendOperaLog(operateLogDto);
-            throw e;
-        }
-
-        return obj;
-    }
-
-    /**
-     * 保存文件存到日志
-     *
-     * @param operateLogDto 日志
-     * @throws IOException 异常
-     */
-    private void saveFileInfo(OperateLogDto operateLogDto) throws IOException {
-        HttpServletRequest request = ((ServletRequestAttributes) Objects
-                .requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
-        Object fileFlag = request.getAttribute(FileExportUtils.EXPORT_FLAG);
-        if (fileFlag == null) {
-            return;
-        }
-
-        HttpServletResponse response = ((ServletRequestAttributes) Objects
-                .requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
-        if (response == null || !FileExportUtils.isFileContentType(response)) {
-            return;
-        }
-
-        ResponseWrapper wrapper = (ResponseWrapper) response;
-        byte[] bodyBytes = wrapper.getBodyBytes();
-
-        String fileName = FileExportUtils.getFileName(response);
-        operateLogDto.setResponseParams(fileName);
-
-        operateLogDto.setFile(bodyBytes);
-    }
-
-    /**
      * 执行方法后
      */
     private void afterProceed(ProceedingJoinPoint joinPoint, OperateLogDto operateLogDto,
-                              Object obj) throws Throwable {
+            Object obj) {
         //方法执行后
         try {
-
-            if (obj instanceof IdmResDTO) {
-                IdmResDTO respDto = (IdmResDTO) obj;
-                operateLogDto.setResponseParams(respDto.toString());
-                operateLogDto.setStatusCode(respDto.getCode());
-                operateLogDto.setStatusMsg(respDto.getMessage());
-            } else {
-                operateLogDto.setResponseParams(obj == null ? "" : obj.toString());
-                operateLogDto.setStatusCode(StatusCodeEnum.SUCCESS.getCode());
-                operateLogDto.setStatusMsg(StatusCodeEnum.SUCCESS.getName());
-                saveFileInfo(operateLogDto);
+            if (StringUtils.isBlank(operateLogDto.getLogLevel())) {
+                operateLogDto.setLogLevel(LogLevelEnum.INFO.getCode());
             }
-            operateLogDto.setLogLevel(LogLevelEnum.INFO.getCode());
-
-            // 记录日志
+            if (StringUtils.isBlank(operateLogDto.getStatusCode())) {
+                if (obj instanceof IdmResDTO) {
+                    IdmResDTO respDto = (IdmResDTO) obj;
+                    operateLogDto.setStatusCode(respDto.getCode());
+                    operateLogDto.setStatusMsg(respDto.getMessage());
+                } else {
+                    operateLogDto.setStatusCode(StatusCodeEnum.SUCCESS.getCode());
+                    operateLogDto.setStatusMsg(StatusCodeEnum.SUCCESS.getName());
+                }
+            }
+            //设置响应内容
+            operateLogDto.setResponseParams(obj == null ? "" : JsonUtil.writeValueAsString(obj));
+            //设置操作对象内容
+            operateLogDto.setOperationTargetInfo(getOptTargetInfoStr(LogContextHolder.getOptTargetInfo()));
+            // 发送记录日志消息
             sendService.sendOperaLog(operateLogDto);
         } catch (Exception e) {
             log.error("LogRecordAspect joinPoint.afterProceed error", e);
@@ -221,6 +221,25 @@ public class LogRecordAspect extends BaseController {
             map.put(key, parameterMap.get(key)[0]);
         }
         return map;
+    }
+
+    /**
+     * 转换操作对象内容为字符串
+     */
+    private String getOptTargetInfoStr(OptTargetInfo optTargetInfo) {
+        StringBuilder stringBuilder = new StringBuilder("");
+        if (Objects.nonNull(optTargetInfo)) {
+            String name = optTargetInfo.getName();
+            stringBuilder.append(name);
+            List<OptTargetData> targetDatas = optTargetInfo.getTargetDatas();
+            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(targetDatas)) {
+                stringBuilder.append("{");
+                stringBuilder.append(Joiner.on(",").join(targetDatas.stream().map(item->item.getDataName()+"("+item.getDataId()+")").collect(
+                        Collectors.toList())));
+                stringBuilder.append("}");
+            }
+        }
+        return stringBuilder.toString();
     }
 
 }

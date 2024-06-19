@@ -7,8 +7,7 @@
         (
         id,
         name,
-        company_id,
-        archive_type,
+        system_option_type,
         created_by,
         created_on
         )
@@ -17,8 +16,7 @@
             (
             #{item.id},
             #{item.name},
-            #{item.companyId},
-            #{item.archiveType},
+            #{item.systemOptionType},
             #{item.createdBy},
             now()
             )

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
- * 系统配置-自定义配置
+ * 系统配置-初始化配置-常用选项-系统选项名称
  *
  * @author caorui
  * @date 2024/5/22
@@ -89,11 +89,12 @@ public class CustomConfigController extends BaseController {
     @LogRecord(operationCode = "deleteCustomConfig", operationName = "删除自定义配置", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public int deleteCustomConfig(@RequestBody @Valid IdParam idParam) {
-        return customConfigService.deleteCustomConfig(idParam.getId());
+        Long orgId = Long.valueOf(getOrgId());
+        return customConfigService.deleteCustomConfig(idParam.getId(), orgId);
     }
 
     /**
-     * 根据档案类型查询自定义配置列表
+     * 根据系统选项类型查询自定义配置列表
      */
     @PostMapping("/queryByType")
     public PageResult<CustomConfigVO> queryCustomConfigByType(@RequestBody @Valid CustomConfigPageQuery pageQuery) {

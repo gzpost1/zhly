@@ -5,6 +5,7 @@ import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfigPageQuery;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author caorui
@@ -16,6 +17,11 @@ public interface FormConfigRepository {
      * 根据id获取详情
      */
     FormConfig queryForDetail(Long id);
+
+    /**
+     * 根据名称获取详情
+     */
+    FormConfig queryForDetailByName(FormConfig formConfig);
 
     /**
      * 保存
@@ -71,5 +77,13 @@ public interface FormConfigRepository {
      * 根据表单配置检查常用选项是否引用，true为引用，false为未引用
      */
     boolean useCommonOptionByFormConfig(Long commonOptionId);
+
+    /**
+     * 初始化系统表单的表单配置
+     *
+     * @param companyId               企业id
+     * @param systemFormConfigTypeMap 系统表单配置类型map（名称，类型id）
+     */
+    void initSystemFormConfig(Long companyId, Map<String, Long> systemFormConfigTypeMap);
 
 }

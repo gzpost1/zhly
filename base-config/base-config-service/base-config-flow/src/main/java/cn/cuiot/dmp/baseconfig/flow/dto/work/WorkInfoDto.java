@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
+import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.NodeButton;
 import cn.cuiot.dmp.query.PageQuery;
 import lombok.Data;
 
@@ -47,7 +49,7 @@ public class WorkInfoDto extends PageQuery {
 
 
     /**
-     * 工单来源 0 计划生成  1 自查报事
+     * 工单来源 0 计划生成  1 自查报事2客户提单3代录工单
      */
     private Byte workSouce;
 
@@ -57,7 +59,7 @@ public class WorkInfoDto extends PageQuery {
     private String phone;
 
     /**
-     * 状态 1已完结2进行中3已终止4已挂起
+     * 状态 1已完结2进行中3已终止4已挂起5已撤回
      */
     private Byte status;
 
@@ -81,6 +83,21 @@ public class WorkInfoDto extends PageQuery {
      * 创建人名称
      */
     private String userName;
+
+    /**
+     * 保单人id
+     */
+    private Long actualUserId;
+
+    /**
+     * 报单人名称
+     */
+    private String actualUserName;
+
+    /**
+     * 报单人名称
+     */
+    private String actualUserPhone;
 
     /**
      * 流程实例id
@@ -112,4 +129,39 @@ public class WorkInfoDto extends PageQuery {
      * 部门
      */
     private String deptIds;
+
+    /**
+     * 楼盘名称
+     */
+    private String propertyName;
+
+    /**
+     * 楼盘id
+     */
+    private String propertyId;
+
+    /**
+     * 关联工单
+     */
+    private List<Long> workOrderIds;
+
+
+    /**
+     * 是否可撤回 0 不可撤回 1 可撤回
+     */
+    private Byte revokeType;
+
+    /**
+     * 撤销节点
+     */
+    private String revokeNodeId;
+
+    /**
+     * 1 重新提交
+     */
+    private Byte resubmit;
+    /**
+     * 按钮信息
+     */
+    private List<NodeButton> buttons;
 }

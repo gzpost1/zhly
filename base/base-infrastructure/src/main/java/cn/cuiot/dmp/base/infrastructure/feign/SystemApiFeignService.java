@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 系统管理Feign服务
@@ -24,7 +25,7 @@ import java.util.List;
  */
 @Component
 @FeignClient(value = "community-system")
-//@FeignClient(value = "community-system",url = "http://220.197.15.115:9050/gateway/community-system")
+//@FeignClient(value = "community-system", url = "http://220.197.15.115:9050/gateway/community-system")
 public interface SystemApiFeignService {
 
     /**
@@ -67,6 +68,12 @@ public interface SystemApiFeignService {
     IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList(@RequestBody DepartmentReqDto query);
 
     /**
+     * 查询子部门(可多部门查询)
+     */
+    @PostMapping(value = "/api/lookUpDepartmentChildList2", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList2(@RequestBody DepartmentReqDto query);
+
+    /**
      * 查询组织树
      */
     @PostMapping(value = "/api/lookUpDepartmentTree", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -89,6 +96,12 @@ public interface SystemApiFeignService {
     IdmResDTO<List<BusinessTypeRspDTO>> batchGetBusinessType(@RequestBody @Valid BusinessTypeReqDTO businessTypeReqDTO);
 
     /**
+     * 通过名称查询表单配置详情
+     */
+    @PostMapping(value = "/api/lookUpFormConfigByName", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<FormConfigRspDTO> lookUpFormConfigByName(@RequestBody @Valid FormConfigReqDTO formConfigReqDTO);
+
+    /**
      * 批量查询表单配置
      */
     @PostMapping(value = "/api/batchQueryFormConfig", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -101,9 +114,21 @@ public interface SystemApiFeignService {
     IdmResDTO<List<CustomConfigDetailRspDTO>> batchQueryCustomConfigDetails(@RequestBody @Valid CustomConfigDetailReqDTO customConfigDetailReqDTO);
 
     /**
+     * 根据id集合批量查询自定义配置详情，并返回对应的名称关系map
+     */
+    @PostMapping(value = "/api/batchQueryCustomConfigDetailsForMap", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<Map<Long, String>> batchQueryCustomConfigDetailsForMap(@RequestBody @Valid CustomConfigDetailReqDTO customConfigDetailReqDTO);
+
+    /**
      * 根据条件批量查询自定义配置列表
      */
     @PostMapping(value = "/api/batchQueryCustomConfigs", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<CustomConfigRspDTO>> batchQueryCustomConfigs(@RequestBody @Valid CustomConfigReqDTO customConfigReqDTO);
+
+    /**
+     * 根据条件批量查询审核配置列表
+     */
+    @PostMapping(value = "/api/lookUpAuditConfig", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<AuditConfigTypeRspDTO>> lookUpAuditConfig(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO);
 
 }

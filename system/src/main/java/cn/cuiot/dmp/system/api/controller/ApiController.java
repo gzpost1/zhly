@@ -12,12 +12,15 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
 import cn.cuiot.dmp.system.application.param.assembler.MenuConverter;
+import cn.cuiot.dmp.system.application.param.dto.FormConfigDTO;
+import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.application.service.*;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -68,6 +71,9 @@ public class ApiController {
 
     @Autowired
     private CustomConfigService customConfigService;
+
+    @Autowired
+    private AuditConfigTypeService auditConfigTypeService;
 
     /**
      * 查询角色
@@ -143,6 +149,15 @@ public class ApiController {
     }
 
     /**
+     * 查询子部门(可多部门查询)
+     */
+    @PostMapping(value = "/lookUpDepartmentChildList2", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList2(@RequestBody DepartmentReqDto query) {
+        List<DepartmentDto> list = departmentService.lookUpDepartmentChildList2(query);
+        return IdmResDTO.success(list);
+    }
+
+    /**
      * 查询组织树
      */
     @PostMapping(value = "/lookUpDepartmentTree", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -187,6 +202,20 @@ public class ApiController {
     }
 
     /**
+     * 通过名称查询表单配置详情
+     */
+    @PostMapping(value = "/lookUpFormConfigByName", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<FormConfigRspDTO> lookUpFormConfigByName(@RequestBody @Valid FormConfigReqDTO formConfigReqDTO) {
+        FormConfigDTO formConfigDTO = new FormConfigDTO();
+        formConfigDTO.setName(formConfigReqDTO.getName());
+        formConfigDTO.setCompanyId(formConfigReqDTO.getCompanyId());
+        FormConfigVO formConfigVO = formConfigService.queryForDetailByName(formConfigDTO);
+        FormConfigRspDTO formConfigRspDTO = new FormConfigRspDTO();
+        BeanUtils.copyProperties(formConfigVO, formConfigRspDTO);
+        return IdmResDTO.success(formConfigRspDTO);
+    }
+
+    /**
      * 批量查询表单配置
      */
     @PostMapping(value = "/batchQueryFormConfig", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -205,12 +234,30 @@ public class ApiController {
     }
 
     /**
+     * 根据id集合批量查询自定义配置详情，并返回对应的名称关系map
+     */
+    @PostMapping(value = "/batchQueryCustomConfigDetailsForMap", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<Map<Long, String>> batchQueryCustomConfigDetailsForMap(@RequestBody @Valid CustomConfigDetailReqDTO customConfigDetailReqDTO) {
+        List<CustomConfigDetailRspDTO> customConfigDetailRspDTOList = customConfigService.batchQueryCustomConfigDetails(customConfigDetailReqDTO);
+        return IdmResDTO.success(customConfigDetailRspDTOList.stream().collect(Collectors.toMap(CustomConfigDetailRspDTO::getId, CustomConfigDetailRspDTO::getName)));
+    }
+
+    /**
      * 根据条件批量查询自定义配置列表
      */
     @PostMapping(value = "/batchQueryCustomConfigs", produces = MediaType.APPLICATION_JSON_VALUE)
     public IdmResDTO<List<CustomConfigRspDTO>> batchQueryCustomConfigs(@RequestBody @Valid CustomConfigReqDTO customConfigReqDTO) {
         List<CustomConfigRspDTO> customConfigRspDTOS = customConfigService.batchQueryCustomConfigs(customConfigReqDTO);
         return IdmResDTO.success(customConfigRspDTOS);
+    }
+
+    /**
+     * 根据条件批量查询审核配置列表
+     */
+    @PostMapping(value = "/lookUpAuditConfig", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<AuditConfigTypeRspDTO>> lookUpAuditConfig(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO) {
+        List<AuditConfigTypeRspDTO> auditConfigTypeRspDTOList = auditConfigTypeService.queryForList(queryDTO);
+        return IdmResDTO.success(auditConfigTypeRspDTOList);
     }
 
 }

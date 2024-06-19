@@ -1,11 +1,12 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.constant.CustomConfigConstant;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.system.domain.aggregate.*;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigDetailRepository;
 import cn.cuiot.dmp.system.domain.repository.CustomConfigRepository;
@@ -50,7 +51,8 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         CustomConfig customConfig = new CustomConfig();
         BeanUtils.copyProperties(customConfigEntity, customConfig);
         // 查询自定义配置详情
-        List<CustomConfigDetail> customConfigDetails = customConfigDetailRepository.batchQueryCustomConfigDetails(id);
+        List<CustomConfigDetail> customConfigDetails = customConfigDetailRepository.batchQueryCustomConfigDetails(id,
+                customConfig.getCompanyId());
         customConfig.setCustomConfigDetailList(customConfigDetails);
         return customConfig;
     }
@@ -60,7 +62,6 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         AssertUtil.notBlank(customConfig.getName(), "自定义配置名称不能为空");
         AssertUtil.notNull(customConfig.getCompanyId(), "企业Id不能为空");
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
-                .eq(CustomConfigEntity::getCompanyId, customConfig.getCompanyId())
                 .eq(CustomConfigEntity::getName, customConfig.getName());
         List<CustomConfigEntity> customConfigEntityList = customConfigMapper.selectList(queryWrapper);
         AssertUtil.notEmpty(customConfigEntityList, "自定义配置不存在");
@@ -69,14 +70,15 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         BeanUtils.copyProperties(customConfigEntity, customConfigResult);
         // 查询自定义配置详情
         List<CustomConfigDetail> customConfigDetails = customConfigDetailRepository
-                .batchQueryCustomConfigDetails(customConfigEntity.getId());
-        customConfig.setCustomConfigDetailList(customConfigDetails);
-        return customConfig;
+                .batchQueryCustomConfigDetails(customConfigEntity.getId(), customConfig.getCompanyId());
+        customConfigResult.setCustomConfigDetailList(customConfigDetails);
+        return customConfigResult;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int saveCustomConfig(CustomConfig customConfig) {
+        AssertUtil.notNull(customConfig.getCompanyId(), "企业id不能为空");
         // 保存校验
         checkSave(customConfig);
         customConfig.setId(IdWorker.getId());
@@ -85,7 +87,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         // 保存自定义配置详情
         if (CollectionUtils.isNotEmpty(customConfig.getCustomConfigDetailList())) {
             customConfigDetailRepository.batchSaveOrUpdateCustomConfigDetails(customConfig.getId(),
-                    customConfig.getCustomConfigDetailList());
+                    customConfig.getCustomConfigDetailList(), customConfig.getCompanyId());
         }
         return customConfigMapper.insert(customConfigEntity);
     }
@@ -93,6 +95,7 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int updateCustomConfig(CustomConfig customConfig) {
+        AssertUtil.notNull(customConfig.getCompanyId(), "企业id不能为空");
         CustomConfigEntity customConfigEntity = Optional.ofNullable(customConfigMapper.selectById(customConfig.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         // 保存校验
@@ -101,12 +104,12 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         // 如果传入的自定义配置设置不为空，则执行保存更新操作
         if (CollectionUtils.isNotEmpty(customConfig.getCustomConfigDetailList())) {
             customConfigDetailRepository.batchSaveOrUpdateCustomConfigDetails(customConfig.getId(),
-                    customConfig.getCustomConfigDetailList());
+                    customConfig.getCustomConfigDetailList(), customConfig.getCompanyId());
         } else {
             // 如果为空，则删除原有数据
             List<Long> customConfigIdList = new ArrayList<>();
             customConfigIdList.add(customConfig.getId());
-            customConfigDetailRepository.batchDeleteCustomConfigDetails(customConfigIdList);
+            customConfigDetailRepository.batchDeleteCustomConfigDetails(customConfigIdList, customConfig.getCompanyId());
         }
         return customConfigMapper.updateById(customConfigEntity);
     }
@@ -120,19 +123,19 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     }
 
     @Override
-    public int deleteCustomConfig(Long id) {
+    public int deleteCustomConfig(Long id, Long companyId) {
         // 先删除自定义配置详情，后删除自定义配置
         List<Long> customConfigIdList = new ArrayList<>();
         customConfigIdList.add(id);
-        customConfigDetailRepository.batchDeleteCustomConfigDetails(customConfigIdList);
+        customConfigDetailRepository.batchDeleteCustomConfigDetails(customConfigIdList, companyId);
         return customConfigMapper.deleteById(id);
     }
 
     @Override
     public PageResult<CustomConfig> queryCustomConfigByType(CustomConfigPageQuery pageQuery) {
+        AssertUtil.notNull(pageQuery.getCompanyId(), "企业id不能为空");
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
-                .eq(Objects.nonNull(pageQuery.getCompanyId()), CustomConfigEntity::getCompanyId, pageQuery.getCompanyId())
-                .eq(Objects.nonNull(pageQuery.getArchiveType()), CustomConfigEntity::getArchiveType, pageQuery.getArchiveType())
+                .eq(Objects.nonNull(pageQuery.getSystemOptionType()), CustomConfigEntity::getSystemOptionType, pageQuery.getSystemOptionType())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), CustomConfigEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CustomConfigEntity::getStatus, pageQuery.getStatus());
         IPage<CustomConfigEntity> customConfigEntityPage = customConfigMapper.selectPage(
@@ -140,14 +143,14 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         if (Objects.isNull(customConfigEntityPage) || CollectionUtils.isEmpty(customConfigEntityPage.getRecords())) {
             return new PageResult<>();
         }
-        return customConfigEntity2CustomConfig(customConfigEntityPage);
+        return customConfigEntity2CustomConfig(customConfigEntityPage, pageQuery.getCompanyId());
     }
 
     @Override
     public List<CustomConfig> queryForList(CustomConfigPageQuery pageQuery) {
+        AssertUtil.notNull(pageQuery.getCompanyId(), "企业id不能为空");
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
-                .eq(Objects.nonNull(pageQuery.getCompanyId()), CustomConfigEntity::getCompanyId, pageQuery.getCompanyId())
-                .eq(Objects.nonNull(pageQuery.getArchiveType()), CustomConfigEntity::getArchiveType, pageQuery.getArchiveType())
+                .eq(Objects.nonNull(pageQuery.getSystemOptionType()), CustomConfigEntity::getSystemOptionType, pageQuery.getSystemOptionType())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), CustomConfigEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CustomConfigEntity::getStatus, pageQuery.getStatus());
         List<CustomConfigEntity> customConfigEntityList = customConfigMapper.selectList(queryWrapper);
@@ -158,77 +161,24 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
                 .map(o -> {
                     CustomConfig customConfig = new CustomConfig();
                     BeanUtils.copyProperties(o, customConfig);
-                    List<CustomConfigDetail> CustomConfigDetails = customConfigDetailRepository
-                            .batchQueryCustomConfigDetails(o.getId());
-                    customConfig.setCustomConfigDetailList(CustomConfigDetails);
+                    List<CustomConfigDetail> customConfigDetails = customConfigDetailRepository
+                            .batchQueryCustomConfigDetails(o.getId(), pageQuery.getCompanyId());
+                    customConfig.setCustomConfigDetailList(customConfigDetails);
                     return customConfig;
                 })
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public void initCustomConfig(Long companyId, String userId) {
-        AssertUtil.notNull(companyId, "企业ID不能为空");
-        LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
-                .eq(CustomConfigEntity::getCompanyId, companyId);
-        List<CustomConfigEntity> customConfigEntityListCurrent = customConfigMapper.selectList(queryWrapper);
-        if (CollectionUtils.isNotEmpty(customConfigEntityListCurrent)) {
-            return;
-        }
-        AssertUtil.notBlank(userId, "用户ID不能为空");
-        List<CustomConfigEntity> customConfigEntityList = new ArrayList<>();
-        // 房屋档案
-        CustomConfigConstant.HOUSES_ARCHIVES_INIT.forEach(o -> {
-            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
-            customConfigEntity.setId(IdWorker.getId());
-            customConfigEntity.setCompanyId(companyId);
-            customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.HOUSE_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
-            customConfigEntityList.add(customConfigEntity);
-        });
-        // 空间档案
-        CustomConfigConstant.ROOM_ARCHIVES_INIT.forEach(o -> {
-            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
-            customConfigEntity.setId(IdWorker.getId());
-            customConfigEntity.setCompanyId(companyId);
-            customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.ROOM_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
-            customConfigEntityList.add(customConfigEntity);
-        });
-        // 设备档案
-        CustomConfigConstant.DEVICE_ARCHIVES_INIT.forEach(o -> {
-            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
-            customConfigEntity.setId(IdWorker.getId());
-            customConfigEntity.setCompanyId(companyId);
-            customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.DEVICE_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
-            customConfigEntityList.add(customConfigEntity);
-        });
-        // 车位档案
-        CustomConfigConstant.PARKING_ARCHIVES_INIT.forEach(o -> {
-            CustomConfigEntity customConfigEntity = new CustomConfigEntity();
-            customConfigEntity.setId(IdWorker.getId());
-            customConfigEntity.setCompanyId(companyId);
-            customConfigEntity.setName(o);
-            customConfigEntity.setArchiveType(ArchiveTypeEnum.PARK_ARCHIVE.getCode());
-            customConfigEntity.setCreatedBy(userId);
-            customConfigEntityList.add(customConfigEntity);
-        });
-        customConfigMapper.batchSaveCustomConfig(customConfigEntityList);
-    }
-
-    private PageResult<CustomConfig> customConfigEntity2CustomConfig(IPage<CustomConfigEntity> customConfigEntityPage) {
+    private PageResult<CustomConfig> customConfigEntity2CustomConfig(IPage<CustomConfigEntity> customConfigEntityPage,
+                                                                     Long companyId) {
         PageResult<CustomConfig> customConfigPageResult = new PageResult<>();
         List<CustomConfig> customConfigList = customConfigEntityPage.getRecords().stream()
                 .map(o -> {
                     CustomConfig customConfig = new CustomConfig();
                     BeanUtils.copyProperties(o, customConfig);
-                    List<CustomConfigDetail> CustomConfigDetails = customConfigDetailRepository
-                            .batchQueryCustomConfigDetails(o.getId());
-                    customConfig.setCustomConfigDetailList(CustomConfigDetails);
+                    List<CustomConfigDetail> customConfigDetails = customConfigDetailRepository
+                            .batchQueryCustomConfigDetails(o.getId(), companyId);
+                    customConfig.setCustomConfigDetailList(customConfigDetails);
                     return customConfig;
                 })
                 .collect(Collectors.toList());
@@ -243,7 +193,6 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
         AssertUtil.notNull(customConfig.getCompanyId(), "企业ID不能为空");
         AssertUtil.notBlank(customConfig.getName(), "自定义配置名称不能为空");
         LambdaQueryWrapper<CustomConfigEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigEntity>()
-                .eq(CustomConfigEntity::getCompanyId, customConfig.getCompanyId())
                 // 更新的话排除自身
                 .ne(Objects.nonNull(customConfig.getId()), CustomConfigEntity::getId, customConfig.getId());
         List<CustomConfigEntity> customConfigEntityList = customConfigMapper.selectList(queryWrapper);

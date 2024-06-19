@@ -62,4 +62,9 @@ public class FlowEngineInsertDto {
     @Valid
     @NotNull(message = "通用配置不能为空")
     private CommonConfigDto commonConfigDto;
+
+    /**
+     * 是否允许客户端发起工单 0否 1是
+     */
+    private Byte isSelectAppUser;
 }

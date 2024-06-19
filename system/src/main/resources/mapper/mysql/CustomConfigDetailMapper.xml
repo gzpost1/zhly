@@ -16,16 +16,20 @@
         INSERT INTO custom_config_detail
         (
         id,
+        company_id,
         `name`,
         custom_config_id,
+        sort,
         deleted_flag
         )
         values
         <foreach collection="list" separator="," item="item">
             (
             #{item.id},
+            #{item.companyId},
             #{item.name},
             #{item.customConfigId},
+            #{item.sort},
             0
             )
         </foreach>
@@ -37,6 +41,9 @@
             <set>
                 <if test="item.name != null and item.name != '' ">
                     `name` = #{item.name},
+                </if>
+                <if test="item.sort != null">
+                    sort = #{item.sort}
                 </if>
                 <if test="item.deletedFlag != null">
                     deleted_flag = #{item.deletedFlag}

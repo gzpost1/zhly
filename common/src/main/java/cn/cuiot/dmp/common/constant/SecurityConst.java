@@ -9,27 +9,32 @@ package cn.cuiot.dmp.common.constant;
 public class SecurityConst {
 
     /**
-     * 图形验证码过期时间，单位（分钟）
+     * 图形验证码过期时间，单位（秒） 5分钟
      */
     public static final int KAPTCHA_EXPIRED_TIME = 5 * 60;
 
     /**
-     * SESSION时间，单位（分钟） 12小时
+     * SESSION时间，单位（秒） 12小时
      */
-    public static final int REFRESH_SESSION_TIME = 60 * 60 * 12;
+    public static final int REFRESH_SESSION_TIME =12 * 60 * 60;
 
     /**
-     * 短信验证码调用间隔时间，单位（分钟）
+     * APP SESSION时间，单位（秒） 15天
+     */
+    public static final int WX_REFRESH_SESSION_TIME =15 * 24 * 60 * 60;
+
+    /**
+     * 短信验证码调用间隔时间，单位（分钟） 3分钟
      */
     public static final int SMS_CODE_FORBIDDEN_TIME = 3;
 
     /**
-     * 短信验证码过期时间，单位（分钟）
+     * 短信验证码过期时间，单位（分钟） 3分钟
      */
     public static final int SMS_CODE_EXPIRED_TIME = 3;
 
     /**
-     * 登录失败冻结时间，单位（分钟）
+     * 登录失败冻结时间，单位（分钟） 30分钟
      *
      */
     public static final long LOGIN_FAILED_FREEZE_TIME = 30;

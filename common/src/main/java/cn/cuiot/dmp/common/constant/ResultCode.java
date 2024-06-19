@@ -18,7 +18,7 @@ public enum ResultCode {
      */
     SUCCESS("000000", "API请求成功"),
 
-    ERROR("000001","系统异常"),
+    ERROR("000001", "系统异常"),
 
     /**
      * 公共错误：系统错误
@@ -41,8 +41,7 @@ public enum ResultCode {
 
     SERVER_BUSY("011002", "服务繁忙，请稍后核对或者重试。"),
 
-    CONTAIN_SENSITIVITY_ERROR("011020","文本包含敏感词"),
-
+    CONTAIN_SENSITIVITY_ERROR("011020", "文本包含敏感词"),
 
 
     SIGN_ERROR("020008", "签名失败"),
@@ -58,7 +57,7 @@ public enum ResultCode {
     QUERY_ROLE_DETAILS_ERROR("060001", "查询角色详情失败"),
     OPEN_ID_NOT_EXIST("021017", "openId不存在"),
     ROLE_NAME_ALREADY_EXIST("021020", "角色名称已存在"),
-    PAY_REQUIRED("021021","缴费管理为必选"),
+    PAY_REQUIRED("021021", "缴费管理为必选"),
     LABEL_TYPE_NOT_EXIST("021022", "标签类型不存在"),
     ONLY_DEPT_USER_CAN_INSERT_DEPT("021023", "只有组织级用户才可添加组织"),
     ONLY_LEVEL_TWO_DEPT("021024", "组织只可选择市级组织层级，比如江苏省**市，或北京市**区"),
@@ -92,7 +91,6 @@ public enum ResultCode {
     RESET_PASSWORD_ERROR("050030", "重置密码失败"),
     UPDATE_PASSWORD_FAIL("050033", "修改密码失败"),
     SMS_COUNT_EXCEEDS_LIMIT("050034", "获取验证码超过单日最大次数"),
-
 
 
     CANNOT_DELETE_ORGOWNER("050036", "不能删除账户所有者"),
@@ -135,7 +133,6 @@ public enum ResultCode {
     KID_EXPIRED_ERROR("050122", "kid已过期，请重新获取"),
 
 
-
     DEPT_NOT_EXISTS("060007", "组织不存在"),
     QUERY_USER_DEPT_ERROR("060007", "查询用户组织信息异常"),
 
@@ -163,9 +160,6 @@ public enum ResultCode {
     PARAM_NOT_NULL("140007", "参数不能为空"),
 
 
-
-
-
     /**
      * 组织相关
      */
@@ -182,11 +176,10 @@ public enum ResultCode {
     DEPARTMENT_QUERY_VIRES("1500014", "所选组织没有查看权限"),
 
 
-
     BUILDING_NAME_IS_EXIST("1500015", "该小区下已存在该楼栋"),
     DUPLICATE_REQUEST("150021", "请勿重复提交！"),
 
-    DEPARTMENT_NAME_EXIST("150024","组织名称已存在"),
+    DEPARTMENT_NAME_EXIST("150024", "组织名称已存在"),
 
     BUILDING_NAME_NOT_EXIST("150029", "楼座名称不存在"),
 
@@ -195,7 +188,7 @@ public enum ResultCode {
 
     REGION_NAME_IS_EXIST("150035", "该园区下已存在该区域"),
     REGION_BUILDING_NAME_IS_EXIST("150036", "该区域下已存在该楼栋"),
-    PARK_NAME_IS_EXIST("150037","该园区已存在"),
+    PARK_NAME_IS_EXIST("150037", "该园区已存在"),
     REGION_HAS_CHILDREN("150036", "区域已存在楼栋数据,不可删除,请先删除楼栋"),
     CURRENT_FLOOR_IS_NUMBER("1500039", "当前楼层只支持数字"),
     PARK_HAS_CHILDREN("1500043", "园区已存在下级数据,不可删除,请先删除下级数据"),
@@ -209,15 +202,15 @@ public enum ResultCode {
     DEPARTMENT_NOT_HAS_CHILDREN("150102", "不存在下级组织"),
     HOUSE_HAS_EXIST("170002", "该房屋已存在"),
     REGION_NOT_NULL("170011", "房屋所属区域不得为空"),
-    HOUSE_USE_AREA_SUPPORT_NUM("170012","房屋使用面积仅支持正数，最大支持三位小数"),
-    HOUSE_PUBLIC_AREA_SUPPORT_NUM("170013","房屋公摊面积仅支持正数，最大支持三位小数"),
+    HOUSE_USE_AREA_SUPPORT_NUM("170012", "房屋使用面积仅支持正数，最大支持三位小数"),
+    HOUSE_PUBLIC_AREA_SUPPORT_NUM("170013", "房屋公摊面积仅支持正数，最大支持三位小数"),
 
 
     /**
      * 标签相关
      */
-    OTHER_LABEL_NAME_NOT_NULL("7000001","其它商企标签名称为空"),
-    ACCOUNT_LABEL_NOT_EXIST("7000002","所选账户标签不存在"),
+    OTHER_LABEL_NAME_NOT_NULL("7000001", "其它商企标签名称为空"),
+    ACCOUNT_LABEL_NOT_EXIST("7000002", "所选账户标签不存在"),
 
     /**
      * 系统服务相关（前两位表示服务模块，中间三位表示所属业务，后两位表示异常编码）
@@ -226,10 +219,18 @@ public enum ResultCode {
     QUERY_FORM_CONFIG_ERROR("0100201", "查询表单配置信息异常"),
     QUERY_FORM_CONFIG_DETAIL_ERROR("0100202", "查询表单配置详情异常"),
     QUERY_CUSTOM_CONFIG_DETAIL_ERROR("0100301", "查询自定义配置详情异常"),
+    QUERY_AUDIT_CONFIG_DETAIL_ERROR("0100401", "查询审核配置列表详情异常"),
+
+    /**
+     * 内容中心
+     */
+    EFFECTIVE_TIME_EXPIRED("1800001", "已过生效时间"),
+    IMG_TEXT_TYPE_EXISTS("1800002", "类型名称已存在"),
+    IMG_TEXT_TYPE_EXISTS_DATA("1800003", "该类型下存在图文，不可删除"),
+
+    COMPLETE_RATIO_ERROR("1900001","未达到完成比列，不能提交"),
+
     ;
-
-
-
 
 
     /**

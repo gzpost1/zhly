@@ -36,7 +36,7 @@ public class WorkInfoEntity implements Serializable {
     /**
      * 业务类型名称
      */
-    @TableField(value = "company_id")
+    @TableField(exist = false)
     private String businessTypeName;
 
     /**
@@ -51,9 +51,9 @@ public class WorkInfoEntity implements Serializable {
     private String orgPath;
 
     /**
-     * 企业ID
+     * 楼盘id
      */
-    private Long companyId;
+    private Long propertyId;
 
 
     /**
@@ -63,7 +63,7 @@ public class WorkInfoEntity implements Serializable {
 
 
     /**
-     * 工单来源
+     * 工单来源 0 计划生成  1 自查报事2客户提单3代录工单
      */
     private Byte workSouce;
 
@@ -102,5 +102,40 @@ public class WorkInfoEntity implements Serializable {
      */
     private String orgIds;
 
+    /**
+     * 流程定义id
+     */
+    private  String ProcessDefinitionId;
+
+    /**
+     * 报单客户id
+     */
+    private Long actualUserId;
+
+    /**
+     * 工单是否超时0未超时1已超时
+     */
+    private Byte workTimeOut;
+
+    /**
+     * 企业id
+     */
+    private Long companyId;
+
+    /**
+     * 撤销规则 0不可撤回 1 可撤回
+     */
+    private Byte revokeType;
+
+    /**
+     * 撤销的节点id
+     */
+    private String revokeNodeId;
+
+    /**
+     * 1 重新提交
+     */
+    @TableField(exist = false)
+    private Byte resubmit;
 
 }

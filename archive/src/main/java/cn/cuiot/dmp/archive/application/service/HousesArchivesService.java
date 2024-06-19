@@ -4,10 +4,13 @@ import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
+import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -41,5 +44,13 @@ public interface HousesArchivesService extends IService<HousesArchivesEntity> {
      * 导入数据
      */
     void importDataSave(List<HousesArchiveImportDto> dataList, Long loupanId, Long companyId);
+
+
+    /**
+     * 根据房屋ids查询房屋信息
+     * @param ids
+     * @return
+     */
+    List<HousesArchivesVo> queryHousesList(IdsReq ids);
 
 }

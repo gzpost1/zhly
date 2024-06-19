@@ -1,95 +1,70 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
-import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_ALREADY_EXIST;
-
-import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
 import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
+import cn.cuiot.dmp.base.infrastructure.constants.MsgBindingNameConstants;
+import cn.cuiot.dmp.base.infrastructure.constants.MsgTagConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.stream.StreamMessageSender;
+import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.enums.EventActionEnum;
 import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.utils.Const;
-import cn.cuiot.dmp.common.utils.DateTimeUtil;
-import cn.cuiot.dmp.common.utils.JsonUtil;
-import cn.cuiot.dmp.common.utils.RandomCodeWorker;
-import cn.cuiot.dmp.common.utils.Sm4;
-import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
+import cn.cuiot.dmp.common.utils.*;
 import cn.cuiot.dmp.domain.types.Password;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
 import cn.cuiot.dmp.system.application.enums.ResetPasswordEnum;
 import cn.cuiot.dmp.system.application.enums.UserSourceTypeEnum;
+import cn.cuiot.dmp.system.application.feign.ContentApiFeignService;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2EntityAssembler;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2GetOrganizationVoAssembler;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2OrganizationResDTOAssembler;
 import cn.cuiot.dmp.system.application.param.event.OrganizationActionEvent;
+import cn.cuiot.dmp.system.application.service.AuditConfigService;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.application.service.OrganizationService;
 import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.domain.entity.Organization;
 import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.domain.query.OrganizationCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.FormConfigTypeRepository;
 import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
 import cn.cuiot.dmp.system.domain.types.enums.OrgSourceEnum;
 import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
-import cn.cuiot.dmp.system.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.OrganizationEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertOrganizationDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.ListOrganizationDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgCsvDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgMenuDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.OrgTypeDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationChangeDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.ResetUserPasswordReqDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateOrganizationDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.*;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.GetOrganizationVO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.ListOrganizationVO;
 import cn.cuiot.dmp.system.infrastructure.messaging.spring.SystemEventSendAdapter;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgTypeMenuDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrganizationDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
+import cn.cuiot.dmp.system.infrastructure.persistence.dao.*;
 import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.DeptTreePathUtils;
 import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.RandomPwUtils;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
-import java.io.UnsupportedEncodingException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -98,6 +73,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_ALREADY_EXIST;
 
 /**
  * @Author 26432
@@ -165,7 +149,19 @@ public class OrganizationServiceImpl implements OrganizationService {
     private SystemEventSendAdapter systemEventSendAdapter;
 
     @Autowired
+    private StreamMessageSender streamMessageSender;
+
+    @Autowired
     private DeptTreePathUtils deptTreePathUtils;
+
+    @Autowired
+    private FormConfigTypeRepository formConfigTypeRepository;
+
+    @Autowired
+    private AuditConfigService auditConfigService;
+
+    @Autowired
+    private ContentApiFeignService contentApiFeignService;
 
     /**
      * 根据用户类型返回
@@ -209,7 +205,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     /**
      * 新增子账户
      */
-    @LogRecord(operationCode = "insertSonOrganization", operationName = "新增账户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long insertOrganization(InsertOrganizationDto dto) {
@@ -293,8 +288,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(orgTypeId);
         menuList = menuList.stream().filter(menuIdList::contains).distinct()
                 .collect(Collectors.toList());
-        if(size!=menuList.size()){
-            throw new BusinessException(ResultCode.CANNOT_OPERATION,"配置企业权限有误");
+        if (size != menuList.size()) {
+            throw new BusinessException(ResultCode.CANNOT_OPERATION, "配置企业权限有误");
         }
 
         //账户类型为企业账户
@@ -319,6 +314,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         organizationRepository.save(organization);
 
         Long pkOrgId = organization.getId().getValue();
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("企业")
+                .targetDatas(Lists.newArrayList(new OptTargetData(organization.getCompanyName(), organization.getId().toString())))
+                .build());
 
         //保存菜单权限
         if (!CollectionUtils.isEmpty(menuList)) {
@@ -345,21 +346,31 @@ public class OrganizationServiceImpl implements OrganizationService {
                 dto.getDeptId().toString(), null);
 
         //发送事件
-        if(TransactionSynchronizationManager.isActualTransactionActive()){
+        OrganizationEntity toDTO = organization2EntityAssembler.toDTO(organization);
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    systemEventSendAdapter.sendOrganizationCreateActionEvent(
-                            organization2EntityAssembler.toDTO(organization));
+                    systemEventSendAdapter.sendOrganizationCreateActionEvent(toDTO);
                 }
             });
-        }else {
-            systemEventSendAdapter.sendOrganizationCreateActionEvent(
-                    organization2EntityAssembler.toDTO(organization));
+        } else {
+            systemEventSendAdapter.sendOrganizationCreateActionEvent(toDTO);
         }
 
         // 文件流输出
-        createCsvFile(username,dto.getPhoneNumber(), password);
+        createCsvFile(username, dto.getPhoneNumber(), password);
+
+        //发送MQ消息
+        streamMessageSender.sendGenericMessage(
+                MsgBindingNameConstants.SYSTEM_PRODUCER,
+                SimpleMsg.builder()
+                        .delayTimeLevel(2)
+                        .operateTag(MsgTagConstants.ORGANIZATION_ADD)
+                        .data(toDTO)
+                        .dataId(toDTO.getId())
+                        .info("创建企业")
+                        .build());
 
         return pkOrgId;
     }
@@ -368,7 +379,7 @@ public class OrganizationServiceImpl implements OrganizationService {
      * 创建根节点组织
      */
     private DepartmentEntity createRootDepartment(InsertOrganizationDto dto, Long pkOrgId,
-            String deptId) {
+                                                  String deptId) {
 
         DepartmentEntity parentEntity = departmentDao.selectByPrimary(Long.valueOf(deptId));
 
@@ -394,12 +405,12 @@ public class OrganizationServiceImpl implements OrganizationService {
      * @param username 用户名
      * @return password 未加密密码
      */
-    private void createCsvFile(String username, String phoneNumber,String password) {
+    private void createCsvFile(String username, String phoneNumber, String password) {
         List<JSONObject> jsonList = new ArrayList<>();
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("用户名",username);
-        jsonObject.put("手机号",phoneNumber);
-        jsonObject.put("密码",password);
+        jsonObject.put("用户名", username);
+        jsonObject.put("手机号", phoneNumber);
+        jsonObject.put("密码", password);
         jsonList.add(jsonObject);
 
         List<Object> head = new ArrayList<>();
@@ -421,7 +432,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     /**
      * 编辑子账户
      */
-    @LogRecord(operationCode = "updateOrganization", operationName = "更新账户", serviceType = ServiceTypeConst.ORGANIZATION_MANAGEMENT)
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateOrganization(UpdateOrganizationDto dto) {
@@ -440,6 +450,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (oldOrganization == null) {
             throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
         }
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("企业")
+                .targetDatas(Lists.newArrayList(new OptTargetData(oldOrganization.getOrgName(), oldOrganization.getId().toString())))
+                .build());
 
         //判断登录用户是否有权限修改
         String grantDeptId = userDao.getUserGrantDeptId(pkOrgId);
@@ -468,8 +484,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         List<String> menuIdList = orgTypeMenuDao.getMenuIdListByOrgType(orgTypeId);
         menuList = menuList.stream().filter(menuIdList::contains).distinct()
                 .collect(Collectors.toList());
-        if(size!=menuList.size()){
-            throw new BusinessException(ResultCode.CANNOT_OPERATION,"配置企业权限有误");
+        if (size != menuList.size()) {
+            throw new BusinessException(ResultCode.CANNOT_OPERATION, "配置企业权限有误");
         }
 
         orgMenuDao.deleteByOrgId(pkOrgId);
@@ -549,18 +565,28 @@ public class OrganizationServiceImpl implements OrganizationService {
         updatePasswordIfNeed(dto);
 
         //发送事件
-        if(TransactionSynchronizationManager.isActualTransactionActive()){
+        OrganizationEntity toDTO = organization2EntityAssembler.toDTO(organization);
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    systemEventSendAdapter.sendOrganizationUpdateActionEvent(
-                            organization2EntityAssembler.toDTO(organization));
+                    systemEventSendAdapter.sendOrganizationUpdateActionEvent(toDTO);
                 }
             });
-        }else {
-            systemEventSendAdapter.sendOrganizationUpdateActionEvent(
-                    organization2EntityAssembler.toDTO(organization));
+        } else {
+            systemEventSendAdapter.sendOrganizationUpdateActionEvent(toDTO);
         }
+
+        //发送MQ消息
+        streamMessageSender.sendGenericMessage(
+                MsgBindingNameConstants.SYSTEM_PRODUCER,
+                SimpleMsg.builder()
+                        .delayTimeLevel(2)
+                        .operateTag(MsgTagConstants.ORGANIZATION_UPDATE)
+                        .data(toDTO)
+                        .dataId(toDTO.getId())
+                        .info("修改企业")
+                        .build());
     }
 
     /**
@@ -753,11 +779,11 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw new BusinessException(ResultCode.ACCOUNT_HAS_COMMUNITY);
         }*/
 
-        OrganizationEntity needDelete = null;
+        OrganizationEntity toDTO = null;
         try {
             Organization organization = organizationRepository
                     .find(new OrganizationId(Long.valueOf(orgId)));
-            needDelete = organization2EntityAssembler.toDTO(organization);
+            toDTO = organization2EntityAssembler.toDTO(organization);
             organizationRepository.remove(organization);
 
             List<Long> userList = userDao.getUserId(orgId);
@@ -780,18 +806,27 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw new BusinessException(ResultCode.ACCOUNT_DELETED_ERROR);
         }
         //发送事件
-        if(TransactionSynchronizationManager.isActualTransactionActive()){
-            OrganizationEntity finalNeedDelete = needDelete;
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            OrganizationEntity finalDTO = toDTO;
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    systemEventSendAdapter.sendOrganizationDeleteActionEvent(finalNeedDelete);
+                    systemEventSendAdapter.sendOrganizationDeleteActionEvent(finalDTO);
                 }
             });
-        }else {
-            systemEventSendAdapter.sendOrganizationDeleteActionEvent(needDelete);
+        } else {
+            systemEventSendAdapter.sendOrganizationDeleteActionEvent(toDTO);
         }
-
+        //发送MQ消息
+        streamMessageSender.sendGenericMessage(
+                MsgBindingNameConstants.SYSTEM_PRODUCER,
+                SimpleMsg.builder()
+                        .delayTimeLevel(2)
+                        .operateTag(MsgTagConstants.ORGANIZATION_DELETE)
+                        .data(toDTO)
+                        .dataId(toDTO.getId())
+                        .info("删除企业")
+                        .build());
         return 1;
     }
 
@@ -814,21 +849,29 @@ public class OrganizationServiceImpl implements OrganizationService {
         log.info("【账户详情下用户重置密码】，redis，key：{}", CacheConst.USER_CACHE_KEY_PREFIX + userId);
         UserCsvDto userCsvDto = userService.resetPasswordWithOutSms(userBo);
         // 文件流输出
-        createCsvFile(userCsvDto.getUsername(),userCsvDto.getPhoneNumber(), userCsvDto.getPassword());
+        createCsvFile(userCsvDto.getUsername(), userCsvDto.getPhoneNumber(), userCsvDto.getPassword());
     }
 
     /**
      * 启停用
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateStatus(UpdateStatusParam updateStatusParam, String sessionUserId,
-            String sessionOrgId) {
+                             String sessionOrgId) {
         Long pkOrgId = updateStatusParam.getId();
         // 获取企业账户信息
         Organization find = organizationRepository.find(new OrganizationId(pkOrgId));
         if (find == null) {
             throw new BusinessException(ResultCode.ORG_IS_NOT_EXIST);
         }
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("企业")
+                .targetDatas(Lists.newArrayList(new OptTargetData(find.getCompanyName(), find.getId().toString())))
+                .build());
+
         Organization organization = Organization.builder()
                 .id(new OrganizationId(pkOrgId))
                 .status(cn.cuiot.dmp.system.domain.types.enums.OrgStatusEnum
@@ -847,29 +890,35 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
 
         //发送事件
-        if(TransactionSynchronizationManager.isActualTransactionActive()){
+        OrganizationEntity toDTO = organization2EntityAssembler.toDTO(organization);
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
                     if (OrgStatusEnum.DISABLE.getCode().equals(organization.getStatus().getValue())) {
-                        systemEventSendAdapter.sendOrganizationDisableActionEvent(
-                                organization2EntityAssembler.toDTO(organization));
+                        systemEventSendAdapter.sendOrganizationDisableActionEvent(toDTO);
                     } else {
-                        systemEventSendAdapter.sendOrganizationEnableActionEvent(
-                                organization2EntityAssembler.toDTO(organization));
+                        systemEventSendAdapter.sendOrganizationEnableActionEvent(toDTO);
                     }
                 }
             });
-        }else {
+        } else {
             if (OrgStatusEnum.DISABLE.getCode().equals(organization.getStatus().getValue())) {
-                systemEventSendAdapter.sendOrganizationDisableActionEvent(
-                        organization2EntityAssembler.toDTO(organization));
+                systemEventSendAdapter.sendOrganizationDisableActionEvent(toDTO);
             } else {
-                systemEventSendAdapter.sendOrganizationEnableActionEvent(
-                        organization2EntityAssembler.toDTO(organization));
+                systemEventSendAdapter.sendOrganizationEnableActionEvent(toDTO);
             }
         }
-
+        //发送MQ消息
+        streamMessageSender.sendGenericMessage(
+                MsgBindingNameConstants.SYSTEM_PRODUCER,
+                SimpleMsg.builder()
+                        .delayTimeLevel(2)
+                        .operateTag(MsgTagConstants.ORGANIZATION_UPDATE)
+                        .data(toDTO)
+                        .dataId(toDTO.getId())
+                        .info("修改企业")
+                        .build());
     }
 
     /**
@@ -884,8 +933,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         Date changeDate = Objects.nonNull(event.getUpdatedOn())
                 ? DateTimeUtil.localDateTimeToDate(event.getUpdatedOn())
                 : (Objects.nonNull(event.getCreatedOn())
-                        ? DateTimeUtil.localDateTimeToDate(event.getCreatedOn())
-                        : new Date());
+                ? DateTimeUtil.localDateTimeToDate(event.getCreatedOn())
+                : new Date());
 
         String changeUserId = StringUtils.isNotBlank(event.getUpdatedBy()) ? event.getUpdatedBy()
                 : event.getCreatedBy();
@@ -947,7 +996,7 @@ public class OrganizationServiceImpl implements OrganizationService {
      */
     @Override
     public List<OrganizationChangeDto> selectOrganizationChangeByOrgId(String pkOrgId,
-            String sessionUserId, String sessionOrgId) {
+                                                                       String sessionUserId, String sessionOrgId) {
         //数据权限判断
         String loginDeptId = userService.getDeptId(sessionUserId, sessionOrgId);
         String grantDeptId = userDao.getUserGrantDeptId(Long.parseLong(pkOrgId));
@@ -962,7 +1011,7 @@ public class OrganizationServiceImpl implements OrganizationService {
      */
     @Override
     public OrganizationChangeDto getOrganizationChangeById(Long id, String sessionUserId,
-            String sessionOrgId) {
+                                                           String sessionOrgId) {
         OrganizationChangeDto organizationChangeDto = organizationDao
                 .getOrganizationChangeById(id);
         if (Objects.nonNull(organizationChangeDto)) {
@@ -972,11 +1021,23 @@ public class OrganizationServiceImpl implements OrganizationService {
             if (!departmentUtil.checkPrivilege(loginDeptId, grantDeptId)) {
                 throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
             }
-            if(StringUtils.isNotBlank(organizationChangeDto.getChangeData())){
-                organizationChangeDto.setChangeDataObj(JsonUtil.readValue(organizationChangeDto.getChangeData(),GetOrganizationVO.class));
+            if (StringUtils.isNotBlank(organizationChangeDto.getChangeData())) {
+                organizationChangeDto.setChangeDataObj(JsonUtil.readValue(organizationChangeDto.getChangeData(), GetOrganizationVO.class));
             }
         }
         return organizationChangeDto;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int updateInitFlag(Long companyId) {
+        AssertUtil.notNull(companyId, "企业id不能为空");
+        contentApiFeignService.initModule(companyId);
+        // 初始化表单配置
+        formConfigTypeRepository.queryByCompany(companyId, EntityConstants.ENABLED);
+        // 初始化审核配置
+        auditConfigService.queryByCompany(companyId);
+        return organizationRepository.updateInitFlag(companyId, EntityConstants.ENABLED);
     }
 
 }

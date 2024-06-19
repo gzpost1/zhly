@@ -23,6 +23,11 @@ public class CustomConfigDetailEntity implements Serializable {
     private Long id;
 
     /**
+     * 企业ID
+     */
+    private Long companyId;
+
+    /**
      * 自定义配置详情名称
      */
     private String name;
@@ -44,5 +49,10 @@ public class CustomConfigDetailEntity implements Serializable {
     @TableField(fill = FieldFill.INSERT)
     @JsonIgnore
     private Integer deletedFlag;
+
+    /**
+     * 排序
+     */
+    private Byte sort;
 
 }

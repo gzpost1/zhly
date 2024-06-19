@@ -1,0 +1,35 @@
+package cn.cuiot.dmp.message.param;//	模板
+
+import cn.cuiot.dmp.common.bean.PageQuery;
+import lombok.Data;
+
+import java.util.Date;
+
+/**
+ * @author hantingyao
+ * @Description
+ * @data 2024/6/7 16:45
+ */
+@Data
+public class MessagePageQuery extends PageQuery {
+
+    /**
+     * 是否已读
+     */
+    private Byte readStatus;
+
+    /**
+     * 数据类型
+     */
+    private String dataType;
+
+    /**
+     * 消息时间筛选 - 大于等于
+     */
+    private Date messageGtTime;
+
+    /**
+     * 消息时间筛选 - 小于等于
+     */
+    private Date messageLeTime;
+}

@@ -9,10 +9,7 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigDTO;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigUpdateDTO;
-import cn.cuiot.dmp.system.application.param.vo.CommonOptionVO;
-import cn.cuiot.dmp.system.application.param.vo.CustomConfigDetailVO;
 import cn.cuiot.dmp.system.application.param.vo.CustomConfigVO;
-import cn.cuiot.dmp.system.domain.aggregate.CommonOptionPageQuery;
 import cn.cuiot.dmp.system.domain.aggregate.CustomConfigPageQuery;
 
 import java.util.List;
@@ -51,7 +48,7 @@ public interface CustomConfigService {
     /**
      * 删除
      */
-    int deleteCustomConfig(Long id);
+    int deleteCustomConfig(Long id, Long companyId);
 
     /**
      * 根据档案类型查询自定义配置列表

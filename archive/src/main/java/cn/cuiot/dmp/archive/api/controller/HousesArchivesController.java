@@ -21,7 +21,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -66,7 +66,7 @@ public class HousesArchivesController extends BaseController {
     @PostMapping("/queryForDetail")
     public HousesArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
         HousesArchivesEntity res = housesArchivesService.getById(idParam.getId());
-        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.HOUSE_ARCHIVE.getCode()));
+        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), SystemOptionTypeEnum.HOUSE_ARCHIVE.getCode()));
         return res;
     }
 
@@ -82,11 +82,17 @@ public class HousesArchivesController extends BaseController {
         wrapper.eq(Objects.nonNull(query.getPropertyType()), HousesArchivesEntity::getPropertyType, query.getPropertyType());
         wrapper.eq(Objects.nonNull(query.getStatus()), HousesArchivesEntity::getStatus, query.getStatus());
         wrapper.eq(Objects.nonNull(query.getOwnershipAttribute()), HousesArchivesEntity::getOwnershipAttribute, query.getOwnershipAttribute());
+        wrapper.eq(Objects.nonNull(query.getRoomNum()), HousesArchivesEntity::getRoomNum, query.getRoomNum());
+        wrapper.eq(Objects.nonNull(query.getCode()), HousesArchivesEntity::getCode, query.getCode());
         if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())){
             wrapper.like( HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
         }
         wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
+        List<HousesArchivesEntity> records = res.getRecords();
+        records.forEach(h->{
+            String code = h.getCode();
+        });
         return IdmResDTO.success(res);
     }
 

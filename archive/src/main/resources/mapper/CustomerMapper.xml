@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.archive.infrastructure.persistence.mapper.CustomerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.entity.CustomerEntity">
+        <id column="id" property="id" />
+        <result column="company_id" property="companyId" />
+        <result column="customer_name" property="customerName" />
+        <result column="customer_type" property="customerType" />
+        <result column="customer_cate" property="customerCate" />
+        <result column="customer_level" property="customerLevel" />
+        <result column="contact_name" property="contactName" />
+        <result column="contact_phone" property="contactPhone" />
+        <result column="company_nature" property="companyNature" />
+        <result column="company_industry" property="companyIndustry" />
+        <result column="credit_level" property="creditLevel" />
+        <result column="customer_star" property="customerStar" />
+        <result column="email" property="email" />
+        <result column="sex" property="sex" />
+        <result column="certificate_type" property="certificateType" />
+        <result column="certificate_cdoe" property="certificateCdoe" />
+        <result column="address" property="address" />
+        <result column="attachments"
+                jdbcType="VARCHAR"
+                property="attachments"
+                typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+        <result column="status" property="status" />
+        <result column="remark" property="remark" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, company_id, customer_name, customer_type, customer_cate, customer_level, contact_name, contact_phone, company_nature, company_industry, credit_level, customer_star, email, sex, certificate_type, certificate_cdoe, address, attachments, status, remark, update_time, update_user, create_time, create_user, deleted
+    </sql>
+
+    <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.vo.CustomerVo">
+        <collection property="houseList" ofType="cn.cuiot.dmp.archive.infrastructure.vo.CustomerHouseVo">
+            <id column="id" property="id" />
+            <result column="customer_id" property="customerId" />
+            <result column="house_id" property="houseId" />
+            <result column="identity_type" property="identityType" />
+            <result column="move_in_date" property="moveInDate" />
+            <result column="move_out_date" property="moveOutDate" />
+            <result column="status" property="status" />
+            <result column="remark" property="remark" />
+            <result column="update_time" property="updateTime" />
+            <result column="update_user" property="updateUser" />
+            <result column="create_time" property="createTime" />
+            <result column="create_user" property="createUser" />
+            <result column="deleted" property="deleted" />
+        </collection>
+    </resultMap>
+
+    <select id="queryForList" resultMap="VoResultMap">
+        SELECT
+            a.id,
+            a.company_id,
+            a.customer_name,
+            a.customer_type,
+            a.customer_cate,
+            a.customer_level,
+            a.contact_name,
+            a.contact_phone,
+            a.company_nature,
+            a.company_industry,
+            a.credit_level,
+            a.customer_star,
+            a.email,
+            a.sex,
+            a.certificate_type,
+            a.certificate_cdoe,
+            a.address,
+            a.attachments,
+            a.`status`,
+            a.remark,
+            a.update_time,
+            a.update_user,
+            a.create_time,
+            a.create_user,
+            a.deleted
+        FROM
+        tb_customer AS a
+        <where>
+            <if test="param.companyId != null">
+                and a.company_id=#{param.companyId}
+            </if>
+            <if test="param.id != null">
+                and a.id=#{param.id}
+            </if>
+            <if test="param.keyword != null and param.keyword != ''">
+                and (a.customer_name like CONCAT('%',#{param.keyword}, '%') or a.contact_phone=#{param.keywordPhone})
+            </if>
+            <if test="param.customerName != null and param.customerName != ''">
+                and a.customer_name like CONCAT('%',#{param.customerName}, '%')
+            </if>
+            <if test="param.contactName != null and param.contactName != ''">
+                and a.contact_name like CONCAT('%',#{param.contactName}, '%')
+            </if>
+            <if test="param.contactPhone != null and param.contactPhone != ''">
+                and a.contact_phone=#{param.contactPhone}
+            </if>
+            <if test="param.status != null">
+                and a.`status`=#{param.status}
+            </if>
+          and a.deleted=0
+        </where>
+        order by a.create_time desc,a.id desc
+    </select>
+
+    <select id="lookupCustomerUsers"
+            resultType="cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto">
+          SELECT
+            a.id AS customer_id,
+            a.customer_name,
+            a.contact_name,
+            a.contact_phone,
+            b.user_id,
+            b.user_name
+        FROM
+            tb_customer AS a
+            LEFT JOIN ( SELECT bind_customer_id, user_id, `name` AS user_name FROM user_house_audit WHERE audit_status = 1 and bind_customer_type=1 AND deleted_flag = 0 ) AS b
+            ON a.id = b.bind_customer_id
+        WHERE
+            a.id IN
+        <foreach collection="param.customerIdList" item="itemCustomerId" open="(" close=")" separator=",">
+            #{itemCustomerId}
+        </foreach>
+            AND a.deleted =0
+    </select>
+
+
+</mapper>

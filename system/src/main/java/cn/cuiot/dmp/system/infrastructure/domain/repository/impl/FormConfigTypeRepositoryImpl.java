@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.SystemFormConfigConstant;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -23,10 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -55,7 +54,8 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
     @Override
     public List<FormConfigType> queryForList(FormConfigType formConfigType) {
         LambdaQueryWrapper<FormConfigTypeEntity> queryWrapper = new LambdaQueryWrapper<FormConfigTypeEntity>()
-                .eq(Objects.nonNull(formConfigType.getCompanyId()), FormConfigTypeEntity::getCompanyId, formConfigType.getCompanyId());
+                .eq(Objects.nonNull(formConfigType.getCompanyId()), FormConfigTypeEntity::getCompanyId, formConfigType.getCompanyId())
+                .eq(Objects.nonNull(formConfigType.getInitFlag()), FormConfigTypeEntity::getInitFlag, formConfigType.getInitFlag());
         List<FormConfigTypeEntity> formConfigTypeEntityList = formConfigTypeMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(formConfigTypeEntityList)) {
             return new ArrayList<>();
@@ -87,17 +87,29 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
     }
 
     @Override
-    public List<FormConfigType> queryByCompany(Long companyId) {
+    public List<FormConfigType> queryByCompany(Long companyId, Byte initFlag) {
         LambdaQueryWrapper<FormConfigTypeEntity> queryWrapper = new LambdaQueryWrapper<FormConfigTypeEntity>()
-                .eq(FormConfigTypeEntity::getCompanyId, companyId);
+                .eq(FormConfigTypeEntity::getCompanyId, companyId)
+                .eq(FormConfigTypeEntity::getInitFlag, initFlag);
         List<FormConfigTypeEntity> formConfigTypeEntityList = formConfigTypeMapper.selectList(queryWrapper);
         List<FormConfigType> formConfigTypeList = new ArrayList<>();
-        // 如果该企业下没有数据，默认创建一条"全部"作为根节点的数据
         if (CollectionUtils.isEmpty(formConfigTypeEntityList)) {
-            FormConfigTypeEntity formConfigTypeEntity = initRootNode(companyId);
-            FormConfigType formConfigType = new FormConfigType();
-            BeanUtils.copyProperties(formConfigTypeEntity, formConfigType);
-            formConfigTypeList.add(formConfigType);
+            // 如果该企业下没有数据且为自定义表单，默认创建一条"全部"作为根节点的数据
+            if (EntityConstants.DISABLED.equals(initFlag)) {
+                FormConfigTypeEntity formConfigTypeEntity = initRootNode(companyId);
+                FormConfigType formConfigType = new FormConfigType();
+                BeanUtils.copyProperties(formConfigTypeEntity, formConfigType);
+                formConfigTypeList.add(formConfigType);
+            } else {
+                // 如果该企业下没有数据且为系统表单，则默认初始化
+                formConfigTypeList = initSystemFormConfigType(companyId).stream()
+                        .map(o -> {
+                            FormConfigType formConfigType = new FormConfigType();
+                            BeanUtils.copyProperties(o, formConfigType);
+                            return formConfigType;
+                        })
+                        .collect(Collectors.toList());
+            }
             return formConfigTypeList;
         }
         formConfigTypeList = formConfigTypeEntityList.stream()
@@ -153,6 +165,45 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
         return formConfigTypeEntityList.get(0).getId();
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public List<FormConfigTypeEntity> initSystemFormConfigType(Long companyId) {
+        AssertUtil.notNull(companyId, "企业ID不能为空");
+        List<FormConfigTypeEntity> formConfigTypeEntityList = new ArrayList<>();
+        Map<String, Long> systemFormConfigTypeMap = new HashMap<>();
+        // 系统表单的根节点分类
+        FormConfigTypeEntity rootFormConfigTypeEntity = new FormConfigTypeEntity();
+        rootFormConfigTypeEntity.setId(IdWorker.getId());
+        rootFormConfigTypeEntity.setCompanyId(companyId);
+        rootFormConfigTypeEntity.setName(SystemFormConfigConstant.ROOT_NAME);
+        rootFormConfigTypeEntity.setLevelType(SystemFormConfigConstant.ROOT_LEVEL_TYPE);
+        rootFormConfigTypeEntity.setParentId(SystemFormConfigConstant.DEFAULT_PARENT_ID);
+        rootFormConfigTypeEntity.setPathName(SystemFormConfigConstant.ROOT_NAME);
+        rootFormConfigTypeEntity.setInitFlag(EntityConstants.ENABLED);
+        rootFormConfigTypeEntity.setCreatedBy(SystemFormConfigConstant.DEFAULT_USER_ID.toString());
+        formConfigTypeEntityList.add(rootFormConfigTypeEntity);
+        systemFormConfigTypeMap.put(SystemFormConfigConstant.ROOT_NAME, rootFormConfigTypeEntity.getId());
+        // 线索相关
+        SystemFormConfigConstant.FORM_CONFIG_TYPE_LIST.forEach(o -> {
+            FormConfigTypeEntity formConfigTypeEntity = new FormConfigTypeEntity();
+            formConfigTypeEntity.setId(IdWorker.getId());
+            formConfigTypeEntity.setCompanyId(companyId);
+            formConfigTypeEntity.setName(o);
+            formConfigTypeEntity.setLevelType(SystemFormConfigConstant.FIRST_LEVEL_TYPE);
+            formConfigTypeEntity.setParentId(rootFormConfigTypeEntity.getId());
+            formConfigTypeEntity.setPathName(SystemFormConfigConstant.ROOT_NAME + ">" + o);
+            formConfigTypeEntity.setInitFlag(EntityConstants.ENABLED);
+            formConfigTypeEntity.setCreatedBy(SystemFormConfigConstant.DEFAULT_USER_ID.toString());
+            formConfigTypeEntityList.add(formConfigTypeEntity);
+            systemFormConfigTypeMap.put(o, formConfigTypeEntity.getId());
+        });
+        // 保存表单配置分类
+        formConfigTypeMapper.batchSaveFormConfigType(formConfigTypeEntityList);
+        // 保存表单
+        formConfigRepository.initSystemFormConfig(companyId, systemFormConfigTypeMap);
+        return formConfigTypeEntityList;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
     private FormConfigTypeEntity initRootNode(Long companyId) {
         FormConfigTypeEntity formConfigTypeEntity = new FormConfigTypeEntity();
         formConfigTypeEntity.setId(IdWorker.getId());
@@ -173,7 +224,7 @@ public class FormConfigTypeRepositoryImpl implements FormConfigTypeRepository {
         AssertUtil.notNull(formConfigType.getCompanyId(), "企业id不能为空");
         AssertUtil.notNull(formConfigType.getParentId(), "父级id不能为空");
         String pathName;
-        List<FormConfigType> formConfigTypeList = queryByCompany(formConfigType.getCompanyId());
+        List<FormConfigType> formConfigTypeList = queryByCompany(formConfigType.getCompanyId(), EntityConstants.DISABLED);
         // 拼接树型结构
         List<FormConfigTypeTreeNodeVO> formConfigTypeTreeNodeVOList = formConfigTypeList.stream()
                 .map(parent -> new FormConfigTypeTreeNodeVO(

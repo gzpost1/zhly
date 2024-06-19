@@ -142,8 +142,6 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
         commonOptionTypeEntity.setParentId(CommonOptionConstant.DEFAULT_PARENT_ID);
         commonOptionTypeEntity.setPathName(CommonOptionConstant.ROOT_NAME);
         commonOptionTypeMapper.insert(commonOptionTypeEntity);
-        // 初始化【挂起原因】【终止原因】【退回原因】固定选项，可编辑，不可删除
-        commonOptionRepository.initCommonOption(companyId, commonOptionTypeEntity.getId());
         return commonOptionTypeEntity;
     }
 

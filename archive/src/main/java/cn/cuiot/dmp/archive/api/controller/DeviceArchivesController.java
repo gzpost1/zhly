@@ -21,7 +21,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.common.enums.ArchiveTypeEnum;
+import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -37,14 +37,11 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -68,7 +65,7 @@ public class DeviceArchivesController extends BaseController {
     @PostMapping("/queryForDetail")
     public DeviceArchivesEntity queryForDetail(@RequestBody @Valid IdParam idParam) {
         DeviceArchivesEntity res = deviceArchivesService.getById(idParam.getId());
-        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), ArchiveTypeEnum.DEVICE_ARCHIVE.getCode()));
+        res.setQrCodeId(archivesApiMapper.getCodeId(idParam.getId(), SystemOptionTypeEnum.DEVICE_ARCHIVE.getCode()));
 
         return res;
     }

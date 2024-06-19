@@ -82,6 +82,11 @@ public class OrganizationEntity implements Serializable {
     private String description;
 
     /**
+     * 初始化标志位(0:未初始化,1:已初始化)
+     */
+    private Byte initFlag;
+
+    /**
      * 企业有效期-开始时间
      */
     private Date expStartDate;

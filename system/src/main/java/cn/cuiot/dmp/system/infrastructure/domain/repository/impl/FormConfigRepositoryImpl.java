@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.SystemFormConfigConstant;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -32,10 +33,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -68,6 +66,27 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
             formConfig.setFormConfigDetail(formConfigDetailEntity.getFormConfigDetail());
         }
         return formConfig;
+    }
+
+    @Override
+    public FormConfig queryForDetailByName(FormConfig formConfig) {
+        AssertUtil.notBlank(formConfig.getName(), "表单配置名称不能为空");
+        AssertUtil.notNull(formConfig.getCompanyId(), "企业Id不能为空");
+        LambdaQueryWrapper<FormConfigEntity> queryWrapper = new LambdaQueryWrapper<FormConfigEntity>()
+                .eq(FormConfigEntity::getName, formConfig.getName())
+                .eq(FormConfigEntity::getCompanyId, formConfig.getCompanyId());
+        List<FormConfigEntity> formConfigEntityList = formConfigMapper.selectList(queryWrapper);
+        AssertUtil.notEmpty(formConfigEntityList, "表单配置不存在");
+        FormConfigEntity formConfigEntity = formConfigEntityList.get(0);
+        FormConfig formConfigResult = new FormConfig();
+        BeanUtils.copyProperties(formConfigEntity, formConfigResult);
+        // 查询表单详情
+        FormConfigDetailEntity formConfigDetailEntity = mongoTemplate.findById(formConfigEntity.getId(),
+                FormConfigDetailEntity.class, FormConfigConstant.FORM_CONFIG_COLLECTION);
+        if (Objects.nonNull(formConfigDetailEntity)) {
+            formConfigResult.setFormConfigDetail(formConfigDetailEntity.getFormConfigDetail());
+        }
+        return formConfigResult;
     }
 
     @Override
@@ -230,6 +249,23 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
             }
         }
         return false;
+    }
+
+    @Override
+    public void initSystemFormConfig(Long companyId, Map<String, Long> systemFormConfigTypeMap) {
+        AssertUtil.notNull(companyId, "企业ID不能为空");
+        List<FormConfigEntity> formConfigEntityList = new ArrayList<>();
+        // 线索相关
+        SystemFormConfigConstant.CLUE_FORM_CONFIG.forEach(o -> {
+            FormConfigEntity formConfigEntity = new FormConfigEntity();
+            formConfigEntity.setId(IdWorker.getId());
+            formConfigEntity.setName(o);
+            formConfigEntity.setCompanyId(companyId);
+            formConfigEntity.setTypeId(systemFormConfigTypeMap.get(SystemFormConfigConstant.FORM_CONFIG_TYPE_LIST.get(0)));
+            formConfigEntity.setCreatedBy(SystemFormConfigConstant.DEFAULT_USER_ID.toString());
+            formConfigEntityList.add(formConfigEntity);
+        });
+        formConfigMapper.batchSaveFormConfig(formConfigEntityList);
     }
 
     private Query getQuery(FormConfigDetailQueryDTO formConfigDetailQueryDTO) {

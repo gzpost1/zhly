@@ -4,10 +4,10 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.system.application.param.dto.BatchFormConfigDTO;
-import cn.cuiot.dmp.system.application.param.dto.FormConfigCreateDTO;
-import cn.cuiot.dmp.system.application.param.dto.FormConfigUpdateDTO;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.system.application.param.dto.*;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.application.service.FormConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +37,16 @@ public class FormConfigController {
     @PostMapping("/queryForDetail")
     public FormConfigVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return formConfigService.queryForDetail(idParam.getId());
+    }
+
+    /**
+     * 根据名称获取详情
+     */
+    @PostMapping("/queryForDetailByName")
+    public FormConfigVO queryForDetailByName(@RequestBody @Valid FormConfigDTO formConfigDTO) {
+        Long orgId = LoginInfoHolder.getCurrentOrgId();
+        formConfigDTO.setCompanyId(orgId);
+        return formConfigService.queryForDetailByName(formConfigDTO);
     }
 
     /**
@@ -107,6 +117,32 @@ public class FormConfigController {
     @PostMapping("/batchDelete")
     public int batchDeleteFormConfig(@RequestBody @Valid BatchFormConfigDTO batchFormConfigDTO) {
         return formConfigService.batchDeleteFormConfig(batchFormConfigDTO.getIdList());
+    }
+
+    /**
+     * 从缓存获取表单配置内容
+     */
+    @PostMapping("/getFormConfigFromCache")
+    public IdmResDTO<String> getFormConfigFromCache(@RequestBody @Valid FormConfigCacheDTO cacheDTO) {
+        return IdmResDTO.success(formConfigService.getFormConfigFromCache(cacheDTO));
+    }
+
+    /**
+     * 写入表单配置内容到缓存
+     */
+    @PostMapping("/setFormConfig2Cache")
+    public IdmResDTO<Object> setFormConfig2Cache(@RequestBody @Valid FormConfigCacheDTO cacheDTO) {
+        formConfigService.setFormConfig2Cache(cacheDTO);
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 从缓存删除表单配置内容
+     */
+    @PostMapping("/deleteFormConfigFromCache")
+    public IdmResDTO<Object> deleteFormConfigFromCache(@RequestBody @Valid FormConfigCacheDTO cacheDTO) {
+        formConfigService.deleteFormConfigFromCache(cacheDTO);
+        return IdmResDTO.success();
     }
 
 }

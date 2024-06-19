@@ -6,8 +6,14 @@ import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesCreateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesExportVO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
+import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchives;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchivesPageQuery;
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.PageResult;
 
 import java.util.List;
@@ -73,5 +79,19 @@ public interface BuildingArchivesService {
      * 获取组织楼盘树
      */
     List<DepartmentTreeRspDTO> getDepartmentBuildingTree(Long orgId, Long userId);
+
+    List<BuildingArchive> apiQueryForList(BuildingArchiveReq buildingArchiveReq);
+
+    /**
+     * 根据ID获取楼盘信息
+     * @param id
+     * @return
+     */
+    BuildingArchive lookupBuildingArchiveInfo(Long id);
+
+    /**
+     * 查询当前组织及下级组织下的楼盘列表
+     */
+    List<BuildingArchive> lookupBuildingArchiveByDepartmentList(DepartmentReqDto reqDto);
 
 }

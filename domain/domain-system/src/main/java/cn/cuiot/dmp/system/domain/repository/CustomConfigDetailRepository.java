@@ -13,7 +13,7 @@ public interface CustomConfigDetailRepository {
     /**
      * 根据自定义配置ID批量查询自定义配置详情
      */
-    List<CustomConfigDetail> batchQueryCustomConfigDetails(Long customConfigId);
+    List<CustomConfigDetail> batchQueryCustomConfigDetails(Long customConfigId, Long companyId);
 
     /**
      * 根据id集合批量查询自定义配置详情
@@ -23,11 +23,11 @@ public interface CustomConfigDetailRepository {
     /**
      * 批量保存或更新
      */
-    void batchSaveOrUpdateCustomConfigDetails(Long customConfigId, List<CustomConfigDetail> customConfigDetails);
+    void batchSaveOrUpdateCustomConfigDetails(Long customConfigId, List<CustomConfigDetail> customConfigDetails, Long companyId);
 
     /**
      * 根据自定义配置ID批量删除自定义配置详情
      */
-    void batchDeleteCustomConfigDetails(List<Long> customConfigIdList);
+    void batchDeleteCustomConfigDetails(List<Long> customConfigIdList, Long companyId);
 
 }

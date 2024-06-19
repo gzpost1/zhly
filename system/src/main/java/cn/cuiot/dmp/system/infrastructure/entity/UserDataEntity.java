@@ -202,4 +202,9 @@ public class UserDataEntity {
      * 角色key
      */
     private String roleKey;
+
+    /**
+     * 小程序openid
+     */
+    private String openid;
 }

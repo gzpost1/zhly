@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.archive.infrastructure.persistence.mapper.CustomerVehicleMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.entity.CustomerVehicleEntity">
+        <id column="id" property="id" />
+        <result column="customer_id" property="customerId" />
+        <result column="vehicle_code" property="vehicleCode" />
+        <result column="owner_name" property="ownerName" />
+        <result column="phone" property="phone" />
+        <result column="certificate_type" property="certificateType" />
+        <result column="certificate_cdoe" property="certificateCdoe" />
+        <result column="status" property="status" />
+        <result column="remark" property="remark" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, customer_id, vehicle_code, owner_name, phone, certificate_type, certificate_cdoe, status, remark, update_time, update_user, create_time, create_user, deleted
+    </sql>
+
+    <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.vo.CustomerVehicleVo">
+    </resultMap>
+
+    <select id="selectByCustomerId" resultMap="VoResultMap">
+        select
+        <include refid="Base_Column_List" />
+        <where>
+            <if test="customerIdList != null and customerIdList.size() > 0">
+                and customer_id in
+                <foreach collection="customerIdList" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            AND deleted = 0
+        </where>
+        ORDER BY
+        create_time DESC,id DESC
+    </select>
+
+</mapper>

@@ -22,11 +22,12 @@
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="create_user" jdbcType="BIGINT" property="createUser" />
     <result column="deleted" jdbcType="TINYINT" property="deleted" />
+    <result column="is_select_app_user" jdbcType="TINYINT" property="isSelectAppUser" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, `name`, business_type_id,  `process`, logo, notify_setting, remark, common_config_dto,
-    `status`, company_id, update_time, update_user, create_time, create_user, deleted
+    `status`, company_id, update_time, update_user, create_time, create_user, deleted,is_select_app_user
   </sql>
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto">
@@ -49,6 +50,9 @@
       </if>
       <if test="query.businessTypeId != null">
         and business_type_id = #{query.businessTypeId}
+      </if>
+      <if test="query.isSelectAppUser != null">
+        and is_select_app_user = #{query.isSelectAppUser}
       </if>
     </where>
     order by create_time desc
