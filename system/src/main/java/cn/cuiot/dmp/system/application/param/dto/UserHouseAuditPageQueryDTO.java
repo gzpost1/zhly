@@ -53,4 +53,9 @@ public class UserHouseAuditPageQueryDTO extends PageQuery {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endTime;
+
+    /**
+     * 企业ID-前端不用管
+     */
+    private Long companyId;
 }
