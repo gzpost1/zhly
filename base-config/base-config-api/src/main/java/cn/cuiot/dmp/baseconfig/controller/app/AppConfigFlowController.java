@@ -59,9 +59,9 @@ public class AppConfigFlowController {
     public IdmResDTO<IPage<TbFlowPageDto>> queryForWorkOrderPage(@RequestBody TbFlowConfigQuery query) {
         Long deptId = null;
 
-        if (Objects.equals(LoginInfoHolder.getCurrentUserType(), UserTypeEnum.USER)) {
+        if (Objects.equals(LoginInfoHolder.getCurrentUserType(), UserTypeEnum.USER.getValue())) {
             deptId = LoginInfoHolder.getCurrentDeptId();
-        } else if (Objects.equals(LoginInfoHolder.getCurrentUserType(), UserTypeEnum.OWNER)) {
+        } else if (Objects.equals(LoginInfoHolder.getCurrentUserType(), UserTypeEnum.OWNER.getValue())) {
             //获取小区信息
             BuildingArchive buildingArchive = apiArchiveService.lookupBuildingArchiveInfo(LoginInfoHolder.getCommunityId());
             AssertUtil.isTrue(Objects.nonNull(buildingArchive) && Objects.nonNull(buildingArchive.getDepartmentId()), "小区不存在");
