@@ -1,12 +1,8 @@
 package cn.cuiot.dmp.lease.entity;
 
-import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
-import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
+import cn.cuiot.dmp.base.application.enums.BeanValidationGroup;
 import cn.cuiot.dmp.common.constant.EntityConstants;
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -18,13 +14,11 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-
 /**
- * 意向合同
+ * 租赁合同
  *
  * @author MJ~
- * @since 2024-06-12
+ * @since 2024-06-19
  */
 @Data
 @Builder(toBuilder = true)
@@ -32,17 +26,15 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName(value = "tb_contract_intention",autoResultMap = true)
+@TableName("tb_contract_lease")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> {
+public class TbContractLeaseEntity extends Model<TbContractLeaseEntity> {
 
     private static final long serialVersionUID = 1L;
 
+    @TableId(value = "id", type = IdType.AUTO)
+    @NotNull(message = "id不能为空",groups = BeanValidationGroup.Update.class)
     private Long id;
-    /**
-     * 租赁合同id
-     */
-    private Long contractLeaseId;
 
     /**
      * 合同编号
@@ -54,13 +46,6 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
      */
     @NotNull(message = "合同名称不能为空")
     private String name;
-
-    /**
-     * 签订日期
-     */
-    @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    private LocalDate cantractDate;
 
     /**
      * 合同开始日期
@@ -79,33 +64,75 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
     private LocalDate endDate;
 
     /**
-     * 跟进人
+     * 签订日期
+     */
+    @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    private LocalDate cantractDate;
 
+    /**
+     * 首期应收日期
+     */
+    @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    private LocalDate firstDate;
+
+    /**
+     * 跟进人
      */
     @NotNull(message = "跟进人不能为空")
     private String followUp;
     @TableField(exist = false)
     private String followUpName;
 
-    /**
-     * 签订客户
-     */
-    private String client;
-    @TableField(exist = false)
-    private String clientName;
-    @TableField(exist = false)
-    private String clientPhone;
 
     /**
-     * 意向备注
+     * 租赁用途
+     */
+    @NotNull(message = "租赁用途不能为空")
+    private String purpose;
+
+    /**
+     * 合同类型
+     */
+    @NotNull(message = "合同类型不能为空")
+    private String type;
+
+    /**
+     * 合同性质
+     */
+    @NotNull(message = "合同性质不能为空")
+    private String property;
+
+    /**
+     * 标签
+     */
+    private String label;
+
+    /**
+     * 备注
      */
     private String remark;
 
     /**
-     * 审核状态
-     * 1:审核中待审核 2:审核通过 3:未通过
+     * 签订客户
      */
-    private Integer auditStatus;
+    private String client;
+
+    /**
+     * 合同表单
+     */
+    private String form;
+
+    /**
+     * 合同主体
+     */
+    private String mainBody;
+
+    /**
+     * 其他功能-附件
+     */
+    private String path;
 
     @TableField(fill = FieldFill.INSERT)
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
@@ -132,37 +159,16 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
     private Byte deleted = EntityConstants.NOT_DELETED;
 
     /**
-     * 意向房屋
-     */
-    @TableField(exist = false)
-    private List<HousesArchivesVo> houseList;
-    /**
-     * 意向金
-     */
-    @TableField(exist = false)
-    private List<TbContractIntentionMoneyEntity> moneyList;
-    /**
-     * 退订信息
-     */
-    @TableField(exist = false)
-    private TbContractCancelEntity cancelInfo;
-    /**
-     * 作废信息
-     */
-    @TableField(exist = false)
-    private TbContractCancelEntity uselessInfo;
-
-    /**
      * 合同状态
      */
     private Integer contractStatus;
 
     /**
-     * 标签
+     * 审核状态 1审核中,待审核 2 审核通过 3.未通过
      */
-    private String label;
+    private Integer auditStatus;
 
-    public static final String TABLE_NAME = "tb_contract_intention";
+    public static final String TABLE_NAME = "tb_contract_lease";
 
 
     public static final String ID = "id";
@@ -171,17 +177,33 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
 
     public static final String NAME = "name";
 
-    public static final String CANTRACT_DATE = "cantract_date";
-
     public static final String BEGIN_DATE = "begin_date";
 
     public static final String END_DATE = "end_date";
 
+    public static final String CANTRACT_DATE = "cantract_date";
+
+    public static final String FIRST_DATE = "first_date";
+
     public static final String FOLLOW_UP = "follow_up";
+
+    public static final String PURPOSE = "purpose";
+
+    public static final String TYPE = "type";
+
+    public static final String PROPERTY = "property";
+
+    public static final String LABEL = "label";
+
+    public static final String REMARK = "remark";
 
     public static final String CLIENT = "client";
 
-    public static final String REMARK = "remark";
+    public static final String FORM = "form";
+
+    public static final String MAIN_BODY = "main_body";
+
+    public static final String PATH = "path";
 
     public static final String CREATE_TIME = "create_time";
 
@@ -197,9 +219,11 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
 
     public static final String CONTRACT_STATUS = "contract_status";
 
+    public static final String AUDIT_STATUS = "audit_status";
+
     @Override
     public Serializable pkVal() {
-        return null;
+        return this.id;
     }
 
 }

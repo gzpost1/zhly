@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="cn.cuiot.dmp.lease.mapper.TbContractIntentionBindInfoMapper">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.TbContractBindInfoMapper">
 
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.TbContractIntentionBindInfoEntity">
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.TbContractBindInfoEntity">
         <result column="intention_id" property="intentionId" />
         <result column="bind_id" property="bindId" />
         <result column="type" property="type" />
     </resultMap>
 
-<select id="list" resultMap="BaseResultMap" parameterType="cn.cuiot.dmp.lease.entity.TbContractIntentionBindInfoEntity" >
+<select id="list" resultMap="BaseResultMap" parameterType="cn.cuiot.dmp.lease.entity.TbContractBindInfoEntity" >
     select
     <include refid="Base_Column_List" />
-    from tb_contract_intention_bind_info
+    from tb_contract_bind_info
     <where>
       <include refid="dynamic_where" />
   </where>
@@ -39,7 +39,7 @@
 </sql>
 
     <select id="queryMoneyInfoByIntentionId" resultMap="cn.cuiot.dmp.lease.mapper.TbContractIntentionMoneyMapper.BaseResultMap">
-        select m.* from tb_contract_intention_money m left join tb_contract_intention_bind_info b
+        select m.* from tb_contract_intention_money m left join tb_contract_bind_info b
         on b.bind_id=m.id
         where b.type=2 and b.intention_id= #{id}
     </select>

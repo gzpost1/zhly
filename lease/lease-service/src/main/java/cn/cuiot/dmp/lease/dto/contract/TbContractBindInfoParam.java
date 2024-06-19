@@ -24,7 +24,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class TbContractIntentionBindInfoParam extends PageQuery implements Serializable {
+public class TbContractBindInfoParam extends PageQuery implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

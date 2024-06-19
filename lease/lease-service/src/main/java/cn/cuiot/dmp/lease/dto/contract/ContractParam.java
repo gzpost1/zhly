@@ -2,6 +2,7 @@ package cn.cuiot.dmp.lease.dto.contract;
 
 import cn.cuiot.dmp.lease.entity.TbContractCancelEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
+import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -29,12 +30,13 @@ public class ContractParam implements Serializable {
      */
     private TbContractCancelEntity contractCancelEntity;
 
-
-
     /**
-     * 租赁合同 ID
+     * 租赁合同信息 签约需要传入
      */
-    private Long contractLeaseId;
+    private TbContractLeaseEntity contractLeaseEntity;
+
+
+
 
 
 }

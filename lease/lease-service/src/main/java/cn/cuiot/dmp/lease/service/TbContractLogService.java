@@ -6,6 +6,7 @@ import cn.cuiot.dmp.lease.dto.contract.AuditParam;
 import cn.cuiot.dmp.lease.entity.TbContractLogEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractLogMapper;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 
@@ -24,17 +25,11 @@ import static cn.cuiot.dmp.common.constant.AuditConstant.*;
 @Service
 public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMapper, TbContractLogEntity> {
 
-    public void saveLogWithFile(String operation, String operDesc, String path) {
-        saveLog(operation, operDesc, null, path);
-    }
 
-    public void saveLogWithExtInfo(String operation, String operDesc, String extId) {
-        saveLog(operation, operDesc, extId, null);
-    }
-
-    public void saveLog(String operation, String operDesc, String extId, String path) {
+    public void saveLog(Long contractId,String operation, String operDesc, String extId, String path) {
         String username = LoginInfoHolder.getCurrentLoginInfo().getUsername();
         TbContractLogEntity logEntity = new TbContractLogEntity();
+        logEntity.setContractId(contractId);
         logEntity.setOperator(username);
         logEntity.setOperation(operation);
         logEntity.setOperDesc(username + " " + operDesc);
@@ -43,10 +38,10 @@ public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMa
         logEntity.setOperTime(LocalDateTime.now());
         save(logEntity);
     }
-
-    public void saveLog(String operation, String operDesc) {
-        saveLog(operation, operDesc, null, null);
+    public void saveLog(Long contractId,String operation, String operDesc) {
+       saveLog(contractId,operation,operDesc,null,null);
     }
+
 
     /**
      * 获取合同的操作日志
@@ -72,13 +67,20 @@ public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMa
         }
         logMsgParam.add(operate);
         if (Objects.equals(auditParam.getAuditStatus(),ContractEnum.AUDIT_PASS.getCode())) {
-            logMsgParam.add(PASS);
+            logMsgParam.add(AUDIT_PASS);
         } else {
-            logMsgParam.add(REFUSE);
+            logMsgParam.add(AUDIT_REFUSE);
         }
         logMsgParam.add(auditParam.getRemark());
         String logMsg = String.format(AUDIT_MSG_TEMP, logMsgParam.toArray());
         String operation = operate + "审核";
-        saveLog(operation, logMsg);
+        saveLog(auditParam.getId(), operation, logMsg);
     }
+
+    public void removeByContractId(Long id){
+        LambdaQueryWrapper<TbContractLogEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TbContractLogEntity::getContractId,id);
+        remove(queryWrapper);
+    }
+
 }

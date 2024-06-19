@@ -2,9 +2,7 @@ package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
-import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
@@ -14,6 +12,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.contract.AuditParam;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
@@ -41,7 +40,7 @@ import static cn.cuiot.dmp.common.constant.AuditConstant.AUDIT_CONFIG_INTENTION_
 public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContractIntentionMapper, TbContractIntentionEntity> {
 
     @Autowired
-    TbContractIntentionBindInfoService bindInfoService;
+    TbContractBindInfoService bindInfoService;
     @Autowired
     SystemApiFeignService systemApiFeignService;
 
@@ -56,6 +55,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
 
     /**
      * 填充房屋信息,跟进人和合同人信息
+     *
      * @param c
      */
     private void fullInfo(TbContractIntentionEntity c) {
@@ -257,4 +257,14 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
             entity.setContractStatus(ContractEnum.STATUS_EXECUTING.getCode());
         }
     }
+
+    @Override
+    public boolean save(Object o) {
+        Long code = SnowflakeIdWorkerUtil.nextId();
+        TbContractIntentionEntity entity = (TbContractIntentionEntity) o;
+        entity.setContractNo(String.valueOf(code));
+        bindInfoService.createContractIntentionBind(entity);
+        return super.save(entity);
+    }
+
 }

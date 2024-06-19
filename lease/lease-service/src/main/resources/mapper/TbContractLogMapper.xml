@@ -4,6 +4,7 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.TbContractLogEntity">
         <result column="id" property="id"/>
+        <result column="contract_id" property="contractId"/>
         <result column="operation" property="operation"/>
         <result column="operator" property="operator"/>
         <result column="oper_time" property="operTime"/>
@@ -26,13 +27,16 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, operation, operator, oper_time, oper_desc, path, create_user, create_time,operation_type,ext_id
+        id, operation, operator, oper_time, oper_desc, path, create_user, create_time,operation_type,ext_id,contract_id
     </sql>
 
     <sql id="dynamic_where">
         <if test="params!=null">
             <if test=" params.id != null">
                 and id = #{params.id}
+            </if>
+            <if test=" params.contractId != null">
+                and contract_id = #{params.contractId}
             </if>
             <if test=" params.operation != null and params.operation.trim() != ''">
                 and operation like CONCAT('%','${params.operation}','%' )

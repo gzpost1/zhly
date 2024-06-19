@@ -81,6 +81,11 @@ public class TbContractLogEntity extends Model<TbContractLogEntity> {
     private String operationType;
 
     /**
+     * 合同id
+     */
+    private Long contractId;
+
+    /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)

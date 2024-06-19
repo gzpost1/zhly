@@ -84,9 +84,14 @@
         </if>
     </sql>
 
-    <select id="selectByNo" resultMap="BaseResultMap">
+    <select id="selectCancelByContractId" resultMap="BaseResultMap">
         select *
         from tb_contract_cancel
-        where contract_no = #{no}
+        where type=0 and contract_id = #{id}
+    </select>
+    <select id="selectUselessByContractId" resultMap="BaseResultMap">
+        select *
+        from tb_contract_cancel
+        where type=1 and contract_id = #{id}
     </select>
 </mapper>

@@ -26,12 +26,16 @@
         <result column="followUpName" property="followUpName"/>
         <result column="contact_phone" property="clientPhone"/>
         <collection property="moneyList"
-                    select="cn.cuiot.dmp.lease.mapper.TbContractIntentionBindInfoMapper.queryMoneyInfoByIntentionId"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractBindInfoMapper.queryMoneyInfoByIntentionId"
                     column="id">
         </collection>
-        <collection property="backEntity"
-                    select="cn.cuiot.dmp.lease.mapper.TbContractCancelMapper.selectByNo"
-                    column="contract_no">
+        <collection property="cancelInfo"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractCancelMapper.selectCancelByContractId"
+                    column="id">
+        </collection>
+        <collection property="uselessInfo"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractCancelMapper.selectUselessByContractId"
+                    column="id">
         </collection>
     </resultMap>
 

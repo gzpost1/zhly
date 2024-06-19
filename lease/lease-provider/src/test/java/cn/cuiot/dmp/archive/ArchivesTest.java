@@ -7,8 +7,7 @@ import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.lease.LeaseApplication;
-import cn.cuiot.dmp.lease.service.TbContractIntentionBindInfoService;
-import cn.cuiot.dmp.lease.vo.ContractBindInfo;
+import cn.cuiot.dmp.lease.service.TbContractBindInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
 import org.junit.Test;
@@ -33,7 +32,7 @@ public class ArchivesTest {
     @Autowired
     ArchiveFeignService archiveFeignService;
     @Autowired
-    TbContractIntentionBindInfoService bindInfoService;
+    TbContractBindInfoService bindInfoService;
 
 
     @Test

@@ -15,9 +15,10 @@ public class AuditConstant {
     public static final String AUDIT_CONFIG_INTENTION_USELESS = "合同作废";
 
     public static final String OPERATE_COMMIT = "提交";
-    public static final String PASS = "通过";
-    public static final String REFUSE = "不通过";
+    public static final String AUDIT_PASS = "通过";
+    public static final String AUDIT_REFUSE = "不通过";
     public static final String OPERATE_SIGN_CONTRACT = "签约";
     public static final String OPERATE_CANCEL = "退定";
     public static final String OPERATE_USELESS = "作废";
+    public static final String OPERATE_ALLOCATION = "分配";
 }

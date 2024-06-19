@@ -5,10 +5,10 @@ import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.lease.entity.TbContractIntentionBindInfoEntity;
+import cn.cuiot.dmp.lease.entity.TbContractBindInfoEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionMoneyEntity;
-import cn.cuiot.dmp.lease.mapper.TbContractIntentionBindInfoMapper;
+import cn.cuiot.dmp.lease.mapper.TbContractBindInfoMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.google.common.collect.Lists;
@@ -27,9 +27,11 @@ import java.util.stream.Collectors;
  * @since 2024-06-12
  */
 @Service
-public class TbContractIntentionBindInfoService extends BaseMybatisServiceImpl<TbContractIntentionBindInfoMapper, TbContractIntentionBindInfoEntity> {
-    public static final Long CONTRACT_TYPE_HOUSE = 1L;
-    public static final Long CONTRACT_TYPE_MONEY = 2L;
+public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContractBindInfoMapper, TbContractBindInfoEntity> {
+    //1 意向合同 房屋 2.意向合同 意向金 3.租赁合同
+    public static final Long CONTRACT_INTENTION_TYPE_HOUSE = 1L;
+    public static final Long CONTRACT_INTENTION_TYPE_MONEY = 2L;
+    public static final Long CONTRACT_LEASE_TYPE_HOUSE = 3L;
     @Autowired
     ArchiveFeignService archiveFeignService;
     @Autowired
@@ -40,8 +42,8 @@ public class TbContractIntentionBindInfoService extends BaseMybatisServiceImpl<T
      * 根据合同id删除关联关系
      */
     public void removeByContractId(Long id) {
-        LambdaQueryWrapper<TbContractIntentionBindInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TbContractIntentionBindInfoEntity::getIntentionId, id);
+        LambdaQueryWrapper<TbContractBindInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TbContractBindInfoEntity::getIntentionId, id);
         remove(queryWrapper);
     }
 
@@ -52,13 +54,13 @@ public class TbContractIntentionBindInfoService extends BaseMybatisServiceImpl<T
      * @return
      */
     public List<HousesArchivesVo> queryBindHouseInfoByContractId(Long id) {
-        LambdaQueryWrapper<TbContractIntentionBindInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TbContractIntentionBindInfoEntity::getIntentionId, id);
-        List<TbContractIntentionBindInfoEntity> bindList = list(queryWrapper);
+        LambdaQueryWrapper<TbContractBindInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TbContractBindInfoEntity::getIntentionId, id);
+        List<TbContractBindInfoEntity> bindList = list(queryWrapper);
         if (CollectionUtils.isEmpty(bindList)) {
             return null;
         }
-        List<Long> houseIds = bindList.stream().filter(t -> Objects.equals(t.getType(), CONTRACT_TYPE_HOUSE)).map(TbContractIntentionBindInfoEntity::getBindId).collect(Collectors.toList());
+        List<Long> houseIds = bindList.stream().filter(t -> Objects.equals(t.getType(), CONTRACT_INTENTION_TYPE_HOUSE)).map(TbContractBindInfoEntity::getBindId).collect(Collectors.toList());
         List<HousesArchivesVo> houseList = queryRemoteHouseList(houseIds);
 
         return houseList;
@@ -84,8 +86,8 @@ public class TbContractIntentionBindInfoService extends BaseMybatisServiceImpl<T
      */
     public void createContractIntentionBind(TbContractIntentionEntity entity) {
         Long id = entity.getId();
-        ArrayList<TbContractIntentionBindInfoEntity> saveBindList = Lists.newArrayList();
-        TbContractIntentionBindInfoEntity bindInfoEntity = new TbContractIntentionBindInfoEntity();
+        ArrayList<TbContractBindInfoEntity> saveBindList = Lists.newArrayList();
+        TbContractBindInfoEntity bindInfoEntity = new TbContractBindInfoEntity();
         bindInfoEntity.setIntentionId(entity.getId());
         List<HousesArchivesVo> houseList = entity.getHouseList();
         List<TbContractIntentionMoneyEntity> moneyList = entity.getMoneyList();
@@ -93,14 +95,14 @@ public class TbContractIntentionBindInfoService extends BaseMybatisServiceImpl<T
             List<Long> houseIds = houseList.stream().map(HousesArchivesVo::getId).collect(Collectors.toList());
             houseIds.forEach(h -> {
                 bindInfoEntity.setBindId(h);
-                bindInfoEntity.setType(CONTRACT_TYPE_HOUSE);
+                bindInfoEntity.setType(CONTRACT_INTENTION_TYPE_HOUSE);
                 saveBindList.add(bindInfoEntity);
             });
         }
         if (CollectionUtils.isNotEmpty(moneyList)) {
             moneyList.forEach(m -> {
                 bindInfoEntity.setBindId(m.getId());
-                bindInfoEntity.setType(CONTRACT_TYPE_MONEY);
+                bindInfoEntity.setType(CONTRACT_INTENTION_TYPE_MONEY);
                 saveBindList.add(bindInfoEntity);
             });
         }
