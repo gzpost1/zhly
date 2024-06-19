@@ -640,7 +640,13 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         for(CustomerHouseVo vo:houseList){
             CustomerHouseExportVo exportVo = new CustomerHouseExportVo();
             exportVo.setHouseId(vo.getHouseId());
-            exportVo.setIdentityTypeName(getItemName(optionItems,parseLong(vo.getIdentityType())));
+            if(StringUtils.isNotBlank(vo.getIdentityType())){
+                CustomerIdentityTypeEnum identityTypeEnum = CustomerIdentityTypeEnum
+                        .parseByCode(vo.getIdentityType());
+                if(Objects.nonNull(identityTypeEnum)){
+                    exportVo.setIdentityTypeName(identityTypeEnum.getName());
+                }
+            }
             if(Objects.nonNull(vo.getMoveInDate())){
                 exportVo.setMoveInDateStr(DateTimeUtil.dateToString(vo.getMoveInDate(),DEFAULT_DATE_FORMAT));
             }
@@ -656,7 +662,15 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
      * 查询客户
      */
     public List<CustomerUserRspDto> lookupCustomerUsers(CustomerUseReqDto reqDto) {
-        return customerMapper.lookupCustomerUsers(reqDto);
+        List<CustomerUserRspDto> list = customerMapper.lookupCustomerUsers(reqDto);
+        if (CollectionUtils.isNotEmpty(list)) {
+            for(CustomerUserRspDto dto:list){
+                if(StringUtils.isNotBlank(dto.getContactPhone())){
+                    dto.setContactPhone(Sm4.decrypt(dto.getContactPhone()));
+                }
+            }
+        }
+        return list;
     }
 
 }
