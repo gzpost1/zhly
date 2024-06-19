@@ -52,6 +52,11 @@ public class OrganizationEntity {
     private String description;
 
     /**
+     * 初始化标志位(0:未初始化,1:已初始化)
+     */
+    private Byte initFlag;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdOn;
