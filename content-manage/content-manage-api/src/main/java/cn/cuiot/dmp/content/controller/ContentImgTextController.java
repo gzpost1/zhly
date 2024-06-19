@@ -12,18 +12,19 @@ import cn.cuiot.dmp.content.dal.entity.ContentAudit;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
+import cn.cuiot.dmp.content.param.vo.AuditStatusNumVo;
 import cn.cuiot.dmp.content.param.vo.ImgTextVo;
 import cn.cuiot.dmp.content.service.ContentAuditService;
 import cn.cuiot.dmp.content.service.ContentImgTextService;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 图文管理
@@ -78,20 +79,22 @@ public class ContentImgTextController extends BaseController {
      * 保存
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "saveContentImgText", operationName = "保存图文", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "saveContentImgText", operationName = "保存图文", serviceType = "imgText",serviceTypeName = "图文管理")
     @PostMapping("/create")
-    public int saveContentImgText(@RequestBody @Valid ContentImgTextCreateDto createDTO) {
-        return contentImgTextService.saveContentImgText(createDTO);
+    public int saveContentImgText(@RequestBody @Valid ContentImgTextCreateDto createDto) {
+        createDto.setDepartments(Collections.singletonList(LoginInfoHolder.getCurrentDeptId()));
+        return contentImgTextService.saveContentImgText(createDto);
     }
 
     /**
      * 更新
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateContentImgText", operationName = "更新图文", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateContentImgText", operationName = "更新图文", serviceType = "imgText",serviceTypeName = "图文管理")
     @PostMapping("/update")
-    public int updateContentImgText(@RequestBody @Valid ContentImgTextUpdateDto updateDTO) {
-        return contentImgTextService.updateContentImgText(updateDTO);
+    public int updateContentImgText(@RequestBody @Valid ContentImgTextUpdateDto updateDto) {
+        updateDto.setDepartments(Collections.singletonList(LoginInfoHolder.getCurrentDeptId()));
+        return contentImgTextService.updateContentImgText(updateDto);
     }
 
     /**
@@ -111,8 +114,17 @@ public class ContentImgTextController extends BaseController {
      * @return
      */
     @PostMapping("/updateStatus")
-    @LogRecord(operationCode = "updateStatusImgText", operationName = "停启用图文", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateStatusImgText", operationName = "停启用图文", serviceType = "imgText",serviceTypeName = "图文管理")
     public Boolean updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         return contentImgTextService.updateStatus(updateStatusParam);
+    }
+
+    /**
+     * 获取审核状态数量
+     * @return
+     */
+    @GetMapping("/getAuditStatusNum")
+    public List<AuditStatusNumVo> getAuditStatusNum(@RequestParam("typeId") Long typeId) {
+        return contentImgTextService.getAuditStatusNum(typeId);
     }
 }

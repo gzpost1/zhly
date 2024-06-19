@@ -4,23 +4,23 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
-import cn.cuiot.dmp.baseconfig.flow.dto.QueryApprovalInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.ClientOperationDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.ProcessBusinessDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.BatchBusinessDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDTO;
-import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
+import cn.cuiot.dmp.baseconfig.flow.enums.WorkSourceEnums;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import javax.validation.Valid;
 
 
 /**
@@ -36,7 +36,7 @@ public class BaseApprovalCenterController extends BaseController {
     private WorkInfoService workInfoService;
 
     /**
-     * 启动流程
+     * 启动流程-2.0-改动
      * @param startProcessInstanceDTO
      * @return
      */
@@ -44,18 +44,8 @@ public class BaseApprovalCenterController extends BaseController {
     @RequiresPermissions
     @LogRecord(operationCode = "startWork", operationName = "启动工单", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO start(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
-        startProcessInstanceDTO.setWorkSource(WorkOrderConstants.WORK_SOURCE_MAKE);
+        startProcessInstanceDTO.setWorkSource(WorkSourceEnums.WORK_SOURCE_MAKE.getCode());
         return workInfoService.start(startProcessInstanceDTO);
-    }
-
-    /**
-     *
-     * @param dto
-     * @return
-     */
-    public IdmResDTO<IPage<WorkInfoEntity>> processList(@RequestBody QueryApprovalInfoDto dto){
-
-        return workInfoService. processList(dto);
     }
 
 
@@ -134,14 +124,14 @@ public class BaseApprovalCenterController extends BaseController {
 
     /**
      * 回退
-     * @param handleDataDTO
+     * @param operationDto
      * @return
      */
     @PostMapping("rollback")
     @RequiresPermissions
     @LogRecord(operationCode = "rollback", operationName = "回退", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO rollback(@RequestBody HandleDataDTO handleDataDTO){
-        return workInfoService.rollback(handleDataDTO);
+    public IdmResDTO rollback(@RequestBody ClientOperationDto operationDto){
+        return workInfoService.rollback(operationDto);
     }
 
     /**
@@ -154,6 +144,18 @@ public class BaseApprovalCenterController extends BaseController {
     @LogRecord(operationCode = "businessPending", operationName = "挂起", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO businessPending(@RequestBody BatchBusinessDto handleDataDTO){
         return workInfoService.businessPending(handleDataDTO);
+    }
+
+
+    /**
+     * 撤回
+     * @param businessDto
+     * @return
+     */
+    @RequiresPermissions
+    @PostMapping("revokeWorkOrder")
+    public IdmResDTO revokeWorkOrder(@RequestBody @Valid ProcessBusinessDto businessDto){
+        return workInfoService.revokeWorkOrder(businessDto);
     }
 
 }

@@ -12,4 +12,9 @@ public class MsgBindingNameConstants {
      */
     public final static String SYSTEM_PRODUCER="systemOutput";
 
+    /**
+     * 档案中心消息发送绑定
+     */
+    public final static String ARCHIVE_PRODUCER="archiveOutput";
+
 }

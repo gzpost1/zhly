@@ -1,8 +1,9 @@
 package cn.cuiot.dmp.message.consumer;//	模板
 
-import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
+import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
 import cn.cuiot.dmp.common.constant.MsgTypeConstant;
+import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.message.config.MqMsgChannel;
 import cn.cuiot.dmp.message.conver.UserMessageConvert;
 import cn.cuiot.dmp.message.dal.entity.UserMessageEntity;
@@ -11,14 +12,11 @@ import cn.hutool.core.bean.BeanUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.StreamListener;
-import org.springframework.context.annotation.Bean;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * @author hantingyao
@@ -34,49 +32,23 @@ public class UserMsgConsumer {
 
     @StreamListener(MqMsgChannel.USERMESSAGEINPUT)
     public void userMessageConsumer(@Payload UserMessageAcceptDto userMessageAcceptDto) {
-        log.info("userMessageInput:{}", userMessageAcceptDto);
+        log.info("userMessageInput:{}", JsonUtil.writeValueAsString(userMessageAcceptDto));
         UserMessageEntity userMessage = UserMessageConvert.INSTANCE.concert(userMessageAcceptDto);
         userMessage.init();
-//        List<UserMessageEntity> userMessageEntities = dealMsgByType(userMessage, userMessageAcceptDto);
-//        userMessageService.saveBatch(userMessageEntities);
+        if ((userMessageAcceptDto.getMsgType() & MsgTypeConstant.SYS_MSG) == MsgTypeConstant.SYS_MSG) {
+            List<UserMessageEntity> userMessageEntities = dealMsgByType(userMessage, userMessageAcceptDto.getSysMsgDto());
+            userMessageService.saveBatch(userMessageEntities);
+        }
     }
-
-    //    @Bean
-//    public Consumer<Message<SimpleMsg>> userMessageConsumer() {
-//        return userMessageAcceptDto -> {
-//            log.info("userMessageInput:{}", userMessageAcceptDto);
-////            UserMessageEntity userMessage = UserMessageConvert.INSTANCE.concert(userMessageAcceptDto);
-////            userMessage.init();
-////            dealMsgByType(userMessage, userMessageAcceptDto);
-//        };
-    @Bean
-    public Consumer<Message<SimpleMsg>> userMessageConsumer() {
-        return msg -> {
-            log.info(Thread.currentThread().getName() + " Consumer1 Receive New Messages: " + msg.getPayload().getData());
-        };
-    }
-
 
     //TODO
-    private List<UserMessageEntity> dealMsgByType(UserMessageEntity userMessage, UserMessageAcceptDto userMessageAcceptDto) {
+    private List<UserMessageEntity> dealMsgByType(UserMessageEntity userMessage, SysMsgDto sysMsgDto) {
         List<UserMessageEntity> userMessageEntities = new ArrayList<>();
-        //根据消息类型处理消息
-        switch (userMessageAcceptDto.getMsgType()) {
-            case MsgTypeConstant.NOTICE:
-                userMessageAcceptDto.getAcceptors().forEach(acceptor -> {
-                    UserMessageEntity userMessageEntity = BeanUtil.copyProperties(userMessage, UserMessageEntity.class);
-                    userMessageEntity.setAccepter(acceptor);
-                    userMessageEntities.add(userMessageEntity);
-                });
-                break;
-            case "2":
-                //处理消息类型2
-                break;
-            default:
-                break;
-        }
+        sysMsgDto.getAcceptors().forEach(acceptor -> {
+            UserMessageEntity userMessageEntity = BeanUtil.copyProperties(userMessage, UserMessageEntity.class);
+            userMessageEntity.setAccepter(acceptor);
+            userMessageEntities.add(userMessageEntity);
+        });
         return userMessageEntities;
     }
-
-
 }

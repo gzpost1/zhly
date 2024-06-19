@@ -43,7 +43,7 @@ public interface ContentModuleService {
 
     /**
      * 获取小程序首页模块
-     * @param orgId
+     * @param systemModule
      * @return
      */
     List<ContentModule> getAppHomeModule(String systemModule);

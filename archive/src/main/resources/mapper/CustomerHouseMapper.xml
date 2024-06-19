@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.archive.infrastructure.persistence.mapper.CustomerHouseMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.entity.CustomerHouseEntity">
+        <id column="id" property="id" />
+        <result column="customer_id" property="customerId" />
+        <result column="house_id" property="houseId" />
+        <result column="identity_type" property="identityType" />
+        <result column="move_in_date" property="moveInDate" />
+        <result column="move_out_date" property="moveOutDate" />
+        <result column="status" property="status" />
+        <result column="remark" property="remark" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, customer_id, house_id, identity_type, move_in_date, move_out_date, status, remark, update_time, update_user, create_time, create_user, deleted
+    </sql>
+
+    <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.vo.CustomerHouseVo">
+        <result column="community_id" property="communityId" />
+        <result column="community_name" property="communityName" />
+        <result column="house_code" property="houseCode" />
+        <result column="room_num" property="roomNum" />
+        <result column="floor_name" property="floorName" />
+        <result column="floor_alias" property="floorAlias" />
+    </resultMap>
+
+    <select id="selectByCustomerId" resultMap="VoResultMap">
+        SELECT
+            t.id,
+            t.customer_id,
+            t.house_id,
+            t.identity_type,
+            t.move_in_date,
+            t.move_out_date,
+            t.`status`,
+            t.remark,
+            t.update_time,
+            t.update_user,
+            t.create_time,
+            t.create_user,
+            t.deleted,
+            a.id as community_id,
+            a.name as community_name,
+            b.name as house_name,
+            b.code as house_code,
+            b.room_num,
+            b.floor_name,
+            b.floor_alias
+        FROM
+            tb_customer_house AS t,
+            tb_building_archives a,
+            tb_houses_archives b
+        <where>
+            t.house_id=b.id
+            and a.id=b.loupan_id
+            <if test="customerIdList != null and customerIdList.size() > 0">
+                and t.customer_id in
+                <foreach collection="customerIdList" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            AND t.deleted = 0
+            and a.deleted=0
+            and b.deleted=0
+        </where>
+        ORDER BY
+            t.create_time DESC,
+            t.id DESC
+    </select>
+
+</mapper>

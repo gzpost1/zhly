@@ -24,8 +24,8 @@ import java.util.Map;
  * @date: 2024/4/1 20:46
  */
 @Component
-//@FeignClient(value = "community-system")
-@FeignClient(value = "community-system", url = "http://220.197.15.115:9050/gateway/community-system")
+@FeignClient(value = "community-system")
+//@FeignClient(value = "community-system", url = "http://220.197.15.115:9050/gateway/community-system")
 public interface SystemApiFeignService {
 
     /**
@@ -71,7 +71,7 @@ public interface SystemApiFeignService {
      * 查询子部门(可多部门查询)
      */
     @PostMapping(value = "/api/lookUpDepartmentChildList2", produces = MediaType.APPLICATION_JSON_VALUE)
-    IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList2(DepartmentReqDto query);
+    IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList2(@RequestBody DepartmentReqDto query);
 
     /**
      * 查询组织树
@@ -96,6 +96,12 @@ public interface SystemApiFeignService {
     IdmResDTO<List<BusinessTypeRspDTO>> batchGetBusinessType(@RequestBody @Valid BusinessTypeReqDTO businessTypeReqDTO);
 
     /**
+     * 通过名称查询表单配置详情
+     */
+    @PostMapping(value = "/api/lookUpFormConfigByName", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<FormConfigRspDTO> lookUpFormConfigByName(@RequestBody @Valid FormConfigReqDTO formConfigReqDTO);
+
+    /**
      * 批量查询表单配置
      */
     @PostMapping(value = "/api/batchQueryFormConfig", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -118,5 +124,11 @@ public interface SystemApiFeignService {
      */
     @PostMapping(value = "/api/batchQueryCustomConfigs", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<CustomConfigRspDTO>> batchQueryCustomConfigs(@RequestBody @Valid CustomConfigReqDTO customConfigReqDTO);
+
+    /**
+     * 根据条件批量查询审核配置列表
+     */
+    @PostMapping(value = "/api/lookUpAuditConfig", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<AuditConfigTypeRspDTO>> lookUpAuditConfig(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO);
 
 }

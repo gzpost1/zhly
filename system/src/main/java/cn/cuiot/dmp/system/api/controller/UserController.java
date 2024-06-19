@@ -48,7 +48,9 @@ import cn.cuiot.dmp.system.infrastructure.entity.vo.UserImportDownloadVo;
 import cn.cuiot.dmp.system.infrastructure.utils.ExcelUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.github.houbb.sensitive.core.api.SensitiveUtil;
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -120,6 +122,7 @@ public class UserController extends BaseController {
             @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "deptId", required = false) Long deptId,
+            @RequestParam(value = "endDeptId", required = false) Long endDeptId,
             @RequestParam(value = "deptIds", required = false) String deptIds,
             @RequestParam(value = "status", required = false) Byte status,
             @RequestParam(value = "pageNo", required = false, defaultValue = "1") int pageNo,
@@ -155,6 +158,15 @@ public class UserController extends BaseController {
             }
         }
 
+        if(Objects.nonNull(endDeptId)){
+            DepartmentEntity endDepartment = departmentService
+                    .getDeptById(String.valueOf(endDeptId));
+            if (endDepartment != null) {
+                List<String> pathList = getPathList(endDepartment.getPath());
+                params.put("pathList",pathList);
+            }
+        }
+
         if (!StringUtils.isEmpty(deptIds)) {
             params.put("deptIds", Splitter.on(",").splitToList(deptIds));
         }
@@ -178,6 +190,26 @@ public class UserController extends BaseController {
             params.put("phone", decrypt);
         }
         return userService.getPage(params, sessionOrgId, pageNo, pageSize);
+    }
+
+    /**
+     * 获得直线路径列表
+     * @param path
+     * @return
+     */
+    private List<String> getPathList(String path){
+        List<String> strings = Splitter.on("-").splitToList(path);
+        List<String> resultList = Lists.newArrayList();
+        String tmpPath="";
+        for(int i=0;i<4;i++){
+            if(i==0){
+                tmpPath=strings.get(i);
+            }else{
+                tmpPath=tmpPath+"-"+strings.get(i);
+            }
+            resultList.add(tmpPath);
+        }
+        return resultList;
     }
 
     /**

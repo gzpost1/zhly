@@ -2,8 +2,11 @@ package cn.cuiot.dmp.content.feign;//	模板
 
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.hutool.core.collection.CollUtil;
@@ -56,5 +59,25 @@ public class SystemConverService {
             return new HashMap<>();
         }
         return data.stream().collect(Collectors.toMap(BaseUserDto::getId, baseUserDto -> baseUserDto, (k1, k2) -> k1, HashMap::new));
+    }
+
+    public List<BaseUserDto> lookUpUserList(BaseUserReqDto reqDto) {
+        return systemApiFeignService.lookUpUserList(reqDto).getData();
+    }
+
+    public List<Long> lookUpUserIds(BaseUserReqDto reqDto) {
+        List<BaseUserDto> userDtoList = systemApiFeignService.lookUpUserList(reqDto).getData();
+        if (CollUtil.isNotEmpty(userDtoList)) {
+            return userDtoList.stream().map(BaseUserDto::getId).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
+    }
+
+    public AuditConfigRspDTO lookUpAuditConfig(AuditConfigTypeReqDTO reqDTO) {
+        List<AuditConfigTypeRspDTO> auditConfigTypeRspDTOS = systemApiFeignService.lookUpAuditConfig(reqDTO).getData();
+        if (CollUtil.isNotEmpty(auditConfigTypeRspDTOS) && CollUtil.isNotEmpty(auditConfigTypeRspDTOS.get(0).getAuditConfigList())) {
+            return auditConfigTypeRspDTOS.get(0).getAuditConfigList().get(0);
+        }
+        return null;
     }
 }

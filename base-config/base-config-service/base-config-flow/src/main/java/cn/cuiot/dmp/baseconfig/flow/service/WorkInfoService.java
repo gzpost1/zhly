@@ -1,42 +1,45 @@
 package cn.cuiot.dmp.baseconfig.flow.service;
 
 
+import cn.cuiot.dmp.base.application.service.ApiArchiveService;
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.AppTransferTaskDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.app.query.PendingProcessQuery;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.ClientOperationDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.ProcessBusinessDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.*;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
-import cn.cuiot.dmp.baseconfig.flow.dto.vo.AttachmentVO;
-import cn.cuiot.dmp.baseconfig.flow.dto.vo.CommentVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
-import cn.cuiot.dmp.baseconfig.flow.dto.vo.TaskDetailVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.HandleDataDTO;
 import cn.cuiot.dmp.baseconfig.flow.entity.*;
 import cn.cuiot.dmp.baseconfig.flow.enums.*;
 import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
-import cn.cuiot.dmp.baseconfig.flow.flowable.cmd.AddMultiInstanceUserTaskService;
+import cn.cuiot.dmp.baseconfig.flow.flowable.msg.MsgSendService;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkInfoMapper;
-import cn.cuiot.dmp.baseconfig.flow.vo.HistoryProcessInstanceVO;
 import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.MsgDataType;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -46,23 +49,16 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import liquibase.pro.packaged.A;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.record.DVALRecord;
 import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.Process;
 import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.engine.*;
-import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.ProcessDefinition;
-import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceBuilder;
-import org.flowable.engine.task.Attachment;
-import org.flowable.engine.task.Comment;
-import org.flowable.task.api.DelegationState;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.variable.api.history.HistoricVariableInstanceQuery;
@@ -72,10 +68,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static cn.cuiot.dmp.baseconfig.flow.constants.CommonConstants.*;
 import static cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants.*;
-import static cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants.USER_TASK;
 import static cn.cuiot.dmp.baseconfig.flow.enums.BusinessInfoEnums.BUSINESS_TIME_OUT;
 import static cn.cuiot.dmp.baseconfig.flow.utils.BpmnModelUtils.getChildNodeByNodeId;
 
@@ -95,16 +91,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     @Autowired
     private TbFlowConfigService flowConfigService;
 
-    @Autowired
-    private TbFlowCcService tbFlowCcService;
+
     @Autowired
     private RepositoryService repositoryService;
 
     @Autowired
     private HistoryService historyService;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private WorkBusinessTypeInfoService workBusinessTypeInfoService;
@@ -115,6 +107,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     private TbFlowConfigOrgService tbFlowConfigOrgService;
     @Autowired
     private ProcessEngine processEngine;
+
+    @Autowired
+    private ArchiveFeignService archiveFeignService;
 
     @Autowired
     private SystemToFlowService systemToFlowService;
@@ -129,7 +124,16 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     private ProcessAndDeptService processAndDeptService;
 
     @Autowired
-    protected ManagementService managementService;
+    private CommitProcessService commitProcessService;
+
+    @Autowired
+    private ManagementService managementService;
+
+    @Autowired
+    private MsgSendService msgSendService;
+
+    @Autowired
+    private ApiArchiveService apiArchiveService;
 
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO) {
@@ -138,6 +142,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         Authentication.setAuthenticatedUserId(startUserInfo.getId());
         Map<String,Object> processVariables= new HashMap<>();
         processVariables.put(WorkOrderConstants.FORM_VAR,formData);
+
         processVariables.put(WorkOrderConstants.PROCESS_STATUS,WorkOrderConstants.BUSINESS_STATUS_1);
         processVariables.put(WorkOrderConstants.START_USER_INFO,JSONObject.toJSONString(startUserInfo));
         processVariables.put(WorkOrderConstants.INITIATOR_ID,startUserInfo.getId());
@@ -166,52 +171,84 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(StringUtils.isNotBlank(startProcessInstanceDTO.getTaskId())){
             task = taskService.createTaskQuery().taskId(taskId).singleResult();
             runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
-            taskService.complete(task.getId());
         }else{
-            //新建
-            ProcessInstanceBuilder processInstanceBuilder = runtimeService.createProcessInstanceBuilder();
-            ProcessInstance processInstance = processInstanceBuilder
-                    .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
-                    .variables(processVariables)
-                    .businessStatus(WorkOrderConstants.BUSINESS_STATUS_1)
-                    .start();
-            //手动完成第一个任务
-            task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
+            task = startWorkOrder(startProcessInstanceDTO,processVariables);
+        }
 
-            //保存工单信息
-            ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
-                    .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
-                    .singleResult();
-            String flowableKey = processDefinition.getKey().replaceAll("[a-zA-Z]", "");
-            TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
-                    orElseThrow(()->new RuntimeException("流程配置为空"));
-
-            //保存节点类型
-            saveChildNode(processJson(flowConfig.getProcess()),startProcessInstanceDTO.getProcessDefinitionId());
-            //保存工单信息
-            List<Long> orgIds = orgIds(flowConfig.getId());
-
-            saveWorkInfo(flowConfig,startProcessInstanceDTO,task,orgIds);
-
-//            //保存工单组织信息
-//            saveWorkOrg(entity.getId(),orgIds);
-
-            //保存组织与流程的关联关系
-            saveProcessDefinitionAndOrgIds(startProcessInstanceDTO.getProcessDefinitionId(),orgIds);
-
+        if(Objects.nonNull(task)){
             HandleDataDTO handleDataDTO = new HandleDataDTO();
             handleDataDTO.setTaskId(task.getId());
-
             WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
             workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_START.getCode());
             workBusinessTypeInfoService.save(workBusinessTypeInfo);
-            if(task!=null){
-                taskService.complete(task.getId());
-            }
+            //保存提交的参数
+            //组装提交信息
+            CommitProcessEntity processEntity = new CommitProcessEntity();
+            processEntity.setCommitProcess(JsonUtil.writeValueAsString(formData));
+            processEntity.setDataId(workBusinessTypeInfo.getTaskId());
+            startProcessInstanceDTO.setCommitProcess(processEntity);
+            saveCommitProcess(workBusinessTypeInfo,startProcessInstanceDTO);
+            taskService.complete(task.getId());
         }
         return IdmResDTO.success(task.getProcessInstanceId());
     }
 
+    /**
+     * 保存提交的信息
+     * @param workBusinessTypeInfo
+     * @param startProcessInstanceDTO
+     */
+    public void saveCommitProcess(WorkBusinessTypeInfoEntity workBusinessTypeInfo,StartProcessInstanceDTO startProcessInstanceDTO){
+        CommitProcessEntity commitProcess = startProcessInstanceDTO.getCommitProcess();
+        if(Objects.isNull(commitProcess)){
+            return;
+        }
+        CommitProcessEntity entity = new CommitProcessEntity();
+        entity.setId(IdWorker.getId());
+        entity.setProcInstId(workBusinessTypeInfo.getProcInstId());
+        entity.setUserId(LoginInfoHolder.getCurrentUserId());
+        entity.setNodeId(workBusinessTypeInfo.getNode());
+        entity.setDataId(commitProcess.getDataId());
+        entity.setCommitProcess(commitProcess.getCommitProcess());
+        entity.setCreateTime(new Date());
+        entity.setBusinessTypeId(workBusinessTypeInfo.getId());
+        commitProcessService.save(entity);
+    }
+    /**
+     * 启动工单
+     * @param startProcessInstanceDTO
+     * @param processVariables
+     * @return
+     */
+    public Task startWorkOrder(StartProcessInstanceDTO startProcessInstanceDTO,Map<String,Object> processVariables){
+        //新建
+        ProcessInstanceBuilder processInstanceBuilder = runtimeService.createProcessInstanceBuilder();
+        ProcessInstance processInstance = processInstanceBuilder
+                .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
+                .variables(processVariables)
+                .businessStatus(WorkOrderConstants.BUSINESS_STATUS_1)
+                .start();
+        //手动完成第一个任务
+        Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
+
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
+                .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
+                .singleResult();
+        String flowableKey = processDefinition.getKey().replaceAll("[a-zA-Z]", "");
+        TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
+                orElseThrow(()->new RuntimeException("流程配置为空"));
+        //保存节点类型
+        saveChildNode(processJson(flowConfig.getProcess()),startProcessInstanceDTO.getProcessDefinitionId());
+        //保存工单信息
+        List<Long> orgIds = orgIds(flowConfig.getId());
+        //保存工单信息
+        saveWorkInfo(flowConfig,startProcessInstanceDTO,task,orgIds);
+
+        //保存组织与流程的关联关系
+        saveProcessDefinitionAndOrgIds(startProcessInstanceDTO.getProcessDefinitionId(),orgIds);
+
+        return task;
+    }
     /**
      * 保存流程与组织的关联关系
      * @param processDefinitionId
@@ -266,10 +303,23 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(Objects.isNull(startProcessInstanceDTO.getActualUserId())){
             startProcessInstanceDTO.setActualUserId(LoginInfoHolder.getCurrentUserId());
         }
+        entity.setCompanyId(flowConfig.getCompanyId());
         entity.setProcInstId(task.getProcessInstanceId());
         entity.setPropertyId(startProcessInstanceDTO.getPropertyId());
         entity.setStatus(WorkOrderStatusEnums.progress.getStatus());
         entity.setOrgIds(orgIds.stream().map(e -> String.valueOf(e)).collect(Collectors.joining(", ")));
+
+        Process mainProcess = repositoryService.getBpmnModel(startProcessInstanceDTO.getProcessDefinitionId()).getMainProcess();
+
+        String dingDing = mainProcess.getAttributeValue(FLOWABLE_NAME_SPACE, FLOWABLE_NAME_SPACE_NAME);
+        JSONObject mainJson = JSONObject.parseObject(dingDing, new TypeReference<JSONObject>() {
+        });
+        String configJosn = mainJson.getString(VIEW_FLOW_CONFIG);
+
+        TbFlowConfig jsonEntity = JsonUtil.readValue(configJosn, TbFlowConfig.class);
+        CommonConfigDto configDto = jsonEntity.getCommonConfigDto();
+        entity.setRevokeType(configDto.getRevokeType());
+        entity.setRevokeNodeId(configDto.getRevokeNodeId());
 //            entity.setFlowConfigId(flowConfig.getId());
         this.save(entity);
     }
@@ -293,6 +343,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     }
 
+    /**
+     * 保存流程节点信息
+     * @param childNode
+     * @param processDefinitionId
+     */
     public void saveChildNode(ChildNode childNode,String processDefinitionId){
         LambdaQueryWrapper<NodeTypeEntity> lw = new LambdaQueryWrapper<>();
         lw.eq(NodeTypeEntity::getProcessDefinitionId,processDefinitionId);
@@ -300,16 +355,21 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(count>0){
             return;
         }
-        ChildNode children = childNode.getChildren();
-        if(Objects.nonNull(children) && StringUtils.isNotEmpty(children.getType())){
+        ChildNode chilNodedren = childNode.getChildren();
+        while (true){
+            if(Objects.isNull(chilNodedren.getId())){
+                break;
+            }
             NodeTypeEntity entity = new NodeTypeEntity();
             entity.setId(IdWorker.getId());
-            entity.setNodeId(children.getId());
-            entity.setNodeType(children.getType());
+            entity.setNodeId(chilNodedren.getId());
+            entity.setNodeType(chilNodedren.getType());
             entity.setProcessDefinitionId(processDefinitionId);
+            entity.setProcessNodeType(chilNodedren.getProcessNodeType());
             nodeTypeService.save(entity);
-            saveChildNode(children,processDefinitionId);
+            chilNodedren = chilNodedren.getChildren();
         }
+
 
     }
     public ChildNode processJson(String processJson) {
@@ -328,120 +388,19 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         }
         return list.stream().map(TbFlowConfigOrg::getOrgId).collect(Collectors.toList());
     }
-    public IdmResDTO<IPage<WorkInfoEntity>> processList(QueryApprovalInfoDto dto) {
-        List<HistoricProcessInstance> historicProcessInstances =
-                historyService.createHistoricProcessInstanceQuery()
-                        .includeProcessVariables()
-                        .startedBy(dto.getUserId())
-                        .orderByProcessInstanceStartTime().desc()
-                        .listPage((dto.getCurrentPage() - 1) * dto.getPageSize(), dto.getPageSize());
-        long count = historyService.createHistoricProcessInstanceQuery()
-                .startedBy(dto.getUserId()).count();
-        List<String> applyUserIds= new ArrayList<>();
-        for (HistoricProcessInstance historicProcessInstance : historicProcessInstances) {
-            Map<String, Object> processVariables = historicProcessInstance.getProcessVariables();
-            String id = JSONObject.parseObject(MapUtil.getStr(processVariables, WorkOrderConstants.START_USER_INFO), new TypeReference<UserInfo>() {
-            }).getId();
-            applyUserIds.add(id);
-        }
-        Map<Long, UserEntity> collect=new HashMap<>();
-        if(CollUtil.isNotEmpty(applyUserIds)){
-            LambdaQueryWrapper<UserEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-//            lambdaQueryWrapper.in(UserInfo::getId,applyUserIds);
-//            List<UserEntity> list = userService.list(lambdaQueryWrapper);
-//            collect = list.stream().collect(Collectors.toMap(UserEntity::getUserId, Function.identity()));
-        }
-
-        List<HistoryProcessInstanceVO> historyProcessInstanceVOS= new ArrayList<>();
-        Page<HistoryProcessInstanceVO> page=new Page<>();
-        for (HistoricProcessInstance historicProcessInstance : historicProcessInstances) {
-            Map<String, Object> processVariables = historicProcessInstance.getProcessVariables();
-            HistoryProcessInstanceVO historyProcessInstanceVO=new HistoryProcessInstanceVO();
-            historyProcessInstanceVO.setProcessInstanceId(historicProcessInstance.getId());
-            historyProcessInstanceVO.setProcessDefinitionName(historicProcessInstance.getProcessDefinitionName());
-            historyProcessInstanceVO.setStartUser(JSONObject.parseObject(MapUtil.getStr(processVariables,START_USER_INFO),new TypeReference<UserInfo>(){}));
-            historyProcessInstanceVO.setUsers(collect.get(Long.valueOf(historyProcessInstanceVO.getStartUser().getId())));
-            historyProcessInstanceVO.setStartTime(historicProcessInstance.getStartTime());
-            historyProcessInstanceVO.setEndTime(historicProcessInstance.getEndTime());
-            Boolean flag= historicProcessInstance.getEndTime() != null;
-//            historyProcessInstanceVO.setCurrentActivityName(getCurrentName(historicProcessInstance.getId(),flag,historicProcessInstance.getProcessDefinitionId()));
-            historyProcessInstanceVO.setBusinessStatus(MapUtil.getStr(processVariables,PROCESS_STATUS));
-
-
-            long totalTimes = historicProcessInstance.getEndTime()==null?
-                    (Calendar.getInstance().getTimeInMillis()-historicProcessInstance.getStartTime().getTime()):
-                    (historicProcessInstance.getEndTime().getTime()-historicProcessInstance.getStartTime().getTime());
-            long dayCount = totalTimes /(1000*60*60*24);//计算天
-            long restTimes = totalTimes %(1000*60*60*24);//剩下的时间用于计于小时
-            long hourCount = restTimes/(1000*60*60);//小时
-            restTimes = restTimes % (1000*60*60);
-            long minuteCount = restTimes / (1000*60);
-
-            String spendTimes = dayCount+"天"+hourCount+"小时"+minuteCount+"分";
-            historyProcessInstanceVO.setDuration(spendTimes);
-            historyProcessInstanceVOS.add(historyProcessInstanceVO);
-        }
-        page.setRecords(historyProcessInstanceVOS);
-//        page.setCurrent(applyDTO.getPageNo());
-//        page.setSize(applyDTO.getPageSize());
-        page.setTotal(count);
-        return null;
-    }
-
-    /**
-     * 转办
-     * @param handleDataDTO
-     * @return
-     */
-    public IdmResDTO delegateTask(HandleDataDTO handleDataDTO) {
-        UserInfo currentUserInfo = handleDataDTO.getCurrentUserInfo();
-        List<AttachmentDTO> attachments = handleDataDTO.getAttachments();
-        String comments = handleDataDTO.getComments();
-        JSONObject formData = handleDataDTO.getFormData();
-        String taskId = handleDataDTO.getTaskId();
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        Map<String,Object> map=new HashMap<>();
-        if(formData!=null &&formData.size()>0){
-            Map formValue = JSONObject.parseObject(formData.toJSONString(), new TypeReference<Map>() {
-            });
-            map.putAll(formValue);
-            map.put(FORM_VAR,formData);
-        }
-
-        runtimeService.setVariables(task.getProcessInstanceId(),map);
-        if(StringUtils.isNotBlank(comments)){
-            taskService.addComment(task.getId(),task.getProcessInstanceId(),OPINION_COMMENT,comments);
-        }
-        if(attachments!=null && attachments.size()>0){
-            for (AttachmentDTO attachment : attachments) {
-                taskService.createAttachment(OPTION_COMMENT,taskId,task.getProcessInstanceId(),attachment.getName(),attachment.getName(),attachment.getUrl());
-            }
-        }
-
-        if(StringUtils.isNotBlank(handleDataDTO.getSignInfo())){
-            taskService.addComment(task.getId(),task.getProcessInstanceId(),SIGN_COMMENT,handleDataDTO.getSignInfo());
-        }
-
-        UserInfo delegateUserInfo = handleDataDTO.getDelegateUserInfo();
-        taskService.delegateTask(task.getId(),delegateUserInfo.getId());
-
-        return IdmResDTO.success();
-    }
 
     /**
      * 同意
      * @param handleDataDTO
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO agree(BatchBusinessDto handleDataDTO) {
         List<WorkBusinessTypeInfoEntity> busiList = new ArrayList<>();
-        Authentication.setAuthenticatedUserId(String.valueOf(LoginInfoHolder.getCurrentUserId()));
-        for (String taskId :handleDataDTO.getTaskIds()){
+        List<String> taskIds = Optional.ofNullable(handleDataDTO.getTaskIds()).orElse(new ArrayList<>());
 
-            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
-            if(Objects.nonNull(taskInstance.getEndTime())){
-                return IdmResDTO.error(ErrorCode.NOT_FOUND.getCode(),"节点已审批");
-            }
+        Map<String, List<UserInfo>> processUsers = handleDataDTO.getProcessUsers();
+        for (String taskId :taskIds){
             HandleDataDTO dto = new HandleDataDTO();
             dto.setTaskId(taskId);
             dto.setComments(handleDataDTO.getComments());
@@ -451,7 +410,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             //防止是挂起状态
             updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
 
-            taskService.complete(taskId);
             busiList.add(businessTypeInfo);
             //如果节点存在挂起数据，将挂起数据结束
             WorkBusinessTypeInfoEntity update = queryWorkBusinessById(businessTypeInfo.getNode(), businessTypeInfo.getProcInstId());
@@ -460,6 +418,23 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 update.setEndTime(new Date());
                 workBusinessTypeInfoService.updateById(update);
             }
+            Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+            Map<String,Object> processVariables= new HashMap<>();
+            if(CollUtil.isNotEmpty(processUsers)){
+                Set<String> nodes = processUsers.keySet();
+                for (String node : nodes) {
+                    List<UserInfo> selectUserInfo = processUsers.get(node);
+                    List<String> users=new ArrayList<>();
+                    for (UserInfo userInfo : selectUserInfo) {
+                        users.add(userInfo.getId());
+                    }
+                    processVariables.put(node,users);
+                }
+                //保存节点审批人信息
+                runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
+
+            }
+            taskService.complete(taskId);
         }
         if(!CollectionUtils.isEmpty(busiList)){
             workBusinessTypeInfoService.saveBatch(busiList);
@@ -503,13 +478,31 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
-        assigneeByProcInstId(handleDataDTO);
-//        if(CollectionUtils.isNotEmpty(handleDataDTO.getUserIds())){
-//            //批量转办
-//            return assigneeByProcInstId(handleDataDTO);
-//        }
-//        //单个转办
-//        taskService.setAssignee(handleDataDTO.getTaskId(),handleDataDTO.getTransferUserInfo().getId());
+        if(StringUtils.isNotEmpty(handleDataDTO.getTaskId())){
+            //审批中心转办
+            assigneeByProcInstId(handleDataDTO);
+            return IdmResDTO.success();
+        }
+        //查出当前节点的所有人员信息
+
+        List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
+                .orElseThrow(()->new BusinessException(ErrorCode.NOT_FOUND.getCode(),ErrorCode.NOT_FOUND.getMessage()));
+        //查询该节点下所有任务信息
+        List<String> hisTaskIds = baseMapper.queryHistoricTask( tasks.get(0).getTaskDefinitionKey(),tasks.get(0).getProcessInstanceId());
+        //执行加签操作
+        AddMultiInstanceUserTaskService multiInstanceUserTaskService = new AddMultiInstanceUserTaskService(managementService);
+        Integer instance = 1;
+        for (Long userId : handleDataDTO.getUserIds()) {
+            multiInstanceUserTaskService.addMultiInstanceUserTask(tasks.get(0).getId(),String.valueOf(userId), instance);
+            instance++;
+        }
+
+        taskService.complete(tasks.get(0).getId());
+
+        //删除原来的任务id
+        hisTaskIds.stream().forEach(item->{
+            taskService.deleteTask(item, true);
+        });
         return IdmResDTO.success();
     }
 
@@ -522,10 +515,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     public IdmResDTO assigneeByProcInstId(HandleDataDTO handleDataDTO){
 
-//        taskService.setAssignee(handleDataDTO.getTaskId(),String.valueOf(handleDataDTO.getUserIds().get(0)));
-        //执行加签操作
-        AddMultiInstanceUserTaskService multiInstanceUserTaskService = new AddMultiInstanceUserTaskService(managementService);
-        multiInstanceUserTaskService.addMultiInstanceUserTask(handleDataDTO.getTaskId(),String.valueOf(handleDataDTO.getUserIds().get(0)));
+        taskService.setAssignee(handleDataDTO.getTaskId(),String.valueOf(handleDataDTO.getUserIds().get(0)));
+
 //        // 查询与流程实例ID相关联的所有任务
 //        List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
 //                .orElseThrow(()->new RuntimeException("任务信息不存在"));
@@ -576,6 +567,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             dto.setNodeId(workBusinessTypeInfo.getNode());
             updateBusinessPendingDate(dto);
 
+            //发送消息
+            msgSendService.sendProcess(workBusinessTypeInfo.getProcInstId().toString(), MsgDataType.WORK_INFO_TURNDOWN);
+
         }
         if(!CollectionUtils.isEmpty(buList)){
             workBusinessTypeInfoService.saveBatch(buList);
@@ -622,14 +616,15 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     /**
      * 回退
-     * @param handleDataDTO
+     * @param operationDto
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
-
-    public IdmResDTO rollback(HandleDataDTO handleDataDTO) {
-        UserInfo currentUserInfo = handleDataDTO.getCurrentUserInfo();
-//        Authentication.setAuthenticatedUserIddsacurrentUserInfo.getId());
+    public IdmResDTO rollback(ClientOperationDto operationDto) {
+        HandleDataDTO handleDataDTO = new HandleDataDTO();
+        handleDataDTO.setTaskId(String.valueOf(operationDto.getTaskId()));
+        handleDataDTO.setComments(operationDto.getComments());
+        handleDataDTO.setReason(operationDto.getReason());
         //回退留痕
         WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_ROLLBACK.getCode());
@@ -639,22 +634,37 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         //更新主流程状态
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), workBusinessTypeInfo.getProcInstId());
-        List<HistoricTaskInstance> taskInstances = historyService.createHistoricTaskInstanceQuery()
-                .processInstanceId(handleDataDTO.getProcessInstanceId()).orderByTaskId().desc().list();
+        Task task = taskService.createTaskQuery().taskId(String.valueOf(operationDto.getTaskId())).singleResult();
+        String rollBackNode = queryRollBackNode(task);
+        runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
+                rollBackNode).changeState();
 
-        List<String> collect = taskInstances.stream().map(HistoricTaskInstance::getTaskDefinitionKey).distinct().collect(Collectors.toList());
+        //设置回退标识
+        taskService.setVariable(String.valueOf(operationDto.getTaskId()),"rollback","true");
 
-        List<Execution> executions = runtimeService.createExecutionQuery().parentId(handleDataDTO.getProcessInstanceId()).list();
-        List<String> executionIds = new ArrayList<>();
-        executions.forEach(execution -> executionIds.add(execution.getId()));
-
-
-        runtimeService.createChangeActivityStateBuilder().moveExecutionsToSingleActivityId(executionIds,
-                collect.get(1)).changeState();
         return IdmResDTO.success();
 
     }
 
+
+
+    /**
+     * 获取回退节点
+     * @param task
+     * @return
+     */
+    public String queryRollBackNode(Task task){
+
+        ChildNode childNodeByNodeId = getChildNodeByNodeId(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+        String nodeId = childNodeByNodeId.getParentId();
+        while (true){
+            ChildNode parentIdNode = getChildNodeByNodeId(task.getProcessDefinitionId(), nodeId);
+            nodeId=parentIdNode.getParentId();
+            if(WorkOrderConstants.nodes.contains(parentIdNode.getType())){
+                return parentIdNode.getId();
+            }
+        }
+    }
     /**
      * 挂起流程
      * @param handleDataDTOs
@@ -742,12 +752,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //指定人员
         if(StringUtils.equalsAnyIgnoreCase(props.getAssignedType(), AssigneeTypeEnums.ASSIGN_USER.getTypeName())){
             if(!ids.contains(String.valueOf(userId))){
-                return  IdmResDTO.error("00001","没有权限发起流程");
+                return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
             }
         }
         if(StringUtils.equalsAnyIgnoreCase(props.getAssignedType(), AssigneeTypeEnums.DEPT.getTypeName())){
             if(!ids.contains(String.valueOf(LoginInfoHolder.getCurrentDeptId()))){
-                return  IdmResDTO.error("00001","没有权限发起流程");
+                return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
             }
         }
         if(StringUtils.equalsAnyIgnoreCase(props.getAssignedType(), AssigneeTypeEnums.ROLE.getTypeName())){
@@ -756,7 +766,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             IdmResDTO<BaseUserDto> baseUserDtoIdmResDTO = systemApiFeignService.lookUpUserInfo(query);
             BaseUserDto data = baseUserDtoIdmResDTO.getData();
             if(!ids.contains(String.valueOf(data.getRoleId()))){
-                return  IdmResDTO.error("00001","没有权限发起流程");
+                return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
             }
         }
         return IdmResDTO.success();
@@ -829,8 +839,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             userIds=userIds.stream().distinct().collect(Collectors.toList());
             Map<Long, String> userMap = getUserMap(userIds);
 
-            //TODO 根据楼盘id获取楼盘名称
-
+            //
+            List<Long> propertyIds = records.stream().map(item->Long.parseLong(item.getPropertyId())).distinct().collect(Collectors.toList());
+            Map<Long, String> propertyMap = getPropertyMap(propertyIds);
             //部门ids
             records.stream().forEach(item->{
                 //组织名称
@@ -843,26 +854,44 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 item.setOrgIds(getOrgIds(item.getDeptIds()));
                 //报单人
                 item.setActualUserName(userMap.get(item.getActualUserId()));
-                //TODO 组装楼盘名称
-
+                //组装楼盘信息
+                item.setPropertyName(propertyMap.get(item.getPropertyId()));
             });
         }
 
         return IdmResDTO.success(workInfoEntityPage);
     }
 
+
+    /**
+     * 根据部门id获取部门路径名称
+     * @param deptIds
+     * @return
+     */
     public String getOrgPath(String deptIds){
         List<Long> orgIds = getOrgIds(deptIds);
         Map<Long, String> deptMap = getDeptMap(orgIds);
         return deptMap.values().stream()
                 .collect(Collectors.joining(","));
     }
+
+    /**
+     * 将部门字符串转成部门List
+     * @param deptIds
+     * @return
+     */
     public List<Long> getOrgIds(String deptIds){
         String[] stringArray = deptIds.split(",",-1);
         return Arrays.stream(stringArray)
                 .map(e->Long.parseLong(e.trim())) // 将String转换为Long
                 .collect(Collectors.toList()); // 收集结果到List
     }
+
+    /**
+     * 部门id与部门名称
+     * @param deptIds
+     * @return
+     */
     public Map<Long,String> getDeptMap(List<Long> deptIds){
         DepartmentReqDto depeDto = new DepartmentReqDto();
         depeDto.setDeptIdList(deptIds);
@@ -912,10 +941,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public IdmResDTO<WorkInfoDto> queryBasicWorkOrderDetailInfo(WorkProcInstDto dto) {
+        //校验权限信息
+        checkWorkOrder(dto.getProcInstId());
         //获取工单详情
         WorkInfoDto resultDto = getBaseMapper().queryWorkOrderDetailInfo(dto);
+
         //填充组织名称
-        Map<Long, String> deptMap = getDeptMap(Arrays.asList(resultDto.getOrg()));
         resultDto.setOrgPath(getOrgPath(resultDto.getDeptIds()));
         // 业务类型后返回数据
         Map<Long, String> busiMap = getBusiMap(Arrays.asList(resultDto.getBusinessType()));
@@ -949,6 +980,14 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         queryBusinessTime(resultDto,historicProcessInstance.getEndTime());
 
         return IdmResDTO.success(resultDto);
+    }
+
+    public Long getCompany(){
+        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
+        if(Objects.isNull(currentOrgId)){
+            //TODO 根据小区id获取企业id
+        }
+        return currentOrgId;
     }
 
     public BaseUserDto queryBaseUserInfo(Long userId){
@@ -1012,18 +1051,21 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return null;
     }
 
-
+    /**
+     * 工单进度
+     * @param HandleDataDTO
+     * @return
+     */
     public IdmResDTO<HandleDataVO> instanceInfo(HandleDataDTO HandleDataDTO) {
         String processInstanceId = HandleDataDTO.getProcessInstanceId();
+        //校验权限信息
+        checkWorkOrder(processInstanceId);
+
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
                 .includeProcessVariables().singleResult();
         String processDefinitionKey = historicProcessInstance.getProcessDefinitionKey();
 
         TbFlowConfig flowConfig = flowConfigService.getById(processDefinitionKey.replace(PROCESS_PREFIX, ""));
-
-
-//        Process mainProcess = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess();
-
 
         Process mainProcess = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess();
 
@@ -1043,45 +1085,31 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         handleDataVO.setProcessInstanceId(historicProcessInstance.getId());
         JSONObject jsonObject = (JSONObject) processVariables.get(FORM_VAR);
         handleDataVO.setFormData(jsonObject);
-
-//        List<HistoricActivityInstance> list = historyService.createHistoricActivityInstanceQuery()
-//                .processInstanceId(historicProcessInstance.getId()).orderByHistoricActivityInstanceStartTime().asc().list();
-//        if(CollectionUtils.isEmpty(list)){
-//            return IdmResDTO.success();
-//        }
-
-
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
         if(CollectionUtils.isNotEmpty(taskList)){
             handleDataVO.setCurrentNode(taskList.get(0).getTaskDefinitionKey());
         }
-
-
         Map<String,NodeDetailDto> pamaMap = new HashMap<>();
         //已经运行完成的节点
         List<String> endNodes = new ArrayList<>();
         for (FlowElement flowElement : flowElements) {
             String nodeId = flowElement.getId();
-            if(nodeId.startsWith("node") || StringUtils.equals(WorkOrderConstants.USER_ROOT,nodeId)){
+            if(nodeId.startsWith(WorkOrderConstants.NODE_START) || StringUtils.equals(WorkOrderConstants.USER_ROOT,nodeId)){
                 //没有收集
                 if(!pamaMap.containsKey(nodeId)){
                     NodeDetailDto nodeDetailDto = new NodeDetailDto();
-
                     nodeDetailDto.setNodeId(nodeId);
-
                     nodeDetailDto.setTimeOut(checkNodeTimeOut(nodeId,
                             instId));
-
                     nodeDetailDto.setNodeInfos(queryNodeBusiness(nodeId,
                             instId));
-
                     nodeDetailDto.setBusinessName(getStartUserName(nodeId,
                             instId));
                     nodeDetailDto.setCreateDate(historicProcessInstance.getStartTime());
                     pamaMap.put(nodeDetailDto.getNodeId(),nodeDetailDto);
                 }
             }
-            if(!endNodes.contains(nodeId) && (nodeId.startsWith("node") || StringUtils.equals(WorkOrderConstants.USER_ROOT,nodeId))){
+            if(!endNodes.contains(nodeId) && (nodeId.startsWith(WorkOrderConstants.NODE_START) || StringUtils.equals(WorkOrderConstants.USER_ROOT,nodeId))){
                 endNodes.add(nodeId);
             }
         }
@@ -1089,10 +1117,31 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         handleDataVO.setProcessTemplates(flowConfig);
         handleDataVO.setEndList(endNodes);
         handleDataVO.setNodeList(pamaMap);
-//        handleDataVO.setDetailVOList(deatailMap);
         return IdmResDTO.success(handleDataVO);
     }
 
+    /**
+     * 校验查询的工单信息与自己是不是同一个企业下的
+     * @param processInstanceId
+     */
+    public void checkWorkOrder(String processInstanceId){
+        if(Objects.nonNull(processInstanceId)){
+            WorkInfoEntity workInfo = getWorkInfo(processInstanceId);
+            AssertUtil.isTrue(Objects.equals(workInfo.getCompanyId(),LoginInfoHolder.getCurrentOrgId()),ResultCode.NO_OPERATION_PERMISSION.getMessage());
+        }
+    }
+
+    /**
+     * 获取工单信息
+     * @param processInstanceId
+     * @return
+     */
+    public WorkInfoEntity getWorkInfo(String processInstanceId){
+        LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkInfoEntity::getProcInstId,processInstanceId);
+        List<WorkInfoEntity> workInfoEntities = baseMapper.selectList(lw);
+        return CollectionUtils.isNotEmpty(workInfoEntities)?workInfoEntities.get(0):new WorkInfoEntity();
+    }
     public String queryCCrecipient(String process,String procInstId ,String processDefinitionId){
 
         String flowConfigId = StringUtils.substringBefore(processDefinitionId, ":").replace(PROCESS_PREFIX, "");
@@ -1126,25 +1175,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                         assignedUser.add(userInfo);
                     });
                 children.getProps().setAssignedUser(assignedUser);
-//                List<UserInfo> assignedUser1 = children.getProps().getAssignedUser();
-//                if(CollectionUtils.isNotEmpty(assignedUser1)){
-//                    continue;
-//                }
-//                LambdaQueryWrapper<TbFlowCc> lw = new LambdaQueryWrapper<>();
-//                lw.eq(TbFlowCc::getProcessInstanceId,procInstId).eq(TbFlowCc::getNodeId,children.getId());
-//                List<TbFlowCc> list = tbFlowCcService.list(lw);
-//                if(CollectionUtils.isNotEmpty(list)){
-//                    List<Long> userIds = list.stream().map(TbFlowCc::getUserId).collect(Collectors.toList());
-//                    Map<Long, String> userMap = getUserMap(userIds);
-//                    List<UserInfo>  assignedUser = new ArrayList<>();
-//                    list.stream().forEach(item->{
-//                        UserInfo userInfo = new UserInfo();
-//                        userInfo.setId(String.valueOf(item.getUserId()));
-//                        userInfo.setName(userMap.get(item.getUserId()));
-//                        assignedUser.add(userInfo);
-//                    });
-//                    children.getProps().setAssignedUser(assignedUser);
-//                }
             }
             children=children.getChildren();
         }
@@ -1237,24 +1267,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return timeOut;
     }
 
-
-    public static  ChildNode getChildNode(ChildNode childNode,String nodeId){
-        Map<String,ChildNode> childNodeMap =new HashMap<>();
-        if(StringUtils.isNotBlank(childNode.getId())){
-            getChildNode(childNode,childNodeMap);
-        }
-
-        Set<String> set = childNodeMap.keySet();
-        for (String s : set) {
-            if(StringUtils.isNotBlank(s)){
-                if(s.equals(nodeId)){
-                    return childNodeMap.get(s);
-                }
-            }
-        }
-        return null;
-    }
-
+    /**
+     * 获取节点数据
+     * @param childNode
+     * @param childNodeMap
+     */
     private  static  void getChildNode(ChildNode childNode,Map<String,ChildNode> childNodeMap){
         childNodeMap.put(childNode.getId(),childNode);
         List<ChildNode> branchs = childNode.getBranchs();
@@ -1294,12 +1311,15 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             businessTypeInfoEntities.add(workBusinessTypeInfo);
             //终止流程
             runtimeService.deleteProcessInstance(instId, handleDataDTOs.getComments()); // 终止
-            //
+            //更新挂起结束时间
             dataDTO.setNodeId(workBusinessTypeInfo.getNode());
             updateBusinessPendingDate(dataDTO);
 
             //更新工单状态
             updateWorkInfo(WorkOrderStatusEnums.terminated.getStatus(), workBusinessTypeInfo.getProcInstId());
+
+            //发送消息
+            msgSendService.sendProcess(workBusinessTypeInfo.getProcInstId().toString(), MsgDataType.WORK_INFO_CANCEL);
         }
         //审批中心终止流程
         for(String taskId : handleDataDTOs.getTaskIds()){
@@ -1318,6 +1338,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
             //更新工单状态
             updateWorkInfo(WorkOrderStatusEnums.terminated.getStatus(), workBusinessTypeInfo.getProcInstId());
+
+            //发送消息
+            msgSendService.sendProcess(workBusinessTypeInfo.getProcInstId().toString(), MsgDataType.WORK_INFO_CANCEL);
         }
 
         if(CollectionUtils.isNotEmpty(businessTypeInfoEntities)){
@@ -1330,6 +1353,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public void updateWorkInfo(Byte state,Long procInstId){
         LambdaUpdateWrapper<WorkInfoEntity> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(WorkInfoEntity::getProcInstId,procInstId).set(WorkInfoEntity::getStatus,state);
+        this.update(wrapper);
+    }
+
+    public void updateWorkTimeOutInfo(Byte state,Long procInstId){
+        LambdaUpdateWrapper<WorkInfoEntity> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(WorkInfoEntity::getProcInstId,procInstId).set(WorkInfoEntity::getWorkTimeOut,state);
         this.update(wrapper);
     }
     /**
@@ -1386,7 +1415,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO<IPage<MyApprovalResultDto>> queryMyNotApproval(QueryMyApprovalDto dto) {
         dto.setAssignee(LoginInfoHolder.getCurrentUserId());
 
-        Page<MyApprovalResultDto> pages = baseMapper.queryMyNotApproval(new Page<MyApprovalResultDto>(dto.getCurrentPage()
+        Page<MyApprovalResultDto> pages = baseMapper.queryMyNotApproval(new Page<MyApprovalResultDto>(dto.getPageNo()
                 ,dto.getPageSize()),dto);
 
         List<MyApprovalResultDto> records = pages.getRecords();
@@ -1394,11 +1423,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             //根据业务类型获取数据
             List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
             Map<Long, String> busiMap = getBusiMap(busiTypes);
-
             //userIds
             List<Long> usreIds = records.stream().map(MyApprovalResultDto::getUserId).collect(Collectors.toList());
             Map<Long, String> userMap = getUserMap(usreIds);
-
             records.stream().forEach(item->{
                 //根据业务类型id获取业务类型数据
                 item.setBusinessTypeName(busiMap.get(item.getBusinessType()));
@@ -1425,7 +1452,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO<IPage<MyApprovalResultDto>> queryMyApproval(QueryMyApprovalDto dto) {
         dto.setAssignee(LoginInfoHolder.getCurrentUserId());
         Page<MyApprovalResultDto> page=baseMapper.
-                queryMyApproval(new Page<MyApprovalResultDto>(dto.getCurrentPage(),dto.getPageSize()),dto);
+                queryMyApproval(new Page<MyApprovalResultDto>(dto.getPageNo(),dto.getPageSize()),dto);
         List<MyApprovalResultDto> records = page.getRecords();
         if(CollectionUtils.isNotEmpty(records)){
 
@@ -1455,7 +1482,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     public IdmResDTO<IPage<MyApprovalResultDto>> queryMakeApproval(QueryMyApprovalDto dto) {
         dto.setMakeUserId(LoginInfoHolder.getCurrentUserId());
-        Page<MyApprovalResultDto> page = baseMapper.queryMakeApproval(new Page<MyApprovalResultDto>(dto.getCurrentPage(),dto.getPageSize()),
+        Page<MyApprovalResultDto> page = baseMapper.queryMakeApproval(new Page<MyApprovalResultDto>(dto.getPageNo(),dto.getPageSize()),
                 dto);
         List<MyApprovalResultDto> records = page.getRecords();
         if(CollectionUtils.isNotEmpty(records)){
@@ -1485,19 +1512,13 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     public IdmResDTO<IPage<WorkInfoEntity>> queryMySubmitWorkInfo(QueryMyApprovalDto dto) {
         dto.setCreateUser(LoginInfoHolder.getCurrentUserId());
-        Page<WorkInfoEntity> page = baseMapper.queryMySubmitWorkInfo(new Page<WorkInfoEntity>(dto.getCurrentPage(),dto.getPageSize()),
+        Page<WorkInfoEntity> page = baseMapper.queryMySubmitWorkInfo(new Page<WorkInfoEntity>(dto.getPageNo(),dto.getPageSize()),
                 dto);
         List<WorkInfoEntity> records = page.getRecords();
         if(CollectionUtils.isNotEmpty(records)){
             //根据业务类型获取数据
             List<Long> busiTypes = records.stream().map(WorkInfoEntity::getBusinessType).collect(Collectors.toList());
             Map<Long, String> busiMap = getBusiMap(busiTypes);
-
-//            //组织ids
-//            List<Long> orgIds = records.stream().map(WorkInfoEntity::getOrgId).collect(Collectors.toList());
-//            Map<Long, String> deptMap = getDeptMap(orgIds);
-
-            //userIds
             List<Long> usreIds = records.stream().map(WorkInfoEntity::getCreateUser).collect(Collectors.toList());
             Map<Long, String> userMap = getUserMap(usreIds);
             records.stream().forEach(item->{
@@ -1507,11 +1528,59 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 item.setOrgPath(getOrgPath(item.getOrgIds()));
                 // 发起人
                 item.setUserName(userMap.get(item.getCreateUser()));
+                //判断能否撤回
+                item.setRevokeType(checkRevokeType(item));
+                //重新提交
+                item.setResubmit(resubmit(item.getProcInstId()));
             });
         }
         return IdmResDTO.success(page);
     }
 
+    /**
+     * 判断是否可以重新提交
+     * @param procInstId
+     * @return
+     */
+    public Byte resubmit(String procInstId){
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(String.valueOf(procInstId)).list();
+        if (CollectionUtil.isEmpty(taskList)){
+            return ButtonBusinessEnums.NOT_BUTTON.getCode();
+        }
+        //当前节点为root节点则可以重新提交
+        if(Objects.equals(taskList.get(0).getTaskDefinitionKey(), WorkOrderConstants.USER_ROOT)){
+            return ButtonBusinessEnums.BUTTON.getCode();
+        }
+        return ButtonBusinessEnums.NOT_BUTTON.getCode();
+    }
+
+    /**
+     * 判断能否撤回
+     * @param workInfoDto
+     * @return
+     */
+    public Byte checkRevokeType(WorkInfoEntity workInfoDto){
+
+        //查询当前任务节点
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(workInfoDto.getProcInstId()).list();
+        //不存在任务信息则表示流程已经结束
+        if(CollectionUtil.isEmpty(taskList)){
+            return ButtonBusinessEnums.NOT_BUTTON.getCode();
+        }
+        //表示流程不支持撤销
+        if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.NOT_BUTTON.getCode())){
+            return ButtonBusinessEnums.NOT_BUTTON.getCode();
+        }
+        //未完成就可以撤回
+        if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.BUTTON.getCode())){
+            return ButtonBusinessEnums.BUTTON.getCode();
+        }
+        //同节点可以撤回
+        if(Objects.equals(workInfoDto.getRevokeNodeId(),taskList.get(0).getTaskDefinitionKey())){
+            return ButtonBusinessEnums.BUTTON.getCode();
+        }
+        return ButtonBusinessEnums.NOT_BUTTON.getCode();
+    }
 
     /**
      * 获取部门信息
@@ -1568,5 +1637,149 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         });
 
         return IdmResDTO.success();
+    }
+
+    /**
+     * 查询客户工单列表
+     * @param req
+     * @return
+     */
+    public IdmResDTO<IPage<CustomerWorkOrderDto>> queryCustomerWorkOrder(QueryCustomerWorkOrderDto req) {
+
+        //校验楼盘信息
+        List<Long> propertyList = queryPropertyInfoByDeptId();
+        checkProperty(req.getPropertyIds(),propertyList);
+        if(CollectionUtils.isEmpty(req.getPropertyIds())){
+            //根据当前管理人员信息查询下面的楼盘id
+            req.setPropertyIds(propertyList);
+        }
+        IPage<CustomerWorkOrderDto> page= baseMapper.queryCustomerWorkOrder(new Page<CustomerWorkOrderDto>(req.getPageNo(),req.getPageSize()),req);
+        List<CustomerWorkOrderDto> records = page.getRecords();
+        if (CollectionUtils.isNotEmpty(records)){
+            //获取业务类型
+            List<Long> businessTypeIds = records.stream().map(CustomerWorkOrderDto::getBusinessType).collect(Collectors.toList());
+            Map<Long, String> businessMap = getBusiMap(businessTypeIds);
+
+            //获取楼盘信息
+            List<Long> propertyIds = records.stream().map(CustomerWorkOrderDto::getPropertyId).collect(Collectors.toList());
+            Map<Long,String> propertyMap =getPropertyMap(propertyIds);
+            //获取发起人与报单人信息
+            List<Long> userIds = records.stream().map(CustomerWorkOrderDto::getCreateUser).collect(Collectors.toList());
+            List<Long> actualUserId = records.stream().map(CustomerWorkOrderDto::getActualUserId).collect(Collectors.toList());
+            List<Long> combinedList = Stream.concat(userIds.stream(), actualUserId.stream()).distinct()
+                    .collect(Collectors.toList());
+
+            Map<Long, String> userMap = getUserMap(combinedList);
+            records.stream().forEach(item->{
+                //填充业务业务类型
+                item.setBusinessTypeName(businessMap.get(item.getBusinessType()));
+                //填充楼盘信息
+                item.setPropertyName(propertyMap.get(item.getPropertyId()));
+                //创建人
+                item.setCreateUserName(userMap.get(item.getCreateUser()));
+                //填报人
+                item.setActualUserName(userMap.get(item.getActualUserId()));
+            });
+        }
+        return IdmResDTO.success(page);
+    }
+
+    /**
+     * 校验查询范围
+     * @param propertyIds
+     * @param propertyList
+     */
+    public void checkProperty(List<Long> propertyIds,List<Long> propertyList){
+        if(CollectionUtils.isNotEmpty(propertyIds) && CollectionUtils.isNotEmpty(propertyList)){
+            AssertUtil.isTrue(propertyList.containsAll(propertyIds),ResultCode.NO_OPERATION_PERMISSION.getMessage());
+        }
+    }
+    /**
+     * 获取当前登录人的楼盘信息（管理端）
+     * @return
+     */
+    public List<Long> queryPropertyInfoByDeptId(){
+        DepartmentReqDto dto = new DepartmentReqDto();
+        dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
+        dto.setSelfReturn(true);
+        List<BuildingArchive> buildingArchives = apiArchiveService.lookupBuildingArchiveByDepartmentList(dto);
+        return CollectionUtils.isNotEmpty(buildingArchives)?buildingArchives.stream().map(BuildingArchive::getId).collect(Collectors.toList()) : null;
+    }
+    /**
+     * 根据楼盘id获取楼盘信息
+     * @param propertyIds
+     * @return
+     */
+    public  Map<Long,String> getPropertyMap(List<Long> propertyIds){
+        BuildingArchiveReq req = new BuildingArchiveReq();
+        req.setIdList(propertyIds);
+        IdmResDTO<List<BuildingArchive>> listIdmResDTO = archiveFeignService.buildingArchiveQueryForList(req);
+        List<BuildingArchive> archiveList = Optional.ofNullable(listIdmResDTO.getData()).orElseThrow(()->new BusinessException(ErrorCode.NOT_FOUND.getCode(),
+                ErrorCode.NOT_FOUND.getMessage()));
+        return archiveList.stream().collect(Collectors.toMap(BuildingArchive::getId,BuildingArchive::getName));
+    }
+
+    public IdmResDTO revokeWorkOrder(ProcessBusinessDto businessDto) {
+
+        //获取工单信息
+        List<WorkInfoEntity> works = queryWorkInfo(businessDto.getProcessInstanceId());
+        if(Objects.isNull(works)){
+            return IdmResDTO.error(ErrorCode.NOT_FOUND.getCode(),ErrorCode.NOT_FOUND.getMessage());
+        }
+        //判断是否是本人撤销，不是本人撤销提示没有权限
+        if(!Objects.equals(LoginInfoHolder.getCurrentUserId(),works.get(0).getCreateUser())){
+            return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
+        }
+        //判断流程是否可以撤销,不可以撤销提示没有权限
+        Byte businessType = checkRevokeType(works.get(0));
+        if(Objects.equals(businessType, ButtonBusinessEnums.NOT_BUTTON)){
+            return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
+        }
+        //记录撤销
+        HandleDataDTO handleDataDTO =new HandleDataDTO();
+        handleDataDTO.setProcessInstanceId(String.valueOf(businessDto.getProcessInstanceId()));
+        handleDataDTO.setComments(businessDto.getComments());
+        handleDataDTO.setReason(businessDto.getReason());
+        WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
+        businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_REVOKE.getCode());
+        workBusinessTypeInfoService.save(businessTypeInfo);
+
+        //更新主流程为已撤销
+        //更新挂起结束时间
+        handleDataDTO.setNodeId(businessTypeInfo.getNode());
+        updateBusinessPendingDate(handleDataDTO);
+
+        //更新工单状态为撤销
+        updateWorkInfo(WorkOrderStatusEnums.revoke.getStatus(), businessTypeInfo.getProcInstId());
+        //撤销流程
+        runtimeService.deleteProcessInstance(String.valueOf(businessDto.getProcessInstanceId()),"撤销");
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 根据工单id获取工单信息
+     * @param procInstId
+     * @return
+     */
+    public List<WorkInfoEntity> queryWorkInfo(Long procInstId){
+        LambdaQueryWrapper<WorkInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkInfoEntity::getProcInstId,String.valueOf(procInstId));
+        return baseMapper.selectList(lw);
+    }
+
+    /**
+     * 获取用户提交的信息
+     * @param dto
+     * @return
+     */
+    public List<CommitProcessEntity> queryCommitProcessInfo(QueryCommitProcessDto dto) {
+        LambdaQueryWrapper<CommitProcessEntity> lw= new LambdaQueryWrapper<>() ;
+        lw.eq(CommitProcessEntity::getProcInstId,dto.getProcInstId()).eq(CommitProcessEntity::getNodeId,dto.getNodeId())
+                .eq(Objects.nonNull(dto.getDataId()),CommitProcessEntity::getDataId,dto.getDataId())
+                .eq(Objects.nonNull(dto.getUserId()),CommitProcessEntity::getUserId,dto.getUserId());
+        if(Objects.isNull(dto.getUserId())){
+            lw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
+        }
+        return commitProcessService.list(lw);
     }
 }

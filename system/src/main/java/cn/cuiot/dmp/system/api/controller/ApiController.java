@@ -12,6 +12,8 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
 import cn.cuiot.dmp.system.application.param.assembler.MenuConverter;
+import cn.cuiot.dmp.system.application.param.dto.FormConfigDTO;
+import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.application.service.*;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
@@ -69,6 +71,9 @@ public class ApiController {
 
     @Autowired
     private CustomConfigService customConfigService;
+
+    @Autowired
+    private AuditConfigTypeService auditConfigTypeService;
 
     /**
      * 查询角色
@@ -197,6 +202,20 @@ public class ApiController {
     }
 
     /**
+     * 通过名称查询表单配置详情
+     */
+    @PostMapping(value = "/lookUpFormConfigByName", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<FormConfigRspDTO> lookUpFormConfigByName(@RequestBody @Valid FormConfigReqDTO formConfigReqDTO) {
+        FormConfigDTO formConfigDTO = new FormConfigDTO();
+        formConfigDTO.setName(formConfigReqDTO.getName());
+        formConfigDTO.setCompanyId(formConfigReqDTO.getCompanyId());
+        FormConfigVO formConfigVO = formConfigService.queryForDetailByName(formConfigDTO);
+        FormConfigRspDTO formConfigRspDTO = new FormConfigRspDTO();
+        BeanUtils.copyProperties(formConfigVO, formConfigRspDTO);
+        return IdmResDTO.success(formConfigRspDTO);
+    }
+
+    /**
      * 批量查询表单配置
      */
     @PostMapping(value = "/batchQueryFormConfig", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -230,6 +249,15 @@ public class ApiController {
     public IdmResDTO<List<CustomConfigRspDTO>> batchQueryCustomConfigs(@RequestBody @Valid CustomConfigReqDTO customConfigReqDTO) {
         List<CustomConfigRspDTO> customConfigRspDTOS = customConfigService.batchQueryCustomConfigs(customConfigReqDTO);
         return IdmResDTO.success(customConfigRspDTOS);
+    }
+
+    /**
+     * 根据条件批量查询审核配置列表
+     */
+    @PostMapping(value = "/lookUpAuditConfig", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<AuditConfigTypeRspDTO>> lookUpAuditConfig(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO) {
+        List<AuditConfigTypeRspDTO> auditConfigTypeRspDTOList = auditConfigTypeService.queryForList(queryDTO);
+        return IdmResDTO.success(auditConfigTypeRspDTOList);
     }
 
 }

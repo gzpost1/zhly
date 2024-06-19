@@ -17,18 +17,22 @@ import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMa
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -260,17 +264,43 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
 
     /**
      * 根据ID获取楼盘信息
+     *
      * @param id
      * @return
      */
     @Override
     public BuildingArchive lookupBuildingArchiveInfo(Long id) {
         BuildingArchives buildingArchives = buildingArchivesRepository.queryForDetail(id);
-        if(Objects.nonNull(buildingArchives)){
+        if (Objects.nonNull(buildingArchives)) {
             BuildingArchive result = new BuildingArchive();
             BeanUtils.copyProperties(buildingArchives, result);
             return result;
         }
         return null;
     }
+
+    @Override
+    public List<BuildingArchive> lookupBuildingArchiveByDepartmentList(DepartmentReqDto reqDto) {
+        DepartmentReqDto paraDto = new DepartmentReqDto();
+        paraDto.setDeptId(LoginInfoHolder.getCurrentDeptId());
+        paraDto.setSelfReturn(true);
+        List<DepartmentDto> departmentDtoList = apiSystemService.lookUpDepartmentChildList(paraDto);
+        List<Long> departmentIdList = departmentDtoList.stream()
+                .map(DepartmentDto::getId)
+                .collect(Collectors.toList());
+        BuildingArchivesPageQuery pageQuery = new BuildingArchivesPageQuery();
+        pageQuery.setDepartmentIdList(departmentIdList);
+        List<BuildingArchives> buildingArchivesList = buildingArchivesRepository.queryForList(pageQuery);
+        if (CollectionUtils.isEmpty(buildingArchivesList)) {
+            return new ArrayList<>();
+        }
+        return buildingArchivesList.stream()
+                .map(o -> {
+                    BuildingArchive buildingArchive = new BuildingArchive();
+                    BeanUtils.copyProperties(o, buildingArchive);
+                    return buildingArchive;
+                })
+                .collect(Collectors.toList());
+    }
+
 }

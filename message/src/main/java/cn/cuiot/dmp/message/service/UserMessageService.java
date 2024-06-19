@@ -1,9 +1,12 @@
 package cn.cuiot.dmp.message.service;//	模板
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.MsgExistDataIdReqDto;
 import cn.cuiot.dmp.message.dal.entity.UserMessageEntity;
 import cn.cuiot.dmp.message.param.MessagePageQuery;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @author hantingyao
@@ -21,7 +24,20 @@ public interface UserMessageService extends IService<UserMessageEntity> {
 
     /**
      * 标记消息已读
-     * @param id
+     * @param ids
      */
-    void readMessage(Long id);
+    void readMessage(List<Long> ids);
+
+    /**
+     * 获取用户已经接收的消息数据id列表
+     * @param reqDto
+     * @return
+     */
+    List<Long> getAcceptDataIdList(MsgExistDataIdReqDto reqDto);
+
+    /**
+     * 获取未读消息数量
+     * @return
+     */
+    Long getUnreadMessageCount();
 }

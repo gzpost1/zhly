@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.lease.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -8,8 +10,11 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.lease.dto.clue.ClueRecordDTO;
 import cn.cuiot.dmp.lease.dto.clue.ClueRecordPageQueryDTO;
 import cn.cuiot.dmp.lease.dto.clue.ClueRecordUpdateDTO;
+import cn.cuiot.dmp.lease.entity.ClueEntity;
 import cn.cuiot.dmp.lease.entity.ClueRecordEntity;
+import cn.cuiot.dmp.lease.mapper.ClueMapper;
 import cn.cuiot.dmp.lease.mapper.ClueRecordMapper;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -18,6 +23,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +43,9 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
     @Autowired
     private SystemApiFeignService systemApiFeignService;
 
+    @Autowired
+    private ClueMapper clueMapper;
+
     /**
      * 查询详情
      */
@@ -45,6 +54,7 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         ClueRecordDTO clueRecordDTO = new ClueRecordDTO();
         BeanUtils.copyProperties(clueRecordEntity, clueRecordDTO);
+        clueRecordDTO.setFormData(JSON.parseObject(clueRecordEntity.getFormData()));
         fillSystemOptionName(Lists.newArrayList(clueRecordDTO));
         return clueRecordDTO;
     }
@@ -64,9 +74,11 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
                 .map(o -> {
                     ClueRecordDTO clueRecordDTO = new ClueRecordDTO();
                     BeanUtils.copyProperties(o, clueRecordDTO);
+                    clueRecordDTO.setFormData(JSON.parseObject(o.getFormData()));
                     return clueRecordDTO;
                 })
                 .collect(Collectors.toList());
+        fillUserName(clueRecordDTOList);
         fillSystemOptionName(clueRecordDTOList);
         return clueRecordDTOList;
     }
@@ -94,6 +106,14 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
         ClueRecordEntity clueRecordEntity = Optional.ofNullable(getById(updateDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(updateDTO, clueRecordEntity);
+        clueRecordEntity.setFormData(String.valueOf(updateDTO.getFormData()));
+        // 如果是最新的线索记录，则需要同步修改线索的对应字段
+        ClueEntity clueEntity = Optional.ofNullable(clueMapper.selectById(clueRecordEntity.getClueId()))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        if (clueRecordEntity.getId().equals(clueEntity.getCurrentFollowRecordId())) {
+            clueEntity.setCurrentFollowStatusId(clueRecordEntity.getFollowStatusId());
+            clueMapper.updateById(clueEntity);
+        }
         return updateById(clueRecordEntity);
     }
 
@@ -102,6 +122,33 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteClueRecord(Long id) {
+        // 如果删除的是最新的线索记录，则需要同步修改线索的对应字段
+        ClueRecordEntity clueRecordEntity = Optional.ofNullable(getById(id))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        ClueEntity clueEntity = Optional.ofNullable(clueMapper.selectById(clueRecordEntity.getClueId()))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        if (clueRecordEntity.getId().equals(clueEntity.getCurrentFollowRecordId())) {
+            ClueRecordPageQueryDTO queryDTO = new ClueRecordPageQueryDTO();
+            queryDTO.setClueId(clueEntity.getId());
+            List<ClueRecordDTO> clueRecordDTOList = queryForList(queryDTO);
+            // 删除后仍存在线索记录，则更新线索状态为最新的一条
+            if (CollectionUtils.isNotEmpty(clueRecordDTOList) && clueRecordDTOList.size() > 1) {
+                ClueRecordDTO clueRecordDTO = clueRecordDTOList.get(1);
+                clueEntity.setCurrentFollowRecordId(clueRecordDTO.getId());
+                clueEntity.setCurrentFollowerId(clueRecordDTO.getFollowerId());
+                clueEntity.setCurrentFollowTime(clueRecordDTO.getFollowTime());
+                clueEntity.setCurrentFollowStatusId(clueRecordDTO.getFollowStatusId());
+                clueMapper.updateById(clueEntity);
+            } else {
+                // 不存在则清空线索状态
+                LambdaUpdateWrapper<ClueEntity> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.eq(ClueEntity::getId, clueEntity.getId());
+                updateWrapper.set(ClueEntity::getCurrentFollowRecordId, null);
+                updateWrapper.set(ClueEntity::getCurrentFollowTime, null);
+                updateWrapper.set(ClueEntity::getCurrentFollowStatusId, null);
+                clueMapper.update(clueEntity, updateWrapper);
+            }
+        }
         return removeById(id);
     }
 
@@ -120,15 +167,55 @@ public class ClueRecordService extends ServiceImpl<ClueRecordMapper, ClueRecordE
                 .map(o -> {
                     ClueRecordDTO clueRecordDTO = new ClueRecordDTO();
                     BeanUtils.copyProperties(o, clueRecordDTO);
+                    clueRecordDTO.setFormData(JSON.parseObject(o.getFormData()));
                     return clueRecordDTO;
                 })
                 .collect(Collectors.toList());
+        fillUserName(clueRecordDTOList);
         fillSystemOptionName(clueRecordDTOList);
         clueRecordDTOPageResult.setList(clueRecordDTOList);
         clueRecordDTOPageResult.setCurrentPage((int) clueRecordEntityIPage.getCurrent());
         clueRecordDTOPageResult.setPageSize((int) clueRecordEntityIPage.getSize());
         clueRecordDTOPageResult.setTotal(clueRecordEntityIPage.getTotal());
         return clueRecordDTOPageResult;
+    }
+
+    /**
+     * 使用用户id列表查询出，对应的用户名称
+     *
+     * @param clueRecordDTOList 线索记录列表
+     */
+    private void fillUserName(List<ClueRecordDTO> clueRecordDTOList) {
+        if (CollectionUtils.isEmpty(clueRecordDTOList)) {
+            return;
+        }
+        Set<Long> userIdList = new HashSet<>();
+        clueRecordDTOList.forEach(o -> {
+            if (StringUtils.isNotBlank(o.getCreatedBy())) {
+                userIdList.add(Long.valueOf(o.getCreatedBy()));
+            }
+            if (StringUtils.isNotBlank(o.getUpdatedBy())) {
+                userIdList.add(Long.valueOf(o.getUpdatedBy()));
+            }
+            if (Objects.nonNull(o.getFollowerId())) {
+                userIdList.add(o.getFollowerId());
+            }
+        });
+        BaseUserReqDto reqDto = new BaseUserReqDto();
+        reqDto.setUserIdList(new ArrayList<>(userIdList));
+        List<BaseUserDto> baseUserDtoList = systemApiFeignService.lookUpUserList(reqDto).getData();
+        Map<Long, String> userMap = baseUserDtoList.stream().collect(Collectors.toMap(BaseUserDto::getId, BaseUserDto::getName));
+        clueRecordDTOList.forEach(o -> {
+            if (Objects.nonNull(o.getCreatedBy()) && userMap.containsKey(Long.valueOf(o.getCreatedBy()))) {
+                o.setCreatedName(userMap.get(Long.valueOf(o.getCreatedBy())));
+            }
+            if (Objects.nonNull(o.getUpdatedBy()) && userMap.containsKey(Long.valueOf(o.getUpdatedBy()))) {
+                o.setUpdatedName(userMap.get(Long.valueOf(o.getUpdatedBy())));
+            }
+            if (Objects.nonNull(o.getFollowerId()) && userMap.containsKey(o.getFollowerId())) {
+                o.setFollowerName(userMap.get(o.getFollowerId()));
+            }
+        });
     }
 
     /**

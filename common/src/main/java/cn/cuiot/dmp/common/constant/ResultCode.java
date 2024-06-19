@@ -219,11 +219,16 @@ public enum ResultCode {
     QUERY_FORM_CONFIG_ERROR("0100201", "查询表单配置信息异常"),
     QUERY_FORM_CONFIG_DETAIL_ERROR("0100202", "查询表单配置详情异常"),
     QUERY_CUSTOM_CONFIG_DETAIL_ERROR("0100301", "查询自定义配置详情异常"),
+    QUERY_AUDIT_CONFIG_DETAIL_ERROR("0100401", "查询审核配置列表详情异常"),
 
     /**
      * 内容中心
      */
     EFFECTIVE_TIME_EXPIRED("1800001", "已过生效时间"),
+    IMG_TEXT_TYPE_EXISTS("1800002", "类型名称已存在"),
+    IMG_TEXT_TYPE_EXISTS_DATA("1800003", "该类型下存在图文，不可删除"),
+
+    COMPLETE_RATIO_ERROR("1900001","未达到完成比列，不能提交"),
 
     ;
 

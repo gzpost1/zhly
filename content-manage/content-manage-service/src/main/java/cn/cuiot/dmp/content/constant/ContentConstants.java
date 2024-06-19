@@ -52,6 +52,11 @@ public class ContentConstants {
          * 已过期
          */
         public static final Byte EXPIRED = 3;
+
+        /**
+         * 停止发布
+         */
+        public static final Byte STOP_PUBLISH = 4;
     }
 
     /**
@@ -66,7 +71,7 @@ public class ContentConstants {
         /**
          * 审核通过
          */
-        public static final Byte PASSED = 2;
+        public static final Byte AUDIT_PASSED = 2;
 
         /**
          * 审核不通过
@@ -86,4 +91,27 @@ public class ContentConstants {
         public static final Byte SHOW = 1;
     }
 
+    public static class PublishSource {
+        /**
+         * 管理端
+         */
+        public static final Byte MANAGE = 1;
+
+        /**
+         * 客户端
+         */
+        public static final Byte APP = 2;
+    }
+
+    public static class MsgInform {
+        /**
+         * 系统内通知
+         */
+        public static final Byte SYSTEM = 1;
+
+        /**
+         * 短信通知
+         */
+        public static final Byte SMS = 2;
+    }
 }

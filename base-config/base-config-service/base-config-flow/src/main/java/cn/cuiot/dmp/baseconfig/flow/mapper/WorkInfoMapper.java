@@ -2,15 +2,13 @@ package cn.cuiot.dmp.baseconfig.flow.mapper;
 
 import cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.RepairReportDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.PendingProcessQuery;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.query.RepairReportQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.WorkOrderSuperQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.QueryTaskUserInfoDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.TaskUserInfoDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.work.WorkProcInstDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -49,4 +47,18 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
     Page<AppWorkInfoDto> queryAppMySubmitWorkInfo(Page<AppWorkInfoDto> workInfoEntityPage , @Param("query") QueryMyApprovalDto dto);
 
     IPage<AppWorkInfoDto> queryWorkOrderSuper(Page<AppWorkInfoDto> objectPage, @Param("query") WorkOrderSuperQuery query);
+
+    List<String> queryNodeType(@Param("query") PendingProcessQuery query);
+
+    Page<AppWorkInfoDto> queryMyHandleInfo(Page<AppWorkInfoDto> page, @Param("query") WorkOrderSuperQuery query);
+
+    Page<AppWorkInfoDto> queryMyApprove(Page<AppWorkInfoDto> page, @Param("query") WorkOrderSuperQuery query);
+
+    Page<AppWorkInfoDto> queryMyMake(Page<AppWorkInfoDto> page, WorkOrderSuperQuery query);
+
+    Page<RepairReportDto> queryReportRepairs(Page<RepairReportDto> page, RepairReportQuery query);
+
+    Page<CustomerWorkOrderDto> queryCustomerWorkOrder(Page<CustomerWorkOrderDto> page, @Param("query") QueryCustomerWorkOrderDto req);
+
+    List<String> queryHistoricTask(@Param("taskDefinitionKey") String taskDefinitionKey,@Param("processInstanceId") String processInstanceId);
 }

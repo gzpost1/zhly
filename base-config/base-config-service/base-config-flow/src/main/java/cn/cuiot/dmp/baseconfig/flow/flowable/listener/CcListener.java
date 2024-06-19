@@ -5,6 +5,7 @@ import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
 import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowCc;
 import cn.cuiot.dmp.baseconfig.flow.enums.FlowCCEnums;
 import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
+import cn.cuiot.dmp.baseconfig.flow.flowable.msg.MsgSendService;
 import cn.cuiot.dmp.baseconfig.flow.service.TbFlowCcService;
 import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigOrgService;
 import cn.cuiot.dmp.common.utils.AssertUtil;
@@ -29,7 +30,6 @@ import java.util.stream.Collectors;
 import static cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants.*;
 import static cn.cuiot.dmp.baseconfig.flow.utils.BpmnModelUtils.getChildNode;
 
-
 /**
  * @author LoveMyOrange
  * @create 2022-10-15 19:47
@@ -45,6 +45,8 @@ public class CcListener implements JavaDelegate {
     private SystemToFlowService systemToFlowService;
     @Autowired
     private TbFlowConfigOrgService flowConfigOrgService;
+    @Autowired
+    private MsgSendService msgSendService;
 
     @Override
     public void execute(DelegateExecution execution) {
@@ -64,7 +66,7 @@ public class CcListener implements JavaDelegate {
                 List<Long> flowCOnfigDeptIds = flowConfigOrgService.queryOrgIdsByFlowConfigId(Long.valueOf(flowConfigId));
                 AssertUtil.notEmpty(flowCOnfigDeptIds, "该流程暂未配置组织,请重试");
 
-                ccUserIds = systemToFlowService.getUserIdByRole(ccInfo.getCcIds().stream().map(e -> Long.parseLong(e)).collect(Collectors.toList()),flowCOnfigDeptIds);
+                ccUserIds = systemToFlowService.getUserIdByRole(ccInfo.getCcIds().stream().map(e -> Long.parseLong(e)).collect(Collectors.toList()), flowCOnfigDeptIds);
             } else if (Objects.equals(ccInfo.getType(), FlowCCEnums.DEPARTMENT.getCode())) {
                 ccUserIds = systemToFlowService.getUserIdByDept(ccInfo.getCcIds().stream().map(e -> Long.parseLong(e)).collect(Collectors.toList()));
             }
@@ -80,6 +82,8 @@ public class CcListener implements JavaDelegate {
                 }).collect(Collectors.toList());
 
                 flowCcService.saveBatch(collect);
+
+                msgSendService.sendCCMsg(execution.getProcessInstanceId(), ccUserIds,execution.getProcessDefinitionId());
             }
         }
     }

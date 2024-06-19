@@ -33,9 +33,10 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
     private CustomConfigDetailMapper customConfigDetailMapper;
 
     @Override
-    public List<CustomConfigDetail> batchQueryCustomConfigDetails(Long customConfigId) {
+    public List<CustomConfigDetail> batchQueryCustomConfigDetails(Long customConfigId, Long companyId) {
         LambdaQueryWrapper<CustomConfigDetailEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigDetailEntity>()
                 .eq(CustomConfigDetailEntity::getCustomConfigId, customConfigId)
+                .eq(CustomConfigDetailEntity::getCompanyId, companyId)
                 .orderByAsc(CustomConfigDetailEntity::getSort);
         List<CustomConfigDetailEntity> customConfigDetailEntities = customConfigDetailMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(customConfigDetailEntities)) {
@@ -68,26 +69,29 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void batchSaveOrUpdateCustomConfigDetails(Long customConfigId, List<CustomConfigDetail> customConfigDetails) {
+    public void batchSaveOrUpdateCustomConfigDetails(Long customConfigId, List<CustomConfigDetail> customConfigDetails,
+                                                     Long companyId) {
         if (Objects.isNull(customConfigId) || CollectionUtils.isEmpty(customConfigDetails)) {
             return;
         }
         checkSave(customConfigDetails);
         LambdaQueryWrapper<CustomConfigDetailEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigDetailEntity>()
-                .eq(CustomConfigDetailEntity::getCustomConfigId, customConfigId);
+                .eq(CustomConfigDetailEntity::getCustomConfigId, customConfigId)
+                .eq(CustomConfigDetailEntity::getCompanyId, companyId);
         List<CustomConfigDetailEntity> customConfigDetailEntities = customConfigDetailMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(customConfigDetailEntities)) {
-            batchSaveCustomConfigDetails(customConfigId, customConfigDetails);
+            batchSaveCustomConfigDetails(customConfigId, customConfigDetails, companyId);
         } else {
-            batchUpdateCustomConfigDetails(customConfigId, customConfigDetails, customConfigDetailEntities);
+            batchUpdateCustomConfigDetails(customConfigId, customConfigDetails, customConfigDetailEntities, companyId);
         }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void batchDeleteCustomConfigDetails(List<Long> customConfigIdList) {
+    public void batchDeleteCustomConfigDetails(List<Long> customConfigIdList, Long companyId) {
         LambdaQueryWrapper<CustomConfigDetailEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigDetailEntity>()
-                .in(CustomConfigDetailEntity::getCustomConfigId, customConfigIdList);
+                .in(CustomConfigDetailEntity::getCustomConfigId, customConfigIdList)
+                .eq(CustomConfigDetailEntity::getCompanyId, companyId);
         List<CustomConfigDetailEntity> CustomConfigDetailEntities = customConfigDetailMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(CustomConfigDetailEntities)) {
             return;
@@ -97,13 +101,14 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
                 .collect(Collectors.toList()));
     }
 
-    private void batchSaveCustomConfigDetails(Long customConfigId, List<CustomConfigDetail> customConfigDetails) {
+    private void batchSaveCustomConfigDetails(Long customConfigId, List<CustomConfigDetail> customConfigDetails, Long companyId) {
         List<CustomConfigDetailEntity> CustomConfigDetailEntities = customConfigDetails.stream()
                 .map(o -> {
                     CustomConfigDetailEntity customConfigDetailEntity = new CustomConfigDetailEntity();
                     BeanUtils.copyProperties(o, customConfigDetailEntity);
                     customConfigDetailEntity.setId(IdWorker.getId());
                     customConfigDetailEntity.setCustomConfigId(customConfigId);
+                    customConfigDetailEntity.setCompanyId(companyId);
                     return customConfigDetailEntity;
                 })
                 .collect(Collectors.toList());
@@ -111,7 +116,7 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
     }
 
     private void batchUpdateCustomConfigDetails(Long customConfigId, List<CustomConfigDetail> customConfigDetails,
-                                                List<CustomConfigDetailEntity> oldCustomConfigDetailEntities) {
+                                                List<CustomConfigDetailEntity> oldCustomConfigDetailEntities, Long companyId) {
         // id为空的数据说明为新增数据，直接新增
         List<CustomConfigDetailEntity> newCustomConfigDetailEntities = customConfigDetails.stream()
                 .filter(o -> Objects.isNull(o.getId()))
@@ -120,6 +125,7 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
                     BeanUtils.copyProperties(o, customConfigDetailEntity);
                     customConfigDetailEntity.setId(IdWorker.getId());
                     customConfigDetailEntity.setCustomConfigId(customConfigId);
+                    customConfigDetailEntity.setCompanyId(companyId);
                     return customConfigDetailEntity;
                 })
                 .collect(Collectors.toList());
@@ -133,6 +139,7 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
                     CustomConfigDetailEntity customConfigDetailEntity = new CustomConfigDetailEntity();
                     BeanUtils.copyProperties(o, customConfigDetailEntity);
                     customConfigDetailEntity.setCustomConfigId(customConfigId);
+                    customConfigDetailEntity.setCompanyId(companyId);
                     return customConfigDetailEntity;
                 })
                 .collect(Collectors.toList());

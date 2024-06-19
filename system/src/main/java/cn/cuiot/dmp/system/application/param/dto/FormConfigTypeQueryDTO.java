@@ -33,7 +33,6 @@ public class FormConfigTypeQueryDTO implements Serializable {
     /**
      * 初始化标志位(0:非初始化数据,1:初始化数据)
      */
-    @NotNull(message = "初始化标志位不能为空")
     private Byte initFlag;
 
 }

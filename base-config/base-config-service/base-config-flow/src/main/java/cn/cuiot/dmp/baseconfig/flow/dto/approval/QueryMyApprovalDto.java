@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.approval;
 
-import cn.cuiot.dmp.query.PageQuery;
+import cn.cuiot.dmp.common.bean.PageQuery;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -56,7 +56,7 @@ public class QueryMyApprovalDto extends PageQuery {
     /**
      * 工单编号
      */
-    private Long procInstId;
+    private String procInstId;
 
     /**
      * 查询类型

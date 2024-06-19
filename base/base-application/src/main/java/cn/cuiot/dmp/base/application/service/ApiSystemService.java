@@ -37,7 +37,7 @@ public interface ApiSystemService {
     /**
      * 获取用户信息
      */
-    BaseUserDto lookUpUserInfo(@RequestBody BaseUserReqDto query);
+    BaseUserDto lookUpUserInfo(BaseUserReqDto query);
 
     /**
      * 获取部门信息
@@ -60,6 +60,11 @@ public interface ApiSystemService {
     List<BusinessTypeRspDTO> batchGetBusinessType(BusinessTypeReqDTO businessTypeReqDTO);
 
     /**
+     * 通过名称查询表单配置详情
+     */
+    FormConfigRspDTO lookUpFormConfigByName(FormConfigReqDTO formConfigReqDTO);
+
+    /**
      * 批量查询表单配置
      */
     List<FormConfigRspDTO> batchQueryFormConfig(FormConfigReqDTO formConfigReqDTO);
@@ -78,5 +83,10 @@ public interface ApiSystemService {
      * 根据条件批量查询自定义配置列表
      */
     List<CustomConfigRspDTO> batchQueryCustomConfigs(CustomConfigReqDTO customConfigReqDTO);
+
+    /**
+     * 根据条件批量查询审核配置列表
+     */
+    List<AuditConfigTypeRspDTO> lookUpAuditConfig(AuditConfigTypeReqDTO queryDTO);
 
 }

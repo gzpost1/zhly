@@ -47,9 +47,25 @@ public class ClueEntity extends BaseEntity {
     private Long sourceId;
 
     /**
+     * 当前跟进记录ID
+     */
+    private Long currentFollowRecordId;
+
+    /**
      * 当前跟进人ID
      */
     private Long currentFollowerId;
+
+    /**
+     * 跟进状态（系统配置自定义）
+     */
+    private Long currentFollowStatusId;
+
+    /**
+     * 完成时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date currentFollowTime;
 
     /**
      * 关联客户ID
@@ -73,7 +89,12 @@ public class ClueEntity extends BaseEntity {
     private Long resultId;
 
     /**
-     * 表单配置详情
+     * 线索表单配置数据
+     */
+    private String formData;
+
+    /**
+     * 当前线索表单配置快照
      */
     private String formConfigDetail;
 

@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.application.param.dto;
 
+import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -17,5 +18,11 @@ public class AuditConfigTypeQueryDTO implements Serializable {
      * 企业id
      */
     private Long companyId;
+
+    /**
+     * 审核配置类型
+     * @see AuditConfigTypeEnum
+     */
+    private Byte auditConfigType;
 
 }

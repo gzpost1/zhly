@@ -32,7 +32,7 @@ public class ContentImgTextCreateDto {
     /**
      * 图文类型
      */
-    private Long type;
+    private Long typeId;
 
     /**
      * 图文封面

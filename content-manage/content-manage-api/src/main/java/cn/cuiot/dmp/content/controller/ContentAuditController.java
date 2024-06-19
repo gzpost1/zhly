@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.content.controller;//	模板
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -34,10 +35,12 @@ public class ContentAuditController {
      */
     @RequiresPermissions
     @PostMapping("/auditApply")
+    @LogRecord(operationCode = "auditApply", operationName = "审核",serviceType = "contentAudit",serviceTypeName = "内容审核")
     public Boolean audit(@RequestBody @Valid AuditReqVo auditReqVo) {
         if (auditReqVo.getAuditStatus().equals(ContentConstants.AuditStatus.NOT_PASSED) && auditReqVo.getAuditOpinion() == null) {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "审核意见不能为空");
         }
         return contentAuditService.audit(auditReqVo);
     }
+
 }

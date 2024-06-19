@@ -1,15 +1,15 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
 import cn.cuiot.dmp.common.constant.AuditConfigConstant;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
-import cn.cuiot.dmp.system.application.param.dto.AuditConfigTypeDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.AuditConfigEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.AuditConfigTypeEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.AuditConfigMapper;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -28,6 +29,17 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class AuditConfigService extends ServiceImpl<AuditConfigMapper, AuditConfigEntity> {
+
+    /**
+     * 根据条件查询审核配置列表
+     */
+    public List<AuditConfigEntity> queryForList(AuditConfigTypeReqDTO queryDTO) {
+        LambdaQueryWrapper<AuditConfigEntity> queryWrapper = new LambdaQueryWrapper<AuditConfigEntity>()
+                .eq(Objects.nonNull(queryDTO.getCompanyId()), AuditConfigEntity::getCompanyId, queryDTO.getCompanyId())
+                .eq(Objects.nonNull(queryDTO.getAuditConfigType()), AuditConfigEntity::getAuditConfigType, queryDTO.getAuditConfigType())
+                .eq(StrUtil.isNotEmpty(queryDTO.getName()), AuditConfigEntity::getName, queryDTO.getName());
+        return list(queryWrapper);
+    }
 
     /**
      * 根据企业id查询审核配置列表

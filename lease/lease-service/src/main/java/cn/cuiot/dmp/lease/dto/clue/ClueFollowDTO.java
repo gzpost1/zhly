@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.dto.clue;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -15,6 +16,11 @@ import java.util.Date;
 public class ClueFollowDTO implements Serializable {
 
     private static final long serialVersionUID = -561752869274727868L;
+
+    /**
+     * 企业ID
+     */
+    private Long companyId;
 
     /**
      * 线索跟进id
@@ -45,7 +51,12 @@ public class ClueFollowDTO implements Serializable {
     private Long followStatusId;
 
     /**
-     * 线索跟进表单详情
+     * 线索表单配置数据
+     */
+    private JSONObject formData;
+
+    /**
+     * 当前线索表单配置快照
      */
     private String formConfigDetail;
 

@@ -21,7 +21,12 @@ public class AuthContants {
      */
     public static final String COMMUNITY = "community";
 
-    
+    /**
+     * 操作端请求头
+     */
+    public final static String OPERATION_SOURCE="operation-source";
+
+
     /**
      * 用户名称
      */

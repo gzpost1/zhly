@@ -518,7 +518,6 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
     }
 
-    @LogRecord(operationCode = "deleteDepartment", operationName = "删除子组织", serviceType = ServiceTypeConst.SUPER_ORGANIZATION_MANAGEMENT)
     @Override
     public void deleteDepartment(UpdateDepartmentDto updateDepartmentDto) {
         //checkAdminUser(updateDepartmentDto.getOrgId(), updateDepartmentDto.getUserId());

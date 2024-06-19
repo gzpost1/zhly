@@ -4,7 +4,6 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
-import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.content.dal.entity.ContentModuleBanner;
 import cn.cuiot.dmp.content.param.dto.ModuleBannerCreateDto;
 import cn.cuiot.dmp.content.param.dto.ModuleBannerUpdateDto;
@@ -22,6 +21,7 @@ import java.util.List;
 
 /**
  * banner管理
+ *
  * @author hantingyao
  * @Description
  * @data 2024/6/4 10:27
@@ -42,7 +42,7 @@ public class ContentModuleBannerController {
      */
     @PostMapping("/create")
     @RequiresPermissions
-    @LogRecord(operationCode = "createModuleBanner", operationName = "新增banner", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "createModuleBanner", operationName = "新增banner", serviceType = "moduleBanner", serviceTypeName = "banner管理")
     public Boolean create(@RequestBody @Valid ModuleBannerCreateDto moduleBannerCreateDto) {
         return contentModuleBannerService.create(moduleBannerCreateDto);
     }
@@ -53,7 +53,7 @@ public class ContentModuleBannerController {
      */
     @RequiresPermissions
     @PostMapping("/update")
-    @LogRecord(operationCode = "updateModuleBanner", operationName = "更新banner", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateModuleBanner", operationName = "更新banner", serviceType = "moduleBanner", serviceTypeName = "banner管理")
     public Boolean update(@RequestBody @Valid ModuleBannerUpdateDto updateDto) {
         return contentModuleBannerService.update(updateDto);
     }
@@ -63,7 +63,7 @@ public class ContentModuleBannerController {
      */
     @RequiresPermissions
     @PostMapping("/delete")
-    @LogRecord(operationCode = "deleteModuleBanner", operationName = "删除banner", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "deleteModuleBanner", operationName = "删除banner", serviceType = "moduleBanner", serviceTypeName = "banner管理")
     public Boolean deleteContentImgText(@RequestBody @Valid IdParam idParam) {
         return contentModuleBannerService.deleteById(idParam.getId());
     }
@@ -75,7 +75,7 @@ public class ContentModuleBannerController {
      * @return
      */
     @PostMapping("/updateStatus")
-    @LogRecord(operationCode = "updateStatus", operationName = "停启用banner", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateStatus", operationName = "停启用banner", serviceType = "moduleBanner", serviceTypeName = "banner管理")
     @RequiresPermissions
     public Boolean updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         return contentModuleBannerService.updateStatus(updateStatusParam);

@@ -1,8 +1,13 @@
 package cn.cuiot.dmp.base.infrastructure.feign;//	模板
 
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
+import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -33,4 +38,21 @@ public interface ArchiveFeignService {
      */
     @PostMapping(value = "/api/lookupBuildingArchiveInfo", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<BuildingArchive> lookupBuildingArchiveInfo(@RequestBody @Valid IdParam idParam);
+    /**
+     * 根据ID获取房屋
+     */
+    @PostMapping(value = "/api/queryHousesList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<HousesArchivesVo>> queryHousesList(@RequestBody @Valid IdsReq ids);
+
+    /**
+     * 查询当前组织及下级组织下的楼盘列表
+     */
+    @PostMapping(value = "/api/lookupBuildingArchiveByDepartmentList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<BuildingArchive>> lookupBuildingArchiveByDepartmentList(@RequestBody @Valid DepartmentReqDto reqDto);
+
+    /**
+     * 查询客户
+     */
+    @PostMapping(value = "/api/lookupCustomerUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<CustomerUserRspDto>> lookupCustomerUsers(@RequestBody @Valid CustomerUseReqDto reqDto);
 }

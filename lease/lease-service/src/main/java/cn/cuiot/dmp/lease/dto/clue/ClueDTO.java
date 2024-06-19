@@ -1,9 +1,11 @@
 package cn.cuiot.dmp.lease.dto.clue;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -41,6 +43,16 @@ public class ClueDTO implements Serializable {
     private Long buildingId;
 
     /**
+     * 楼盘名称
+     */
+    private String buildingName;
+
+    /**
+     * 楼盘所属部门ID
+     */
+    private Long buildingDepartmentId;
+
+    /**
      * 线索来源（系统配置自定义）
      */
     private Long sourceId;
@@ -61,6 +73,11 @@ public class ClueDTO implements Serializable {
     private Long finishUserId;
 
     /**
+     * 完成人名称
+     */
+    private String finishUserName;
+
+    /**
      * 完成时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -77,7 +94,12 @@ public class ClueDTO implements Serializable {
     private String resultIdName;
 
     /**
-     * 表单配置详情
+     * 线索表单配置数据
+     */
+    private JSONObject formData;
+
+    /**
+     * 当前线索表单配置快照
      */
     private String formConfigDetail;
 
@@ -90,5 +112,47 @@ public class ClueDTO implements Serializable {
      * 线索状态（1待分配，2跟进中，3已完成）
      */
     private Byte status;
+
+    /**
+     * 创建时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createdOn;
+
+    /**
+     * 创建者。取值：SYSTEM：系统生成的；{userKey}：Portal用户创建的；{appKey}：API创建的。
+     */
+    private String createdBy;
+
+    /**
+     * 创建者名称
+     */
+    private String createdName;
+
+    /**
+     * 当前跟进人ID
+     */
+    private Long currentFollowerId;
+
+    /**
+     * 当前跟进人名称
+     */
+    private String currentFollowerName;
+
+    /**
+     * 跟进状态（系统配置自定义）
+     */
+    private Long currentFollowStatusId;
+
+    /**
+     * 跟进状态名称
+     */
+    private String currentFollowStatusIdName;
+
+    /**
+     * 跟进时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date currentFollowTime;
 
 }

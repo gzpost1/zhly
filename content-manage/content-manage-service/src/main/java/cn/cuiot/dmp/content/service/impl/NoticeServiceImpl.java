@@ -2,16 +2,24 @@ package cn.cuiot.dmp.content.service.impl;//	模板
 
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.MsgExistDataIdReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
-import cn.cuiot.dmp.common.constant.EntityConstants;
-import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
+import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
+import cn.cuiot.dmp.common.constant.*;
+import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.content.config.MsgChannel;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.conver.NoticeConvert;
 import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.dal.mapper.ContentNoticeMapper;
 import cn.cuiot.dmp.content.feign.ArchiveConverService;
+import cn.cuiot.dmp.content.feign.MessageFeignService;
 import cn.cuiot.dmp.content.feign.SystemConverService;
 import cn.cuiot.dmp.content.param.dto.AuditResultDto;
 import cn.cuiot.dmp.content.param.dto.NoticeCreateDto;
@@ -24,13 +32,18 @@ import cn.cuiot.dmp.content.service.NoticeService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeTypeUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,6 +62,10 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     private SystemConverService systemConverService;
     @Autowired
     private ArchiveConverService archiveConverService;
+    @Autowired
+    private MsgChannel msgChannel;
+    @Autowired
+    private MessageFeignService messageFeignService;
 
     @Override
     public NoticeVo queryForDetail(Long id) {
@@ -62,6 +79,14 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     public int saveNotice(NoticeCreateDto createDTO) {
         ContentNoticeEntity contentNoticeEntity = NoticeConvert.INSTANCE.convert(createDTO);
         contentNoticeEntity.setStatus(EntityConstants.ENABLED);
+        AuditConfigTypeReqDTO reqDTO = new AuditConfigTypeReqDTO().setCompanyId(LoginInfoHolder.getCurrentOrgId())
+                .setAuditConfigType(AuditConfigTypeEnum.NOTICE_MANAGE.getCode()).setName("新增公告");
+        AuditConfigRspDTO auditConfigRspDTO = systemConverService.lookUpAuditConfig(reqDTO);
+        if (auditConfigRspDTO != null && EntityConstants.ENABLED.equals(auditConfigRspDTO.getStatus())) {
+            contentNoticeEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_ING);
+        } else {
+            contentNoticeEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_PASSED);
+        }
         int insert = this.baseMapper.insert(contentNoticeEntity);
         contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, createDTO.getDepartments(), createDTO.getBuildings(), contentNoticeEntity.getId());
         return insert;
@@ -72,6 +97,14 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     public int updateNotice(NoticeUpdateDto updateDtO) {
         ContentNoticeEntity contentNoticeEntity = NoticeConvert.INSTANCE.convert(updateDtO);
         contentNoticeEntity.setId(updateDtO.getId());
+        AuditConfigTypeReqDTO reqDTO = new AuditConfigTypeReqDTO().setCompanyId(LoginInfoHolder.getCurrentOrgId())
+                .setAuditConfigType(AuditConfigTypeEnum.NOTICE_MANAGE.getCode()).setName("编辑公告");
+        AuditConfigRspDTO auditConfigRspDTO = systemConverService.lookUpAuditConfig(reqDTO);
+        if (auditConfigRspDTO != null && EntityConstants.ENABLED.equals(auditConfigRspDTO.getStatus())) {
+            contentNoticeEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_ING);
+        } else {
+            contentNoticeEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_PASSED);
+        }
         int update = this.baseMapper.updateById(contentNoticeEntity);
         contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, updateDtO.getDepartments(), updateDtO.getBuildings(), contentNoticeEntity.getId());
         return update;
@@ -140,9 +173,89 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         initQuery(pageQuery);
         pageQuery.setPublishStatus(ContentConstants.PublishStatus.PUBLISHED);
-        PageHelper.orderBy("effective_start_time asc");
+        PageHelper.orderBy("effective_start_time desc");
         IPage<ContentNoticeEntity> noticeEntityIPage = this.baseMapper.queryForPage(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery, ContentConstants.DataType.NOTICE);
         return NoticeConvert.INSTANCE.convert(noticeEntityIPage);
+    }
+
+    @Override
+    public List<ContentNoticeEntity> queryPublishNotice() {
+        LambdaQueryWrapper<ContentNoticeEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.ge(ContentNoticeEntity::getEffectiveStartTime, new Date());
+        queryWrapper.lt(ContentNoticeEntity::getEffectiveEndTime, new Date());
+        queryWrapper.eq(ContentNoticeEntity::getAuditStatus, ContentConstants.AuditStatus.AUDIT_PASSED);
+        queryWrapper.eq(ContentNoticeEntity::getStatus, EntityConstants.ENABLED);
+        queryWrapper.eq(ContentNoticeEntity::getPublishStatus, ContentConstants.PublishStatus.UNPUBLISHED);
+        return list(queryWrapper);
+    }
+
+    @Override
+    @Async
+    //TODO 缺少短信通知
+    public void sendNoticeMessage(ContentNoticeEntity noticeEntity) {
+        if (ContentConstants.PublishSource.MANAGE.equals(noticeEntity.getPublishSource())) {
+            if (CollUtil.isNotEmpty(noticeEntity.getDepartments())) {
+                BaseUserReqDto reqDto = new BaseUserReqDto();
+                reqDto.setDeptIdList(noticeEntity.getDepartments().stream().map(Long::parseLong).collect(Collectors.toList()));
+                List<Long> longs = systemConverService.lookUpUserIds(reqDto);
+                if (CollUtil.isEmpty(longs)) {
+                    return;
+                }
+                if (ContentConstants.MsgInform.SYSTEM.equals(noticeEntity.getInform())) {
+                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SYS_MSG).setSysMsgDto(
+                            new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
+                                    .setDataJson(noticeEntity).setMessageTime(new Date()));
+                    msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+                            .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
+                            .build());
+                } else if (ContentConstants.MsgInform.SMS.equals(noticeEntity.getInform())) {
+//                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SMS).setSmsMsgDto(new SmsMsgDto()
+//                            .setTelNumbers());
+//                    msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+//                            .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
+//                            .build());
+                }
+            }
+        } else if (ContentConstants.PublishSource.APP.equals(noticeEntity.getPublishSource())) {
+            if (CollUtil.isNotEmpty(noticeEntity.getBuildings())) {
+                //TODO 小程序通知
+            }
+        }
+    }
+
+    @Override
+    public NoticeVo queryForAppDetail(Long id) {
+        ContentNoticeEntity contentNoticeEntity = this.baseMapper.selectById(id);
+        NoticeVo noticeVo = NoticeConvert.INSTANCE.convert(contentNoticeEntity);
+        Byte publishStatus = NoticeConvert.INSTANCE.checkEffectiveStatus(noticeVo);
+        if (ContentConstants.PublishStatus.STOP_PUBLISH.equals(publishStatus) || ContentConstants.PublishStatus.EXPIRED.equals(publishStatus)) {
+            throw new BusinessException(ResultCode.EFFECTIVE_TIME_EXPIRED);
+        }
+        return noticeVo;
+    }
+
+    @Override
+    public void getMyNotice(Long communityId) {
+        MsgExistDataIdReqDto reqDto = new MsgExistDataIdReqDto().setAccepter(LoginInfoHolder.getCurrentUserId()).setDataType(MsgDataType.NOTICE);
+        IdmResDTO<List<Long>> acceptDataIdList = messageFeignService.getAcceptDataIdList(reqDto);
+        NoticPageQuery pageQuery = new NoticPageQuery();
+        pageQuery.setIdNotIn(acceptDataIdList.getData());
+        pageQuery.setBuildings(Collections.singletonList(communityId));
+        pageQuery.setPublishStatus(ContentConstants.PublishStatus.PUBLISHED);
+        pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        pageQuery.setAuditStatus(ContentConstants.AuditStatus.AUDIT_PASSED);
+        pageQuery.setStatus(EntityConstants.ENABLED);
+        List<ContentNoticeEntity> noticeEntityList = this.baseMapper.queryForList(pageQuery, ContentConstants.DataType.NOTICE);
+        if (CollUtil.isNotEmpty(noticeEntityList)) {
+            noticeEntityList.forEach(noticeEntity -> {
+                UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SYS_MSG).setSysMsgDto(
+                        new SysMsgDto().setAcceptors(Collections.singletonList(LoginInfoHolder.getCurrentUserId())).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
+                                .setDataJson(noticeEntity).setMessageTime(new Date()));
+                msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+                        .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
+                        .build());
+            });
+        }
     }
 
     @Override

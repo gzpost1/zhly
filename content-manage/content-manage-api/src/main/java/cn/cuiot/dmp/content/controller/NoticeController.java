@@ -80,7 +80,7 @@ public class NoticeController extends BaseController {
      * 保存
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "saveNotice", operationName = "保存公告", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "saveNotice", operationName = "保存公告", serviceType = "notice",serviceTypeName = "公告管理")
     @PostMapping("/create")
     public int saveNotice(@RequestBody @Valid NoticeCreateDto createDTO) {
         String orgId = getOrgId();
@@ -92,7 +92,7 @@ public class NoticeController extends BaseController {
      * 更新
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateNotice", operationName = "更新公告", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateNotice", operationName = "更新公告", serviceType = "notice",serviceTypeName = "公告管理")
     @PostMapping("/update")
     public int updateNotice(@RequestBody @Valid NoticeUpdateDto updateDtO) {
         return noticeService.updateNotice(updateDtO);
@@ -102,7 +102,7 @@ public class NoticeController extends BaseController {
      * 删除
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "deleteNotice", operationName = "删除公告", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "deleteNotice", operationName = "删除公告", serviceType = "notice",serviceTypeName = "公告管理")
     @PostMapping("/delete")
     public Boolean deleteNotice(@RequestBody @Valid IdParam idParam) {
         return noticeService.removeById(idParam.getId());
@@ -114,7 +114,7 @@ public class NoticeController extends BaseController {
      * @return
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "publishNotice", operationName = "发布公告", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "publishNotice", operationName = "发布公告", serviceType = "notice",serviceTypeName = "公告管理")
     @PostMapping("/publish")
     public Boolean publish(@RequestBody @Valid PublishReqVo publishReqVo) {
         return noticeService.publish(publishReqVo);

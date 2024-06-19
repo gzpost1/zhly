@@ -48,5 +48,5 @@ public class ContentImgTextPageQuery extends PageQuery {
     /**
      * 图文类型
      */
-    private Long type;
+    private Long typeId;
 }

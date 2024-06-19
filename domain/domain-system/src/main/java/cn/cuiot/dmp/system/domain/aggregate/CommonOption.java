@@ -45,11 +45,6 @@ public class CommonOption implements Serializable {
     private Byte status;
 
     /**
-     * 初始化标志位(0:非初始化数据,1:初始化数据)
-     */
-    private Byte initFlag;
-
-    /**
      * 常用选项设置
      */
     private List<CommonOptionSetting> commonOptionSettings;
