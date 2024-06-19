@@ -4,10 +4,8 @@ import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.common.utils.AssertUtil;
-import cn.cuiot.dmp.system.application.param.dto.BatchFormConfigDTO;
-import cn.cuiot.dmp.system.application.param.dto.FormConfigCreateDTO;
-import cn.cuiot.dmp.system.application.param.dto.FormConfigDTO;
-import cn.cuiot.dmp.system.application.param.dto.FormConfigUpdateDTO;
+import cn.cuiot.dmp.system.application.constant.FormConfigConstant;
+import cn.cuiot.dmp.system.application.param.dto.*;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.application.service.FormConfigService;
 import cn.cuiot.dmp.system.domain.aggregate.FormConfig;
@@ -15,10 +13,12 @@ import cn.cuiot.dmp.system.domain.repository.FormConfigRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +31,9 @@ public class FormConfigServiceImpl implements FormConfigService {
 
     @Autowired
     private FormConfigRepository formConfigRepository;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public FormConfigVO queryForDetail(Long id) {
@@ -114,6 +117,26 @@ public class FormConfigServiceImpl implements FormConfigService {
     @Override
     public int batchDeleteFormConfig(List<Long> idList) {
         return formConfigRepository.batchDeleteFormConfig(idList);
+    }
+
+    @Override
+    public String getFormConfigFromCache(FormConfigCacheDTO cacheDTO) {
+        AssertUtil.notBlank(cacheDTO.getId(), "主键id不能为空");
+        return stringRedisTemplate.opsForValue().get(cacheDTO.getId());
+    }
+
+    @Override
+    public void setFormConfig2Cache(FormConfigCacheDTO cacheDTO) {
+        AssertUtil.notBlank(cacheDTO.getId(), "主键id不能为空");
+        AssertUtil.notBlank(cacheDTO.getContent(), "表单内容不能为空");
+        stringRedisTemplate.opsForValue().set(FormConfigConstant.FORM_CONFIG_KEY + cacheDTO.getId(),
+                cacheDTO.getContent(), 24L, TimeUnit.HOURS);
+    }
+
+    @Override
+    public void deleteFormConfigFromCache(FormConfigCacheDTO cacheDTO) {
+        AssertUtil.notBlank(cacheDTO.getId(), "主键id不能为空");
+        stringRedisTemplate.opsForHash().delete(FormConfigConstant.FORM_CONFIG_KEY + cacheDTO.getId());
     }
 
 }

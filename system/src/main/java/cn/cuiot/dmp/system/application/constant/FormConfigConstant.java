@@ -12,6 +12,8 @@ public class FormConfigConstant {
     public static final String FORM_CONFIG_COLLECTION = "form_config_collection";
     public static final String FORM_CONFIG_COLLECTION_PK = "id";
 
+    public static final String FORM_CONFIG_KEY = "system:form_config:";
+
     /**
      * 表单配置分类相关
      */
