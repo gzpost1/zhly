@@ -2,6 +2,7 @@ package cn.cuiot.dmp.system.api.controller;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.constant.PermissionContants;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -122,7 +123,7 @@ public class FormConfigController {
     /**
      * 从缓存获取表单配置内容
      */
-    @RequiresPermissions
+    @RequiresPermissions(allowUserType = PermissionContants.USER_ALL)
     @PostMapping("/getFormConfigFromCache")
     public String getFormConfigFromCache(@RequestBody @Valid FormConfigCacheDTO cacheDTO) {
         return formConfigService.getFormConfigFromCache(cacheDTO);
@@ -131,7 +132,7 @@ public class FormConfigController {
     /**
      * 写入表单配置内容到缓存
      */
-    @RequiresPermissions
+    @RequiresPermissions(allowUserType = PermissionContants.USER_ALL)
     @PostMapping("/setFormConfig2Cache")
     public IdmResDTO<Object> setFormConfig2Cache(@RequestBody @Valid FormConfigCacheDTO cacheDTO) {
         formConfigService.setFormConfig2Cache(cacheDTO);
@@ -141,7 +142,7 @@ public class FormConfigController {
     /**
      * 从缓存删除表单配置内容
      */
-    @RequiresPermissions
+    @RequiresPermissions(allowUserType = PermissionContants.USER_ALL)
     @PostMapping("/deleteFormConfigFromCache")
     public IdmResDTO<Object> deleteFormConfigFromCache(@RequestBody @Valid FormConfigCacheDTO cacheDTO) {
         formConfigService.deleteFormConfigFromCache(cacheDTO);
