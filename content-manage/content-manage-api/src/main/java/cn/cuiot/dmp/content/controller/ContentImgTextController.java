@@ -79,7 +79,7 @@ public class ContentImgTextController extends BaseController {
      * 保存
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "saveContentImgText", operationName = "保存图文", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "saveContentImgText", operationName = "保存图文", serviceType = "imgText",serviceTypeName = "图文管理")
     @PostMapping("/create")
     public int saveContentImgText(@RequestBody @Valid ContentImgTextCreateDto createDto) {
         createDto.setDepartments(Collections.singletonList(LoginInfoHolder.getCurrentDeptId()));
@@ -90,7 +90,7 @@ public class ContentImgTextController extends BaseController {
      * 更新
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateContentImgText", operationName = "更新图文", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateContentImgText", operationName = "更新图文", serviceType = "imgText",serviceTypeName = "图文管理")
     @PostMapping("/update")
     public int updateContentImgText(@RequestBody @Valid ContentImgTextUpdateDto updateDto) {
         updateDto.setDepartments(Collections.singletonList(LoginInfoHolder.getCurrentDeptId()));
@@ -114,7 +114,7 @@ public class ContentImgTextController extends BaseController {
      * @return
      */
     @PostMapping("/updateStatus")
-    @LogRecord(operationCode = "updateStatusImgText", operationName = "停启用图文", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateStatusImgText", operationName = "停启用图文", serviceType = "imgText",serviceTypeName = "图文管理")
     public Boolean updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         return contentImgTextService.updateStatus(updateStatusParam);
     }

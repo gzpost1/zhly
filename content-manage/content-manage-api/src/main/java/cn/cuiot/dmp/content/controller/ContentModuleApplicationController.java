@@ -4,7 +4,6 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
-import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.content.dal.entity.ContentModuleApplication;
 import cn.cuiot.dmp.content.param.dto.ModuleApplicationCreateDto;
 import cn.cuiot.dmp.content.param.dto.ModuleApplicationUpdateDto;
@@ -43,7 +42,7 @@ public class ContentModuleApplicationController {
      */
     @PostMapping("/create")
     @RequiresPermissions
-    @LogRecord(operationCode = "createModuleApplication", operationName = "新增应用", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "createModuleApplication", operationName = "新增应用", serviceType = "moduleApplication", serviceTypeName = "应用管理")
     public Boolean create(@RequestBody @Valid ModuleApplicationCreateDto moduleBannerCreateDto) {
         return contentModuleApplicationService.create(moduleBannerCreateDto);
     }
@@ -54,7 +53,7 @@ public class ContentModuleApplicationController {
      */
     @RequiresPermissions
     @PostMapping("/update")
-    @LogRecord(operationCode = "updateModuleApplication", operationName = "更新应用", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateModuleApplication", operationName = "更新应用", serviceType = "moduleApplication", serviceTypeName = "应用管理")
     public Boolean update(@RequestBody @Valid ModuleApplicationUpdateDto updateDto) {
         return contentModuleApplicationService.update(updateDto);
     }
@@ -64,7 +63,7 @@ public class ContentModuleApplicationController {
      */
     @RequiresPermissions
     @PostMapping("/delete")
-    @LogRecord(operationCode = "deleteModuleApplication", operationName = "删除应用", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "deleteModuleApplication", operationName = "删除应用", serviceType = "moduleApplication", serviceTypeName = "应用管理")
     public Boolean deleteContentImgText(@RequestBody @Valid IdParam idParam) {
         return contentModuleApplicationService.deleteById(idParam.getId());
     }
@@ -77,7 +76,7 @@ public class ContentModuleApplicationController {
      */
     @PostMapping("/updateStatus")
     @RequiresPermissions
-    @LogRecord(operationCode = "updateStatus", operationName = "停启用应用", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateStatus", operationName = "停启用应用", serviceType = "moduleApplication", serviceTypeName = "应用管理")
     public Boolean updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         return contentModuleApplicationService.updateStatus(updateStatusParam);
     }

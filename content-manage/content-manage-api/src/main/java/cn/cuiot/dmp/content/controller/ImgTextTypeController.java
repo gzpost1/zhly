@@ -4,7 +4,6 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
-import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.content.dal.entity.ImgTextType;
 import cn.cuiot.dmp.content.service.ImgTextTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +33,7 @@ public class ImgTextTypeController extends BaseController {
      * 保存
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "saveImgTextType", operationName = "保存图文类型", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "saveImgTextType", operationName = "保存图文类型", serviceType = "imgTextType", serviceTypeName = "图文类型管理")
     @PostMapping("/create")
     public Boolean saveImgTextType(@RequestBody @Valid ImgTextType imgTextType) {
         return imgTextTypeService.create(imgTextType);
@@ -44,7 +43,7 @@ public class ImgTextTypeController extends BaseController {
      * 更新
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateImgTextType", operationName = "更新图文类型", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "updateImgTextType", operationName = "更新图文类型", serviceType = "imgTextType", serviceTypeName = "图文类型管理")
     @PostMapping("/update")
     public Boolean updateImgTextType(@RequestBody @Valid ImgTextType imgTextType) {
         return imgTextTypeService.update(imgTextType);
@@ -54,7 +53,7 @@ public class ImgTextTypeController extends BaseController {
      * 删除
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "deleteImgTextType", operationName = "删除图文类型", serviceType = ServiceTypeConst.CONTENT_MANAGE)
+    @LogRecord(operationCode = "deleteImgTextType", operationName = "删除图文类型", serviceType = "imgTextType", serviceTypeName = "图文类型管理")
     @PostMapping("/delete")
     public Boolean deleteImgTextType(@RequestBody @Valid IdParam idParam) {
         return imgTextTypeService.remove(idParam.getId());
