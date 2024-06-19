@@ -49,4 +49,9 @@ public interface OrganizationRepository extends Repository<Organization, Organiz
      * 多条件编辑
      */
     boolean updateByParams(@NonNull Organization organization, @NonNull OrganizationCommonQuery organizationCommonQuery);
+
+    /**
+     * 更新企业初始化状态
+     */
+    int updateInitFlag(Long companyId, Byte initFlag);
 }
