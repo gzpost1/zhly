@@ -123,8 +123,8 @@ public class FormConfigController {
      * 从缓存获取表单配置内容
      */
     @PostMapping("/getFormConfigFromCache")
-    public String getFormConfigFromCache(@RequestBody @Valid FormConfigCacheDTO cacheDTO) {
-        return formConfigService.getFormConfigFromCache(cacheDTO);
+    public IdmResDTO<String> getFormConfigFromCache(@RequestBody @Valid FormConfigCacheDTO cacheDTO) {
+        return IdmResDTO.success(formConfigService.getFormConfigFromCache(cacheDTO));
     }
 
     /**
