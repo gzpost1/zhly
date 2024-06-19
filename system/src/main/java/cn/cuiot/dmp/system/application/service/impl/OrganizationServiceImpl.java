@@ -33,6 +33,7 @@ import cn.cuiot.dmp.system.application.param.assembler.Organization2EntityAssemb
 import cn.cuiot.dmp.system.application.param.assembler.Organization2GetOrganizationVoAssembler;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2OrganizationResDTOAssembler;
 import cn.cuiot.dmp.system.application.param.event.OrganizationActionEvent;
+import cn.cuiot.dmp.system.application.service.AuditConfigService;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.application.service.OrganizationService;
 import cn.cuiot.dmp.system.application.service.UserService;
@@ -155,6 +156,10 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private FormConfigTypeRepository formConfigTypeRepository;
+
+    @Autowired
+    private AuditConfigService auditConfigService;
+
     @Autowired
     private ContentApiFeignService contentApiFeignService;
 
@@ -1030,6 +1035,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         contentApiFeignService.initModule(companyId);
         // 初始化表单配置
         formConfigTypeRepository.queryByCompany(companyId, EntityConstants.ENABLED);
+        // 初始化审核配置
+        auditConfigService.queryByCompany(companyId);
         return organizationRepository.updateInitFlag(companyId, EntityConstants.ENABLED);
     }
 
