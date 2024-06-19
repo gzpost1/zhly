@@ -13,6 +13,16 @@ import java.math.BigDecimal;
 @Data
 public class ChargeManagerDetailDto extends ChargeManagerPageDto{
     /**
+     * 房屋名称
+     */
+    private String houseName;
+
+    /**
+     * 房屋编号
+     */
+    private String houseCode;
+
+    /**
      * 本金税率
      */
     private BigDecimal receivableAmountRate;

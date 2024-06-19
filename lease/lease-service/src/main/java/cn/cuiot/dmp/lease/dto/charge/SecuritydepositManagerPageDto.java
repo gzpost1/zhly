@@ -26,7 +26,7 @@ public class SecuritydepositManagerPageDto {
     /**
      * 客户名称
      */
-    private Long customerUserName;
+    private String customerUserName;
 
     /**
      * 房屋id

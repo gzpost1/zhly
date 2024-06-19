@@ -17,17 +17,17 @@ public class CustomerUserInfo {
     /**
      * 客户名称
      */
-    private Long customerUserName;
+    private String customerUserName;
 
     /**
      * 客户手机号
      */
-    private Long customerUserPhone;
+    private String customerUserPhone;
 
     /**
      * 客户身份
      */
-    private Long customerUserRoleName;
+    private String customerUserRoleName;
 
     /**
      * 业主身份

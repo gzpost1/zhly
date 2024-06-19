@@ -2,10 +2,13 @@ package cn.cuiot.dmp.lease.controller.charge;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.enums.CustomerIdentityTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
@@ -16,8 +19,12 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.enums.ChargeAbrogateEnum;
 import cn.cuiot.dmp.lease.enums.ChargeHangUpEnum;
 import cn.cuiot.dmp.lease.enums.ChargeReceivbleEnum;
+import cn.cuiot.dmp.lease.feign.SystemToFlowService;
+import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +32,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 收费管理-应收管理-收银台-应收生成明细
@@ -40,6 +49,10 @@ public class ReceivableGenerationController {
 
     @Autowired
     private TbChargeManagerService tbChargeManagerService;
+    @Autowired
+    private ChargeHouseAndUserService chargeHouseAndUserService;
+    @Autowired
+    private SystemToFlowService systemToFlowService;
 
 
     /**
@@ -52,7 +65,32 @@ public class ReceivableGenerationController {
     public IdmResDTO<IPage<ChargeManagerPageDto>> queryForPage(@RequestBody TbChargeManagerQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         IPage<ChargeManagerPageDto> chargeManagerPageDtoIPage = tbChargeManagerService.queryForPage(query);
-        //todo 房屋信息 客户信息
+        if (Objects.nonNull(chargeManagerPageDtoIPage) && CollectionUtils.isNotEmpty(chargeManagerPageDtoIPage.getRecords())) {
+            List<Long> houseIds = chargeManagerPageDtoIPage.getRecords().stream().map(ChargeManagerPageDto::getHouseId).collect(Collectors.toList());
+            List<Long> userIds = chargeManagerPageDtoIPage.getRecords().stream().map(ChargeManagerPageDto::getCustomerUserId).collect(Collectors.toList());
+
+            List<CustomerUserInfo> userInfoList = chargeHouseAndUserService.getUserInfo(houseIds, userIds);
+            if (CollectionUtils.isNotEmpty(userInfoList)) {
+                for (ChargeManagerPageDto record : chargeManagerPageDtoIPage.getRecords()) {
+                    for (CustomerUserInfo userInfo : userInfoList) {
+                        if (Objects.equals(record.getCustomerUserId(), userInfo.getCustomerUserId())) {
+                            record.setCustomerUserName(userInfo.getCustomerUserName());
+                            record.setCustomerUserPhone(userInfo.getCustomerUserPhone());
+
+                            if (Objects.equals(record.getHouseId(), userInfo.getHouseId())) {
+                                if (Objects.nonNull(userInfo.getIdentityType())) {
+                                    CustomerIdentityTypeEnum customerIdentityTypeEnum = CustomerIdentityTypeEnum.parseByCode(userInfo.getIdentityType().toString());
+                                    if (Objects.nonNull(customerIdentityTypeEnum)) {
+                                        record.setCustomerUserRoleName(customerIdentityTypeEnum.getName());
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return IdmResDTO.success().body(chargeManagerPageDtoIPage);
     }
 
@@ -64,7 +102,32 @@ public class ReceivableGenerationController {
      */
     @PostMapping("/queryForDetail")
     public IdmResDTO<ChargeManagerDetailDto> queryForDetail(@RequestBody @Valid IdParam idParam) {
-        return IdmResDTO.success().body(tbChargeManagerService.queryForDetail(idParam.getId()));
+        ChargeManagerDetailDto chargeManagerDetailDto = tbChargeManagerService.queryForDetail(idParam.getId());
+        //填充客户信息
+        if (Objects.nonNull(chargeManagerDetailDto)) {
+            List<Long> houseIds = Lists.newArrayList(chargeManagerDetailDto.getHouseId());
+            List<Long> userIds = Lists.newArrayList(chargeManagerDetailDto.getCustomerUserId());
+
+            List<CustomerUserInfo> userInfoList = chargeHouseAndUserService.getUserInfo(houseIds, userIds);
+            if (CollectionUtils.isNotEmpty(userInfoList)) {
+                chargeManagerDetailDto.setCustomerUserName(userInfoList.get(0).getCustomerUserName());
+                chargeManagerDetailDto.setCustomerUserPhone(userInfoList.get(0).getCustomerUserPhone());
+
+                if (Objects.nonNull(userInfoList.get(0).getIdentityType())) {
+                    CustomerIdentityTypeEnum customerIdentityTypeEnum = CustomerIdentityTypeEnum.parseByCode(userInfoList.get(0).getIdentityType().toString());
+                    if (Objects.nonNull(customerIdentityTypeEnum)) {
+                        chargeManagerDetailDto.setCustomerUserRoleName(customerIdentityTypeEnum.getName());
+                    }
+                }
+            }
+
+            List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(Lists.newArrayList(chargeManagerDetailDto.getHouseId()));
+            if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
+                chargeManagerDetailDto.setHouseCode(houseInfoDtos.get(0).getHouseCode());
+                chargeManagerDetailDto.setHouseName(houseInfoDtos.get(0).getHouseName());
+            }
+        }
+        return IdmResDTO.success().body(chargeManagerDetailDto);
     }
 
     /**
@@ -76,7 +139,22 @@ public class ReceivableGenerationController {
     @PostMapping("/queryForHangupPage")
     public IdmResDTO<IPage<TbChargeHangup>> queryForHangupPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeHangup> tbChargeHangupIPage = tbChargeManagerService.queryForHangupPage(queryDto);
-        //todo 填充操作人员名称
+        if(Objects.nonNull(tbChargeHangupIPage) && CollectionUtils.isNotEmpty(tbChargeHangupIPage.getRecords())){
+            List<Long> userIds = tbChargeHangupIPage.getRecords().stream().map(TbChargeHangup::getCreateUser).distinct().collect(Collectors.toList());
+            BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
+            baseUserReqDto.setUserIdList(userIds);
+            List<BaseUserDto> baseUserDtoList = systemToFlowService.lookUpUserList(baseUserReqDto);
+            if(CollectionUtils.isNotEmpty(baseUserDtoList)){
+                for (TbChargeHangup record : tbChargeHangupIPage.getRecords()) {
+                    for (BaseUserDto baseUserDto : baseUserDtoList) {
+                        if(Objects.equals(record.getCreateUser(),baseUserDto.getId())){
+                            record.setOperatorName(baseUserDto.getName());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         return IdmResDTO.success().body(tbChargeHangupIPage);
     }
 
@@ -89,7 +167,23 @@ public class ReceivableGenerationController {
     @PostMapping("/queryForAbrogatePage")
     public IdmResDTO<IPage<TbChargeAbrogate>> queryForAbrogatePage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeAbrogate> tbChargeHangupIPage = tbChargeManagerService.queryForAbrogatePage(queryDto);
-        //todo 填充操作人员名称
+        if(Objects.nonNull(tbChargeHangupIPage) && CollectionUtils.isNotEmpty(tbChargeHangupIPage.getRecords())){
+            List<Long> userIds = tbChargeHangupIPage.getRecords().stream().map(TbChargeAbrogate::getCreateUser).distinct().collect(Collectors.toList());
+            BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
+            baseUserReqDto.setUserIdList(userIds);
+            List<BaseUserDto> baseUserDtoList = systemToFlowService.lookUpUserList(baseUserReqDto);
+            if(CollectionUtils.isNotEmpty(baseUserDtoList)){
+                for (TbChargeAbrogate record : tbChargeHangupIPage.getRecords()) {
+                    for (BaseUserDto baseUserDto : baseUserDtoList) {
+                        if(Objects.equals(record.getCreateUser(),baseUserDto.getId())){
+                            record.setOperatorName(baseUserDto.getName());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         return IdmResDTO.success().body(tbChargeHangupIPage);
     }
 
@@ -102,7 +196,6 @@ public class ReceivableGenerationController {
     @PostMapping("/queryForReceivedPage")
     public IdmResDTO<IPage<TbChargeReceived>> queryForReceivedPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeReceived> tbChargeHangupIPage = tbChargeManagerService.queryForReceivedPage(queryDto);
-        //todo 填充操作人员名称
         return IdmResDTO.success().body(tbChargeHangupIPage);
     }
 

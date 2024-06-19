@@ -24,4 +24,7 @@ public interface TbChargeManagerMapper extends BaseMapper<TbChargeManager> {
     ChargeHouseDetailDto getOwnerInfo(Long houseId);
 
     List<CustomerUserInfo> getUserInfo(@Param("houseIds") List<Long> houseIds,@Param("userIds") List<Long> userIds);
+
+    List<CustomerUserInfo> getUserInfoByIds(@Param("userIds") List<Long> userIds);
+
 }

@@ -32,4 +32,7 @@ public class ChargeHouseAndUserService {
     public List<CustomerUserInfo> getUserInfo(List<Long> houseIds,List<Long> userIds) {
         return chargeManagerMapper.getUserInfo(houseIds,userIds);
     }
+    public List<CustomerUserInfo> getUserInfoByIds(List<Long> userIds) {
+        return chargeManagerMapper.getUserInfoByIds(userIds);
+    }
 }

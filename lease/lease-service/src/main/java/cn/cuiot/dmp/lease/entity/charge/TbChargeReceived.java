@@ -157,4 +157,16 @@ public class TbChargeReceived {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date ownershipPeriodEnd;
+
+    /**
+     * 客户名称
+     */
+    @TableField(exist = false)
+    private String customerUserName;
+
+    /**
+     * 客户手机号
+     */
+    @TableField(exist = false)
+    private String customerUserPhone;
 }
