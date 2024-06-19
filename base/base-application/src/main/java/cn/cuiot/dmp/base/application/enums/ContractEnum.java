@@ -22,7 +22,13 @@ public enum ContractEnum {
     STATUS_CANCELING(18, "退订中"),
     STATUS_CANCELLED(19, "已退订"),
     STATUS_USELESSING(20, "作废中"),
-    STATUS_USELESS(21, "已作废");
+    STATUS_USELESS(21, "已作废"),
+    STATUS_RELETING(22, "续租中"),
+    STATUS_RELET(23, "已续租"),
+    STATUS_CHANGING(24, "变更中"),
+    STATUS_CHANGED(25, "已变更"),
+    STATUS_BACKING_LEASE(26, "退租中"),
+    STATUS_BACKED_LEASE(27, "已退租");
 
     private   Integer code;
     private   String desc;

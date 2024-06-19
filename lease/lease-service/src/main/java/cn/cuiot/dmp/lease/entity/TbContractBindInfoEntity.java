@@ -39,7 +39,7 @@ public class TbContractBindInfoEntity extends Model<TbContractBindInfoEntity> {
     /**
      * 1.房屋id 2.意向金id
      */
-    private Long type;
+    private Integer type;
 
     public static final String TABLE_NAME = "tb_contract_bind_info";
 

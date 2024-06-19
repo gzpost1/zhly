@@ -2,6 +2,7 @@ package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
+import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -9,6 +10,7 @@ import cn.cuiot.dmp.lease.entity.TbContractBindInfoEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionMoneyEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractBindInfoMapper;
+import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.google.common.collect.Lists;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -29,9 +32,9 @@ import java.util.stream.Collectors;
 @Service
 public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContractBindInfoMapper, TbContractBindInfoEntity> {
     //1 意向合同 房屋 2.意向合同 意向金 3.租赁合同
-    public static final Long CONTRACT_INTENTION_TYPE_HOUSE = 1L;
-    public static final Long CONTRACT_INTENTION_TYPE_MONEY = 2L;
-    public static final Long CONTRACT_LEASE_TYPE_HOUSE = 3L;
+    public static final Integer BIND_CONTRACT_INTENTION_TYPE_HOUSE = 1;
+    public static final Integer BIND_CONTRACT_INTENTION_TYPE_MONEY = 2;
+    public static final Integer BIND_CONTRACT_LEASE_TYPE_HOUSE = 3;
     @Autowired
     ArchiveFeignService archiveFeignService;
     @Autowired
@@ -60,7 +63,7 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
         if (CollectionUtils.isEmpty(bindList)) {
             return null;
         }
-        List<Long> houseIds = bindList.stream().filter(t -> Objects.equals(t.getType(), CONTRACT_INTENTION_TYPE_HOUSE)).map(TbContractBindInfoEntity::getBindId).collect(Collectors.toList());
+        List<Long> houseIds = bindList.stream().filter(t -> Objects.equals(t.getType(), BIND_CONTRACT_INTENTION_TYPE_HOUSE)).map(TbContractBindInfoEntity::getBindId).collect(Collectors.toList());
         List<HousesArchivesVo> houseList = queryRemoteHouseList(houseIds);
 
         return houseList;
@@ -82,6 +85,7 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
 
     /**
      * 创建合同关联的房屋,意向金
+     *
      * @param entity
      */
     public void createContractIntentionBind(TbContractIntentionEntity entity) {
@@ -95,14 +99,14 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
             List<Long> houseIds = houseList.stream().map(HousesArchivesVo::getId).collect(Collectors.toList());
             houseIds.forEach(h -> {
                 bindInfoEntity.setBindId(h);
-                bindInfoEntity.setType(CONTRACT_INTENTION_TYPE_HOUSE);
+                bindInfoEntity.setType(BIND_CONTRACT_INTENTION_TYPE_HOUSE);
                 saveBindList.add(bindInfoEntity);
             });
         }
         if (CollectionUtils.isNotEmpty(moneyList)) {
             moneyList.forEach(m -> {
                 bindInfoEntity.setBindId(m.getId());
-                bindInfoEntity.setType(CONTRACT_INTENTION_TYPE_MONEY);
+                bindInfoEntity.setType(BIND_CONTRACT_INTENTION_TYPE_MONEY);
                 saveBindList.add(bindInfoEntity);
             });
         }
@@ -117,5 +121,19 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
         if (CollectionUtils.isNotEmpty(saveBindList)) {
             saveBatch(saveBindList);
         }
+    }
+
+    public ContractStatusVo queryConctactStatusByHouseIds(List<Long> ids) {
+        List<ContractStatus> list = baseMapper.queryConctactStatusByHouseIds(ids);
+        ContractStatusVo contractStatusVo = new ContractStatusVo();
+        if(CollectionUtils.isNotEmpty(list)) {
+            //意向合同
+            Map<Long, List<ContractStatus>> intentionMap = list.stream().filter(o -> Objects.equals(o.getType(), BIND_CONTRACT_INTENTION_TYPE_HOUSE)).collect(Collectors.groupingBy(ContractStatus::getHouseId));
+            //租赁合同
+            Map<Long, List<ContractStatus>> leaseMap = list.stream().filter(o -> Objects.equals(o.getType(), BIND_CONTRACT_LEASE_TYPE_HOUSE)).collect(Collectors.groupingBy(ContractStatus::getHouseId));
+            contractStatusVo.setIntentionMap(intentionMap);
+            contractStatusVo.setLeaseMap(leaseMap);
+        }
+        return contractStatusVo;
     }
 }

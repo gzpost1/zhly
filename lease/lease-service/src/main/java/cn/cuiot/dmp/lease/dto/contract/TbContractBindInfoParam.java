@@ -41,7 +41,7 @@ public class TbContractBindInfoParam extends PageQuery implements Serializable {
     /**
      * 1.房屋id 2.意向金id
      */
-    private Long type;
+    private Integer type;
 
 
 }
