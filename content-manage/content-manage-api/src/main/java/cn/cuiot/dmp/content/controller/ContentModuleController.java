@@ -28,18 +28,6 @@ public class ContentModuleController extends BaseController {
     private ContentModuleService contentModuleService;
 
     /**
-     * 初始化模块
-     *
-     * @param orgId
-     * @return
-     */
-    @PostMapping("/initModule")
-    public Boolean initModule(@RequestParam Long orgId) {
-        contentModuleService.initModule(orgId);
-        return true;
-    }
-
-    /**
      * 查询模块列表
      *
      * @param systemModule

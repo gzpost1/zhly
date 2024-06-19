@@ -90,6 +90,12 @@
             <if test="param.companyId != null">
                 and a.company_id=#{param.companyId}
             </if>
+            <if test="param.id != null">
+                and a.id=#{param.id}
+            </if>
+            <if test="param.keyword != null and param.keyword != ''">
+                and (a.customer_name like CONCAT('%',#{param.keyword}, '%') or a.contact_phone=#{param.keywordPhone})
+            </if>
             <if test="param.customerName != null and param.customerName != ''">
                 and a.customer_name like CONCAT('%',#{param.customerName}, '%')
             </if>
@@ -112,11 +118,13 @@
           SELECT
             a.id AS customer_id,
             a.customer_name,
+            a.contact_name,
+            a.contact_phone,
             b.user_id,
             b.user_name
         FROM
             tb_customer AS a
-            LEFT JOIN ( SELECT bind_customer_id, user_id, `name` AS user_name FROM user_house_audit WHERE audit_status = 1 AND deleted_flag = 0 ) AS b
+            LEFT JOIN ( SELECT bind_customer_id, user_id, `name` AS user_name FROM user_house_audit WHERE audit_status = 1 and bind_customer_type=1 AND deleted_flag = 0 ) AS b
             ON a.id = b.bind_customer_id
         WHERE
             a.id IN
