@@ -7,6 +7,7 @@ import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.UserHouseAuditStatusConstants;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
@@ -230,4 +231,17 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         });
     }
 
+    /**
+     * 取消身份
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean cancelAuditStatus(IdParam idParam) {
+        UserHouseAuditEntity userHouseAuditEntity = Optional.ofNullable(getById(idParam.getId()))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        LambdaUpdateWrapper<UserHouseAuditEntity> updateWrapper = Wrappers.lambdaUpdate();
+        updateWrapper.set(UserHouseAuditEntity::getAuditStatus,
+                UserHouseAuditStatusConstants.INVALID);
+        updateWrapper.eq(UserHouseAuditEntity::getId, userHouseAuditEntity.getId());
+        return super.update(null, updateWrapper);
+    }
 }

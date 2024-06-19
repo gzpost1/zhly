@@ -69,4 +69,14 @@ public class UserHouseAuditController {
         return userHouseAuditService.updateAuditStatus(statusDTO);
     }
 
+    /**
+     * 取消身份
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "cancelAuditStatus", operationName = "取消身份", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @PostMapping("/cancelAuditStatus")
+    public boolean cancelAuditStatus(@RequestBody @Valid IdParam idParam) {
+        return userHouseAuditService.cancelAuditStatus(idParam);
+    }
+
 }
