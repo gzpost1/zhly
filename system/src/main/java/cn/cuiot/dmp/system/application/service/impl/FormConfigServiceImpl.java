@@ -122,7 +122,7 @@ public class FormConfigServiceImpl implements FormConfigService {
     @Override
     public String getFormConfigFromCache(FormConfigCacheDTO cacheDTO) {
         AssertUtil.notBlank(cacheDTO.getId(), "主键id不能为空");
-        return stringRedisTemplate.opsForValue().get(cacheDTO.getId());
+        return stringRedisTemplate.opsForValue().get(FormConfigConstant.FORM_CONFIG_KEY + cacheDTO.getId());
     }
 
     @Override
