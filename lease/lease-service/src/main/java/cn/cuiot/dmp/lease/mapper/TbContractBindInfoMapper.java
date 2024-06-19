@@ -3,6 +3,7 @@ package cn.cuiot.dmp.lease.mapper;
 import cn.cuiot.dmp.base.application.mybatis.mapper.BaseMybatisMapper;
 import cn.cuiot.dmp.lease.entity.TbContractBindInfoEntity;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -15,5 +16,5 @@ import java.util.List;
  * @since 2024-06-12
  */
 public interface TbContractBindInfoMapper extends BaseMybatisMapper<TbContractBindInfoEntity> {
-      List<ContractStatus> queryConctactStatusByHouseIds(List<Long> ids);
+      List<ContractStatus> queryConctactStatusByHouseIds(@Param("ids") List<Long> ids);
 }
