@@ -4,6 +4,7 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.*;
@@ -116,6 +117,35 @@ public class FormConfigController {
     @PostMapping("/batchDelete")
     public int batchDeleteFormConfig(@RequestBody @Valid BatchFormConfigDTO batchFormConfigDTO) {
         return formConfigService.batchDeleteFormConfig(batchFormConfigDTO.getIdList());
+    }
+
+    /**
+     * 从缓存获取表单配置内容
+     */
+    @RequiresPermissions
+    @PostMapping("/getFormConfigFromCache")
+    public String getFormConfigFromCache(@RequestBody @Valid FormConfigCacheDTO cacheDTO) {
+        return formConfigService.getFormConfigFromCache(cacheDTO);
+    }
+
+    /**
+     * 写入表单配置内容到缓存
+     */
+    @RequiresPermissions
+    @PostMapping("/setFormConfig2Cache")
+    public IdmResDTO<Object> setFormConfig2Cache(@RequestBody @Valid FormConfigCacheDTO cacheDTO) {
+        formConfigService.setFormConfig2Cache(cacheDTO);
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 从缓存删除表单配置内容
+     */
+    @RequiresPermissions
+    @PostMapping("/deleteFormConfigFromCache")
+    public IdmResDTO<Object> deleteFormConfigFromCache(@RequestBody @Valid FormConfigCacheDTO cacheDTO) {
+        formConfigService.deleteFormConfigFromCache(cacheDTO);
+        return IdmResDTO.success();
     }
 
 }
