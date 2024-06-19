@@ -71,7 +71,7 @@ public interface SystemApiFeignService {
      * 查询子部门(可多部门查询)
      */
     @PostMapping(value = "/api/lookUpDepartmentChildList2", produces = MediaType.APPLICATION_JSON_VALUE)
-    IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList2(DepartmentReqDto query);
+    IdmResDTO<List<DepartmentDto>> lookUpDepartmentChildList2(@RequestBody DepartmentReqDto query);
 
     /**
      * 查询组织树
