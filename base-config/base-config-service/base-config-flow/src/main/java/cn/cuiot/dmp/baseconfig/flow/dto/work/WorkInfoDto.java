@@ -95,6 +95,16 @@ public class WorkInfoDto extends PageQuery {
     private String actualUserName;
 
     /**
+     * 客户id
+     */
+    private Long customerId;
+
+    /**
+     * 报单客户名称
+     */
+    private String  customerName;
+
+    /**
      * 报单人名称
      */
     private String actualUserPhone;

@@ -1001,7 +1001,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         workInfoDto.setRevokeType(checkRevokeType(workInfoDto));
         //判断是否可以重新提交
         workInfoDto.setResubmit(resubmit(workInfoDto.getProcInstId()));
-        return IdmResDTO.success();
+        return IdmResDTO.success(workInfoDto);
     }
     public Byte resubmit(String procInstId){
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(String.valueOf(procInstId)).list();
@@ -1545,7 +1545,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @return
      */
     public IdmResDTO<IPage<RepairReportDto>> queryReportRepairs(RepairReportQuery query) {
-
+        query.setUserId(LoginInfoHolder.getCurrentUserId());
         IPage<RepairReportDto> report = baseMapper.queryReportRepairs(new Page<>(query.getPageNo(),query.getPageSize()),query);
 
         return IdmResDTO.success(report);

@@ -54,9 +54,14 @@ public class StartProcessInstanceDTO {
     private Long createUserId;
 
     /**
-     * 报单客户id
+     * 报单用户id
      */
     private Long actualUserId;
+
+    /**
+     * 报单客户id
+     */
+    private Long customerId;
 
 
     /**
