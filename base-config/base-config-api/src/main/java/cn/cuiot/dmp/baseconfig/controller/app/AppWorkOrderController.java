@@ -17,6 +17,7 @@ import cn.cuiot.dmp.baseconfig.flow.service.AppWorkInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,16 @@ public class AppWorkOrderController {
 
     @Autowired
     private WorkInfoService workInfoService;
+
+    /**
+     * 查询节点属性数据,并判断是否有权限发起该流程
+     * @return
+     */
+    @PostMapping("queryFirstFormInfo")
+    public IdmResDTO queryFirstFormInfo(@RequestBody FirstFormDto dto){
+
+        return workInfoService.queryFirstFormInfo(dto, LoginInfoHolder.getCurrentUserId());
+    }
 
     /**
      * 3.3代办工单-待审批
