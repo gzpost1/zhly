@@ -186,6 +186,57 @@ public class AppWorkOrderController {
        return appWorkInfoService.queryNodeType(query);
     }
 
+    /**
+     * 小程序 - 3.6.5 我处理的-列表查询
+     * @param
+     * @return
+     */
+    @PostMapping("queryMyHandleInfo")
+    public IdmResDTO<IPage<AppWorkInfoDto>> queryMyHandleInfo(@RequestBody WorkOrderSuperQuery query){
+        return appWorkInfoService.queryMyHandleInfo(query);
+    }
+
+    /**
+     * 我处理的-3.6.5 基本信息
+     * 因为此处需要返回配置的操作所以单独提出来
+     * @param dto
+     * @return
+     */
+    @PostMapping("queryBasicInfo")
+    public IdmResDTO<WorkInfoDto> queryBasicInfo(@RequestBody WorkProcInstDto dto){
+        return appWorkInfoService.queryBasicInfo(dto);
+    }
+    /**
+     * 3.6.5-我处理的-去处理
+     * @param dto
+     * @return
+     */
+    @PostMapping("queryUserSubmitData")
+    public IdmResDTO<ProcessResultDto> queryUserSubmitData(@RequestBody @Valid UserSubmitDataDto dto) throws FlowException {
+        return appWorkInfoService.queryUserSubmitData(dto);
+    }
+    /**
+     * 3.6.5更新或者保存用户提交的对象数据
+     * @param commitId
+     * @return
+     */
+    @PostMapping("saveOrUpdateSubmitData")
+    @LogRecord(operationCode = "saveOrUpdateSubmitData", operationName = "app完成对象任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
+    @RequiresPermissions()
+    public IdmResDTO saveOrUpdateSubmitData(@RequestBody @Valid CommitProcessDto commitId){
+        return appWorkInfoService.saveSubmitData(commitId);
+    }
+
+    /**
+     * 3.6.5完成任务
+     * @param taskDto
+     * @return
+     */
+    @PostMapping("completeTask")
+    @LogRecord(operationCode = "completeTask", operationName = "app完成任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
+    public IdmResDTO  completeTask(@RequestBody CompleteTaskDto taskDto){
+        return appWorkInfoService.completeTask(taskDto);
+    }
 
     /**
      * 3.6.4-我审批的-列表查询
@@ -230,59 +281,7 @@ public class AppWorkOrderController {
     public IdmResDTO approvalRejection(@RequestBody @Valid ApprovalDto approvalDto){
         return appWorkInfoService.approvalRejection(approvalDto);
     }
-    /**
-     * 小程序 - 3.6.5 我处理的-列表查询
-     * @param
-     * @return
-     */
-    @PostMapping("queryMyHandleInfo")
-    public IdmResDTO<IPage<AppWorkInfoDto>> queryMyHandleInfo(@RequestBody WorkOrderSuperQuery query){
-        return appWorkInfoService.queryMyHandleInfo(query);
-    }
 
-
-
-    /**
-     * 我处理的-3.6.5 基本信息
-     * 因为此处需要返回配置的操作所以单独提出来
-     * @param dto
-     * @return
-     */
-    @PostMapping("queryBasicInfo")
-    public IdmResDTO<WorkInfoDto> queryBasicInfo(@RequestBody WorkProcInstDto dto){
-        return appWorkInfoService.queryBasicInfo(dto);
-    }
-    /**
-     * 3.6.5-我处理的-去处理
-     * @param dto
-     * @return
-     */
-    @PostMapping("queryUserSubmitData")
-    public IdmResDTO<ProcessResultDto> queryUserSubmitData(@RequestBody @Valid UserSubmitDataDto dto) throws FlowException {
-        return appWorkInfoService.queryUserSubmitData(dto);
-    }
-    /**
-     * 3.6.5更新或者保存用户提交的对象数据
-     * @param commitId
-     * @return
-     */
-    @PostMapping("saveOrUpdateSubmitData")
-    @LogRecord(operationCode = "saveOrUpdateSubmitData", operationName = "app完成对象任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    @RequiresPermissions()
-    public IdmResDTO saveOrUpdateSubmitData(@RequestBody @Valid CommitProcessDto commitId){
-        return appWorkInfoService.saveSubmitData(commitId);
-    }
-
-    /**
-     * 3.6.5完成任务
-     * @param taskDto
-     * @return
-     */
-    @PostMapping("completeTask")
-    @LogRecord(operationCode = "completeTask", operationName = "app完成任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO  completeTask(@RequestBody CompleteTaskDto taskDto){
-        return appWorkInfoService.completeTask(taskDto);
-    }
 
     /**
      *小程序- 退回

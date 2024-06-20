@@ -3,6 +3,7 @@ package cn.cuiot.dmp.message.param;//	模板
 import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -16,6 +17,7 @@ public class MessagePageQuery extends PageQuery {
     /**
      * 是否已读
      */
+    @NotNull(message = "是否已读不能为空")
     private Byte readStatus;
 
     /**
