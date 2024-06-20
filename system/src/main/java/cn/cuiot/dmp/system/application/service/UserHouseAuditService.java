@@ -6,6 +6,7 @@ import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.NumberConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.UserHouseAuditStatusConstants;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -168,18 +169,56 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         UserHouseAuditEntity userHouseAuditEntity = Optional.ofNullable(getById(statusDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
 
+        if(UserHouseAuditStatusConstants.PASS.equals(statusDTO.getAuditStatus())){
+            //绑定客户本人
+            if(Objects.equals(NumberConst.ONE.byteValue(),statusDTO.getBindCustomerType())){
+                if(alreadyBindOtherUser(userHouseAuditEntity.getUserId(),statusDTO.getBindCustomerId(),null)){
+                    throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"所选客户已绑定其他用户账号");
+                }
+            }
+            //客户家庭成员
+            if(Objects.equals(NumberConst.TWO.byteValue(),statusDTO.getBindCustomerType())){
+                if(alreadyBindOtherUser(userHouseAuditEntity.getUserId(),statusDTO.getBindCustomerId(),statusDTO.getBindCustomerMemberId())){
+                    throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"所选成员已绑定其他用户账号");
+                }
+            }
+        }
+
         LambdaUpdateWrapper<UserHouseAuditEntity> updateWrapper = Wrappers.lambdaUpdate();
 
         updateWrapper.set(UserHouseAuditEntity::getAuditStatus, statusDTO.getAuditStatus());
         updateWrapper.set(UserHouseAuditEntity::getRejectReason, statusDTO.getRejectReason());
         updateWrapper.set(UserHouseAuditEntity::getBindCustomerId, statusDTO.getBindCustomerId());
-        updateWrapper
-                .set(UserHouseAuditEntity::getBindCustomerType, statusDTO.getBindCustomerType());
+        updateWrapper.set(UserHouseAuditEntity::getBindCustomerType, statusDTO.getBindCustomerType());
         updateWrapper.set(UserHouseAuditEntity::getBindCustomerMemberId,
                 statusDTO.getBindCustomerMemberId());
 
         updateWrapper.eq(UserHouseAuditEntity::getId, userHouseAuditEntity.getId());
         return super.update(null, updateWrapper);
+    }
+
+    /**
+     * 判断是否绑定其他用户
+     * @param userId
+     * @param bindCustomerId
+     * @return
+     */
+    private Boolean alreadyBindOtherUser(Long userId,Long bindCustomerId,Long bindCustomerMemberId){
+        LambdaQueryWrapper<UserHouseAuditEntity> lambdaQueryWrapper = Wrappers.<UserHouseAuditEntity>lambdaQuery()
+                .eq(UserHouseAuditEntity::getBindCustomerId, bindCustomerId)
+                .eq(UserHouseAuditEntity::getAuditStatus, UserHouseAuditStatusConstants.PASS);
+        if(Objects.nonNull(bindCustomerMemberId)){
+            lambdaQueryWrapper.ne(UserHouseAuditEntity::getBindCustomerMemberId,bindCustomerMemberId);
+        }
+        if(Objects.nonNull(userId)){
+            lambdaQueryWrapper.ne(UserHouseAuditEntity::getUserId,userId);
+        }
+        List<UserHouseAuditEntity> selectList = userHouseAuditMapper
+                .selectList(lambdaQueryWrapper);
+        if(CollectionUtils.isNotEmpty(selectList)){
+            return true;
+        }
+        return false;
     }
 
     /**

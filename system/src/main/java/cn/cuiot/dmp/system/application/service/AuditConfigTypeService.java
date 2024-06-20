@@ -8,7 +8,6 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.system.application.param.dto.AuditConfigTypeDTO;
-import cn.cuiot.dmp.system.application.param.dto.AuditConfigTypeQueryDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.AuditConfigEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.AuditConfigTypeEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.AuditConfigTypeMapper;

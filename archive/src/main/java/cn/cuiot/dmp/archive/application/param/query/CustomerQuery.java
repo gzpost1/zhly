@@ -11,6 +11,15 @@ import lombok.Data;
 @Data
 public class CustomerQuery extends PageQuery {
 
+    /**
+     * 客户ID
+     */
+    private Long id;
+
+    /**
+     * 关键字
+     */
+    private String keyword;
 
     /**
      * 客户名称
