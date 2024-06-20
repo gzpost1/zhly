@@ -179,7 +179,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
         List<AppWorkInfoDto> records = page.getRecords();
         if(CollectionUtil.isEmpty(records)){
-            return IdmResDTO.success();
+            return IdmResDTO.success(page);
         }
         List<Long> userIds = records.stream().map(AppWorkInfoDto::getCreateUser).collect(Collectors.toList());
         Map<Long, String> userMap = getUserMap(userIds);
@@ -1003,6 +1003,12 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         workInfoDto.setResubmit(resubmit(workInfoDto.getProcInstId()));
         return IdmResDTO.success(workInfoDto);
     }
+
+    /**
+     * 判断是不是root节点
+     * @param procInstId
+     * @return
+     */
     public Byte resubmit(String procInstId){
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(String.valueOf(procInstId)).list();
         if (CollectionUtil.isEmpty(taskList)){
