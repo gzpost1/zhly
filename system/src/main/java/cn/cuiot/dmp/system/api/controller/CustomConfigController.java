@@ -39,7 +39,8 @@ public class CustomConfigController extends BaseController {
      */
     @PostMapping("/queryForDetail")
     public CustomConfigVO queryForDetail(@RequestBody @Valid IdParam idParam) {
-        return customConfigService.queryForDetail(idParam.getId());
+        Long orgId = Long.valueOf(getOrgId());
+        return customConfigService.queryForDetail(idParam.getId(), orgId);
     }
 
     /**
