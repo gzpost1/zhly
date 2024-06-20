@@ -235,9 +235,8 @@ public class OrganizationController extends BaseController {
     @RequiresPermissions
     @LogRecord(operationCode = "updateInitFlag", operationName = "初始化企业", serviceType = "organization", serviceTypeName = "企业管理")
     @PostMapping("/updateInitFlag")
-    public int updateInitFlag() {
-        Long orgId = LoginInfoHolder.getCurrentOrgId();
-        return organizationService.updateInitFlag(orgId);
+    public int updateInitFlag(@RequestBody @Valid IdParam idParam) {
+        return organizationService.updateInitFlag(idParam.getId());
     }
 
 }

@@ -46,6 +46,14 @@ public interface WorkOrderConstants {
      */
     Byte WORK_SOURCE_MAKE = 1;
 
+    /**
+     * 节点类型集合
+     */
     List<String> nodes = Arrays.asList("ROOT","APPROVAL","TASK");
+
+    /**
+     * 审批节点类型
+     */
+    String approvalNodeType = "APPROVAL";
 
 }

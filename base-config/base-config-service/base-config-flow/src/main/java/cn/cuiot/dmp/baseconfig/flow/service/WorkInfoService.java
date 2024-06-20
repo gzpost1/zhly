@@ -7,8 +7,10 @@ import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
@@ -300,8 +302,21 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(Objects.nonNull(startProcessInstanceDTO.getCreateUserId())){
             entity.setCreateUser(startProcessInstanceDTO.getCreateUserId());
         }
-        if(Objects.isNull(startProcessInstanceDTO.getActualUserId())){
-            startProcessInstanceDTO.setActualUserId(LoginInfoHolder.getCurrentUserId());
+        if(Objects.isNull(startProcessInstanceDTO.getCustomerId())){
+            entity.setActualUserId(LoginInfoHolder.getCurrentUserId());
+        }
+        if(Objects.nonNull(startProcessInstanceDTO.getCustomerId())){
+            //TODO根据客户编码获取用户信息,设置用户id
+            CustomerUseReqDto reqDto = new CustomerUseReqDto();
+            reqDto.setCustomerIdList(Arrays.asList(startProcessInstanceDTO.getCustomerId()));
+            List<CustomerUserRspDto> customerUserRspDtos = apiArchiveService.lookupCustomerUsers(reqDto);
+            if(CollectionUtils.isNotEmpty(customerUserRspDtos)){
+                List<Long> userIds = customerUserRspDtos.stream().map(CustomerUserRspDto::getUserId).collect(Collectors.toList());
+                if(CollectionUtils.isNotEmpty(userIds)){
+                    entity.setActualUserId(userIds.get(0));
+                }
+            }
+            entity.setCustomerId(startProcessInstanceDTO.getCustomerId());
         }
         entity.setCompanyId(flowConfig.getCompanyId());
         entity.setProcInstId(task.getProcessInstanceId());
@@ -833,12 +848,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
             //获取创建人的userId
             List<Long> userIds = records.stream().map(WorkInfoDto::getCreateUser).collect(Collectors.toList());
-            //获取全部报单人的userId
-            List<Long> actualIds = records.stream().map(WorkInfoDto::getActualUserId).collect(Collectors.toList());
-            userIds.addAll(actualIds);
-            userIds=userIds.stream().distinct().collect(Collectors.toList());
             Map<Long, String> userMap = getUserMap(userIds);
-
+            //获取全部报单人的userId
+            List<Long> customerIds = records.stream().map(WorkInfoDto::getCustomerId).filter(item->Objects.nonNull(item)).collect(Collectors.toList());
+            // 根据客户id获取客户信息
+            Map<Long, String> customerMap = getCustomerMap(customerIds);
             //
             List<Long> propertyIds = records.stream().map(item->Long.parseLong(item.getPropertyId())).distinct().collect(Collectors.toList());
             Map<Long, String> propertyMap = getPropertyMap(propertyIds);
@@ -853,7 +867,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 //获取流程输入的组织信息
                 item.setOrgIds(getOrgIds(item.getDeptIds()));
                 //报单人
-                item.setActualUserName(userMap.get(item.getActualUserId()));
+               item.setCustomerName(customerMap.get(item.getCustomerId()));
                 //组装楼盘信息
                 item.setPropertyName(propertyMap.get(item.getPropertyId()));
             });
@@ -862,7 +876,19 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(workInfoEntityPage);
     }
 
-
+    /**
+     * 根据客户id获取客户名称
+     * @param customerIds
+     * @return
+     */
+    public Map<Long,String> getCustomerMap( List<Long> customerIds){
+        CustomerUseReqDto reqDto = new CustomerUseReqDto();
+        reqDto.setCustomerIdList(customerIds);
+        List<CustomerUserRspDto> customerUserRspDtos = apiArchiveService.lookupCustomerUsers(reqDto);
+        return CollectionUtils.isNotEmpty(customerUserRspDtos)?
+                customerUserRspDtos.stream().collect(Collectors.toMap(CustomerUserRspDto::getCustomerId,CustomerUserRspDto::getCustomerName)):
+        new HashMap<>();
+    }
     /**
      * 根据部门id获取部门路径名称
      * @param deptIds
@@ -982,13 +1008,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(resultDto);
     }
 
-    public Long getCompany(){
-        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
-        if(Objects.isNull(currentOrgId)){
-            //TODO 根据小区id获取企业id
-        }
-        return currentOrgId;
-    }
+
 
     public BaseUserDto queryBaseUserInfo(Long userId){
         BaseUserReqDto reqDto = new BaseUserReqDto();
@@ -1781,5 +1801,18 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             lw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
         }
         return commitProcessService.list(lw);
+    }
+
+    /**
+     * 获取工单待审批数量
+     * @param dto
+     * @return
+     */
+    public IdmResDTO<AgencyHandlingDto> queryAgencyHandlingNumber(QueryAgencyDto dto) {
+        dto.setAssignee(LoginInfoHolder.getCurrentUserId());
+        dto.setNodeType(WorkOrderConstants.approvalNodeType);
+        AgencyHandlingDto resultDto = baseMapper.queryAgencyHandlingNumber(dto);
+
+        return IdmResDTO.success(resultDto);
     }
 }
