@@ -115,7 +115,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     public int updateInitFlag(Long companyId, Byte initFlag) {
         OrganizationEntity organizationEntity = Optional.ofNullable(organizationEntityMapper.selectById(companyId))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
-        AssertUtil.isTrue(EntityConstants.DISABLED.equals(initFlag), "企业已初始化，请勿重复操作");
+        AssertUtil.isTrue(EntityConstants.DISABLED.equals(organizationEntity.getInitFlag()), "企业已初始化，请勿重复操作");
         organizationEntity.setInitFlag(initFlag);
         return organizationEntityMapper.updateById(organizationEntity);
     }
