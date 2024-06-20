@@ -61,4 +61,6 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
     Page<CustomerWorkOrderDto> queryCustomerWorkOrder(Page<CustomerWorkOrderDto> page, @Param("query") QueryCustomerWorkOrderDto req);
 
     List<String> queryHistoricTask(@Param("taskDefinitionKey") String taskDefinitionKey,@Param("processInstanceId") String processInstanceId);
+
+    AgencyHandlingDto queryAgencyHandlingNumber(@Param("query") QueryAgencyDto dto);
 }

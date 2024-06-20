@@ -69,7 +69,7 @@
 
     <sql id="queryCustomerWorkOrderInfoSql">
         t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds
-        t1.property_id , t1.actual_user_id
+        t1.property_id , t1.actual_user_id,t1.customer_id
     </sql>
     <select id="queryCustomerWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
@@ -607,5 +607,10 @@
 
     <select id="queryHistoricTask" resultType="java.lang.String">
         select ID_ from act_hi_taskinst where TASK_DEF_KEY_ =#{taskDefinitionKey} and PROC_INST_ID_ =#{processInstanceId}
+    </select>
+
+    <select id="queryAgencyHandlingNumber" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.AgencyHandlingDto">
+        select count(*) as AgencyNumber from act_ru_task t1 left join tb_node_type t2 on t1.PROC_DEF_ID_ = t2.process_definition_id
+        where t1.TASK_DEF_KEY_ = t2.node_id and t2.node_type = #{query.nodeType} and t1.ASSIGNEE_= #{query.assignee}
     </select>
 </mapper>

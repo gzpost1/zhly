@@ -138,4 +138,9 @@ public class WorkInfoEntity implements Serializable {
     @TableField(exist = false)
     private Byte resubmit;
 
+    /**
+     * 客户id
+     */
+    private Long customerId;
+
 }
