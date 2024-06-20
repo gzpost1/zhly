@@ -15,7 +15,7 @@ public interface CustomConfigRepository {
     /**
      * 根据id获取详情
      */
-    CustomConfig queryForDetail(Long id);
+    CustomConfig queryForDetail(Long id, Long companyId);
 
     /**
      * 根据名称获取详情

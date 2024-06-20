@@ -41,8 +41,8 @@ public class CustomConfigServiceImpl implements CustomConfigService {
     private CustomConfigDetailRepository customConfigDetailRepository;
 
     @Override
-    public CustomConfigVO queryForDetail(Long id) {
-        CustomConfig customConfig = customConfigRepository.queryForDetail(id);
+    public CustomConfigVO queryForDetail(Long id, Long companyId) {
+        CustomConfig customConfig = customConfigRepository.queryForDetail(id, companyId);
         CustomConfigVO customConfigVO = new CustomConfigVO();
         BeanUtils.copyProperties(customConfig, customConfigVO);
         return customConfigVO;
