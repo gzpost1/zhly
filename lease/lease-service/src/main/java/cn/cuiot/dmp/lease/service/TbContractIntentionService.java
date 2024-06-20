@@ -15,10 +15,13 @@ import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.contract.AuditParam;
+import cn.cuiot.dmp.lease.dto.contract.TbContractIntentionParam;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractIntentionMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +49,11 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
 
     @Override
     public List<TbContractIntentionEntity> list(TbContractIntentionEntity params) {
+        String houseName = params.getHouseName();
+        if(StringUtils.isNotEmpty(houseName)){
+            List<Long> queryIds = queryContractIdsByHouseName(houseName);
+            params.setQueryIds(queryIds);
+        }
         List<TbContractIntentionEntity> list = super.list(params);
         list.forEach(c -> {
             fullInfo(c);
@@ -64,6 +72,12 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
 
     @Override
     public PageResult<TbContractIntentionEntity> page(PageQuery param) {
+        TbContractIntentionParam params = (TbContractIntentionParam) param;
+        String houseName = params.getHouseName();
+        if(StringUtils.isNotEmpty(houseName)){
+            List<Long> queryIds = queryContractIdsByHouseName(houseName);
+            params.setQueryIds(queryIds);
+        }
         PageResult<TbContractIntentionEntity> page = super.page(param);
         page.getRecords().forEach(c -> {
             fullInfo(c);
@@ -265,6 +279,15 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         entity.setContractNo(String.valueOf(code));
         bindInfoService.createContractIntentionBind(entity);
         return super.save(entity);
+    }
+
+    /**
+     * 根据房屋名称模糊获取合同id集合
+     * @param name
+     * @return
+     */
+    public List<Long> queryContractIdsByHouseName(String name) {
+        return baseMapper.queryContractIdsByHouseName(name);
     }
 
 }

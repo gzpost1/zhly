@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseCurdController;
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.dto.contract.*;
@@ -64,6 +65,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         contractLogService.saveLog(id, "新增", "新增了意向合同");
         return service.save(entity);
     }
+
 
     /**
      * 提交
@@ -200,7 +202,6 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         queryEntity.setLabel(param.getLabel());
         return service.saveOrUpdate(queryEntity);
     }
-
 
     @Override
     public boolean update(@RequestBody TbContractIntentionEntity entity) {

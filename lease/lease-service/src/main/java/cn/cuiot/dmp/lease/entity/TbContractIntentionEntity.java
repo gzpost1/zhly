@@ -55,12 +55,19 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
     @NotNull(message = "合同名称不能为空")
     private String name;
 
+    @TableField(exist = false)
+    private List<Long> queryIds;
+
     /**
      * 签订日期
      */
     @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private LocalDate cantractDate;
+    @TableField(exist = false)
+    private LocalDate cantractBeginDate;
+    @TableField(exist = false)
+    private LocalDate cantractEndDate;
 
     /**
      * 合同开始日期
@@ -69,6 +76,35 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @NotNull(message = "合同开始日期不能为空")
     private LocalDate beginDate;
+
+    /**
+     * 查询开始日期 开始日期
+     */
+    @TableField(exist = false)
+    private LocalDate beginDateBegin;
+    /**
+     * 查询开始日期 结束日期
+     */
+    @TableField(exist = false)
+    private LocalDate beginDateEnd;
+    /**
+     * 合同结束日期 开始日期
+     */
+    @TableField(exist = false)
+    private LocalDate endDateBegin;
+    /**
+     * 合同结束日期 结束日期
+     */
+    @TableField(exist = false)
+    private LocalDate endDateEnd;
+    /**
+     * 意向标(房屋名称)
+     */
+    @TableField(exist = false)
+    private String houseName;
+
+
+
 
     /**
      * 合同结束日期

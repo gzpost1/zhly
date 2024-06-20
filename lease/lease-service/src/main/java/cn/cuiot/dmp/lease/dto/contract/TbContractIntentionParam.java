@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.lease.dto.contract;
 
 import cn.cuiot.dmp.common.bean.PageQuery;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 ;
 /**
@@ -31,6 +33,8 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
     private static final long serialVersionUID = 1L;
 
     private Long id;
+
+    private List<Long> queryIds;
     /**
      * 租赁合同id
      */
@@ -40,6 +44,11 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
      * 合同编号
      */
     private String contractNo;
+
+    /**
+     * 意向标(房屋名称)
+     */
+    private String houseName;
 
     /**
      * 合同名称
@@ -70,6 +79,26 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
     @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private LocalDate endDate;
+
+    private LocalDate cantractBeginDate;
+
+    private LocalDate cantractEndDate;
+    /**
+     * 查询开始日期 开始日期
+     */
+    private LocalDate beginDateBegin;
+    /**
+     * 查询开始日期 结束日期
+     */
+    private LocalDate beginDateEnd;
+    /**
+     * 合同结束日期 开始日期
+     */
+    private LocalDate endDateBegin;
+    /**
+     * 合同结束日期 结束日期
+     */
+    private LocalDate endDateEnd;
 
     /**
      * 跟进人

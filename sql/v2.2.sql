@@ -89,7 +89,7 @@ create table tb_contract_lease
 (
     id              bigint      not null primary key,
     contract_no     varchar(30) null comment '合同编号',
-    name            varchar(60) not null comment '合同名称',
+    name            varchar(100) not null comment '合同名称',
     begin_date      date        not null comment '合同开始日期',
     end_date        date        not null comment '合同结束日期',
     cantract_date   date        null comment '签订日期',
