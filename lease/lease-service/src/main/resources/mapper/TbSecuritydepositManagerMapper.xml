@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.charge.TbSecuritydepositManagerMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositManager">
+    <!--@mbg.generated-->
+    <!--@Table tb_securitydeposit_manager-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="customer_user_id" jdbcType="BIGINT" property="customerUserId" />
+    <result column="house_id" jdbcType="BIGINT" property="houseId" />
+    <result column="charge_item_id" jdbcType="BIGINT" property="chargeItemId" />
+    <result column="charge_standard" jdbcType="TINYINT" property="chargeStandard" />
+    <result column="receivable_amount" jdbcType="INTEGER" property="receivableAmount" />
+    <result column="ownership_period_begin" jdbcType="DATE" property="ownershipPeriodBegin" />
+    <result column="ownership_period_end" jdbcType="DATE" property="ownershipPeriodEnd" />
+    <result column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="update_user" jdbcType="BIGINT" property="updateUser" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_user" jdbcType="BIGINT" property="createUser" />
+    <result column="deleted" jdbcType="TINYINT" property="deleted" />
+    <result column="due_date" jdbcType="TIMESTAMP" property="dueDate" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+    <result column="receivable_amount_received" jdbcType="INTEGER" property="receivableAmountReceived" />
+    <result column="returned_amount" jdbcType="INTEGER" property="returnedAmount" />
+      <result column="transaction_mode" jdbcType="BIGINT" property="transactionMode" />
+      <result column="account_bank" jdbcType="VARCHAR" property="accountBank" />
+      <result column="account_number" jdbcType="VARCHAR" property="accountNumber" />
+      <result column="received_date" jdbcType="TIMESTAMP" property="receivedDate" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, customer_user_id, house_id, charge_item_id, charge_standard, receivable_amount, 
+    ownership_period_begin, ownership_period_end, company_id, update_time, update_user, 
+    create_time, create_user, deleted, due_date, `status`, receivable_amount_received, 
+    returned_amount,transaction_mode,account_bank,account_number,received_date
+  </sql>
+
+  <select id="queryForPage" resultType="cn.cuiot.dmp.lease.dto.charge.SecuritydepositManagerPageDto">
+      select *
+      from tb_securitydeposit_manager
+      where deleted = 0
+      <if test="query.companyId != null">
+          and company_id = #{query.companyId}
+      </if>
+      <if test="query.status != null">
+          and status = #{query.status}
+      </if>
+      <if test="query.houseId != null">
+          and house_id = #{query.houseId}
+      </if>
+      <if test="query.customerUserId != null">
+          and customer_user_id = #{query.customerUserId}
+      </if>
+      <if test="query.receivableCode != null and query.receivableCode != ''">
+          and id like concat('%', #{query.receivableCode}, '%')
+      </if>
+      <if test="query.ownershipPeriodBegin != null">
+          and ownership_period_begin &gt;= #{query.ownershipPeriodBegin}
+      </if>
+      <if test="query.ownershipPeriodEnd != null">
+          and ownership_period_end &lt;= #{query.ownershipPeriodEnd}
+      </if>
+      <if test="query.selectReceived != null and query.selectReceived.toString() == '1'.toString() ">
+          and receivable_amount_received &gt; 0
+      </if>
+  </select>
+
+  <update id="refund">
+      update tb_securitydeposit_manager
+      set returned_amount = returned_amount + #{query.refundAmount},
+          `status`        = if(receivable_amount_received > (returned_amount + #{query.refundAmount}), 2, 3)
+      where id = #{query.depositId}
+        and `status` in (1, 2)
+        and receivable_amount_received >= returned_amount + #{query.refundAmount}
+  </update>
+
+  <select id="getHouseReundableAmount" resultType="java.lang.Integer">
+      select sum(receivable_amount_received - returned_amount) from tb_securitydeposit_manager where house_id = #{houseId} and deleted = 0 and receivable_amount_received > 0
+    </select>
+</mapper>

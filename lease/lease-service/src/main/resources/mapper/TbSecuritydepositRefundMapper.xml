@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.charge.TbSecuritydepositRefundMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositRefund">
+    <!--@mbg.generated-->
+    <!--@Table tb_securitydeposit_refund-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="refund_amount" jdbcType="INTEGER" property="refundAmount" />
+    <result column="refund_time" jdbcType="TIMESTAMP" property="refundTime" />
+    <result column="refund_reason" jdbcType="VARCHAR" property="refundReason" />
+    <result column="refund_mode" jdbcType="BIGINT" property="refundMode" />
+    <result column="refund_bank" jdbcType="VARCHAR" property="refundBank" />
+    <result column="refund_number" jdbcType="VARCHAR" property="refundNumber" />
+    <result column="deposit_id" jdbcType="BIGINT" property="depositId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, refund_amount, refund_time, refund_reason, refund_mode, refund_bank, refund_number,deposit_id
+  </sql>
+</mapper>
