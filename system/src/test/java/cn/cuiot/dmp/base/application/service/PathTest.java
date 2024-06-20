@@ -11,11 +11,16 @@ import java.util.List;
 public class PathTest {
 
     public static void main(String[] args) {
-        String path="00-GUIZHOU-dY6LDD4b-LraLPT4r";
+        String path="00-BEIJING-222";
+        List<String> resultList = getPathList(path);
+        System.out.println(resultList);
+    }
+
+    private static List<String> getPathList(String path){
         List<String> strings = Splitter.on("-").splitToList(path);
         List<String> resultList = Lists.newArrayList();
         String tmpPath="";
-        for(int i=0;i<4;i++){
+        for(int i=0;i<strings.size();i++){
             if(i==0){
                 tmpPath=strings.get(i);
             }else{
@@ -23,6 +28,7 @@ public class PathTest {
             }
             resultList.add(tmpPath);
         }
-        System.out.println(resultList);
+        return resultList;
     }
+
 }

@@ -201,7 +201,7 @@ public class UserController extends BaseController {
         List<String> strings = Splitter.on("-").splitToList(path);
         List<String> resultList = Lists.newArrayList();
         String tmpPath="";
-        for(int i=0;i<4;i++){
+        for(int i=0;i<strings.size();i++){
             if(i==0){
                 tmpPath=strings.get(i);
             }else{
