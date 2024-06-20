@@ -5,6 +5,7 @@ import cn.cuiot.dmp.message.dal.entity.UserMessageEntity;
 import cn.cuiot.dmp.message.param.MessagePageQuery;
 import cn.cuiot.dmp.message.param.MessagePageQueryReq;
 import cn.cuiot.dmp.message.service.UserMessageService;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,6 +48,9 @@ public class AppUserMessageController {
      */
     @PostMapping("/readMessage")
     public Boolean readMessage(@RequestBody MessagePageQueryReq req) {
+        if (CollUtil.isEmpty(req.getIds())) {
+            return true;
+        }
         userMessageService.readMessage(req.getIds());
         return true;
     }
