@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
  * @author caorui
  * @date 2024/5/31
  */
-@MapperScan(basePackages = {"cn.cuiot.dmp.**.mapper", "cn.cuiot.dmp.**.dao"})
+@MapperScan(basePackages = {"cn.cuiot.dmp.lease.**.mapper","cn.cuiot.dmp.lease.**.entity"})
 @EnableDiscoveryClient
 @ComponentScan(basePackages = {"cn.cuiot.dmp"})
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})

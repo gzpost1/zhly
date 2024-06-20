@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.charge.TbChargeManagerMapper">
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.charge.TbChargeManager">
+        <!--@mbg.generated-->
+        <!--@Table tb_charge_manager-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="customer_user_id" jdbcType="BIGINT" property="customerUserId"/>
+        <result column="house_id" jdbcType="BIGINT" property="houseId"/>
+        <result column="charge_item_id" jdbcType="BIGINT" property="chargeItemId"/>
+        <result column="charge_standard" jdbcType="TINYINT" property="chargeStandard"/>
+        <result column="receivable_amount" jdbcType="INTEGER" property="receivableAmount"/>
+        <result column="charge_type" jdbcType="TINYINT" property="chargeType"/>
+        <result column="ownership_period_begin" jdbcType="DATE" property="ownershipPeriodBegin"/>
+        <result column="ownership_period_end" jdbcType="DATE" property="ownershipPeriodEnd"/>
+        <result column="company_id" jdbcType="BIGINT" property="companyId"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="update_user" jdbcType="BIGINT" property="updateUser"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="create_user" jdbcType="BIGINT" property="createUser"/>
+        <result column="deleted" jdbcType="TINYINT" property="deleted"/>
+        <result column="due_date" jdbcType="TIMESTAMP" property="dueDate"/>
+        <result column="create_type" jdbcType="TINYINT" property="createType"/>
+        <result column="receivble_plan_id" jdbcType="BIGINT" property="receivblePlanId"/>
+        <result column="receivble_status" jdbcType="TINYINT" property="receivbleStatus"/>
+        <result column="hang_up_status" jdbcType="TINYINT" property="hangUpStatus"/>
+        <result column="abrogate_status" jdbcType="TINYINT" property="abrogateStatus"/>
+        <result column="receivable_amount_rate" jdbcType="DECIMAL" property="receivableAmountRate"/>
+        <result column="receivable_amount_received" jdbcType="INTEGER" property="receivableAmountReceived"/>
+        <result column="liquidated_damages_need" jdbcType="INTEGER" property="liquidatedDamagesNeed"/>
+        <result column="liquidated_damages_received" jdbcType="INTEGER" property="liquidatedDamagesReceived"/>
+        <result column="liquidated_damages_tax" jdbcType="INTEGER" property="liquidatedDamagesTax"/>
+        <result column="liquidated_damages_not_tax" jdbcType="INTEGER" property="liquidatedDamagesNotTax"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id,
+        customer_user_id,
+        house_id,
+        charge_item_id,
+        charge_standard,
+        receivable_amount,
+        charge_type,
+        ownership_period_begin,
+        ownership_period_end,
+        company_id,
+        update_time,
+        update_user,
+        create_time,
+        create_user,
+        deleted,
+        due_date,
+        create_type,
+        receivble_plan_id,
+        receivble_status,
+        hang_up_status,
+        abrogate_status,
+        receivable_amount_rate,
+        receivable_amount_received,
+        liquidated_damages_need,
+        liquidated_damages_received,
+        liquidated_damages_tax,
+        liquidated_damages_not_tax
+    </sql>
+
+    <select id="queryForPage" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeManagerPageDto">
+        select id,
+               customer_user_id,
+               charge_item_id,
+               receivable_amount,
+               ownership_period_begin,
+               ownership_period_end,
+               create_time,
+               due_date,
+               receivble_plan_id,
+               receivble_status,
+               hang_up_status,
+               abrogate_status,
+               house_id
+        from tb_charge_manager
+        where deleted = 0
+        <if test="query.houseId != null">
+            and house_id = #{query.houseId}
+        </if>
+        <if test="query.companyId != null">
+            and company_id = #{query.companyId}
+        </if>
+        <if test="query.receivableCode != null">
+            and id like concat('%', #{query.receivableCode}, '%')
+        </if>
+        <if test="query.receivbleStatus != null">
+            and receivble_status = #{query.receivbleStatus}
+        </if>
+        <if test="query.hangUpStatus != null">
+            and hang_up_status = #{query.hangUpStatus}
+        </if>
+        <if test="query.abrogateStatus != null">
+            and abrogate_status = #{query.abrogateStatus}
+        </if>
+        <if test="query.chargeItemId != null">
+            and charge_item_id = #{query.chargeItemId}
+        </if>
+        <if test="query.ownershipPeriodBegin != null">
+            and ownership_period_begin &gt;= #{query.ownershipPeriodBegin}
+        </if>
+        <if test="query.ownershipPeriodEnd != null">
+            and ownership_period_end &lt;= #{query.ownershipPeriodEnd}
+        </if>
+        <if test="query.dueDateBegin != null">
+            and due_date &gt;= #{query.dueDateBegin}
+        </if>
+        <if test="query.dueDateEnd != null">
+            and due_date &lt;= #{query.dueDateEnd}
+        </if>
+    </select>
+
+    <select id="queryForHouseDetail" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeHouseDetailDto">
+        select house_id,
+               sum(receivable_amount_received) + sum(liquidated_damages_received) as paid_amount,
+               sum(receivable_amount) - sum(receivable_amount_received)           as total_arrears
+
+        from tb_charge_manager
+        where deleted = 0
+          and house_id = #{id}
+    </select>
+
+    <update id="receivedAmount">
+        UPDATE tb_charge_manager
+        set liquidated_damages_need     = liquidated_damages_need + #{received.liquidatedDamagesNeed},
+            liquidated_damages_received = liquidated_damages_received + #{received.liquidatedDamagesReceived},
+            liquidated_damages_tax      = liquidated_damages_tax + #{received.liquidatedDamagesTax},
+            liquidated_damages_not_tax  = liquidated_damages_not_tax + #{received.liquidatedDamagesNotTax},
+            receivable_amount_received  = receivable_amount_received + #{received.receivableAmountReceived},
+            receivble_status            = if(
+                    receivable_amount_received + #{received.liquidatedDamagesReceived} = receivable_amount, 2, 1)
+        where id = #{received.chargeId}
+          and hang_up_status = 0
+          and receivble_status in (0, 1)
+          and abrogate_status = 0
+          and receivable_amount >= receivable_amount_received + #{received.liquidatedDamagesReceived}
+    </update>
+
+    <select id="getHouseInfoByIds" resultType="cn.cuiot.dmp.lease.dto.charge.HouseInfoDto">
+        select id   as house_id,
+               name as house_name,
+               code as house_code
+        from tb_houses_archives
+        where deleted = 0
+          and id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getOwnerInfo" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeHouseDetailDto">
+        SELECT GROUP_CONCAT(a.customer_name) as owner_name,
+               GROUP_CONCAT(a.contact_phone) as owner_phone
+        from tb_customer a
+                 INNER JOIN tb_customer_house b on a.id = b.customer_id
+        where a.deleted = 0
+          and b.deleted = 0
+          and b.identity_type = 1
+          and b.house_id = #{houseId}
+    </select>
+
+    <select id="getUserInfo" resultType="cn.cuiot.dmp.lease.dto.charge.CustomerUserInfo">
+        SELECT a.id            as customer_user_id,
+               a.customer_name  as customer_user_name,
+               a.contact_phone as customer_user_phone,
+               b.identity_type,
+               b.house_id
+        from
+        tb_customer a
+            LEFT JOIN tb_customer_house b on a.id = b.customer_id and b.deleted = 0 and b.house_id in
+        <foreach collection="houseIds" item="houseid" open="(" close=")" separator=",">
+            #{houseid}
+        </foreach>
+        where a.deleted = 0
+          and a.id in
+        <foreach collection="userIds" item="userid" open="(" close=")" separator=",">
+            #{userid}
+        </foreach>
+    </select>
+
+    <select id="getUserInfoByIds" resultType="cn.cuiot.dmp.lease.dto.charge.CustomerUserInfo">
+        SELECT a.id            as customer_user_id,
+               a.customer_name  as customer_user_name,
+               a.contact_phone as customer_user_phone
+        from tb_customer a
+        where a.deleted = 0
+          and a.id in
+        <foreach collection="userIds" item="userid" open="(" close=")" separator=",">
+            #{userid}
+        </foreach>
+    </select>
+
+    <select id="queryHouseCustmerPage" resultType="cn.cuiot.dmp.lease.dto.charge.CustomerUserInfo">
+        SELECT a.id            as customer_user_id,
+               a.customer_name as customer_user_name,
+               a.contact_phone as customer_user_phone,
+               b.identity_type,
+               b.house_id
+        from tb_customer a
+                 INNER JOIN tb_customer_house b on a.id = b.customer_id
+        where a.deleted = 0
+          and b.deleted = 0
+          and b.house_id = #{query.houseId}
+        <if test="query.customerUserName != null">
+            and a.customer_name like concat('%', #{query.customerUserName}, '%')
+        </if>
+    </select>
+</mapper>
