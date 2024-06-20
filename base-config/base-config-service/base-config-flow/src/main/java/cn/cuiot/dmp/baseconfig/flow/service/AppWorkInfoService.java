@@ -179,7 +179,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
         List<AppWorkInfoDto> records = page.getRecords();
         if(CollectionUtil.isEmpty(records)){
-            return IdmResDTO.success();
+            return IdmResDTO.success(page);
         }
         List<Long> userIds = records.stream().map(AppWorkInfoDto::getCreateUser).collect(Collectors.toList());
         Map<Long, String> userMap = getUserMap(userIds);
@@ -1001,8 +1001,14 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         workInfoDto.setRevokeType(checkRevokeType(workInfoDto));
         //判断是否可以重新提交
         workInfoDto.setResubmit(resubmit(workInfoDto.getProcInstId()));
-        return IdmResDTO.success();
+        return IdmResDTO.success(workInfoDto);
     }
+
+    /**
+     * 判断是不是root节点
+     * @param procInstId
+     * @return
+     */
     public Byte resubmit(String procInstId){
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(String.valueOf(procInstId)).list();
         if (CollectionUtil.isEmpty(taskList)){
@@ -1545,7 +1551,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @return
      */
     public IdmResDTO<IPage<RepairReportDto>> queryReportRepairs(RepairReportQuery query) {
-
+        query.setUserId(LoginInfoHolder.getCurrentUserId());
         IPage<RepairReportDto> report = baseMapper.queryReportRepairs(new Page<>(query.getPageNo(),query.getPageSize()),query);
 
         return IdmResDTO.success(report);

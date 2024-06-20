@@ -26,6 +26,8 @@ import cn.cuiot.dmp.archive.infrastructure.vo.CustomerVehicleVo;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerVo;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgBindingNameConstants;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgTagConstants;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.stream.StreamMessageSender;
 import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
 import cn.cuiot.dmp.common.constant.EntityConstants;
@@ -93,10 +95,15 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
     public IPage<CustomerVo> queryForPage(CustomerQuery query) {
         CustomerCriteriaQuery criteriaQuery = CustomerCriteriaQuery.builder()
                 .companyId(query.getCompanyId())
+                .id(query.getId())
+                .keyword(query.getKeyword())
                 .customerName(query.getCustomerName())
                 .contactName(query.getContactName())
                 .status(query.getStatus())
                 .build();
+        if(StringUtils.isNotBlank(query.getKeyword())){
+            criteriaQuery.setKeywordPhone(Sm4.encryption(query.getKeyword()));
+        }
         if(StringUtils.isNotBlank(query.getContactPhone())){
             criteriaQuery.setContactPhone(Sm4.encryption(query.getContactPhone()));
         }
@@ -135,7 +142,19 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
     public List<CustomerVo> queryForList(CustomerQuery query) {
         CustomerCriteriaQuery criteriaQuery = CustomerCriteriaQuery.builder()
                 .companyId(query.getCompanyId())
+                .id(query.getId())
+                .keyword(query.getKeyword())
+                .customerName(query.getCustomerName())
+                .contactName(query.getContactName())
+                .status(query.getStatus())
                 .build();
+        if(StringUtils.isNotBlank(query.getKeyword())){
+            criteriaQuery.setKeywordPhone(Sm4.encryption(query.getKeyword()));
+        }
+        if(StringUtils.isNotBlank(query.getContactPhone())){
+            criteriaQuery.setContactPhone(Sm4.encryption(query.getContactPhone()));
+        }
+
         List<CustomerVo> selectList = customerMapper
                 .queryForList(criteriaQuery);
         List<Long> customerIdList = Optional.ofNullable(selectList)
@@ -621,7 +640,13 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         for(CustomerHouseVo vo:houseList){
             CustomerHouseExportVo exportVo = new CustomerHouseExportVo();
             exportVo.setHouseId(vo.getHouseId());
-            exportVo.setIdentityTypeName(getItemName(optionItems,parseLong(vo.getIdentityType())));
+            if(StringUtils.isNotBlank(vo.getIdentityType())){
+                CustomerIdentityTypeEnum identityTypeEnum = CustomerIdentityTypeEnum
+                        .parseByCode(vo.getIdentityType());
+                if(Objects.nonNull(identityTypeEnum)){
+                    exportVo.setIdentityTypeName(identityTypeEnum.getName());
+                }
+            }
             if(Objects.nonNull(vo.getMoveInDate())){
                 exportVo.setMoveInDateStr(DateTimeUtil.dateToString(vo.getMoveInDate(),DEFAULT_DATE_FORMAT));
             }
@@ -631,6 +656,21 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
             resultList.add(exportVo);
         }
         return resultList;
+    }
+
+    /**
+     * 查询客户
+     */
+    public List<CustomerUserRspDto> lookupCustomerUsers(CustomerUseReqDto reqDto) {
+        List<CustomerUserRspDto> list = customerMapper.lookupCustomerUsers(reqDto);
+        if (CollectionUtils.isNotEmpty(list)) {
+            for(CustomerUserRspDto dto:list){
+                if(StringUtils.isNotBlank(dto.getContactPhone())){
+                    dto.setContactPhone(Sm4.decrypt(dto.getContactPhone()));
+                }
+            }
+        }
+        return list;
     }
 
 }

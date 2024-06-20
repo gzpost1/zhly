@@ -1,5 +1,9 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
+import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.system.infrastructure.domain.converter.OrganizatioConverter;
@@ -19,6 +23,7 @@ import com.github.pagehelper.PageInfo;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
@@ -104,6 +109,15 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
         int count = 0;
         count = organizationEntityMapper.update(entity, queryWrapper);
         return count == 1;
+    }
+
+    @Override
+    public int updateInitFlag(Long companyId, Byte initFlag) {
+        OrganizationEntity organizationEntity = Optional.ofNullable(organizationEntityMapper.selectById(companyId))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        AssertUtil.isTrue(EntityConstants.DISABLED.equals(organizationEntity.getInitFlag()), "企业已初始化，请勿重复操作");
+        organizationEntity.setInitFlag(initFlag);
+        return organizationEntityMapper.updateById(organizationEntity);
     }
 
     private void fillUpdatePropertyValue(Organization aggregate) {
