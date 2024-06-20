@@ -5,7 +5,6 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseCurdController;
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
-import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.dto.contract.*;
@@ -56,7 +55,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
      */
     @RequiresPermissions
     @PostMapping("/saveDarft")
-    public boolean saveDarft(@RequestBody @Valid ContractParam param) {
+    public boolean saveDarft(@RequestBody @Valid ContractIntentionParam param) {
         TbContractIntentionEntity entity = param.getContractIntentionEntity();
         Long id = SnowflakeIdWorkerUtil.nextId();
         entity.setId(id);
@@ -75,7 +74,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
      */
     @RequiresPermissions
     @PostMapping("/commit")
-    public boolean commit(@RequestBody @Valid ContractParam param) {
+    public boolean commit(@RequestBody @Valid ContractIntentionParam param) {
         TbContractIntentionEntity entity = param.getContractIntentionEntity();
         Long id = SnowflakeIdWorkerUtil.nextId();
         entity.setId(id);
@@ -94,7 +93,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
      */
     @RequiresPermissions
     @PostMapping("/signContract")
-    public boolean signContract(@RequestBody @Valid ContractParam param) {
+    public boolean signContract(@RequestBody @Valid ContractIntentionParam param) {
         Long id = param.getId();
         TbContractLeaseEntity contractLease = param.getContractLeaseEntity();
         AssertUtil.notNull(contractLease, "关联租赁合同信息不能为空");
@@ -118,7 +117,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
      */
     @RequiresPermissions
     @PostMapping("/cancel")
-    public boolean cancel(@RequestBody @Valid ContractParam param) {
+    public boolean cancel(@RequestBody @Valid ContractIntentionParam param) {
         Long id = param.getId();
         TbContractCancelEntity contractCancelParam = param.getContractCancelEntity();
         AssertUtil.notNull(id, "退定合同id不能为空");
@@ -143,7 +142,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
      */
     @RequiresPermissions
     @PostMapping("/useless")
-    public boolean useless(@RequestBody @Valid ContractParam param) {
+    public boolean useless(@RequestBody @Valid ContractIntentionParam param) {
         Long id = param.getId();
         TbContractCancelEntity contractCancelParam = param.getContractCancelEntity();
         AssertUtil.notNull(contractCancelParam, "作废信息不能为空");

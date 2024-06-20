@@ -40,7 +40,7 @@
     </resultMap>
 
     <select id="selectById" resultMap="BaseResultMap">
-        select ci.*, c.customer_name customer_name, u.name followUpName, c.contact_phone
+        select   <include refid="Base_Column_List"/>
         from tb_contract_intention ci
                      left join user u on ci.follow_up = u.id
                      left join tb_customer c on ci.client = c.id
@@ -56,6 +56,7 @@
         <where>
             <include refid="dynamic_where"/>
         </where>
+        order by ifnull(ci.update_time,ci.create_time) desc
     </select>
 
     <select id="queryContractIdsByHouseName" resultType="Long">
@@ -80,9 +81,9 @@
         ci.client,
         ci.remark,
         ci.create_time,
-        ci.update_time,
+        ifnull(ci.update_time,ci.create_time),
         ci.create_user,
-        ci.update_user,
+        ifnull(ci.create_user,ci.update_user),
         ci.status,
         ci.deleted,
         ci.contract_status,ci.audit_status,ci.label,c.customer_name,u.name followUpName,c.contact_phone

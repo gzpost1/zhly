@@ -14,7 +14,7 @@ import java.io.Serializable;
  * @Created by Mujun
  */
 @Data
-public class ContractParam implements Serializable {
+public class ContractIntentionParam implements Serializable {
     /**
      * 意向合同id
      */
