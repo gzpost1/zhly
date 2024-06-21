@@ -25,9 +25,21 @@ import static cn.cuiot.dmp.common.constant.AuditConstant.*;
 @Service
 public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMapper, TbContractLogEntity> {
 
+    //意向合同
+    public static final String TYPE_INTERNTION = "interntion";
+    //租赁合同
+    public static final String TYPE_LEASE = "lease";
 
-    public void saveLog(Long contractId,String operation, String operDesc, String extId, String path) {
-        String username = LoginInfoHolder.getCurrentLoginInfo().getUsername();
+    /**
+     * @param contractId
+     * @param operation
+     * @param operationType interntion 意向合同  lease租赁合同
+     * @param operDesc
+     * @param extId
+     * @param path
+     */
+    public void saveLog(Long contractId, String operation, String operationType, String operDesc, String extId, String path) {
+        String username = LoginInfoHolder.getCurrentLoginInfo().getName();
         TbContractLogEntity logEntity = new TbContractLogEntity();
         logEntity.setContractId(contractId);
         logEntity.setOperator(username);
@@ -35,38 +47,46 @@ public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMa
         logEntity.setOperDesc(username + " " + operDesc);
         logEntity.setExtId(extId);
         logEntity.setPath(path);
+        logEntity.setOperationType(operationType);
         logEntity.setOperTime(LocalDateTime.now());
         save(logEntity);
     }
-    public void saveLog(Long contractId,String operation, String operDesc) {
-       saveLog(contractId,operation,operDesc,null,null);
+
+    public void saveIntentionLog(Long contractId, String operation, String operDesc) {
+        saveLog(contractId, operation, TYPE_INTERNTION, operDesc, null, null);
+    }
+
+    public void saveLeaseLog(Long contractId, String operation, String operDesc) {
+        saveLog(contractId, operation, TYPE_LEASE, operDesc, null, null);
     }
 
 
     /**
      * 获取合同的操作日志
-     * 1.提交审核 2.签约审核 3.退订审核 4.作废审核
      */
-    public void saveAuditLogMsg(AuditParam auditParam) {
-        Integer auditType = auditParam.getAuditType();
+    public void saveAuditLogMsg(Integer contractStatus, AuditParam auditParam) {
         List<String> logMsgParam = Lists.newLinkedList();
+        ContractEnum contractEnum = ContractEnum.getEnumByCode(contractStatus);
         String operate = null;
-        switch (auditType) {
-            case 1:
+        switch (contractEnum) {
+            case STATUS_COMMITING:
                 operate = OPERATE_COMMIT;
                 break;
-            case 2:
+            case STATUS_SIGNING:
                 operate = OPERATE_SIGN_CONTRACT;
                 break;
-            case 3:
+            case STATUS_CANCELING:
                 operate = OPERATE_CANCEL;
                 break;
-            case 4:
+            case STATUS_USELESSING:
                 operate = OPERATE_USELESS;
+                break;
+            default:
+                operate = ContractEnum.getEnumByCode(contractStatus).getDesc();
                 break;
         }
         logMsgParam.add(operate);
-        if (Objects.equals(auditParam.getAuditStatus(),ContractEnum.AUDIT_PASS.getCode())) {
+        if (Objects.equals(auditParam.getAuditStatus(), ContractEnum.AUDIT_PASS.getCode())) {
             logMsgParam.add(AUDIT_PASS);
         } else {
             logMsgParam.add(AUDIT_REFUSE);
@@ -74,12 +94,12 @@ public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMa
         logMsgParam.add(auditParam.getRemark());
         String logMsg = String.format(AUDIT_MSG_TEMP, logMsgParam.toArray());
         String operation = operate + "审核";
-        saveLog(auditParam.getId(), operation, logMsg);
+        saveIntentionLog(auditParam.getId(), operation, logMsg);
     }
 
-    public void removeByContractId(Long id){
+    public void removeByContractId(Long id) {
         LambdaQueryWrapper<TbContractLogEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TbContractLogEntity::getContractId,id);
+        queryWrapper.eq(TbContractLogEntity::getContractId, id);
         remove(queryWrapper);
     }
 

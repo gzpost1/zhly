@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.entity;
 
+import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.Accessors;
+import lombok.experimental.SuperBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
@@ -19,6 +21,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 意向合同
@@ -27,27 +30,23 @@ import java.util.List;
  * @since 2024-06-12
  */
 @Data
-@Builder(toBuilder = true)
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName(value = "tb_contract_intention",autoResultMap = true)
+@TableName(value = "tb_contract_intention", autoResultMap = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> {
+public class TbContractIntentionEntity extends BaseContractEntity {
 
     private static final long serialVersionUID = 1L;
 
-    private Long id;
+
     /**
      * 租赁合同id
      */
     private Long contractLeaseId;
 
-    /**
-     * 合同编号
-     */
-    private String contractNo;
 
     /**
      * 合同名称
@@ -58,45 +57,7 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
     @TableField(exist = false)
     private List<Long> queryIds;
 
-    /**
-     * 签订日期
-     */
-    @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    private LocalDate cantractDate;
-    @TableField(exist = false)
-    private LocalDate cantractBeginDate;
-    @TableField(exist = false)
-    private LocalDate cantractEndDate;
 
-    /**
-     * 合同开始日期
-     */
-    @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @NotNull(message = "合同开始日期不能为空")
-    private LocalDate beginDate;
-
-    /**
-     * 查询开始日期 开始日期
-     */
-    @TableField(exist = false)
-    private LocalDate beginDateBegin;
-    /**
-     * 查询开始日期 结束日期
-     */
-    @TableField(exist = false)
-    private LocalDate beginDateEnd;
-    /**
-     * 合同结束日期 开始日期
-     */
-    @TableField(exist = false)
-    private LocalDate endDateBegin;
-    /**
-     * 合同结束日期 结束日期
-     */
-    @TableField(exist = false)
-    private LocalDate endDateEnd;
     /**
      * 意向标(房屋名称)
      */
@@ -104,19 +65,8 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
     private String houseName;
 
 
-
-
-    /**
-     * 合同结束日期
-     */
-    @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @NotNull(message = "合同结束日期不能为空")
-    private LocalDate endDate;
-
     /**
      * 跟进人
-
      */
     @NotNull(message = "跟进人不能为空")
     private String followUp;
@@ -137,20 +87,15 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
      */
     private String remark;
 
-    /**
-     * 审核状态
-     * 1:审核中待审核 2:审核通过 3:未通过
-     */
-    private Integer auditStatus;
 
     @TableField(fill = FieldFill.INSERT)
-	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
-	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 
     @TableField(fill = FieldFill.INSERT)
@@ -168,16 +113,6 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
     private Byte deleted = EntityConstants.NOT_DELETED;
 
     /**
-     * 意向房屋
-     */
-    @TableField(exist = false)
-    private List<HousesArchivesVo> houseList;
-    /**
-     * 意向金
-     */
-    @TableField(exist = false)
-    private List<TbContractIntentionMoneyEntity> moneyList;
-    /**
      * 退订信息
      */
     @TableField(exist = false)
@@ -188,10 +123,15 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
     @TableField(exist = false)
     private TbContractCancelEntity uselessInfo;
 
-    /**
-     * 合同状态
-     */
-    private Integer contractStatus;
+
+    @Override
+    public void setContractStatus(Integer contractStatus) {
+        if (Objects.equals(contractStatus, ContractEnum.STATUS_SIGNED.getCode())) {
+            LocalDate now = LocalDate.now();
+            setCantractDate(now);
+        }
+        super.setContractStatus(contractStatus);
+    }
 
     /**
      * 标签
@@ -235,7 +175,7 @@ public class TbContractIntentionEntity extends Model<TbContractIntentionEntity> 
 
     @Override
     public Serializable pkVal() {
-        return null;
+        return this.getId();
     }
 
 }

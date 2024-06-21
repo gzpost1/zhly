@@ -26,10 +26,5 @@ public class AuditParam implements Serializable {
      */
     private String remark;
 
-    /**
-     * 1.提交审核 2.签约审核 3.退订审核 4.作废审核
-     */
-    private Integer auditType;
-
 
 }

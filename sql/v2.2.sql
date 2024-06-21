@@ -87,7 +87,8 @@ create table tb_contract_log
 -- auto-generated definition
 create table tb_contract_lease
 (
-    id              bigint       not null primary key,
+    id              bigint       not null
+        primary key,
     contract_no     varchar(30)  null comment '合同编号',
     name            varchar(100) not null comment '合同名称',
     begin_date      date         not null comment '合同开始日期',
@@ -111,9 +112,11 @@ create table tb_contract_lease
     status          tinyint(1)   null,
     deleted         tinyint(1)   null,
     contract_status int          null comment '合同状态',
-    audit_status    int          null comment '审核状态 1审核中,待审核 2 审核通过 3.未通过'
+    audit_status    int          null comment '审核状态 1审核中,待审核 2 审核通过 3.未通过',
+    template_id     bigint       null comment '合同模板id'
 )
     comment '租赁合同';
+
 
 -- auto-generated definition
 create table tb_contract_charge

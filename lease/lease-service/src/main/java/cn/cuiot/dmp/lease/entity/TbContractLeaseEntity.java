@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.lease.entity;
 
 import cn.cuiot.dmp.base.application.enums.BeanValidationGroup;
+import cn.cuiot.dmp.base.application.enums.ContractEnum;
+import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
@@ -8,12 +10,16 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.Accessors;
+import lombok.experimental.SuperBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+
 /**
  * 租赁合同
  *
@@ -21,25 +27,16 @@ import java.time.LocalDateTime;
  * @since 2024-06-19
  */
 @Data
-@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("tb_contract_lease")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class TbContractLeaseEntity extends Model<TbContractLeaseEntity> {
+@Builder
+public class TbContractLeaseEntity extends BaseContractEntity {
 
     private static final long serialVersionUID = 1L;
-
-    @TableId(value = "id", type = IdType.AUTO)
-    @NotNull(message = "id不能为空",groups = BeanValidationGroup.Update.class)
-    private Long id;
-
-    /**
-     * 合同编号
-     */
-    private String contractNo;
 
     /**
      * 合同名称
@@ -47,28 +44,7 @@ public class TbContractLeaseEntity extends Model<TbContractLeaseEntity> {
     @NotNull(message = "合同名称不能为空")
     private String name;
 
-    /**
-     * 合同开始日期
-     */
-    @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @NotNull(message = "合同开始日期不能为空")
-    private LocalDate beginDate;
 
-    /**
-     * 合同结束日期
-     */
-    @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @NotNull(message = "合同结束日期不能为空")
-    private LocalDate endDate;
-
-    /**
-     * 签订日期
-     */
-    @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    private LocalDate cantractDate;
 
     /**
      * 首期应收日期
@@ -103,6 +79,12 @@ public class TbContractLeaseEntity extends Model<TbContractLeaseEntity> {
      */
     @NotNull(message = "合同性质不能为空")
     private String property;
+
+    /**
+     * 租赁房屋
+     */
+    @TableField(exist = false)
+    private List<HousesArchivesVo> houseList;
 
     /**
      * 标签
@@ -158,15 +140,21 @@ public class TbContractLeaseEntity extends Model<TbContractLeaseEntity> {
     @TableField(fill = FieldFill.INSERT)
     private Byte deleted = EntityConstants.NOT_DELETED;
 
+    @Override
+    public void setContractStatus(Integer contractStatus) {
+        super.setContractStatus(contractStatus);
+    }
     /**
      * 合同状态
      */
-    private Integer contractStatus;
+//    private Integer contractStatus;
+
+    private Integer templateId;
 
     /**
      * 审核状态 1审核中,待审核 2 审核通过 3.未通过
      */
-    private Integer auditStatus;
+//    private Integer auditStatus;
 
     public static final String TABLE_NAME = "tb_contract_lease";
 
@@ -223,7 +211,7 @@ public class TbContractLeaseEntity extends Model<TbContractLeaseEntity> {
 
     @Override
     public Serializable pkVal() {
-        return this.id;
+        return this.getId();
     }
 
 }

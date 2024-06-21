@@ -19,6 +19,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.ArrayList;
 import java.util.List;
 
+import static cn.cuiot.dmp.lease.service.TbContractBindInfoService.BIND_CONTRACT_INTENTION_TYPE_HOUSE;
+
 
 /**
  * @author liujianyu
@@ -55,7 +57,7 @@ public class ArchivesTest {
 
     @Test
     public void test2(){
-        List<HousesArchivesVo> contractBindInfo = bindInfoService.queryBindHouseInfoByContractId(1L);
+        List<HousesArchivesVo> contractBindInfo = bindInfoService.queryBindHouseInfoByContractId(1L,BIND_CONTRACT_INTENTION_TYPE_HOUSE);
         System.out.println(contractBindInfo);
     }
 

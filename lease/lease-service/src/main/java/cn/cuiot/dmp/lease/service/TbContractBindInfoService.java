@@ -2,15 +2,13 @@ package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
+import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.lease.entity.TbContractBindInfoEntity;
-import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
-import cn.cuiot.dmp.lease.entity.TbContractIntentionMoneyEntity;
+import cn.cuiot.dmp.lease.entity.*;
 import cn.cuiot.dmp.lease.mapper.TbContractBindInfoMapper;
-import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.google.common.collect.Lists;
@@ -23,6 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static cn.cuiot.dmp.common.constant.AuditConstant.*;
+
 /**
  * 意向合同关联信息 服务实现类
  *
@@ -31,10 +31,11 @@ import java.util.stream.Collectors;
  */
 @Service
 public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContractBindInfoMapper, TbContractBindInfoEntity> {
-    //1 意向合同 房屋 2.意向合同 意向金 3.租赁合同
+    //合同绑定类型 1 意向合同 房屋 2.意向合同 意向金 3.租赁合同
     public static final Integer BIND_CONTRACT_INTENTION_TYPE_HOUSE = 1;
     public static final Integer BIND_CONTRACT_INTENTION_TYPE_MONEY = 2;
     public static final Integer BIND_CONTRACT_LEASE_TYPE_HOUSE = 3;
+
     @Autowired
     ArchiveFeignService archiveFeignService;
     @Autowired
@@ -56,14 +57,14 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
      * @param id
      * @return
      */
-    public List<HousesArchivesVo> queryBindHouseInfoByContractId(Long id) {
+    public List<HousesArchivesVo> queryBindHouseInfoByContractId(Long id, Integer type) {
         LambdaQueryWrapper<TbContractBindInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TbContractBindInfoEntity::getIntentionId, id);
         List<TbContractBindInfoEntity> bindList = list(queryWrapper);
         if (CollectionUtils.isEmpty(bindList)) {
             return null;
         }
-        List<Long> houseIds = bindList.stream().filter(t -> Objects.equals(t.getType(), BIND_CONTRACT_INTENTION_TYPE_HOUSE)).map(TbContractBindInfoEntity::getBindId).collect(Collectors.toList());
+        List<Long> houseIds = bindList.stream().filter(t -> Objects.equals(t.getType(), type)).map(TbContractBindInfoEntity::getBindId).collect(Collectors.toList());
         List<HousesArchivesVo> houseList = queryRemoteHouseList(houseIds);
 
         return houseList;
@@ -84,11 +85,15 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
     }
 
     /**
-     * 创建合同关联的房屋,意向金
+     * 创建合同关联的房屋,意向金(只有意向合同有意向金绑定)
      *
      * @param entity
      */
-    public void createContractIntentionBind(TbContractIntentionEntity entity) {
+    public void createContractBind(BaseContractEntity entity) {
+        int bindHouseType = BIND_CONTRACT_INTENTION_TYPE_HOUSE;
+        if (entity instanceof TbContractLeaseEntity) {
+            bindHouseType = BIND_CONTRACT_LEASE_TYPE_HOUSE;
+        }
         Long id = entity.getId();
         ArrayList<TbContractBindInfoEntity> saveBindList = Lists.newArrayList();
         TbContractBindInfoEntity bindInfoEntity = new TbContractBindInfoEntity();
@@ -97,9 +102,10 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
         List<TbContractIntentionMoneyEntity> moneyList = entity.getMoneyList();
         if (CollectionUtils.isNotEmpty(houseList)) {
             List<Long> houseIds = houseList.stream().map(HousesArchivesVo::getId).collect(Collectors.toList());
+            int finalBindHouseType = bindHouseType;
             houseIds.forEach(h -> {
                 bindInfoEntity.setBindId(h);
-                bindInfoEntity.setType(BIND_CONTRACT_INTENTION_TYPE_HOUSE);
+                bindInfoEntity.setType(finalBindHouseType);
                 saveBindList.add(bindInfoEntity);
             });
         }
@@ -126,7 +132,7 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
     public ContractStatusVo queryConctactStatusByHouseIds(List<Long> ids) {
         List<ContractStatus> list = baseMapper.queryConctactStatusByHouseIds(ids);
         ContractStatusVo contractStatusVo = new ContractStatusVo();
-        if(CollectionUtils.isNotEmpty(list)) {
+        if (CollectionUtils.isNotEmpty(list)) {
             //意向合同
             Map<Long, List<ContractStatus>> intentionMap = list.stream().filter(o -> Objects.equals(o.getType(), BIND_CONTRACT_INTENTION_TYPE_HOUSE)).collect(Collectors.groupingBy(ContractStatus::getHouseId));
             //租赁合同

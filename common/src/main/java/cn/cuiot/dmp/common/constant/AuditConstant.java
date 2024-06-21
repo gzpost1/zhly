@@ -8,6 +8,7 @@ package cn.cuiot.dmp.common.constant;
 public class AuditConstant {
     public static final String AUDIT_MSG_TEMP = "审核了意向合同的%s" + System.lineSeparator() + "审核结果为:%s" + System.lineSeparator() + "审核备注:%s";
 
+
     //意向合同 对应审核配置表name
     public static final String AUDIT_CONFIG_INTENTION_NEW = "合同新建后提交";
     public static final String AUDIT_CONFIG_INTENTION_SIGN = "合同签约";

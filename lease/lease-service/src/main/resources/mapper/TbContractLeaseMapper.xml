@@ -28,6 +28,7 @@
         <result column="deleted" property="deleted"/>
         <result column="contract_status" property="contractStatus"/>
         <result column="audit_status" property="auditStatus"/>
+        <result column="template_id" property="templateId"/>
     </resultMap>
 
     <select id="list" resultMap="BaseResultMap" parameterType="cn.cuiot.dmp.lease.entity.TbContractLeaseEntity">
@@ -41,13 +42,16 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, contract_no, name, begin_date, end_date, cantract_date, first_date, follow_up, purpose, type, property, label, remark, client, form, main_body, path, create_time, update_time, create_user, update_user, status, deleted, contract_status, audit_status
+        id, contract_no, name, begin_date, end_date, cantract_date, first_date, follow_up, purpose, type, property, label, remark, client, form, main_body, path, create_time, update_time, create_user, update_user, status, deleted, contract_status, audit_status,template_id
     </sql>
 
     <sql id="dynamic_where">
         <if test="params!=null">
             <if test=" params.id != null">
                 and id = #{params.id}
+            </if>
+            <if test=" params.templateId != null">
+                and template_id = #{params.templateId}
             </if>
             <if test=" params.contractNo != null and params.contractNo.trim() != ''">
                 and contract_no like CONCAT('%','${params.contractNo}','%' )
