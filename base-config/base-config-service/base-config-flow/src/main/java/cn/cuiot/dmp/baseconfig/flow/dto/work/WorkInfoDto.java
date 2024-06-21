@@ -30,6 +30,10 @@ public class WorkInfoDto extends PageQuery {
      */
     private String businessTypeName;
 
+    /**
+     * 流程定义id
+     */
+    private String processDefinitionId;
 
     /**
      * 所属组织
