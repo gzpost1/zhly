@@ -3,6 +3,7 @@ package cn.cuiot.dmp.lease.service.charge;
 import cn.cuiot.dmp.base.infrastructure.utils.MathTool;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeAbrogate;
@@ -11,6 +12,7 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.enums.*;
 import cn.cuiot.dmp.lease.mapper.charge.TbChargeManagerMapper;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -21,6 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjuster;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -82,11 +87,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
 
             if (betweenMonth == 0) {
                 TbChargeManager tbChargeManager = getTbChargeManager(createDto, createType, receivblePlanId);
-                tbChargeManager.setDueDate(DateUtil.offsetDay(DateUtil.beginOfMonth(ownershipPeriodBegin), createDto.getDueDateNum() - 1));
-                //如果不等于则超过了这个月的最后一天，取这个月的最后一天
-                if (DateUtil.month(tbChargeManager.getDueDate()) != DateUtil.month(ownershipPeriodBegin)) {
-                    tbChargeManager.setDueDate(DateUtil.endOfMonth(ownershipPeriodBegin));
-                }
+                setDueDate(createDto.getDueDateNum(), tbChargeManager);
 
             } else {
                 betweenMonth += 1;
@@ -95,27 +96,33 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
                     //如果是第一个月开始时间为所属账期开始时间，结束为这个月的最后一天 如果是最后一个月开始时间为这个月的第一天，结束时间为所属账期结束时间
                     if (l == 0) {
                         tbChargeManager.setOwnershipPeriodBegin(ownershipPeriodBegin);
-                        tbChargeManager.setOwnershipPeriodEnd(DateUtil.endOfMonth(ownershipPeriodBegin));
+                        tbChargeManager.setOwnershipPeriodEnd(DateTimeUtil.getStartTime(DateUtil.endOfMonth(ownershipPeriodBegin)));
                     } else if (l == betweenMonth - 1) {
                         tbChargeManager.setOwnershipPeriodBegin(DateUtil.beginOfMonth(ownershipPeriodEnd));
                         tbChargeManager.setOwnershipPeriodEnd(ownershipPeriodEnd);
                     } else {
                         tbChargeManager.setOwnershipPeriodBegin(DateUtil.offsetMonth(ownershipPeriodBegin, (int) l));
-                        tbChargeManager.setOwnershipPeriodEnd(DateUtil.endOfMonth(DateUtil.offsetMonth(ownershipPeriodBegin, (int) l)));
+                        tbChargeManager.setOwnershipPeriodEnd(DateTimeUtil.getStartTime(DateUtil.endOfMonth(DateUtil.offsetMonth(ownershipPeriodBegin, (int) l))));
                     }
 
-                    tbChargeManager.setDueDate(DateUtil.offsetDay(DateUtil.beginOfMonth(tbChargeManager.getOwnershipPeriodBegin()), createDto.getDueDateNum() - 1));
-                    //如果不等于则超过了这个月的最后一天，取这个月的最后一天
-                    if (DateUtil.month(tbChargeManager.getDueDate()) != DateUtil.month(tbChargeManager.getOwnershipPeriodBegin())) {
-                        tbChargeManager.setDueDate(DateUtil.endOfMonth(tbChargeManager.getOwnershipPeriodBegin()));
-                    }
-
+                    setDueDate(createDto.getDueDateNum(), tbChargeManager);
+                    tbChargeManager.setCreateUser(LoginInfoHolder.getCurrentUserId());
+                    tbChargeManager.setCreateTime(new Date());
+                    tbChargeManager.setDeleted(EntityConstants.NOT_DELETED);
                     chargeManagers.add(tbChargeManager);
                 }
-
-                saveBatch(chargeManagers);
+                baseMapper.insertList(chargeManagers);
             }
+        }
+    }
 
+    private static void setDueDate(Integer dueDateNum, TbChargeManager tbChargeManager) {
+        int dayOfMonth = DateTimeUtil.dateToLocalDate(DateUtil.endOfMonth(tbChargeManager.getOwnershipPeriodBegin())).getDayOfMonth();
+        if(dayOfMonth <= dueDateNum){
+            tbChargeManager.setDueDate(DateTimeUtil.getStartTime(DateUtil.endOfMonth(tbChargeManager.getOwnershipPeriodBegin())));
+        }else {
+            LocalDate localDate = DateTimeUtil.dateToLocalDate(tbChargeManager.getOwnershipPeriodBegin());
+            tbChargeManager.setDueDate(DateTimeUtil.localDateToDate(LocalDate.of(localDate.getYear(),localDate.getMonth(),dueDateNum)));
         }
     }
 

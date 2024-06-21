@@ -118,7 +118,7 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
                     createDto.setOwnershipPeriodEnd(new Date());
                 } else {
                     createDto.setOwnershipPeriodBegin(DateUtil.beginOfMonth(new Date()));
-                    createDto.setOwnershipPeriodEnd(DateUtil.endOfMonth(new Date()));
+                    createDto.setOwnershipPeriodEnd(DateTimeUtil.getEndTime(DateUtil.endOfMonth(new Date())));
                 }
                 createDto.setDueDate(new Date());
 

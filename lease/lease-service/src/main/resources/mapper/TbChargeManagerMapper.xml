@@ -239,11 +239,6 @@
         update_time,
         create_user,
         update_user,
-        deleted,
-        create_time,
-        update_time,
-        create_user,
-        update_user,
         deleted
         )VALUES
         <foreach collection="list" item="element" index="index" separator=",">
@@ -270,11 +265,6 @@
             #{element.liquidatedDamagesReceived,jdbcType=INTEGER},
             #{element.liquidatedDamagesTax,jdbcType=INTEGER},
             #{element.liquidatedDamagesNotTax,jdbcType=INTEGER},
-            #{element.createTime,jdbcType=TIMESTAMP},
-            #{element.updateTime,jdbcType=TIMESTAMP},
-            #{element.createUser,jdbcType=BIGINT},
-            #{element.updateUser,jdbcType=BIGINT},
-            #{element.deleted,jdbcType=TINYINT},
             #{element.createTime,jdbcType=TIMESTAMP},
             #{element.updateTime,jdbcType=TIMESTAMP},
             #{element.createUser,jdbcType=BIGINT},

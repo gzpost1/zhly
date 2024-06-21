@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 public class ChargeReceiptsReceivedDto {
     /**
-     * 是否只收本金
+     * 是否只收本金 0否 1是
      */
     @NotNull(message = "是否只收本金不能为空")
     private Byte onlyPrincipal;

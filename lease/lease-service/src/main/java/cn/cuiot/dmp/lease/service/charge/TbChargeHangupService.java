@@ -6,6 +6,7 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeHangup;
 import cn.cuiot.dmp.lease.mapper.charge.TbChargeHangupMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class TbChargeHangupService extends ServiceImpl<TbChargeHangupMapper, TbC
 
     public void saveData(Long id, Byte hangUpStatus, String abrogateDesc) {
         TbChargeHangup tbChargeHangup = new TbChargeHangup();
-        tbChargeHangup.setId(id);
+        tbChargeHangup.setId(IdWorker.getId());
         tbChargeHangup.setHangupTime(new Date());
         tbChargeHangup.setHangupDesc(abrogateDesc);
         tbChargeHangup.setCreateUser(LoginInfoHolder.getCurrentUserId());

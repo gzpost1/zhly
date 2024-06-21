@@ -146,23 +146,4 @@ public class TbChargeManager extends YjBaseEntity {
      */
     @TableField(value = "liquidated_damages_not_tax")
     private Integer liquidatedDamagesNotTax = 0;
-
-    @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createTime;
-
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date updateTime;
-
-    @TableField(fill = FieldFill.INSERT)
-    private Long createUser;
-
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Long updateUser;
-
-    @TableField(fill = FieldFill.INSERT)
-    @TableLogic
-    @JsonIgnore
-    private Byte deleted;
 }

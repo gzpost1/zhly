@@ -45,7 +45,7 @@ public class TbChargeHangup {
     private Long dataId;
 
     /**
-     * 数据类型 0挂起 1解挂
+     * 数据类型 0解挂 1挂起
      */
     @TableField(value = "data_type")
     private Byte dataType;
