@@ -21,7 +21,7 @@ public class QueryCommitProcessDto {
     /**
      * 用户id
      */
-
+    
     private Long userId;
 
     /**
