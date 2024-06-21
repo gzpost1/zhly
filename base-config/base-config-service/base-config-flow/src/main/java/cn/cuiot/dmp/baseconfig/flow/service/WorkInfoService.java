@@ -1146,6 +1146,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(handleDataVO);
     }
 
+    /**
+     * map排序
+     * @param pamaMap
+     * @return
+     */
     public Map<String, NodeDetailDto> sortedMap(Map<String,NodeDetailDto> pamaMap){
         Map<String, NodeDetailDto> sortedMap = new TreeMap<>(new Comparator<String>() {
             @Override
