@@ -45,14 +45,15 @@ public class CustomConfigRepositoryImpl implements CustomConfigRepository {
     private CustomConfigDetailRepository customConfigDetailRepository;
 
     @Override
-    public CustomConfig queryForDetail(Long id) {
+    public CustomConfig queryForDetail(Long id, Long companyId) {
+        AssertUtil.notNull(companyId, "企业Id不能为空");
         CustomConfigEntity customConfigEntity = Optional.ofNullable(customConfigMapper.selectById(id))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         CustomConfig customConfig = new CustomConfig();
         BeanUtils.copyProperties(customConfigEntity, customConfig);
         // 查询自定义配置详情
         List<CustomConfigDetail> customConfigDetails = customConfigDetailRepository.batchQueryCustomConfigDetails(id,
-                customConfig.getCompanyId());
+                companyId);
         customConfig.setCustomConfigDetailList(customConfigDetails);
         return customConfig;
     }
