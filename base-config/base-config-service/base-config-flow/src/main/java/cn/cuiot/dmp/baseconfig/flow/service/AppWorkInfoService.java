@@ -1307,7 +1307,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             entity.setProcessDefinitionId(processDefinitionId);
             entity.setProcessNodeType(children.getProcessNodeType());
             nodeTypeService.save(entity);
-            children = childNode.getChildren();
+            children = children.getChildren();
         }
 
 
