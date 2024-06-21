@@ -762,7 +762,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public IdmResDTO clientBack(ClientOperationDto operationDto) {
         //回退留痕
         HandleDataDTO handleDataDTO = new HandleDataDTO();
-        handleDataDTO.setTaskId(String.valueOf(operationDto.getTaskId()));
+        handleDataDTO.setProcessInstanceId(String.valueOf(operationDto.getProcessInstanceId()));
         handleDataDTO.setReason(operationDto.getReason());
         handleDataDTO.setComments(operationDto.getComments());
         WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
@@ -775,7 +775,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //更新主流程状态
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), workBusinessTypeInfo.getProcInstId());
 
-        Task task = taskService.createTaskQuery().taskId(String.valueOf(operationDto.getTaskId())).singleResult();
+        Task task = taskService.createTaskQuery().taskId(String.valueOf(workBusinessTypeInfo.getTaskId())).singleResult();
         String rollBackNode = queryRollBackNode(task);
         runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
                 rollBackNode).changeState();
