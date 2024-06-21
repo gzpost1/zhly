@@ -91,13 +91,13 @@ public class TbChargePlain {
      * 执行频率-指定日期-开始时间
      */
     @TableField(value = "cron_begin_date")
-    private Date cronBeginDate;
+    private Integer cronBeginDate;
 
     /**
      * 执行频率-指定日期-结束时间
      */
     @TableField(value = "cron_end_date")
-    private Date cronEndDate;
+    private Integer cronEndDate;
 
     /**
      * 执行频率-指定日期 1-31

@@ -241,7 +241,7 @@ public class ChargeManagerController {
      * @param createDto
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/create")
     @LogRecord(operationCode = "create", operationName = "缴费管理-创建", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO create(@RequestBody @Valid ChargeManagerInsertVo createDto) {
@@ -255,7 +255,7 @@ public class ChargeManagerController {
      * @param idParam
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/updateHangUpStatus")
     @LogRecord(operationCode = "updateHangUpStatus", operationName = "缴费管理-挂起/解挂", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO updateHangUpStatus(@RequestBody @Valid ChargeAbrogateInsertDto idParam) {
@@ -272,7 +272,7 @@ public class ChargeManagerController {
      * @param idParam
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/abrogateStatus")
     @LogRecord(operationCode = "abrogateStatus", operationName = "缴费管理-作废", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO abrogateStatus(@RequestBody @Valid ChargeAbrogateInsertDto idParam) {
@@ -291,7 +291,7 @@ public class ChargeManagerController {
      * @param
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/receivedAmount")
     @LogRecord(operationCode = "receivedAmount", operationName = "缴费管理-收款", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO receivedAmount(@RequestBody @Valid ChargeReceiptsReceivedDto dto) {

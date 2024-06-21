@@ -28,4 +28,8 @@ public interface TbChargeManagerMapper extends BaseMapper<TbChargeManager> {
     List<CustomerUserInfo> getUserInfoByIds(@Param("userIds") List<Long> userIds);
 
     IPage<CustomerUserInfo> queryHouseCustmerPage(Page page, @Param("query")HouseCustomerQuery query);
+
+    int insertList(@Param("list")List<TbChargeManager> list);
+
+
 }

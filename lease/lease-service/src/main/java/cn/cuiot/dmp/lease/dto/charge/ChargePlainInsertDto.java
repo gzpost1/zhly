@@ -44,16 +44,12 @@ public class ChargePlainInsertDto {
     /**
      * 执行频率-指定日期-开始时间
      */
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date cronBeginDate;
+    private Integer cronBeginDate;
 
     /**
      * 执行频率-指定日期-结束时间
      */
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date cronEndDate;
+    private Integer cronEndDate;
 
     /**
      * 执行频率-指定日期 1-31

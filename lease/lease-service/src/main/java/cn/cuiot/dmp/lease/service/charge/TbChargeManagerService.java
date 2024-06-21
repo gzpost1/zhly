@@ -126,11 +126,11 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
      * @param receivblePlanId
      * @return
      */
-    private static TbChargeManager getTbChargeManager(ChargeManagerInsertVo createDto, Byte createType, Long receivblePlanId) {
+    public  TbChargeManager getTbChargeManager(ChargeManagerInsertVo createDto, Byte createType, Long receivblePlanId) {
         TbChargeManager entity = new TbChargeManager();
         BeanUtils.copyProperties(createDto, entity);
         entity.setId(IdWorker.getId());
-        entity.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        entity.setCompanyId(createDto.getCompanyId());
         entity.setCreateType(createType);
         entity.setReceivblePlanId(receivblePlanId);
         entity.setReceivbleStatus(ChargeReceivbleEnum.UNPAID.getCode());
@@ -280,5 +280,9 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
 
     public IPage<CustomerUserInfo> queryHouseCustmerPage(HouseCustomerQuery query) {
         return baseMapper.queryHouseCustmerPage(new Page(query.getPageNo(), query.getPageSize()), query);
+    }
+
+    public void insertList(List<TbChargeManager> saveChargeMangeList) {
+        baseMapper.insertList(saveChargeMangeList);
     }
 }
