@@ -2,6 +2,7 @@ package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.NodeButton;
+import cn.cuiot.dmp.baseconfig.flow.entity.CommitProcessEntity;
 import cn.cuiot.dmp.query.PageQuery;
 import lombok.Data;
 
@@ -30,6 +31,10 @@ public class WorkInfoDto extends PageQuery {
      */
     private String businessTypeName;
 
+    /**
+     * 流程定义id
+     */
+    private String processDefinitionId;
 
     /**
      * 所属组织
@@ -174,4 +179,9 @@ public class WorkInfoDto extends PageQuery {
      * 按钮信息
      */
     private List<NodeButton> buttons;
+
+    /**
+     * 提交的信息
+     */
+    private CommitProcessEntity commitProcess;
 }
