@@ -1297,7 +1297,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         }
         ChildNode children = childNode.getChildren();
         while (true){
-            if(Objects.isNull(children)){
+            if(Objects.isNull(children.getId())){
                 return;
             }
             NodeTypeEntity entity = new NodeTypeEntity();

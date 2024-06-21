@@ -1079,7 +1079,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO<HandleDataVO> instanceInfo(HandleDataDTO HandleDataDTO) {
         String processInstanceId = HandleDataDTO.getProcessInstanceId();
         //校验权限信息
-        checkWorkOrder(processInstanceId);
+//        checkWorkOrder(processInstanceId);
 
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
                 .includeProcessVariables().singleResult();
@@ -1112,10 +1112,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         Map<String,NodeDetailDto> pamaMap = new HashMap<>();
         //已经运行完成的节点
         List<String> endNodes = new ArrayList<>();
+        Integer  sort =1;
         for (FlowElement flowElement : flowElements) {
             String nodeId = flowElement.getId();
             if(nodeId.startsWith(WorkOrderConstants.NODE_START) || StringUtils.equals(WorkOrderConstants.USER_ROOT,nodeId)){
                 //没有收集
+
                 if(!pamaMap.containsKey(nodeId)){
                     NodeDetailDto nodeDetailDto = new NodeDetailDto();
                     nodeDetailDto.setNodeId(nodeId);
@@ -1126,6 +1128,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                     nodeDetailDto.setBusinessName(getStartUserName(nodeId,
                             instId));
                     nodeDetailDto.setCreateDate(historicProcessInstance.getStartTime());
+                    nodeDetailDto.setSort(sort);
+                    sort++;
                     pamaMap.put(nodeDetailDto.getNodeId(),nodeDetailDto);
                 }
             }
@@ -1136,10 +1140,24 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         handleDataVO.setProcessTemplates(flowConfig);
         handleDataVO.setEndList(endNodes);
-        handleDataVO.setNodeList(pamaMap);
+        if (Objects.nonNull(pamaMap)){
+            handleDataVO.setNodeList(sortedMap(pamaMap));
+        }
         return IdmResDTO.success(handleDataVO);
     }
 
+    public Map<String, NodeDetailDto> sortedMap(Map<String,NodeDetailDto> pamaMap){
+        Map<String, NodeDetailDto> sortedMap = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String key1, String key2) {
+                // 比较两个键对应的值的sort属性
+                return Integer.compare(pamaMap.get(key1).getSort(), pamaMap.get(key2).getSort());
+            }
+        });
+
+        sortedMap.putAll(pamaMap);
+        return sortedMap;
+    }
     /**
      * 校验查询的工单信息与自己是不是同一个企业下的
      * @param processInstanceId
