@@ -21,6 +21,9 @@
         <result column="bind_customer_id" property="bindCustomerId" />
         <result column="bind_customer_type" property="bindCustomerType" />
         <result column="bind_customer_member_id" property="bindCustomerMemberId" />
+        <result column="audit_time" property="auditTime" />
+        <result column="audit_user_id" property="auditUserId" />
+        <result column="audit_person" property="auditPerson" />
         <result column="created_on" property="createdOn" />
         <result column="created_by" property="createdBy" />
         <result column="created_by_type" property="createdByType" />
@@ -35,7 +38,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, user_id, company_id, building_id, house_id, identity_type, name, phone_number, card_type_id, identity_num, remark, remark_images, audit_status, reject_reason, bind_customer_id, bind_customer_type, bind_customer_member_id, created_on, created_by, created_by_type, updated_on, updated_by, updated_by_type, deleted_flag, deleted_on, deleted_by, delete_by_type
+        id, user_id, company_id, building_id, house_id, identity_type, name, phone_number, card_type_id, identity_num, remark, remark_images, audit_status, reject_reason, bind_customer_id, bind_customer_type, bind_customer_member_id, audit_time,audit_user_id,audit_person,created_on, created_by, created_by_type, updated_on, updated_by, updated_by_type, deleted_flag, deleted_on, deleted_by, delete_by_type
     </sql>
 
     <resultMap id="DtoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.system.application.param.dto.UserHouseAuditDTO">
