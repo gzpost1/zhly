@@ -135,6 +135,20 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 }
             }
         }
+
+        //下拉回显
+        if(Objects.nonNull(query.getIncludeId())){
+            CustomerQuery ncludeQuery = new CustomerQuery();
+            ncludeQuery.setId(query.getIncludeId());
+            List<CustomerVo> dataList = queryForList(query);
+            if(CollectionUtils.isNotEmpty(dataList)){
+                CustomerVo customerVo = dataList.get(0);
+                if(!page.getRecords().stream().filter(item->item.getId().equals(customerVo.getId())).findFirst().isPresent()){
+                    page.getRecords().add(0,customerVo);
+                }
+            }
+        }
+
         return page;
     }
 

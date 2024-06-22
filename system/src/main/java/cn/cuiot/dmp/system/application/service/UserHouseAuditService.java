@@ -19,6 +19,7 @@ import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditStatusDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditUpdateDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseBuildingDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.UserHouseAuditEntity;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserHouseAuditMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -60,15 +61,27 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
     @Autowired
     private UserHouseAuditMapper userHouseAuditMapper;
 
+    @Autowired
+    private UserService userService;
+
     /**
      * 查询详情
      */
     public UserHouseAuditDTO queryForDetail(Long id) {
-        UserHouseAuditEntity userHouseAuditEntity = Optional.ofNullable(getById(id))
+
+        UserHouseAuditDTO userHouseAuditDTO = Optional.ofNullable(userHouseAuditMapper.queryForDetail(id))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
-        UserHouseAuditDTO userHouseAuditDTO = new UserHouseAuditDTO();
-        BeanUtils.copyProperties(userHouseAuditEntity, userHouseAuditDTO);
+
         fillSystemOptionName(Lists.newArrayList(userHouseAuditDTO));
+
+        UserResDTO userById = userService.getUserById(userHouseAuditDTO.getUserId().toString());
+        if (null != userById) {
+            if(StringUtils.isNotBlank(userById.getPhoneNumber())){
+                userById.setPhoneNumber(Sm4.decrypt(userById.getPhoneNumber()));
+            }
+        }
+        userHouseAuditDTO.setUser(userById);
+
         return userHouseAuditDTO;
     }
 
