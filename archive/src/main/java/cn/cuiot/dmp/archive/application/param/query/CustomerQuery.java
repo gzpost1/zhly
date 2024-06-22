@@ -22,6 +22,11 @@ public class CustomerQuery extends PageQuery {
     private Long excludeId;
 
     /**
+     * 包含客户ID
+     */
+    private Long includeId;
+
+    /**
      * 关键字
      */
     private String keyword;

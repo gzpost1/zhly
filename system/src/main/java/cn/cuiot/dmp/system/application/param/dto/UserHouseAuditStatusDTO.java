@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.application.param.dto;
 
+import java.io.Serializable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -10,8 +11,7 @@ import javax.validation.constraints.NotNull;
  * @date 2024/6/14
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class UserHouseAuditStatusDTO extends UserHouseAuditCreateDTO {
+public class UserHouseAuditStatusDTO implements Serializable {
 
     private static final long serialVersionUID = -4214062520515412021L;
 
