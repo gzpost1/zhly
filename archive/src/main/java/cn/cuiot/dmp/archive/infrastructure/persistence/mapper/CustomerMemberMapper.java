@@ -18,4 +18,6 @@ import org.apache.ibatis.annotations.Param;
 public interface CustomerMemberMapper extends BaseMapper<CustomerMemberEntity> {
 
     List<CustomerMemberVo> selectByCustomerId(@Param("customerIdList") List<Long> customerIdList);
+
+    void deleteByCustomerId(@Param("customerId") Long customerId);
 }
