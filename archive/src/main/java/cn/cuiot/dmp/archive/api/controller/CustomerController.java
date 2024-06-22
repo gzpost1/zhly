@@ -88,6 +88,7 @@ public class CustomerController {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
         query.setCompanyId(currentOrgId);
         IPage<CustomerVo> pageData = customerService.queryForPage(query);
+
         return IdmResDTO.success(pageData);
     }
 
