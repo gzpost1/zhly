@@ -33,6 +33,7 @@
     <select id="selectByCustomerId" resultMap="VoResultMap">
         select
         <include refid="Base_Column_List" />
+        from tb_customer_member
         <where>
             <if test="customerIdList != null and customerIdList.size() > 0">
                 and customer_id in
