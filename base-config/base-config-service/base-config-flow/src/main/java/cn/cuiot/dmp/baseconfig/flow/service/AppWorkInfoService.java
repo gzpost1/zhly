@@ -762,7 +762,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public IdmResDTO clientBack(ClientOperationDto operationDto) {
         //回退留痕
         HandleDataDTO handleDataDTO = new HandleDataDTO();
-        handleDataDTO.setTaskId(String.valueOf(operationDto.getTaskId()));
+        handleDataDTO.setProcessInstanceId(String.valueOf(operationDto.getProcessInstanceId()));
         handleDataDTO.setReason(operationDto.getReason());
         handleDataDTO.setComments(operationDto.getComments());
         WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
@@ -775,7 +775,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //更新主流程状态
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), workBusinessTypeInfo.getProcInstId());
 
-        Task task = taskService.createTaskQuery().taskId(String.valueOf(operationDto.getTaskId())).singleResult();
+        Task task = taskService.createTaskQuery().taskId(String.valueOf(workBusinessTypeInfo.getTaskId())).singleResult();
         String rollBackNode = queryRollBackNode(task);
         runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
                 rollBackNode).changeState();
@@ -1001,6 +1001,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         workInfoDto.setRevokeType(checkRevokeType(workInfoDto));
         //判断是否可以重新提交
         workInfoDto.setResubmit(resubmit(workInfoDto.getProcInstId()));
+
+        //获取我提交的信息
+        workInfoDto.setCommitProcess(queryCommitProcess(Long.parseLong(dto.getProcInstId()),WorkOrderConstants.USER_ROOT,null));
         return IdmResDTO.success(workInfoDto);
     }
 
@@ -1728,7 +1731,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         if(CollectionUtils.isNotEmpty(tasks)){
             resultDto.setCurrentNode(tasks.get(0).getTaskDefinitionKey());
         }
-        CommitProcessEntity processEntity = queryCommitProcess(Long.parseLong(entity.getProcInstId()), WorkOrderConstants.USER_ROOT);
+        CommitProcessEntity processEntity = queryCommitProcess(Long.parseLong(entity.getProcInstId()), WorkOrderConstants.USER_ROOT,null);
         if(Objects.nonNull(processEntity)){
             resultDto.setCommitProcess(processEntity.getCommitProcess());
         }
@@ -1740,9 +1743,11 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @param nodeId
      * @return
      */
-    public CommitProcessEntity queryCommitProcess(Long procInstId,String nodeId){
+    public CommitProcessEntity queryCommitProcess(Long procInstId,String nodeId,Long userId){
         LambdaQueryWrapper<CommitProcessEntity> lw = new LambdaQueryWrapper<>();
-        lw.eq(CommitProcessEntity::getProcInstId,procInstId).eq(CommitProcessEntity::getNodeId,nodeId).orderByDesc(CommitProcessEntity::getCreateTime);
+        lw.eq(CommitProcessEntity::getProcInstId,procInstId).eq(CommitProcessEntity::getNodeId,nodeId)
+                .eq(Objects.nonNull(userId),CommitProcessEntity::getUserId,userId)
+                .orderByDesc(CommitProcessEntity::getCreateTime);
         List<CommitProcessEntity> processEntities = commitProcessService.list(lw);
         return CollectionUtils.isEmpty(processEntities)?null:processEntities.get(0);
     }

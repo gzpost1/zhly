@@ -1146,6 +1146,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(handleDataVO);
     }
 
+    /**
+     * map排序
+     * @param pamaMap
+     * @return
+     */
     public Map<String, NodeDetailDto> sortedMap(Map<String,NodeDetailDto> pamaMap){
         Map<String, NodeDetailDto> sortedMap = new TreeMap<>(new Comparator<String>() {
             @Override
@@ -1818,6 +1823,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(Objects.isNull(dto.getUserId())){
             lw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
         }
+        lw.orderByDesc(CommitProcessEntity::getCreateTime);
         return commitProcessService.list(lw);
     }
 
@@ -1832,5 +1838,18 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         AgencyHandlingDto resultDto = baseMapper.queryAgencyHandlingNumber(dto);
 
         return IdmResDTO.success(resultDto);
+    }
+
+    /**
+     * 获取开始节点已提交的信息
+     * @param dto
+     * @return
+     */
+    public IdmResDTO<CommitProcessEntity> queryCommitProcess(QueryCommitProcessDto dto) {
+        dto.setNodeId(WorkOrderConstants.USER_ROOT);
+        List<CommitProcessEntity> processEntities = queryCommitProcessInfo(dto);
+        CommitProcessEntity entity = CollectionUtils.isNotEmpty(processEntities)?processEntities.get(0):null;
+        return IdmResDTO.success(entity);
+
     }
 }

@@ -2,6 +2,8 @@ package cn.cuiot.dmp.baseconfig.controller.workorder;
 
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.work.QueryCommitProcessDto;
+import cn.cuiot.dmp.baseconfig.flow.entity.CommitProcessEntity;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -64,5 +66,15 @@ public class ApprovalController {
     @PostMapping("queryMySubmitWorkInfo")
     public IdmResDTO<IPage<WorkInfoEntity>> queryMySubmitWorkInfo(@RequestBody QueryMyApprovalDto dto){
         return workInfoService.queryMySubmitWorkInfo(dto);
+    }
+
+    /**
+     * 获取用户已提交的信息开始节点
+     * @param dto
+     * @return
+     */
+    @PostMapping("queryCommitProcess")
+    public IdmResDTO<CommitProcessEntity> queryCommitProcess(@RequestBody QueryCommitProcessDto dto){
+        return workInfoService.queryCommitProcess(dto);
     }
 }
