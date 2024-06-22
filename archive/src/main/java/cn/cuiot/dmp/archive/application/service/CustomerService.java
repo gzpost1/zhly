@@ -95,11 +95,13 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
     public IPage<CustomerVo> queryForPage(CustomerQuery query) {
         CustomerCriteriaQuery criteriaQuery = CustomerCriteriaQuery.builder()
                 .companyId(query.getCompanyId())
+                .excludeId(query.getExcludeId())
                 .id(query.getId())
                 .keyword(query.getKeyword())
                 .customerName(query.getCustomerName())
                 .contactName(query.getContactName())
                 .status(query.getStatus())
+                .houseId(query.getHouseId())
                 .build();
         if(StringUtils.isNotBlank(query.getKeyword())){
             criteriaQuery.setKeywordPhone(Sm4.encryption(query.getKeyword()));
@@ -143,10 +145,12 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         CustomerCriteriaQuery criteriaQuery = CustomerCriteriaQuery.builder()
                 .companyId(query.getCompanyId())
                 .id(query.getId())
+                .excludeId(query.getExcludeId())
                 .keyword(query.getKeyword())
                 .customerName(query.getCustomerName())
                 .contactName(query.getContactName())
                 .status(query.getStatus())
+                .houseId(query.getHouseId())
                 .build();
         if(StringUtils.isNotBlank(query.getKeyword())){
             criteriaQuery.setKeywordPhone(Sm4.encryption(query.getKeyword()));

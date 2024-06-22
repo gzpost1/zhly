@@ -17,6 +17,11 @@ public class CustomerQuery extends PageQuery {
     private Long id;
 
     /**
+     * 排除客户ID
+     */
+    private Long excludeId;
+
+    /**
      * 关键字
      */
     private String keyword;
@@ -40,6 +45,12 @@ public class CustomerQuery extends PageQuery {
      * 状态
      */
     private Byte status;
+
+
+    /**
+     * 房屋ID
+     */
+    private Long houseId;
 
 
     /**
