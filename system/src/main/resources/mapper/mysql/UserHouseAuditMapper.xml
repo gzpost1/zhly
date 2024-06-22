@@ -60,7 +60,7 @@
        <where>
            a.building_id = b.id
            AND b.department_id = c.id
-           and a.house_id=b.id
+           and a.house_id=d.id
            <if test="param.beginTime !=null">
                and a.created_on <![CDATA[>=]]> #{param.beginTime}
            </if>
@@ -108,7 +108,7 @@
         where
             a.building_id = b.id
             AND b.department_id = c.id
-            and a.house_id=b.id
+            and a.house_id=d.id
             and a.id=#{id}
     </select>
 
