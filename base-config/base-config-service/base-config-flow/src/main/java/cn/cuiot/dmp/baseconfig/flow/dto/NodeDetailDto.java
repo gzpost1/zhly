@@ -35,4 +35,9 @@ public class NodeDetailDto {
      * 创建时间
      */
     private Date createDate;
+
+    /**
+     * 节点排序
+     */
+    private Integer sort;
 }

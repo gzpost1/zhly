@@ -85,25 +85,13 @@ public class WorkPlanInfoTask {
             }
             exList.add(entity);
         }
-
         if(CollectionUtil.isNotEmpty(exList)){
             planWorkExecutionInfoService.updateBatchById(exList);
         }
 
-
         return ReturnT.SUCCESS;
     }
 
-    public LocalDateTime getOverTime(WorkPlanInfoEntity entity){
-        LocalDate currentDate = LocalDate.now();
-        //循环结束类型今日
-        LocalTime recurrentOverTime = entity.getRecurrentOverTime();
-        if(Objects.equals(entity.getRecurrentType(), WorkFlowConstants.RESULT_1)){
-            currentDate=currentDate.plusDays(1);
-        }
 
-        // 获取新的日期时间
-        return LocalDateTime.of(currentDate, recurrentOverTime);
-    }
 
 }

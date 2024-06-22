@@ -37,36 +37,18 @@ public interface WorkFlowConstants {
     String OPINION_COMMENT="opinion";
     String OPTION_COMMENT="option";
     String SIGN_COMMENT="sign";
-
-
-    String JOB_INVOKETARGET="createPlanWork";
-
-    /**
-     * 挂起
-     */
-    String BUSINESS_PENDING = "businessPending";
-
-
     /**
      * 挂起
      */
     Byte BUSINESS_BYPE_PENDING=0;
-
-    /**
-     * 定时任务状态
-     */
-    Byte JOB_STATUS=1;
-
     /**
      * 超时处理类型
      */
     String TIME_HANDLER_TYPE = "timeHandler";
-
     /**
      * 最后一天
      */
     String LAST_DAT="32";
-
     /**
      * 返回结果
      */
@@ -75,10 +57,5 @@ public interface WorkFlowConstants {
     Byte RESULT_0 = 0;
 
     Byte PARAM_2 = 2;
-
-    /**
-     * 获取待已审批列表
-     */
-    Integer QUERY_TYPE_APPROVAL = 1;
 
 }
