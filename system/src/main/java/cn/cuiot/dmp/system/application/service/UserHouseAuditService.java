@@ -12,6 +12,7 @@ import cn.cuiot.dmp.common.constant.UserHouseAuditStatusConstants;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditPageQueryDTO;
@@ -29,6 +30,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -198,6 +200,10 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         }
 
         LambdaUpdateWrapper<UserHouseAuditEntity> updateWrapper = Wrappers.lambdaUpdate();
+
+        updateWrapper.set(UserHouseAuditEntity::getAuditTime, new Date());
+        updateWrapper.set(UserHouseAuditEntity::getAuditUserId, LoginInfoHolder.getCurrentUserId());
+        updateWrapper.set(UserHouseAuditEntity::getAuditPerson, LoginInfoHolder.getCurrentName());
 
         updateWrapper.set(UserHouseAuditEntity::getAuditStatus, statusDTO.getAuditStatus());
         updateWrapper.set(UserHouseAuditEntity::getRejectReason, statusDTO.getRejectReason());
