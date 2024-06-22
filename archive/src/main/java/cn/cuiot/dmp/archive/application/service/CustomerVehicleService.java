@@ -52,9 +52,10 @@ public class CustomerVehicleService extends
      * 根据客户ID删除
      */
     public void deleteByCustomerId(Long customerId) {
-        LambdaUpdateWrapper<CustomerVehicleEntity> lambdaUpdate = Wrappers.lambdaUpdate();
+        /*LambdaUpdateWrapper<CustomerVehicleEntity> lambdaUpdate = Wrappers.lambdaUpdate();
         lambdaUpdate.set(CustomerVehicleEntity::getDeleted, EntityConstants.DELETED);
         lambdaUpdate.eq(CustomerVehicleEntity::getCustomerId, customerId);
-        customerVehicleMapper.update(null, lambdaUpdate);
+        customerVehicleMapper.update(null, lambdaUpdate);*/
+        customerVehicleMapper.deleteByCustomerId(customerId);
     }
 }
