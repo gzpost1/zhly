@@ -45,6 +45,7 @@ public class CustomConfigServiceImpl implements CustomConfigService {
         CustomConfig customConfig = customConfigRepository.queryForDetail(id, companyId);
         CustomConfigVO customConfigVO = new CustomConfigVO();
         BeanUtils.copyProperties(customConfig, customConfigVO);
+        customConfigVO.setCustomConfigDetailList(customConfig.getCustomConfigDetailList());
         return customConfigVO;
     }
 
@@ -55,6 +56,7 @@ public class CustomConfigServiceImpl implements CustomConfigService {
         CustomConfig customConfigResult = customConfigRepository.queryForDetailByName(customConfig);
         CustomConfigVO customConfigVO = new CustomConfigVO();
         BeanUtils.copyProperties(customConfigResult, customConfigVO);
+        customConfigVO.setCustomConfigDetailList(customConfigResult.getCustomConfigDetailList());
         return customConfigVO;
     }
 
