@@ -50,9 +50,6 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
         tbChargePlain.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         tbChargePlain.setStatus(EntityConstants.ENABLED);
         baseMapper.insert(tbChargePlain);
-
-        //todo 填充xxljob生成任务
-
     }
 
     /**
@@ -66,8 +63,6 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
         AssertUtil.notNull(tbChargePlain, "数据不存在");
         BeanUtils.copyProperties(updateDto, tbChargePlain);
         this.updateById(tbChargePlain);
-
-        //todo 更新xxl-job任务
     }
 
     /**

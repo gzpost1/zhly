@@ -91,4 +91,8 @@ public class ChargePlainPageDto {
      * 状态 0停用 1启用
      */
     private Byte status;
+    /**
+     * 收费对象
+     */
+    private Long receivableObj;
 }

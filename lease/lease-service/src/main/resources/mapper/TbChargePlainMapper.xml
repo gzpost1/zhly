@@ -21,13 +21,13 @@
     <result column="cron_appoint_date" jdbcType="INTEGER" property="cronAppointDate" />
     <result column="cron_time" jdbcType="TIME" property="cronTime" />
     <result column="status" jdbcType="TINYINT" property="status" />
-    <result column="job_id" jdbcType="VARCHAR" property="jobId" />
+    <result column="receivable_obj" jdbcType="BIGINT" property="receivable_obj" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, receivable_amount_rate, charge_item_id, charge_standard, receivable_amount, company_id, 
     update_time, update_user, create_time, create_user, deleted, cron_type, cron_begin_date, 
-    cron_end_date, cron_appoint_date, cron_time, `status`,job_id
+    cron_end_date, cron_appoint_date, cron_time, `status`,receivable_obj
   </sql>
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.lease.dto.charge.ChargePlainPageDto">

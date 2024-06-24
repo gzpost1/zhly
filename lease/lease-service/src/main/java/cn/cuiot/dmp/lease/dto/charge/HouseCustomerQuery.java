@@ -22,4 +22,9 @@ public class HouseCustomerQuery extends PageQuery {
      * 客户名称
      */
     private String customerUserName;
+
+    /**
+     * 楼盘id
+     */
+    private Long loupanId;
 }

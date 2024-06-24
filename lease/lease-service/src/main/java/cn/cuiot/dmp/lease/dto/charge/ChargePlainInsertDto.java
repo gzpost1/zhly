@@ -1,12 +1,9 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
-import java.util.Date;
 
 /**
  * @Description 自动生成计划
@@ -61,4 +58,8 @@ public class ChargePlainInsertDto {
      */
     private LocalTime cronTime;
 
+    /**
+     * 收费对象
+     */
+    private Long receivableObj;
 }

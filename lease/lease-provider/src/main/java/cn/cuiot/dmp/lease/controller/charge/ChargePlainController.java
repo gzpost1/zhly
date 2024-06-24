@@ -133,7 +133,7 @@ public class ChargePlainController {
     @PostMapping("/delete")
     @LogRecord(operationCode = "delete", operationName = "自动生成计划-删除", serviceType = ServiceTypeConst.CHARGEPLAIN)
     public IdmResDTO delete(@RequestBody @Valid DeleteParam deleteParam) {
-
+        chargePlainService.removeById(deleteParam.getId());
         return IdmResDTO.success();
     }
 }

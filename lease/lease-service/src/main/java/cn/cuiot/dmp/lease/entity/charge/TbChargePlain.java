@@ -118,7 +118,7 @@ public class TbChargePlain {
     private Byte status;
 
     /**
-     * 定时任务ID
+     * 收费对象
      */
-    private String jobId;
+    private Long receivableObj;
 }
