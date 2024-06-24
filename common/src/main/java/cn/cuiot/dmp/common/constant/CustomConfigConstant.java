@@ -24,6 +24,7 @@ public class CustomConfigConstant {
     public static final List<String> WORK_OPTION_INIT = Lists.newArrayList("挂起原因", "终止原因", "退回原因",
             "撤回原因", "处理节点类型");
     public static final List<String> CLUE_OPTION_INIT = Lists.newArrayList("线索来源", "跟进状态", "线索结果");
+    public static final List<String> NOTICE_TYPE_INIT = Lists.newArrayList("公告类型");
     public static final Long DEFAULT_USER_ID = 1L;
 
 }
