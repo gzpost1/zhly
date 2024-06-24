@@ -14,7 +14,8 @@ public enum ErrorCode implements IExceptionType {
     NOT_FOUND("00006", "未找到"),
 
     NOT_OPERATION("00005","无权操作"),
-    SUSPENDED("00007","任务已挂起")
+    SUSPENDED("00007","任务已挂起"),
+    TASK_COMPLETE("00008","任务已结束")
     ;
 
     private String code;
