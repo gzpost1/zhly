@@ -2,6 +2,7 @@ package cn.cuiot.dmp.baseconfig.controller.app;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.AppAssigneeDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.*;
@@ -215,6 +216,7 @@ public class AppWorkOrderController {
      */
     @PostMapping("queryBasicInfo")
     public IdmResDTO<WorkInfoDto> queryBasicInfo(@RequestBody WorkProcInstDto dto){
+        dto.setNodeType(WorkOrderConstants.taskNode);
         return appWorkInfoService.queryBasicInfo(dto);
     }
     /**
@@ -266,6 +268,7 @@ public class AppWorkOrderController {
      */
     @PostMapping("queryMyapproveBasicInfo")
     public IdmResDTO<WorkInfoDto> queryMyapproveBasicInfo(@RequestBody WorkProcInstDto dto){
+        dto.setNodeType(WorkOrderConstants.approvalNodeType);
         return appWorkInfoService.queryBasicInfo(dto);
     }
 
@@ -348,7 +351,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("clientComment")
-    public IdmResDTO clientComment(@RequestBody TaskBusinessDto dto){
+    public IdmResDTO clientComment(@RequestBody ClientOperationDto dto){
         return appWorkInfoService.clientComment(dto);
     }
 
