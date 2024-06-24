@@ -17,4 +17,9 @@ public class WorkProcInstDto {
      */
     @NotBlank(message = "工单id不能为空")
     private String procInstId;
+
+    /**
+     * 查询节点类型
+     */
+    private String nodeType;
 }

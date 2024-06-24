@@ -2,6 +2,7 @@ package cn.cuiot.dmp.baseconfig.controller.app;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.AppAssigneeDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.*;
@@ -17,6 +18,7 @@ import cn.cuiot.dmp.baseconfig.flow.service.AppWorkInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,16 @@ public class AppWorkOrderController {
 
     @Autowired
     private WorkInfoService workInfoService;
+
+    /**
+     * 查询节点属性数据,并判断是否有权限发起该流程
+     * @return
+     */
+    @PostMapping("queryFirstFormInfo")
+    public IdmResDTO queryFirstFormInfo(@RequestBody FirstFormDto dto){
+
+        return workInfoService.queryFirstFormInfo(dto, LoginInfoHolder.getCurrentUserId());
+    }
 
     /**
      * 3.3代办工单-待审批
@@ -204,6 +216,7 @@ public class AppWorkOrderController {
      */
     @PostMapping("queryBasicInfo")
     public IdmResDTO<WorkInfoDto> queryBasicInfo(@RequestBody WorkProcInstDto dto){
+        dto.setNodeType(WorkOrderConstants.taskNode);
         return appWorkInfoService.queryBasicInfo(dto);
     }
     /**
@@ -255,6 +268,7 @@ public class AppWorkOrderController {
      */
     @PostMapping("queryMyapproveBasicInfo")
     public IdmResDTO<WorkInfoDto> queryMyapproveBasicInfo(@RequestBody WorkProcInstDto dto){
+        dto.setNodeType(WorkOrderConstants.approvalNodeType);
         return appWorkInfoService.queryBasicInfo(dto);
     }
 
@@ -337,7 +351,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("clientComment")
-    public IdmResDTO clientComment(@RequestBody TaskBusinessDto dto){
+    public IdmResDTO clientComment(@RequestBody ClientOperationDto dto){
         return appWorkInfoService.clientComment(dto);
     }
 

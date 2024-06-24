@@ -12,6 +12,7 @@ import cn.cuiot.dmp.common.constant.UserHouseAuditStatusConstants;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditPageQueryDTO;
@@ -19,6 +20,7 @@ import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditStatusDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditUpdateDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseBuildingDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.UserHouseAuditEntity;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserHouseAuditMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -28,6 +30,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,15 +63,27 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
     @Autowired
     private UserHouseAuditMapper userHouseAuditMapper;
 
+    @Autowired
+    private UserService userService;
+
     /**
      * 查询详情
      */
     public UserHouseAuditDTO queryForDetail(Long id) {
-        UserHouseAuditEntity userHouseAuditEntity = Optional.ofNullable(getById(id))
+
+        UserHouseAuditDTO userHouseAuditDTO = Optional.ofNullable(userHouseAuditMapper.queryForDetail(id))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
-        UserHouseAuditDTO userHouseAuditDTO = new UserHouseAuditDTO();
-        BeanUtils.copyProperties(userHouseAuditEntity, userHouseAuditDTO);
+
         fillSystemOptionName(Lists.newArrayList(userHouseAuditDTO));
+
+        UserResDTO userById = userService.getUserById(userHouseAuditDTO.getUserId().toString());
+        if (null != userById) {
+            if(StringUtils.isNotBlank(userById.getPhoneNumber())){
+                userById.setPhoneNumber(Sm4.decrypt(userById.getPhoneNumber()));
+            }
+        }
+        userHouseAuditDTO.setUser(userById);
+
         return userHouseAuditDTO;
     }
 
@@ -185,6 +200,10 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         }
 
         LambdaUpdateWrapper<UserHouseAuditEntity> updateWrapper = Wrappers.lambdaUpdate();
+
+        updateWrapper.set(UserHouseAuditEntity::getAuditTime, new Date());
+        updateWrapper.set(UserHouseAuditEntity::getAuditUserId, LoginInfoHolder.getCurrentUserId());
+        updateWrapper.set(UserHouseAuditEntity::getAuditPerson, LoginInfoHolder.getCurrentName());
 
         updateWrapper.set(UserHouseAuditEntity::getAuditStatus, statusDTO.getAuditStatus());
         updateWrapper.set(UserHouseAuditEntity::getRejectReason, statusDTO.getRejectReason());

@@ -24,6 +24,10 @@
         id, customer_id, house_id, identity_type, move_in_date, move_out_date, status, remark, update_time, update_user, create_time, create_user, deleted
     </sql>
 
+    <delete id="deleteByCustomerId">
+        delete from tb_customer_house where customer_id=#{customerId}
+    </delete>
+
     <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.vo.CustomerHouseVo">
         <result column="community_id" property="communityId" />
         <result column="community_name" property="communityName" />

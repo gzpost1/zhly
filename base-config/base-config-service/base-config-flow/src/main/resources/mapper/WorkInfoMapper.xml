@@ -23,7 +23,7 @@
     </sql>
     <sql id="queryWorkOrderInfoSql">
          t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds,
-         t1.actual_user_id,t1.revoke_type,t1.revoke_node_id
+         t1.actual_user_id,t1.revoke_type,t1.revoke_node_id,t1.process_definition_id
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
@@ -436,10 +436,10 @@
                 <if test="query.nodeType !=null and query.nodeType!=''">
                     and t3.process_node_type = #{query.nodeType}
                 </if>
-                <if test="query.queryType !=null and query.queryType='0'">
+                <if test="query.queryType !=null and query.queryType=='0'">
                     and t2.END_TIME_ is  null
                 </if>
-                <if test="query.queryType !=null and query.queryType='1'">
+                <if test="query.queryType !=null and query.queryType=='1'">
                     and t2.END_TIME_ is not null
                 </if>
             </where>
@@ -481,10 +481,10 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="query.queryType !=null and query.queryType='0'">
+            <if test="query.queryType !=null and query.queryType=='0'">
                 and t2.END_TIME_ is  null
             </if>
-            <if test="query.queryType !=null and query.queryType='1'">
+            <if test="query.queryType !=null and query.queryType=='1'">
                 and t2.END_TIME_ is not null
             </if>
         </where>
@@ -493,7 +493,7 @@
     </sql>
 
     <sql id="queryMyMakeSql">
-        t1.work_name,t1.create_user,t1.create_time,t1.work_time_out as outTime,t3.node_id,t1.proc_inst_id
+        t1.work_name,t1.create_user,t1.create_time,t1.work_time_out as outTime,t2.node_id,t1.proc_inst_id
     </sql>
     <select id="queryMyMake" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
     select
@@ -561,7 +561,7 @@
         order by create_time desc
     </sql>
     <sql id="queryCustomerWorkOrderSql">
-        business_type,work_name,work_source as workSource,status,create_time,actual_user_id,create_user,proc_inst_id,property_id,work_time_out as timeOut
+        business_type,work_name,work_souce as workSource,status,create_time,actual_user_id,create_user,proc_inst_id,property_id,work_time_out as timeOut
     </sql>
     <select id="queryCustomerWorkOrder" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.CustomerWorkOrderDto">
         select
@@ -612,5 +612,10 @@
     <select id="queryAgencyHandlingNumber" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.AgencyHandlingDto">
         select count(*) as AgencyNumber from act_ru_task t1 left join tb_node_type t2 on t1.PROC_DEF_ID_ = t2.process_definition_id
         where t1.TASK_DEF_KEY_ = t2.node_id and t2.node_type = #{query.nodeType} and t1.ASSIGNEE_= #{query.assignee}
+    </select>
+
+    <select id="queryWorkOrderNumber" resultType="java.lang.Integer">
+        select IF(count(*)>0,0,1) from act_ru_task t1 left join tb_node_type t2 on t1.PROC_DEF_ID_ = t2.process_definition_id
+        where t1.ASSIGNEE_ = #{userId} and t1.PROC_INST_ID_ = #{procInstId} and t1.TASK_DEF_KEY_=t2.node_id and t2.node_type='APPROVAL'
     </select>
 </mapper>
