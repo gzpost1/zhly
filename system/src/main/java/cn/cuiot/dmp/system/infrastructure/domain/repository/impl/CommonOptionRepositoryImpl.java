@@ -204,6 +204,7 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
         LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
                 .eq(Objects.nonNull(pageQuery.getCompanyId()), CommonOptionEntity::getCompanyId, pageQuery.getCompanyId())
                 .eq(Objects.nonNull(pageQuery.getTypeId()), CommonOptionEntity::getTypeId, pageQuery.getTypeId())
+                .eq(Objects.nonNull(pageQuery.getCategory()), CommonOptionEntity::getTypeCategory, pageQuery.getCategory())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), CommonOptionEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CommonOptionEntity::getStatus, pageQuery.getStatus());
         IPage<CommonOptionEntity> commonOptionEntityPage = commonOptionMapper.selectPage(
