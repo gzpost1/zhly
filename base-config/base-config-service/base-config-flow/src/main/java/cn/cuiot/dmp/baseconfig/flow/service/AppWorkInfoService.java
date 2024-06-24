@@ -1,11 +1,14 @@
 package cn.cuiot.dmp.baseconfig.flow.service;
 
+import cn.cuiot.dmp.base.application.service.ApiArchiveService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.utils.SpringContextHolder;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
@@ -114,6 +117,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
     @Autowired
     private MsgSendService msgSendService;
+
+    @Autowired
+    private ApiArchiveService apiArchiveService;
 
     /**
      * APP 获取待审批的数据
@@ -249,10 +255,15 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         resultDto.setPhone(baseUserDto.getPhoneNumber());
         resultDto.setUserName(baseUserDto.getName());
         //获取报单人信息
-        BaseUserDto actualUser = queryBaseUserInfo(resultDto.getActualUserId());
-        resultDto.setActualUserPhone(actualUser.getPhoneNumber());
-        resultDto.setActualUserName(actualUser.getName());
-
+        if(Objects.nonNull(resultDto.getCustomerId())){
+            CustomerUserRspDto customerUserRspDto = queryCustomerInfo(resultDto.getCustomerId());
+            resultDto.setActualUserPhone(customerUserRspDto.getContactPhone());
+            resultDto.setActualUserName(customerUserRspDto.getUserName());
+        }else{
+            BaseUserDto actualUser = queryBaseUserInfo(resultDto.getActualUserId());
+            resultDto.setActualUserPhone(actualUser.getPhoneNumber());
+            resultDto.setActualUserName(actualUser.getName());
+        }
         //获取挂起时间
         BusinessTypeInfoDto businessTypeInfoDto = BusinessTypeInfoDto.builder().businessType(BUSINESS_BYPE_PENDING).
                 procInstId(Long.parseLong(resultDto.getProcInstId())).build();
@@ -351,6 +362,11 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         return CollectionUtils.isEmpty(list)?null:list.get(0);
     }
 
+    /**
+     * 查询用户信息
+     * @param userId
+     * @return
+     */
     public BaseUserDto queryBaseUserInfo(Long userId){
         BaseUserReqDto reqDto = new BaseUserReqDto();
         reqDto.setUserId(userId);
@@ -359,6 +375,21 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             throw new RuntimeException("用户信息不存在");
         }
         return baseUserDtoIdmResDTO.getData();
+    }
+
+    /**
+     * 获取客户信息
+     * @param customerId
+     * @return
+     */
+    public CustomerUserRspDto queryCustomerInfo(Long customerId){
+        CustomerUseReqDto reqDto = new CustomerUseReqDto();
+        reqDto.setCustomerIdList(Arrays.asList(customerId));
+        List<CustomerUserRspDto> customerUsers = apiArchiveService.lookupCustomerUsers(reqDto);
+        if(customerUsers == null){
+            throw new RuntimeException("客户信息不存在");
+        }
+        return customerUsers.get(0);
     }
 
 
@@ -832,7 +863,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         if(CollectionUtil.isEmpty(taskList)){
             return IdmResDTO.error(ResultCode.OBJECT_NOT_EXIST.getCode(), ResultCode.OBJECT_NOT_EXIST.getMessage());
         }
-        List<Task> tasks = taskList.stream().filter(item -> Objects.equals(item.getAssignee(), LoginInfoHolder.getCurrentUserId())).collect(Collectors.toList());
+        List<Task> tasks = taskList.stream().filter(item -> Objects.equals(item.getAssignee(), String.valueOf(LoginInfoHolder.getCurrentUserId()))).collect(Collectors.toList());
         if(CollectionUtil.isNotEmpty(tasks)){
             resultDto.setTaskId(Long.parseLong(tasks.get(0).getId()));
         }
