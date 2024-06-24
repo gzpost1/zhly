@@ -870,9 +870,18 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         queryBusinessTime(resultDto,historicProcessInstance.getEndTime());
         //获取关联的工单信息
         resultDto.setWorkOrderIds(getWordOrderIds(Long.parseLong(resultDto.getProcInstId())));
+        resultDto.setQueryType(queryWorkOrderNumber(Long.parseLong(resultDto.getProcInstId()), dto.getNodeType()));
         return IdmResDTO.success(resultDto);
     }
 
+    /**
+     * 查询当前是否在该登陆人处理状态
+     * @param procInstId
+     * @return
+     */
+    public Integer queryWorkOrderNumber(Long procInstId,String nodeType){
+        return baseMapper.queryWorkOrderNumber(LoginInfoHolder.getCurrentUserId(),procInstId,nodeType);
+    }
     /**
      * 转办
      * @param assigneeDto
@@ -979,9 +988,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @param dto
      * @return
      */
-    public IdmResDTO clientComment(TaskBusinessDto dto) {
+    public IdmResDTO clientComment(ClientOperationDto dto) {
         HandleDataDTO dataDTO = new HandleDataDTO();
-        dataDTO.setTaskId(String.valueOf(dto.getTaskId()));
+        dataDTO.setProcessInstanceId(String.valueOf(dto.getProcessInstanceId()));
         dataDTO.setComments(dto.getComments());
         dataDTO.setReason(dto.getReason());
         WorkBusinessTypeInfoEntity businessTypeInfo =getWorkBusinessTypeInfo(dataDTO);
@@ -1396,6 +1405,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //保存节点自选人信息
         Map<String, List<UserInfo>> processUsers = approvalDto.getProcessUsers();
         Task task = taskService.createTaskQuery().taskId(String.valueOf(approvalDto.getTaskId())).singleResult();
+        if(Objects.isNull(task)){
+            return IdmResDTO.error(ErrorCode.TASK_COMPLETE.getCode(), ErrorCode.TASK_COMPLETE.getMessage());
+        }
         Map<String,Object> processVariables= new HashMap<>();
         if(CollUtil.isNotEmpty(processUsers)){
             Set<String> nodes = processUsers.keySet();

@@ -59,7 +59,7 @@ public class NoticeCreateDto {
     /**
      * 消息通知
      */
-    private Byte inform;
+    private List<Byte> inform;
 
     /**
      * 公告详情

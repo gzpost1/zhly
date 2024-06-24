@@ -13,7 +13,7 @@
         <result column="digest" property="digest" />
         <result column="effective_start_time" property="effectiveStartTime" />
         <result column="effective_end_time" property="effectiveEndTime" />
-        <result column="inform" property="inform" />
+        <result column="inform" property="inform" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
         <result column="detail" property="detail" />
         <result column="status" property="status" />
         <result column="audit_status" property="auditStatus" />
@@ -68,16 +68,20 @@
             </foreach>
         </if>
         <if test="param.publishStatus != null ">
-            <if test="param.publishStatus == 1">
-               and publish_status = #{param.publishStatus} and effective_start_time &gt;= now()
+            and publish_status = #{param.publishStatus}
+        </if>
+        <if test="param.effectiveStatus != null ">
+            <if test="param.effectiveStatus == 1">
+                and effective_start_time &lt;= now() and effective_end_time &gt;= now()
             </if>
-            <if test="param.publishStatus == 2">
-                and publish_status = #{param.publishStatus} and effective_start_time &lt;= now() and effective_end_time &gt;= now()
-            </if>
-            <if test="param.publishStatus == 3">
+            <if test="param.effectiveStatus == 2">
                 and effective_end_time &lt; now()
             </if>
+            <if test="param.effectiveStatus == 0">
+                and effective_start_time &gt;= now()
+            </if>
         </if>
+
         <choose>
             <when test="param.buildings !=null and param.buildings.size > 0">
                 and id in (
