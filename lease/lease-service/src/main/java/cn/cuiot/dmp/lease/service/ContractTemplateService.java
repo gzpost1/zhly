@@ -7,6 +7,7 @@ import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.lease.dto.contractTemplate.ContractTemplateCreateDTO;
 import cn.cuiot.dmp.lease.dto.contractTemplate.ContractTemplateDTO;
 import cn.cuiot.dmp.lease.dto.contractTemplate.ContractTemplatePageQueryDTO;
@@ -104,6 +105,7 @@ public class ContractTemplateService extends ServiceImpl<ContractTemplateMapper,
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean saveContractTemplate(ContractTemplateCreateDTO createDTO) {
+        AssertUtil.notNull(createDTO.getCompanyId(), "企业id不能为空");
         ContractTemplateEntity ContractTemplateEntity = new ContractTemplateEntity();
         BeanUtils.copyProperties(createDTO, ContractTemplateEntity);
         return save(ContractTemplateEntity);
