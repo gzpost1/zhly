@@ -860,17 +860,17 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         WorkInfoDto resultDto = getBaseMapper().queryWorkOrderDetailInfo(dto);
 
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(dto.getProcInstId()).list();
-        if(CollectionUtil.isEmpty(taskList)){
-            return IdmResDTO.error(ResultCode.OBJECT_NOT_EXIST.getCode(), ResultCode.OBJECT_NOT_EXIST.getMessage());
+        if(CollectionUtil.isNotEmpty(taskList)){
+            List<Task> tasks = taskList.stream().filter(item -> Objects.equals(item.getAssignee(), String.valueOf(LoginInfoHolder.getCurrentUserId()))).collect(Collectors.toList());
+            if(CollectionUtil.isNotEmpty(tasks)){
+                resultDto.setTaskId(Long.parseLong(tasks.get(0).getId()));
+            }
+            //获取节点按钮信息
+            ChildNode childNode = getChildNodeByNodeId(taskList.get(0).getProcessDefinitionId(), taskList.get(0).getTaskDefinitionKey());
+            List<NodeButton> buttons = childNode.getProps().getButtons();
+            resultDto.setButtons(buttons);
         }
-        List<Task> tasks = taskList.stream().filter(item -> Objects.equals(item.getAssignee(), String.valueOf(LoginInfoHolder.getCurrentUserId()))).collect(Collectors.toList());
-        if(CollectionUtil.isNotEmpty(tasks)){
-            resultDto.setTaskId(Long.parseLong(tasks.get(0).getId()));
-        }
-        //获取节点按钮信息
-        ChildNode childNode = getChildNodeByNodeId(taskList.get(0).getProcessDefinitionId(), taskList.get(0).getTaskDefinitionKey());
-        List<NodeButton> buttons = childNode.getProps().getButtons();
-        resultDto.setButtons(buttons);
+
         //填充组织名称
         resultDto.setOrgPath(getOrgPath(resultDto.getDeptIds()));
         // 业务类型后返回数据
@@ -1128,7 +1128,6 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         });
         processVariables.putAll(formValue);
 
-        String taskId = startProcessInstanceDTO.getTaskId();
         Task task =null;
         //再次发起
         if(StringUtils.isNotBlank(startProcessInstanceDTO.getProcessInstanceId())){
@@ -1145,7 +1144,15 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             if(Objects.equals(WorkOrderConstants.USER_ROOT,tasks.get(0).getTaskDefinitionKey())){
                 throw new BusinessException(ErrorCode.NOT_OPERATION.getCode(), ErrorCode.NOT_OPERATION.getMessage());
             }
+            task=tasks.get(0);
             runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
+
+        }else{
+            //新建,发起流程
+            task =initiateProcess(startProcessInstanceDTO,processVariables);
+        }
+
+        if(task!=null){
             HandleDataDTO handleDataDTO = new HandleDataDTO();
             handleDataDTO.setTaskId(task.getId());
             //保存操作信息
@@ -1154,17 +1161,24 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             workBusinessTypeInfoService.save(workBusinessTypeInfo);
             //保存提交的参数
             saveCommitProcess(workBusinessTypeInfo,startProcessInstanceDTO);
-        }else{
-            //新建,发起流程
-            task =initiateProcess(startProcessInstanceDTO,processVariables);
-        }
-
-        if(task!=null){
+            //保存工单关联关系
+            saveWorkOrderRel(startProcessInstanceDTO,Long.parseLong(task.getProcessInstanceId()));
             taskService.complete(task.getId());
         }
         return IdmResDTO.success(task.getProcessInstanceId());
     }
 
+
+    public void saveWorkOrderRel(StartProcessInstanceDTO startProcessInstanceDTO,Long procInstId){
+        if(Objects.isNull(startProcessInstanceDTO.getOldProcInstId())){
+            return;
+        }
+        WorkOrderRelEntity rel = new WorkOrderRelEntity();
+        rel.setId(IdWorker.getId());
+        rel.setOldWorkOrderId(startProcessInstanceDTO.getOldProcInstId());
+        rel.setNewWorkOrderId(procInstId);
+        workOrderRelService.save(rel);
+    }
     /**
      * 发起流程任务
      * @param startProcessInstanceDTO
@@ -1226,6 +1240,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         entity.setCreateTime(new Date());
         entity.setBusinessTypeId(workBusinessTypeInfo.getId());
         commitProcessService.save(commitProcess);
+
+        //保存工单关联关系
+
     }
     /**
      * 获取组织信息
@@ -1575,6 +1592,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             if(Objects.equals(WorkOrderConstants.USER_ROOT,tasks.get(0).getTaskDefinitionKey())){
                 throw new BusinessException(ErrorCode.NOT_OPERATION.getCode(), ErrorCode.NOT_OPERATION.getMessage());
             }
+            task=tasks.get(0);
             runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
 
         }else{
