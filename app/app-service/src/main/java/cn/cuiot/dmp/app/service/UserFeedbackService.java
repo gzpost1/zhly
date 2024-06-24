@@ -3,6 +3,7 @@ package cn.cuiot.dmp.app.service;
 import cn.cuiot.dmp.app.dto.UserFeedbackQuery;
 import cn.cuiot.dmp.app.entity.UserFeedbackEntity;
 import cn.cuiot.dmp.app.mapper.UserFeedbackMapper;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.Sm4;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -76,6 +77,7 @@ public class UserFeedbackService extends ServiceImpl<UserFeedbackMapper, UserFee
         updateEntity.setReplyUserName(replyUserName);
         updateEntity.setReplyTime(replyTime);
         updateEntity.setReplyContent(replyContent);
+        updateEntity.setStatus(EntityConstants.YES);
         userFeedbackMapper.updateById(updateEntity);
     }
 }

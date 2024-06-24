@@ -1,10 +1,9 @@
 package cn.cuiot.dmp.lease.entity.charge;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.math.BigDecimal;

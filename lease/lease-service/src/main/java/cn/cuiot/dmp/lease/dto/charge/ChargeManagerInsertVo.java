@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -82,4 +83,9 @@ public class ChargeManagerInsertVo {
      * 本金税率
      */
     private BigDecimal receivableAmountRate;
+
+    /**
+     * 企业ID
+     */
+    private Long companyId;
 }

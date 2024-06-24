@@ -9,8 +9,10 @@ import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * 收费管理-收银台-缴费管理
@@ -19,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  * @date 2024/6/12
  */
 @Slf4j
+@RunWith(SpringRunner.class)
 @SpringBootTest(classes = LeaseApplication.class)
 public class TbChargeManagerTest {
 

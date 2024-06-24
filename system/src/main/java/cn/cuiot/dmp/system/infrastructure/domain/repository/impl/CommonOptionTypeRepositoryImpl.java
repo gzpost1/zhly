@@ -67,9 +67,10 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
     }
 
     @Override
-    public List<CommonOptionType> queryByCompany(Long companyId) {
+    public List<CommonOptionType> queryByCompany(Long companyId, Byte category) {
         LambdaQueryWrapper<CommonOptionTypeEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionTypeEntity>()
-                .eq(CommonOptionTypeEntity::getCompanyId, companyId);
+                .eq(CommonOptionTypeEntity::getCompanyId, companyId)
+                .eq(CommonOptionTypeEntity::getCategory,category);
         List<CommonOptionTypeEntity> commonOptionTypeEntityList = commonOptionTypeMapper.selectList(queryWrapper);
         List<CommonOptionType> commonOptionTypeList = new ArrayList<>();
         // 如果该企业下没有数据，默认创建一条"全部"作为根节点的数据
@@ -123,11 +124,12 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
     }
 
     @Override
-    public Long getRootTypeId(Long companyId) {
+    public Long getRootTypeId(Long companyId, Byte category) {
         AssertUtil.notNull(companyId, "企业id不能为空");
         LambdaQueryWrapper<CommonOptionTypeEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionTypeEntity>()
                 .eq(CommonOptionTypeEntity::getCompanyId, companyId)
-                .eq(CommonOptionTypeEntity::getParentId, CommonOptionConstant.DEFAULT_PARENT_ID);
+                .eq(CommonOptionTypeEntity::getParentId, CommonOptionConstant.DEFAULT_PARENT_ID)
+                .eq(CommonOptionTypeEntity::getCategory, category);
         List<CommonOptionTypeEntity> commonOptionTypeEntityList = commonOptionTypeMapper.selectList(queryWrapper);
         AssertUtil.notEmpty(commonOptionTypeEntityList, "该企业下不存在常用选项分类");
         return commonOptionTypeEntityList.get(0).getId();
@@ -153,7 +155,7 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
         AssertUtil.notNull(commonOptionType.getCompanyId(), "企业id不能为空");
         AssertUtil.notNull(commonOptionType.getParentId(), "父级id不能为空");
         String pathName;
-        List<CommonOptionType> commonOptionTypeList = queryByCompany(commonOptionType.getCompanyId());
+        List<CommonOptionType> commonOptionTypeList = queryByCompany(commonOptionType.getCompanyId(), commonOptionType.getCategory());
         // 拼接树型结构
         List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList = commonOptionTypeList.stream()
                 .map(parent -> new CommonOptionTypeTreeNodeVO(
@@ -176,6 +178,7 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
         LambdaQueryWrapper<CommonOptionTypeEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionTypeEntity>()
                 .eq(CommonOptionTypeEntity::getLevelType, commonOptionType.getLevelType())
                 .eq(CommonOptionTypeEntity::getParentId, commonOptionType.getParentId())
+                .eq(CommonOptionTypeEntity::getCategory, commonOptionType.getCategory())
                 .ne(Objects.nonNull(commonOptionType.getId()), CommonOptionTypeEntity::getId, commonOptionType.getId());
         List<CommonOptionTypeEntity> commonOptionTypeEntityList = commonOptionTypeMapper.selectList(queryWrapper);
         for (CommonOptionTypeEntity commonOptionTypeEntity : commonOptionTypeEntityList) {

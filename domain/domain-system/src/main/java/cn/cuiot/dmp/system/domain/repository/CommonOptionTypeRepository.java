@@ -26,7 +26,7 @@ public interface CommonOptionTypeRepository {
     /**
      * 根据企业id获取常用选项类型
      */
-    List<CommonOptionType> queryByCompany(Long companyId);
+    List<CommonOptionType> queryByCompany(Long companyId, Byte category);
 
     /**
      * 保存
@@ -51,6 +51,6 @@ public interface CommonOptionTypeRepository {
     /**
      * 根据企业id获取根节点类型id
      */
-    Long getRootTypeId(Long companyId);
+    Long getRootTypeId(Long companyId, Byte category);
 
 }

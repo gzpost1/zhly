@@ -1,6 +1,11 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import cn.cuiot.dmp.util.Sm4;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * @Description 获取房屋欠费等相关信息
@@ -49,4 +54,5 @@ public class ChargeHouseDetailDto {
      * ■可退押金：
      */
     private Integer depositRefundable = 0;
+
 }

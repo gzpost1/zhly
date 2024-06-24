@@ -94,5 +94,11 @@ public class ServiceTypeConst {
      */
     public static final String SECURITYDEPOSITMANAGER = "122";
 
+
+    /**
+     * 平台日志
+     * 收费管理-收银台-自动生成计划
+     */
+    public static final String CHARGEPLAIN = "123";
     //----------------------------------收费管理----------------------------------end
 }
