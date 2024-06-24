@@ -199,6 +199,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
                         e.setFormOperates(formObjectOperates);
                     });
 
+                    childNode.getProps().setTaskConfig(flowTaskConfigVo);
                     childNode.getProps().setFormPerms(null);
                 } else {
                     childNode.getProps().setFormPerms(formConfigRspDTOS.stream().map(e -> {
