@@ -654,7 +654,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public HistoricTaskInstance getHisTaskInfo(HandleDataDTO handleDataDTO){
         String taskId = handleDataDTO.getTaskId();
         HistoricTaskInstance task = null;
-        if(StringUtils.isNotEmpty(taskId)){
+        if(StringUtils.isEmpty(taskId)){
             //通过流程实例id找最新的taskId
             List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
                     .processInstanceId(handleDataDTO.getProcessInstanceId()).orderByTaskId().desc().list();
@@ -831,6 +831,10 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(dto.getProcInstId()).list();
         if(CollectionUtil.isEmpty(taskList)){
             return IdmResDTO.error(ResultCode.OBJECT_NOT_EXIST.getCode(), ResultCode.OBJECT_NOT_EXIST.getMessage());
+        }
+        List<Task> tasks = taskList.stream().filter(item -> Objects.equals(item.getAssignee(), LoginInfoHolder.getCurrentUserId())).collect(Collectors.toList());
+        if(CollectionUtil.isNotEmpty(tasks)){
+            resultDto.setTaskId(Long.parseLong(tasks.get(0).getId()));
         }
         //获取节点按钮信息
         ChildNode childNode = getChildNodeByNodeId(taskList.get(0).getProcessDefinitionId(), taskList.get(0).getTaskDefinitionKey());
