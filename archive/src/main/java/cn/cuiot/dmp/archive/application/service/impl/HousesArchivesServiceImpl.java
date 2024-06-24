@@ -1,16 +1,20 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
+import cn.cuiot.dmp.archive.application.constant.BuildingArchivesConstant;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
+import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.HousesArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DoubleValidator;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -37,6 +41,9 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
 
     @Autowired
     private BuildingAndConfigCommonUtilService buildingAndConfigCommonUtilService;
+
+    @Autowired
+    private BuildingArchivesService buildingArchivesService;
 
     /**
      * 参数校验
@@ -194,6 +201,22 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         return housesArchivesVos;
     }
 
+    @Override
+    public List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree(Long orgId, Long userId) {
+        AssertUtil.notNull(orgId, "企业id不能为空");
+        AssertUtil.notNull(userId, "用户id不能为空");
+        List<DepartmentTreeRspDTO> departmentTreeRspList = buildingArchivesService.getDepartmentBuildingTree(orgId, userId);
+        if (CollectionUtils.isEmpty(departmentTreeRspList)) {
+            return new ArrayList<>();
+        }
+        List<Long> buidingIdList = getBuidingIdList(departmentTreeRspList.get(0));
+        LambdaQueryWrapper<HousesArchivesEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(HousesArchivesEntity::getLoupanId, buidingIdList);
+        List<HousesArchivesEntity> housesArchivesEntityList = list(queryWrapper);
+        fillDepartmentBuildingHouseTree(departmentTreeRspList.get(0), housesArchivesEntityList);
+        return departmentTreeRspList;
+    }
+
     private String getFiledForExport(Object value) {
         if (Objects.isNull(value)) {
             return "";
@@ -269,6 +292,38 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         addListCanNull(configIdList, entity.getOwnershipAttribute());
         if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
             configIdList.addAll(entity.getBasicServices());
+        }
+    }
+
+    private List<Long> getBuidingIdList(DepartmentTreeRspDTO rootTreeNode) {
+        List<Long> treeIdList = new ArrayList<>();
+        if(BuildingArchivesConstant.BUILDING_ARCHIVES_TYPE.equals(rootTreeNode.getType())){
+            treeIdList.add(rootTreeNode.getId());
+        }
+        if (CollectionUtils.isNotEmpty(rootTreeNode.getChildren())) {
+            for (DepartmentTreeRspDTO child : rootTreeNode.getChildren()) {
+                treeIdList.addAll(getBuidingIdList(child));
+            }
+        }
+        return treeIdList;
+    }
+
+    private void fillDepartmentBuildingHouseTree(DepartmentTreeRspDTO rootTreeNode, List<HousesArchivesEntity> housesArchivesEntityList) {
+        for (HousesArchivesEntity housesArchives : housesArchivesEntityList) {
+            if (rootTreeNode.getId().equals(housesArchives.getLoupanId())) {
+                DepartmentTreeRspDTO departmentTreeRspDTO = new DepartmentTreeRspDTO();
+                departmentTreeRspDTO.setId(housesArchives.getId());
+                departmentTreeRspDTO.setDepartmentName(housesArchives.getName());
+                departmentTreeRspDTO.setType(BuildingArchivesConstant.HOUSE_ARCHIVES_TYPE);
+                departmentTreeRspDTO.setParentId(rootTreeNode.getId());
+                departmentTreeRspDTO.setChildren(new ArrayList<>());
+                rootTreeNode.getChildren().add(departmentTreeRspDTO);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(rootTreeNode.getChildren())) {
+            for (DepartmentTreeRspDTO child : rootTreeNode.getChildren()) {
+                fillDepartmentBuildingHouseTree(child, housesArchivesEntityList);
+            }
         }
     }
 

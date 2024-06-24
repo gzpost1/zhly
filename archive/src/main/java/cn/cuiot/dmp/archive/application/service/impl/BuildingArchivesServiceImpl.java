@@ -245,6 +245,7 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
                 departmentTreeRspDTO.setDepartmentName(buildingArchives.getName());
                 departmentTreeRspDTO.setType(BuildingArchivesConstant.BUILDING_ARCHIVES_TYPE);
                 departmentTreeRspDTO.setParentId(rootTreeNode.getId());
+                departmentTreeRspDTO.setChildren(new ArrayList<>());
                 rootTreeNode.getChildren().add(departmentTreeRspDTO);
             }
         }

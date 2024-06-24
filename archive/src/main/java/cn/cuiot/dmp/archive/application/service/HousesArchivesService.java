@@ -7,6 +7,7 @@ import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.validation.annotation.Validated;
@@ -52,5 +53,10 @@ public interface HousesArchivesService extends IService<HousesArchivesEntity> {
      * @return
      */
     List<HousesArchivesVo> queryHousesList(IdsReq ids);
+
+    /**
+     * 获取组织楼盘房屋树
+     */
+    List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree(Long orgId, Long userId);
 
 }

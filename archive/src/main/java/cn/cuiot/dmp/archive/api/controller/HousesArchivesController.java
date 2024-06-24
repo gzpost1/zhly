@@ -21,6 +21,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ContractFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -276,5 +277,14 @@ public class HousesArchivesController extends BaseController {
         }
     }
 
+    /**
+     * 获取组织楼盘房屋树
+     */
+    @PostMapping("/getDepartmentBuildingHouseTree")
+    public List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree() {
+        String orgId = getOrgId();
+        String userId = getUserId();
+        return housesArchivesService.getDepartmentBuildingHouseTree(Long.valueOf(orgId), Long.valueOf(userId));
+    }
 
 }
