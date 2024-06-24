@@ -53,7 +53,7 @@ public class WorkOrderSuperQuery extends PageQuery {
     private String nodeType;
 
     /**
-     * 0 未处理 1已处理
+     * 0 未处理 1已处理 0 待审批 1审批
      */
     private String queryType;
 

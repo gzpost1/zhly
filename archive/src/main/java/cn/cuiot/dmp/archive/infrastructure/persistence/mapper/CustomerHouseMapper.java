@@ -18,4 +18,5 @@ public interface CustomerHouseMapper extends BaseMapper<CustomerHouseEntity> {
 
     List<CustomerHouseVo> selectByCustomerId(@Param("customerIdList") List<Long> customerIdList);
 
+    void deleteByCustomerId(@Param("customerId") Long customerId);
 }

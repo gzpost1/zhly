@@ -47,9 +47,10 @@ public class CustomerHouseService extends ServiceImpl<CustomerHouseMapper, Custo
      * @param customerId
      */
     public void deleteByCustomerId(Long customerId) {
-        LambdaUpdateWrapper<CustomerHouseEntity> lambdaUpdate = Wrappers.lambdaUpdate();
+        /*LambdaUpdateWrapper<CustomerHouseEntity> lambdaUpdate = Wrappers.lambdaUpdate();
         lambdaUpdate.set(CustomerHouseEntity::getDeleted, EntityConstants.DELETED);
         lambdaUpdate.eq(CustomerHouseEntity::getCustomerId, customerId);
-        customerHouseMapper.update(null, lambdaUpdate);
+        customerHouseMapper.update(null, lambdaUpdate);*/
+        customerHouseMapper.deleteByCustomerId(customerId);
     }
 }

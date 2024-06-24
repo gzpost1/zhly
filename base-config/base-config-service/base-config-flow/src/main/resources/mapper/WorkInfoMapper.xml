@@ -436,10 +436,10 @@
                 <if test="query.nodeType !=null and query.nodeType!=''">
                     and t3.process_node_type = #{query.nodeType}
                 </if>
-                <if test="query.queryType !=null and query.queryType='0'">
+                <if test="query.queryType !=null and query.queryType=='0'">
                     and t2.END_TIME_ is  null
                 </if>
-                <if test="query.queryType !=null and query.queryType='1'">
+                <if test="query.queryType !=null and query.queryType=='1'">
                     and t2.END_TIME_ is not null
                 </if>
             </where>
@@ -481,10 +481,10 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="query.queryType !=null and query.queryType='0'">
+            <if test="query.queryType !=null and query.queryType=='0'">
                 and t2.END_TIME_ is  null
             </if>
-            <if test="query.queryType !=null and query.queryType='1'">
+            <if test="query.queryType !=null and query.queryType=='1'">
                 and t2.END_TIME_ is not null
             </if>
         </where>

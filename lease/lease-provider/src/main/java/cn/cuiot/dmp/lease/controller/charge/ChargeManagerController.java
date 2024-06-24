@@ -20,9 +20,11 @@ import cn.cuiot.dmp.lease.enums.*;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
+import cn.cuiot.dmp.util.Sm4;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -60,19 +63,20 @@ public class ChargeManagerController {
     @PostMapping("/queryForHouseDetail")
     public IdmResDTO<ChargeHouseDetailDto> queryForHouseDetail(@RequestBody @Valid IdParam idParam) {
         ChargeHouseDetailDto chargeHouseDetailDto = tbChargeManagerService.queryForHouseDetail(idParam.getId());
-        if (Objects.nonNull(chargeHouseDetailDto)) {
-            List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(Lists.newArrayList(chargeHouseDetailDto.getHouseId()));
-            if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
-                chargeHouseDetailDto.setHouseCode(houseInfoDtos.get(0).getHouseCode());
-                chargeHouseDetailDto.setHouseName(houseInfoDtos.get(0).getHouseName());
-            }
+        List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(Lists.newArrayList(idParam.getId()));
+        if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
+            chargeHouseDetailDto.setHouseCode(houseInfoDtos.get(0).getHouseCode());
+            chargeHouseDetailDto.setHouseName(houseInfoDtos.get(0).getHouseName());
+        }
 
-            ChargeHouseDetailDto ownerInfo = chargeHouseAndUserService.getOwnerInfo(chargeHouseDetailDto.getHouseId());
-            if (Objects.nonNull(ownerInfo)) {
-                chargeHouseDetailDto.setOwnerName(ownerInfo.getOwnerName());
-                chargeHouseDetailDto.setOwnerPhone(ownerInfo.getOwnerPhone());
+        ChargeHouseDetailDto ownerInfo = chargeHouseAndUserService.getOwnerInfo(idParam.getId());
+        if (Objects.nonNull(ownerInfo)) {
+            chargeHouseDetailDto.setOwnerName(ownerInfo.getOwnerName());
+            if(StringUtils.isNotBlank(ownerInfo.getOwnerPhone())){
+                chargeHouseDetailDto.setOwnerPhone(StringUtils.join(Arrays.stream(StringUtils.split(ownerInfo.getOwnerPhone(),",")).map(e -> Sm4.decrypt(e)).toArray()));
             }
         }
+        chargeHouseDetailDto.setHouseId(idParam.getId());
         return IdmResDTO.success().body(chargeHouseDetailDto);
     }
 
@@ -241,7 +245,7 @@ public class ChargeManagerController {
      * @param createDto
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/create")
     @LogRecord(operationCode = "create", operationName = "缴费管理-创建", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO create(@RequestBody @Valid ChargeManagerInsertVo createDto) {
@@ -255,7 +259,7 @@ public class ChargeManagerController {
      * @param idParam
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/updateHangUpStatus")
     @LogRecord(operationCode = "updateHangUpStatus", operationName = "缴费管理-挂起/解挂", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO updateHangUpStatus(@RequestBody @Valid ChargeAbrogateInsertDto idParam) {
@@ -272,7 +276,7 @@ public class ChargeManagerController {
      * @param idParam
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/abrogateStatus")
     @LogRecord(operationCode = "abrogateStatus", operationName = "缴费管理-作废", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO abrogateStatus(@RequestBody @Valid ChargeAbrogateInsertDto idParam) {
@@ -291,7 +295,7 @@ public class ChargeManagerController {
      * @param
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/receivedAmount")
     @LogRecord(operationCode = "receivedAmount", operationName = "缴费管理-收款", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO receivedAmount(@RequestBody @Valid ChargeReceiptsReceivedDto dto) {

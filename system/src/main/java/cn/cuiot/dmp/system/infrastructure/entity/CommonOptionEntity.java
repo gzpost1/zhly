@@ -34,6 +34,12 @@ public class CommonOptionEntity extends BaseEntity {
     private Long typeId;
 
     /**
+     * 选项类别（0：自定义，1：交易方式，2：收费方式）
+     */
+    private Byte typeCategory;
+
+
+    /**
      * 状态(0:禁用,1:正常)
      */
     private Byte status;

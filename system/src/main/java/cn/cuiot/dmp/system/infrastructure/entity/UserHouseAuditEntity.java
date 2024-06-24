@@ -4,10 +4,13 @@ import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import cn.cuiot.dmp.base.infrastructure.persistence.mapper.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Date;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * 系统配置-C端用户审核列表
@@ -102,5 +105,24 @@ public class UserHouseAuditEntity extends BaseEntity {
      * 绑定客户成员ID
      */
     private Long bindCustomerMemberId;
+
+
+    /**
+     * 创建时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date auditTime;
+
+    /**
+     * 审核人ID
+     */
+    private Long auditUserId;
+
+    /**
+     * 审核人名称
+     */
+    private String auditPerson;
+
 
 }

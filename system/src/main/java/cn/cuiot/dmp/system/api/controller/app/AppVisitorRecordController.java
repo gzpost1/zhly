@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.system.api.controller;
+package cn.cuiot.dmp.system.api.controller.app;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
@@ -26,8 +26,8 @@ import java.util.List;
  * @date 2024/6/6
  */
 @RestController
-@RequestMapping("/visitorRecord")
-public class VisitorRecordController {
+@RequestMapping("/app/visitorRecord")
+public class AppVisitorRecordController {
 
     @Autowired
     private VisitorRecordService visitorRecordService;

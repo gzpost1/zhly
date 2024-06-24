@@ -95,11 +95,13 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
     public IPage<CustomerVo> queryForPage(CustomerQuery query) {
         CustomerCriteriaQuery criteriaQuery = CustomerCriteriaQuery.builder()
                 .companyId(query.getCompanyId())
+                .excludeId(query.getExcludeId())
                 .id(query.getId())
                 .keyword(query.getKeyword())
                 .customerName(query.getCustomerName())
                 .contactName(query.getContactName())
                 .status(query.getStatus())
+                .houseId(query.getHouseId())
                 .build();
         if(StringUtils.isNotBlank(query.getKeyword())){
             criteriaQuery.setKeywordPhone(Sm4.encryption(query.getKeyword()));
@@ -133,6 +135,20 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 }
             }
         }
+
+        //下拉回显
+        if(Objects.nonNull(query.getIncludeId())){
+            CustomerQuery ncludeQuery = new CustomerQuery();
+            ncludeQuery.setId(query.getIncludeId());
+            List<CustomerVo> dataList = queryForList(query);
+            if(CollectionUtils.isNotEmpty(dataList)){
+                CustomerVo customerVo = dataList.get(0);
+                if(!page.getRecords().stream().filter(item->item.getId().equals(customerVo.getId())).findFirst().isPresent()){
+                    page.getRecords().add(0,customerVo);
+                }
+            }
+        }
+
         return page;
     }
 
@@ -143,10 +159,12 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         CustomerCriteriaQuery criteriaQuery = CustomerCriteriaQuery.builder()
                 .companyId(query.getCompanyId())
                 .id(query.getId())
+                .excludeId(query.getExcludeId())
                 .keyword(query.getKeyword())
                 .customerName(query.getCustomerName())
                 .contactName(query.getContactName())
                 .status(query.getStatus())
+                .houseId(query.getHouseId())
                 .build();
         if(StringUtils.isNotBlank(query.getKeyword())){
             criteriaQuery.setKeywordPhone(Sm4.encryption(query.getKeyword()));

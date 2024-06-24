@@ -58,4 +58,9 @@ public class HousesArchivesQuery extends PageQuery {
      */
     private String code;
 
+    /**
+     * 房屋名称
+     */
+    private String name;
+
 }

@@ -21,6 +21,9 @@
         <result column="bind_customer_id" property="bindCustomerId" />
         <result column="bind_customer_type" property="bindCustomerType" />
         <result column="bind_customer_member_id" property="bindCustomerMemberId" />
+        <result column="audit_time" property="auditTime" />
+        <result column="audit_user_id" property="auditUserId" />
+        <result column="audit_person" property="auditPerson" />
         <result column="created_on" property="createdOn" />
         <result column="created_by" property="createdBy" />
         <result column="created_by_type" property="createdByType" />
@@ -35,54 +38,32 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, user_id, company_id, building_id, house_id, identity_type, name, phone_number, card_type_id, identity_num, remark, remark_images, audit_status, reject_reason, bind_customer_id, bind_customer_type, bind_customer_member_id, created_on, created_by, created_by_type, updated_on, updated_by, updated_by_type, deleted_flag, deleted_on, deleted_by, delete_by_type
+        id, user_id, company_id, building_id, house_id, identity_type, name, phone_number, card_type_id, identity_num, remark, remark_images, audit_status, reject_reason, bind_customer_id, bind_customer_type, bind_customer_member_id, audit_time,audit_user_id,audit_person,created_on, created_by, created_by_type, updated_on, updated_by, updated_by_type, deleted_flag, deleted_on, deleted_by, delete_by_type
     </sql>
 
     <resultMap id="DtoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.system.application.param.dto.UserHouseAuditDTO">
         <result column="building_name" property="buildingName" />
         <result column="department_id" property="departmentId" />
         <result column="department_name" property="departmentName" />
+        <result column="house_code" property="houseCode" />
     </resultMap>
 
     <select id="queryForList" resultMap="DtoResultMap">
         SELECT
-            a.id,
-            a.user_id,
-            a.company_id,
-            a.building_id,
-            a.house_id,
-            a.identity_type,
-            a.`name`,
-            a.phone_number,
-            a.card_type_id,
-            a.identity_num,
-            a.remark,
-            a.remark_images,
-            a.audit_status,
-            a.reject_reason,
-            a.bind_customer_id,
-            a.bind_customer_type,
-            a.bind_customer_member_id,
-            a.created_on,
-            a.created_by,
-            a.created_by_type,
-            a.updated_on,
-            a.updated_by,
-            a.updated_by_type,
-            a.deleted_flag,
-            a.deleted_on,
-            a.deleted_by,
-            a.delete_by_type,
+            a.*,
             b.`name` as building_name,
             b.department_id as department_id,
-            c.department_name as department_name
+            c.department_name as department_name,
+            d.`code` as house_code
         FROM
             user_house_audit AS a,
             tb_building_archives AS b,
-            department AS c
+            department AS c,
+            tb_houses_archives as d
        <where>
            a.building_id = b.id
            AND b.department_id = c.id
+           and a.house_id=d.id
            <if test="param.beginTime !=null">
                and a.created_on <![CDATA[>=]]> #{param.beginTime}
            </if>
@@ -113,6 +94,25 @@
         ORDER BY
             a.created_on DESC,
             a.id DESC
+    </select>
+
+    <select id="queryForDetail"  resultMap="DtoResultMap">
+        SELECT
+        a.*,
+        b.`name` as building_name,
+        b.department_id as department_id,
+        c.department_name as department_name,
+        d.`code` as house_code
+        FROM
+        user_house_audit AS a,
+        tb_building_archives AS b,
+        department AS c,
+        tb_houses_archives as d
+        where
+            a.building_id = b.id
+            AND b.department_id = c.id
+            and a.house_id=d.id
+            and a.id=#{id}
     </select>
 
 
