@@ -44,7 +44,7 @@
                 and a.company_id=#{companyId}
             </if>
             <if test="deptPath != null and deptPath != ''">
-               and a.community_id IN (select id from tb_building_archives where department_id in (select id from department where path like CONCAT(#{deptPath}, '%'))
+               and a.community_id IN (select id from tb_building_archives where department_id in (select id from department where path like CONCAT(#{deptPath}, '%')))
             </if>
             <if test="communityId != null">
                 and a.community_id=#{communityId}
