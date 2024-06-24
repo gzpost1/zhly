@@ -85,6 +85,9 @@
         <if test="query.companyId != null">
             and company_id = #{query.companyId}
         </if>
+        <if test="query.receivblePlanId != null">
+            and receivble_plan_id = #{query.receivblePlanId}
+        </if>
         <if test="query.receivableCode != null">
             and id like concat('%', #{query.receivableCode}, '%')
         </if>

@@ -76,4 +76,9 @@ public class TbChargeManagerQuery extends PageQuery {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 自动生成计划编码
+     */
+    private Long receivblePlanId;
 }
