@@ -22,6 +22,12 @@ public class CommonOptionTypeCreateDTO implements Serializable {
     private String name;
 
     /**
+     * 选项类别
+     */
+    @NotNull(message = "选项类别不能为空")
+    private Byte category;
+
+    /**
      * 上级ID
      */
     @NotNull(message = "上级ID不能为空")

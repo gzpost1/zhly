@@ -1,6 +1,11 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import cn.cuiot.dmp.common.enums.CustomerIdentityTypeEnum;
+import cn.cuiot.dmp.util.Sm4;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Objects;
 
 /**
  * @Description 用户信息
@@ -38,4 +43,20 @@ public class CustomerUserInfo {
      * 房屋ID
      */
     private Long houseId;
+
+    public String getCustomerUserPhone() {
+        if(StringUtils.isNotBlank(customerUserPhone)){
+            return Sm4.decrypt(customerUserPhone);
+        }
+
+        return null;
+    }
+
+    public String getCustomerUserRoleName() {
+        if(Objects.nonNull(getIdentityType())){
+            CustomerIdentityTypeEnum customerIdentityTypeEnum = CustomerIdentityTypeEnum.parseByCode(getIdentityType().toString());
+            return customerIdentityTypeEnum.getName();
+        }
+        return null;
+    }
 }

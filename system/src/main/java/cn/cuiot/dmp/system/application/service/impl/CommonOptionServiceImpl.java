@@ -11,7 +11,9 @@ import cn.cuiot.dmp.system.application.param.dto.CommonOptionUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.CommonOptionVO;
 import cn.cuiot.dmp.system.application.service.CommonOptionService;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOption;
+import cn.cuiot.dmp.system.domain.aggregate.CommonOptionType;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionRepository;
+import cn.cuiot.dmp.system.domain.repository.CommonOptionTypeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -32,6 +35,8 @@ public class CommonOptionServiceImpl implements CommonOptionService {
 
     @Autowired
     private CommonOptionRepository commonOptionRepository;
+    @Autowired
+    private CommonOptionTypeRepository commonOptionTypeRepository;
 
     @Override
     public CommonOptionVO queryForDetail(Long id) {
@@ -53,15 +58,24 @@ public class CommonOptionServiceImpl implements CommonOptionService {
 
     @Override
     public int saveCommonOption(CommonOptionCreateDTO createDTO) {
+        CommonOptionType commonOptionType =
+                Optional.ofNullable(commonOptionTypeRepository.queryForDetail(createDTO.getTypeId()))
+                        .orElseThrow(() -> new RuntimeException("父节点不存在"));
         CommonOption commonOption = new CommonOption();
         BeanUtils.copyProperties(createDTO, commonOption);
+        commonOption.setTypeCategory(commonOptionType.getCategory());
         return commonOptionRepository.saveCommonOption(commonOption);
     }
 
     @Override
     public int updateCommonOption(CommonOptionUpdateDTO updateDTO) {
+        CommonOptionType commonOptionType =
+                Optional.ofNullable(commonOptionTypeRepository.queryForDetail(updateDTO.getTypeId()))
+                        .orElseThrow(() -> new RuntimeException("父节点不存在"));
+
         CommonOption commonOption = new CommonOption();
         BeanUtils.copyProperties(updateDTO, commonOption);
+        commonOption.setTypeCategory(commonOptionType.getCategory());
         return commonOptionRepository.updateCommonOption(commonOption);
     }
 

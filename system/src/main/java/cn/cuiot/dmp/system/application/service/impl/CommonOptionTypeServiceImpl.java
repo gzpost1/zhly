@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -54,7 +55,7 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
 
     @Override
     public List<CommonOptionTypeTreeNodeVO> queryByCompany(CommonOptionTypeQueryDTO queryDTO) {
-        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryByCompany(queryDTO.getCompanyId());
+        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryByCompany(queryDTO.getCompanyId(), queryDTO.getCategory());
         List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList = commonOptionTypeList.stream()
                 .map(parent -> new CommonOptionTypeTreeNodeVO(
                         parent.getId().toString(), parent.getParentId().toString(),
@@ -77,7 +78,7 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
     @Override
     public List<CommonOptionTypeTreeNodeVO> queryExcludeChild(CommonOptionTypeQueryDTO queryDTO) {
         AssertUtil.notNull(queryDTO.getId(), "当前节点不能为空");
-        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryByCompany(queryDTO.getCompanyId());
+        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryByCompany(queryDTO.getCompanyId(), queryDTO.getCategory());
         List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList = commonOptionTypeList.stream()
                 .map(parent -> new CommonOptionTypeTreeNodeVO(
                         parent.getId().toString(), parent.getParentId().toString(),
@@ -116,6 +117,7 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
         AssertUtil.notNull(commonOptionTypeParent, "父节点不存在");
         AssertUtil.isTrue(commonOptionTypeUpdateDTO.getLevelType() - commonOptionTypeParent.getLevelType() == 1,
                 "父节点和子节点只能相差一级");
+        AssertUtil.isFalse(!Objects.equals(commonOptionTypeParent.getCategory(), commonOptionTypeUpdateDTO.getCategory()), "类别不能改变");
         CommonOptionType commonOptionType = commonOptionTypeRepository.queryForDetail(commonOptionTypeUpdateDTO.getId());
         BeanUtils.copyProperties(commonOptionTypeUpdateDTO, commonOptionType);
         return commonOptionTypeRepository.updateCommonOptionType(commonOptionType);
@@ -124,7 +126,7 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
     @Override
     public int deleteCommonOptionType(CommonOptionTypeQueryDTO queryDTO) {
         AssertUtil.notNull(queryDTO.getId(), "当前节点不能为空");
-        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryByCompany(queryDTO.getCompanyId());
+        List<CommonOptionType> commonOptionTypeList = commonOptionTypeRepository.queryByCompany(queryDTO.getCompanyId(), queryDTO.getCategory());
         List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList = commonOptionTypeList.stream()
                 .map(parent -> new CommonOptionTypeTreeNodeVO(
                         parent.getId().toString(), parent.getParentId().toString(),
@@ -136,7 +138,7 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
         AssertUtil.notNull(commonOptionTypeTreeNodeVO, "当前节点不能为空");
         List<String> treeIdList = TreeUtil.getChildTreeIdList(commonOptionTypeTreeNodeVO);
         // 批量移动该分类及子节点下所有的表单配置到"全部"分类下
-        Long rootTypeId = commonOptionTypeRepository.getRootTypeId(queryDTO.getCompanyId());
+        Long rootTypeId = commonOptionTypeRepository.getRootTypeId(queryDTO.getCompanyId(), queryDTO.getCategory());
         commonOptionRepository.batchMoveCommonOptionDefault(treeIdList, rootTypeId);
         return commonOptionTypeRepository.deleteCommonOptionType(treeIdList);
     }
