@@ -35,6 +35,11 @@ public class CommonOption implements Serializable {
     private Long typeId;
 
     /**
+     * 选项类别（0：自定义，1：交易方式，2：收费方式）
+     */
+    private Byte typeCategory;
+
+    /**
      * 分类名称（合并后的层级名称，e.g.巡检>设备巡检）
      */
     private String typeName;

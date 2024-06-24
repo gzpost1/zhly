@@ -260,6 +260,7 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
         AssertUtil.notBlank(commonOption.getName(), "常用选项名称不能为空");
         LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
                 .eq(CommonOptionEntity::getCompanyId, commonOption.getCompanyId())
+                .eq(CommonOptionEntity::getTypeCategory, commonOption.getTypeCategory())
                 // 更新的话排除自身
                 .ne(Objects.nonNull(commonOption.getId()), CommonOptionEntity::getId, commonOption.getId());
         List<CommonOptionEntity> commonOptionEntityList = commonOptionMapper.selectList(queryWrapper);
