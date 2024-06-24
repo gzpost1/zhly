@@ -22,7 +22,7 @@ public interface WorkFlowConstants {
     /**
      * 任务信息
      */
-    String TAST_CONFIG="taskConfig";
+    String TASK_CONFIG="taskConfig";
 
     String VIEW_FLOW_CONFIG = "flowconfig";
     String VIEW_ASSIGNEE_USER_NAME="assignedUser";
