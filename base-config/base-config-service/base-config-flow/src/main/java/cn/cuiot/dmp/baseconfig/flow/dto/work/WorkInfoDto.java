@@ -16,9 +16,7 @@ import java.util.List;
 @Data
 public class WorkInfoDto extends PageQuery {
 
-    /**
-     * 工单id
-     */
+
     private Long id;
 
     /**
@@ -183,6 +181,11 @@ public class WorkInfoDto extends PageQuery {
      * 0 未处理，1已处理
      */
     private Integer queryType;
+
+    /**
+     * 任务id
+     */
+    private Long taskId;
 
     /**
      * 提交的信息

@@ -37,6 +37,7 @@ import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
@@ -1127,7 +1128,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                             instId));
                     nodeDetailDto.setBusinessName(getStartUserName(nodeId,
                             instId));
-                    nodeDetailDto.setCreateDate(historicProcessInstance.getStartTime());
                     nodeDetailDto.setSort(sort);
                     sort++;
                     pamaMap.put(nodeDetailDto.getNodeId(),nodeDetailDto);
@@ -1228,7 +1228,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * 判断节点是否超时
      * @return
      */
-    public List<WorkBusinessTypeInfoEntity> queryNodeBusiness(String nodeId,String procinstId){
+    public List<WorkBusinessTypeInfoEntity> queryNodeBusiness(String nodeId,String procinstId ){
         LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
         lw.eq(WorkBusinessTypeInfoEntity::getNode,nodeId).
                 ne(WorkBusinessTypeInfoEntity::getBusinessType,BUSINESS_TIME_OUT.getCode()).
@@ -1242,7 +1242,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //获取userIds
         List<Long> userIds = list.stream().map(WorkBusinessTypeInfoEntity::getUserId).collect(Collectors.toList());
         Map<Long, String> userMap = getUserMap(userIds);
+
         list.stream().forEach(item->{
+
             item.setUserName(userMap.get(item.getUserId()));
             if(StringUtils.isNotEmpty(item.getDeliver())){
                 String deliverNames = getDeliverNames(item.getDeliver());
