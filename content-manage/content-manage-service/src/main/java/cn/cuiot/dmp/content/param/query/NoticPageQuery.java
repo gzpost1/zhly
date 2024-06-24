@@ -64,4 +64,9 @@ public class NoticPageQuery extends PageQuery {
      * 排除的ID
      */
     private List<Long> idNotIn;
+
+    /**
+     * 生效效状态
+     */
+    private Byte effectiveStatus;
 }
