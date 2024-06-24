@@ -144,6 +144,9 @@ public class AppAuthService {
                                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                                 appUserService.updateAppUser(updateEntity);
 
+                                if(StringUtils.isNotBlank(openid)){
+                                    userDto.setOpenid(openid);
+                                }
                                 //设置token
                                 genSetAppToken(userDto);
 
@@ -160,6 +163,9 @@ public class AppAuthService {
                     updateEntity.setLastOnlineOn(LocalDateTime.now());
                     appUserService.updateAppUser(updateEntity);
 
+                    if(StringUtils.isNotBlank(openid)){
+                        userDto.setOpenid(openid);
+                    }
                     //设置token
                     genSetAppToken(userDto);
 
@@ -261,6 +267,9 @@ public class AppAuthService {
                 appUserService.updateAppUser(updateEntity);
             }
         }
+        if(StringUtils.isNotBlank(openid)){
+            userDto.setOpenid(openid);
+        }
         //生成与设置token
         genSetAppToken(userDto);
 
@@ -341,6 +350,9 @@ public class AppAuthService {
         checkAndClearLoginFailedCount(userDto.getId());
 
         //更新登录时间
+        if(StringUtils.isNotBlank(dto.getOpenid())){
+            userDto.setOpenid(dto.getOpenid());
+        }
         UserEntity updateEntity = new UserEntity();
         updateEntity.setId(userDto.getId());
         updateEntity.setOpenid(dto.getOpenid());
@@ -474,44 +486,80 @@ public class AppAuthService {
 
         AppUserDto userDto = appUserService.getUserByPhoneAndUserType(userAccount, userType);
 
-        // 账号不存在
-        if (userDto == null || Objects.isNull(userDto.getStatus())) {
-            //记录登录失败次数
-            recordLoginFailedCount(userAccount);
+        //员工
+        if (UserTypeEnum.USER.getValue().equals(userType)) {
+            // 账号不存在
+            if (userDto == null || Objects.isNull(userDto.getStatus())) {
+                //记录登录失败次数
+                recordLoginFailedCount(userAccount);
+            }
+
+            // 账号被停用
+            if (EntityConstants.DISABLED.equals(userDto.getStatus())) {
+                recordLoginFailedCountWhenUserExist(userDto.getId());
+                throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
+            }
+
+            //登录成功-检验和清空登录失败次数
+            checkAndClearLoginFailedCount(userDto.getId());
+
+            Long pkUserId = userDto.getId();
+            // 获取org主键id
+            Long pkOrgId = appUserService.getOrgId(pkUserId);
+            // 获取dept主键id
+            String pkDeptId = appUserService.getDeptId(pkUserId.toString(), pkOrgId.toString());
+            // 获取企业信息
+            OrganizationEntity organization = organizationEntityMapper.selectById(pkOrgId);
+            if (organization == null || organization.getStatus() == null || OrgStatusEnum.DISABLE
+                    .getCode().equals(organization.getStatus())) {
+                throw new BusinessException(ResultCode.ORG_IS_ENABLED);
+            }
+            userDto.setOrgId(pkOrgId.toString());
+            userDto.setDeptId(pkDeptId);
+            userDto.setOrgTypeId(organization.getOrgTypeId());
+
+            //更新登录时间
+            UserEntity updateEntity = new UserEntity();
+            updateEntity.setId(userDto.getId());
+            updateEntity.setOpenid(dto.getOpenid());
+            updateEntity.setLastOnlineIp(dto.getIpAddr());
+            updateEntity.setLastOnlineOn(LocalDateTime.now());
+            appUserService.updateAppUser(updateEntity);
+
+        }else {
+            //非员工
+            if (Objects.isNull(userDto)) {
+                String password = randomPwUtils
+                        .getRandomPassword((int) (8 + Math.random() * (20 - 8 + 1)));
+                UserEntity userEntity = new UserEntity();
+                userEntity.setName("用户昵称");
+                userEntity.setUsername(dto.getPhoneNumber() + userType);
+                userEntity.setPassword(new Password(password).getHashEncryptValue());
+                userEntity.setPhoneNumber(new PhoneNumber(dto.getPhoneNumber()).getEncryptedValue());
+                userEntity.setStatus(UserStatusEnum.OPEN.getValue());
+                userEntity.setUserType(userType);
+                userEntity.setOpenid(dto.getOpenid());
+                userEntity.setDeletedFlag(EntityConstants.NOT_DELETED.intValue());
+                userEntity.setLastOnlineIp(dto.getIpAddr());
+                userEntity.setLastOnlineOn(LocalDateTime.now());
+                userEntity.setCreatedOn(LocalDateTime.now());
+                userEntity.setCreatedBy(OperateByTypeEnum.SYSTEM.name().toLowerCase());
+                userEntity.setCreatedByType(OperateByTypeEnum.SYSTEM.getValue());
+                appUserService.createAppUser(userEntity);
+                userDto = appUserConverter.toAppUserDto(userEntity);
+            } else {
+                //更新登录时间
+                UserEntity updateEntity = new UserEntity();
+                updateEntity.setId(userDto.getId());
+                updateEntity.setOpenid(dto.getOpenid());
+                updateEntity.setLastOnlineIp(dto.getIpAddr());
+                updateEntity.setLastOnlineOn(LocalDateTime.now());
+                appUserService.updateAppUser(updateEntity);
+            }
         }
-
-        // 账号被停用
-        if (EntityConstants.DISABLED.equals(userDto.getStatus())) {
-            recordLoginFailedCountWhenUserExist(userDto.getId());
-            throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
+        if(StringUtils.isNotBlank(dto.getOpenid())){
+            userDto.setOpenid(dto.getOpenid());
         }
-
-        //登录成功-检验和清空登录失败次数
-        checkAndClearLoginFailedCount(userDto.getId());
-
-        //更新登录时间
-        UserEntity updateEntity = new UserEntity();
-        updateEntity.setId(userDto.getId());
-        updateEntity.setOpenid(dto.getOpenid());
-        updateEntity.setLastOnlineIp(dto.getIpAddr());
-        updateEntity.setLastOnlineOn(LocalDateTime.now());
-        appUserService.updateAppUser(updateEntity);
-
-        Long pkUserId = userDto.getId();
-        // 获取org主键id
-        Long pkOrgId = appUserService.getOrgId(pkUserId);
-        // 获取dept主键id
-        String pkDeptId = appUserService.getDeptId(pkUserId.toString(), pkOrgId.toString());
-        // 获取企业信息
-        OrganizationEntity organization = organizationEntityMapper.selectById(pkOrgId);
-        if (organization == null || organization.getStatus() == null || OrgStatusEnum.DISABLE
-                .getCode().equals(organization.getStatus())) {
-            throw new BusinessException(ResultCode.ORG_IS_ENABLED);
-        }
-        userDto.setOrgId(pkOrgId.toString());
-        userDto.setDeptId(pkDeptId);
-        userDto.setOrgTypeId(organization.getOrgTypeId());
-
         //生成与设置token
         genSetAppToken(userDto);
 
@@ -790,6 +838,9 @@ public class AppAuthService {
                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                 appUserService.updateAppUser(updateEntity);
             }
+        }
+        if(StringUtils.isNotBlank(dto.getOpenid())){
+            userDto.setOpenid(dto.getOpenid());
         }
         //生成与设置token
         genSetAppToken(userDto);
