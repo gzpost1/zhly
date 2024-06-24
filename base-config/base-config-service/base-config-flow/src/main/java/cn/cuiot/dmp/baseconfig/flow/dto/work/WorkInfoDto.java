@@ -179,6 +179,10 @@ public class WorkInfoDto extends PageQuery {
      * 按钮信息
      */
     private List<NodeButton> buttons;
+    /**
+     * 0 未处理，1已处理
+     */
+    private Integer queryType;
 
     /**
      * 提交的信息
