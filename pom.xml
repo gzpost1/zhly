@@ -17,6 +17,7 @@
         <module>message</module>
         <module>content-manage</module>
         <module>lease</module>
+        <module>digitaltwin</module>
     </modules>
 
     <parent>
