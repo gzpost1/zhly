@@ -19,6 +19,10 @@ public interface WorkFlowConstants {
     String FLOWABLE_NAME_SPACE_NAME="yunjintech";
     String FLOWABLE_NAME_SPACE="http://flowable.org/bpmn";
     String VIEW_PROCESS_JSON_NAME="processJson";
+    /**
+     * 任务信息
+     */
+    String TAST_CONFIG="taskConfig";
 
     String VIEW_FLOW_CONFIG = "flowconfig";
     String VIEW_ASSIGNEE_USER_NAME="assignedUser";
