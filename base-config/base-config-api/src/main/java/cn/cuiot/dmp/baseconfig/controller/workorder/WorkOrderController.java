@@ -114,6 +114,7 @@ public class WorkOrderController extends BaseController {
      */
     @PostMapping("queryCustomerWorkOrder")
     public IdmResDTO<IPage<CustomerWorkOrderDto>> queryCustomerWorkOrder(@RequestBody QueryCustomerWorkOrderDto req){
+        req.setWorkSource(WorkSourceEnums.PROXY_CUSTOMER_RECORD.getCode());
         return workInfoService.queryCustomerWorkOrder(req);
     }
 

@@ -27,6 +27,8 @@ import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -76,8 +78,7 @@ public class BuildingArchivesController extends BaseController {
      */
     @PostMapping("/queryForList")
     public List<BuildingArchivesVO> queryForList(@RequestBody @Valid BuildingArchivesPageQuery pageQuery) {
-        String orgId = getOrgId();
-        pageQuery.setCompanyId(Long.valueOf(orgId));
+        pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         return buildingArchivesService.queryForList(pageQuery);
     }
 
@@ -86,8 +87,7 @@ public class BuildingArchivesController extends BaseController {
      */
     @PostMapping("/queryForPage")
     public PageResult<BuildingArchivesVO> queryForPage(@RequestBody @Valid BuildingArchivesPageQuery pageQuery) {
-        String orgId = getOrgId();
-        pageQuery.setCompanyId(Long.valueOf(orgId));
+        pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         return buildingArchivesService.queryForPage(pageQuery);
     }
 

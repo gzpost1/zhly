@@ -654,7 +654,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public HistoricTaskInstance getHisTaskInfo(HandleDataDTO handleDataDTO){
         String taskId = handleDataDTO.getTaskId();
         HistoricTaskInstance task = null;
-        if(null == taskId){
+        if(StringUtils.isNotEmpty(taskId)){
             //通过流程实例id找最新的taskId
             List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
                     .processInstanceId(handleDataDTO.getProcessInstanceId()).orderByTaskId().desc().list();
@@ -762,7 +762,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public IdmResDTO clientBack(ClientOperationDto operationDto) {
         //回退留痕
         HandleDataDTO handleDataDTO = new HandleDataDTO();
-        handleDataDTO.setTaskId(String.valueOf(operationDto.getTaskId()));
+        handleDataDTO.setProcessInstanceId(String.valueOf(operationDto.getProcessInstanceId()));
         handleDataDTO.setReason(operationDto.getReason());
         handleDataDTO.setComments(operationDto.getComments());
         WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
@@ -775,7 +775,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //更新主流程状态
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), workBusinessTypeInfo.getProcInstId());
 
-        Task task = taskService.createTaskQuery().taskId(String.valueOf(operationDto.getTaskId())).singleResult();
+        Task task = taskService.createTaskQuery().taskId(String.valueOf(workBusinessTypeInfo.getTaskId())).singleResult();
         String rollBackNode = queryRollBackNode(task);
         runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
                 rollBackNode).changeState();
@@ -870,9 +870,18 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         queryBusinessTime(resultDto,historicProcessInstance.getEndTime());
         //获取关联的工单信息
         resultDto.setWorkOrderIds(getWordOrderIds(Long.parseLong(resultDto.getProcInstId())));
+        resultDto.setQueryType(queryWorkOrderNumber(Long.parseLong(resultDto.getProcInstId()), dto.getNodeType()));
         return IdmResDTO.success(resultDto);
     }
 
+    /**
+     * 查询当前是否在该登陆人处理状态
+     * @param procInstId
+     * @return
+     */
+    public Integer queryWorkOrderNumber(Long procInstId,String nodeType){
+        return baseMapper.queryWorkOrderNumber(LoginInfoHolder.getCurrentUserId(),procInstId,nodeType);
+    }
     /**
      * 转办
      * @param assigneeDto
@@ -883,6 +892,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
         HandleDataDTO handleDataDTO = new HandleDataDTO();
         handleDataDTO.setTaskId(String.valueOf(assigneeDto.getTaskId()));
+        handleDataDTO.setProcessInstanceId(assigneeDto.getProcessInstanceId());
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_TRANSFER.getCode());
         businessTypeInfo.setDeliver(assigneeDto.getUserIds().stream().map(String::valueOf).collect(Collectors.joining(",")));
@@ -906,7 +916,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //执行加签操作
         AddMultiInstanceUserTaskService multiInstanceUserTaskService = new AddMultiInstanceUserTaskService(managementService);
         Integer instance = 1;
-        for (Long userId : handleDataDTO.getUserIds()) {
+        for (Long userId : assigneeDto.getUserIds()) {
             multiInstanceUserTaskService.addMultiInstanceUserTask(tasks.get(0).getId(),String.valueOf(userId), instance);
             instance++;
         }
@@ -978,9 +988,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @param dto
      * @return
      */
-    public IdmResDTO clientComment(TaskBusinessDto dto) {
+    public IdmResDTO clientComment(ClientOperationDto dto) {
         HandleDataDTO dataDTO = new HandleDataDTO();
-        dataDTO.setTaskId(String.valueOf(dto.getTaskId()));
+        dataDTO.setProcessInstanceId(String.valueOf(dto.getProcessInstanceId()));
         dataDTO.setComments(dto.getComments());
         dataDTO.setReason(dto.getReason());
         WorkBusinessTypeInfoEntity businessTypeInfo =getWorkBusinessTypeInfo(dataDTO);
@@ -1395,6 +1405,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //保存节点自选人信息
         Map<String, List<UserInfo>> processUsers = approvalDto.getProcessUsers();
         Task task = taskService.createTaskQuery().taskId(String.valueOf(approvalDto.getTaskId())).singleResult();
+        if(Objects.isNull(task)){
+            return IdmResDTO.error(ErrorCode.TASK_COMPLETE.getCode(), ErrorCode.TASK_COMPLETE.getMessage());
+        }
         Map<String,Object> processVariables= new HashMap<>();
         if(CollUtil.isNotEmpty(processUsers)){
             Set<String> nodes = processUsers.keySet();

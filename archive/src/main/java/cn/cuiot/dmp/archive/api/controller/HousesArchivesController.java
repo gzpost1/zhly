@@ -97,6 +97,9 @@ public class HousesArchivesController extends BaseController {
         if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())){
             wrapper.like( HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
         }
+        if (StringUtils.isNotBlank(query.getName())){
+            wrapper.like( HousesArchivesEntity::getName, query.getName());
+        }
         wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         List<HousesArchivesEntity> records = res.getRecords();

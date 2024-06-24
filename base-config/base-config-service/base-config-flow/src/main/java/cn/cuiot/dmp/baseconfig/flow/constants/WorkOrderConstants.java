@@ -43,4 +43,9 @@ public interface WorkOrderConstants {
      */
     String approvalNodeType = "APPROVAL";
 
+    /**
+     * 任务节点类型
+     */
+    String taskNode="TASK";
+
 }
