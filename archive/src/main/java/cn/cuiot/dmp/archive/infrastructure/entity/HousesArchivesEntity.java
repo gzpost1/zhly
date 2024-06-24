@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.archive.infrastructure.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
+import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
 import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import cn.cuiot.dmp.base.infrastructure.persistence.handler.LongListHandler;
 import com.alibaba.fastjson.annotation.JSONField;
@@ -299,5 +300,17 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
      */
     @TableField(exist = false)
     private Long qrCodeId;
+
+
+    /**
+     * 意向合同状态
+     */
+    @TableField(exist = false)
+    public List<ContractStatus> intentionStatuses;
+    /**
+     * 租赁合同状态
+     */
+    @TableField(exist = false)
+    public List<ContractStatus> leaseStatuses;
 
 }

@@ -16,8 +16,13 @@ import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
+import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
+import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.feign.ContractFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
@@ -28,7 +33,9 @@ import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +51,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 房屋档案
@@ -59,6 +68,8 @@ public class HousesArchivesController extends BaseController {
 
     @Autowired
     private ArchivesApiMapper archivesApiMapper;
+    @Autowired
+    ContractFeignService contractFeignService;
 
     /**
      * 根据id获取详情
@@ -93,10 +104,33 @@ public class HousesArchivesController extends BaseController {
         wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         List<HousesArchivesEntity> records = res.getRecords();
-        records.forEach(h->{
-            String code = h.getCode();
-        });
+        fullContractInfo(records);
         return IdmResDTO.success(res);
+    }
+
+    /**
+     * 填充房屋关联的意向合同和租赁合同
+     * @param records
+     */
+    public void fullContractInfo(List<HousesArchivesEntity> records) {
+        List<Long> houseIds = records.stream().map(HousesArchivesEntity::getId).collect(Collectors.toList());
+        IdsReq houseIdsReq = new IdsReq();
+        houseIdsReq.setIds(houseIds);
+        IdmResDTO<ContractStatusVo> resDTO = contractFeignService.queryConctactStatusByHouseIds(houseIdsReq);
+        ContractStatusVo contractStatusVo = resDTO.getData();
+        Map<Long, List<ContractStatus>> intentionMap = Optional.ofNullable(contractStatusVo.getIntentionMap()).orElse(Maps.newHashMap());
+        Map<Long, List<ContractStatus>> leaseMap = Optional.ofNullable(contractStatusVo.getLeaseMap()).orElse(Maps.newHashMap());
+        records.forEach(h->{
+            Long houseId = h.getId();
+            List<ContractStatus> intentionStatuses = intentionMap.get(houseId);
+            List<ContractStatus> leaseStatuses = leaseMap.get(houseId);
+            if(CollectionUtils.isNotEmpty(intentionStatuses)){
+                h.setIntentionStatuses(intentionStatuses);
+            }
+            if(CollectionUtils.isNotEmpty(leaseStatuses)){
+                h.setLeaseStatuses(leaseStatuses);
+            }
+        });
     }
 
     /**
@@ -246,5 +280,14 @@ public class HousesArchivesController extends BaseController {
         }
     }
 
+    /**
+     * 获取组织楼盘房屋树
+     */
+    @PostMapping("/getDepartmentBuildingHouseTree")
+    public List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree() {
+        String orgId = getOrgId();
+        String userId = getUserId();
+        return housesArchivesService.getDepartmentBuildingHouseTree(Long.valueOf(orgId), Long.valueOf(userId));
+    }
 
 }

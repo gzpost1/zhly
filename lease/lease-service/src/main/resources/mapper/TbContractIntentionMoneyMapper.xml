@@ -56,7 +56,7 @@
                          from (
                                       select m.id
                                       from tb_contract_intention_money m
-                                                   left join tb_contract_intention_bind_info b on m.id = b.bind_id
+                                                   left join tb_contract_bind_info b on m.id = b.bind_id
                                       where b.type = 2) a)
     </delete>
 </mapper>
