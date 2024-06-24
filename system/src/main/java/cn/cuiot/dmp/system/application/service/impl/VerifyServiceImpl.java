@@ -2,7 +2,9 @@ package cn.cuiot.dmp.system.application.service.impl;
 
 import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
 import static cn.cuiot.dmp.common.constant.ResultCode.KAPTCHA_ERROR;
+import static cn.cuiot.dmp.common.constant.ResultCode.KAPTCHA_EXPIRED_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_EXIST;
+import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_EXPIRED_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_FREQUENTLY_REQ_ERROR;
 
 import cn.cuiot.dmp.common.constant.CacheConst;
@@ -13,6 +15,8 @@ import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.domain.types.id.UserId;
+import cn.cuiot.dmp.system.application.param.dto.auth.SmsCodeCheckResDto;
+import cn.cuiot.dmp.system.application.param.dto.auth.SmsCodeResDto;
 import cn.cuiot.dmp.system.application.service.VerifyService;
 import cn.cuiot.dmp.system.infrastructure.entity.SensitivityEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.KaptchaResDTO;
@@ -36,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +54,7 @@ import org.springframework.stereotype.Service;
  * @description 验证业务实现
  * @date 2020-06-22
  */
+@Slf4j
 @Service
 public class VerifyServiceImpl implements VerifyService {
 
@@ -212,5 +218,92 @@ public class VerifyServiceImpl implements VerifyService {
         SensitiveWordEngineUtils.sensitiveWordMap = sensitiveWordMap;
         //校验是否含有敏感词
         return SensitiveWordEngineUtils.isContaintSensitiveWord(username, 2);
+    }
+
+
+    /**
+     * 验证图形验证码
+     *
+     * @param actualText 用户输入到验证码
+     * @param uuid 身份识别id
+     */
+    @Override
+    public boolean checkKaptchaText(String actualText, String uuid) {
+        // 获取redis中的图形验证码文本
+        String expectedText = stringRedisTemplate.opsForValue()
+                .get(CacheConst.KAPTCHA_TEXT_REDIS_KEY + uuid);
+        // 判断是否过期
+        if (org.springframework.util.StringUtils.isEmpty(expectedText)) {
+            // 图形验证码过期
+            throw new BusinessException(KAPTCHA_EXPIRED_ERROR);
+        }
+        // 判断用户输入的验证码是否正确
+        if (!expectedText.equals(actualText)) {
+            stringRedisTemplate.delete(CacheConst.KAPTCHA_TEXT_REDIS_KEY + uuid);
+            // 图形验证码错误
+            return false;
+        }
+        stringRedisTemplate.delete(CacheConst.KAPTCHA_TEXT_REDIS_KEY + uuid);
+        return true;
+    }
+
+    /**
+     * 发送短信验证码
+     */
+    @Override
+    public SmsCodeResDto sendPhoneSmsCode(String phoneNumber, Long userId) {
+        // 查看redis中是否已经存在短信验证码文本
+        String expectedText = stringRedisTemplate.opsForValue()
+                .get(CacheConst.SMS_ALREADY_SEND_REDIS_KEY_P + phoneNumber);
+        // 短时间内重复获取
+        if (!org.apache.commons.lang.StringUtils.isEmpty(expectedText)) {
+            // 短时间内重复提交
+            throw new BusinessException(SMS_CODE_FREQUENTLY_REQ_ERROR);
+        }
+        // 生成短信验证码
+        //String smsCode = RandomStringUtils.random(SendMessageConst.SMS_CODE_LENGTH, false, true);
+        String smsCode = "123456";
+        log.warn("sendPhoneSmsCode===smsCode:{}",smsCode);
+        // 发送短信
+        boolean sendSucceed = verifyUnit.sendSmsCode(String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber);
+        // 发送成功
+        if (sendSucceed) {
+            // 存入redis并设置过期时间
+            stringRedisTemplate.opsForValue()
+                    .set(CacheConst.SMS_ALREADY_SEND_REDIS_KEY_P + phoneNumber,
+                            phoneNumber + smsCode,
+                            SecurityConst.SMS_CODE_FORBIDDEN_TIME, TimeUnit.MINUTES);
+            // 短信验证码以登录用户的标记存入redis
+            stringRedisTemplate.opsForValue()
+                    .set(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber,
+                            phoneNumber + smsCode,
+                            SecurityConst.SMS_CODE_EXPIRED_TIME, TimeUnit.MINUTES);
+
+            return new SmsCodeResDto(sendSucceed, "发送成功");
+        }
+        return new SmsCodeResDto(sendSucceed, "发送失败");
+    }
+    /**
+     * 校验短信验证码
+     */
+    @Override
+    public SmsCodeCheckResDto checkPhoneSmsCode(String phoneNumber, Long userId, String smsCode,Boolean needDeleteCache) {
+        // 获取redis中的短信验证码文本
+        String expectedText = stringRedisTemplate.opsForValue()
+                .get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
+        // 判断是否过期
+        if (org.springframework.util.StringUtils.isEmpty(expectedText)) {
+            // 短信验证码过期
+            throw new BusinessException(SMS_CODE_EXPIRED_ERROR);
+        }
+        if(Boolean.TRUE.equals(needDeleteCache)){
+            stringRedisTemplate.delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
+        }
+        // 判断用户输入的验证码是否正确
+        Boolean checkSucceed = expectedText.equals(phoneNumber + smsCode);
+        if (checkSucceed) {
+            return new SmsCodeCheckResDto(checkSucceed, "校验成功");
+        }
+        return new SmsCodeCheckResDto(checkSucceed, "校验失败");
     }
 }
