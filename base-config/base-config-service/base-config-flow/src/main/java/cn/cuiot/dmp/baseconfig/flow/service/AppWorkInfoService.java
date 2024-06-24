@@ -1405,6 +1405,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //保存节点自选人信息
         Map<String, List<UserInfo>> processUsers = approvalDto.getProcessUsers();
         Task task = taskService.createTaskQuery().taskId(String.valueOf(approvalDto.getTaskId())).singleResult();
+        if(Objects.isNull(task)){
+            return IdmResDTO.error(ErrorCode.TASK_COMPLETE.getCode(), ErrorCode.TASK_COMPLETE.getMessage());
+        }
         Map<String,Object> processVariables= new HashMap<>();
         if(CollUtil.isNotEmpty(processUsers)){
             Set<String> nodes = processUsers.keySet();

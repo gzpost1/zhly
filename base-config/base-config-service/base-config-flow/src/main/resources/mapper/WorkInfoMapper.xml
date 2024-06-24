@@ -561,7 +561,7 @@
         order by create_time desc
     </sql>
     <sql id="queryCustomerWorkOrderSql">
-        business_type,work_name,work_source as workSource,status,create_time,actual_user_id,create_user,proc_inst_id,property_id,work_time_out as timeOut
+        business_type,work_name,work_souce as workSource,status,create_time,actual_user_id,create_user,proc_inst_id,property_id,work_time_out as timeOut
     </sql>
     <select id="queryCustomerWorkOrder" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.CustomerWorkOrderDto">
         select
@@ -615,7 +615,7 @@
     </select>
 
     <select id="queryWorkOrderNumber" resultType="java.lang.Integer">
-        select IF(count(*)>0,1,0) from act_ru_task t1 left join tb_node_type t2 on t1.PROC_DEF_ID_ = t2.process_definition_id
+        select IF(count(*)>0,0,1) from act_ru_task t1 left join tb_node_type t2 on t1.PROC_DEF_ID_ = t2.process_definition_id
         where t1.ASSIGNEE_ = #{userId} and t1.PROC_INST_ID_ = #{procInstId} and t1.TASK_DEF_KEY_=t2.node_id and t2.node_type='APPROVAL'
     </select>
 </mapper>
