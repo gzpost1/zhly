@@ -80,7 +80,7 @@ public class ChargePlainController {
      * @param createDto
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/create")
     @LogRecord(operationCode = "create", operationName = "自动生成计划-创建", serviceType = ServiceTypeConst.CHARGEPLAIN)
     public IdmResDTO create(@RequestBody @Valid ChargePlainInsertDto createDto) {
@@ -96,7 +96,7 @@ public class ChargePlainController {
      * @param updateDto
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/update")
     @LogRecord(operationCode = "update", operationName = "自动生成计划-修改", serviceType = ServiceTypeConst.CHARGEPLAIN)
     public IdmResDTO update(@RequestBody @Valid ChargePlainUpdateDto updateDto) {
@@ -112,7 +112,7 @@ public class ChargePlainController {
      * @param updateStatusParam
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/updateStatus")
     @LogRecord(operationCode = "updateStatus", operationName = "自动生成计划-更新状态", serviceType = ServiceTypeConst.CHARGEPLAIN)
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
@@ -129,7 +129,7 @@ public class ChargePlainController {
      * @param deleteParam
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/delete")
     @LogRecord(operationCode = "delete", operationName = "自动生成计划-删除", serviceType = ServiceTypeConst.CHARGEPLAIN)
     public IdmResDTO delete(@RequestBody @Valid DeleteParam deleteParam) {

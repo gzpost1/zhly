@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.entity.charge;
 
+import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -14,7 +15,7 @@ import java.util.Date;
  */
 @Data
 @TableName(value = "tb_charge_plain")
-public class TbChargePlain {
+public class TbChargePlain extends YjBaseEntity {
     /**
      * id
      */
@@ -50,36 +51,6 @@ public class TbChargePlain {
      */
     @TableField(value = "company_id")
     private Long companyId;
-
-    /**
-     * 更新时间
-     */
-    @TableField(value = "update_time")
-    private Date updateTime;
-
-    /**
-     * 更新人
-     */
-    @TableField(value = "update_user")
-    private Long updateUser;
-
-    /**
-     * 创建时间
-     */
-    @TableField(value = "create_time")
-    private Date createTime;
-
-    /**
-     * 创建人
-     */
-    @TableField(value = "create_user")
-    private Long createUser;
-
-    /**
-     * 是否删除 0否 1是
-     */
-    @TableField(value = "deleted")
-    private Byte deleted;
 
     /**
      * 执行频率 0每月 1每日 2指定日期
