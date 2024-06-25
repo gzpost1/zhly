@@ -7,6 +7,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.entity.*;
 import cn.cuiot.dmp.lease.mapper.TbContractBindInfoMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -40,6 +41,8 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
     ArchiveFeignService archiveFeignService;
     @Autowired
     TbContractIntentionMoneyService moneyService;
+    @Autowired
+    TbContractChargeService chargeService;
 
 
     /**
@@ -95,38 +98,51 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
             bindHouseType = BIND_CONTRACT_LEASE_TYPE_HOUSE;
         }
         Long id = entity.getId();
+        //先移除之前合同关联关系
+        removeByContractId(id);
         ArrayList<TbContractBindInfoEntity> saveBindList = Lists.newArrayList();
-        TbContractBindInfoEntity bindInfoEntity = new TbContractBindInfoEntity();
-        bindInfoEntity.setIntentionId(entity.getId());
+
         List<HousesArchivesVo> houseList = entity.getHouseList();
         List<TbContractIntentionMoneyEntity> moneyList = entity.getMoneyList();
         if (CollectionUtils.isNotEmpty(houseList)) {
             List<Long> houseIds = houseList.stream().map(HousesArchivesVo::getId).collect(Collectors.toList());
             int finalBindHouseType = bindHouseType;
             houseIds.forEach(h -> {
+                TbContractBindInfoEntity bindInfoEntity = new TbContractBindInfoEntity();
+                bindInfoEntity.setIntentionId(id);
                 bindInfoEntity.setBindId(h);
                 bindInfoEntity.setType(finalBindHouseType);
                 saveBindList.add(bindInfoEntity);
             });
         }
+
+        //记录意向金
         if (CollectionUtils.isNotEmpty(moneyList)) {
+            moneyService.removeByContractId(id);
             moneyList.forEach(m -> {
-                bindInfoEntity.setBindId(m.getId());
+                Long moneyId = SnowflakeIdWorkerUtil.nextId();
+                m.setId(moneyId);
+                m.setContractId(id);
+                TbContractBindInfoEntity bindInfoEntity = new TbContractBindInfoEntity();
+                bindInfoEntity.setIntentionId(id);
+                bindInfoEntity.setBindId(moneyId);
                 bindInfoEntity.setType(BIND_CONTRACT_INTENTION_TYPE_MONEY);
                 saveBindList.add(bindInfoEntity);
             });
+            moneyService.saveOrUpdateBatch(moneyList);
         }
-        //记录意向金
-        if (CollectionUtils.isNotEmpty(moneyList)) {
-            moneyService.saveBatch(moneyList);
-            //每次操作意向金都清除没有关联的意向金信息
-            moneyService.clearMoney();
-        }
-        removeByContractId(id);
 
+        //记录绑定关系
         if (CollectionUtils.isNotEmpty(saveBindList)) {
             saveBatch(saveBindList);
         }
+        //记录租赁合同费用条款
+        List<TbContractChargeEntity> chargeList = entity.getChargeList();
+        if(CollectionUtils.isNotEmpty(chargeList)){
+            chargeService.removeByContractId(id);
+            chargeService.saveOrUpdateBatch(chargeList);
+        }
+
     }
 
     public ContractStatusVo queryConctactStatusByHouseIds(List<Long> ids) {

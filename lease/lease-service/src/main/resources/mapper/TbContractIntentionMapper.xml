@@ -140,10 +140,10 @@
                 and ci.end_date = #{params.endDate}
             </if>
             <if test="params.followUp != null and params.followUp.trim() != ''">
-                and u.name like CONCAT('%','${params.followUp}','%' )
+                and ci.followUp like CONCAT('%','${params.followUp}','%' )
             </if>
             <if test="params.followUpName != null and params.followUpName.trim() != ''">
-                and ci.follow_up like CONCAT('%','${params.followUpName}','%' )
+                and u.name like CONCAT('%','${params.followUpName}','%' )
             </if>
             <if test="params.client != null and params.client.trim() != ''">
                 and ci.client like CONCAT('%','${params.client}','%' )

@@ -144,4 +144,20 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
     private Integer auditStatus;
 
 
+    /**
+     * 续租日期
+     */
+    private LocalDate reletDate;
+    /**
+     * 续租说明
+     */
+    private LocalDate reletRemark;
+    /**
+     * 续租附件
+     */
+    private LocalDate reletPath;
+
+    private Integer templateId;
+
+
 }

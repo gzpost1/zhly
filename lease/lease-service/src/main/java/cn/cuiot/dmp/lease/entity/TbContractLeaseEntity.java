@@ -80,11 +80,6 @@ public class TbContractLeaseEntity extends BaseContractEntity {
     @NotNull(message = "合同性质不能为空")
     private String property;
 
-    /**
-     * 租赁房屋
-     */
-    @TableField(exist = false)
-    private List<HousesArchivesVo> houseList;
 
     /**
      * 标签
@@ -150,6 +145,19 @@ public class TbContractLeaseEntity extends BaseContractEntity {
 //    private Integer contractStatus;
 
     private Integer templateId;
+
+    /**
+     * 续租日期
+     */
+    private LocalDate reletDate;
+    /**
+     * 续租说明
+     */
+    private LocalDate reletRemark;
+    /**
+     * 续租附件
+     */
+    private LocalDate reletPath;
 
     /**
      * 审核状态 1审核中,待审核 2 审核通过 3.未通过

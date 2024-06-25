@@ -8,6 +8,7 @@
         <result column="bid" property="bid"/>
         <result column="amount" property="amount"/>
         <result column="remark" property="remark"/>
+        <result column="contract_id" property="contractId"/>
     </resultMap>
 
     <select id="list" resultMap="BaseResultMap"
@@ -26,13 +27,16 @@
         project,
         bid,
         amount,
-        remark
+        remark,contract_id
     </sql>
 
     <sql id="dynamic_where">
         <if test="params != null">
             <if test="params.id != null">
                 and id = #{params.id}
+            </if>
+            <if test="params.contractId != null">
+                and contract_id = #{params.contractId}
             </if>
             <if test="params.project != null and params.project.trim() != ''">
                 and project like CONCAT('%','${params.project}','%' )

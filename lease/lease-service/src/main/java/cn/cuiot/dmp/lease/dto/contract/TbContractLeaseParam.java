@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.lease.dto.contract;
 
+import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
+import cn.cuiot.dmp.lease.entity.TbContractChargeEntity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
@@ -10,6 +12,8 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
+import java.util.List;
+
 import lombok.*;
 import cn.cuiot.dmp.common.bean.PageQuery;;
 import lombok.experimental.Accessors;
@@ -137,6 +141,16 @@ public class TbContractLeaseParam extends PageQuery implements Serializable {
     private Long updateUser;
 
     private Byte status;
+
+    /**
+     * 租赁房屋
+     */
+    private List<HousesArchivesVo> houseList;
+
+    /**
+     * 费用条款
+     */
+    private List<TbContractChargeEntity> chargeList;
 
     @TableLogic
     @Builder.Default

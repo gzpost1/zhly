@@ -6,12 +6,14 @@ import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.dto.contract.AuditParam;
 import cn.cuiot.dmp.lease.dto.contract.TbContractIntentionParam;
 import cn.cuiot.dmp.lease.entity.BaseContractEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractIntentionMapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +84,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
 
     @Override
     public TbContractIntentionEntity getById(Serializable id) {
+        AssertUtil.notNull(id,"id不能为空");
         TbContractIntentionEntity intentionEntity = super.getById(id);
         fullBindHouseInfo(intentionEntity);
         return intentionEntity;
@@ -132,5 +135,13 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     public boolean removeById(Serializable id) {
         bindInfoService.removeByContractId(Long.valueOf(String.valueOf(id)));
         return super.removeById(id);
+    }
+
+    @Override
+    public boolean updateById(Object entity) {
+        TbContractIntentionEntity o = (TbContractIntentionEntity) entity;
+        Long id = o.getId();
+        bindInfoService.createContractBind(o);
+        return super.updateById(o);
     }
 }

@@ -11,6 +11,7 @@
         <result column="cantract_date" property="cantractDate"/>
         <result column="first_date" property="firstDate"/>
         <result column="follow_up" property="followUp"/>
+        <result column="followUpName" property="followUpName"/>
         <result column="purpose" property="purpose"/>
         <result column="type" property="type"/>
         <result column="property" property="property"/>
@@ -29,12 +30,23 @@
         <result column="contract_status" property="contractStatus"/>
         <result column="audit_status" property="auditStatus"/>
         <result column="template_id" property="templateId"/>
+        <result column="relet_date" property="reletDate"/>
+        <result column="relet_remark" property="reletRemark"/>
+        <result column="relet_path" property="reletPath"/>
     </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        select   <include refid="Base_Column_List"/>
+        from tb_contract_lease ci
+        left join user u on ci.follow_up = u.id
+        where ci.id = #{id}
+    </select>
 
     <select id="list" resultMap="BaseResultMap" parameterType="cn.cuiot.dmp.lease.entity.TbContractLeaseEntity">
         select
         <include refid="Base_Column_List"/>
-        from tb_contract_lease
+        from tb_contract_lease ci
+        left join user u on ci.follow_up = u.id
         <where>
             <include refid="dynamic_where"/>
         </where>
@@ -42,94 +54,112 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, contract_no, name, begin_date, end_date, cantract_date, first_date, follow_up, purpose, type, property, label, remark, client, form, main_body, path, create_time, update_time, create_user, update_user, status, deleted, contract_status, audit_status,template_id
+        ci.id, ci.contract_no, name, ci.begin_date, ci.end_date, ci.cantract_date, ci.first_date, ci.follow_up, ci.purpose, ci.type, ci.property, ci.label, ci.remark, ci.client, ci.form, ci.main_body, ci.path, ci.create_time, ci.update_time, ci.create_user, ci.update_user, ci.status, ci.deleted, ci.contract_status, ci.audit_status,ci.template_id,ci.relet_date,ci.relet_remark,ci.relet_path
     </sql>
 
     <sql id="dynamic_where">
         <if test="params!=null">
             <if test=" params.id != null">
-                and id = #{params.id}
+                and ci.id = #{params.id}
             </if>
             <if test=" params.templateId != null">
-                and template_id = #{params.templateId}
+                and ci.template_id = #{params.templateId}
             </if>
             <if test=" params.contractNo != null and params.contractNo.trim() != ''">
-                and contract_no like CONCAT('%','${params.contractNo}','%' )
+                and ci.contract_no like CONCAT('%','${params.contractNo}','%' )
             </if>
             <if test=" params.name != null and params.name.trim() != ''">
-                and name like CONCAT('%','${params.name}','%' )
+                and ci.name like CONCAT('%','${params.name}','%' )
             </if>
             <if test=" params.beginDate != null">
                 <!--  and  begin_date between #{params.beginDate} and #{params.endDate}  -->
-                and begin_date = #{params.beginDate}
+                and ci.begin_date = #{params.beginDate}
             </if>
             <if test=" params.endDate != null">
                 <!--  and  end_date between #{params.beginDate} and #{params.endDate}  -->
-                and end_date = #{params.endDate}
+                and ci.end_date = #{params.endDate}
             </if>
             <if test=" params.cantractDate != null">
                 <!--  and  cantract_date between #{params.beginDate} and #{params.endDate}  -->
-                and cantract_date = #{params.cantractDate}
+                and ci.cantract_date = #{params.cantractDate}
+            </if>
+            <if test="params.cantractBeginDate != null">
+                and ci.cantract_date >= #{params.cantractBeginDate}
+            </if>
+            <if test="params.cantractEndDate != null">
+                and ci.cantract_date  <![CDATA[<=]]>  #{params.cantractEndDate}
+            </if>
+            <if test="params.beginDateBegin != null">
+                and ci.begin_date >= #{params.beginDateBegin}
+            </if>
+            <if test="params.beginDateEnd != null">
+                and ci.begin_date   <![CDATA[<=]]>  #{params.beginDateEnd}
+            </if>
+            <if test="params.endDateBegin != null">
+                and ci.end_date >= #{params.beginDateBegin}
+            </if>
+            <if test="params.endDateEnd != null">
+                and ci.end_date   <![CDATA[<=]]>  #{params.endDateEnd}
             </if>
             <if test=" params.firstDate != null">
                 <!--  and  first_date between #{params.beginDate} and #{params.endDate}  -->
-                and first_date = #{params.firstDate}
+                and ci.first_date = #{params.firstDate}
             </if>
             <if test=" params.followUp != null and params.followUp.trim() != ''">
-                and follow_up like CONCAT('%','${params.followUp}','%' )
+                and ci.follow_up like CONCAT('%','${params.followUp}','%' )
             </if>
             <if test=" params.purpose != null and params.purpose.trim() != ''">
-                and purpose like CONCAT('%','${params.purpose}','%' )
+                and ci.purpose like CONCAT('%','${params.purpose}','%' )
             </if>
             <if test=" params.type != null and params.type.trim() != ''">
-                and type like CONCAT('%','${params.type}','%' )
+                and ci.type like CONCAT('%','${params.type}','%' )
             </if>
             <if test=" params.property != null and params.property.trim() != ''">
-                and property like CONCAT('%','${params.property}','%' )
+                and ci.property like CONCAT('%','${params.property}','%' )
             </if>
             <if test=" params.label != null and params.label.trim() != ''">
-                and label = #{params.label}
+                and ci.label = #{params.label}
             </if>
             <if test=" params.remark != null and params.remark.trim() != ''">
-                and remark = #{params.remark}
+                and ci.remark = #{params.remark}
             </if>
             <if test=" params.client != null and params.client.trim() != ''">
-                and client like CONCAT('%','${params.client}','%' )
+                and ci.client like CONCAT('%','${params.client}','%' )
             </if>
             <if test=" params.form != null and params.form.trim() != ''">
-                and form = #{params.form}
+                and ci.form = #{params.form}
             </if>
             <if test=" params.mainBody != null">
-                and main_body = #{params.mainBody}
+                and ci.main_body = #{params.mainBody}
             </if>
             <if test=" params.path != null and params.path.trim() != ''">
-                and path = #{params.path}
+                and ci.path = #{params.path}
             </if>
             <if test=" params.createTime != null">
                 <!--  and  create_time between #{params.beginDate} and #{params.endDate}  -->
-                and create_time = #{params.createTime}
+                and ci.create_time = #{params.createTime}
             </if>
             <if test=" params.updateTime != null">
                 <!--  and  update_time between #{params.beginDate} and #{params.endDate}  -->
-                and update_time = #{params.updateTime}
+                and ci.update_time = #{params.updateTime}
             </if>
             <if test=" params.createUser != null">
-                and create_user = #{params.createUser}
+                and ci.create_user = #{params.createUser}
             </if>
             <if test=" params.updateUser != null">
-                and update_user = #{params.updateUser}
+                and ci.update_user = #{params.updateUser}
             </if>
             <if test=" params.status != null">
-                and status = #{params.status}
+                and ci.status = #{params.status}
             </if>
             <if test=" params.deleted != null">
-                and deleted = #{params.deleted}
+                and ci.deleted = #{params.deleted}
             </if>
             <if test=" params.contractStatus != null">
-                and contract_status = #{params.contractStatus}
+                and ci.contract_status = #{params.contractStatus}
             </if>
             <if test=" params.auditStatus != null">
-                and audit_status = #{params.auditStatus}
+                and ci.audit_status = #{params.auditStatus}
             </if>
         </if>
     </sql>

@@ -3,6 +3,7 @@ package cn.cuiot.dmp.lease.service;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
 import cn.cuiot.dmp.lease.entity.TbContractCancelEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractCancelMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
 
 /**

@@ -119,4 +119,11 @@ public class BaseContractEntity extends Model {
     private List<TbContractIntentionMoneyEntity> moneyList;
 
 
+    /**
+     * 费用条款
+     */
+    @TableField(exist = false)
+    private List<TbContractChargeEntity> chargeList;
+
+
 }

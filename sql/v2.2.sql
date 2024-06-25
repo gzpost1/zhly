@@ -18,7 +18,7 @@ create table tb_contract_intention
     status            tinyint(1)  null,
     deleted           tinyint(1)  null,
     contract_status   int         null comment '合同状态',
-    audit_status      int         null comment '审核状态 1审核中,待审核 2 审核通过 3.未通过',
+    audit_status      int         null comment '审核状态 0.待提交 1审核中 2 审核通过 3.未通过',
     contract_lease_id bigint      null comment '租赁合同关联id',
     label             text        null comment '标签'
 )
@@ -56,15 +56,19 @@ create table tb_contract_bind_info
 )
     comment '意向合同关联信息';
 
+-- auto-generated definition
 create table tb_contract_intention_money
 (
-    id      bigint         not null primary key,
-    project varchar(50)    null comment '收费项目',
-    bid     varchar(50)    null comment '意向标的',
-    amount  decimal(10, 2) null comment '应收金额',
-    remark  longtext       null comment '备注'
+    id          bigint         not null,
+    project     varchar(50)    null comment '收费项目',
+    bid         varchar(50)    null comment '意向标的',
+    amount      decimal(10, 2) null comment '应收金额',
+    remark      longtext       null comment '备注',
+    contract_id bigint         null comment '合同id'
 )
-    comment '意向合同关联信息';
+    comment '意向金';
+
+
 
 -- auto-generated definition
 create table tb_contract_log
@@ -113,7 +117,10 @@ create table tb_contract_lease
     deleted         tinyint(1)   null,
     contract_status int          null comment '合同状态',
     audit_status    int          null comment '审核状态 1审核中,待审核 2 审核通过 3.未通过',
-    template_id     bigint       null comment '合同模板id'
+    template_id     bigint       null comment '合同模板id',
+    relet_date   date         null comment '续租日期',
+    relet_remark   text         null comment '续租说明',
+    relet_path   varchar(512)         null comment '续组附件'
 )
     comment '租赁合同';
 
