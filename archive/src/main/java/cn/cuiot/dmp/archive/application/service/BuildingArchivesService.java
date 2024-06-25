@@ -78,7 +78,7 @@ public interface BuildingArchivesService {
     /**
      * 获取组织楼盘树
      */
-    List<DepartmentTreeRspDTO> getDepartmentBuildingTree(Long orgId, Long userId);
+    List<DepartmentTreeRspDTO> getDepartmentBuildingTree(Long orgId, Long userId,String keyWords);
 
     List<BuildingArchive> apiQueryForList(BuildingArchiveReq buildingArchiveReq);
 

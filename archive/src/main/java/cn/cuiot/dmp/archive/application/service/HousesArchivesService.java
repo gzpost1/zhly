@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.archive.application.service;
 
 import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
+import cn.cuiot.dmp.archive.application.param.dto.HouseTreeQueryDto;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
@@ -57,6 +58,6 @@ public interface HousesArchivesService extends IService<HousesArchivesEntity> {
     /**
      * 获取组织楼盘房屋树
      */
-    List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree(Long orgId, Long userId);
+    List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree(HouseTreeQueryDto houseTreeQueryDto);
 
 }

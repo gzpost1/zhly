@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
 import cn.cuiot.dmp.archive.application.constant.BuildingArchivesConstant;
+import cn.cuiot.dmp.archive.application.param.dto.HouseTreeQueryDto;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
@@ -202,16 +203,18 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
     }
 
     @Override
-    public List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree(Long orgId, Long userId) {
-        AssertUtil.notNull(orgId, "企业id不能为空");
-        AssertUtil.notNull(userId, "用户id不能为空");
-        List<DepartmentTreeRspDTO> departmentTreeRspList = buildingArchivesService.getDepartmentBuildingTree(orgId, userId);
+    public List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree(HouseTreeQueryDto houseTreeQueryDto) {
+        List<DepartmentTreeRspDTO> departmentTreeRspList = buildingArchivesService.getDepartmentBuildingTree(houseTreeQueryDto.getOrgId(), houseTreeQueryDto.getUserId(),houseTreeQueryDto.getKeyWords());
         if (CollectionUtils.isEmpty(departmentTreeRspList)) {
             return new ArrayList<>();
         }
         List<Long> buidingIdList = getBuidingIdList(departmentTreeRspList.get(0));
         LambdaQueryWrapper<HousesArchivesEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(HousesArchivesEntity::getLoupanId, buidingIdList);
+        if(houseTreeQueryDto.getIsSelectHouseArrears()){
+            queryWrapper.last(String.format("SELECT DISTINCT house_id FROM tb_charge_manager WHERE deleted = 0 AND company_id = ? AND receivble_status = 2 AND abrogate_status = 0",
+                    houseTreeQueryDto.getOrgId()));
+        }
         List<HousesArchivesEntity> housesArchivesEntityList = list(queryWrapper);
         fillDepartmentBuildingHouseTree(departmentTreeRspList.get(0), housesArchivesEntityList);
         return departmentTreeRspList;
