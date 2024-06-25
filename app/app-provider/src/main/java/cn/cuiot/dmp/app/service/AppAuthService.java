@@ -725,7 +725,7 @@ public class AppAuthService {
             throw new BusinessException(ResultCode.SMS_TEXT_IS_EMPTY, "请输入验证码");
         }
         SmsCodeCheckResDto res = appVerifyService
-                .checkPhoneSmsCode(dto.getPhoneNumber(), null, dto.getSmsCode(), true);
+                .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), dto.getSmsCode(), true);
         if (!res.getCheckSucceed()) {
             throw new BusinessException(SMS_TEXT_OLD_INVALID);
         }
