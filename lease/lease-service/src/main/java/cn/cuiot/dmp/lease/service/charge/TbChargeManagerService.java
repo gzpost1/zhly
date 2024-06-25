@@ -284,7 +284,11 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         return tbChargeReceivedService.queryForPage(queryDto);
     }
 
-
+    /**
+     * 查询房屋下的所有客户
+     * @param query
+     * @return
+     */
     public IPage<CustomerUserInfo> queryHouseCustmerPage(HouseCustomerQuery query) {
         return baseMapper.queryHouseCustmerPage(new Page(query.getPageNo(), query.getPageSize()), query);
     }
