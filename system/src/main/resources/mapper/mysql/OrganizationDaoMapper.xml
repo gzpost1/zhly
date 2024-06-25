@@ -41,7 +41,8 @@
         o.company_name,
         o.exp_start_date,
         o.exp_end_date,
-        o.source
+        o.source,
+        o.init_flag
         FROM organization o
         join user u on u.id = o.org_owner
         left join user_grant ug on ug.org_id=o.id
