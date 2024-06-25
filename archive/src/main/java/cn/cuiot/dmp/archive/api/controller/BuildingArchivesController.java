@@ -98,7 +98,7 @@ public class BuildingArchivesController extends BaseController {
     public List<DepartmentTreeRspDTO> getDepartmentBuildingTree() {
         String orgId = getOrgId();
         String userId = getUserId();
-        return buildingArchivesService.getDepartmentBuildingTree(Long.valueOf(orgId), Long.valueOf(userId));
+        return buildingArchivesService.getDepartmentBuildingTree(Long.valueOf(orgId), Long.valueOf(userId),null);
     }
 
     /**
