@@ -15,7 +15,7 @@ public class QueryCommitProcessDto {
      * 订单id
      */
     @NotNull(message = "订单id不能为空")
-    private Long procInstId;
+    private Long businessTypeId;
 
 
     /**

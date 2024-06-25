@@ -29,5 +29,6 @@ public class ClientOperationDto {
     /**
      * 工单id
      */
+    @NotNull(message = "工单id不能为空")
     private Long processInstanceId;
 }
