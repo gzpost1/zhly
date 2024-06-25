@@ -576,7 +576,8 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         String processJson = mainJson.getString(VIEW_PROCESS_JSON_NAME);
 
         LambdaQueryWrapper<CommitProcessEntity> processLw = new LambdaQueryWrapper<>();
-        processLw.eq(CommitProcessEntity::getProcInstId,dto.getProcInstId()).eq(CommitProcessEntity::getNodeId,dto.getNodeId())
+        processLw.eq(CommitProcessEntity::getProcInstId,dto.getProcInstId())
+                .eq(CommitProcessEntity::getNodeId,dto.getNodeId())
                 .eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId())
                 .orderByDesc(CommitProcessEntity::getCreateTime);
         List<CommitProcessEntity> processList = commitProcessService.list(processLw);
@@ -1162,6 +1163,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             workBusinessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_START.getCode());
             workBusinessTypeInfoService.save(workBusinessTypeInfo);
             //保存提交的参数
+
             saveCommitProcess(workBusinessTypeInfo,startProcessInstanceDTO);
             //保存工单关联关系
             saveWorkOrderRel(startProcessInstanceDTO,Long.parseLong(task.getProcessInstanceId()));
@@ -1219,8 +1221,8 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
 
     public void saveCommitProcess(WorkBusinessTypeInfoEntity workBusinessTypeInfo,StartProcessInstanceDTO startProcessInstanceDTO){
-        CommitProcessEntity commitProcess = startProcessInstanceDTO.getCommitProcess();
-        if(Objects.isNull(commitProcess)){
+        JSONObject formData = startProcessInstanceDTO.getFormData();
+        if(Objects.isNull(formData)){
             return;
         }
         CommitProcessEntity entity = new CommitProcessEntity();
@@ -1229,11 +1231,11 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         entity.setProcInstId(workBusinessTypeInfo.getProcInstId());
         entity.setUserId(LoginInfoHolder.getCurrentUserId());
         entity.setNodeId(workBusinessTypeInfo.getNode());
-        entity.setDataId(commitProcess.getDataId());
-        entity.setCommitProcess(commitProcess.getCommitProcess());
+//        entity.setDataId(commitProcess.getDataId());
+        entity.setCommitProcess(JsonUtil.writeValueAsString(formData));
         entity.setCreateTime(new Date());
         entity.setBusinessTypeId(workBusinessTypeInfo.getId());
-        commitProcessService.save(commitProcess);
+        commitProcessService.save(entity);
 
         //保存工单关联关系
 
