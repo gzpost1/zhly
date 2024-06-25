@@ -166,5 +166,11 @@ public class TbContractLeaseParam extends PageQuery implements Serializable {
      */
     private Integer auditStatus;
 
+    /**
+     * 意向标(房屋名称)
+     */
+    @TableField(exist = false)
+    private String houseName;
+    private String followUpName;
 
 }

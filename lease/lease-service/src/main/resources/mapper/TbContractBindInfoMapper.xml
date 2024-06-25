@@ -74,4 +74,14 @@
             </foreach>
         </if>
     </select>
+
+    <select id="queryContractIdsByHouseName" resultType="Long">
+        select distinct b.intention_id
+        from tb_contract_bind_info b left join tb_houses_archives h on b.bind_id=h.id
+        <where>
+            <if test="name != null and name !=''">
+                and h.name like CONCAT('%','${name}','%' )
+            </if>
+        </where>
+    </select>
 </mapper>

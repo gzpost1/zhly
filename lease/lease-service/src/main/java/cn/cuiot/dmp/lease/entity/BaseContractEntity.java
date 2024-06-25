@@ -37,10 +37,18 @@ public class BaseContractEntity extends Model {
     @NotNull(message = "id不能为空",groups = BeanValidationGroup.Update.class)
     private Long id;
 
+    @TableField(exist = false)
+    private List<Long> queryIds;
     /**
      * 合同编号
      */
     private String contractNo;
+
+    /**
+     * 意向标(房屋名称)
+     */
+    @TableField(exist = false)
+    private String houseName;
     /**
      * 审核状态
      * 1:审核中待审核 2:审核通过 3:未通过
@@ -124,6 +132,11 @@ public class BaseContractEntity extends Model {
      */
     @TableField(exist = false)
     private List<TbContractChargeEntity> chargeList;
+
+    @TableField(exist = false)
+    private String createUserName;
+    @TableField(exist = false)
+    private String updateUserName;
 
 
 }

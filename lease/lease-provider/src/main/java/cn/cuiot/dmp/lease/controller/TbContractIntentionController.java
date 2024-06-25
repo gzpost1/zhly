@@ -208,7 +208,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
     public boolean update(@RequestBody TbContractIntentionEntity entity) {
         checkUpdate(entity.getId());
         entity.setAuditStatus(ContractEnum.AUDIT_WAITING.getCode());
-        return super.update(entity);
+        return service.updateById(entity);
     }
 
     private void checkUpdate(Long id) {

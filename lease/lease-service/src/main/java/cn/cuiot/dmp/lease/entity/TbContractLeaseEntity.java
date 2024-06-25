@@ -45,7 +45,6 @@ public class TbContractLeaseEntity extends BaseContractEntity {
     private String name;
 
 
-
     /**
      * 首期应收日期
      */

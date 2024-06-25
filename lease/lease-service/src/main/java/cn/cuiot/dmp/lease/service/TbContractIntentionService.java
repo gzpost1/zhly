@@ -48,23 +48,14 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     public List<TbContractIntentionEntity> list(TbContractIntentionEntity params) {
         String houseName = params.getHouseName();
         if (StringUtils.isNotEmpty(houseName)) {
-            List<Long> queryIds = queryContractIdsByHouseName(houseName);
+            List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
             params.setQueryIds(queryIds);
         }
         List<TbContractIntentionEntity> list = super.list(params);
         list.forEach(c -> {
-            fullInfo(c);
+            baseContractService.fullInfo(c);
         });
         return list;
-    }
-
-    /**
-     * 填充房屋信息,跟进人和合同人信息
-     *
-     * @param c
-     */
-    private void fullInfo(TbContractIntentionEntity c) {
-        fullBindHouseInfo(c);
     }
 
     @Override
@@ -72,12 +63,12 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         TbContractIntentionParam params = (TbContractIntentionParam) param;
         String houseName = params.getHouseName();
         if (StringUtils.isNotEmpty(houseName)) {
-            List<Long> queryIds = queryContractIdsByHouseName(houseName);
+            List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
             params.setQueryIds(queryIds);
         }
         PageResult<TbContractIntentionEntity> page = super.page(param);
         page.getRecords().forEach(c -> {
-            fullInfo(c);
+            baseContractService.fullInfo(c);
         });
         return page;
     }
@@ -86,7 +77,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     public TbContractIntentionEntity getById(Serializable id) {
         AssertUtil.notNull(id,"id不能为空");
         TbContractIntentionEntity intentionEntity = super.getById(id);
-        fullBindHouseInfo(intentionEntity);
+        baseContractService.fullBindHouseInfo(intentionEntity);
         return intentionEntity;
     }
 
@@ -95,16 +86,10 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         queryWrapper.eq(TbContractIntentionEntity::getContractNo, contractNo);
         queryWrapper.last("limit 1");
         TbContractIntentionEntity intentionEntity = baseMapper.selectOne(queryWrapper);
-        fullBindHouseInfo(intentionEntity);
+        baseContractService.fullBindHouseInfo(intentionEntity);
         return intentionEntity;
     }
 
-    private void fullBindHouseInfo(TbContractIntentionEntity intentionEntity) {
-        List<HousesArchivesVo> housesArchivesVos = bindInfoService.queryBindHouseInfoByContractId(intentionEntity.getId(),BIND_CONTRACT_INTENTION_TYPE_HOUSE);
-        if (Objects.nonNull(housesArchivesVos)) {
-            intentionEntity.setHouseList(housesArchivesVos);
-        }
-    }
 
 
     @Override
@@ -116,15 +101,6 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         return super.save(entity);
     }
 
-    /**
-     * 根据房屋名称模糊获取合同id集合
-     *
-     * @param name
-     * @return
-     */
-    public List<Long> queryContractIdsByHouseName(String name) {
-        return baseMapper.queryContractIdsByHouseName(name);
-    }
 
     /**
      * 删除合同同时删除绑定信息

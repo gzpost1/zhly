@@ -143,5 +143,9 @@ create table tb_contract_charge
 )
     comment '费用条款';
 
-
+CREATE FUNCTION getUserName(userid INT)
+    RETURNS varchar(255)
+BEGIN
+    return (select name from user where id=userid);
+END;
 

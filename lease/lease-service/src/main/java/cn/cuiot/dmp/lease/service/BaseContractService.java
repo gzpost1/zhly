@@ -6,6 +6,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
+import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
@@ -26,6 +27,8 @@ import java.util.Objects;
 
 import static cn.cuiot.dmp.common.constant.AuditConstant.*;
 import static cn.cuiot.dmp.common.constant.AuditConstant.AUDIT_CONFIG_INTENTION_USELESS;
+import static cn.cuiot.dmp.lease.service.TbContractBindInfoService.BIND_CONTRACT_INTENTION_TYPE_HOUSE;
+import static cn.cuiot.dmp.lease.service.TbContractBindInfoService.BIND_CONTRACT_LEASE_TYPE_HOUSE;
 
 /**
  * 租赁合同 服务实现类
@@ -41,7 +44,29 @@ public class BaseContractService {
     public static final int CONTRACT_LEASE_TYPE = 2;
     @Autowired
     SystemApiFeignService systemApiFeignService;
+    @Autowired
+    TbContractBindInfoService bindInfoService;
 
+    /**
+     * 填充房屋信息,跟进人和合同人信息
+     *
+     * @param c
+     */
+    public void fullInfo(BaseContractEntity c) {
+        fullBindHouseInfo(c);
+    }
+
+
+    public void fullBindHouseInfo(BaseContractEntity contractEntity) {
+        Integer type = BIND_CONTRACT_INTENTION_TYPE_HOUSE;
+        if(contractEntity instanceof TbContractLeaseEntity){
+            type = BIND_CONTRACT_LEASE_TYPE_HOUSE;
+        }
+        List<HousesArchivesVo> housesArchivesVos = bindInfoService.queryBindHouseInfoByContractId(contractEntity.getId(),type);
+        if (Objects.nonNull(housesArchivesVos)) {
+            contractEntity.setHouseList(housesArchivesVos);
+        }
+    }
 
     /**
      * 获取审核后的合同状态
@@ -168,16 +193,44 @@ public class BaseContractService {
                 case STATUS_USELESSING:
                     contractStatus = ContractEnum.STATUS_USELESS.getCode();
                     break;
+                //变更中
+                case STATUS_CHANGING:
+                    contractStatus = ContractEnum.STATUS_CHANGED.getCode();
+                    break;
+                //退租中
+                case STATUS_BACKING_LEASE:
+                    contractStatus = ContractEnum.STATUS_BACKED_LEASE.getCode();
+                    break;
             }
-            //意向合同  签约,退定,作废审核不通过的按照合同日期修改合同状态
-        } else if (Objects.equals(type, CONTRACT_INTENTION_TYPE) && !Objects.equals(contractStatus, ContractEnum.STATUS_COMMITING.getCode())
-                && Objects.equals(auditStatus, ContractEnum.AUDIT_REFUSE.getCode())) {
-            contractStatus = handleContractStatusByDate(beginDate, endDate);
-            handleContractStatusByDate(beginDate, endDate);
-            //意向合同 提交中 未通过的合同改为草稿
-        } else if (Objects.equals(type, CONTRACT_INTENTION_TYPE) && Objects.equals(contractStatus, ContractEnum.STATUS_COMMITING.getCode())
-                && Objects.equals(auditStatus, ContractEnum.AUDIT_REFUSE.getCode()) && Objects.equals(type, CONTRACT_INTENTION_TYPE)) {
-            contractStatus = ContractEnum.STATUS_DARFT.getCode();
+            //   被拒绝的处理
+        } else if (Objects.equals(auditStatus, ContractEnum.AUDIT_REFUSE.getCode())) {
+            switch (ContractEnum.getEnumByCode(contractStatus)) {
+                case STATUS_COMMITING:
+                    contractStatus = ContractEnum.STATUS_DARFT.getCode();
+                    break;
+//                case STATUS_SIGNING:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+//                case STATUS_CANCELING:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+//                case STATUS_USELESSING:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+//                case STATUS_CHANGING:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+//                case STATUS_BACKING_LEASE:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+//                case STATUS_RELETING:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+                //除了提交中被拒绝改为草稿,其余都是走时间判断状态
+                default:
+                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+                    break;
+            }
         }
         return contractStatus;
     }

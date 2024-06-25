@@ -105,6 +105,7 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
 
      */
     private String followUp;
+    private String followUpName;
 
     /**
      * 签订客户

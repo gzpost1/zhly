@@ -17,4 +17,5 @@ import java.util.List;
  */
 public interface TbContractBindInfoMapper extends BaseMybatisMapper<TbContractBindInfoEntity> {
       List<ContractStatus> queryConctactStatusByHouseIds(@Param("ids") List<Long> ids);
+      List<Long>  queryContractIdsByHouseName(@Param("name") String name);
 }

@@ -11,19 +11,21 @@
         <result column="begin_date" property="beginDate"/>
         <result column="end_date" property="endDate"/>
         <result column="follow_up" property="followUp"/>
+        <result column="followUpName" property="followUpName"/>
         <result column="client" property="client"/>
         <result column="remark" property="remark"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
         <result column="create_user" property="createUser"/>
         <result column="update_user" property="updateUser"/>
+        <result column="createUserName" property="createUserName"/>
+        <result column="updateUserName" property="updateUserName"/>
         <result column="status" property="status"/>
         <result column="deleted" property="deleted"/>
         <result column="contract_status" property="contractStatus"/>
         <result column="audit_status" property="auditStatus"/>
         <result column="label" property="label"/>
         <result column="customer_name" property="clientName"/>
-        <result column="followUpName" property="followUpName"/>
         <result column="contact_phone" property="clientPhone"/>
         <collection property="moneyList"
                     select="cn.cuiot.dmp.lease.mapper.TbContractBindInfoMapper.queryMoneyInfoByIntentionId"
@@ -40,10 +42,11 @@
     </resultMap>
 
     <select id="selectById" resultMap="BaseResultMap">
-        select   <include refid="Base_Column_List"/>
+        select
+        <include refid="Base_Column_List"/>
         from tb_contract_intention ci
-                     left join user u on ci.follow_up = u.id
-                     left join tb_customer c on ci.client = c.id
+        left join user u on ci.follow_up = u.id
+        left join tb_customer c on ci.client = c.id
         where ci.id = #{id}
     </select>
 
@@ -59,15 +62,6 @@
         order by ifnull(ci.update_time,ci.create_time) desc
     </select>
 
-    <select id="queryContractIdsByHouseName" resultType="Long">
-        select distinct b.intention_id
-        from tb_contract_bind_info b left join tb_houses_archives h on b.bind_id=h.id
-        <where>
-            <if test="name != null and name !=''">
-                and h.name like CONCAT('%','${name}','%' )
-            </if>
-        </where>
-    </select>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
@@ -81,12 +75,13 @@
         ci.client,
         ci.remark,
         ci.create_time,
-        ifnull(ci.update_time,ci.create_time),
+        ifnull(ci.update_time,ci.create_time) update_time,
         ci.create_user,
-        ifnull(ci.create_user,ci.update_user),
+        ifnull(ci.update_user,ci.create_user) update_user,
         ci.status,
         ci.deleted,
-        ci.contract_status,ci.audit_status,ci.label,c.customer_name,u.name followUpName,c.contact_phone
+        ci.contract_status,ci.audit_status,ci.label,c.customer_name,u.name followUpName,c.contact_phone,
+        getUserName(ci.create_user) createUserName,getUserName(ifnull(ci.update_user,ci.create_user)) updateUserName
     </sql>
 
     <sql id="dynamic_where">

@@ -25,6 +25,8 @@
         <result column="update_time" property="updateTime"/>
         <result column="create_user" property="createUser"/>
         <result column="update_user" property="updateUser"/>
+        <result column="createUserName" property="createUserName"/>
+        <result column="updateUserName" property="updateUserName"/>
         <result column="status" property="status"/>
         <result column="deleted" property="deleted"/>
         <result column="contract_status" property="contractStatus"/>
@@ -36,7 +38,8 @@
     </resultMap>
 
     <select id="selectById" resultMap="BaseResultMap">
-        select   <include refid="Base_Column_List"/>
+        select
+        <include refid="Base_Column_List"/>
         from tb_contract_lease ci
         left join user u on ci.follow_up = u.id
         where ci.id = #{id}
@@ -54,7 +57,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        ci.id, ci.contract_no, name, ci.begin_date, ci.end_date, ci.cantract_date, ci.first_date, ci.follow_up, ci.purpose, ci.type, ci.property, ci.label, ci.remark, ci.client, ci.form, ci.main_body, ci.path, ci.create_time, ci.update_time, ci.create_user, ci.update_user, ci.status, ci.deleted, ci.contract_status, ci.audit_status,ci.template_id,ci.relet_date,ci.relet_remark,ci.relet_path
+        ci.id, ci.contract_no, name, ci.begin_date, ci.end_date, ci.cantract_date, ci.first_date, ci.follow_up, ci.purpose, ci.type, ci.property, ci.label, ci.remark, ci.client, ci.form, ci.main_body, ci.path, ci.create_time,  ifnull(ci.update_time,ci.create_time) update_time, ci.create_user,  ifnull(ci.update_user,ci.create_user) update_user,getUserName(ci.create_user) createUserName,getUserName(ifnull(ci.update_user,ci.create_user)) updateUserName, ci.status, ci.deleted, ci.contract_status, ci.audit_status,ci.template_id,ci.relet_date,ci.relet_remark,ci.relet_path,u.name followUpName
     </sql>
 
     <sql id="dynamic_where">
@@ -107,6 +110,9 @@
             </if>
             <if test=" params.followUp != null and params.followUp.trim() != ''">
                 and ci.follow_up like CONCAT('%','${params.followUp}','%' )
+            </if>
+            <if test="params.followUpName != null and params.followUpName.trim() != ''">
+                and u.name like CONCAT('%','${params.followUpName}','%' )
             </if>
             <if test=" params.purpose != null and params.purpose.trim() != ''">
                 and ci.purpose like CONCAT('%','${params.purpose}','%' )

@@ -54,16 +54,6 @@ public class TbContractIntentionEntity extends BaseContractEntity {
     @NotNull(message = "合同名称不能为空")
     private String name;
 
-    @TableField(exist = false)
-    private List<Long> queryIds;
-
-
-    /**
-     * 意向标(房屋名称)
-     */
-    @TableField(exist = false)
-    private String houseName;
-
 
     /**
      * 跟进人

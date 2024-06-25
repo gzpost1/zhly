@@ -46,6 +46,15 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
 
 
     /**
+     * 根据房屋名称模糊获取合同id集合
+     *
+     * @param name
+     * @return
+     */
+    public List<Long> queryContractIdsByHouseName(String name) {
+        return baseMapper.queryContractIdsByHouseName(name);
+    }
+    /**
      * 根据合同id删除关联关系
      */
     public void removeByContractId(Long id) {
@@ -93,17 +102,17 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
      * @param entity
      */
     public void createContractBind(BaseContractEntity entity) {
-        int bindHouseType = BIND_CONTRACT_INTENTION_TYPE_HOUSE;
-        if (entity instanceof TbContractLeaseEntity) {
-            bindHouseType = BIND_CONTRACT_LEASE_TYPE_HOUSE;
-        }
         Long id = entity.getId();
         //先移除之前合同关联关系
         removeByContractId(id);
         ArrayList<TbContractBindInfoEntity> saveBindList = Lists.newArrayList();
 
+        //房屋绑定
+        int bindHouseType = BIND_CONTRACT_INTENTION_TYPE_HOUSE;
+        if (entity instanceof TbContractLeaseEntity) {
+            bindHouseType = BIND_CONTRACT_LEASE_TYPE_HOUSE;
+        }
         List<HousesArchivesVo> houseList = entity.getHouseList();
-        List<TbContractIntentionMoneyEntity> moneyList = entity.getMoneyList();
         if (CollectionUtils.isNotEmpty(houseList)) {
             List<Long> houseIds = houseList.stream().map(HousesArchivesVo::getId).collect(Collectors.toList());
             int finalBindHouseType = bindHouseType;
@@ -117,6 +126,7 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
         }
 
         //记录意向金
+        List<TbContractIntentionMoneyEntity> moneyList = entity.getMoneyList();
         if (CollectionUtils.isNotEmpty(moneyList)) {
             moneyService.removeByContractId(id);
             moneyList.forEach(m -> {
