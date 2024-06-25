@@ -3,10 +3,7 @@ package cn.cuiot.dmp.baseconfig.flow.service;
 import cn.cuiot.dmp.base.application.service.ApiArchiveService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.*;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
@@ -141,6 +138,17 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public IdmResDTO<List<BaseDto>> queryPendProcessList(PendingProcessQuery query) {
         query.setAssignee(LoginInfoHolder.getCurrentUserId());
         List<BaseDto> dtos = getBaseMapper().queryPendProcessList(query);
+        if(CollectionUtils.isNotEmpty(dtos)){
+            List<Long> processNodeIds = dtos.stream().filter(item -> StringUtils.isNotEmpty(item.getProcessNodeId()))
+                    .map(item -> Long.parseLong(item.getProcessNodeId())).collect(Collectors.toList());
+            CustomConfigDetailReqDTO req = new CustomConfigDetailReqDTO();
+            req.setCustomConfigDetailIdList(processNodeIds);
+            IdmResDTO<Map<Long, String>> mapIdmResDTO = systemApiFeignService.batchQueryCustomConfigDetailsForMap(req);
+            Map<Long, String> processMap = Optional.ofNullable(mapIdmResDTO.getData()).orElse(new HashMap<>());
+            dtos.stream().forEach(item->{
+                item.setName(processMap.get(item.getProcessNodeId()));
+            });
+        }
         return IdmResDTO.success(dtos);
     }
 
@@ -327,13 +335,6 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         }
         return workOrders;
     }
-    public Long getCompany(){
-        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
-        if(Objects.isNull(currentOrgId)){
-            //TODO 根据小区id获取企业id
-        }
-        return currentOrgId;
-    }
 
     /**
      * 获取操作时间
@@ -495,12 +496,19 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @param query
      * @return
      */
-    public IdmResDTO<NodeTypeDto> queryNodeType(PendingProcessQuery query) {
+    public IdmResDTO<Map<Long, String>> queryNodeType(PendingProcessQuery query) {
         query.setAssignee(LoginInfoHolder.getCurrentUserId());
         List<String> types = baseMapper.queryNodeType(query);
-        NodeTypeDto dto = new NodeTypeDto();
-        dto.setProcessNodeType(types);
-        return IdmResDTO.success(dto);
+        if(CollectionUtil.isNotEmpty(types)){
+            List<Long> nodes = types.stream().filter(Objects::nonNull).
+                    map(item->Long.parseLong(item)).collect(Collectors.toList());
+            CustomConfigDetailReqDTO req = new CustomConfigDetailReqDTO();
+            req.setCustomConfigDetailIdList(nodes);
+            IdmResDTO<Map<Long, String>> mapIdmResDTO = systemApiFeignService.batchQueryCustomConfigDetailsForMap(req);
+            Map<Long, String> data = mapIdmResDTO.getData();
+            return IdmResDTO.success(data);
+        }
+        return IdmResDTO.success();
     }
 
     /**
@@ -576,9 +584,14 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         String processJson = mainJson.getString(VIEW_PROCESS_JSON_NAME);
 
         LambdaQueryWrapper<CommitProcessEntity> processLw = new LambdaQueryWrapper<>();
-        processLw.eq(CommitProcessEntity::getProcInstId,dto.getProcInstId())
-                .eq(CommitProcessEntity::getNodeId,dto.getNodeId())
-                .eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId())
+        processLw.eq(Objects.nonNull(dto.getProcInstId()),CommitProcessEntity::getProcInstId,dto.getProcInstId())
+                .eq(Objects.nonNull(dto.getNodeId()),CommitProcessEntity::getNodeId,dto.getNodeId());
+        if(Objects.nonNull(dto.getUserId())){
+            processLw.eq(CommitProcessEntity::getUserId,dto.getUserId());
+        }else{
+            processLw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
+        }
+        processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId())
                 .orderByDesc(CommitProcessEntity::getCreateTime);
         List<CommitProcessEntity> processList = commitProcessService.list(processLw);
 

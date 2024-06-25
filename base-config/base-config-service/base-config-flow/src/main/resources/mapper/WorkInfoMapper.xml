@@ -377,7 +377,7 @@
 
     <select id="queryPendProcessList" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto">
         SELECT
-            t2.process_node_type AS name ,count(*) AS number
+            t2.process_node_type AS processNodeId ,count(*) AS number
         FROM
             act_ru_task t1,
             tb_node_type t2
@@ -394,7 +394,8 @@
     </select>
 
     <select id="queryNodeType" resultType="java.lang.String">
-        select t2.process_node_type from act_hi_taskinst t1 ,tb_node_type t2 where t1.PROC_DEF_ID_ = t2.process_definition_id and t1.ASSIGNEE_= #{query.assignee} and t2.node_type ='TASK'
+        select t2.process_node_type from act_hi_taskinst t1 ,tb_node_type t2
+                                    where t1.PROC_DEF_ID_ = t2.process_definition_id and t1.ASSIGNEE_= #{query.assignee} and t2.node_type ='TASK'
         GROUP BY t2.process_node_type
     </select>
 

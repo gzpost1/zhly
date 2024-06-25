@@ -21,6 +21,10 @@ public class BaseDto {
     private String name;
 
     /**
+     * 节点id
+     */
+    private String processNodeId;
+    /**
      * value 名称
      */
     private Integer number;

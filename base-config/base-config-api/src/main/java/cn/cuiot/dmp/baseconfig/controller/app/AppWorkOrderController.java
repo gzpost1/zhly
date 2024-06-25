@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 2.3.【管理端-待办】
@@ -194,7 +195,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryNodeType")
-    public IdmResDTO<NodeTypeDto> queryNodeType(@RequestBody PendingProcessQuery query){
+    public IdmResDTO<Map<Long, String>> queryNodeType(@RequestBody PendingProcessQuery query){
        return appWorkInfoService.queryNodeType(query);
     }
 
