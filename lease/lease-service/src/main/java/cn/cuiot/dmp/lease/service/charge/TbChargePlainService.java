@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +51,6 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
         tbChargePlain.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         tbChargePlain.setStatus(EntityConstants.ENABLED);
         baseMapper.insert(tbChargePlain);
-
-        //todo 填充xxljob生成任务
-
     }
 
     /**
@@ -66,8 +64,6 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
         AssertUtil.notNull(tbChargePlain, "数据不存在");
         BeanUtils.copyProperties(updateDto, tbChargePlain);
         this.updateById(tbChargePlain);
-
-        //todo 更新xxl-job任务
     }
 
     /**
@@ -122,15 +118,38 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
                 }
                 createDto.setDueDate(new Date());
 
-                TbChargeManager tbChargeManager = tbChargeManagerService.getTbChargeManager(createDto, ChargeTypeEnum.AUTO_GENERATE.getCode(), tbChargePlain.getId());
+                //查询房屋客户并构建收费明细
+                HouseCustomerQuery houseCustomerQuery = new HouseCustomerQuery();
+                houseCustomerQuery.setLoupanId(tbChargePlain.getReceivableObj());
+                long pageNum = 1L;
+                IPage<CustomerUserInfo> customerUserInfoIPage = null;
+                do {
+                    houseCustomerQuery.setPageNo(pageNum);
+                    customerUserInfoIPage = tbChargeManagerService.queryHouseCustmerPage(houseCustomerQuery);
+                    if(Objects.nonNull(customerUserInfoIPage) && CollectionUtils.isNotEmpty(customerUserInfoIPage.getRecords())){
+                        for (CustomerUserInfo record : customerUserInfoIPage.getRecords()) {
+                            TbChargeManager tbChargeManager = tbChargeManagerService.getTbChargeManager(createDto, ChargeTypeEnum.AUTO_GENERATE.getCode(), tbChargePlain.getId());
+                            tbChargeManager.setCustomerUserId(record.getCustomerUserId());
+                            tbChargeManager.setCreateUser(tbChargePlain.getCreateUser());
+                            tbChargeManager.setCreateTime(new Date());
+                            tbChargeManager.setDeleted(EntityConstants.NO);
+                            saveChargeMangeList.add(tbChargeManager);
+                        }
+                    }
+                    pageNum++;
+                } while (Objects.nonNull(customerUserInfoIPage) && CollectionUtils.isNotEmpty(customerUserInfoIPage.getRecords()));
 
-                tbChargeManager.setCreateUser(tbChargePlain.getCreateUser());
-                tbChargeManager.setCreateTime(new Date());
-                tbChargeManager.setDeleted(EntityConstants.NO);
-                saveChargeMangeList.add(tbChargeManager);
+                if(CollectionUtils.isNotEmpty(saveChargeMangeList) && saveChargeMangeList.size() > 500){
+                    for (List<TbChargeManager> chargeManagers : Lists.partition(saveChargeMangeList, 100)) {
+                        tbChargeManagerService.insertList(chargeManagers);
+                    }
+                    saveChargeMangeList.clear();
+                }
             }
 
-            tbChargeManagerService.insertList(saveChargeMangeList);
+            for (List<TbChargeManager> chargeManagers : Lists.partition(saveChargeMangeList, 100)) {
+                tbChargeManagerService.insertList(chargeManagers);
+            }
         }
     }
 
