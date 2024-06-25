@@ -195,7 +195,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryNodeType")
-    public IdmResDTO<Map<Long, String>> queryNodeType(@RequestBody PendingProcessQuery query){
+    public IdmResDTO< List<NodeTypeDto>> queryNodeType(@RequestBody PendingProcessQuery query){
        return appWorkInfoService.queryNodeType(query);
     }
 

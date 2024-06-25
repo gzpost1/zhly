@@ -496,19 +496,25 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @param query
      * @return
      */
-    public IdmResDTO<Map<Long, String>> queryNodeType(PendingProcessQuery query) {
+    public IdmResDTO< List<NodeTypeDto>> queryNodeType(PendingProcessQuery query) {
         query.setAssignee(LoginInfoHolder.getCurrentUserId());
         List<String> types = baseMapper.queryNodeType(query);
+        List<NodeTypeDto> resultList = new ArrayList<>();
         if(CollectionUtil.isNotEmpty(types)){
             List<Long> nodes = types.stream().filter(Objects::nonNull).
                     map(item->Long.parseLong(item)).collect(Collectors.toList());
             CustomConfigDetailReqDTO req = new CustomConfigDetailReqDTO();
             req.setCustomConfigDetailIdList(nodes);
             IdmResDTO<Map<Long, String>> mapIdmResDTO = systemApiFeignService.batchQueryCustomConfigDetailsForMap(req);
-            Map<Long, String> data = mapIdmResDTO.getData();
-            return IdmResDTO.success(data);
+            Map<Long, String> data = Optional.ofNullable(mapIdmResDTO.getData()).orElse(new HashMap<>());
+            for(Long key : data.keySet()){
+                NodeTypeDto dto = new NodeTypeDto();
+                dto.setProcessNodeId(String.valueOf(key));
+                dto.setProcessNodeName(data.get(key));
+                resultList.add(dto);
+            }
         }
-        return IdmResDTO.success();
+        return IdmResDTO.success(resultList);
     }
 
     /**
