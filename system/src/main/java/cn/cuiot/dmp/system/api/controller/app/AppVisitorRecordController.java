@@ -2,6 +2,7 @@ package cn.cuiot.dmp.system.api.controller.app;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.constant.PermissionContants;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
@@ -59,7 +60,7 @@ public class AppVisitorRecordController {
     /**
      * 保存
      */
-    @RequiresPermissions
+    @RequiresPermissions(allowUserType = PermissionContants.USER_CLIENT)
     @LogRecord(operationCode = "saveVisitorRecord", operationName = "保存访客记录", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/save")
     public boolean saveVisitorRecord(@RequestBody @Valid VisitorRecordCreateDTO createDTO) {
@@ -69,7 +70,7 @@ public class AppVisitorRecordController {
     /**
      * 更新
      */
-    @RequiresPermissions
+    @RequiresPermissions(allowUserType = PermissionContants.USER_CLIENT)
     @LogRecord(operationCode = "updateVisitorRecord", operationName = "更新访客记录", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/update")
     public boolean updateVisitorRecord(@RequestBody @Valid VisitorRecordUpdateDTO updateDTO) {
@@ -79,7 +80,7 @@ public class AppVisitorRecordController {
     /**
      * 删除
      */
-    @RequiresPermissions
+    @RequiresPermissions(allowUserType = PermissionContants.USER_CLIENT)
     @LogRecord(operationCode = "deleteVisitorRecord", operationName = "删除访客记录", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public boolean deleteVisitorRecord(@RequestBody @Valid IdParam idParam) {
