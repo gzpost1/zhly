@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
@@ -56,6 +58,8 @@ public class ChargePlainInsertDto {
     /**
      * 执行频率-指定的小时分
      */
+    @DateTimeFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH:mm:ss", timezone = "GMT+8")
     private LocalTime cronTime;
 
     /**

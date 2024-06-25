@@ -85,6 +85,8 @@ public class ChargePlainPageDto {
     /**
      * 执行频率-指定的小时分
      */
+    @DateTimeFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH:mm:ss", timezone = "GMT+8")
     private LocalTime cronTime;
 
     /**

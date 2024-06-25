@@ -15,6 +15,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.sql.Wrapper;
 import java.util.Objects;
 
@@ -30,6 +31,7 @@ public class ChargePlainTask {
     private TbChargePlainService chargePlainService;
 
     private static final Long PAGE_SIZE = 500L;
+
     /**
      * 每天生成计费任务
      *

@@ -133,6 +133,7 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
                             tbChargeManager.setCreateUser(tbChargePlain.getCreateUser());
                             tbChargeManager.setCreateTime(new Date());
                             tbChargeManager.setDeleted(EntityConstants.NO);
+                            tbChargeManager.setHouseId(record.getHouseId());
                             saveChargeMangeList.add(tbChargeManager);
                         }
                     }
