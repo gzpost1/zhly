@@ -209,14 +209,18 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
             return new ArrayList<>();
         }
         List<Long> buidingIdList = getBuidingIdList(departmentTreeRspList.get(0));
-        LambdaQueryWrapper<HousesArchivesEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(HousesArchivesEntity::getLoupanId, buidingIdList);
-        if(houseTreeQueryDto.getIsSelectHouseArrears()){
-            queryWrapper.last(String.format("SELECT DISTINCT house_id FROM tb_charge_manager WHERE deleted = 0 AND company_id = ? AND receivble_status = 2 AND abrogate_status = 0",
-                    houseTreeQueryDto.getOrgId()));
+        if(CollectionUtils.isNotEmpty(buidingIdList)){
+            LambdaQueryWrapper<HousesArchivesEntity> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(HousesArchivesEntity::getLoupanId, buidingIdList);
+            if(houseTreeQueryDto.getIsSelectHouseArrears()){
+                String lastSql = String.format("and id in (SELECT DISTINCT house_id FROM tb_charge_manager WHERE deleted = 0 AND company_id = %s AND receivble_status = 2 AND abrogate_status = 0)",
+                        houseTreeQueryDto.getOrgId());
+                queryWrapper.last(lastSql);
+            }
+            List<HousesArchivesEntity> housesArchivesEntityList = list(queryWrapper);
+            fillDepartmentBuildingHouseTree(departmentTreeRspList.get(0), housesArchivesEntityList);
         }
-        List<HousesArchivesEntity> housesArchivesEntityList = list(queryWrapper);
-        fillDepartmentBuildingHouseTree(departmentTreeRspList.get(0), housesArchivesEntityList);
+
         return departmentTreeRspList;
     }
 
