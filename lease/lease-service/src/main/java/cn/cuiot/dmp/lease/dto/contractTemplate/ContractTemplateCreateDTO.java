@@ -3,6 +3,7 @@ package cn.cuiot.dmp.lease.dto.contractTemplate;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
@@ -58,6 +59,7 @@ public class ContractTemplateCreateDTO implements Serializable {
     /**
      * 收费项目列表（系统配置自定义）
      */
+    @NotEmpty(message = "收费项目列表不能为空")
     private List<String> chargeItemIds;
 
 }

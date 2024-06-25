@@ -163,7 +163,7 @@ public class ContractTemplateService extends ServiceImpl<ContractTemplateMapper,
             if (StringUtils.isNotBlank(o.getCreatedBy())) {
                 userIdList.add(Long.valueOf(o.getCreatedBy()));
             }
-            if (Objects.nonNull(o.getUpdatedBy())) {
+            if (StringUtils.isNotBlank(o.getUpdatedBy())) {
                 userIdList.add(Long.valueOf(o.getUpdatedBy()));
             }
         });
@@ -172,10 +172,10 @@ public class ContractTemplateService extends ServiceImpl<ContractTemplateMapper,
         List<BaseUserDto> baseUserDtoList = systemApiFeignService.lookUpUserList(reqDto).getData();
         Map<Long, String> userMap = baseUserDtoList.stream().collect(Collectors.toMap(BaseUserDto::getId, BaseUserDto::getName));
         contractTemplateDTOList.forEach(o -> {
-            if (Objects.nonNull(o.getCreatedBy()) && userMap.containsKey(Long.valueOf(o.getCreatedBy()))) {
+            if (StringUtils.isNotBlank(o.getCreatedBy()) && userMap.containsKey(Long.valueOf(o.getCreatedBy()))) {
                 o.setCreatedName(userMap.get(Long.valueOf(o.getCreatedBy())));
             }
-            if (Objects.nonNull(o.getUpdatedBy()) && userMap.containsKey(Long.valueOf(o.getUpdatedBy()))) {
+            if (StringUtils.isNotBlank(o.getUpdatedBy()) && userMap.containsKey(Long.valueOf(o.getUpdatedBy()))) {
                 o.setUpdatedName(userMap.get(Long.valueOf(o.getUpdatedBy())));
             }
         });

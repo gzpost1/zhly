@@ -6,6 +6,7 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.archive.application.constant.ArchivesApiConstant;
 import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
+import cn.cuiot.dmp.archive.application.param.dto.HouseTreeQueryDto;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.query.HousesArchivesQuery;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
@@ -21,6 +22,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ContractFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -279,5 +281,19 @@ public class HousesArchivesController extends BaseController {
         }
     }
 
+    /**
+     * 获取组织楼盘房屋树
+     */
+    @PostMapping("/getDepartmentBuildingHouseTree")
+    public List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree(@RequestBody HouseTreeQueryDto houseTreeQueryDto) {
+        String orgId = getOrgId();
+        String userId = getUserId();
+        AssertUtil.notNull(orgId,"获取企业信息失败");
+        AssertUtil.notNull(userId,"获取用户信息失败");
+
+        houseTreeQueryDto.setOrgId(Long.valueOf(orgId));
+        houseTreeQueryDto.setUserId(Long.valueOf(userId));
+        return housesArchivesService.getDepartmentBuildingHouseTree(houseTreeQueryDto);
+    }
 
 }

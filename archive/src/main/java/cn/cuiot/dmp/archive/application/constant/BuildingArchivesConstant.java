@@ -11,5 +11,6 @@ public class BuildingArchivesConstant {
      */
     public static final String DEPARTMENT_TYPE = "dept";
     public static final String BUILDING_ARCHIVES_TYPE = "building";
+    public static final String HOUSE_ARCHIVES_TYPE = "house";
 
 }

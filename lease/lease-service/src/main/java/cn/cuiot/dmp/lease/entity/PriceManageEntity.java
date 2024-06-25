@@ -1,12 +1,15 @@
 package cn.cuiot.dmp.lease.entity;
 
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import cn.cuiot.dmp.base.infrastructure.persistence.mapper.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 租赁管理-定价管理
@@ -72,5 +75,16 @@ public class PriceManageEntity extends BaseEntity {
      * 审核备注
      */
     private String auditRemark;
+
+    /**
+     * 定价管理明细房屋列表
+     */
+    @TableField(typeHandler = JsonTypeHandler.class)
+    private List<String> houseIds;
+
+    /**
+     * 状态(1:草稿,2:审核中,3:审核通过,4:审核不通过,5:已执行,6:已作废)
+     */
+    private Byte status;
 
 }

@@ -3,10 +3,13 @@ package cn.cuiot.dmp.lease.dto.price;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author caorui
@@ -57,6 +60,7 @@ public class PriceManageCreateDTO implements Serializable {
     /**
      * 定价人id
      */
+    @NotNull(message = "定价人id不能为空")
     private Long priceUserId;
 
     /**
@@ -69,5 +73,12 @@ public class PriceManageCreateDTO implements Serializable {
      * 定价说明
      */
     private String remark;
+
+    /**
+     * 定价明细列表
+     */
+    @Valid
+    @NotEmpty
+    private List<PriceManageDetailCreateDTO> priceManageDetailCreateList;
 
 }
