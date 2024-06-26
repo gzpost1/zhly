@@ -27,6 +27,7 @@
     <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.entity.HouseKeeperEntity">
         <result column="community_name" property="communityName" />
         <result column="staff_name" property="staffName" />
+        <result column="avatar" property="avatar" />
     </resultMap>
 
     <select id="queryForList"
@@ -34,7 +35,8 @@
         SELECT
             a.*,
             b.`name` AS community_name,
-            u.`name` as staff_name
+            u.`name` as staff_name,
+            u.avatar as avatar
         FROM
             tb_house_keeper a
             INNER JOIN tb_building_archives b ON a.community_id = b.id
