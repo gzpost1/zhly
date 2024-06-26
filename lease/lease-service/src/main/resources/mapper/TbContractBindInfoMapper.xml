@@ -3,7 +3,7 @@
 <mapper namespace="cn.cuiot.dmp.lease.mapper.TbContractBindInfoMapper">
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.TbContractBindInfoEntity">
-        <result column="intention_id" property="intentionId"/>
+        <result column="contractId" property="contractId"/>
         <result column="bind_id" property="bindId"/>
         <result column="type" property="type"/>
     </resultMap>
@@ -19,13 +19,13 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        intention_id, bind_id, type
+        contract_id, bind_id, type
     </sql>
 
     <sql id="dynamic_where">
         <if test="params!=null">
-            <if test=" params.intentionId != null">
-                and intention_id = #{params.intentionId}
+            <if test=" params.contractId != null">
+                and contract_id = #{params.contractId}
             </if>
             <if test=" params.bindId != null">
                 and bind_id = #{params.bindId}
@@ -38,19 +38,16 @@
 
     <select id="queryMoneyInfoByIntentionId"
             resultMap="cn.cuiot.dmp.lease.mapper.TbContractIntentionMoneyMapper.BaseResultMap">
-        select m.*
-        from tb_contract_intention_money m
-                     left join tb_contract_bind_info b
-                on b.bind_id = m.id
-        where b.type = 2
-          and b.intention_id = #{id}
+        select *
+        from tb_contract_intention_money
+        where  contract_id = #{id}
     </select>
 
     <select id="queryConctactStatusByHouseIds"
             resultType="cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus">
         select bind_id houseId, begin_date, end_date, contract_status, type
         from tb_contract_bind_info b
-                     left join tb_contract_intention i on b.intention_id = i.id
+                     left join tb_contract_intention i on b.contract_id = i.id
         where b.type = 1
           and contract_status in (12, 13, 14, 16, 17, 18)
           and current_date <![CDATA[<]]> end_date
@@ -63,7 +60,7 @@
         union
         select bind_id houseId, begin_date, end_date, contract_status, type
         from tb_contract_bind_info b
-                     left join tb_contract_intention i on b.intention_id = i.id
+                     left join tb_contract_intention i on b.contract_id = i.id
         where b.type = 3
           and contract_status in (12, 13, 14, 22, 23, 24, 26)
           and current_date <![CDATA[<]]> end_date
@@ -76,7 +73,7 @@
     </select>
 
     <select id="queryContractIdsByHouseName" resultType="Long">
-        select distinct b.intention_id
+        select distinct b.contract_id
         from tb_contract_bind_info b left join tb_houses_archives h on b.bind_id=h.id
         <where>
             <if test="name != null and name !=''">

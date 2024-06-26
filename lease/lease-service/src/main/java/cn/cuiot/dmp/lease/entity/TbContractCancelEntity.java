@@ -37,9 +37,13 @@ public class TbContractCancelEntity extends Model<TbContractCancelEntity> {
     private Long id;
 
     /**
-     * 合同编号
+     * 意向合同ID
      */
-    private String contractNo;
+    private Long intentionContractId;
+    /**
+     * 租赁合同ID
+     */
+    private Long leaseContractId;
 
     /**
      * 合同名称

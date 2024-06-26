@@ -123,7 +123,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         AssertUtil.notNull(contractCancelParam.getReason(), "退定原因不能为空");
         TbContractIntentionEntity queryEntity = service.getById(id);
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_CANCEL);
-        contractCancelParam.setContractNo(queryEntity.getContractNo());
+        contractCancelParam.setIntentionContractId(id);
         contractCancelParam.setId(queryEntity.getId());
         contractCancelService.saveOrUpdate(contractCancelParam);
         String operMsg = "退定了意向合同" + System.lineSeparator() +

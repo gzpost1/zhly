@@ -22,8 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static cn.cuiot.dmp.common.constant.AuditConstant.*;
-
 /**
  * 意向合同关联信息 服务实现类
  *
@@ -34,7 +32,6 @@ import static cn.cuiot.dmp.common.constant.AuditConstant.*;
 public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContractBindInfoMapper, TbContractBindInfoEntity> {
     //合同绑定类型 1 意向合同 房屋 2.意向合同 意向金 3.租赁合同
     public static final Integer BIND_CONTRACT_INTENTION_TYPE_HOUSE = 1;
-    public static final Integer BIND_CONTRACT_INTENTION_TYPE_MONEY = 2;
     public static final Integer BIND_CONTRACT_LEASE_TYPE_HOUSE = 3;
 
     @Autowired
@@ -59,7 +56,7 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
      */
     public void removeByContractId(Long id) {
         LambdaQueryWrapper<TbContractBindInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TbContractBindInfoEntity::getIntentionId, id);
+        queryWrapper.eq(TbContractBindInfoEntity::getContractId, id);
         remove(queryWrapper);
     }
 
@@ -71,7 +68,7 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
      */
     public List<HousesArchivesVo> queryBindHouseInfoByContractId(Long id, Integer type) {
         LambdaQueryWrapper<TbContractBindInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TbContractBindInfoEntity::getIntentionId, id);
+        queryWrapper.eq(TbContractBindInfoEntity::getContractId, id);
         List<TbContractBindInfoEntity> bindList = list(queryWrapper);
         if (CollectionUtils.isEmpty(bindList)) {
             return null;
@@ -118,7 +115,7 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
             int finalBindHouseType = bindHouseType;
             houseIds.forEach(h -> {
                 TbContractBindInfoEntity bindInfoEntity = new TbContractBindInfoEntity();
-                bindInfoEntity.setIntentionId(id);
+                bindInfoEntity.setContractId(id);
                 bindInfoEntity.setBindId(h);
                 bindInfoEntity.setType(finalBindHouseType);
                 saveBindList.add(bindInfoEntity);
@@ -133,11 +130,6 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
                 Long moneyId = SnowflakeIdWorkerUtil.nextId();
                 m.setId(moneyId);
                 m.setContractId(id);
-                TbContractBindInfoEntity bindInfoEntity = new TbContractBindInfoEntity();
-                bindInfoEntity.setIntentionId(id);
-                bindInfoEntity.setBindId(moneyId);
-                bindInfoEntity.setType(BIND_CONTRACT_INTENTION_TYPE_MONEY);
-                saveBindList.add(bindInfoEntity);
             });
             moneyService.saveOrUpdateBatch(moneyList);
         }

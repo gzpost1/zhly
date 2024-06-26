@@ -39,7 +39,7 @@ public class TbContractChargeEntity extends Model<TbContractChargeEntity> {
     /**
      * 合同编号
      */
-    private String contractId;
+    private Long contractId;
 
     /**
      * 交费项目

@@ -38,7 +38,7 @@ public class TbContractChargeParam extends PageQuery implements Serializable {
     /**
      * 合同编号
      */
-    private String contractId;
+    private Long contractId;
 
     /**
      * 交费项目

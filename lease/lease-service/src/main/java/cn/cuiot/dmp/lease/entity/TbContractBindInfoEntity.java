@@ -29,7 +29,7 @@ public class TbContractBindInfoEntity extends Model<TbContractBindInfoEntity> {
     /**
      * 意向合同id
      */
-    private Long intentionId;
+    private Long contractId;
 
     /**
      * 关联id
@@ -44,7 +44,7 @@ public class TbContractBindInfoEntity extends Model<TbContractBindInfoEntity> {
     public static final String TABLE_NAME = "tb_contract_bind_info";
 
 
-    public static final String INTENTION_ID = "intention_id";
+    public static final String CONTRACT_ID = "contract_id";
 
     public static final String BIND_ID = "bindId";
 
