@@ -19,6 +19,11 @@ public class PriceManageDetailEntity extends BaseEntity {
     private static final long serialVersionUID = 5006255016575791725L;
 
     /**
+     * 定价管理编码
+     */
+    private Long priceId;
+
+    /**
      * 房屋编码
      */
     private Long houseId;

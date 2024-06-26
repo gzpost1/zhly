@@ -16,6 +16,7 @@ import cn.cuiot.dmp.lease.entity.PriceManageEntity;
 import cn.cuiot.dmp.lease.mapper.PriceManageMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
@@ -40,6 +41,12 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
 
     @Autowired
     private SystemApiFeignService systemApiFeignService;
+
+    @Autowired
+    private PriceManageDetailService priceManageDetailService;
+
+    @Autowired
+    private PriceManageRecordService priceManageRecordService;
 
     /**
      * 查询详情
@@ -117,7 +124,10 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
         List<String> houseIds = createDTO.getPriceManageDetailCreateList().stream()
                 .map(o -> o.getHouseId().toString())
                 .collect(Collectors.toList());
+        priceManageEntity.setId(IdWorker.getId());
         priceManageEntity.setHouseIds(houseIds);
+        // 保存定价明细
+        priceManageDetailService.savePriceManageDetailList(priceManageEntity.getId(), createDTO.getPriceManageDetailCreateList());
         return save(priceManageEntity);
     }
 
@@ -133,7 +143,23 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
                 .map(o -> o.getHouseId().toString())
                 .collect(Collectors.toList());
         priceManageEntity.setHouseIds(houseIds);
+        // 先删除定价明细，再新增定价明细
+        priceManageDetailService.deletePriceManageDetailList(priceManageEntity.getId());
+        priceManageDetailService.savePriceManageDetailList(priceManageEntity.getId(), updateDTO.getPriceManageDetailCreateList());
         return updateById(priceManageEntity);
+    }
+
+    /**
+     * 复制新增
+     */
+    public boolean copyPriceManage(Long id) {
+        PriceManageEntity priceManageEntity = Optional.ofNullable(getById(id))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        PriceManageEntity copyPriceManageEntity = new PriceManageEntity();
+        BeanUtils.copyProperties(priceManageEntity, copyPriceManageEntity);
+        copyPriceManageEntity.setId(IdWorker.getId());
+        copyPriceManageEntity.setName(priceManageEntity.getName() + "(1)");
+        return save(copyPriceManageEntity);
     }
 
     /**
