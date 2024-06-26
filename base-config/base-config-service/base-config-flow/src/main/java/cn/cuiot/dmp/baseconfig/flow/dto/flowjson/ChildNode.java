@@ -82,9 +82,5 @@ public class ChildNode {
     private Boolean typeElse;
 
 
-    /**
-     * 通过
-     */
-    private Integer formTaskAccessRate;
 }
 
