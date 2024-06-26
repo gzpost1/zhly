@@ -152,11 +152,13 @@ public class TbContractLeaseEntity extends BaseContractEntity {
     /**
      * 续租说明
      */
-    private LocalDate reletRemark;
+    private String reletRemark;
     /**
      * 续租附件
      */
-    private LocalDate reletPath;
+    private String reletPath;
+
+    private Long reletContractId;
 
     /**
      * 审核状态 1审核中,待审核 2 审核通过 3.未通过

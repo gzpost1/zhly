@@ -25,7 +25,10 @@ public class AuditConstant {
     public static final String OPERATE_COMMIT = "提交";
     public static final String OPERATE_CHANGE = "变更";
     public static final String OPERATE_SIGN_CONTRACT = "签约";
+    public static final String OPERATE_SIGN_LEASE_CONTRACT = "被意向合同签约";
     public static final String OPERATE_CANCEL = "退定";
+    public static final String OPERATE_LEASE_BACK = "退租";
+    public static final String OPERATE_LEASE_RELET = "续租";
     public static final String OPERATE_USELESS = "作废";
     public static final String OPERATE_ALLOCATION = "分配";
 

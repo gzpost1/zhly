@@ -89,11 +89,11 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
      */
     @RequiresPermissions
     @PostMapping("/signContract")
-    public boolean signContract(@RequestBody @Valid ContractIntentionParam param) {
+    public boolean signContract(@RequestBody @Valid ContractParam param) {
         Long id = param.getId();
         TbContractLeaseEntity contractLease = param.getContractLeaseEntity();
         AssertUtil.notNull(contractLease, "关联租赁合同信息不能为空");
-        AssertUtil.notNull(contractLease.getId(), "关联租赁合id不能为空");
+        AssertUtil.notNull(contractLease.getId(), "合同id不能为空");
         AssertUtil.notNull(contractLease.getName(), "关联租赁合同名称不能为空");
         AssertUtil.notNull(contractLease.getContractNo(), "关联租赁合同编号不能为空");
         TbContractIntentionEntity queryEntity = service.getById(id);
@@ -101,7 +101,10 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         queryEntity.setContractLeaseId(contractLease.getId());
         String operMsg = "签约了意向合同,关联的租赁合同为:"
                 + contractLease.getName() + "(编号" + contractLease.getContractNo() + ")";
-        contractLogService.saveLog(id, OPERATE_SIGN_CONTRACT,TbContractLogService.TYPE_INTERNTION, operMsg, String.valueOf(contractLease.getId()), null);
+        String leaseOperMsg = "在意向合同中签约了本租赁合同" + System.lineSeparator() + "意向合同编码:" + queryEntity.getContractNo();
+        contractLogService.saveLog(id, OPERATE_SIGN_CONTRACT, TbContractLogService.TYPE_INTERNTION, operMsg, String.valueOf(contractLease.getId()), null);
+        contractLogService.saveLog(contractLease.getId(), OPERATE_SIGN_LEASE_CONTRACT, TbContractLogService.TYPE_LEASE,
+                leaseOperMsg, String.valueOf(queryEntity.getId()), null);
         return service.updateById(queryEntity);
     }
 
@@ -114,17 +117,17 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
      */
     @RequiresPermissions
     @PostMapping("/cancel")
-    public boolean cancel(@RequestBody @Valid ContractIntentionParam param) {
+    public boolean cancel(@RequestBody @Valid ContractParam param) {
         Long id = param.getId();
         TbContractCancelEntity contractCancelParam = param.getContractCancelEntity();
-        AssertUtil.notNull(id, "退定合同id不能为空");
+        AssertUtil.notNull(id, "合同id不能为空");
         AssertUtil.notNull(contractCancelParam, "退订信息不能为空");
         AssertUtil.notNull(contractCancelParam.getDate(), "退定日期不能为空");
         AssertUtil.notNull(contractCancelParam.getReason(), "退定原因不能为空");
         TbContractIntentionEntity queryEntity = service.getById(id);
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_CANCEL);
         contractCancelParam.setIntentionContractId(id);
-        contractCancelParam.setId(queryEntity.getId());
+        contractCancelParam.setId(SnowflakeIdWorkerUtil.nextId());
         contractCancelService.saveOrUpdate(contractCancelParam);
         String operMsg = "退定了意向合同" + System.lineSeparator() +
                 "退定原因:" + contractCancelParam.getReason() + System.lineSeparator() + "退定备注:" + contractCancelParam.getRemark();
@@ -140,7 +143,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
      */
     @RequiresPermissions
     @PostMapping("/useless")
-    public boolean useless(@RequestBody @Valid ContractIntentionParam param) {
+    public boolean useless(@RequestBody @Valid ContractParam param) {
         Long id = param.getId();
         TbContractCancelEntity contractCancelParam = param.getContractCancelEntity();
         AssertUtil.notNull(contractCancelParam, "作废信息不能为空");

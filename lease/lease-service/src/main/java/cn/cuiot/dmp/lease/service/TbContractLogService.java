@@ -81,6 +81,15 @@ public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMa
             case STATUS_USELESSING:
                 operate = OPERATE_USELESS;
                 break;
+            case STATUS_CHANGING:
+                operate = OPERATE_CHANGE;
+                break;
+            case STATUS_RELETING:
+                operate = OPERATE_LEASE_RELET;
+                break;
+            case STATUS_BACKING_LEASE:
+                operate = OPERATE_LEASE_BACK;
+                break;
             default:
                 operate = ContractEnum.getEnumByCode(contractStatus).getDesc();
                 break;

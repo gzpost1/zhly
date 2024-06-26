@@ -11,7 +11,9 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 租赁合同 服务实现类
@@ -30,11 +32,32 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
 
     @Override
     public boolean save(Object o) {
-        Long code = SnowflakeIdWorkerUtil.nextId();
         TbContractLeaseEntity entity = (TbContractLeaseEntity) o;
-        entity.setContractNo(String.valueOf(code));
+        if(Objects.isNull(entity.getContractNo())) {
+            Long code = SnowflakeIdWorkerUtil.nextId();
+            entity.setContractNo(String.valueOf(code));
+        }
+        super.save(entity);
         bindInfoService.createContractBind(entity);
-        return super.save(entity);
+        return true;
+    }
+
+    @Override
+    public boolean updateById(Object o) {
+        TbContractLeaseEntity entity = (TbContractLeaseEntity) o;
+        bindInfoService.createContractBind(entity);
+        return super.updateById(entity);
+    }
+
+    /**
+     * 删除合同同时删除绑定信息
+     * @param id
+     * @return
+     */
+    @Override
+    public boolean removeById(Serializable id) {
+        bindInfoService.removeByContractId(Long.valueOf(String.valueOf(id)));
+        return super.removeById(id);
     }
 
     @Override
