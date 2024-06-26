@@ -55,7 +55,7 @@ import static cn.cuiot.dmp.common.constant.AuditConstant.OPERATE_COMMIT;
         entity.setId(id);
         entity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
         entity.setContractStatus(ContractEnum.STATUS_DARFT.getCode());
-        contractLogService.saveIntentionLog(id, "新增", "新增了租赁合同");
+        contractLogService.saveLeaseLog(id, "新增", "新增了租赁合同");
         return service.save(entity);
     }
 
@@ -72,7 +72,9 @@ import static cn.cuiot.dmp.common.constant.AuditConstant.OPERATE_COMMIT;
         entity.setId(id);
         //需要审核
         baseContractService.handleAuditStatusByConfig(entity, OPERATE_COMMIT);
-        contractLogService.saveIntentionLog(id, OPERATE_COMMIT, "提交了意向合同");
+        contractLogService.saveLeaseLog(id, OPERATE_COMMIT, "提交了租赁合同");
         return service.save(entity);
     }
+
+
 }

@@ -87,12 +87,12 @@ public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMa
         }
         logMsgParam.add(operate);
         if (Objects.equals(auditParam.getAuditStatus(), ContractEnum.AUDIT_PASS.getCode())) {
-            logMsgParam.add(AUDIT_PASS);
+            logMsgParam.add(LOG_MSG_AUDIT_PASS);
         } else {
-            logMsgParam.add(AUDIT_REFUSE);
+            logMsgParam.add(LOG_MSG_AUDIT_REFUSE);
         }
         logMsgParam.add(auditParam.getRemark());
-        String logMsg = String.format(AUDIT_MSG_TEMP, logMsgParam.toArray());
+        String logMsg = String.format(LOG_AUDIT_MSG_TEMP, logMsgParam.toArray());
         String operation = operate + "审核";
         saveIntentionLog(auditParam.getId(), operation, logMsg);
     }

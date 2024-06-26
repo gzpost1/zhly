@@ -31,7 +31,7 @@ public class TbContractBindInfoParam extends PageQuery implements Serializable {
     /**
      * 意向合同id
      */
-    private Long intentionId;
+    private Long contractId;
 
     /**
      * 关联id

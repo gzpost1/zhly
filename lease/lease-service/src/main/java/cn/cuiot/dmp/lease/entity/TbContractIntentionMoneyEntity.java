@@ -13,6 +13,8 @@ import javax.validation.constraints.NotNull;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.base.application.enums.BeanValidationGroup;
+import org.springframework.data.annotation.Id;
+
 /**
  * 意向金
  *
@@ -31,6 +33,7 @@ public class TbContractIntentionMoneyEntity extends Model<TbContractIntentionMon
 
     private static final long serialVersionUID = 1L;
 
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
@@ -52,6 +55,8 @@ public class TbContractIntentionMoneyEntity extends Model<TbContractIntentionMon
      * 备注
      */
     private String remark;
+
+    private Long contractId;
 
     public static final String TABLE_NAME = "tb_contract_intention_money";
 

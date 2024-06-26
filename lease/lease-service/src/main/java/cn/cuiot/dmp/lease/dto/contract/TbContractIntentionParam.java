@@ -105,6 +105,7 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
 
      */
     private String followUp;
+    private String followUpName;
 
     /**
      * 签订客户
@@ -142,6 +143,22 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
      * 审核状态
      */
     private Integer auditStatus;
+
+
+    /**
+     * 续租日期
+     */
+    private LocalDate reletDate;
+    /**
+     * 续租说明
+     */
+    private LocalDate reletRemark;
+    /**
+     * 续租附件
+     */
+    private LocalDate reletPath;
+
+    private Integer templateId;
 
 
 }

@@ -6,12 +6,14 @@ import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.dto.contract.AuditParam;
 import cn.cuiot.dmp.lease.dto.contract.TbContractIntentionParam;
 import cn.cuiot.dmp.lease.entity.BaseContractEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractIntentionMapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,23 +48,14 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     public List<TbContractIntentionEntity> list(TbContractIntentionEntity params) {
         String houseName = params.getHouseName();
         if (StringUtils.isNotEmpty(houseName)) {
-            List<Long> queryIds = queryContractIdsByHouseName(houseName);
+            List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
             params.setQueryIds(queryIds);
         }
         List<TbContractIntentionEntity> list = super.list(params);
         list.forEach(c -> {
-            fullInfo(c);
+            baseContractService.fullInfo(c);
         });
         return list;
-    }
-
-    /**
-     * 填充房屋信息,跟进人和合同人信息
-     *
-     * @param c
-     */
-    private void fullInfo(TbContractIntentionEntity c) {
-        fullBindHouseInfo(c);
     }
 
     @Override
@@ -70,20 +63,21 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         TbContractIntentionParam params = (TbContractIntentionParam) param;
         String houseName = params.getHouseName();
         if (StringUtils.isNotEmpty(houseName)) {
-            List<Long> queryIds = queryContractIdsByHouseName(houseName);
+            List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
             params.setQueryIds(queryIds);
         }
         PageResult<TbContractIntentionEntity> page = super.page(param);
         page.getRecords().forEach(c -> {
-            fullInfo(c);
+            baseContractService.fullInfo(c);
         });
         return page;
     }
 
     @Override
     public TbContractIntentionEntity getById(Serializable id) {
+        AssertUtil.notNull(id,"id不能为空");
         TbContractIntentionEntity intentionEntity = super.getById(id);
-        fullBindHouseInfo(intentionEntity);
+        baseContractService.fullBindHouseInfo(intentionEntity);
         return intentionEntity;
     }
 
@@ -92,36 +86,22 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         queryWrapper.eq(TbContractIntentionEntity::getContractNo, contractNo);
         queryWrapper.last("limit 1");
         TbContractIntentionEntity intentionEntity = baseMapper.selectOne(queryWrapper);
-        fullBindHouseInfo(intentionEntity);
+        baseContractService.fullBindHouseInfo(intentionEntity);
         return intentionEntity;
     }
 
-    private void fullBindHouseInfo(TbContractIntentionEntity intentionEntity) {
-        List<HousesArchivesVo> housesArchivesVos = bindInfoService.queryBindHouseInfoByContractId(intentionEntity.getId(),BIND_CONTRACT_INTENTION_TYPE_HOUSE);
-        if (Objects.nonNull(housesArchivesVos)) {
-            intentionEntity.setHouseList(housesArchivesVos);
-        }
-    }
 
 
     @Override
     public boolean save(Object o) {
         Long code = SnowflakeIdWorkerUtil.nextId();
         TbContractIntentionEntity entity = (TbContractIntentionEntity) o;
+        super.save(entity);
         entity.setContractNo(String.valueOf(code));
         bindInfoService.createContractBind(entity);
-        return super.save(entity);
+        return true;
     }
 
-    /**
-     * 根据房屋名称模糊获取合同id集合
-     *
-     * @param name
-     * @return
-     */
-    public List<Long> queryContractIdsByHouseName(String name) {
-        return baseMapper.queryContractIdsByHouseName(name);
-    }
 
     /**
      * 删除合同同时删除绑定信息
@@ -132,5 +112,12 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     public boolean removeById(Serializable id) {
         bindInfoService.removeByContractId(Long.valueOf(String.valueOf(id)));
         return super.removeById(id);
+    }
+
+    @Override
+    public boolean updateById(Object entity) {
+        TbContractIntentionEntity o = (TbContractIntentionEntity) entity;
+        bindInfoService.createContractBind(o);
+        return super.updateById(o);
     }
 }

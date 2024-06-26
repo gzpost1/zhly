@@ -6,7 +6,7 @@ package cn.cuiot.dmp.common.constant;
  * @Author by Mujun~
  */
 public class AuditConstant {
-    public static final String AUDIT_MSG_TEMP = "审核了意向合同的%s" + System.lineSeparator() + "审核结果为:%s" + System.lineSeparator() + "审核备注:%s";
+    public static final String LOG_AUDIT_MSG_TEMP = "审核了意向合同的%s" + System.lineSeparator() + "审核结果为:%s" + System.lineSeparator() + "审核备注:%s";
 
 
     //意向合同 对应审核配置表name
@@ -23,10 +23,12 @@ public class AuditConstant {
 
 
     public static final String OPERATE_COMMIT = "提交";
-    public static final String AUDIT_PASS = "通过";
-    public static final String AUDIT_REFUSE = "不通过";
+    public static final String OPERATE_CHANGE = "变更";
     public static final String OPERATE_SIGN_CONTRACT = "签约";
     public static final String OPERATE_CANCEL = "退定";
     public static final String OPERATE_USELESS = "作废";
     public static final String OPERATE_ALLOCATION = "分配";
+
+    public static final String LOG_MSG_AUDIT_PASS = "通过";
+    public static final String LOG_MSG_AUDIT_REFUSE = "不通过";
 }

@@ -6,6 +6,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
+import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
@@ -13,6 +14,7 @@ import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.contract.AuditParam;
 import cn.cuiot.dmp.lease.entity.BaseContractEntity;
+import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -25,6 +27,8 @@ import java.util.Objects;
 
 import static cn.cuiot.dmp.common.constant.AuditConstant.*;
 import static cn.cuiot.dmp.common.constant.AuditConstant.AUDIT_CONFIG_INTENTION_USELESS;
+import static cn.cuiot.dmp.lease.service.TbContractBindInfoService.BIND_CONTRACT_INTENTION_TYPE_HOUSE;
+import static cn.cuiot.dmp.lease.service.TbContractBindInfoService.BIND_CONTRACT_LEASE_TYPE_HOUSE;
 
 /**
  * 租赁合同 服务实现类
@@ -33,10 +37,36 @@ import static cn.cuiot.dmp.common.constant.AuditConstant.AUDIT_CONFIG_INTENTION_
  * @since 2024-06-19
  */
 @Service
-public class BaseContractService  {
+public class BaseContractService {
+    //意向合同
+    public static final int CONTRACT_INTENTION_TYPE = 1;
+    //租赁合同
+    public static final int CONTRACT_LEASE_TYPE = 2;
     @Autowired
     SystemApiFeignService systemApiFeignService;
+    @Autowired
+    TbContractBindInfoService bindInfoService;
 
+    /**
+     * 填充房屋信息,跟进人和合同人信息
+     *
+     * @param c
+     */
+    public void fullInfo(BaseContractEntity c) {
+        fullBindHouseInfo(c);
+    }
+
+
+    public void fullBindHouseInfo(BaseContractEntity contractEntity) {
+        Integer type = BIND_CONTRACT_INTENTION_TYPE_HOUSE;
+        if(contractEntity instanceof TbContractLeaseEntity){
+            type = BIND_CONTRACT_LEASE_TYPE_HOUSE;
+        }
+        List<HousesArchivesVo> housesArchivesVos = bindInfoService.queryBindHouseInfoByContractId(contractEntity.getId(),type);
+        if (Objects.nonNull(housesArchivesVos)) {
+            contractEntity.setHouseList(housesArchivesVos);
+        }
+    }
 
     /**
      * 获取审核后的合同状态
@@ -46,7 +76,15 @@ public class BaseContractService  {
      */
     public BaseContractEntity handleAuditContractStatus(BaseContractEntity entity, AuditParam param) {
         Integer auditStatus = handleAuditStatus(param.getAuditStatus());
-        Integer contractStatus = handleContractStatus(entity.getContractStatus(), param.getAuditStatus(),
+        int type = CONTRACT_INTENTION_TYPE;
+        //租赁合同
+        if (entity instanceof TbContractLeaseEntity) {
+            type = CONTRACT_LEASE_TYPE;
+            //意向合同
+        } else if (entity instanceof TbContractIntentionEntity) {
+            type = CONTRACT_INTENTION_TYPE;
+        }
+        Integer contractStatus = handleContractStatus(entity.getContractStatus(), param.getAuditStatus(), type,
                 entity.getBeginDate(), entity.getEndDate());
         entity.setAuditStatus(auditStatus);
         entity.setContractStatus(contractStatus);
@@ -79,27 +117,39 @@ public class BaseContractService  {
 
         Integer auditStatus;
         Integer contractStatus = null;
-        String configName = null;
+        String configIntentionName = null;
+        String configLeaseName = null;
         //根据操作类型设置合同的中间状态
         switch (operate) {
             case OPERATE_COMMIT:
-                configName = AUDIT_CONFIG_INTENTION_NEW;
+                configIntentionName = AUDIT_CONFIG_INTENTION_NEW;
+                configLeaseName = AUDIT_CONFIG_LEASE_NEW;
                 contractStatus = ContractEnum.STATUS_COMMITING.getCode();
                 break;
             case OPERATE_SIGN_CONTRACT:
-                configName = AUDIT_CONFIG_INTENTION_SIGN;
+                configIntentionName = AUDIT_CONFIG_INTENTION_SIGN;
                 contractStatus = ContractEnum.STATUS_SIGNING.getCode();
                 break;
             case OPERATE_CANCEL:
-                configName = AUDIT_CONFIG_INTENTION_CANCEL;
+                configIntentionName = AUDIT_CONFIG_INTENTION_CANCEL;
                 contractStatus = ContractEnum.STATUS_CANCELING.getCode();
                 break;
             case OPERATE_USELESS:
-                configName = AUDIT_CONFIG_INTENTION_USELESS;
+                configIntentionName = AUDIT_CONFIG_INTENTION_USELESS;
                 contractStatus = ContractEnum.STATUS_USELESSING.getCode();
                 break;
         }
-        boolean needAudit = needAudit(configName);
+        boolean needAudit = true;
+        int type = CONTRACT_INTENTION_TYPE;
+        //租赁合同
+        if (entity instanceof TbContractLeaseEntity) {
+            needAudit = needAudit(configLeaseName, AuditConfigTypeEnum.LEASE_CONTRACT.getCode());
+            type = CONTRACT_LEASE_TYPE;
+            //意向合同
+        } else if (entity instanceof TbContractIntentionEntity) {
+            needAudit = needAudit(configIntentionName, AuditConfigTypeEnum.INTENTION_CONTRACT.getCode());
+            type = CONTRACT_INTENTION_TYPE;
+        }
 
         //如果不需要审核,则调用审核通过改变合同状态,需要审核这保持中间状态等待审核
         if (needAudit) {
@@ -107,7 +157,7 @@ public class BaseContractService  {
         } else {
             //如果不需要审核,默认走通过合同流程
             auditStatus = ContractEnum.AUDIT_PASS.getCode();
-            contractStatus = handleContractStatus(contractStatus, ContractEnum.AUDIT_PASS.getCode(), entity.getBeginDate(), entity.getEndDate());
+            contractStatus = handleContractStatus(contractStatus, ContractEnum.AUDIT_PASS.getCode(), type, entity.getBeginDate(), entity.getEndDate());
         }
         entity.setAuditStatus(auditStatus);
         entity.setContractStatus(contractStatus);
@@ -117,8 +167,9 @@ public class BaseContractService  {
      * 根据审核通过与否 更改合同的合同状态
      *
      * @param auditStatus 审核 2.审核通过 3.审核不通过
+     * @param type        合同类型 1.意向合同 2.租赁合同
      */
-    public Integer handleContractStatus(Integer contractStatus, Integer auditStatus, LocalDate beginDate, LocalDate endDate) {
+    public Integer handleContractStatus(Integer contractStatus, Integer auditStatus, Integer type, LocalDate beginDate, LocalDate endDate) {
 
         //签约,退定,作废成功 审核通过的按照审核状态修改合同状态为 已签约,已退定,已作废
         if (Objects.equals(auditStatus, ContractEnum.AUDIT_PASS.getCode())) {
@@ -142,16 +193,44 @@ public class BaseContractService  {
                 case STATUS_USELESSING:
                     contractStatus = ContractEnum.STATUS_USELESS.getCode();
                     break;
+                //变更中
+                case STATUS_CHANGING:
+                    contractStatus = ContractEnum.STATUS_CHANGED.getCode();
+                    break;
+                //退租中
+                case STATUS_BACKING_LEASE:
+                    contractStatus = ContractEnum.STATUS_BACKED_LEASE.getCode();
+                    break;
             }
-            //签约,退定,作废审核不通过的按照合同日期修改合同状态
-        } else if (!Objects.equals(contractStatus, ContractEnum.STATUS_COMMITING.getCode())
-                && Objects.equals(auditStatus, ContractEnum.AUDIT_REFUSE.getCode())) {
-            contractStatus = handleContractStatusByDate(beginDate, endDate);
-            handleContractStatusByDate(beginDate, endDate);
-            //提交中 未通过的合同改为草稿
-        } else if (Objects.equals(contractStatus, ContractEnum.STATUS_COMMITING.getCode())
-                && Objects.equals(auditStatus, ContractEnum.AUDIT_REFUSE.getCode())) {
-            contractStatus = ContractEnum.STATUS_DARFT.getCode();
+            //   被拒绝的处理
+        } else if (Objects.equals(auditStatus, ContractEnum.AUDIT_REFUSE.getCode())) {
+            switch (ContractEnum.getEnumByCode(contractStatus)) {
+                case STATUS_COMMITING:
+                    contractStatus = ContractEnum.STATUS_DARFT.getCode();
+                    break;
+//                case STATUS_SIGNING:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+//                case STATUS_CANCELING:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+//                case STATUS_USELESSING:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+//                case STATUS_CHANGING:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+//                case STATUS_BACKING_LEASE:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+//                case STATUS_RELETING:
+//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+//                    break;
+                //除了提交中被拒绝改为草稿,其余都是走时间判断状态
+                default:
+                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+                    break;
+            }
         }
         return contractStatus;
     }
@@ -175,8 +254,8 @@ public class BaseContractService  {
         return contractStatus;
     }
 
-    public boolean needAudit(String name) {
-        AuditConfigRspDTO auditConfig = getAuditConfig(AuditConfigTypeEnum.INTENTION_CONTRACT.getCode(), name);
+    public boolean needAudit(String name, Byte type) {
+        AuditConfigRspDTO auditConfig = getAuditConfig(type, name);
         Byte status = auditConfig.getStatus();
         if (status == 1) {
             return true;
@@ -184,7 +263,13 @@ public class BaseContractService  {
         return false;
     }
 
-
+    /**
+     * 根据审核配置判断是否需要审核
+     *
+     * @param type
+     * @param name
+     * @return
+     */
     public AuditConfigRspDTO getAuditConfig(Byte type, String name) {
         AuditConfigTypeReqDTO auditConfigTypeReqDTO = new AuditConfigTypeReqDTO();
         auditConfigTypeReqDTO.setAuditConfigType(type);

@@ -15,5 +15,4 @@ import java.util.List;
  * @since 2024-06-12
  */
 public interface TbContractIntentionMapper extends BaseMybatisMapper<TbContractIntentionEntity> {
-    List<Long>  queryContractIdsByHouseName(@Param("name") String name);
 }

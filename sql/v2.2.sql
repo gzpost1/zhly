@@ -1,7 +1,7 @@
 -- auto-generated definition
 create table tb_contract_intention
 (
-    id                bigint      null,
+    id                bigint(20)  not null primary key,
     contract_no       varchar(30) null comment '合同编号',
     name              varchar(60) not null comment '合同名称',
     cantract_date     date        null comment '签订日期',
@@ -18,7 +18,7 @@ create table tb_contract_intention
     status            tinyint(1)  null,
     deleted           tinyint(1)  null,
     contract_status   int         null comment '合同状态',
-    audit_status      int         null comment '审核状态 1审核中,待审核 2 审核通过 3.未通过',
+    audit_status      int         null comment '审核状态 0.待提交 1审核中 2 审核通过 3.未通过',
     contract_lease_id bigint      null comment '租赁合同关联id',
     label             text        null comment '标签'
 )
@@ -27,44 +27,58 @@ create table tb_contract_intention
 -- auto-generated definition
 create table tb_contract_cancel
 (
-    id          bigint        not null
+    id                    bigint        not null
         primary key,
-    contract_id varchar(30)   null comment '合同id
-',
-    name        varchar(60)   not null comment '合同名称',
-    date        date          null comment '退订日期',
-    reason      varchar(255)  null comment '退订原因',
-    remark      longtext      null comment '退订说明',
-    path        varchar(512)  not null comment '退订附件',
-    create_time datetime      null,
-    update_time datetime      null,
-    create_user bigint        null,
-    update_user bigint        null,
-    status      tinyint(1)    null,
-    deleted     tinyint(1)    null,
-    type        int default 0 null comment '0.退订 1.作废'
+    intention_contract_id bigint        null comment '意向合同id',
+    lease_contract_id     bigint        null comment '租赁合同id',
+    name                  varchar(60)   not null comment '合同名称',
+    date                  date          null comment '退订日期',
+    reason                varchar(255)  null comment '退订原因',
+    remark                longtext      null comment '退订说明',
+    path                  varchar(512)  not null comment '退订附件',
+    create_time           datetime      null,
+    update_time           datetime      null,
+    create_user           bigint        null,
+    update_user           bigint        null,
+    status                tinyint(1)    null,
+    deleted               tinyint(1)    null,
+    type                  int default 0 null comment '0.退订 1.作废',
+    constraint fk_intention
+        foreign key (intention_contract_id) references tb_contract_intention (id)
+            on delete cascade,
+    constraint fk_lease
+        foreign key (lease_contract_id) references tb_contract_lease (id)
+            on delete cascade
 )
     comment '退订或作废信息';
+
+
 
 
 -- auto-generated definition
 create table tb_contract_bind_info
 (
-    intention_id bigint null comment '意向合同id',
+    intention_id bigint null comment '合同id',
     bind_id      bigint null comment '关联id',
-    type         bigint null comment '1.意向合同关联房屋 2.意向金 3.租赁合同关联房屋'
+    type         bigint null comment '1.意向合同关联房屋   3.租赁合同关联房屋'
 )
     comment '意向合同关联信息';
 
+-- auto-generated definition
 create table tb_contract_intention_money
 (
-    id      bigint         not null primary key,
-    project varchar(50)    null comment '收费项目',
-    bid     varchar(50)    null comment '意向标的',
-    amount  decimal(10, 2) null comment '应收金额',
-    remark  longtext       null comment '备注'
+    id          bigint         not null,
+    project     varchar(50)    null comment '收费项目',
+    bid         varchar(50)    null comment '意向标的',
+    amount      decimal(10, 2) null comment '应收金额',
+    remark      longtext       null comment '备注',
+    contract_id bigint         null comment '合同id',
+    constraint fk_money
+        foreign key (contract_id) references tb_contract_intention (id)
+            on delete cascade
 )
-    comment '意向合同关联信息';
+    comment '意向金';
+
 
 -- auto-generated definition
 create table tb_contract_log
@@ -113,7 +127,10 @@ create table tb_contract_lease
     deleted         tinyint(1)   null,
     contract_status int          null comment '合同状态',
     audit_status    int          null comment '审核状态 1审核中,待审核 2 审核通过 3.未通过',
-    template_id     bigint       null comment '合同模板id'
+    template_id     bigint       null comment '合同模板id',
+    relet_date      date         null comment '续租日期',
+    relet_remark    text         null comment '续租说明',
+    relet_path      varchar(512) null comment '续组附件'
 )
     comment '租赁合同';
 
@@ -121,8 +138,9 @@ create table tb_contract_lease
 -- auto-generated definition
 create table tb_contract_charge
 (
-    id          bigint         not null primary key,
-    contract_id varchar(30)    null comment '合同编号',
+    id          bigint         not null
+        primary key,
+    contract_id bigint         null comment '合同编号',
     project     varchar(100)   null comment '交费项目',
     house       varchar(100)   null comment '交费房屋',
     first_date  date           null comment '首次交费日期',
@@ -132,9 +150,39 @@ create table tb_contract_charge
     create_time datetime       null,
     update_time datetime       null,
     create_user bigint         null,
-    update_user bigint         null
+    update_user bigint         null,
+    constraint fk_charge
+        foreign key (contract_id) references tb_contract_lease (id)
+            on delete cascade
 )
     comment '费用条款';
 
 
+-- auto-generated definition
+create table tb_contract_lease_back
+(
+    id            bigint       not null
+        primary key,
+    contract_id   bigint       null comment '合同id',
+    end_date      date         null comment '合同截止日期',
+    type          varchar(50)  null comment '退租类型',
+    reason        varchar(100) null comment '退租原因',
+    handover_date date         null comment '物业验收交接日期',
+    remark        longtext     null comment '退租说明',
+    path          varchar(512) null comment '退租协议附件',
+    constraint fk_back_lease
+        foreign key (contract_id) references tb_contract_lease (id)
+            on delete cascade
+)
+    comment '退租信息';
+
+
+
+
+
+CREATE FUNCTION getUserName(userid INT)
+    RETURNS varchar(255)
+BEGIN
+    return (select name from user where id = userid);
+END;
 
