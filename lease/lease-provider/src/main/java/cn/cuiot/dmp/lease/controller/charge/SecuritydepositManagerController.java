@@ -11,6 +11,7 @@ import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositManager;
+import cn.cuiot.dmp.lease.enums.ChargeTypeEnum;
 import cn.cuiot.dmp.lease.enums.SecurityDepositStatusEnum;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeAbrogateService;
@@ -173,4 +174,18 @@ public class SecuritydepositManagerController {
         return IdmResDTO.success();
     }
 
+    /**
+     * 创建
+     *
+     * @param createDto
+     * @return
+     */
+//    @RequiresPermissions
+    @PostMapping("/create")
+    @LogRecord(operationCode = "create", operationName = "押金管理-创建", serviceType = ServiceTypeConst.SECURITYDEPOSITMANAGER)
+    public IdmResDTO create(@RequestBody @Valid SecuritydepositManagerInsertDto createDto) {
+        createDto.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        securitydepositManagerService.saveData(createDto);
+        return IdmResDTO.success();
+    }
 }

@@ -7,6 +7,7 @@
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="customer_user_id" jdbcType="BIGINT" property="customerUserId" />
     <result column="house_id" jdbcType="BIGINT" property="houseId" />
+    <result column="loupan_id" jdbcType="BIGINT" property="loupanId" />
     <result column="charge_item_id" jdbcType="BIGINT" property="chargeItemId" />
     <result column="charge_standard" jdbcType="TINYINT" property="chargeStandard" />
     <result column="receivable_amount" jdbcType="INTEGER" property="receivableAmount" />
@@ -32,7 +33,7 @@
     id, customer_user_id, house_id, charge_item_id, charge_standard, receivable_amount, 
     ownership_period_begin, ownership_period_end, company_id, update_time, update_user, 
     create_time, create_user, deleted, due_date, `status`, receivable_amount_received, 
-    returned_amount,transaction_mode,account_bank,account_number,received_date
+    returned_amount,transaction_mode,account_bank,account_number,received_date,loupan_id
   </sql>
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.lease.dto.charge.SecuritydepositManagerPageDto">

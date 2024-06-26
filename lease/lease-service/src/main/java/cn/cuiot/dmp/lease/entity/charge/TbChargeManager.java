@@ -146,4 +146,9 @@ public class TbChargeManager extends YjBaseEntity {
      */
     @TableField(value = "liquidated_damages_not_tax")
     private Integer liquidatedDamagesNotTax = 0;
+
+    /**
+     * 所属楼盘id
+     */
+    private Long loupanId;
 }

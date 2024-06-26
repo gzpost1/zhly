@@ -88,4 +88,9 @@ public class ChargeManagerInsertVo {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 所属楼盘id
+     */
+    private Long loupanId;
 }
