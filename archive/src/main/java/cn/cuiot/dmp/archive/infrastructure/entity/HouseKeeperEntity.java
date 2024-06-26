@@ -80,5 +80,11 @@ public class HouseKeeperEntity extends YjBaseEntity {
     @TableField(exist = false)
     private String staffName;
 
+    /**
+     * 头像
+     */
+    @TableField(exist = false)
+    private String avatar;
+
 
 }
