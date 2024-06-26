@@ -732,7 +732,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
         ChildNode childNodeByNodeId = getChildNodeByNodeId(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
         //设置的比例信息
-        Integer rate = childNodeByNodeId.getFormTaskAccessRate()*100;
+        Integer rate = childNodeByNodeId.getProps().getFormTaskAccessRate()*100;
         //实际比例
         Integer ratio = (int) (Double.parseDouble(taskDto.getCompletionRatio())*100);
         if(rate>ratio){

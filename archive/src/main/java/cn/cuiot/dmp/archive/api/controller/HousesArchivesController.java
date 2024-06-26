@@ -10,6 +10,7 @@ import cn.cuiot.dmp.archive.application.param.dto.HouseTreeQueryDto;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.query.HousesArchivesQuery;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
+import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
@@ -24,6 +25,8 @@ import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ContractFeignService;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
@@ -31,6 +34,7 @@ import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -52,11 +56,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.*;
-import java.util.function.Function;
+
 import java.util.stream.Collectors;
 
 /**
  * 房屋档案
+ *
  * @author liujianyu
  * @since 2024-05-15 10:30
  */
@@ -71,6 +76,9 @@ public class HousesArchivesController extends BaseController {
     private ArchivesApiMapper archivesApiMapper;
     @Autowired
     ContractFeignService contractFeignService;
+
+    @Autowired
+    private BuildingArchivesService buildingArchivesService;
 
     /**
      * 根据id获取详情
@@ -87,8 +95,20 @@ public class HousesArchivesController extends BaseController {
      */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<HousesArchivesEntity>> queryForPage(@RequestBody @Valid HousesArchivesQuery query) {
+        // 获取当前平台下的楼盘列表
+        DepartmentReqDto dto = new DepartmentReqDto();
+        dto.setDeptId(LoginInfoHolder.getCurrentOrgId());
+        dto.setSelfReturn(true);
+        List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
+        if (CollectionUtils.isEmpty(buildingArchives)) {
+            return IdmResDTO.success(new Page<>());
+        }
+        List<Long> buildingIdList = buildingArchives.stream()
+                .map(BuildingArchive::getId)
+                .collect(Collectors.toList());
         LambdaQueryWrapper<HousesArchivesEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(HousesArchivesEntity::getLoupanId, query.getLoupanId());
+        wrapper.in(CollectionUtils.isNotEmpty(buildingIdList), HousesArchivesEntity::getLoupanId, buildingIdList);
+        wrapper.eq(Objects.nonNull(query.getLoupanId()), HousesArchivesEntity::getLoupanId, query.getLoupanId());
         wrapper.eq(Objects.nonNull(query.getHouseType()), HousesArchivesEntity::getHouseType, query.getHouseType());
         wrapper.eq(Objects.nonNull(query.getOrientation()), HousesArchivesEntity::getOrientation, query.getOrientation());
         wrapper.eq(Objects.nonNull(query.getPropertyType()), HousesArchivesEntity::getPropertyType, query.getPropertyType());
@@ -96,11 +116,11 @@ public class HousesArchivesController extends BaseController {
         wrapper.eq(Objects.nonNull(query.getOwnershipAttribute()), HousesArchivesEntity::getOwnershipAttribute, query.getOwnershipAttribute());
         wrapper.eq(Objects.nonNull(query.getRoomNum()), HousesArchivesEntity::getRoomNum, query.getRoomNum());
         wrapper.eq(Objects.nonNull(query.getCode()), HousesArchivesEntity::getCode, query.getCode());
-        if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())){
-            wrapper.like( HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
+        if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())) {
+            wrapper.like(HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
         }
-        if (StringUtils.isNotBlank(query.getName())){
-            wrapper.like( HousesArchivesEntity::getName, query.getName());
+        if (StringUtils.isNotBlank(query.getName())) {
+            wrapper.like(HousesArchivesEntity::getName, query.getName());
         }
         wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
@@ -145,8 +165,8 @@ public class HousesArchivesController extends BaseController {
         housesArchivesService.checkParams(entity);
         // 保存数据
         // 计算使用率 公式：使用面积/建筑面积的结果，显示百分数，精确小数点后两位
-        if (Objects.nonNull(entity.getUsableArea()) && Objects.nonNull(entity.getBuildingArea()) && entity.getBuildingArea() > 0.0){
-            entity.setUtilizationRate(entity.getUsableArea()/entity.getBuildingArea());
+        if (Objects.nonNull(entity.getUsableArea()) && Objects.nonNull(entity.getBuildingArea()) && entity.getBuildingArea() > 0.0) {
+            entity.setUtilizationRate(entity.getUsableArea() / entity.getBuildingArea());
         }
         housesArchivesService.save(entity);
         return IdmResDTO.success();
@@ -160,8 +180,8 @@ public class HousesArchivesController extends BaseController {
     @PostMapping("/update")
     public IdmResDTO update(@RequestBody HousesArchivesEntity entity) {
         // 计算使用率 公式：使用面积/建筑面积的结果，显示百分数，精确小数点后两位
-        if (Objects.nonNull(entity.getUsableArea()) && Objects.nonNull(entity.getBuildingArea()) && entity.getBuildingArea() > 0.0){
-            entity.setUtilizationRate(entity.getUsableArea()/entity.getBuildingArea());
+        if (Objects.nonNull(entity.getUsableArea()) && Objects.nonNull(entity.getBuildingArea()) && entity.getBuildingArea() > 0.0) {
+            entity.setUtilizationRate(entity.getUsableArea() / entity.getBuildingArea());
         }
         housesArchivesService.updateById(entity);
         return IdmResDTO.success();
@@ -242,12 +262,12 @@ public class HousesArchivesController extends BaseController {
         List<HousesArchiveImportDto> importDtoList = ExcelImportUtil
                 .importExcel(file.getInputStream(), HousesArchiveImportDto.class, params);
 
-        if(CollectionUtils.isEmpty(importDtoList)){
+        if (CollectionUtils.isEmpty(importDtoList)) {
             throw new BusinessException(ResultCode.REQUEST_FORMAT_ERROR, "excel解析失败");
         }
         AssertUtil.isFalse(importDtoList.size() > ArchivesApiConstant.ARCHIVES_IMPORT_MAX_NUM,
                 "数据量超过5000条，导入失败");
-        for (HousesArchiveImportDto dto : importDtoList){
+        for (HousesArchiveImportDto dto : importDtoList) {
             housesArchivesService.checkParamsImport(dto);
         }
 

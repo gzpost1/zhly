@@ -145,7 +145,7 @@ public class WorkOrderController extends BaseController {
 
 
     /**
-     * 详情-详情-重新提交查看以前的提交信息（
+     * 详情中查询详情
      * @param dto
      * @return
      */
