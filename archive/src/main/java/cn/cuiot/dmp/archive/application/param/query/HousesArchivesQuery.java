@@ -17,7 +17,6 @@ public class HousesArchivesQuery extends PageQuery {
     /**
      * 所属楼盘id
      */
-    @NotNull(message = "请选择所属楼盘")
     private Long loupanId;
 
     /**
