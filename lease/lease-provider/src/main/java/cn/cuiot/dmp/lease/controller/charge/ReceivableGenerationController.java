@@ -33,7 +33,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -68,6 +70,7 @@ public class ReceivableGenerationController {
         if (Objects.nonNull(chargeManagerPageDtoIPage) && CollectionUtils.isNotEmpty(chargeManagerPageDtoIPage.getRecords())) {
             List<Long> houseIds = chargeManagerPageDtoIPage.getRecords().stream().map(ChargeManagerPageDto::getHouseId).collect(Collectors.toList());
             List<Long> userIds = chargeManagerPageDtoIPage.getRecords().stream().map(ChargeManagerPageDto::getCustomerUserId).collect(Collectors.toList());
+            List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(Lists.newArrayList(houseIds));
 
             List<CustomerUserInfo> userInfoList = chargeHouseAndUserService.getUserInfo(houseIds, userIds);
             if (CollectionUtils.isNotEmpty(userInfoList)) {
@@ -87,6 +90,17 @@ public class ReceivableGenerationController {
                                 break;
                             }
                         }
+                    }
+                }
+            }
+
+            //填充房屋相关信息
+            if(CollectionUtils.isNotEmpty(houseInfoDtos)){
+                Map<Long, HouseInfoDto> houseMap = houseInfoDtos.stream().collect(Collectors.toMap(HouseInfoDto::getHouseId, Function.identity()));
+                for (ChargeManagerPageDto record : chargeManagerPageDtoIPage.getRecords()) {
+                    if (houseMap.containsKey(record.getHouseId())) {
+                        record.setHouseCode(houseMap.get(record.getHouseId()).getHouseCode());
+                        record.setHouseName(houseMap.get(record.getHouseId()).getHouseName());
                     }
                 }
             }
