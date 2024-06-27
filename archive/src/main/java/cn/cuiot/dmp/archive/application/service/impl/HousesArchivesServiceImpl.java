@@ -10,8 +10,12 @@ import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.HousesArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
+import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
+import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.feign.ContractFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -20,6 +24,7 @@ import cn.cuiot.dmp.common.utils.DoubleValidator;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +50,8 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
 
     @Autowired
     private BuildingArchivesService buildingArchivesService;
+    @Autowired
+    ContractFeignService contractFeignService;
 
     /**
      * 参数校验
@@ -334,4 +341,32 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         }
     }
 
+    /**
+     * 填充房屋关联的意向合同和租赁合同
+     * @param records
+     */
+    @Override
+    public void fullContractInfo(List<HousesArchivesEntity> records) {
+        List<Long> houseIds = records.stream().map(HousesArchivesEntity::getId).collect(Collectors.toList());
+        IdsReq houseIdsReq = new IdsReq();
+        houseIdsReq.setIds(houseIds);
+        IdmResDTO<ContractStatusVo> resDTO = contractFeignService.queryConctactStatusByHouseIds(houseIdsReq);
+        if(!Objects.equals(resDTO.getCode(),ResultCode.SUCCESS.getCode())){
+            return;
+        }
+        ContractStatusVo contractStatusVo = resDTO.getData();
+        Map<Long, List<ContractStatus>> intentionMap = Optional.ofNullable(contractStatusVo.getIntentionMap()).orElse(Maps.newHashMap());
+        Map<Long, List<ContractStatus>> leaseMap = Optional.ofNullable(contractStatusVo.getLeaseMap()).orElse(Maps.newHashMap());
+        records.forEach(h->{
+            Long houseId = h.getId();
+            List<ContractStatus> intentionStatuses = intentionMap.get(houseId);
+            List<ContractStatus> leaseStatuses = leaseMap.get(houseId);
+            if(CollectionUtils.isNotEmpty(intentionStatuses)){
+                h.setIntentionStatuses(intentionStatuses);
+            }
+            if(CollectionUtils.isNotEmpty(leaseStatuses)){
+                h.setLeaseStatuses(leaseStatuses);
+            }
+        });
+    }
 }
