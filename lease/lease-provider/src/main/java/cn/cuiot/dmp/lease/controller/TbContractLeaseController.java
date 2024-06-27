@@ -197,16 +197,18 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     @PostMapping("/useless")
     public boolean useless(@RequestBody @Valid ContractParam param) {
         Long id = param.getId();
-        TbContractCancelEntity contractCancelParam = param.getContractCancelEntity();
-        AssertUtil.notNull(contractCancelParam, "作废信息不能为空");
-        AssertUtil.notNull(contractCancelParam.getRemark(), "作废备注不能为空");
+        TbContractCancelEntity contractCancelEntity = param.getContractCancelEntity();
+
+        AssertUtil.notNull(contractCancelEntity, "作废信息不能为空");
+        AssertUtil.notNull(contractCancelEntity.getRemark(), "作废备注不能为空");
         TbContractLeaseEntity queryEntity = getContract(id);
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_USELESS);
+        contractCancelEntity.setLeaseContractId(id);
         //记录作废备注
-        contractCancelParam.setType(1);
-        contractCancelService.saveOrUpdate(param.getContractCancelEntity());
+        contractCancelEntity.setType(1);
+        contractCancelService.saveOrUpdate(contractCancelEntity);
         String operMsg = "作废了租赁合同" + System.lineSeparator() +
-                "作废备注:" + contractCancelParam.getRemark();
+                "作废备注:" + contractCancelEntity.getRemark();
         contractLogService.saveIntentionLog(id, OPERATE_USELESS, operMsg);
         return service.updateById(queryEntity);
     }
