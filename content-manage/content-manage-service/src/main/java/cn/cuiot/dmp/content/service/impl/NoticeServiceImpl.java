@@ -8,6 +8,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.MsgExistDataIdReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
+import cn.cuiot.dmp.common.bean.dto.SmsMsgDto;
 import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
 import cn.cuiot.dmp.common.constant.*;
@@ -204,10 +205,18 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                 if (CollUtil.isEmpty(longs) || CollUtil.isEmpty(noticeEntity.getInform())) {
                     return;
                 }
-                if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM)) {
-                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SYS_MSG).setSysMsgDto(
-                            new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
-                                    .setDataJson(noticeEntity).setMessageTime(new Date()));
+                if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM) && noticeEntity.getInform().contains(ContentConstants.MsgInform.SMS)) {
+                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType((byte) (MsgTypeConstant.SYS_MSG + MsgTypeConstant.SMS));
+                    SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
+                            .setDataJson(noticeEntity).setMessageTime(new Date());
+                    SmsMsgDto smsMsgDto = new SmsMsgDto();
+                    userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
+                    msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+                            .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON).build());
+                } else if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM)) {
+                    SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
+                            .setDataJson(noticeEntity).setMessageTime(new Date());
+                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SYS_MSG).setSysMsgDto(sysMsgDto);
                     msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
                             .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                             .build());
@@ -271,4 +280,5 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         }
         return false;
     }
+
 }
