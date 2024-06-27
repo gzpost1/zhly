@@ -30,7 +30,7 @@ public class ContractParam implements Serializable {
     /**
      * 意向合同信息 签约需要传入
      */
-    private TbContractLeaseEntity contractLeaseEntity;
+    private Long leaseId;
 
     /**
      * 租赁合同 退租需要传入

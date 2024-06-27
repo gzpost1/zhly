@@ -160,6 +160,7 @@ public class TbContractLeaseEntity extends BaseContractEntity {
 
     private Long reletContractId;
 
+
     /**
      * 审核状态 1审核中,待审核 2 审核通过 3.未通过
      */

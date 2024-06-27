@@ -39,6 +39,7 @@ public class TbContractLeaseParam extends PageQuery implements Serializable {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
+    private List<Long> queryIds;
 
     /**
      * 合同编号
@@ -190,5 +191,7 @@ public class TbContractLeaseParam extends PageQuery implements Serializable {
     private Integer templateId;
 
     private Long reletContractId;
+
+    private Boolean usefullLease ;
 
 }

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import static cn.cuiot.dmp.common.constant.AuditConstant.*;
 
@@ -79,12 +80,13 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     @RequiresPermissions
     @PostMapping("/commit")
     public boolean commit(@RequestBody @Valid TbContractLeaseEntity entity) {
-        Long id = SnowflakeIdWorkerUtil.nextId();
+
+        Long id = Optional.ofNullable(entity.getId()).orElse(SnowflakeIdWorkerUtil.nextId());
         entity.setId(id);
         //需要审核
         baseContractService.handleAuditStatusByConfig(entity, OPERATE_COMMIT);
         contractLogService.saveLeaseLog(id, OPERATE_COMMIT, "提交了租赁合同");
-        return service.save(entity);
+        return service.saveOrUpdate(entity);
     }
 
     /**
@@ -114,7 +116,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         TbContractLeaseBackEntity contractLeaseBackEntity = param.getContractLeaseBackEntity();
         AssertUtil.notNull(id, "合同id不能为空");
         AssertUtil.notNull(contractLeaseBackEntity, "退租信息不能为空");
-        TbContractLeaseEntity queryEntity = service.getById(id);
+        TbContractLeaseEntity queryEntity = getContract(id);
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_LEASE_BACK);
         Long leaseBackId = SnowflakeIdWorkerUtil.nextId();
         contractLeaseBackEntity.setContractId(id);
@@ -123,6 +125,12 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         String operMsg = "退租了租赁合同" + System.lineSeparator() + "退租说明:" + contractLeaseBackEntity.getRemark();
         contractLogService.saveLog(id, OPERATE_LEASE_BACK, TbContractLogService.TYPE_LEASE, operMsg, String.valueOf(leaseBackId), null);
         return service.updateById(queryEntity);
+    }
+
+    private TbContractLeaseEntity getContract(Long id) {
+        TbContractLeaseEntity contract = service.getById(id);
+        AssertUtil.notNull(contract, "合同不存在!");
+        return contract;
     }
 
     /**
@@ -135,7 +143,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     @PostMapping("/leaseRelet")
     public boolean leaseRelet(@RequestBody @Valid ContractReletParam param) {
         Long id = param.getId();
-        TbContractLeaseEntity queryEntity = service.getById(id);
+        TbContractLeaseEntity queryEntity = getContract(id);
         TbContractLeaseEntity contractLeaseReletEntity = getContractLeaseEntity(param);
         service.save(contractLeaseReletEntity);
 
@@ -157,7 +165,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     @PostMapping("/allocation")
     public boolean allocation(@RequestBody @Valid AllocationParam param) {
         Long id = param.getId();
-        TbContractLeaseEntity queryEntity = service.getById(id);
+        TbContractLeaseEntity queryEntity = getContract(id);
         queryEntity.setFollowUp(String.valueOf(param.getFollowUpId()));
         String operMsg = "分配了租赁合同,分配给" + param.getFollowUpName();
         contractLogService.saveLeaseLog(id, OPERATE_ALLOCATION, operMsg);
@@ -174,7 +182,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     @PostMapping("/label")
     public boolean label(@RequestBody @Valid LabelParam param) {
         Long id = param.getId();
-        TbContractLeaseEntity queryEntity = service.getById(id);
+        TbContractLeaseEntity queryEntity = getContract(id);
         queryEntity.setLabel(param.getLabel());
         return service.saveOrUpdate(queryEntity);
     }
@@ -192,7 +200,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         TbContractCancelEntity contractCancelParam = param.getContractCancelEntity();
         AssertUtil.notNull(contractCancelParam, "作废信息不能为空");
         AssertUtil.notNull(contractCancelParam.getRemark(), "作废备注不能为空");
-        TbContractLeaseEntity queryEntity = service.getById(id);
+        TbContractLeaseEntity queryEntity = getContract(id);
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_USELESS);
         //记录作废备注
         contractCancelParam.setType(1);
@@ -213,12 +221,12 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     @PostMapping("/audit")
     public boolean audit(@RequestBody @Valid AuditParam param) {
         Long id = param.getId();
-        TbContractLeaseEntity queryEntity = service.getById(id);
+        TbContractLeaseEntity queryEntity = getContract(id);
         Integer contractStatus = queryEntity.getContractStatus();
         TbContractIntentionEntity auditContractIntentionEntity = (TbContractIntentionEntity) baseContractService.handleAuditContractStatus(queryEntity, param);
         //如果是续租中不通过,这取消关联
-        if(Objects.equals(contractStatus,ContractEnum.STATUS_RELETING.getCode())
-                &&Objects.equals(param.getAuditStatus(),ContractEnum.AUDIT_REFUSE.getCode())){
+        if (Objects.equals(contractStatus, ContractEnum.STATUS_RELETING.getCode())
+                && Objects.equals(param.getAuditStatus(), ContractEnum.AUDIT_REFUSE.getCode())) {
             service.cancelReletBind(id);
         }
         contractLogService.saveAuditLogMsg(contractStatus, param);
@@ -231,7 +239,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         Long id = SnowflakeIdWorkerUtil.nextId();
         Long contractNo = SnowflakeIdWorkerUtil.nextId();
         String name = contractLeaseReletEntity.getName();
-        contractLeaseReletEntity.setName("【续租】"+ name);
+        contractLeaseReletEntity.setName("【续租】" + name);
         contractLeaseReletEntity.setId(id);
         contractLeaseReletEntity.setContractNo(String.valueOf(contractNo));
         contractLeaseReletEntity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());

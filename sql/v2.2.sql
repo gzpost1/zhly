@@ -177,9 +177,6 @@ create table tb_contract_lease_back
     comment '退租信息';
 
 
-
-
-
 CREATE FUNCTION getUserName(userid INT)
     RETURNS varchar(255)
 BEGIN

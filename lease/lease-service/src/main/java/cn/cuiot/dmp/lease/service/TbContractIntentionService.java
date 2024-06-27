@@ -43,7 +43,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         }
         List<TbContractIntentionEntity> list = super.list(params);
         list.forEach(c -> {
-            baseContractService.fullInfo(c);
+            baseContractService.fullBindHouseInfo(c);
         });
         return list;
     }
@@ -58,7 +58,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         }
         PageResult<TbContractIntentionEntity> page = super.page(param);
         page.getRecords().forEach(c -> {
-            baseContractService.fullInfo(c);
+            baseContractService.fullBindHouseInfo(c);
         });
         return page;
     }

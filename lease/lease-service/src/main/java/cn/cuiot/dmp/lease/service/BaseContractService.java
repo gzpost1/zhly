@@ -42,17 +42,16 @@ public class BaseContractService {
     @Autowired
     TbContractBindInfoService bindInfoService;
 
+
     /**
-     * 填充房屋信息,跟进人和合同人信息
+     * 填充房屋信息
      *
-     * @param c
+     * @param contractEntity
      */
-    public void fullInfo(BaseContractEntity c) {
-        fullBindHouseInfo(c);
-    }
-
-
     public void fullBindHouseInfo(BaseContractEntity contractEntity) {
+        if(Objects.isNull(contractEntity)) {
+            return;
+        }
         Integer type =  CONTRACT_INTENTION_TYPE;
         if (contractEntity instanceof TbContractLeaseEntity) {
             type =  CONTRACT_LEASE_TYPE;

@@ -153,6 +153,12 @@ public class BaseContractEntity extends Model {
     private String createUserName;
     @TableField(exist = false)
     private String updateUserName;
+    /**
+     * true为按照条件筛选签约关联时候可用的租赁合同
+     */
+    @TableField(exist = false)
+    private Boolean usefullLease ;
+
 
 
 }
