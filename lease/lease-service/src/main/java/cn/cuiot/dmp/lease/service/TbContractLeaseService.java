@@ -7,6 +7,7 @@ import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
     @Override
     public boolean save(Object o) {
         TbContractLeaseEntity entity = (TbContractLeaseEntity) o;
-        if(Objects.isNull(entity.getContractNo())) {
+        if (Objects.isNull(entity.getContractNo())) {
             Long code = SnowflakeIdWorkerUtil.nextId();
             entity.setContractNo(String.valueOf(code));
         }
@@ -51,6 +52,7 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
 
     /**
      * 删除合同同时删除绑定信息
+     *
      * @param id
      * @return
      */
@@ -74,4 +76,15 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         return list;
     }
 
+    /**
+     * 取消续租合同关联
+     */
+    public void cancelReletBind(Long reletContractId) {
+        LambdaQueryWrapper<TbContractLeaseEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TbContractLeaseEntity::getReletContractId,reletContractId);
+        queryWrapper.last("limit 1");
+        TbContractLeaseEntity contractLeaseEntity = (TbContractLeaseEntity) getOne(queryWrapper);
+        contractLeaseEntity.setReletContractId(null);
+        saveOrUpdate(contractLeaseEntity);
+    }
 }

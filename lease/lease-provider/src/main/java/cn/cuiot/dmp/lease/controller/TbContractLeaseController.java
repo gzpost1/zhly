@@ -66,7 +66,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         entity.setId(id);
         entity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
         entity.setContractStatus(ContractEnum.STATUS_DARFT.getCode());
-        contractLogService.saveLeaseLog(id, "新增", "新增了租赁合同");
+        contractLogService.saveLeaseLog(id, OPERATE_NEW, "新增了租赁合同");
         return service.save(entity);
     }
 
@@ -203,18 +203,41 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         return service.updateById(queryEntity);
     }
 
+
+    /**
+     * 审核  2.审核通过 3.审核不通过
+     *
+     * @return
+     */
+    @RequiresPermissions
+    @PostMapping("/audit")
+    public boolean audit(@RequestBody @Valid AuditParam param) {
+        Long id = param.getId();
+        TbContractLeaseEntity queryEntity = service.getById(id);
+        Integer contractStatus = queryEntity.getContractStatus();
+        TbContractIntentionEntity auditContractIntentionEntity = (TbContractIntentionEntity) baseContractService.handleAuditContractStatus(queryEntity, param);
+        //如果是续租中不通过,这取消关联
+        if(Objects.equals(contractStatus,ContractEnum.STATUS_RELETING.getCode())
+                &&Objects.equals(param.getAuditStatus(),ContractEnum.AUDIT_REFUSE.getCode())){
+            service.cancelReletBind(id);
+        }
+        contractLogService.saveAuditLogMsg(contractStatus, param);
+        return service.updateById(auditContractIntentionEntity);
+    }
+
     private TbContractLeaseEntity getContractLeaseEntity(ContractReletParam param) {
         //续租合同
         TbContractLeaseEntity contractLeaseReletEntity = param.getContractLeaseReletEntity();
         Long id = SnowflakeIdWorkerUtil.nextId();
         Long contractNo = SnowflakeIdWorkerUtil.nextId();
+        String name = contractLeaseReletEntity.getName();
+        contractLeaseReletEntity.setName("【续租】"+ name);
+        contractLeaseReletEntity.setId(id);
+        contractLeaseReletEntity.setContractNo(String.valueOf(contractNo));
         contractLeaseReletEntity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
         contractLeaseReletEntity.setContractStatus(ContractEnum.STATUS_DARFT.getCode());
         contractLeaseReletEntity.setReletContractId(param.getId());
-        contractLeaseReletEntity.setId(id);
-        contractLeaseReletEntity.setContractNo(String.valueOf(contractNo));
         return contractLeaseReletEntity;
     }
-
 
 }

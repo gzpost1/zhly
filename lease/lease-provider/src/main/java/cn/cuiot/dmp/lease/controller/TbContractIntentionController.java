@@ -58,7 +58,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         entity.setId(id);
         entity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
         entity.setContractStatus(ContractEnum.STATUS_DARFT.getCode());
-        contractLogService.saveIntentionLog(id, "新增", "新增了意向合同");
+        contractLogService.saveIntentionLog(id, OPERATE_NEW, "新增了意向合同");
         return service.save(entity);
     }
 
