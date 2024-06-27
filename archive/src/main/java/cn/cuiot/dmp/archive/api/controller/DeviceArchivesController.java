@@ -95,7 +95,7 @@ public class DeviceArchivesController extends BaseController {
                 .map(BuildingArchive::getId)
                 .collect(Collectors.toList());
         LambdaQueryWrapper<DeviceArchivesEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CollectionUtils.isNotEmpty(buildingIdList), DeviceArchivesEntity::getLoupanId, buildingIdList);
+        wrapper.in(CollectionUtils.isNotEmpty(buildingIdList), DeviceArchivesEntity::getLoupanId, buildingIdList);
         wrapper.eq(Objects.nonNull(query.getId()), DeviceArchivesEntity::getId, query.getId());
         wrapper.eq(Objects.nonNull(query.getLoupanId()), DeviceArchivesEntity::getLoupanId, query.getLoupanId());
         wrapper.like(StringUtils.isNotBlank(query.getDeviceName()), DeviceArchivesEntity::getDeviceName, query.getDeviceName());
