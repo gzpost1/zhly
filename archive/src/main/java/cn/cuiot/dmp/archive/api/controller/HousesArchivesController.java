@@ -6,6 +6,7 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.archive.application.constant.ArchivesApiConstant;
 import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
+import cn.cuiot.dmp.archive.application.param.dto.HouseTreeQueryDto;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.query.HousesArchivesQuery;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
@@ -23,6 +24,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ContractFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -120,9 +122,6 @@ public class HousesArchivesController extends BaseController {
         wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         List<HousesArchivesEntity> records = res.getRecords();
-        records.forEach(h -> {
-            String code = h.getCode();
-        });
         fullContractInfo(records);
         return IdmResDTO.success(res);
     }
