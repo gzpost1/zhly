@@ -7,11 +7,14 @@ import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 租赁合同 服务实现类
@@ -30,11 +33,33 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
 
     @Override
     public boolean save(Object o) {
-        Long code = SnowflakeIdWorkerUtil.nextId();
         TbContractLeaseEntity entity = (TbContractLeaseEntity) o;
-        entity.setContractNo(String.valueOf(code));
+        if (Objects.isNull(entity.getContractNo())) {
+            Long code = SnowflakeIdWorkerUtil.nextId();
+            entity.setContractNo(String.valueOf(code));
+        }
+        super.save(entity);
         bindInfoService.createContractBind(entity);
-        return super.save(entity);
+        return true;
+    }
+
+    @Override
+    public boolean updateById(Object o) {
+        TbContractLeaseEntity entity = (TbContractLeaseEntity) o;
+        bindInfoService.createContractBind(entity);
+        return super.updateById(entity);
+    }
+
+    /**
+     * 删除合同同时删除绑定信息
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public boolean removeById(Serializable id) {
+        bindInfoService.removeByContractId(Long.valueOf(String.valueOf(id)));
+        return super.removeById(id);
     }
 
     @Override
@@ -51,4 +76,15 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         return list;
     }
 
+    /**
+     * 取消续租合同关联
+     */
+    public void cancelReletBind(Long reletContractId) {
+        LambdaQueryWrapper<TbContractLeaseEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TbContractLeaseEntity::getReletContractId,reletContractId);
+        queryWrapper.last("limit 1");
+        TbContractLeaseEntity contractLeaseEntity = (TbContractLeaseEntity) getOne(queryWrapper);
+        contractLeaseEntity.setReletContractId(null);
+        saveOrUpdate(contractLeaseEntity);
+    }
 }

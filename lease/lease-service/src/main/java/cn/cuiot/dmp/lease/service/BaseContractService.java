@@ -138,6 +138,18 @@ public class BaseContractService {
                 configIntentionName = AUDIT_CONFIG_INTENTION_USELESS;
                 contractStatus = ContractEnum.STATUS_USELESSING.getCode();
                 break;
+            case OPERATE_LEASE_BACK:
+                configLeaseName = AUDIT_CONFIG_LEASE_BACK;
+                contractStatus = ContractEnum.STATUS_BACKING_LEASE.getCode();
+                break;
+            case OPERATE_CHANGE:
+                configLeaseName = AUDIT_CONFIG_LEASE_CHANGE;
+                contractStatus = ContractEnum.STATUS_CHANGING.getCode();
+                break;
+            case OPERATE_LEASE_RELET:
+                configLeaseName = AUDIT_CONFIG_LEASE_RELET;
+                contractStatus = ContractEnum.STATUS_RELETING.getCode();
+                break;
         }
         boolean needAudit = true;
         int type = CONTRACT_INTENTION_TYPE;
@@ -175,11 +187,11 @@ public class BaseContractService {
         if (Objects.equals(auditStatus, ContractEnum.AUDIT_PASS.getCode())) {
             switch (ContractEnum.getEnumByCode(contractStatus)) {
                 case STATUS_COMMITING:
-                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+                    contractStatus = handleContractStatusByDate(type,beginDate, endDate);
                     break;
                 //草稿提交不审核的情况
                 case STATUS_DARFT:
-                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+                    contractStatus = handleContractStatusByDate(type,beginDate, endDate);
                     break;
                 //签约中
                 case STATUS_SIGNING:
@@ -195,11 +207,15 @@ public class BaseContractService {
                     break;
                 //变更中
                 case STATUS_CHANGING:
-                    contractStatus = ContractEnum.STATUS_CHANGED.getCode();
+                    contractStatus = handleContractStatusByDate(type,beginDate,endDate);
                     break;
                 //退租中
                 case STATUS_BACKING_LEASE:
-                    contractStatus = ContractEnum.STATUS_BACKED_LEASE.getCode();
+                    contractStatus = ContractEnum.STATUS_END.getCode();
+                    break;
+                //续租中
+                case STATUS_RELETING:
+                    contractStatus = ContractEnum.STATUS_RELET.getCode();
                     break;
             }
             //   被拒绝的处理
@@ -228,7 +244,7 @@ public class BaseContractService {
 //                    break;
                 //除了提交中被拒绝改为草稿,其余都是走时间判断状态
                 default:
-                    contractStatus = handleContractStatusByDate(beginDate, endDate);
+                    contractStatus = handleContractStatusByDate(type,beginDate, endDate);
                     break;
             }
         }
@@ -238,12 +254,16 @@ public class BaseContractService {
     /**
      * 根据合同日期设置合同状态
      */
-    public Integer handleContractStatusByDate(LocalDate beginDate, LocalDate endDate) {
+    public Integer handleContractStatusByDate(Integer type,LocalDate beginDate, LocalDate endDate) {
         LocalDate nowDate = LocalDate.now();
         Integer contractStatus;
         if (endDate.isBefore(nowDate)) {
             //已过期
-            contractStatus = ContractEnum.STATUS_EXPIRED.getCode();
+            if(Objects.equals(type,CONTRACT_INTENTION_TYPE)) {
+                contractStatus = ContractEnum.STATUS_EXPIRED.getCode();
+            }else{
+                contractStatus = ContractEnum.STATUS_EXPIRED_WAITING.getCode();
+            }
         } else if (beginDate.isAfter(nowDate)) {
             //待执行
             contractStatus = ContractEnum.STATUS_WAITING.getCode();

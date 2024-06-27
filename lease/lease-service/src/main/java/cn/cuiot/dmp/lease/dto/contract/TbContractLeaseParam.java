@@ -173,4 +173,22 @@ public class TbContractLeaseParam extends PageQuery implements Serializable {
     private String houseName;
     private String followUpName;
 
+
+    /**
+     * 续租日期
+     */
+    private LocalDate reletDate;
+    /**
+     * 续租说明
+     */
+    private String reletRemark;
+    /**
+     * 续租附件
+     */
+    private String reletPath;
+
+    private Integer templateId;
+
+    private Long reletContractId;
+
 }

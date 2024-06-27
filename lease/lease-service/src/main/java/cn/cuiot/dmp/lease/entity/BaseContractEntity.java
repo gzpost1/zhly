@@ -133,6 +133,22 @@ public class BaseContractEntity extends Model {
     @TableField(exist = false)
     private List<TbContractChargeEntity> chargeList;
 
+    /**
+     * 退订信息
+     */
+    @TableField(exist = false)
+    private TbContractCancelEntity cancelInfo;
+    /**
+     * 作废信息
+     */
+    @TableField(exist = false)
+    private TbContractCancelEntity uselessInfo;
+    /**
+     * 退租信息
+     */
+    @TableField(exist = false)
+    private List<TbContractLeaseBackEntity> leaseBackList;
+
     @TableField(exist = false)
     private String createUserName;
     @TableField(exist = false)

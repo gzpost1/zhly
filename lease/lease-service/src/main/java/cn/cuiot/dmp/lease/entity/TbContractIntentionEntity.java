@@ -102,16 +102,6 @@ public class TbContractIntentionEntity extends BaseContractEntity {
     @TableField(fill = FieldFill.INSERT)
     private Byte deleted = EntityConstants.NOT_DELETED;
 
-    /**
-     * 退订信息
-     */
-    @TableField(exist = false)
-    private TbContractCancelEntity cancelInfo;
-    /**
-     * 作废信息
-     */
-    @TableField(exist = false)
-    private TbContractCancelEntity uselessInfo;
 
 
     @Override

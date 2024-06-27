@@ -28,7 +28,9 @@ public enum ContractEnum {
     STATUS_CHANGING(24, "变更中"),
     STATUS_CHANGED(25, "已变更"),
     STATUS_BACKING_LEASE(26, "退租中"),
-    STATUS_BACKED_LEASE(27, "已退租");
+    STATUS_BACKED_LEASE(27, "已退租"),
+    STATUS_EXPIRED_WAITING(28, "到期待处理"),
+    STATUS_END(29, "终止");
 
     private   Integer code;
     private   String desc;
