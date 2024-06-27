@@ -41,11 +41,6 @@ public class PriceManageRecordEntity implements Serializable {
     private Date operateTime;
 
     /**
-     * 操作详情
-     */
-    private String operateDetail;
-
-    /**
      * 逻辑删除，1已删除，0未删除
      */
     @TableLogic

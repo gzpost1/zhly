@@ -8,6 +8,7 @@ import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditPageQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditStatusDTO;
+import cn.cuiot.dmp.system.application.param.dto.UserHouseBuildingDTO;
 import cn.cuiot.dmp.system.application.service.UserHouseAuditService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.List;
@@ -57,6 +58,16 @@ public class UserHouseAuditController {
             @RequestBody @Valid UserHouseAuditPageQueryDTO queryDTO) {
         queryDTO.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         return userHouseAuditService.queryForPage(queryDTO);
+    }
+
+    /**
+     * 根据用户id查询楼盘列表
+     */
+    @PostMapping("/queryBuildingsByUser")
+    public List<UserHouseBuildingDTO> queryBuildingsByUser(
+            @RequestBody @Valid UserHouseAuditPageQueryDTO queryDTO) {
+        Long userId = LoginInfoHolder.getCurrentUserId();
+        return userHouseAuditService.queryBuildingsByUser(userId);
     }
 
     /**

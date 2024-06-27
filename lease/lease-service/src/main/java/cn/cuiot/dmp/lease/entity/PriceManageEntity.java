@@ -77,6 +77,11 @@ public class PriceManageEntity extends BaseEntity {
     private String auditRemark;
 
     /**
+     * 作废备注
+     */
+    private String invalidRemark;
+
+    /**
      * 定价管理明细房屋列表
      */
     @TableField(typeHandler = JsonTypeHandler.class)
