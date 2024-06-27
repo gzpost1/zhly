@@ -135,6 +135,9 @@ public class HousesArchivesController extends BaseController {
         IdsReq houseIdsReq = new IdsReq();
         houseIdsReq.setIds(houseIds);
         IdmResDTO<ContractStatusVo> resDTO = contractFeignService.queryConctactStatusByHouseIds(houseIdsReq);
+        if(!Objects.equals(resDTO.getCode(),ResultCode.SUCCESS.getCode())){
+            return;
+        }
         ContractStatusVo contractStatusVo = resDTO.getData();
         Map<Long, List<ContractStatus>> intentionMap = Optional.ofNullable(contractStatusVo.getIntentionMap()).orElse(Maps.newHashMap());
         Map<Long, List<ContractStatus>> leaseMap = Optional.ofNullable(contractStatusVo.getLeaseMap()).orElse(Maps.newHashMap());
