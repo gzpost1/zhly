@@ -1,7 +1,6 @@
 package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
-import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
 import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
@@ -10,13 +9,11 @@ import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
-import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.contract.AuditParam;
 import cn.cuiot.dmp.lease.entity.BaseContractEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
-import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,8 +24,6 @@ import java.util.Objects;
 
 import static cn.cuiot.dmp.common.constant.AuditConstant.*;
 import static cn.cuiot.dmp.common.constant.AuditConstant.AUDIT_CONFIG_INTENTION_USELESS;
-import static cn.cuiot.dmp.lease.service.TbContractBindInfoService.BIND_CONTRACT_INTENTION_TYPE_HOUSE;
-import static cn.cuiot.dmp.lease.service.TbContractBindInfoService.BIND_CONTRACT_LEASE_TYPE_HOUSE;
 
 /**
  * 租赁合同 服务实现类
@@ -58,11 +53,11 @@ public class BaseContractService {
 
 
     public void fullBindHouseInfo(BaseContractEntity contractEntity) {
-        Integer type = BIND_CONTRACT_INTENTION_TYPE_HOUSE;
-        if(contractEntity instanceof TbContractLeaseEntity){
-            type = BIND_CONTRACT_LEASE_TYPE_HOUSE;
+        Integer type =  CONTRACT_INTENTION_TYPE;
+        if (contractEntity instanceof TbContractLeaseEntity) {
+            type =  CONTRACT_LEASE_TYPE;
         }
-        List<HousesArchivesVo> housesArchivesVos = bindInfoService.queryBindHouseInfoByContractId(contractEntity.getId(),type);
+        List<HousesArchivesVo> housesArchivesVos = bindInfoService.queryBindHouseInfoByContractId(contractEntity.getId(), type);
         if (Objects.nonNull(housesArchivesVos)) {
             contractEntity.setHouseList(housesArchivesVos);
         }
@@ -135,7 +130,11 @@ public class BaseContractService {
                 contractStatus = ContractEnum.STATUS_CANCELING.getCode();
                 break;
             case OPERATE_USELESS:
-                configIntentionName = AUDIT_CONFIG_INTENTION_USELESS;
+                if (entity instanceof TbContractIntentionEntity) {
+                    configIntentionName = AUDIT_CONFIG_INTENTION_USELESS;
+                } else {
+                    configIntentionName = AUDIT_CONFIG_LEASE_USELESS;
+                }
                 contractStatus = ContractEnum.STATUS_USELESSING.getCode();
                 break;
             case OPERATE_LEASE_BACK:
@@ -187,11 +186,11 @@ public class BaseContractService {
         if (Objects.equals(auditStatus, ContractEnum.AUDIT_PASS.getCode())) {
             switch (ContractEnum.getEnumByCode(contractStatus)) {
                 case STATUS_COMMITING:
-                    contractStatus = handleContractStatusByDate(type,beginDate, endDate);
+                    contractStatus = handleContractStatusByDate(type, beginDate, endDate);
                     break;
                 //草稿提交不审核的情况
                 case STATUS_DARFT:
-                    contractStatus = handleContractStatusByDate(type,beginDate, endDate);
+                    contractStatus = handleContractStatusByDate(type, beginDate, endDate);
                     break;
                 //签约中
                 case STATUS_SIGNING:
@@ -207,7 +206,7 @@ public class BaseContractService {
                     break;
                 //变更中
                 case STATUS_CHANGING:
-                    contractStatus = handleContractStatusByDate(type,beginDate,endDate);
+                    contractStatus = handleContractStatusByDate(type, beginDate, endDate);
                     break;
                 //退租中
                 case STATUS_BACKING_LEASE:
@@ -224,27 +223,9 @@ public class BaseContractService {
                 case STATUS_COMMITING:
                     contractStatus = ContractEnum.STATUS_DARFT.getCode();
                     break;
-//                case STATUS_SIGNING:
-//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
-//                    break;
-//                case STATUS_CANCELING:
-//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
-//                    break;
-//                case STATUS_USELESSING:
-//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
-//                    break;
-//                case STATUS_CHANGING:
-//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
-//                    break;
-//                case STATUS_BACKING_LEASE:
-//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
-//                    break;
-//                case STATUS_RELETING:
-//                    contractStatus = handleContractStatusByDate(beginDate, endDate);
-//                    break;
                 //除了提交中被拒绝改为草稿,其余都是走时间判断状态
                 default:
-                    contractStatus = handleContractStatusByDate(type,beginDate, endDate);
+                    contractStatus = handleContractStatusByDate(type, beginDate, endDate);
                     break;
             }
         }
@@ -254,14 +235,14 @@ public class BaseContractService {
     /**
      * 根据合同日期设置合同状态
      */
-    public Integer handleContractStatusByDate(Integer type,LocalDate beginDate, LocalDate endDate) {
+    public Integer handleContractStatusByDate(Integer type, LocalDate beginDate, LocalDate endDate) {
         LocalDate nowDate = LocalDate.now();
         Integer contractStatus;
         if (endDate.isBefore(nowDate)) {
             //已过期
-            if(Objects.equals(type,CONTRACT_INTENTION_TYPE)) {
+            if (Objects.equals(type, CONTRACT_INTENTION_TYPE)) {
                 contractStatus = ContractEnum.STATUS_EXPIRED.getCode();
-            }else{
+            } else {
                 contractStatus = ContractEnum.STATUS_EXPIRED_WAITING.getCode();
             }
         } else if (beginDate.isAfter(nowDate)) {
