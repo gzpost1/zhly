@@ -6,6 +6,8 @@ import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.ProcessResultDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.query.UserSubmitDataDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
@@ -114,7 +116,6 @@ public class WorkOrderController extends BaseController {
      */
     @PostMapping("queryCustomerWorkOrder")
     public IdmResDTO<IPage<CustomerWorkOrderDto>> queryCustomerWorkOrder(@RequestBody QueryCustomerWorkOrderDto req){
-        req.setWorkSource(WorkSourceEnums.PROXY_CUSTOMER_RECORD.getCode());
         return workInfoService.queryCustomerWorkOrder(req);
     }
 
@@ -141,6 +142,19 @@ public class WorkOrderController extends BaseController {
     public List<CommitProcessEntity> queryCommitProcessInfo(@RequestBody @Valid QueryCommitProcessDto dto){
         return workInfoService.queryCommitProcessInfo(dto);
     }
+
+
+    /**
+     * 详情中查询详情
+     * @param dto
+     * @return
+     */
+    @PostMapping("queryUserSubmitData")
+    public IdmResDTO<ProcessResultDto> queryUserSubmitData(@RequestBody @Valid UserSubmitDataDto dto){
+        return workInfoService.queryUserSubmitData(dto);
+    }
+
+
 
     /**
      * 2.3 工单待审批数量

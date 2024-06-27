@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 /**
  * 待审批-待审批-操作-我提交的列表
  *
@@ -74,7 +76,7 @@ public class ApprovalController {
      * @return
      */
     @PostMapping("queryCommitProcess")
-    public IdmResDTO<CommitProcessEntity> queryCommitProcess(@RequestBody QueryCommitProcessDto dto){
+    public IdmResDTO<CommitProcessEntity> queryCommitProcess(@RequestBody @Valid QueryCommitProcessDto dto){
         return workInfoService.queryCommitProcess(dto);
     }
 }

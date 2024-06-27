@@ -47,6 +47,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -284,10 +285,13 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
     public void saveRelateList(Long customerId, CustomerDto dto) {
         List<CustomerHouseDto> houseList = dto.getHouseList();
         if (CollectionUtils.isNotEmpty(houseList)) {
+            Map<String, Long> houseMap = getHouseMap(
+                    houseList.stream().map(ite -> ite.getHouseId()).collect(Collectors.toList()));
             customerHouseService.saveBatch(houseList.stream().map(item -> {
                 CustomerHouseEntity houseEntity = new CustomerHouseEntity();
                 BeanUtils.copyProperties(item, houseEntity);
                 houseEntity.setCustomerId(customerId);
+                houseEntity.setLoupanId(houseMap.get(item.getHouseId().toString()));
                 return houseEntity;
             }).collect(Collectors.toList()));
         }
@@ -323,6 +327,21 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 return vehicleEntity;
             }).collect(Collectors.toList()));
         }
+    }
+
+    /**
+     * 获得房屋楼盘的对应
+     * @param houseIdList
+     * @return
+     */
+    private Map<String,Long> getHouseMap(List<Long> houseIdList){
+        List<HousesArchivesEntity> selectList = housesArchivesMapper.selectList(
+                Wrappers.<HousesArchivesEntity>lambdaQuery()
+                        .in(HousesArchivesEntity::getId, houseIdList));
+        Map<String,Long> map = Optional.ofNullable(selectList).orElse(Lists.newArrayList())
+                .stream().collect(Collectors
+                        .toMap(item->item.getId().toString(), HousesArchivesEntity::getLoupanId));
+        return map;
     }
 
     /**

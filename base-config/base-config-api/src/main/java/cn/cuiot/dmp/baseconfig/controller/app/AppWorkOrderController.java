@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 2.3.【管理端-待办】
@@ -194,7 +195,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryNodeType")
-    public IdmResDTO<NodeTypeDto> queryNodeType(@RequestBody PendingProcessQuery query){
+    public IdmResDTO< List<NodeTypeDto>> queryNodeType(@RequestBody PendingProcessQuery query){
        return appWorkInfoService.queryNodeType(query);
     }
 
@@ -225,7 +226,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryUserSubmitData")
-    public IdmResDTO<ProcessResultDto> queryUserSubmitData(@RequestBody @Valid UserSubmitDataDto dto) throws FlowException {
+    public IdmResDTO<ProcessResultDto> queryUserSubmitData(@RequestBody @Valid UserSubmitDataDto dto) throws Exception {
         return appWorkInfoService.queryUserSubmitData(dto);
     }
     /**
@@ -267,7 +268,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryMyapproveBasicInfo")
-    public IdmResDTO<WorkInfoDto> queryMyapproveBasicInfo(@RequestBody WorkProcInstDto dto){
+    public IdmResDTO<WorkInfoDto> queryMyapproveBasicInfo(@RequestBody @Valid WorkProcInstDto dto){
         dto.setNodeType(WorkOrderConstants.approvalNodeType);
         return appWorkInfoService.queryBasicInfo(dto);
     }
@@ -329,7 +330,7 @@ public class AppWorkOrderController {
     @PostMapping("clientCloseFlow")
     @RequiresPermissions
     @LogRecord(operationCode = "clientCloseFlow", operationName = "app终止", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO clientCloseFlow(@RequestBody ClientOperationDto operationDto){
+    public IdmResDTO clientCloseFlow(@RequestBody  @Valid ClientOperationDto operationDto){
         return appWorkInfoService.clientCloseFlow(operationDto);
     }
 
@@ -342,7 +343,7 @@ public class AppWorkOrderController {
     @PostMapping("clientBusinessPending")
     @RequiresPermissions
     @LogRecord(operationCode = "clientBusinessPending", operationName = "app挂起", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO clientBusinessPending(@RequestBody ClientOperationDto operationDto){
+    public IdmResDTO clientBusinessPending(@RequestBody  @Valid ClientOperationDto operationDto){
         return appWorkInfoService.clientBusinessPending(operationDto);
     }
 
@@ -351,7 +352,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("clientComment")
-    public IdmResDTO clientComment(@RequestBody ClientOperationDto dto){
+    public IdmResDTO clientComment(@RequestBody  @Valid  ClientOperationDto dto){
         return appWorkInfoService.clientComment(dto);
     }
 

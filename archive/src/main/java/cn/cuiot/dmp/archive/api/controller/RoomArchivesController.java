@@ -9,6 +9,7 @@ import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.RoomArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.query.RoomArchivesQuery;
 import cn.cuiot.dmp.archive.application.param.vo.RoomArchivesExportVo;
+import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.RoomArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
@@ -18,6 +19,8 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
@@ -25,6 +28,7 @@ import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -44,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author liujianyu
@@ -58,6 +63,9 @@ public class RoomArchivesController extends BaseController {
     private RoomArchivesService roomArchivesService;
     @Autowired
     private ArchivesApiMapper archivesApiMapper;
+
+    @Autowired
+    private BuildingArchivesService buildingArchivesService;
 
     /**
      * 根据id获取详情
@@ -74,8 +82,20 @@ public class RoomArchivesController extends BaseController {
      */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<RoomArchivesEntity>> queryForPage(@RequestBody @Valid RoomArchivesQuery query) {
+        // 获取当前平台下的楼盘列表
+        DepartmentReqDto dto = new DepartmentReqDto();
+        dto.setDeptId(LoginInfoHolder.getCurrentOrgId());
+        dto.setSelfReturn(true);
+        List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
+        if (CollectionUtils.isEmpty(buildingArchives)) {
+            return IdmResDTO.success(new Page<>());
+        }
+        List<Long> buildingIdList = buildingArchives.stream()
+                .map(BuildingArchive::getId)
+                .collect(Collectors.toList());
         LambdaQueryWrapper<RoomArchivesEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(RoomArchivesEntity::getLoupanId, query.getLoupanId());
+        wrapper.in(CollectionUtils.isNotEmpty(buildingIdList), RoomArchivesEntity::getLoupanId, buildingIdList);
+        wrapper.eq(Objects.nonNull(query.getLoupanId()), RoomArchivesEntity::getLoupanId, query.getLoupanId());
         wrapper.like(StringUtils.isNotBlank(query.getName()), RoomArchivesEntity::getName, query.getName());
         wrapper.like(StringUtils.isNotBlank(query.getOwnershipUnit()), RoomArchivesEntity::getOwnershipUnit, query.getOwnershipUnit());
         wrapper.eq(Objects.nonNull(query.getResourceType()), RoomArchivesEntity::getResourceType, query.getResourceType());

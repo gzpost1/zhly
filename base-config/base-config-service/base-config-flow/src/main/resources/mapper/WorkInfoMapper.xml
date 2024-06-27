@@ -23,7 +23,7 @@
     </sql>
     <sql id="queryWorkOrderInfoSql">
          t1.id ,t1.business_type,t1.org_id as org,t1.work_name,t1.work_souce,t1.status,t1.create_time,t1.create_user,t1.proc_inst_id,t1.company_id,t1.org_ids as deptIds,
-         t1.actual_user_id,t1.revoke_type,t1.revoke_node_id,t1.process_definition_id
+         t1.actual_user_id,t1.revoke_type,t1.revoke_node_id,t1.process_definition_id,customer_id
     </sql>
     <select id="queryWorkOrderInfo" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.WorkInfoDto">
         select  <include refid="queryWorkOrderInfoSql"/>
@@ -377,7 +377,7 @@
 
     <select id="queryPendProcessList" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto">
         SELECT
-            t2.process_node_type AS name ,count(*) AS number
+            t2.process_node_type AS processNodeId ,count(*) AS number
         FROM
             act_ru_task t1,
             tb_node_type t2
@@ -394,7 +394,8 @@
     </select>
 
     <select id="queryNodeType" resultType="java.lang.String">
-        select t2.process_node_type from act_hi_taskinst t1 ,tb_node_type t2 where t1.PROC_DEF_ID_ = t2.process_definition_id and t1.ASSIGNEE_= #{query.assignee} and t2.node_type ='TASK'
+        select t2.process_node_type from act_hi_taskinst t1 ,tb_node_type t2
+                                    where t1.PROC_DEF_ID_ = t2.process_definition_id and t1.ASSIGNEE_= #{query.assignee} and t2.node_type ='TASK'
         GROUP BY t2.process_node_type
     </select>
 
@@ -410,7 +411,7 @@
         <sql id="queryMyHandleInfoCondition">
             <where>
                 <if test="query.assignee != null">
-                    and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'TASK'
+                    and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'TASK' and t2.TASK_DEF_KEY_=t3.node_id
                 </if>
                 <if test="query.workName !=null and query.workName !=''">
                     and t1.work_name like concat('%',#{query.workName},'%')
@@ -436,11 +437,15 @@
                 <if test="query.nodeType !=null and query.nodeType!=''">
                     and t3.process_node_type = #{query.nodeType}
                 </if>
-                <if test="query.queryType !=null and query.queryType=='0'">
-                    and t2.END_TIME_ is  null
-                </if>
-                <if test="query.queryType !=null and query.queryType=='1'">
-                    and t2.END_TIME_ is not null
+                <if test="query.queryType !=null">
+                    <choose>
+                        <when test="query.queryType==0">
+                            and t2.END_TIME_ is  null
+                        </when>
+                        <otherwise>
+                            and t2.END_TIME_ is not null
+                        </otherwise>
+                    </choose>
                 </if>
             </where>
             group by t1.proc_inst_id
@@ -458,7 +463,7 @@
     <sql id="queryMyApproveCondition">
         <where>
             <if test="query.assignee != null">
-                and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'APPROVAL'
+                and t2.ASSIGNEE_ = #{query.assignee} and t3.node_type = 'APPROVAL'  and t2.TASK_DEF_KEY_=t3.node_id
             </if>
             <if test="query.workName !=null and query.workName !=''">
                 and t1.work_name like concat('%',#{query.workName},'%')
@@ -481,12 +486,20 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="query.queryType !=null and query.queryType=='0'">
-                and t2.END_TIME_ is  null
+            <if test="query.queryType !=null">
+                <choose>
+                    <when test="query.queryType==0">
+                        and t2.END_TIME_ is  null
+                    </when>
+                    <otherwise>
+                        and t2.END_TIME_ is not null
+                    </otherwise>
+                </choose>
             </if>
-            <if test="query.queryType !=null and query.queryType=='1'">
-                and t2.END_TIME_ is not null
-            </if>
+<!--            <if test="query.queryType !=null and query.queryType=='1'">-->
+<!--                and t2.END_TIME_ is not null-->
+<!--            </if>-->
+
         </where>
         group by t1.proc_inst_id
         order by t1.create_time desc
@@ -567,15 +580,18 @@
         select
             <include refid="queryCustomerWorkOrderSql"/>
         from tb_work_info
+            <include refid="queryCustomerWorkOrderCondition"/>
     </select>
     <sql id="queryCustomerWorkOrderCondition">
         <where>
-            <if test="query.workSource !=null">
-                and work_souce = #{query.workSource}
-            </if>
-            <if test="query.workSource =null">
-                and work_souce in (2,3)
-            </if>
+            <choose>
+                <when test="query.workSource !=null">
+                    and work_souce = #{query.workSource}
+                </when>
+                <otherwise>
+                    and work_souce in (2,3)
+                </otherwise>
+            </choose>
             <if test="query.businessType !=null">
                 and business_type = #{query.businessType}
             </if>
@@ -594,7 +610,7 @@
             <if test="query.timeOut != null">
                 and work_time_out = #{query.timeOut}
             </if>
-            <if test="query.propertyId !=null">
+            <if test="query.propertyIds !=null and query.propertyIds.size()>0">
                 and property_id in
                 <foreach collection="query.propertyIds" item = "item" open="(" separator="," close=")">
                     #{item}
@@ -616,6 +632,6 @@
 
     <select id="queryWorkOrderNumber" resultType="java.lang.Integer">
         select IF(count(*)>0,0,1) from act_ru_task t1 left join tb_node_type t2 on t1.PROC_DEF_ID_ = t2.process_definition_id
-        where t1.ASSIGNEE_ = #{userId} and t1.PROC_INST_ID_ = #{procInstId} and t1.TASK_DEF_KEY_=t2.node_id and t2.node_type='APPROVAL'
+        where t1.ASSIGNEE_ = #{userId} and t1.PROC_INST_ID_ = #{procInstId} and t1.TASK_DEF_KEY_=t2.node_id and t2.node_type=#{nodeType}
     </select>
 </mapper>
