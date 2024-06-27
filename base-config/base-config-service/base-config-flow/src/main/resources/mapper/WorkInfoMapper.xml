@@ -623,6 +623,7 @@
 
     <select id="queryHistoricTask" resultType="java.lang.String">
         select ID_ from act_hi_taskinst where TASK_DEF_KEY_ =#{taskDefinitionKey} and PROC_INST_ID_ =#{processInstanceId}
+        and END_TIME_ is null
     </select>
 
     <select id="queryAgencyHandlingNumber" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.AgencyHandlingDto">

@@ -735,7 +735,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         Integer rate = childNodeByNodeId.getProps().getFormTaskAccessRate()*100;
         //实际比例
         Integer ratio = (int) (Double.parseDouble(taskDto.getCompletionRatio())*100);
-        if(rate>ratio){
+        if(ratio>rate){
             return false;
         }
         return true;
@@ -750,7 +750,6 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public static ChildNode getChildNodeByNodeId(String processDefinitionId,String currentActivityId){
         RepositoryService repositoryService = SpringContextHolder.getBean(RepositoryService.class);
         Process mainProcess = repositoryService.getBpmnModel(processDefinitionId).getMainProcess();
-        UserTask userTask = (UserTask) mainProcess.getFlowElement(currentActivityId);
         String dingDing = mainProcess.getAttributeValue(FLOWABLE_NAME_SPACE, FLOWABLE_NAME_SPACE_NAME);
         JSONObject jsonObject = JSONObject.parseObject(dingDing, new TypeReference<JSONObject>() {
         });
@@ -812,7 +811,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @param operationDto
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO clientBack(ClientOperationDto operationDto) {
+        checkWorkOrder(String.valueOf(operationDto.getProcessInstanceId()));
         //回退留痕
         HandleDataDTO handleDataDTO = new HandleDataDTO();
         handleDataDTO.setProcessInstanceId(String.valueOf(operationDto.getProcessInstanceId()));
@@ -829,12 +830,15 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), workBusinessTypeInfo.getProcInstId());
 
         Task task = taskService.createTaskQuery().taskId(String.valueOf(workBusinessTypeInfo.getTaskId())).singleResult();
+        if(Objects.isNull(task)){
+            throw new RuntimeException(ErrorCode.TASK_COMPLETE.getMessage());
+        }
         String rollBackNode = queryRollBackNode(task);
         runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
                 rollBackNode).changeState();
 
         //设置回退标识
-        taskService.setVariable(String.valueOf(operationDto.getTaskId()),"rollback","true");
+        taskService.setVariable(String.valueOf(handleDataDTO.getTaskId()),"rollback","true");
 
         return IdmResDTO.success();
     }
@@ -961,9 +965,10 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
         //单个转办
         if(StringUtils.isNotEmpty(assigneeDto.getTaskId())){
+            checkTaskInfo(String.valueOf(assigneeDto.getTaskId()));
             taskService.setAssignee(String.valueOf(assigneeDto.getTaskId()),String.valueOf(assigneeDto.getUserIds().get(0)));
         }
-
+        checkWorkOrder(assigneeDto.getProcessInstanceId());
         //查出当前节点的所有人员信息
 
         List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
@@ -994,6 +999,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      */
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO clientCloseFlow(ClientOperationDto operationDto) {
+        checkWorkOrder(String.valueOf(operationDto.getProcessInstanceId()));
         HandleDataDTO dataDTO = new HandleDataDTO();
         dataDTO.setProcessInstanceId(String.valueOf(operationDto.getProcessInstanceId()));
         dataDTO.setComments(operationDto.getComments());
@@ -1022,8 +1028,10 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @param operationDto
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO clientBusinessPending(ClientOperationDto operationDto) {
         //校验任务是否已挂起
+        checkWorkOrder(String.valueOf(operationDto.getProcessInstanceId()));
         WorkBusinessTypeInfoEntity entity = queryWorkBusinessById(null, operationDto.getProcessInstanceId());
         if(Objects.nonNull(entity)){
             return IdmResDTO.error(ErrorCode.SUSPENDED.getCode(), ErrorCode.SUSPENDED.getMessage());
@@ -1046,6 +1054,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @return
      */
     public IdmResDTO clientComment(ClientOperationDto dto) {
+        checkWorkOrder(String.valueOf(dto.getProcessInstanceId()));
         HandleDataDTO dataDTO = new HandleDataDTO();
         dataDTO.setProcessInstanceId(String.valueOf(dto.getProcessInstanceId()));
         dataDTO.setComments(dto.getComments());
@@ -1475,6 +1484,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         if(Objects.isNull(task)){
             return IdmResDTO.error(ErrorCode.TASK_COMPLETE.getCode(), ErrorCode.TASK_COMPLETE.getMessage());
         }
+        if(!Objects.equals(task.getAssignee(),String.valueOf(LoginInfoHolder.getCurrentUserId()))){
+            throw new RuntimeException(ErrorCode.NOT_OPERATION.getMessage());
+        }
         Map<String,Object> processVariables= new HashMap<>();
         if(CollUtil.isNotEmpty(processUsers)){
             Set<String> nodes = processUsers.keySet();
@@ -1520,6 +1532,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      */
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO approvalRejection(ApprovalDto approvalDto) {
+        checkTaskInfo(String.valueOf(approvalDto.getTaskId()));
         HandleDataDTO dto = new HandleDataDTO();
         dto.setTaskId(String.valueOf(approvalDto.getTaskId()));
         dto.setReason(approvalDto.getReason());
@@ -1540,7 +1553,20 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         msgSendService.sendProcess(workBusinessTypeInfo.getProcInstId().toString(), MsgDataType.WORK_INFO_TURNDOWN);
         return IdmResDTO.success();
     }
-
+    /**
+     * 校验任务信息
+     * @param taskId
+     */
+    public void checkTaskInfo(String taskId){
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        //任务已经结束
+        if(Objects.isNull(task)){
+            throw new RuntimeException(ErrorCode.TASK_COMPLETE.getMessage());
+        }
+        if(!Objects.equals(task.getAssignee(),String.valueOf(LoginInfoHolder.getCurrentUserId()))){
+            throw new RuntimeException(ErrorCode.NOT_OPERATION.getMessage());
+        }
+    }
     /**
      *获取抄送我的列表
      * @param query
@@ -1566,6 +1592,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @param startProcessInstanceDTO
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO reportRepairsStart(StartProcessInstanceDTO startProcessInstanceDTO) {
         JSONObject formData = startProcessInstanceDTO.getFormData();
         UserInfo startUserInfo = startProcessInstanceDTO.getStartUserInfo();
@@ -1851,6 +1878,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @param taskDto
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public IdmResDTO evaluate(CompleteTaskDto taskDto) {
         Task task = taskService.createTaskQuery().taskId(String.valueOf(taskDto.getTaskId())).singleResult();
         //保存操作记录
