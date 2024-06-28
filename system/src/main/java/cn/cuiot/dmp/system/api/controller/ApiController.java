@@ -11,6 +11,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
 import cn.cuiot.dmp.system.application.param.assembler.MenuConverter;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigDTO;
@@ -18,6 +19,7 @@ import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.application.service.*;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOptionSetting;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionSettingRepository;
+import cn.cuiot.dmp.system.infrastructure.entity.CommonOptionSettingEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 
@@ -28,6 +30,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentTreeVO;
+import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CommonOptionSettingMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +81,7 @@ public class ApiController {
     @Autowired
     private AuditConfigTypeService auditConfigTypeService;
     @Autowired
-    private CommonOptionSettingRepository commonOptionSettingRepository;
+    private CommonOptionSettingMapper commonOptionSettingMapper;
 
     /**
      * 查询角色
@@ -269,9 +272,9 @@ public class ApiController {
      * 批量查询表单配置-常用选项设置数据
      */
     @PostMapping(value = "/batchQueryCommonOptionSetting", produces = MediaType.APPLICATION_JSON_VALUE)
-    public IdmResDTO<List<CommonOptionSetting>> batchQueryCommonOptionSetting(@RequestBody @Valid CommonOptionSettingReqDTO dto) {
+    public IdmResDTO<List<CommonOptionSettingRspDTO>> batchQueryCommonOptionSetting(@RequestBody @Valid CommonOptionSettingReqDTO dto) {
         AssertUtil.isFalse(CollectionUtils.isEmpty(dto.getIdList()),"常用选项设置ID列表不能为空");
-        List<CommonOptionSetting> optionSettings = commonOptionSettingRepository.batchQueryCommonOptionSettingsByIds(dto.getIdList());
-        return IdmResDTO.success(optionSettings);
+        List<CommonOptionSettingEntity> entityList = commonOptionSettingMapper.selectBatchIds(dto.getIdList());
+        return IdmResDTO.success(BeanMapper.mapList(entityList, CommonOptionSettingRspDTO.class));
     }
 }

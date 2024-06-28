@@ -2,7 +2,6 @@ package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.AssertUtil;
-import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.StreamUtil;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOptionSetting;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionSettingRepository;
@@ -80,12 +79,6 @@ public class CommonOptionSettingRepositoryImpl implements CommonOptionSettingRep
         commonOptionSettingMapper.deleteBatchIds(commonOptionSettingEntities.stream()
                 .map(CommonOptionSettingEntity::getId)
                 .collect(Collectors.toList()));
-    }
-
-    @Override
-    public List<CommonOptionSetting> batchQueryCommonOptionSettingsByIds(List<Long> ids) {
-        List<CommonOptionSettingEntity> entityList = commonOptionSettingMapper.selectBatchIds(ids);
-        return BeanMapper.mapList(entityList, CommonOptionSetting.class);
     }
 
     private void batchSaveCommonOptionSettings(Long commonOptionId, List<CommonOptionSetting> commonOptionSettings) {

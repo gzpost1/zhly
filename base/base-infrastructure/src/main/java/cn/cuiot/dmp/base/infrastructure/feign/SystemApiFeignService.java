@@ -131,4 +131,9 @@ public interface SystemApiFeignService {
     @PostMapping(value = "/api/lookUpAuditConfig", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<AuditConfigTypeRspDTO>> lookUpAuditConfig(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO);
 
+    /**
+     * 批量查询表单配置-常用选项设置数据
+     */
+    @PostMapping(value = "/api/batchQueryCommonOptionSetting", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<CommonOptionSettingRspDTO>> batchQueryCommonOptionSetting(@RequestBody @Valid CommonOptionSettingReqDTO dto);
 }

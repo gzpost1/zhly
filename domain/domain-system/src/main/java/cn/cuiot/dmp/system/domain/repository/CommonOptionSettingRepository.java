@@ -24,9 +24,4 @@ public interface CommonOptionSettingRepository {
      * 根据常用选项批量删除常用选项分类
      */
     void batchDeleteCommonOptionSettings(List<Long> commonOptionIdList);
-
-    /**
-     * 根据常用选项批量查询常用选项分类
-     */
-    List<CommonOptionSetting> batchQueryCommonOptionSettingsByIds(List<Long> ids);
 }
