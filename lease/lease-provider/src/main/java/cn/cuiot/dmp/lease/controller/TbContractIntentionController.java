@@ -22,7 +22,9 @@ import javax.validation.Valid;
 import java.util.Objects;
 import java.util.Optional;
 
-import static cn.cuiot.dmp.common.constant.AuditConstant.*;
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.*;
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_INTENTION_TYPE;
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_LEASE_TYPE;
 
 
 /**
@@ -61,7 +63,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         entity.setId(id);
         entity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
         entity.setContractStatus(ContractEnum.STATUS_DARFT.getCode());
-        contractLogService.saveIntentionLog(id, OPERATE_NEW, "新增了意向合同");
+        contractLogService.saveOperateLog(id,OPERATE_NEW,CONTRACT_INTENTION_TYPE);
         return service.save(entity);
     }
 
@@ -79,7 +81,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         entity.setId(id);
         //需要审核
         baseContractService.handleAuditStatusByConfig(entity, OPERATE_COMMIT);
-        contractLogService.saveIntentionLog(id, OPERATE_COMMIT, "提交了意向合同");
+        contractLogService.saveOperateLog(id,OPERATE_NEW,CONTRACT_INTENTION_TYPE);
         return service.saveOrUpdate(entity);
     }
 
@@ -104,9 +106,9 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         String operMsg = "签约了意向合同,关联的租赁合同为:"
                 + contractLease.getName() + "(编号" + contractLease.getContractNo() + ")";
         String leaseOperMsg = "在意向合同中签约了本租赁合同" + System.lineSeparator() + "意向合同编码:" + queryEntity.getContractNo();
-        contractLogService.saveLog(id, OPERATE_SIGN_CONTRACT, TbContractLogService.TYPE_INTERNTION, operMsg, String.valueOf(contractLease.getId()), null);
+        contractLogService.saveLog(id, OPERATE_SIGN_CONTRACT, CONTRACT_INTENTION_TYPE, operMsg, String.valueOf(contractLease.getId()), null);
         //租赁合同也需要记录日志
-        contractLogService.saveLog(contractLease.getId(), OPERATE_SIGN_LEASE_CONTRACT, TbContractLogService.TYPE_LEASE,
+        contractLogService.saveLog(contractLease.getId(), OPERATE_SIGN_LEASE_CONTRACT, CONTRACT_LEASE_TYPE,
                 leaseOperMsg, String.valueOf(queryEntity.getId()), null);
         return service.updateById(queryEntity);
     }
@@ -180,7 +182,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         TbContractIntentionEntity queryEntity = getContract(param.getId());
         Integer contractStatus = queryEntity.getContractStatus();
         TbContractIntentionEntity auditContractIntentionEntity = (TbContractIntentionEntity) baseContractService.handleAuditContractStatus(queryEntity, param);
-        contractLogService.saveAuditLogMsg(contractStatus, param);
+        contractLogService.saveAuditLogMsg(contractStatus, param,CONTRACT_INTENTION_TYPE);
         return service.updateById(auditContractIntentionEntity);
     }
 

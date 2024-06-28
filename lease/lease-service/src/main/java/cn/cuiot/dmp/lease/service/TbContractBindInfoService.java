@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static cn.cuiot.dmp.lease.service.BaseContractService.CONTRACT_INTENTION_TYPE;
-import static cn.cuiot.dmp.lease.service.BaseContractService.CONTRACT_LEASE_TYPE;
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_INTENTION_TYPE;
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_LEASE_TYPE;
 
 /**
  * 意向合同关联信息 服务实现类

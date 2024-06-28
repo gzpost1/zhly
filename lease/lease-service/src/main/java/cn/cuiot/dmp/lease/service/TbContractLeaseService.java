@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.service;
 
+import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.common.bean.PageQuery;
@@ -112,6 +113,8 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         queryWrapper.last("limit 1");
         TbContractLeaseEntity contractLeaseEntity = (TbContractLeaseEntity) getOne(queryWrapper);
         contractLeaseEntity.setReletContractId(null);
+        contractLeaseEntity.setContractStatus(ContractEnum.STATUS_USELESS.getCode());
+        contractLeaseEntity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
         saveOrUpdate(contractLeaseEntity);
     }
 }

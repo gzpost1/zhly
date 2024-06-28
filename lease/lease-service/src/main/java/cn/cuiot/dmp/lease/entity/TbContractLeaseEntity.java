@@ -158,6 +158,7 @@ public class TbContractLeaseEntity extends BaseContractEntity {
      */
     private String reletPath;
 
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private Long reletContractId;
 
 

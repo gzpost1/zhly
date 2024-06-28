@@ -22,8 +22,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
-import static cn.cuiot.dmp.common.constant.AuditConstant.*;
-import static cn.cuiot.dmp.common.constant.AuditConstant.AUDIT_CONFIG_INTENTION_USELESS;
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.*;
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.AUDIT_CONFIG_INTENTION_USELESS;
 
 /**
  * 租赁合同 服务实现类
@@ -33,10 +33,6 @@ import static cn.cuiot.dmp.common.constant.AuditConstant.AUDIT_CONFIG_INTENTION_
  */
 @Service
 public class BaseContractService {
-    //意向合同
-    public static final int CONTRACT_INTENTION_TYPE = 1;
-    //租赁合同
-    public static final int CONTRACT_LEASE_TYPE = 2;
     @Autowired
     SystemApiFeignService systemApiFeignService;
     @Autowired
