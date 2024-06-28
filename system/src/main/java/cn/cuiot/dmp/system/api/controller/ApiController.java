@@ -79,6 +79,17 @@ public class ApiController {
     private UserHouseAuditService userHouseAuditService;
 
     /**
+     * 获取权限菜单
+     */
+    @GetMapping(value = "/getPermissionMenus", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<MenuEntity>> getPermissionMenus(
+            @RequestParam(value = "orgId", required = false) String orgId,
+            @RequestParam(value = "userId", required = false) String userId) {
+        List<MenuEntity> menuList = menuService.getPermissionMenus(orgId, userId);
+        return IdmResDTO.success(menuList);
+    }
+
+    /**
      * 查询角色
      */
     @PostMapping(value = "/lookUpRoleList", produces = MediaType.APPLICATION_JSON_VALUE)

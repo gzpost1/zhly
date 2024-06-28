@@ -29,6 +29,14 @@ import java.util.Map;
 public interface SystemApiFeignService {
 
     /**
+     * 获取权限菜单
+     */
+    @GetMapping(value = "/api/getPermissionMenus", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<CommonMenuDto>> getPermissionMenus(
+            @RequestParam(value = "orgId", required = false) String orgId,
+            @RequestParam(value = "userId", required = false) String userId);
+
+    /**
      * 查询角色
      */
     @PostMapping(value = "/api/lookUpRoleList", produces = MediaType.APPLICATION_JSON_VALUE)
