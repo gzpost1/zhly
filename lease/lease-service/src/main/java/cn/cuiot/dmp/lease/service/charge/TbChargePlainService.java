@@ -74,7 +74,7 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
     @Transactional(rollbackFor = Exception.class)
     public void createChargePlainDayTask(List<TbChargePlain> list) {
         list = list.stream().filter(e -> {
-            if (Objects.equals(e.getCronType(), ChargePlainCronType.DAILY)) {
+            if (Objects.equals(e.getCronType(), ChargePlainCronType.DAILY.getCode())) {
                 return true;
             } else {
                 int dayOfMonth = LocalDate.now().getDayOfMonth();
@@ -109,7 +109,7 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
                 createDto.setChargeStandard(EntityConstants.NO);
                 createDto.setCompanyId(tbChargePlain.getCompanyId());
                 createDto.setChargeType(ChargeTypeEnum.AUTO_GENERATE.getCode());
-                if (Objects.equals(tbChargePlain.getCronType(), ChargePlainCronType.DAILY)) {
+                if (Objects.equals(tbChargePlain.getCronType(), ChargePlainCronType.DAILY.getCode())) {
                     createDto.setOwnershipPeriodBegin(new Date());
                     createDto.setOwnershipPeriodEnd(new Date());
                 } else {
