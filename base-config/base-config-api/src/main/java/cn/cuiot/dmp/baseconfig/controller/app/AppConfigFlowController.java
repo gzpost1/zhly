@@ -61,6 +61,7 @@ public class AppConfigFlowController {
 
         if (Objects.equals(LoginInfoHolder.getCurrentUserType(), UserTypeEnum.USER.getValue())) {
             deptId = LoginInfoHolder.getCurrentDeptId();
+            query.setIsSelectAppUser(null);
         } else if (Objects.equals(LoginInfoHolder.getCurrentUserType(), UserTypeEnum.OWNER.getValue())) {
             //获取小区信息
             BuildingArchive buildingArchive = apiArchiveService.lookupBuildingArchiveInfo(LoginInfoHolder.getCommunityId());
