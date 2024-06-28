@@ -328,4 +328,24 @@ public class ApiSystemServiceImpl implements ApiSystemService {
         }
     }
 
+    @Override
+    public Map<Long, List<Long>> lookUpUserIdsByBuildingIds(UserHouseAuditBuildingReqDTO reqDTO) {
+        try {
+            IdmResDTO<Map<Long, List<Long>>> idmResDTO = systemApiFeignService
+                    .lookUpUserIdsByBuildingIds(reqDTO);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==lookUpUserIdsByBuildingIds==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_HOUSE_AUDIT_ERROR);
+        }
+    }
+
 }
