@@ -271,7 +271,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
             noticeEntityList.forEach(noticeEntity -> {
                 UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SYS_MSG).setSysMsgDto(
                         new SysMsgDto().setAcceptors(Collections.singletonList(LoginInfoHolder.getCurrentUserId())).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
-                                .setDataJson(noticeEntity).setMessageTime(new Date()));
+                                .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE));
                 msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
                         .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                         .build());
