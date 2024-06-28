@@ -169,7 +169,7 @@
 
     <select id="queryMyNotApprocalCount" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto">
         select '待审批' as name ,count(*) as number from act_ru_task t1 , tb_node_type t2
-        where t1.PROC_INST_ID_ = t2.proc_inst_id and t1.TASK_DEF_KEY_ = t2.node_id  and t2.node_type = 'APPROVAL' and  t1.ASSIGNEE_ = #{query.assignee}
+        where t1.PROC_DEF_ID_ = t2.process_definition_id and t1.TASK_DEF_KEY_ = t2.node_id  and t2.node_type = 'APPROVAL' and  t1.ASSIGNEE_ = #{query.assignee}
     </select>
     <sql id="queryMyApprovalSql">
          t1.proc_inst_id, t1.id, t1.create_user as userId, t1.status, t1.work_souce, t1.work_name,  t1.org_id, t1.business_type
@@ -385,7 +385,7 @@
             t1.PROC_DEF_ID_ = t2.process_definition_id
           AND t1.TASK_DEF_KEY_ = t2.node_id
           AND t1.ASSIGNEE_ = #{query.assignee}
-          AND t2.node_type = 'APPROVAL'
+          AND t2.node_type = 'TASK'
         group by t2.process_node_type
     </select>
 
