@@ -8,6 +8,7 @@ import cn.cuiot.dmp.message.dal.mapper.UserMessageMapper;
 import cn.cuiot.dmp.message.param.MessagePageQuery;
 import cn.cuiot.dmp.message.service.UserMessageService;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -51,6 +52,9 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
             if (Objects.nonNull(pageQuery.getMessageLeTime())) {
                 query.addCriteria(Criteria.where("messageTime").lte(pageQuery.getMessageLeTime()));
             }
+            if (StrUtil.isNotEmpty(pageQuery.getMsgType())) {
+                query.addCriteria(new Criteria().andOperator(Criteria.where("msgType").is(pageQuery.getMsgType())));
+            }
             //计算总数
             long total = mongoTemplate.count(query, UserMessageEntity.class);
 
@@ -73,6 +77,7 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
             queryWrapper.eq(UserMessageEntity::getAccepter, LoginInfoHolder.getCurrentUserId());
             queryWrapper.eq(Objects.nonNull(pageQuery.getReadStatus()), UserMessageEntity::getReadStatus, pageQuery.getReadStatus());
             queryWrapper.eq(Objects.nonNull(pageQuery.getDataType()), UserMessageEntity::getDataType, pageQuery.getDataType());
+            queryWrapper.eq(StrUtil.isNotEmpty(pageQuery.getMsgType()), UserMessageEntity::getMsgType, pageQuery.getMsgType());
             queryWrapper.ge(Objects.nonNull(pageQuery.getMessageGtTime()), UserMessageEntity::getMessageTime, pageQuery.getMessageGtTime());
             queryWrapper.le(Objects.nonNull(pageQuery.getMessageLeTime()), UserMessageEntity::getMessageTime, pageQuery.getMessageLeTime());
             queryWrapper.orderByDesc(UserMessageEntity::getMessageTime);
