@@ -22,6 +22,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_INTENTION_TYPE;
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_LEASE_TYPE;
+
 /**
  * 意向合同关联信息 服务实现类
  *
@@ -30,9 +33,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContractBindInfoMapper, TbContractBindInfoEntity> {
-    //合同绑定类型 1 意向合同 房屋 2.意向合同 意向金 3.租赁合同
-    public static final Integer BIND_CONTRACT_INTENTION_TYPE_HOUSE = 1;
-    public static final Integer BIND_CONTRACT_LEASE_TYPE_HOUSE = 3;
 
     @Autowired
     ArchiveFeignService archiveFeignService;
@@ -105,9 +105,9 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
         ArrayList<TbContractBindInfoEntity> saveBindList = Lists.newArrayList();
 
         //房屋绑定
-        int bindHouseType = BIND_CONTRACT_INTENTION_TYPE_HOUSE;
+        int bindHouseType = CONTRACT_INTENTION_TYPE;
         if (entity instanceof TbContractLeaseEntity) {
-            bindHouseType = BIND_CONTRACT_LEASE_TYPE_HOUSE;
+            bindHouseType = CONTRACT_LEASE_TYPE;
         }
         List<HousesArchivesVo> houseList = entity.getHouseList();
         if (CollectionUtils.isNotEmpty(houseList)) {
@@ -152,9 +152,9 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
         ContractStatusVo contractStatusVo = new ContractStatusVo();
         if (CollectionUtils.isNotEmpty(list)) {
             //意向合同
-            Map<Long, List<ContractStatus>> intentionMap = list.stream().filter(o -> Objects.equals(o.getType(), BIND_CONTRACT_INTENTION_TYPE_HOUSE)).collect(Collectors.groupingBy(ContractStatus::getHouseId));
+            Map<Long, List<ContractStatus>> intentionMap = list.stream().filter(o -> Objects.equals(o.getType(), CONTRACT_INTENTION_TYPE)).collect(Collectors.groupingBy(ContractStatus::getHouseId));
             //租赁合同
-            Map<Long, List<ContractStatus>> leaseMap = list.stream().filter(o -> Objects.equals(o.getType(), BIND_CONTRACT_LEASE_TYPE_HOUSE)).collect(Collectors.groupingBy(ContractStatus::getHouseId));
+            Map<Long, List<ContractStatus>> leaseMap = list.stream().filter(o -> Objects.equals(o.getType(), CONTRACT_LEASE_TYPE)).collect(Collectors.groupingBy(ContractStatus::getHouseId));
             contractStatusVo.setIntentionMap(intentionMap);
             contractStatusVo.setLeaseMap(leaseMap);
         }

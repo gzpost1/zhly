@@ -8,11 +8,11 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
-import cn.cuiot.dmp.lease.dto.price.PriceManageCreateDTO;
-import cn.cuiot.dmp.lease.dto.price.PriceManageDTO;
-import cn.cuiot.dmp.lease.dto.price.PriceManagePageQueryDTO;
-import cn.cuiot.dmp.lease.dto.price.PriceManageUpdateDTO;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.lease.constants.PriceManageConstant;
+import cn.cuiot.dmp.lease.dto.price.*;
 import cn.cuiot.dmp.lease.entity.PriceManageEntity;
+import cn.cuiot.dmp.lease.enums.PriceManageStatusEnum;
 import cn.cuiot.dmp.lease.mapper.PriceManageMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -114,10 +114,12 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
     }
 
     /**
-     * 保存
+     * 保存草稿
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean savePriceManage(PriceManageCreateDTO createDTO) {
+        Long userId = LoginInfoHolder.getCurrentUserId();
+        String userName = LoginInfoHolder.getCurrentUsername();
         AssertUtil.notNull(createDTO.getCompanyId(), "企业id不能为空");
         PriceManageEntity priceManageEntity = new PriceManageEntity();
         BeanUtils.copyProperties(createDTO, priceManageEntity);
@@ -126,8 +128,11 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
                 .collect(Collectors.toList());
         priceManageEntity.setId(IdWorker.getId());
         priceManageEntity.setHouseIds(houseIds);
+        priceManageEntity.setStatus(PriceManageStatusEnum.DRAFT_STATUS.getCode());
         // 保存定价明细
         priceManageDetailService.savePriceManageDetailList(priceManageEntity.getId(), createDTO.getPriceManageDetailCreateList());
+        // 保存定价操作记录
+        priceManageRecordService.savePriceManageRecord(PriceManageConstant.OPERATE_CREATE, userId);
         return save(priceManageEntity);
     }
 
@@ -152,6 +157,7 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
     /**
      * 复制新增
      */
+    @Transactional(rollbackFor = Exception.class)
     public boolean copyPriceManage(Long id) {
         PriceManageEntity priceManageEntity = Optional.ofNullable(getById(id))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
@@ -160,6 +166,48 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
         copyPriceManageEntity.setId(IdWorker.getId());
         copyPriceManageEntity.setName(priceManageEntity.getName() + "(1)");
         return save(copyPriceManageEntity);
+    }
+
+    /**
+     * 提交
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean submitPriceManage(Long id) {
+        PriceManageEntity priceManageEntity = Optional.ofNullable(getById(id))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        AssertUtil.isTrue(PriceManageStatusEnum.DRAFT_STATUS.getCode().equals(priceManageEntity.getStatus()),
+                "只能提交草稿数据");
+        priceManageEntity.setStatus(PriceManageStatusEnum.AUDIT_STATUS.getCode());
+        return updateById(priceManageEntity);
+    }
+
+    /**
+     * 审核
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean auditPriceManage(PriceManageAuditDTO auditDTO) {
+        AssertUtil.notNull(auditDTO.getStatus(), "审核状态不能为空");
+        PriceManageEntity priceManageEntity = Optional.ofNullable(getById(auditDTO.getId()))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        priceManageEntity.setStatus(auditDTO.getStatus());
+        if (StringUtils.isNotBlank(auditDTO.getRemark())) {
+            priceManageEntity.setAuditRemark(auditDTO.getRemark());
+        }
+        return updateById(priceManageEntity);
+    }
+
+    /**
+     * 作废
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean invalidPriceManage(PriceManageAuditDTO auditDTO) {
+        PriceManageEntity priceManageEntity = Optional.ofNullable(getById(auditDTO.getId()))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        priceManageEntity.setStatus(PriceManageStatusEnum.INVALID_STATUS.getCode());
+        if (StringUtils.isNotBlank(auditDTO.getRemark())) {
+            priceManageEntity.setInvalidRemark(auditDTO.getRemark());
+        }
+        return updateById(priceManageEntity);
     }
 
     /**

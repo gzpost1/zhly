@@ -1,32 +1,22 @@
 package cn.cuiot.dmp.lease.service;
 
-import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
-import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
-import cn.cuiot.dmp.lease.dto.contract.AuditParam;
 import cn.cuiot.dmp.lease.dto.contract.TbContractIntentionParam;
-import cn.cuiot.dmp.lease.entity.BaseContractEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractIntentionMapper;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-
-import static cn.cuiot.dmp.common.constant.AuditConstant.*;
-import static cn.cuiot.dmp.common.constant.AuditConstant.AUDIT_CONFIG_INTENTION_USELESS;
-import static cn.cuiot.dmp.lease.service.TbContractBindInfoService.BIND_CONTRACT_INTENTION_TYPE_HOUSE;
 
 /**
  * 意向合同 服务实现类
@@ -53,7 +43,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         }
         List<TbContractIntentionEntity> list = super.list(params);
         list.forEach(c -> {
-            baseContractService.fullInfo(c);
+            baseContractService.fullBindHouseInfo(c);
         });
         return list;
     }
@@ -68,7 +58,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         }
         PageResult<TbContractIntentionEntity> page = super.page(param);
         page.getRecords().forEach(c -> {
-            baseContractService.fullInfo(c);
+            baseContractService.fullBindHouseInfo(c);
         });
         return page;
     }

@@ -62,6 +62,7 @@
         <where>
             <include refid="dynamic_where"/>
         </where>
+        order by ifnull(ci.update_time,ci.create_time) desc
     </select>
 
     <!-- 通用查询结果列 -->
@@ -178,6 +179,9 @@
             </if>
             <if test=" params.auditStatus != null">
                 and ci.audit_status = #{params.auditStatus}
+            </if>
+            <if test=" params.usefullLease != null">
+                and ci.id not in (select ifnull(contract_lease_id,-1) from tb_contract_intention where deleted=0 and contract_lease_id is not null)
             </if>
         </if>
     </sql>

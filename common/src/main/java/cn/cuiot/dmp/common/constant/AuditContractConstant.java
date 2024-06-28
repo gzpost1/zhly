@@ -5,8 +5,17 @@ package cn.cuiot.dmp.common.constant;
  * @Date 2024-06-14 11:32
  * @Author by Mujun~
  */
-public class AuditConstant {
-    public static final String LOG_AUDIT_MSG_TEMP = "审核了意向合同的%s" + System.lineSeparator() + "审核结果为:%s" + System.lineSeparator() + "审核备注:%s";
+public class AuditContractConstant {
+    //意向合同
+    public static final int CONTRACT_INTENTION_TYPE = 1;
+    //租赁合同
+    public static final int CONTRACT_LEASE_TYPE = 2;
+
+    public static final String LOG_CONTRACT_INTENTION_NAME ="意向合同";
+    public static final String LOG_CONTRACT_LEASE_NAME ="租赁合同";
+
+    public static final String LOG_AUDIT_MSG_TEMP = "审核了%s的%s" + System.lineSeparator() + "审核结果为:%s" + System.lineSeparator() + "审核备注:%s";
+    public static final String LOG_OPERATE_MSG_TEMP = "%s了%s";
 
 
     //意向合同 对应审核配置表name
@@ -35,4 +44,5 @@ public class AuditConstant {
 
     public static final String LOG_MSG_AUDIT_PASS = "通过";
     public static final String LOG_MSG_AUDIT_REFUSE = "不通过";
+
 }
