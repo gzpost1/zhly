@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.app.dto;
 
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonMenuDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
+import java.util.List;
 import lombok.Data;
 
 /**
@@ -121,5 +123,17 @@ public class AppUserDto implements Serializable {
      * refreshCode
      */
     private String refreshCode;
+
+
+    /**
+     * 用户权限
+     */
+    private List<CommonMenuDto> menu;
+
+
+    /**
+     * 权限标识列表
+     */
+    private List<String> permission_ids;
 
 }

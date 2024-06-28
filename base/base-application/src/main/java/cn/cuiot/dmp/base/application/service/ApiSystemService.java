@@ -20,6 +20,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface ApiSystemService {
 
     /**
+     * 获取权限菜单
+     */
+    List<CommonMenuDto> getPermissionMenus(String orgId,String userId);
+
+    /**
      * 查询角色
      */
     List<BaseRoleDto> lookUpRoleList(BaseRoleReqDto query);

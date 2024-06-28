@@ -32,6 +32,30 @@ public class ApiSystemServiceImpl implements ApiSystemService {
     @Autowired
     private SystemApiFeignService systemApiFeignService;
 
+
+    /**
+     * 获取权限菜单
+     */
+    @Override
+    public List<CommonMenuDto> getPermissionMenus(String orgId, String userId) {
+        try {
+            IdmResDTO<List<CommonMenuDto>> idmResDTO = systemApiFeignService
+                    .getPermissionMenus(orgId,userId);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==getPermissionMenus==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_DEPT_ERROR);
+        }
+    }
+
     /**
      * 查询角色
      */

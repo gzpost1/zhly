@@ -22,6 +22,8 @@ import cn.cuiot.dmp.app.entity.UserEntity;
 import cn.cuiot.dmp.app.mapper.OrganizationEntityMapper;
 import cn.cuiot.dmp.app.util.RandomPwUtils;
 import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
+import cn.cuiot.dmp.base.application.service.ApiSystemService;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonMenuDto;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.EntityConstants;
@@ -51,6 +53,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -92,6 +95,9 @@ public class AppAuthService {
      */
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private ApiSystemService apiSystemService;
 
     /**
      * 构建密钥内容
@@ -147,6 +153,8 @@ public class AppAuthService {
                                 if(StringUtils.isNotBlank(openid)){
                                     userDto.setOpenid(openid);
                                 }
+                                //设置权限
+                                setPermissionMenus(userDto);
                                 //设置token
                                 genSetAppToken(userDto);
 
@@ -175,6 +183,23 @@ public class AppAuthService {
             }
         }
         return resultList;
+    }
+
+    /**
+     * 设置菜单权限
+     * @param userDto
+     */
+    private void setPermissionMenus(AppUserDto userDto){
+        List<CommonMenuDto> menuDtoList = apiSystemService
+                .getPermissionMenus(userDto.getOrgId(), userDto.getId().toString());
+        userDto.setMenu(menuDtoList);
+        userDto.setPermission_ids(Lists.newArrayList());
+        if(CollectionUtils.isNotEmpty(menuDtoList)){
+            userDto.setPermission_ids(menuDtoList.stream()
+                    .filter(ite-> org.apache.commons.lang3.StringUtils.isNotBlank(ite.getPermissionCode()))
+                    .map(ite->ite.getPermissionCode())
+                    .collect(Collectors.toList()));
+        }
     }
 
     /**
@@ -228,6 +253,9 @@ public class AppAuthService {
             userDto.setOrgId(pkOrgId.toString());
             userDto.setDeptId(pkDeptId);
             userDto.setOrgTypeId(organization.getOrgTypeId());
+
+            //设置权限
+            setPermissionMenus(userDto);
 
             //更新登录时间
             UserEntity updateEntity = new UserEntity();
@@ -375,6 +403,9 @@ public class AppAuthService {
         userDto.setDeptId(pkDeptId);
         userDto.setOrgTypeId(organization.getOrgTypeId());
 
+        //设置权限
+        setPermissionMenus(userDto);
+
         //生成与设置token
         genSetAppToken(userDto);
 
@@ -518,6 +549,9 @@ public class AppAuthService {
             userDto.setDeptId(pkDeptId);
             userDto.setOrgTypeId(organization.getOrgTypeId());
 
+            //设置权限
+            setPermissionMenus(userDto);
+
             //更新登录时间
             UserEntity updateEntity = new UserEntity();
             updateEntity.setId(userDto.getId());
@@ -633,6 +667,9 @@ public class AppAuthService {
             userDto.setOrgId(pkOrgId.toString());
             userDto.setDeptId(pkDeptId);
             userDto.setOrgTypeId(organization.getOrgTypeId());
+
+            //设置权限
+            setPermissionMenus(userDto);
         }
         return userDto;
     }
@@ -796,6 +833,9 @@ public class AppAuthService {
             userDto.setOrgId(pkOrgId.toString());
             userDto.setDeptId(pkDeptId);
             userDto.setOrgTypeId(organization.getOrgTypeId());
+
+            //设置权限
+            setPermissionMenus(userDto);
 
             //更新登录时间
             UserEntity updateEntity = new UserEntity();
