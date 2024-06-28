@@ -20,6 +20,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -106,5 +107,24 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
         queryWrapper.eq(UserMessageEntity::getAccepter, LoginInfoHolder.getCurrentUserId());
         queryWrapper.eq(UserMessageEntity::getReadStatus, StatusConstans.UNREAD);
         return count(queryWrapper);
+    }
+
+    @Override
+    public void realAllMessage() {
+        LambdaQueryWrapper<UserMessageEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserMessageEntity::getAccepter, LoginInfoHolder.getCurrentUserId());
+        queryWrapper.eq(UserMessageEntity::getReadStatus, StatusConstans.UNREAD);
+        List<UserMessageEntity> userMessageEntities = this.baseMapper.selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(userMessageEntities)) {
+            List<Long> ids = new ArrayList<>();
+            userMessageEntities.forEach(userMessageEntity -> {
+                userMessageEntity.setReadStatus(StatusConstans.READ);
+                userMessageEntity.setReadTime(new Date());
+                mongoTemplate.save(userMessageEntity);
+                ids.add(userMessageEntity.getId());
+            });
+
+            this.baseMapper.deleteBatchIds(ids);
+        }
     }
 }
