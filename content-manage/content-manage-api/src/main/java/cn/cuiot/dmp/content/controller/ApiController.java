@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.content.controller.app;//	模板
+package cn.cuiot.dmp.content.controller;//	模板
 
 import cn.cuiot.dmp.base.application.annotation.InternalApi;
 import cn.cuiot.dmp.content.service.ContentModuleService;

@@ -89,4 +89,9 @@ public interface ApiSystemService {
      */
     List<AuditConfigTypeRspDTO> lookUpAuditConfig(AuditConfigTypeReqDTO queryDTO);
 
+    /**
+     * 根据楼盘id列表查询对应的业主
+     */
+    Map<Long, List<Long>> lookUpUserIdsByBuildingIds(UserHouseAuditBuildingReqDTO reqDTO);
+
 }

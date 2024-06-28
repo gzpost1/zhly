@@ -75,6 +75,9 @@ public class ApiController {
     @Autowired
     private AuditConfigTypeService auditConfigTypeService;
 
+    @Autowired
+    private UserHouseAuditService userHouseAuditService;
+
     /**
      * 查询角色
      */
@@ -258,6 +261,14 @@ public class ApiController {
     public IdmResDTO<List<AuditConfigTypeRspDTO>> lookUpAuditConfig(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO) {
         List<AuditConfigTypeRspDTO> auditConfigTypeRspDTOList = auditConfigTypeService.queryForList(queryDTO);
         return IdmResDTO.success(auditConfigTypeRspDTOList);
+    }
+
+    /**
+     * 根据楼盘id列表查询对应的业主
+     */
+    @PostMapping(value = "/lookUpUserIdsByBuildingIds", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<Map<Long, List<Long>>> lookUpUserIdsByBuildingIds(@RequestBody @Valid UserHouseAuditBuildingReqDTO reqDTO) {
+        return IdmResDTO.success(userHouseAuditService.lookUpUserIdsByBuildingIds(reqDTO.getBuildingIds()));
     }
 
 }

@@ -377,7 +377,7 @@
 
     <select id="queryPendProcessList" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto">
         SELECT
-            t2.process_node_type AS processNodeId ,count(*) AS number
+            IFNULL(t2.process_node_type,0) AS processNodeId ,count(*) AS number
         FROM
             act_ru_task t1,
             tb_node_type t2

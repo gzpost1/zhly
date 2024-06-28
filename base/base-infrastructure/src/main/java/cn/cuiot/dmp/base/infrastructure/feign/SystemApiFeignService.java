@@ -131,4 +131,10 @@ public interface SystemApiFeignService {
     @PostMapping(value = "/api/lookUpAuditConfig", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<AuditConfigTypeRspDTO>> lookUpAuditConfig(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO);
 
+    /**
+     * 根据楼盘id列表查询对应的业主
+     */
+    @PostMapping(value = "/api/lookUpUserIdsByBuildingIds", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<Map<Long, List<Long>>> lookUpUserIdsByBuildingIds(@RequestBody @Valid UserHouseAuditBuildingReqDTO reqDTO);
+
 }
