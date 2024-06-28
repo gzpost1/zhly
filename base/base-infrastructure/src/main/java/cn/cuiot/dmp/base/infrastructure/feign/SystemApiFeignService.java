@@ -145,4 +145,9 @@ public interface SystemApiFeignService {
     @PostMapping(value = "/api/lookUpUserIdsByBuildingIds", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<Map<Long, List<Long>>> lookUpUserIdsByBuildingIds(@RequestBody @Valid UserHouseAuditBuildingReqDTO reqDTO);
 
+    /**
+     * 批量查询表单配置-常用选项设置数据
+     */
+    @PostMapping(value = "/api/batchQueryCommonOptionSetting", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<CommonOptionSettingRspDTO>> batchQueryCommonOptionSetting(@RequestBody @Valid CommonOptionSettingReqDTO dto);
 }

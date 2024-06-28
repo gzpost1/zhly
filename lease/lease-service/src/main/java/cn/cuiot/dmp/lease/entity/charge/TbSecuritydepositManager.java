@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.Date;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * 收费管理-收银台-押金管理
  */
@@ -114,4 +116,9 @@ public class TbSecuritydepositManager extends YjBaseEntity {
      * 收款时间
      */
     private Date receivedDate;
+
+    /**
+     * 所属楼盘id
+     */
+    private Long loupanId;
 }
