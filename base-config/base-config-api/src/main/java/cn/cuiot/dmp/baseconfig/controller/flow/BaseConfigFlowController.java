@@ -67,7 +67,7 @@ public class BaseConfigFlowController {
 
         DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(LoginInfoHolder.getCurrentDeptId(), null, null);
         AssertUtil.notNull(departmentDto,"部门不存在");
-        query.setOrgPath(departmentDto.getPath());
+        query.setOrgId(departmentDto.getOrgId());
 
         IPage<TbFlowPageDto> tbFlowPageDtoIPage = tbFlowConfigService.queryForWorkOrderPage(query);
         if(Objects.nonNull(tbFlowPageDtoIPage) && CollectionUtils.isNotEmpty(tbFlowPageDtoIPage.getRecords())){
