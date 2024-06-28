@@ -65,9 +65,7 @@ public class BaseConfigFlowController {
     public IdmResDTO<IPage<TbFlowPageDto>> queryForWorkOrderPage(@RequestBody TbFlowConfigQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
 
-        DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(LoginInfoHolder.getCurrentDeptId(), null, null);
-        AssertUtil.notNull(departmentDto,"部门不存在");
-        query.setOrgId(departmentDto.getOrgId());
+        query.setOrgId(LoginInfoHolder.getCurrentDeptId());
 
         IPage<TbFlowPageDto> tbFlowPageDtoIPage = tbFlowConfigService.queryForWorkOrderPage(query);
         if(Objects.nonNull(tbFlowPageDtoIPage) && CollectionUtils.isNotEmpty(tbFlowPageDtoIPage.getRecords())){
