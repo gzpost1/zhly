@@ -12,7 +12,7 @@ import cn.cuiot.dmp.common.bean.dto.SmsMsgDto;
 import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
 import cn.cuiot.dmp.common.constant.MsgDataType;
-import cn.cuiot.dmp.common.constant.MsgTypeConstant;
+import cn.cuiot.dmp.common.constant.InformTypeConstant;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -70,7 +70,7 @@ public class MsgSendService {
             //消息通知类型 1web 2短信
             if(StringUtils.isNotBlank(flowCOnfig.getNotifySetting()) && StringUtils.contains(flowCOnfig.getNotifySetting(),"1")){
                 //发送系统消息
-                UserMessageAcceptDto SYS_MSG = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SYS_MSG).setSysMsgDto(
+                UserMessageAcceptDto SYS_MSG = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SYS_MSG).setSysMsgDto(
                         new SysMsgDto().setAcceptors(msg.getUsers()).setDataId(msg.getDataId()).setDataType(msg.getDataType()).setMessage(msg.getMessage())
                                 .setDataJson(msg.getDataJson()).setMessageTime(new Date()));
                 msgChannel.userMessageOutput().send(MessageBuilder.withPayload(SYS_MSG)
@@ -89,7 +89,7 @@ public class MsgSendService {
                     smsMsgDto.setTelNumbers(phones);
                     smsMsgDto.setParams(Lists.newArrayList(msg.getMessage()));
                     smsMsgDto.setTemplateId(msg.getTemplateId());
-                    UserMessageAcceptDto SMS_MSG = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SMS).setSmsMsgDto(smsMsgDto);
+                    UserMessageAcceptDto SMS_MSG = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SMS).setSmsMsgDto(smsMsgDto);
                     msgChannel.userMessageOutput().send(MessageBuilder.withPayload(SMS_MSG)
                             .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                             .build());

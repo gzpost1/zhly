@@ -75,6 +75,20 @@ public class ApiController {
     @Autowired
     private AuditConfigTypeService auditConfigTypeService;
 
+    @Autowired
+    private UserHouseAuditService userHouseAuditService;
+
+    /**
+     * 获取权限菜单
+     */
+    @GetMapping(value = "/getPermissionMenus", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<List<MenuEntity>> getPermissionMenus(
+            @RequestParam(value = "orgId", required = false) String orgId,
+            @RequestParam(value = "userId", required = false) String userId) {
+        List<MenuEntity> menuList = menuService.getPermissionMenus(orgId, userId);
+        return IdmResDTO.success(menuList);
+    }
+
     /**
      * 查询角色
      */
@@ -258,6 +272,14 @@ public class ApiController {
     public IdmResDTO<List<AuditConfigTypeRspDTO>> lookUpAuditConfig(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO) {
         List<AuditConfigTypeRspDTO> auditConfigTypeRspDTOList = auditConfigTypeService.queryForList(queryDTO);
         return IdmResDTO.success(auditConfigTypeRspDTOList);
+    }
+
+    /**
+     * 根据楼盘id列表查询对应的业主
+     */
+    @PostMapping(value = "/lookUpUserIdsByBuildingIds", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<Map<Long, List<Long>>> lookUpUserIdsByBuildingIds(@RequestBody @Valid UserHouseAuditBuildingReqDTO reqDTO) {
+        return IdmResDTO.success(userHouseAuditService.lookUpUserIdsByBuildingIds(reqDTO.getBuildingIds()));
     }
 
 }

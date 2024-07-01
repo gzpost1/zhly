@@ -3,20 +3,24 @@ package cn.cuiot.dmp.common.constant;//	模板
 /**
  * @author hantingyao
  * @Description
- * @data 2024/6/5 15:12
+ * @data 2024/6/28 16:39
  */
 public class MsgTypeConstant {
 
     /**
-     * 系统消息
+     * 公告
      */
-    public final static byte SYS_MSG = 1;
+    public final static String NOTICE = "notice";
 
     /**
-     * 短信
+     * 工单
      */
-    public final static byte SMS = 2;
+    public final static String WORK_INFO = "work_info";
 
-    //短信和系统消息都发传3
+    /**
+     * 线索
+     */
+    public final static String CLUE = "clue";
+
 
 }
