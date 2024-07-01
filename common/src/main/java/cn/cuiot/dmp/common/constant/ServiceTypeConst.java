@@ -100,5 +100,17 @@ public class ServiceTypeConst {
      * 收费管理-收银台-自动生成计划
      */
     public static final String CHARGEPLAIN = "123";
+
+    /**
+     * 平台日志
+     * 收费管理-催款管理
+     */
+    public static final String CHARGE_COLLECTION_MANAGE = "124";
+
+    /**
+     * 平台日志
+     * 收费管理-通知单
+     */
+    public static final String CHARGE_NOTICE = "125";
     //----------------------------------收费管理----------------------------------end
 }

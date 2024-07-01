@@ -63,4 +63,14 @@ public class MsgDataType {
      */
     public final static String WORK_INFO_COPY = "workInfoCopy";
 
+    /**
+     * 收费通知单
+     */
+    public final static String CHARGE_NOTICE = "chargeNotice";
+
+    /**
+     * 催款通知单
+     */
+    public final static String COLLECTION_NOTICE = "collectionNotice";
+
 }
