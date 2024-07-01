@@ -31,6 +31,7 @@ public interface ImgTextConvert {
 
     List<ImgTextVo> convert(List<ContentImgTextEntity> imgTextEntityList);
 
+
     default IPage<ImgTextVo> convert(IPage<ContentImgTextEntity> imgTextEntityIPage, HashMap<Long, DepartmentDto> departmentMapByIds,
                                      HashMap<Long, BuildingArchive> buildingMapByIds, HashMap<Long, BaseUserDto> userMapByIds) {
         return imgTextEntityIPage.convert(imgTextEntity -> {

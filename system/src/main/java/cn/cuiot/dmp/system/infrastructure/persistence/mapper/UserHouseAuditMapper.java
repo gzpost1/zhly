@@ -18,4 +18,7 @@ public interface UserHouseAuditMapper extends BaseMapper<UserHouseAuditEntity> {
     List<UserHouseAuditDTO> queryForList(@Param("param") UserHouseAuditPageQueryDTO queryDTO);
 
     IPage<UserHouseAuditDTO> queryForList(Page<UserHouseAuditEntity> page,@Param("param") UserHouseAuditPageQueryDTO queryDTO);
+
+    UserHouseAuditDTO queryForDetail(@Param("id") Long id);
+
 }

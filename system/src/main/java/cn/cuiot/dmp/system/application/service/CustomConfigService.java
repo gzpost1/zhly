@@ -23,7 +23,7 @@ public interface CustomConfigService {
     /**
      * 根据id获取详情
      */
-    CustomConfigVO queryForDetail(Long id);
+    CustomConfigVO queryForDetail(Long id, Long companyId);
 
     /**
      * 根据名称获取详情

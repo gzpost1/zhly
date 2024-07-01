@@ -2,6 +2,7 @@ package cn.cuiot.dmp.baseconfig.controller.app;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.AppAssigneeDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.*;
@@ -17,6 +18,7 @@ import cn.cuiot.dmp.baseconfig.flow.service.AppWorkInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 2.3.【管理端-待办】
@@ -43,6 +46,16 @@ public class AppWorkOrderController {
 
     @Autowired
     private WorkInfoService workInfoService;
+
+    /**
+     * 查询节点属性数据,并判断是否有权限发起该流程
+     * @return
+     */
+    @PostMapping("queryFirstFormInfo")
+    public IdmResDTO queryFirstFormInfo(@RequestBody FirstFormDto dto){
+
+        return workInfoService.queryFirstFormInfo(dto, LoginInfoHolder.getCurrentUserId());
+    }
 
     /**
      * 3.3代办工单-待审批
@@ -182,10 +195,62 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryNodeType")
-    public IdmResDTO<NodeTypeDto> queryNodeType(@RequestBody PendingProcessQuery query){
+    public IdmResDTO< List<NodeTypeDto>> queryNodeType(@RequestBody PendingProcessQuery query){
        return appWorkInfoService.queryNodeType(query);
     }
 
+    /**
+     * 小程序 - 3.6.5 我处理的-列表查询
+     * @param
+     * @return
+     */
+    @PostMapping("queryMyHandleInfo")
+    public IdmResDTO<IPage<AppWorkInfoDto>> queryMyHandleInfo(@RequestBody WorkOrderSuperQuery query){
+        return appWorkInfoService.queryMyHandleInfo(query);
+    }
+
+    /**
+     * 我处理的-3.6.5 基本信息
+     * 因为此处需要返回配置的操作所以单独提出来
+     * @param dto
+     * @return
+     */
+    @PostMapping("queryBasicInfo")
+    public IdmResDTO<WorkInfoDto> queryBasicInfo(@RequestBody WorkProcInstDto dto){
+        dto.setNodeType(WorkOrderConstants.taskNode);
+        return appWorkInfoService.queryBasicInfo(dto);
+    }
+    /**
+     * 3.6.5-我处理的-去处理
+     * @param dto
+     * @return
+     */
+    @PostMapping("queryUserSubmitData")
+    public IdmResDTO<ProcessResultDto> queryUserSubmitData(@RequestBody @Valid UserSubmitDataDto dto) throws Exception {
+        return appWorkInfoService.queryUserSubmitData(dto);
+    }
+    /**
+     * 3.6.5更新或者保存用户提交的对象数据
+     * @param commitId
+     * @return
+     */
+    @PostMapping("saveOrUpdateSubmitData")
+    @LogRecord(operationCode = "saveOrUpdateSubmitData", operationName = "app完成对象任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
+    @RequiresPermissions()
+    public IdmResDTO saveOrUpdateSubmitData(@RequestBody @Valid CommitProcessDto commitId){
+        return appWorkInfoService.saveSubmitData(commitId);
+    }
+
+    /**
+     * 3.6.5完成任务
+     * @param taskDto
+     * @return
+     */
+    @PostMapping("completeTask")
+    @LogRecord(operationCode = "completeTask", operationName = "app完成任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
+    public IdmResDTO  completeTask(@RequestBody CompleteTaskDto taskDto){
+        return appWorkInfoService.completeTask(taskDto);
+    }
 
     /**
      * 3.6.4-我审批的-列表查询
@@ -203,7 +268,8 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryMyapproveBasicInfo")
-    public IdmResDTO<WorkInfoDto> queryMyapproveBasicInfo(@RequestBody WorkProcInstDto dto){
+    public IdmResDTO<WorkInfoDto> queryMyapproveBasicInfo(@RequestBody @Valid WorkProcInstDto dto){
+        dto.setNodeType(WorkOrderConstants.approvalNodeType);
         return appWorkInfoService.queryBasicInfo(dto);
     }
 
@@ -230,59 +296,7 @@ public class AppWorkOrderController {
     public IdmResDTO approvalRejection(@RequestBody @Valid ApprovalDto approvalDto){
         return appWorkInfoService.approvalRejection(approvalDto);
     }
-    /**
-     * 小程序 - 3.6.5 我处理的-列表查询
-     * @param
-     * @return
-     */
-    @PostMapping("queryMyHandleInfo")
-    public IdmResDTO<IPage<AppWorkInfoDto>> queryMyHandleInfo(@RequestBody WorkOrderSuperQuery query){
-        return appWorkInfoService.queryMyHandleInfo(query);
-    }
 
-
-
-    /**
-     * 我处理的-3.6.5 基本信息
-     * 因为此处需要返回配置的操作所以单独提出来
-     * @param dto
-     * @return
-     */
-    @PostMapping("queryBasicInfo")
-    public IdmResDTO<WorkInfoDto> queryBasicInfo(@RequestBody WorkProcInstDto dto){
-        return appWorkInfoService.queryBasicInfo(dto);
-    }
-    /**
-     * 3.6.5-我处理的-去处理
-     * @param dto
-     * @return
-     */
-    @PostMapping("queryUserSubmitData")
-    public IdmResDTO<ProcessResultDto> queryUserSubmitData(@RequestBody @Valid UserSubmitDataDto dto) throws FlowException {
-        return appWorkInfoService.queryUserSubmitData(dto);
-    }
-    /**
-     * 3.6.5更新或者保存用户提交的对象数据
-     * @param commitId
-     * @return
-     */
-    @PostMapping("saveOrUpdateSubmitData")
-    @LogRecord(operationCode = "saveOrUpdateSubmitData", operationName = "app完成对象任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    @RequiresPermissions()
-    public IdmResDTO saveOrUpdateSubmitData(@RequestBody @Valid CommitProcessDto commitId){
-        return appWorkInfoService.saveSubmitData(commitId);
-    }
-
-    /**
-     * 3.6.5完成任务
-     * @param taskDto
-     * @return
-     */
-    @PostMapping("completeTask")
-    @LogRecord(operationCode = "completeTask", operationName = "app完成任务", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO  completeTask(@RequestBody CompleteTaskDto taskDto){
-        return appWorkInfoService.completeTask(taskDto);
-    }
 
     /**
      *小程序- 退回
@@ -316,7 +330,7 @@ public class AppWorkOrderController {
     @PostMapping("clientCloseFlow")
     @RequiresPermissions
     @LogRecord(operationCode = "clientCloseFlow", operationName = "app终止", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO clientCloseFlow(@RequestBody ClientOperationDto operationDto){
+    public IdmResDTO clientCloseFlow(@RequestBody  @Valid ClientOperationDto operationDto){
         return appWorkInfoService.clientCloseFlow(operationDto);
     }
 
@@ -329,7 +343,7 @@ public class AppWorkOrderController {
     @PostMapping("clientBusinessPending")
     @RequiresPermissions
     @LogRecord(operationCode = "clientBusinessPending", operationName = "app挂起", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    public IdmResDTO clientBusinessPending(@RequestBody ClientOperationDto operationDto){
+    public IdmResDTO clientBusinessPending(@RequestBody  @Valid ClientOperationDto operationDto){
         return appWorkInfoService.clientBusinessPending(operationDto);
     }
 
@@ -338,7 +352,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("clientComment")
-    public IdmResDTO clientComment(@RequestBody TaskBusinessDto dto){
+    public IdmResDTO clientComment(@RequestBody  @Valid  ClientOperationDto dto){
         return appWorkInfoService.clientComment(dto);
     }
 

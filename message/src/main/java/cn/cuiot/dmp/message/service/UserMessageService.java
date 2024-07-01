@@ -40,4 +40,9 @@ public interface UserMessageService extends IService<UserMessageEntity> {
      * @return
      */
     Long getUnreadMessageCount();
+
+    /**
+     * 读取所有消息
+     */
+    void realAllMessage();
 }

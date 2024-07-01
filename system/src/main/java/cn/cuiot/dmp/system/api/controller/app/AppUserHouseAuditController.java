@@ -86,7 +86,7 @@ public class AppUserHouseAuditController {
      * 更新
      */
     @RequiresPermissions(allowUserType = PermissionContants.USER_CLIENT)
-    @LogRecord(operationCode = "updateUserHouseAudit", operationName = "更新线索", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "updateUserHouseAudit", operationName = "更新房屋", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/update")
     public boolean updateUserHouseAudit(@RequestBody @Valid UserHouseAuditUpdateDTO updateDTO) {
         Long userId = LoginInfoHolder.getCurrentUserId();

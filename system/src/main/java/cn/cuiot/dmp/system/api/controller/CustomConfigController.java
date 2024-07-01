@@ -7,6 +7,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigDTO;
 import cn.cuiot.dmp.system.application.param.dto.CustomConfigUpdateDTO;
@@ -39,7 +40,7 @@ public class CustomConfigController extends BaseController {
      */
     @PostMapping("/queryForDetail")
     public CustomConfigVO queryForDetail(@RequestBody @Valid IdParam idParam) {
-        return customConfigService.queryForDetail(idParam.getId());
+        return customConfigService.queryForDetail(idParam.getId(), LoginInfoHolder.getCurrentOrgId());
     }
 
     /**
@@ -47,8 +48,7 @@ public class CustomConfigController extends BaseController {
      */
     @PostMapping("/queryForDetailByName")
     public CustomConfigVO queryForDetailByName(@RequestBody @Valid CustomConfigDTO customConfigDTO) {
-        String orgId = getOrgId();
-        customConfigDTO.setCompanyId(Long.valueOf(orgId));
+        customConfigDTO.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         return customConfigService.queryForDetailByName(customConfigDTO);
     }
 

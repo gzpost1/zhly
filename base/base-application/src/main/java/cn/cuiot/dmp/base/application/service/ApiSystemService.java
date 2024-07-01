@@ -20,6 +20,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface ApiSystemService {
 
     /**
+     * 获取权限菜单
+     */
+    List<CommonMenuDto> getPermissionMenus(String orgId,String userId);
+
+    /**
      * 查询角色
      */
     List<BaseRoleDto> lookUpRoleList(BaseRoleReqDto query);
@@ -88,5 +93,10 @@ public interface ApiSystemService {
      * 根据条件批量查询审核配置列表
      */
     List<AuditConfigTypeRspDTO> lookUpAuditConfig(AuditConfigTypeReqDTO queryDTO);
+
+    /**
+     * 根据楼盘id列表查询对应的业主
+     */
+    Map<Long, List<Long>> lookUpUserIdsByBuildingIds(UserHouseAuditBuildingReqDTO reqDTO);
 
 }

@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.message.conver;//	模板
 
-import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
+import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.message.dal.entity.UserMessageEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,5 +20,5 @@ public interface UserMessageConvert {
 //            @Mapping(target = "dataJson", ignore = true),
             @Mapping(target = "accepter", ignore = true)
     })
-    UserMessageEntity concert(UserMessageAcceptDto userMessageAcceptDto);
+    UserMessageEntity concert(SysMsgDto sysMsgDto);
 }

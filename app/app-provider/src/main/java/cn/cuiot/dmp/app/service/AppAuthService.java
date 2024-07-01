@@ -22,6 +22,8 @@ import cn.cuiot.dmp.app.entity.UserEntity;
 import cn.cuiot.dmp.app.mapper.OrganizationEntityMapper;
 import cn.cuiot.dmp.app.util.RandomPwUtils;
 import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
+import cn.cuiot.dmp.base.application.service.ApiSystemService;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonMenuDto;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.EntityConstants;
@@ -51,6 +53,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -92,6 +95,9 @@ public class AppAuthService {
      */
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private ApiSystemService apiSystemService;
 
     /**
      * 构建密钥内容
@@ -144,6 +150,11 @@ public class AppAuthService {
                                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                                 appUserService.updateAppUser(updateEntity);
 
+                                if(StringUtils.isNotBlank(openid)){
+                                    userDto.setOpenid(openid);
+                                }
+                                //设置权限
+                                setPermissionMenus(userDto);
                                 //设置token
                                 genSetAppToken(userDto);
 
@@ -160,6 +171,9 @@ public class AppAuthService {
                     updateEntity.setLastOnlineOn(LocalDateTime.now());
                     appUserService.updateAppUser(updateEntity);
 
+                    if(StringUtils.isNotBlank(openid)){
+                        userDto.setOpenid(openid);
+                    }
                     //设置token
                     genSetAppToken(userDto);
 
@@ -169,6 +183,23 @@ public class AppAuthService {
             }
         }
         return resultList;
+    }
+
+    /**
+     * 设置菜单权限
+     * @param userDto
+     */
+    private void setPermissionMenus(AppUserDto userDto){
+        List<CommonMenuDto> menuDtoList = apiSystemService
+                .getPermissionMenus(userDto.getOrgId(), userDto.getId().toString());
+        userDto.setMenu(menuDtoList);
+        userDto.setPermission_ids(Lists.newArrayList());
+        if(CollectionUtils.isNotEmpty(menuDtoList)){
+            userDto.setPermission_ids(menuDtoList.stream()
+                    .filter(ite-> org.apache.commons.lang3.StringUtils.isNotBlank(ite.getPermissionCode()))
+                    .map(ite->ite.getPermissionCode())
+                    .collect(Collectors.toList()));
+        }
     }
 
     /**
@@ -223,6 +254,9 @@ public class AppAuthService {
             userDto.setDeptId(pkDeptId);
             userDto.setOrgTypeId(organization.getOrgTypeId());
 
+            //设置权限
+            setPermissionMenus(userDto);
+
             //更新登录时间
             UserEntity updateEntity = new UserEntity();
             updateEntity.setId(userDto.getId());
@@ -260,6 +294,9 @@ public class AppAuthService {
                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                 appUserService.updateAppUser(updateEntity);
             }
+        }
+        if(StringUtils.isNotBlank(openid)){
+            userDto.setOpenid(openid);
         }
         //生成与设置token
         genSetAppToken(userDto);
@@ -341,6 +378,9 @@ public class AppAuthService {
         checkAndClearLoginFailedCount(userDto.getId());
 
         //更新登录时间
+        if(StringUtils.isNotBlank(dto.getOpenid())){
+            userDto.setOpenid(dto.getOpenid());
+        }
         UserEntity updateEntity = new UserEntity();
         updateEntity.setId(userDto.getId());
         updateEntity.setOpenid(dto.getOpenid());
@@ -362,6 +402,9 @@ public class AppAuthService {
         userDto.setOrgId(pkOrgId.toString());
         userDto.setDeptId(pkDeptId);
         userDto.setOrgTypeId(organization.getOrgTypeId());
+
+        //设置权限
+        setPermissionMenus(userDto);
 
         //生成与设置token
         genSetAppToken(userDto);
@@ -474,44 +517,83 @@ public class AppAuthService {
 
         AppUserDto userDto = appUserService.getUserByPhoneAndUserType(userAccount, userType);
 
-        // 账号不存在
-        if (userDto == null || Objects.isNull(userDto.getStatus())) {
-            //记录登录失败次数
-            recordLoginFailedCount(userAccount);
+        //员工
+        if (UserTypeEnum.USER.getValue().equals(userType)) {
+            // 账号不存在
+            if (userDto == null || Objects.isNull(userDto.getStatus())) {
+                //记录登录失败次数
+                recordLoginFailedCount(userAccount);
+            }
+
+            // 账号被停用
+            if (EntityConstants.DISABLED.equals(userDto.getStatus())) {
+                recordLoginFailedCountWhenUserExist(userDto.getId());
+                throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
+            }
+
+            //登录成功-检验和清空登录失败次数
+            checkAndClearLoginFailedCount(userDto.getId());
+
+            Long pkUserId = userDto.getId();
+            // 获取org主键id
+            Long pkOrgId = appUserService.getOrgId(pkUserId);
+            // 获取dept主键id
+            String pkDeptId = appUserService.getDeptId(pkUserId.toString(), pkOrgId.toString());
+            // 获取企业信息
+            OrganizationEntity organization = organizationEntityMapper.selectById(pkOrgId);
+            if (organization == null || organization.getStatus() == null || OrgStatusEnum.DISABLE
+                    .getCode().equals(organization.getStatus())) {
+                throw new BusinessException(ResultCode.ORG_IS_ENABLED);
+            }
+            userDto.setOrgId(pkOrgId.toString());
+            userDto.setDeptId(pkDeptId);
+            userDto.setOrgTypeId(organization.getOrgTypeId());
+
+            //设置权限
+            setPermissionMenus(userDto);
+
+            //更新登录时间
+            UserEntity updateEntity = new UserEntity();
+            updateEntity.setId(userDto.getId());
+            updateEntity.setOpenid(dto.getOpenid());
+            updateEntity.setLastOnlineIp(dto.getIpAddr());
+            updateEntity.setLastOnlineOn(LocalDateTime.now());
+            appUserService.updateAppUser(updateEntity);
+
+        }else {
+            //非员工
+            if (Objects.isNull(userDto)) {
+                String password = randomPwUtils
+                        .getRandomPassword((int) (8 + Math.random() * (20 - 8 + 1)));
+                UserEntity userEntity = new UserEntity();
+                userEntity.setName("用户昵称");
+                userEntity.setUsername(dto.getPhoneNumber() + userType);
+                userEntity.setPassword(new Password(password).getHashEncryptValue());
+                userEntity.setPhoneNumber(new PhoneNumber(dto.getPhoneNumber()).getEncryptedValue());
+                userEntity.setStatus(UserStatusEnum.OPEN.getValue());
+                userEntity.setUserType(userType);
+                userEntity.setOpenid(dto.getOpenid());
+                userEntity.setDeletedFlag(EntityConstants.NOT_DELETED.intValue());
+                userEntity.setLastOnlineIp(dto.getIpAddr());
+                userEntity.setLastOnlineOn(LocalDateTime.now());
+                userEntity.setCreatedOn(LocalDateTime.now());
+                userEntity.setCreatedBy(OperateByTypeEnum.SYSTEM.name().toLowerCase());
+                userEntity.setCreatedByType(OperateByTypeEnum.SYSTEM.getValue());
+                appUserService.createAppUser(userEntity);
+                userDto = appUserConverter.toAppUserDto(userEntity);
+            } else {
+                //更新登录时间
+                UserEntity updateEntity = new UserEntity();
+                updateEntity.setId(userDto.getId());
+                updateEntity.setOpenid(dto.getOpenid());
+                updateEntity.setLastOnlineIp(dto.getIpAddr());
+                updateEntity.setLastOnlineOn(LocalDateTime.now());
+                appUserService.updateAppUser(updateEntity);
+            }
         }
-
-        // 账号被停用
-        if (EntityConstants.DISABLED.equals(userDto.getStatus())) {
-            recordLoginFailedCountWhenUserExist(userDto.getId());
-            throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
+        if(StringUtils.isNotBlank(dto.getOpenid())){
+            userDto.setOpenid(dto.getOpenid());
         }
-
-        //登录成功-检验和清空登录失败次数
-        checkAndClearLoginFailedCount(userDto.getId());
-
-        //更新登录时间
-        UserEntity updateEntity = new UserEntity();
-        updateEntity.setId(userDto.getId());
-        updateEntity.setOpenid(dto.getOpenid());
-        updateEntity.setLastOnlineIp(dto.getIpAddr());
-        updateEntity.setLastOnlineOn(LocalDateTime.now());
-        appUserService.updateAppUser(updateEntity);
-
-        Long pkUserId = userDto.getId();
-        // 获取org主键id
-        Long pkOrgId = appUserService.getOrgId(pkUserId);
-        // 获取dept主键id
-        String pkDeptId = appUserService.getDeptId(pkUserId.toString(), pkOrgId.toString());
-        // 获取企业信息
-        OrganizationEntity organization = organizationEntityMapper.selectById(pkOrgId);
-        if (organization == null || organization.getStatus() == null || OrgStatusEnum.DISABLE
-                .getCode().equals(organization.getStatus())) {
-            throw new BusinessException(ResultCode.ORG_IS_ENABLED);
-        }
-        userDto.setOrgId(pkOrgId.toString());
-        userDto.setDeptId(pkDeptId);
-        userDto.setOrgTypeId(organization.getOrgTypeId());
-
         //生成与设置token
         genSetAppToken(userDto);
 
@@ -585,6 +667,9 @@ public class AppAuthService {
             userDto.setOrgId(pkOrgId.toString());
             userDto.setDeptId(pkDeptId);
             userDto.setOrgTypeId(organization.getOrgTypeId());
+
+            //设置权限
+            setPermissionMenus(userDto);
         }
         return userDto;
     }
@@ -677,7 +762,7 @@ public class AppAuthService {
             throw new BusinessException(ResultCode.SMS_TEXT_IS_EMPTY, "请输入验证码");
         }
         SmsCodeCheckResDto res = appVerifyService
-                .checkPhoneSmsCode(dto.getPhoneNumber(), null, dto.getSmsCode(), true);
+                .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), dto.getSmsCode(), true);
         if (!res.getCheckSucceed()) {
             throw new BusinessException(SMS_TEXT_OLD_INVALID);
         }
@@ -749,6 +834,9 @@ public class AppAuthService {
             userDto.setDeptId(pkDeptId);
             userDto.setOrgTypeId(organization.getOrgTypeId());
 
+            //设置权限
+            setPermissionMenus(userDto);
+
             //更新登录时间
             UserEntity updateEntity = new UserEntity();
             updateEntity.setId(userDto.getId());
@@ -790,6 +878,9 @@ public class AppAuthService {
                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                 appUserService.updateAppUser(updateEntity);
             }
+        }
+        if(StringUtils.isNotBlank(dto.getOpenid())){
+            userDto.setOpenid(dto.getOpenid());
         }
         //生成与设置token
         genSetAppToken(userDto);

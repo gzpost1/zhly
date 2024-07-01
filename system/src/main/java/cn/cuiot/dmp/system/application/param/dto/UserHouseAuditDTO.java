@@ -2,6 +2,7 @@ package cn.cuiot.dmp.system.application.param.dto;
 
 import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import cn.cuiot.dmp.system.infrastructure.entity.UserHouseAuditEntity;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
@@ -32,4 +33,16 @@ public class UserHouseAuditDTO extends UserHouseAuditEntity {
      *  组织部门名称
      */
     private String departmentName;
+
+    /**
+     *  房号
+     */
+    private String houseCode;
+
+    /**
+     * 用户信息
+     */
+    private UserResDTO user;
+
+
 }

@@ -27,12 +27,17 @@
         id, customer_id, relate_customer_id, relationship_type, member_name, member_phone, certificate_type, certificate_cdoe, email, status, remark, update_time, update_user, create_time, create_user, deleted
     </sql>
 
+    <delete id="deleteByCustomerId">
+        delete from tb_customer_member where customer_id=#{customerId}
+    </delete>
+
     <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.vo.CustomerMemberVo">
     </resultMap>
 
     <select id="selectByCustomerId" resultMap="VoResultMap">
         select
         <include refid="Base_Column_List" />
+        from tb_customer_member
         <where>
             <if test="customerIdList != null and customerIdList.size() > 0">
                 and customer_id in

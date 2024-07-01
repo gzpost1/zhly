@@ -54,9 +54,14 @@ public class StartProcessInstanceDTO {
     private Long createUserId;
 
     /**
-     * 报单客户id
+     * 报单用户id
      */
     private Long actualUserId;
+
+    /**
+     * 报单客户id
+     */
+    private Long customerId;
 
 
     /**
@@ -68,4 +73,8 @@ public class StartProcessInstanceDTO {
      * 新增的提交的表单信息
      */
     private CommitProcessEntity commitProcess;
+    /**
+     * 老工单id
+     */
+    private Long oldProcInstId;
 }

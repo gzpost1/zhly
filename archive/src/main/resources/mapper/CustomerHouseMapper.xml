@@ -12,6 +12,7 @@
         <result column="move_out_date" property="moveOutDate" />
         <result column="status" property="status" />
         <result column="remark" property="remark" />
+        <result column="loupan_id" property="loupanId" />
         <result column="update_time" property="updateTime" />
         <result column="update_user" property="updateUser" />
         <result column="create_time" property="createTime" />
@@ -21,8 +22,12 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, customer_id, house_id, identity_type, move_in_date, move_out_date, status, remark, update_time, update_user, create_time, create_user, deleted
+        id, customer_id, house_id, identity_type, move_in_date, move_out_date, status, remark, loupan_id,update_time, update_user, create_time, create_user, deleted
     </sql>
+
+    <delete id="deleteByCustomerId">
+        delete from tb_customer_house where customer_id=#{customerId}
+    </delete>
 
     <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.archive.infrastructure.vo.CustomerHouseVo">
         <result column="community_id" property="communityId" />
@@ -43,6 +48,7 @@
             t.move_out_date,
             t.`status`,
             t.remark,
+            t.loupan_id,
             t.update_time,
             t.update_user,
             t.create_time,
