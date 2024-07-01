@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.system.application.param.vo;
 
 import cn.cuiot.dmp.common.bean.TreeNode;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
  * @author caorui
@@ -10,6 +12,8 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class CommonOptionTypeTreeNodeVO extends TreeNode<CommonOptionTypeTreeNodeVO> {
 
     private static final long serialVersionUID = -5803071977038002559L;
@@ -28,6 +32,11 @@ public class CommonOptionTypeTreeNodeVO extends TreeNode<CommonOptionTypeTreeNod
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 类型（type/name/value）
+     */
+    private String type;
 
     public CommonOptionTypeTreeNodeVO(String id, String parentId, String name,
                                     Byte levelType, Long companyId) {

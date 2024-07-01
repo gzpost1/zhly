@@ -78,6 +78,11 @@ public interface CommonOptionRepository {
     PageResult<CommonOption> queryCommonOptionByType(CommonOptionPageQuery pageQuery);
 
     /**
+     * 根据常用选项分类查询常用选项列表
+     */
+    List<CommonOption> queryCommonOptionListByType(CommonOptionPageQuery pageQuery);
+
+    /**
      * 初始化常用选项
      */
     void initCommonOption(Long companyId, Long typeId);
