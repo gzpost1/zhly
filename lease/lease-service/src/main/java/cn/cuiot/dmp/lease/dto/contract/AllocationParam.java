@@ -18,6 +18,6 @@ public class AllocationParam implements Serializable {
     @NotNull(message = "分配人ID不能为空")
     private Long followUpId;
     @NotNull(message = "分配人姓名不能为空")
-    private Long followUpName;
+    private String followUpName;
 
 }
