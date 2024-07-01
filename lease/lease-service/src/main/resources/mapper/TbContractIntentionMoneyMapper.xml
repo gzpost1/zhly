@@ -9,6 +9,9 @@
         <result column="amount" property="amount"/>
         <result column="remark" property="remark"/>
         <result column="contract_id" property="contractId"/>
+        <result column="room_num" property="roomNum"/>
+        <result column="code" property="code"/>
+        <result column="house_name" property="houseName"/>
     </resultMap>
 
     <select id="list" resultMap="BaseResultMap"

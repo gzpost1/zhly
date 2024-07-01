@@ -38,9 +38,9 @@
 
     <select id="queryMoneyInfoByIntentionId"
             resultMap="cn.cuiot.dmp.lease.mapper.TbContractIntentionMoneyMapper.BaseResultMap">
-        select *
-        from tb_contract_intention_money
-        where  contract_id = #{id}
+        select m.*,h.room_num,h.code,h.name house_name
+        from tb_contract_intention_money m left join tb_houses_archives h on m.bid=h.id
+        where  m.contract_id = #{id}
     </select>
 
     <select id="queryConctactStatusByHouseIds"

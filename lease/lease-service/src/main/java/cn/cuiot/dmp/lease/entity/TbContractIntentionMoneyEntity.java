@@ -1,11 +1,15 @@
 package cn.cuiot.dmp.lease.entity;
 
 import java.math.BigDecimal;
+
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+import java.util.Map;
+
 import lombok.*;
 import lombok.experimental.Accessors;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -27,7 +31,7 @@ import org.springframework.data.annotation.Id;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("tb_contract_intention_money")
+@TableName(value = "tb_contract_intention_money",autoResultMap = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TbContractIntentionMoneyEntity extends Model<TbContractIntentionMoneyEntity> {
 
@@ -45,6 +49,19 @@ public class TbContractIntentionMoneyEntity extends Model<TbContractIntentionMon
      * 意向标的
      */
     private String bid;
+
+    /**
+     * 房号
+     */
+    @TableField(exist = false)
+    private String roomNum;
+    /**
+     * 房屋编码
+     */
+    @TableField(exist = false)
+    private String code;
+    @TableField(exist = false)
+    private String houseName;
 
     /**
      * 应收金额
