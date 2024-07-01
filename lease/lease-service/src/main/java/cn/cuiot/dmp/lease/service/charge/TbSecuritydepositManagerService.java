@@ -1,10 +1,7 @@
 package cn.cuiot.dmp.lease.service.charge;
 
 import cn.cuiot.dmp.common.utils.AssertUtil;
-import cn.cuiot.dmp.lease.dto.charge.SecuritydepositManagerDto;
-import cn.cuiot.dmp.lease.dto.charge.SecuritydepositManagerPageDto;
-import cn.cuiot.dmp.lease.dto.charge.SecuritydepositManagerQuery;
-import cn.cuiot.dmp.lease.dto.charge.SecuritydepositRefundDto;
+import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeAbrogate;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositManager;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositRefund;
@@ -99,5 +96,20 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
 
     public Integer getHouseReundableAmount(Long houseId) {
         return Optional.ofNullable(baseMapper.getHouseReundableAmount(houseId)).orElse(0);
+    }
+
+    /**
+     * 押金保存
+     * @param createDto
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveData(SecuritydepositManagerInsertDto createDto) {
+        TbSecuritydepositManager entity = new TbSecuritydepositManager();
+        BeanUtils.copyProperties(createDto,entity);
+        entity.setId(IdWorker.getId());
+        entity.setStatus(SecurityDepositStatusEnum.UNPAID.getCode());
+        entity.setReceivableAmountReceived(0);
+        entity.setReturnedAmount(0);
+        this.save(entity);
     }
 }

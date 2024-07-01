@@ -7,6 +7,7 @@
         <id column="id" jdbcType="BIGINT" property="id"/>
         <result column="customer_user_id" jdbcType="BIGINT" property="customerUserId"/>
         <result column="house_id" jdbcType="BIGINT" property="houseId"/>
+        <result column="loupan_id" jdbcType="BIGINT" property="loupanId"/>
         <result column="charge_item_id" jdbcType="BIGINT" property="chargeItemId"/>
         <result column="charge_standard" jdbcType="TINYINT" property="chargeStandard"/>
         <result column="receivable_amount" jdbcType="INTEGER" property="receivableAmount"/>
@@ -60,6 +61,7 @@
         liquidated_damages_need,
         liquidated_damages_received,
         liquidated_damages_tax,
+        loupan_id,
         liquidated_damages_not_tax
     </sql>
 
@@ -82,6 +84,9 @@
         <if test="query.houseId != null">
             and house_id = #{query.houseId}
         </if>
+        <if test="query.customerUserId != null">
+            and customer_user_id = #{query.customerUserId}
+        </if>
         <if test="query.companyId != null">
             and company_id = #{query.companyId}
         </if>
@@ -93,6 +98,13 @@
         </if>
         <if test="query.receivbleStatus != null">
             and receivble_status = #{query.receivbleStatus}
+        </if>
+        <if test="query.receivbleStatusList != null and query.receivbleStatusList.size() > 0 ">
+            and receivble_status in (
+            <foreach collection="query.receivbleStatusList" item="item" index="index" separator=",">
+                #{item}
+            </foreach>
+            )
         </if>
         <if test="query.hangUpStatus != null">
             and hang_up_status = #{query.hangUpStatus}
@@ -249,6 +261,7 @@
         update_time,
         create_user,
         update_user,
+        loupan_id,
         deleted
         )VALUES
         <foreach collection="list" item="element" index="index" separator=",">
@@ -279,8 +292,143 @@
             #{element.updateTime,jdbcType=TIMESTAMP},
             #{element.createUser,jdbcType=BIGINT},
             #{element.updateUser,jdbcType=BIGINT},
+            #{element.loupanId,jdbcType=BIGINT},
             #{element.deleted,jdbcType=TINYINT}
             )
         </foreach>
     </insert>
+
+    <select id="queryCollectionManagePage" parameterType="cn.cuiot.dmp.lease.dto.charge.ChargeCollectionManageQuery"
+            resultType="cn.cuiot.dmp.lease.vo.ChargeCollectionManageVo">
+        SELECT
+        a.customer_user_id customerUserId,
+        a.amount,
+        b.customer_name customerUserName,
+        b.contact_phone customerUserPhone
+        FROM
+        (SELECT
+        customer_user_id ,
+        COALESCE( SUM(receivable_amount - receivable_amount_received), 0) amount
+        FROM
+        tb_charge_manager
+        <where>
+            deleted = 0
+            <if test="params.companyId != null">
+                AND company_id = #{params.companyId}
+            </if>
+            AND receivble_status IN (0,1)
+            AND abrogate_status = 0
+            AND hang_up_status = 0
+            AND due_date <![CDATA[ <= ]]> #{params.dueDate}
+        </where>
+        GROUP BY customer_user_id
+        ORDER BY amount DESC
+        ) a
+        LEFT JOIN tb_customer b ON a.customer_user_id = b.id
+        <where>
+            <if test="params.customerUserName != null and params.customerUserName != ''">
+                AND b.customer_name LIKE CONCAT('%',#{params.customerUserName},'%')
+            </if>
+            <if test="params.customerUserPhone != null and params.customerUserPhone != ''">
+                AND b.contact_phone = #{params.customerUserPhone}
+            </if>
+        </where>
+    </select>
+
+    <select id="customerStatistics" parameterType="cn.cuiot.dmp.lease.dto.charge.TbChargeManagerQuery"
+            resultType="cn.cuiot.dmp.lease.vo.ChargeManagerCustomerStatisticsVo">
+        SELECT
+        COALESCE( SUM( receivable_amount ), 0) receivableAmount,
+        COALESCE( SUM( receivable_amount_received ), 0) receivableAmountReceived
+        FROM
+        tb_charge_manager
+        <where>
+            deleted = 0
+            <if test="query.houseId != null">
+                and house_id = #{query.houseId}
+            </if>
+            <if test="query.customerUserId != null">
+                and customer_user_id = #{query.customerUserId}
+            </if>
+            <if test="query.companyId != null">
+                and company_id = #{query.companyId}
+            </if>
+            <if test="query.receivblePlanId != null">
+                and receivble_plan_id = #{query.receivblePlanId}
+            </if>
+            <if test="query.receivableCode != null">
+                and id like concat('%', #{query.receivableCode}, '%')
+            </if>
+            <if test="query.receivbleStatus != null">
+                and receivble_status = #{query.receivbleStatus}
+            </if>
+            <if test="query.receivbleStatusList != null and query.receivbleStatusList.size() > 0 ">
+                and receivble_status in (
+                <foreach collection="query.receivbleStatusList" item="item" index="index" separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+            <if test="query.hangUpStatus != null">
+                and hang_up_status = #{query.hangUpStatus}
+            </if>
+            <if test="query.abrogateStatus != null">
+                and abrogate_status = #{query.abrogateStatus}
+            </if>
+            <if test="query.chargeItemId != null">
+                and charge_item_id = #{query.chargeItemId}
+            </if>
+            <if test="query.ownershipPeriodBegin != null">
+                and ownership_period_begin &gt;= #{query.ownershipPeriodBegin}
+            </if>
+            <if test="query.ownershipPeriodEnd != null">
+                and ownership_period_end &lt;= #{query.ownershipPeriodEnd}
+            </if>
+            <if test="query.dueDateBegin != null">
+                and due_date &gt;= #{query.dueDateBegin}
+            </if>
+            <if test="query.dueDateEnd != null">
+                and due_date &lt;= #{query.dueDateEnd}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryUserArrearsStatistics" parameterType="cn.cuiot.dmp.lease.dto.charge.ChargeCollectionManageSendQuery"
+            resultType="cn.cuiot.dmp.lease.dto.charge.ChargeCollectionManageSendDto">
+        SELECT
+        a.customer_user_id,
+        a.company_id,
+        COUNT(1) total,
+        round(SUM(a.receivable_amount - a.receivable_amount_received) / 1000, 2) amount
+        FROM
+        tb_charge_manager a
+        <if test="params.operationType != null and params.operationType == 2">
+            INNER JOIN tb_charge_collection_plan_building b ON a.loupan_id = b.building_id
+            INNER JOIN tb_charge_collection_plan_item c ON a.charge_item_id = c.charge_item_id
+        </if>
+        <where>
+            a.deleted = 0
+            AND a.company_id = #{params.companyId}
+            AND a.receivble_status IN (0,1)
+            AND a.abrogate_status = 0
+            AND a.hang_up_status = 0
+            AND a.due_date <![CDATA[ < ]]> #{params.dueDate}
+            <choose>
+                <when test="params.operationType != null and params.operationType == 2">
+                    AND b.charge_collection_plan_id = #{params.planId}
+                    AND c.charge_collection_plan_id = #{params.planId}
+                </when>
+                <otherwise>
+                    <if test="params.customerUserIds != null and params.customerUserIds.size() > 0">
+                        AND a.customer_user_id IN (
+                        <foreach collection="params.customerUserIds" index="index" item="item" separator=",">
+                            #{item}
+                        </foreach>
+                        )
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+        GROUP BY a.customer_user_id
+    </select>
 </mapper>

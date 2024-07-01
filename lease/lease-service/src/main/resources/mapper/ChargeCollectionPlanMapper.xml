@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.charge.ChargeCollectionPlanMapper">
+
+  <select id="queryForPage" parameterType="cn.cuiot.dmp.lease.dto.charge.ChargeCollectionPlanPageQuery"
+          resultType="cn.cuiot.dmp.lease.vo.ChargeCollectionPlanPageVo">
+    SELECT
+    a.*
+    FROM
+    tb_charge_collection_plan a
+    <if test="params.buildings != null and params.buildings.size() > 0">
+      INNER JOIN tb_charge_collection_plan_building b on a.id = b.charge_collection_plan_id
+    </if>
+    <if test="params.chargeItems != null and params.chargeItems.size() > 0">
+      INNER JOIN tb_charge_collection_plan_item c on a.id = c.charge_collection_plan_id
+    </if>
+    <where>
+      a.deleted = 0
+      <if test="params.id != null">
+        AND a.id = #{params.id}
+      </if>
+      <if test="params.companyId != null">
+        AND a.company_id = #{params.companyId}
+      </if>
+      <if test="params.channel != null">
+        AND a.channel = #{params.channel}
+      </if>
+      <if test="params.buildings != null and params.buildings.size() > 0">
+        AND b.building_id IN
+        (
+        <foreach collection="params.buildings" item="item" index="index" separator=",">
+          #{item}
+        </foreach>
+        )
+      </if>
+      <if test="params.chargeItems != null and params.chargeItems.size() > 0">
+        AND c.charge_item_id IN
+        (
+        <foreach collection="params.chargeItems" item="item" index="index" separator=",">
+          #{item}
+        </foreach>
+        )
+      </if>
+    </where>
+    GROUP BY a.id, a.create_time
+    ORDER BY a.create_time DESC
+  </select>
+</mapper>
