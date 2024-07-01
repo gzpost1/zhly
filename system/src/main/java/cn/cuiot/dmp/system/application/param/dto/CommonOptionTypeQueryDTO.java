@@ -33,7 +33,6 @@ public class CommonOptionTypeQueryDTO implements Serializable {
     /**
      * 企业ID
      */
-    @NotNull(message = "企业ID不能为空")
     private Long companyId;
 
 }
