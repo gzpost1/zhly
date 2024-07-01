@@ -163,6 +163,10 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         AssertUtil.notNull(contractCancelEntity.getRemark(), "作废备注不能为空");
         TbContractIntentionEntity queryEntity = getContract(id);
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_USELESS);
+        Long useLessId = SnowflakeIdWorkerUtil.nextId();
+        if(Objects.isNull(contractCancelEntity.getId())){
+            contractCancelEntity.setId(useLessId);
+        }
         contractCancelEntity.setIntentionContractId(id);
         //记录作废备注
         contractCancelEntity.setType(1);
