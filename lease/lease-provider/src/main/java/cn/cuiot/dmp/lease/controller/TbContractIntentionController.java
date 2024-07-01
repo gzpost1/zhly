@@ -4,6 +4,7 @@ package cn.cuiot.dmp.lease.controller;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseCurdController;
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.dto.contract.*;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -217,6 +219,15 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         TbContractIntentionEntity queryEntity = getContract(id);
         queryEntity.setLabel(param.getLabel());
         return service.saveOrUpdate(queryEntity);
+    }
+
+    /**
+     * 统计合同状态
+     * @return
+     */
+    @PostMapping("/statisticsContract")
+    public List<BaseVO> statisticsContract(){
+        return service.statisticsContract();
     }
 
     @Override

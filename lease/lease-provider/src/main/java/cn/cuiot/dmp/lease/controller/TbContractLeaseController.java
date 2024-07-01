@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseCurdController;
 import cn.cuiot.dmp.base.application.enums.BeanValidationGroup;
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.dto.contract.*;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -229,6 +231,15 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         }
         contractLogService.saveAuditLogMsg(contractStatus, param,CONTRACT_LEASE_TYPE);
         return service.updateById(auditContractIntentionEntity);
+    }
+
+    /**
+     * 统计合同状态
+     * @return
+     */
+    @PostMapping("/statisticsContract")
+    public List<BaseVO> statisticsContract(){
+        return service.statisticsContract();
     }
 
     private TbContractLeaseEntity getContractLeaseEntity(ContractReletParam param) {

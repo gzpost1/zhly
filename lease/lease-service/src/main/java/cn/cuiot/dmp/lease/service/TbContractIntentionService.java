@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -111,5 +112,9 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         TbContractIntentionEntity o = (TbContractIntentionEntity) entity;
         bindInfoService.createContractBind(o);
         return super.updateById(o);
+    }
+
+    public List<BaseVO> statisticsContract() {
+        return baseMapper.statisticsContract();
     }
 }

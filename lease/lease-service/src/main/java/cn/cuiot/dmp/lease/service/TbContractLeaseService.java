@@ -2,6 +2,7 @@ package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
@@ -112,5 +113,9 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         contractLeaseEntity.setContractStatus(ContractEnum.STATUS_USELESS.getCode());
         contractLeaseEntity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
         saveOrUpdate(contractLeaseEntity);
+    }
+
+    public List<BaseVO> statisticsContract() {
+        return baseMapper.statisticsContract();
     }
 }
