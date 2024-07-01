@@ -3,6 +3,7 @@ package cn.cuiot.dmp.common.bean.dto;//	模板
 import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.MsgTypeConstant;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.Date;
 
@@ -12,6 +13,7 @@ import java.util.Date;
  * @data 2024/7/1 10:26
  */
 @Data
+@Accessors(chain = true)
 public class SysMsgBaseDto {
 
     /**
@@ -26,12 +28,14 @@ public class SysMsgBaseDto {
 
     /**
      * 数据类型（非空）
+     *
      * @see MsgDataType
      */
     private String dataType;
 
     /**
      * 消息类型 (非空)
+     *
      * @see MsgTypeConstant
      */
     private String msgType;
