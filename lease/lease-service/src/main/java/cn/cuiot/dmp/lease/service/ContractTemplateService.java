@@ -8,6 +8,7 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.contractTemplate.ContractTemplateCreateDTO;
 import cn.cuiot.dmp.lease.dto.contractTemplate.ContractTemplateDTO;
 import cn.cuiot.dmp.lease.dto.contractTemplate.ContractTemplatePageQueryDTO;
@@ -16,6 +17,7 @@ import cn.cuiot.dmp.lease.entity.ContractTemplateEntity;
 import cn.cuiot.dmp.lease.mapper.ContractTemplateMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
@@ -105,10 +107,12 @@ public class ContractTemplateService extends ServiceImpl<ContractTemplateMapper,
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean saveContractTemplate(ContractTemplateCreateDTO createDTO) {
-        AssertUtil.notNull(createDTO.getCompanyId(), "企业id不能为空");
-        ContractTemplateEntity ContractTemplateEntity = new ContractTemplateEntity();
-        BeanUtils.copyProperties(createDTO, ContractTemplateEntity);
-        return save(ContractTemplateEntity);
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+        AssertUtil.notNull(companyId, "企业id不能为空");
+        createDTO.setCompanyId(companyId);
+        ContractTemplateEntity contractTemplateEntity = new ContractTemplateEntity();
+        BeanUtils.copyProperties(createDTO, contractTemplateEntity);
+        return save(contractTemplateEntity);
     }
 
     /**
@@ -116,10 +120,24 @@ public class ContractTemplateService extends ServiceImpl<ContractTemplateMapper,
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean updateContractTemplate(ContractTemplateUpdateDTO updateDTO) {
-        ContractTemplateEntity ContractTemplateEntity = Optional.ofNullable(getById(updateDTO.getId()))
+        ContractTemplateEntity contractTemplateEntity = Optional.ofNullable(getById(updateDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
-        BeanUtils.copyProperties(updateDTO, ContractTemplateEntity);
-        return updateById(ContractTemplateEntity);
+        BeanUtils.copyProperties(updateDTO, contractTemplateEntity);
+        return updateById(contractTemplateEntity);
+    }
+
+    /**
+     * 复制新增
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean copyContractTemplate(Long id) {
+        ContractTemplateEntity contractTemplateEntity = Optional.ofNullable(getById(id))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        ContractTemplateEntity copyContractTemplateEntity = new ContractTemplateEntity();
+        BeanUtils.copyProperties(contractTemplateEntity, copyContractTemplateEntity);
+        copyContractTemplateEntity.setId(IdWorker.getId());
+        copyContractTemplateEntity.setName(copyContractTemplateEntity.getName() + "(1)");
+        return save(copyContractTemplateEntity);
     }
 
     /**
