@@ -138,7 +138,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         contractCancelService.saveOrUpdate(contractCancelEntity);
         String operMsg = "退定了意向合同" + System.lineSeparator() +
                 "退定原因:" + contractCancelEntity.getReason() + System.lineSeparator() + "退定备注:" + contractCancelEntity.getRemark();
-        contractLogService.saveIntentionLog(id, OPERATE_CANCEL, operMsg);
+        contractLogService.saveLog(id, OPERATE_CANCEL,CONTRACT_INTENTION_TYPE, operMsg,null,contractCancelEntity.getPath());
         return service.updateById(queryEntity);
     }
 

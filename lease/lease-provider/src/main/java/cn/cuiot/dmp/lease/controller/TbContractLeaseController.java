@@ -120,7 +120,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         leaseBackService.saveOrUpdate(leaseBackEntity);
         String remark = Optional.ofNullable(leaseBackEntity.getRemark()).orElse("无");
         String operMsg = "退租了租赁合同" + System.lineSeparator() + "退租说明:" + remark;
-        contractLogService.saveLog(id, OPERATE_LEASE_BACK, CONTRACT_LEASE_TYPE, operMsg, String.valueOf(leaseBackId), null);
+        contractLogService.saveLog(id, OPERATE_LEASE_BACK, CONTRACT_LEASE_TYPE, operMsg, String.valueOf(leaseBackId), leaseBackEntity.getPath());
         return service.updateById(queryEntity);
     }
 
@@ -149,7 +149,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         String operMsg = "续租了租赁合同" + System.lineSeparator() + "续租新生成的合同编码:" + contractLeaseReletEntity.getContractNo() + System.lineSeparator()
                 + "续租说明:" + reletRemark;
         contractLogService.saveLog(id, OPERATE_LEASE_RELET, CONTRACT_LEASE_TYPE, operMsg,
-                String.valueOf(contractLeaseReletEntity.getId()), null);
+                String.valueOf(contractLeaseReletEntity.getId()), contractLeaseReletEntity.getReletPath());
         return service.updateById(queryEntity);
     }
 
