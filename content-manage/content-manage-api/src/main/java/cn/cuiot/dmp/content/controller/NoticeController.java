@@ -136,4 +136,14 @@ public class NoticeController extends BaseController {
         contentNoticeEntity.setStatus(updateStatusParam.getStatus());
         return noticeService.updateById(contentNoticeEntity);
     }
+
+    /**
+     * 获取公告列表
+     *
+     * @return
+     */
+    @PostMapping("/getNoticeList")
+    public IPage<NoticeVo> getAppNoticePage(@RequestBody @Valid NoticPageQuery pageQuery) {
+        return noticeService.getAppNoticePage(pageQuery);
+    }
 }

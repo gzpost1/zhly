@@ -29,15 +29,10 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -78,7 +73,7 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
 
         UserResDTO userById = userService.getUserById(userHouseAuditDTO.getUserId().toString());
         if (null != userById) {
-            if(StringUtils.isNotBlank(userById.getPhoneNumber())){
+            if (StringUtils.isNotBlank(userById.getPhoneNumber())) {
                 userById.setPhoneNumber(Sm4.decrypt(userById.getPhoneNumber()));
             }
         }
@@ -184,17 +179,17 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         UserHouseAuditEntity userHouseAuditEntity = Optional.ofNullable(getById(statusDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
 
-        if(UserHouseAuditStatusConstants.PASS.equals(statusDTO.getAuditStatus())){
+        if (UserHouseAuditStatusConstants.PASS.equals(statusDTO.getAuditStatus())) {
             //绑定客户本人
-            if(Objects.equals(NumberConst.ONE.byteValue(),statusDTO.getBindCustomerType())){
-                if(alreadyBindOtherUser(userHouseAuditEntity.getUserId(),statusDTO.getBindCustomerId(),null)){
-                    throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"所选客户已绑定其他用户账号");
+            if (Objects.equals(NumberConst.ONE.byteValue(), statusDTO.getBindCustomerType())) {
+                if (alreadyBindOtherUser(userHouseAuditEntity.getUserId(), statusDTO.getBindCustomerId(), null)) {
+                    throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "所选客户已绑定其他用户账号");
                 }
             }
             //客户家庭成员
-            if(Objects.equals(NumberConst.TWO.byteValue(),statusDTO.getBindCustomerType())){
-                if(alreadyBindOtherUser(userHouseAuditEntity.getUserId(),statusDTO.getBindCustomerId(),statusDTO.getBindCustomerMemberId())){
-                    throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"所选成员已绑定其他用户账号");
+            if (Objects.equals(NumberConst.TWO.byteValue(), statusDTO.getBindCustomerType())) {
+                if (alreadyBindOtherUser(userHouseAuditEntity.getUserId(), statusDTO.getBindCustomerId(), statusDTO.getBindCustomerMemberId())) {
+                    throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "所选成员已绑定其他用户账号");
                 }
             }
         }
@@ -218,23 +213,24 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
 
     /**
      * 判断是否绑定其他用户
+     *
      * @param userId
      * @param bindCustomerId
      * @return
      */
-    private Boolean alreadyBindOtherUser(Long userId,Long bindCustomerId,Long bindCustomerMemberId){
+    private Boolean alreadyBindOtherUser(Long userId, Long bindCustomerId, Long bindCustomerMemberId) {
         LambdaQueryWrapper<UserHouseAuditEntity> lambdaQueryWrapper = Wrappers.<UserHouseAuditEntity>lambdaQuery()
                 .eq(UserHouseAuditEntity::getBindCustomerId, bindCustomerId)
                 .eq(UserHouseAuditEntity::getAuditStatus, UserHouseAuditStatusConstants.PASS);
-        if(Objects.nonNull(bindCustomerMemberId)){
-            lambdaQueryWrapper.ne(UserHouseAuditEntity::getBindCustomerMemberId,bindCustomerMemberId);
+        if (Objects.nonNull(bindCustomerMemberId)) {
+            lambdaQueryWrapper.ne(UserHouseAuditEntity::getBindCustomerMemberId, bindCustomerMemberId);
         }
-        if(Objects.nonNull(userId)){
-            lambdaQueryWrapper.ne(UserHouseAuditEntity::getUserId,userId);
+        if (Objects.nonNull(userId)) {
+            lambdaQueryWrapper.ne(UserHouseAuditEntity::getUserId, userId);
         }
         List<UserHouseAuditEntity> selectList = userHouseAuditMapper
                 .selectList(lambdaQueryWrapper);
-        if(CollectionUtils.isNotEmpty(selectList)){
+        if (CollectionUtils.isNotEmpty(selectList)) {
             return true;
         }
         return false;
@@ -302,4 +298,29 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         updateWrapper.eq(UserHouseAuditEntity::getId, userHouseAuditEntity.getId());
         return super.update(null, updateWrapper);
     }
+
+    /**
+     * 根据楼盘id列表查询对应的业主
+     */
+    public Map<Long, List<Long>> lookUpUserIdsByBuildingIds(List<Long> buildingIds) {
+        AssertUtil.notEmpty(buildingIds, "楼盘编码列表不能为空");
+        LambdaQueryWrapper<UserHouseAuditEntity> lambdaQueryWrapper = Wrappers.<UserHouseAuditEntity>lambdaQuery()
+                .in(UserHouseAuditEntity::getBuildingId, buildingIds)
+                .eq(UserHouseAuditEntity::getAuditStatus, UserHouseAuditStatusConstants.PASS);
+        List<UserHouseAuditEntity> userHouseAuditEntities = list(lambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(userHouseAuditEntities)) {
+            return new HashMap<>();
+        }
+        Map<Long, List<UserHouseAuditEntity>> buildingUserEntityMap = userHouseAuditEntities.stream()
+                .collect(Collectors.groupingBy(UserHouseAuditEntity::getBuildingId));
+        Map<Long, List<Long>> buildingUserMap = new HashMap<>();
+        buildingUserEntityMap.forEach((k, v) -> {
+            List<Long> userIdList = v.stream()
+                    .map(UserHouseAuditEntity::getUserId)
+                    .collect(Collectors.toList());
+            buildingUserMap.put(k, userIdList);
+        });
+        return buildingUserMap;
+    }
+
 }

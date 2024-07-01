@@ -5,6 +5,7 @@ import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.NodeButton;
 import cn.cuiot.dmp.baseconfig.flow.entity.CommitProcessEntity;
 import cn.cuiot.dmp.query.PageQuery;
 import lombok.Data;
+import org.jpedal.parser.shape.S;
 
 import java.util.Date;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.List;
 public class WorkInfoDto extends PageQuery {
 
 
-    private Long id;
+    private String id;
 
     /**
      * 业务类型

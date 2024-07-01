@@ -2,7 +2,7 @@ package cn.cuiot.dmp.message.consumer;//	模板
 
 import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
-import cn.cuiot.dmp.common.constant.MsgTypeConstant;
+import cn.cuiot.dmp.common.constant.InformTypeConstant;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.message.config.MqMsgChannel;
 import cn.cuiot.dmp.message.conver.UserMessageConvert;
@@ -33,9 +33,12 @@ public class UserMsgConsumer {
     @StreamListener(MqMsgChannel.USERMESSAGEINPUT)
     public void userMessageConsumer(@Payload UserMessageAcceptDto userMessageAcceptDto) {
         log.info("userMessageInput:{}", JsonUtil.writeValueAsString(userMessageAcceptDto));
-        UserMessageEntity userMessage = UserMessageConvert.INSTANCE.concert(userMessageAcceptDto);
-        userMessage.init();
-        if ((userMessageAcceptDto.getMsgType() & MsgTypeConstant.SYS_MSG) == MsgTypeConstant.SYS_MSG) {
+        if ((userMessageAcceptDto.getMsgType() & InformTypeConstant.SYS_MSG) == InformTypeConstant.SYS_MSG) {
+            if (userMessageAcceptDto.getSysMsgDto() == null) {
+                return;
+            }
+            UserMessageEntity userMessage = UserMessageConvert.INSTANCE.concert(userMessageAcceptDto.getSysMsgDto());
+            userMessage.init();
             List<UserMessageEntity> userMessageEntities = dealMsgByType(userMessage, userMessageAcceptDto.getSysMsgDto());
             userMessageService.saveBatch(userMessageEntities);
         }

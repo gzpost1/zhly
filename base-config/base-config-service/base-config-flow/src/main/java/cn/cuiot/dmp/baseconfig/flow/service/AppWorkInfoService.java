@@ -146,7 +146,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             IdmResDTO<Map<Long, String>> mapIdmResDTO = systemApiFeignService.batchQueryCustomConfigDetailsForMap(req);
             Map<Long, String> processMap = Optional.ofNullable(mapIdmResDTO.getData()).orElse(new HashMap<>());
             dtos.stream().forEach(item->{
-                item.setName(processMap.get(item.getProcessNodeId()));
+                item.setName(processMap.get(Long.parseLong(item.getProcessNodeId())));
             });
         }
         return IdmResDTO.success(dtos);

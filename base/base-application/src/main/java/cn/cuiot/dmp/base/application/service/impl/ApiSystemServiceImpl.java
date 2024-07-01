@@ -32,6 +32,30 @@ public class ApiSystemServiceImpl implements ApiSystemService {
     @Autowired
     private SystemApiFeignService systemApiFeignService;
 
+
+    /**
+     * 获取权限菜单
+     */
+    @Override
+    public List<CommonMenuDto> getPermissionMenus(String orgId, String userId) {
+        try {
+            IdmResDTO<List<CommonMenuDto>> idmResDTO = systemApiFeignService
+                    .getPermissionMenus(orgId,userId);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==getPermissionMenus==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_DEPT_ERROR);
+        }
+    }
+
     /**
      * 查询角色
      */
@@ -325,6 +349,26 @@ public class ApiSystemServiceImpl implements ApiSystemService {
         } catch (Exception ex) {
             log.info("ApiSystemServiceImpl==lookUpAuditConfig==fail", ex);
             throw new BusinessException(ResultCode.QUERY_AUDIT_CONFIG_DETAIL_ERROR);
+        }
+    }
+
+    @Override
+    public Map<Long, List<Long>> lookUpUserIdsByBuildingIds(UserHouseAuditBuildingReqDTO reqDTO) {
+        try {
+            IdmResDTO<Map<Long, List<Long>>> idmResDTO = systemApiFeignService
+                    .lookUpUserIdsByBuildingIds(reqDTO);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==lookUpUserIdsByBuildingIds==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_HOUSE_AUDIT_ERROR);
         }
     }
 

@@ -220,6 +220,7 @@ public enum ResultCode {
     QUERY_FORM_CONFIG_DETAIL_ERROR("0100202", "查询表单配置详情异常"),
     QUERY_CUSTOM_CONFIG_DETAIL_ERROR("0100301", "查询自定义配置详情异常"),
     QUERY_AUDIT_CONFIG_DETAIL_ERROR("0100401", "查询审核配置列表详情异常"),
+    QUERY_USER_HOUSE_AUDIT_ERROR("0100501", "查询用户审核列表详情异常"),
 
     /**
      * 内容中心

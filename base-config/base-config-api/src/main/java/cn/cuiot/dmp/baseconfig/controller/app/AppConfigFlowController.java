@@ -61,6 +61,7 @@ public class AppConfigFlowController {
 
         if (Objects.equals(LoginInfoHolder.getCurrentUserType(), UserTypeEnum.USER.getValue())) {
             deptId = LoginInfoHolder.getCurrentDeptId();
+            query.setIsSelectAppUser(null);
         } else if (Objects.equals(LoginInfoHolder.getCurrentUserType(), UserTypeEnum.OWNER.getValue())) {
             //获取小区信息
             BuildingArchive buildingArchive = apiArchiveService.lookupBuildingArchiveInfo(LoginInfoHolder.getCommunityId());
@@ -70,9 +71,7 @@ public class AppConfigFlowController {
         }
 
         AssertUtil.notNull(deptId, "部门不存在");
-        DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(deptId, null, null);
-        AssertUtil.notNull(departmentDto, "部门不存在");
-        query.setOrgPath(departmentDto.getPath());
+        query.setOrgId(deptId);
 
         IPage<TbFlowPageDto> tbFlowPageDtoIPage = tbFlowConfigService.queryForWorkOrderPage(query);
         if (Objects.nonNull(tbFlowPageDtoIPage) && CollectionUtils.isNotEmpty(tbFlowPageDtoIPage.getRecords())) {

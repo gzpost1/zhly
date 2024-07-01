@@ -2,10 +2,7 @@ package cn.cuiot.dmp.content.service.impl;//	模板
 
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.MsgExistDataIdReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.*;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.bean.dto.SmsMsgDto;
@@ -202,36 +199,48 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                 BaseUserReqDto reqDto = new BaseUserReqDto();
                 reqDto.setDeptIdList(noticeEntity.getDepartments().stream().map(Long::parseLong).collect(Collectors.toList()));
                 List<Long> longs = systemConverService.lookUpUserIds(reqDto);
-                if (CollUtil.isEmpty(longs) || CollUtil.isEmpty(noticeEntity.getInform())) {
-                    return;
+                sendMsg(noticeEntity, longs);
+            }
+        } else if (ContentConstants.PublishSource.APP.equals(noticeEntity.getPublishSource())) {
+            if (CollUtil.isNotEmpty(noticeEntity.getBuildings())) {
+                UserHouseAuditBuildingReqDTO dto = new UserHouseAuditBuildingReqDTO();
+                dto.setBuildingIds(noticeEntity.getBuildings().stream().map(Long::parseLong).collect(Collectors.toList()));
+                Map<Long, List<Long>> map = systemConverService.lookUpUserIdsByBuildingIds(dto);
+                for (String building : noticeEntity.getBuildings()) {
+                    if (map.containsKey(Long.parseLong(building))) {
+                        List<Long> longs = map.get(Long.parseLong(building));
+                        sendMsg(noticeEntity, longs);
+                    }
                 }
-                if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM) && noticeEntity.getInform().contains(ContentConstants.MsgInform.SMS)) {
-                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType((byte) (MsgTypeConstant.SYS_MSG + MsgTypeConstant.SMS));
-                    SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
-                            .setDataJson(noticeEntity).setMessageTime(new Date());
-                    SmsMsgDto smsMsgDto = new SmsMsgDto();
-                    userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
-                    msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
-                            .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON).build());
-                } else if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM)) {
-                    SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
-                            .setDataJson(noticeEntity).setMessageTime(new Date());
-                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SYS_MSG).setSysMsgDto(sysMsgDto);
-                    msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
-                            .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
-                            .build());
-                } else if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SMS)) {
+            }
+        }
+    }
+
+    private void sendMsg(ContentNoticeEntity noticeEntity, List<Long> longs) {
+        if (CollUtil.isEmpty(longs) || CollUtil.isEmpty(noticeEntity.getInform())) {
+            return;
+        }
+        if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM) && noticeEntity.getInform().contains(ContentConstants.MsgInform.SMS)) {
+            UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType((byte) (InformTypeConstant.SYS_MSG + InformTypeConstant.SMS));
+            SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
+                    .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE);
+            SmsMsgDto smsMsgDto = new SmsMsgDto();
+            userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
+            msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+                    .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON).build());
+        } else if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM)) {
+            SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
+                    .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE);
+            UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SYS_MSG).setSysMsgDto(sysMsgDto);
+            msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+                    .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
+                    .build());
+        } else if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SMS)) {
 //                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SMS).setSmsMsgDto(new SmsMsgDto()
 //                            .setTelNumbers());
 //                    msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
 //                            .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
 //                            .build());
-                }
-            }
-        } else if (ContentConstants.PublishSource.APP.equals(noticeEntity.getPublishSource())) {
-            if (CollUtil.isNotEmpty(noticeEntity.getBuildings())) {
-                //TODO 小程序通知
-            }
         }
     }
 
@@ -260,9 +269,9 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         List<ContentNoticeEntity> noticeEntityList = this.baseMapper.queryForList(pageQuery, ContentConstants.DataType.NOTICE);
         if (CollUtil.isNotEmpty(noticeEntityList)) {
             noticeEntityList.forEach(noticeEntity -> {
-                UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SYS_MSG).setSysMsgDto(
+                UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SYS_MSG).setSysMsgDto(
                         new SysMsgDto().setAcceptors(Collections.singletonList(LoginInfoHolder.getCurrentUserId())).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
-                                .setDataJson(noticeEntity).setMessageTime(new Date()));
+                                .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE));
                 msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
                         .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                         .build());
