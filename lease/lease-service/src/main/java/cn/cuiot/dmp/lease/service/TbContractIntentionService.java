@@ -43,7 +43,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         }
         List<TbContractIntentionEntity> list = super.list(params);
         list.forEach(c -> {
-            baseContractService.fullBindHouseInfo(c);
+            baseContractService.fillBindHouseInfo(c);
         });
         return list;
     }
@@ -58,7 +58,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         }
         PageResult<TbContractIntentionEntity> page = super.page(param);
         page.getRecords().forEach(c -> {
-            baseContractService.fullBindHouseInfo(c);
+            baseContractService.fillBindHouseInfo(c);
         });
         return page;
     }
@@ -67,7 +67,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     public TbContractIntentionEntity getById(Serializable id) {
         AssertUtil.notNull(id,"id不能为空");
         TbContractIntentionEntity intentionEntity = super.getById(id);
-        baseContractService.fullBindHouseInfo(intentionEntity);
+        baseContractService.fillBindHouseInfo(intentionEntity);
         return intentionEntity;
     }
 
@@ -76,7 +76,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         queryWrapper.eq(TbContractIntentionEntity::getContractNo, contractNo);
         queryWrapper.last("limit 1");
         TbContractIntentionEntity intentionEntity = baseMapper.selectOne(queryWrapper);
-        baseContractService.fullBindHouseInfo(intentionEntity);
+        baseContractService.fillBindHouseInfo(intentionEntity);
         return intentionEntity;
     }
 

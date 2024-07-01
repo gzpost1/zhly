@@ -2,15 +2,11 @@ package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
-import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
-import cn.cuiot.dmp.lease.dto.contract.TbContractIntentionParam;
 import cn.cuiot.dmp.lease.dto.contract.TbContractLeaseParam;
-import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -77,7 +73,7 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         }
         List<TbContractLeaseEntity> list = super.list(params);
         list.forEach(c -> {
-            baseContractService.fullBindHouseInfo(c);
+            baseContractService.fillBindHouseInfo(c);
         });
         return list;
     }
@@ -91,7 +87,7 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         }
         PageResult<TbContractLeaseEntity> page = super.page(param);
         page.getRecords().forEach(c -> {
-            baseContractService.fullBindHouseInfo(c);
+            baseContractService.fillBindHouseInfo(c);
         });
         return page;
     }
@@ -100,7 +96,7 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
     public TbContractLeaseEntity getById(Serializable id) {
         AssertUtil.notNull(id,"id不能为空");
         TbContractLeaseEntity leaseEntity = super.getById(id);
-        baseContractService.fullBindHouseInfo(leaseEntity);
+        baseContractService.fillBindHouseInfo(leaseEntity);
         return leaseEntity;
     }
 

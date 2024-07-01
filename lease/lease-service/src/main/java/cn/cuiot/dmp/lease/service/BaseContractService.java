@@ -44,7 +44,7 @@ public class BaseContractService {
      *
      * @param contractEntity
      */
-    public void fullBindHouseInfo(BaseContractEntity contractEntity) {
+    public void fillBindHouseInfo(BaseContractEntity contractEntity) {
         if(Objects.isNull(contractEntity)) {
             return;
         }
