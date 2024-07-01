@@ -4,6 +4,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.LabelManageTypeReqDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.LabelManageCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.LabelManageUpdateDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.LabelManageEntity;
@@ -49,7 +50,9 @@ public class LabelManageService extends ServiceImpl<LabelManageMapper, LabelMana
      * 新增
      */
     public boolean saveLabelManage(LabelManageCreateDTO createDTO) {
-        AssertUtil.notNull(createDTO.getCompanyId(), "企业id不能为空");
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+        AssertUtil.notNull(companyId, "企业id不能为空");
+        createDTO.setCompanyId(companyId);
         LabelManageEntity labelManageEntity = new LabelManageEntity();
         BeanUtils.copyProperties(createDTO, labelManageEntity);
         return save(labelManageEntity);

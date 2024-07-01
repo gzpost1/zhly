@@ -53,6 +53,11 @@ public class ContractTemplateEntity extends BaseEntity {
     private String remark;
 
     /**
+     * 表单配置id
+     */
+    private Long formConfigId;
+
+    /**
      * 表单配置详情
      */
     private String formConfigDetail;
