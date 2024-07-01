@@ -132,7 +132,7 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
         // 保存定价明细
         priceManageDetailService.savePriceManageDetailList(priceManageEntity.getId(), createDTO.getPriceManageDetailCreateList());
         // 保存定价操作记录
-        priceManageRecordService.savePriceManageRecord(PriceManageConstant.OPERATE_CREATE, userId);
+        priceManageRecordService.savePriceManageRecord(userName, userId);
         return save(priceManageEntity);
     }
 
