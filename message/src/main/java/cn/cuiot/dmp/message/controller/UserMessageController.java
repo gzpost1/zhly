@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
-@RequestMapping("/app/userMessage")
+@RequestMapping("/userMessage")
 @ResolveExtData
-public class AppUserMessageController {
+public class UserMessageController {
 
     @Autowired
     private UserMessageService userMessageService;
@@ -64,5 +64,15 @@ public class AppUserMessageController {
     @PostMapping("/getUnreadMessageCount")
     public Long getUnreadMessageCount() {
         return userMessageService.getUnreadMessageCount();
+    }
+
+    /**
+     * 一键已读
+     * @return
+     */
+    @PostMapping("/realAllMessage")
+    public Boolean realAllMessage() {
+        userMessageService.realAllMessage();
+        return true;
     }
 }

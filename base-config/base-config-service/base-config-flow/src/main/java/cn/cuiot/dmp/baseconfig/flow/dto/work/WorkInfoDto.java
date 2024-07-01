@@ -2,8 +2,10 @@ package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.NodeButton;
+import cn.cuiot.dmp.baseconfig.flow.entity.CommitProcessEntity;
 import cn.cuiot.dmp.query.PageQuery;
 import lombok.Data;
+import org.jpedal.parser.shape.S;
 
 import java.util.Date;
 import java.util.List;
@@ -15,10 +17,8 @@ import java.util.List;
 @Data
 public class WorkInfoDto extends PageQuery {
 
-    /**
-     * 工单id
-     */
-    private Long id;
+
+    private String id;
 
     /**
      * 业务类型
@@ -30,6 +30,10 @@ public class WorkInfoDto extends PageQuery {
      */
     private String businessTypeName;
 
+    /**
+     * 流程定义id
+     */
+    private String processDefinitionId;
 
     /**
      * 所属组织
@@ -174,4 +178,18 @@ public class WorkInfoDto extends PageQuery {
      * 按钮信息
      */
     private List<NodeButton> buttons;
+    /**
+     * 0 未处理，1已处理
+     */
+    private Integer queryType;
+
+    /**
+     * 任务id
+     */
+    private Long taskId;
+
+    /**
+     * 提交的信息
+     */
+    private CommitProcessEntity commitProcess;
 }

@@ -3,6 +3,7 @@ package cn.cuiot.dmp.content.conver;//	模板
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.param.dto.NoticeCreateDto;
@@ -46,20 +47,21 @@ public interface NoticeConvert {
             noticeVo.setDepartmentNames(departmentNames);
             noticeVo.setBuildingNames(buildingNames);
             noticeVo.setCreatUserName(Optional.ofNullable(userMapByIds.get(contentNoticeEntity.getCreateUser())).orElse(new BaseUserDto()).getUsername());
-            noticeVo.setPublishStatus(checkEffectiveStatus(contentNoticeEntity));
+
+            if (ContentConstants.PublishStatus.PUBLISHED.equals(contentNoticeEntity.getPublishStatus())) {
+                noticeVo.setEffectiveStatus(checkEffectiveStatus(contentNoticeEntity));
+            }
             return noticeVo;
         });
     }
 
     default Byte checkEffectiveStatus(ContentNoticeEntity contentNoticeEntity) {
-        if (ContentConstants.PublishStatus.STOP_PUBLISH.equals(contentNoticeEntity.getPublishStatus())) {
-            return ContentConstants.PublishStatus.STOP_PUBLISH;
-        } else if (DateUtil.compare(new Date(), contentNoticeEntity.getEffectiveStartTime()) < 0) {
-            return ContentConstants.PublishStatus.UNPUBLISHED;
+        if (DateUtil.compare(new Date(), contentNoticeEntity.getEffectiveStartTime()) < 0) {
+            return EntityConstants.NOT_EFFECTIVE;
         } else if (DateUtil.compare(new Date(), contentNoticeEntity.getEffectiveEndTime()) > 0) {
-            return ContentConstants.PublishStatus.EXPIRED;
+            return EntityConstants.EXPIRE;
         } else {
-            return ContentConstants.PublishStatus.PUBLISHED;
+            return EntityConstants.NORMAL;
         }
     }
 

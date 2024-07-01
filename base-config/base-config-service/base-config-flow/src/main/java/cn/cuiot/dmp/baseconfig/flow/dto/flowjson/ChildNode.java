@@ -81,14 +81,6 @@ public class ChildNode {
      */
     private Boolean typeElse;
 
-    /**
-     * 处理节点类型
-     */
-    private String processNodeType;
 
-    /**
-     * 通过
-     */
-    private Integer formTaskAccessRate;
 }
 

@@ -19,6 +19,8 @@ import cn.cuiot.dmp.baseconfig.flow.dto.*;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.AppTransferTaskDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.ClientOperationDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.ProcessBusinessDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.ProcessResultDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.app.query.UserSubmitDataDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.*;
@@ -37,6 +39,7 @@ import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
@@ -172,6 +175,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //再次发起
         if(StringUtils.isNotBlank(startProcessInstanceDTO.getTaskId())){
             task = taskService.createTaskQuery().taskId(taskId).singleResult();
+            if(!Objects.equals(task.getAssignee(),String.valueOf(LoginInfoHolder.getCurrentUserId()))){
+               throw new RuntimeException(ErrorCode.NOT_OPERATION.getMessage());
+            }
             runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
         }else{
             task = startWorkOrder(startProcessInstanceDTO,processVariables);
@@ -185,10 +191,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             workBusinessTypeInfoService.save(workBusinessTypeInfo);
             //保存提交的参数
             //组装提交信息
-            CommitProcessEntity processEntity = new CommitProcessEntity();
-            processEntity.setCommitProcess(JsonUtil.writeValueAsString(formData));
-            processEntity.setDataId(workBusinessTypeInfo.getTaskId());
-            startProcessInstanceDTO.setCommitProcess(processEntity);
             saveCommitProcess(workBusinessTypeInfo,startProcessInstanceDTO);
             taskService.complete(task.getId());
         }
@@ -201,8 +203,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param startProcessInstanceDTO
      */
     public void saveCommitProcess(WorkBusinessTypeInfoEntity workBusinessTypeInfo,StartProcessInstanceDTO startProcessInstanceDTO){
-        CommitProcessEntity commitProcess = startProcessInstanceDTO.getCommitProcess();
-        if(Objects.isNull(commitProcess)){
+        JSONObject formData = startProcessInstanceDTO.getFormData();
+        if(Objects.isNull(formData)){
             return;
         }
         CommitProcessEntity entity = new CommitProcessEntity();
@@ -210,8 +212,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         entity.setProcInstId(workBusinessTypeInfo.getProcInstId());
         entity.setUserId(LoginInfoHolder.getCurrentUserId());
         entity.setNodeId(workBusinessTypeInfo.getNode());
-        entity.setDataId(commitProcess.getDataId());
-        entity.setCommitProcess(commitProcess.getCommitProcess());
+        entity.setCommitProcess(JsonUtil.writeValueAsString(formData));
         entity.setCreateTime(new Date());
         entity.setBusinessTypeId(workBusinessTypeInfo.getId());
         commitProcessService.save(entity);
@@ -223,6 +224,19 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public Task startWorkOrder(StartProcessInstanceDTO startProcessInstanceDTO,Map<String,Object> processVariables){
+
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
+                .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
+                .singleResult();
+        String flowableKey = processDefinition.getKey().replaceAll("[a-zA-Z]", "");
+        TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
+                orElseThrow(()->new RuntimeException("流程配置为空"));
+        //保存工单信息
+        List<Long> orgIds = orgIds(flowConfig.getId());
+        //校验用户是否有发起该流程得权限
+        if(!orgIds.contains(LoginInfoHolder.getCurrentDeptId())){
+            throw new RuntimeException(ErrorCode.NOT_OPERATION.getMessage());
+        }
         //新建
         ProcessInstanceBuilder processInstanceBuilder = runtimeService.createProcessInstanceBuilder();
         ProcessInstance processInstance = processInstanceBuilder
@@ -233,16 +247,10 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //手动完成第一个任务
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
 
-        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
-                .processDefinitionId(startProcessInstanceDTO.getProcessDefinitionId())
-                .singleResult();
-        String flowableKey = processDefinition.getKey().replaceAll("[a-zA-Z]", "");
-        TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(Long.parseLong(flowableKey))).
-                orElseThrow(()->new RuntimeException("流程配置为空"));
         //保存节点类型
         saveChildNode(processJson(flowConfig.getProcess()),startProcessInstanceDTO.getProcessDefinitionId());
-        //保存工单信息
-        List<Long> orgIds = orgIds(flowConfig.getId());
+
+
         //保存工单信息
         saveWorkInfo(flowConfig,startProcessInstanceDTO,task,orgIds);
 
@@ -380,13 +388,19 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             entity.setNodeId(chilNodedren.getId());
             entity.setNodeType(chilNodedren.getType());
             entity.setProcessDefinitionId(processDefinitionId);
-            entity.setProcessNodeType(chilNodedren.getProcessNodeType());
+            entity.setProcessNodeType(chilNodedren.getProps().getProcessNodeType());
             nodeTypeService.save(entity);
             chilNodedren = chilNodedren.getChildren();
         }
 
 
     }
+
+    /**
+     * 获取节点信息
+     * @param processJson
+     * @return
+     */
     public ChildNode processJson(String processJson) {
         ChildNode childNode = JsonUtil.readValue(processJson, new com.fasterxml.jackson.core.type.TypeReference<ChildNode>() {
         });
@@ -394,6 +408,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return childNode;
     }
 
+    /**
+     * 获取组织信息
+     * @param configId
+     * @return
+     */
     public List<Long> orgIds(Long configId){
         LambdaQueryWrapper<TbFlowConfigOrg> lw = new LambdaQueryWrapper<>();
         lw.eq(TbFlowConfigOrg::getFlowConfigId,configId);
@@ -416,6 +435,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         Map<String, List<UserInfo>> processUsers = handleDataDTO.getProcessUsers();
         for (String taskId :taskIds){
+            //校验任务信息
+            checkTaskInfo(taskId);
+            Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
             HandleDataDTO dto = new HandleDataDTO();
             dto.setTaskId(taskId);
             dto.setComments(handleDataDTO.getComments());
@@ -433,7 +455,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 update.setEndTime(new Date());
                 workBusinessTypeInfoService.updateById(update);
             }
-            Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
             Map<String,Object> processVariables= new HashMap<>();
             if(CollUtil.isNotEmpty(processUsers)){
                 Set<String> nodes = processUsers.keySet();
@@ -484,6 +505,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO assignee(HandleDataDTO handleDataDTO) {
+        //校验是不是本企业的人操作
+        checkWorkOrder(handleDataDTO.getProcessInstanceId());
         //记录转办信息
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_TRANSFER.getCode());
@@ -494,6 +517,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         updateBusinessPendingDate(handleDataDTO);
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
         if(StringUtils.isNotEmpty(handleDataDTO.getTaskId())){
+            checkTaskInfo(handleDataDTO.getTaskId());
             //审批中心转办
             assigneeByProcInstId(handleDataDTO);
             return IdmResDTO.success();
@@ -504,6 +528,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 .orElseThrow(()->new BusinessException(ErrorCode.NOT_FOUND.getCode(),ErrorCode.NOT_FOUND.getMessage()));
         //查询该节点下所有任务信息
         List<String> hisTaskIds = baseMapper.queryHistoricTask( tasks.get(0).getTaskDefinitionKey(),tasks.get(0).getProcessInstanceId());
+        if(tasks.size()!=hisTaskIds.size()){
+            throw new RuntimeException("部分任务已结束，不能转办");
+        }
         //执行加签操作
         AddMultiInstanceUserTaskService multiInstanceUserTaskService = new AddMultiInstanceUserTaskService(managementService);
         Integer instance = 1;
@@ -568,6 +595,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO refuse(BatchBusinessDto handleDataDTO) {
         List<WorkBusinessTypeInfoEntity> buList = new ArrayList<>();
         for(String tasId : handleDataDTO.getTaskIds()){
+            //校验任务信息
+            checkTaskInfo(tasId);
             HandleDataDTO dto = new HandleDataDTO();
             dto.setTaskId(tasId);
             dto.setReason(handleDataDTO.getReason());
@@ -636,6 +665,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO rollback(ClientOperationDto operationDto) {
+        checkTaskInfo(String.valueOf(operationDto.getTaskId()));
         HandleDataDTO handleDataDTO = new HandleDataDTO();
         handleDataDTO.setTaskId(String.valueOf(operationDto.getTaskId()));
         handleDataDTO.setComments(operationDto.getComments());
@@ -689,9 +719,10 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
        List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
        //工单中心挂起
-        for(String handleDataDTO : handleDataDTOs.getProcessInstanceId()){
+        for(String processInstanceId : handleDataDTOs.getProcessInstanceId()){
+            checkWorkOrder(processInstanceId);
             HandleDataDTO dataDTO = new HandleDataDTO();
-            dataDTO.setProcessInstanceId(handleDataDTO);
+            dataDTO.setProcessInstanceId(processInstanceId);
             dataDTO.setComments(handleDataDTOs.getComments());
             dataDTO.setReason(handleDataDTOs.getReason());
             WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dataDTO);
@@ -702,6 +733,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
        }
         //审批中心挂起
         for(String taskId : handleDataDTOs.getTaskIds()){
+            checkTaskInfo(taskId);
             HandleDataDTO dataDTO = new HandleDataDTO();
             dataDTO.setTaskId(taskId);
             dataDTO.setComments(handleDataDTOs.getComments());
@@ -1079,7 +1111,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO<HandleDataVO> instanceInfo(HandleDataDTO HandleDataDTO) {
         String processInstanceId = HandleDataDTO.getProcessInstanceId();
         //校验权限信息
-        checkWorkOrder(processInstanceId);
+//        checkWorkOrder(processInstanceId);
 
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
                 .includeProcessVariables().singleResult();
@@ -1112,10 +1144,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         Map<String,NodeDetailDto> pamaMap = new HashMap<>();
         //已经运行完成的节点
         List<String> endNodes = new ArrayList<>();
+        Integer  sort =1;
         for (FlowElement flowElement : flowElements) {
             String nodeId = flowElement.getId();
             if(nodeId.startsWith(WorkOrderConstants.NODE_START) || StringUtils.equals(WorkOrderConstants.USER_ROOT,nodeId)){
                 //没有收集
+
                 if(!pamaMap.containsKey(nodeId)){
                     NodeDetailDto nodeDetailDto = new NodeDetailDto();
                     nodeDetailDto.setNodeId(nodeId);
@@ -1125,7 +1159,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                             instId));
                     nodeDetailDto.setBusinessName(getStartUserName(nodeId,
                             instId));
-                    nodeDetailDto.setCreateDate(historicProcessInstance.getStartTime());
+                    nodeDetailDto.setSort(sort);
+                    sort++;
                     pamaMap.put(nodeDetailDto.getNodeId(),nodeDetailDto);
                 }
             }
@@ -1136,10 +1171,29 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         handleDataVO.setProcessTemplates(flowConfig);
         handleDataVO.setEndList(endNodes);
-        handleDataVO.setNodeList(pamaMap);
+        if (Objects.nonNull(pamaMap)){
+            handleDataVO.setNodeList(sortedMap(pamaMap));
+        }
         return IdmResDTO.success(handleDataVO);
     }
 
+    /**
+     * map排序
+     * @param pamaMap
+     * @return
+     */
+    public Map<String, NodeDetailDto> sortedMap(Map<String,NodeDetailDto> pamaMap){
+        Map<String, NodeDetailDto> sortedMap = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String key1, String key2) {
+                // 比较两个键对应的值的sort属性
+                return Integer.compare(pamaMap.get(key1).getSort(), pamaMap.get(key2).getSort());
+            }
+        });
+
+        sortedMap.putAll(pamaMap);
+        return sortedMap;
+    }
     /**
      * 校验查询的工单信息与自己是不是同一个企业下的
      * @param processInstanceId
@@ -1205,7 +1259,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * 判断节点是否超时
      * @return
      */
-    public List<WorkBusinessTypeInfoEntity> queryNodeBusiness(String nodeId,String procinstId){
+    public List<WorkBusinessTypeInfoEntity> queryNodeBusiness(String nodeId,String procinstId ){
         LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
         lw.eq(WorkBusinessTypeInfoEntity::getNode,nodeId).
                 ne(WorkBusinessTypeInfoEntity::getBusinessType,BUSINESS_TIME_OUT.getCode()).
@@ -1219,7 +1273,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //获取userIds
         List<Long> userIds = list.stream().map(WorkBusinessTypeInfoEntity::getUserId).collect(Collectors.toList());
         Map<Long, String> userMap = getUserMap(userIds);
+
         list.stream().forEach(item->{
+
             item.setUserName(userMap.get(item.getUserId()));
             if(StringUtils.isNotEmpty(item.getDeliver())){
                 String deliverNames = getDeliverNames(item.getDeliver());
@@ -1322,6 +1378,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
         //工单中心终止流程
         for(String instId:handleDataDTOs.getProcessInstanceId()){
+            //校验工单信息
+            checkWorkOrder(instId);
             HandleDataDTO dataDTO = new HandleDataDTO();
             dataDTO.setProcessInstanceId(instId);
             dataDTO.setComments(handleDataDTOs.getComments());
@@ -1343,6 +1401,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         }
         //审批中心终止流程
         for(String taskId : handleDataDTOs.getTaskIds()){
+            //校验任务信息
+            checkTaskInfo(taskId);
             HandleDataDTO dataDTO = new HandleDataDTO();
             dataDTO.setTaskId(taskId);
             dataDTO.setComments(handleDataDTOs.getComments());
@@ -1369,6 +1429,20 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success();
     }
 
+    /**
+     * 校验任务信息
+     * @param taskId
+     */
+    public void checkTaskInfo(String taskId){
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        //任务已经结束
+        if(Objects.isNull(task)){
+            throw new RuntimeException(ErrorCode.TASK_COMPLETE.getMessage());
+        }
+        if(!Objects.equals(task.getAssignee(),String.valueOf(LoginInfoHolder.getCurrentUserId()))){
+            throw new RuntimeException(ErrorCode.NOT_OPERATION.getMessage());
+        }
+    }
 
     public void updateWorkInfo(Byte state,Long procInstId){
         LambdaUpdateWrapper<WorkInfoEntity> wrapper = new LambdaUpdateWrapper<>();
@@ -1794,13 +1868,52 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     public List<CommitProcessEntity> queryCommitProcessInfo(QueryCommitProcessDto dto) {
         LambdaQueryWrapper<CommitProcessEntity> lw= new LambdaQueryWrapper<>() ;
-        lw.eq(CommitProcessEntity::getProcInstId,dto.getProcInstId()).eq(CommitProcessEntity::getNodeId,dto.getNodeId())
+        lw.eq(CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId()).eq(Objects.nonNull(dto.getNodeId()),
+                        CommitProcessEntity::getNodeId,dto.getNodeId())
                 .eq(Objects.nonNull(dto.getDataId()),CommitProcessEntity::getDataId,dto.getDataId())
                 .eq(Objects.nonNull(dto.getUserId()),CommitProcessEntity::getUserId,dto.getUserId());
         if(Objects.isNull(dto.getUserId())){
             lw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
         }
+        lw.orderByDesc(CommitProcessEntity::getCreateTime);
         return commitProcessService.list(lw);
+    }
+
+    /**
+     * 详情-重新提交等获取我提交的数据
+     * @param dto
+     * @return
+     * @throws RuntimeException
+     */
+    public IdmResDTO<ProcessResultDto> queryUserSubmitData(UserSubmitDataDto dto) throws RuntimeException {
+
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(String.valueOf(dto.getProcInstId()))
+                .includeProcessVariables().singleResult();
+        if(Objects.isNull(historicProcessInstance)){
+            throw new RuntimeException(ErrorCode.NOT_FOUND.getMessage());
+        }
+        Process mainProcess = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess();
+        String dingDing = mainProcess.getAttributeValue(FLOWABLE_NAME_SPACE, FLOWABLE_NAME_SPACE_NAME);
+        JSONObject mainJson = JSONObject.parseObject(dingDing, new TypeReference<JSONObject>() {
+        });
+        String processJson = mainJson.getString(VIEW_PROCESS_JSON_NAME);
+
+        LambdaQueryWrapper<CommitProcessEntity> processLw = new LambdaQueryWrapper<>();
+        processLw.eq(Objects.nonNull(dto.getProcInstId()),CommitProcessEntity::getProcInstId,dto.getProcInstId())
+                .eq(Objects.nonNull(dto.getNodeId()),CommitProcessEntity::getNodeId,dto.getNodeId());
+                if(Objects.isNull(dto.getUserId())){
+                    processLw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
+                }else{
+                    processLw.eq(CommitProcessEntity::getUserId,dto.getUserId());
+                }
+        processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId())
+                .orderByDesc(CommitProcessEntity::getCreateTime);
+        List<CommitProcessEntity> processList = commitProcessService.list(processLw);
+
+        ProcessResultDto resultDto = new ProcessResultDto();
+        resultDto.setProcess(processJson);
+        resultDto.setCommitProcess(processList);
+        return IdmResDTO.success(resultDto);
     }
 
     /**
@@ -1814,5 +1927,18 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         AgencyHandlingDto resultDto = baseMapper.queryAgencyHandlingNumber(dto);
 
         return IdmResDTO.success(resultDto);
+    }
+
+    /**
+     * 获取开始节点已提交的信息
+     * @param dto
+     * @return
+     */
+    public IdmResDTO<CommitProcessEntity> queryCommitProcess(QueryCommitProcessDto dto) {
+        dto.setNodeId(WorkOrderConstants.USER_ROOT);
+        List<CommitProcessEntity> processEntities = queryCommitProcessInfo(dto);
+        CommitProcessEntity entity = CollectionUtils.isNotEmpty(processEntities)?processEntities.get(0):null;
+        return IdmResDTO.success(entity);
+
     }
 }

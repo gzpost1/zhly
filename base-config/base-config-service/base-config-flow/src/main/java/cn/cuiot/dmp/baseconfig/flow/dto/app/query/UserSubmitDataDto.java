@@ -22,6 +22,15 @@ public class UserSubmitDataDto {
     /**
      * 节点id
      */
-    @NotBlank(message = "节点id不能为空")
     private String nodeId;
+
+    /**
+     * 用户id
+     */
+    private String userId;
+
+    /**
+     * 节点操作信息id
+     */
+    private String businessTypeId;
 }
