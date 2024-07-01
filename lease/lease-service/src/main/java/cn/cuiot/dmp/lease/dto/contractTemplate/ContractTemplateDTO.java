@@ -62,6 +62,11 @@ public class ContractTemplateDTO implements Serializable {
     private String remark;
 
     /**
+     * 表单配置id
+     */
+    private Long formConfigId;
+
+    /**
      * 表单配置详情
      */
     private String formConfigDetail;

@@ -1,10 +1,16 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.LabelManageTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.LabelManageTypeRspDTO;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.system.application.param.dto.LabelManageCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.LabelManageTypeDTO;
+import cn.cuiot.dmp.system.application.param.dto.LabelManageUpdateDTO;
+import cn.cuiot.dmp.system.application.service.LabelManageService;
 import cn.cuiot.dmp.system.application.service.LabelManageTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +33,9 @@ public class LabelManageTypeController {
 
     @Autowired
     private LabelManageTypeService labelManageTypeService;
+
+    @Autowired
+    private LabelManageService labelManageService;
 
     /**
      * 根据id获取详情
@@ -53,6 +62,26 @@ public class LabelManageTypeController {
     public List<LabelManageTypeDTO> queryByCompany() {
         Long companyId = LoginInfoHolder.getCurrentOrgId();
         return labelManageTypeService.queryByCompany(companyId);
+    }
+
+    /**
+     * 新增标签
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "saveLabel", operationName = "创建标签", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @PostMapping("/saveLabel")
+    public boolean saveLabelManage(@RequestBody @Valid LabelManageCreateDTO createDTO) {
+        return labelManageService.saveLabelManage(createDTO);
+    }
+
+    /**
+     * 更新标签
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "updateLabel", operationName = "更新标签", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @PostMapping("/updateLabel")
+    public boolean updateLabelManage(@RequestBody @Valid LabelManageUpdateDTO updateDTO) {
+        return labelManageService.updateLabelManage(updateDTO);
     }
 
 }
