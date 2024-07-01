@@ -25,6 +25,12 @@ public class CommonOptionTypeQueryDTO implements Serializable {
     private String name;
 
     /**
+     * 选项类别
+     */
+    @NotNull(message = "选项类别不能为空")
+    private Byte category;
+
+    /**
      * 企业ID
      */
     @NotNull(message = "企业ID不能为空")

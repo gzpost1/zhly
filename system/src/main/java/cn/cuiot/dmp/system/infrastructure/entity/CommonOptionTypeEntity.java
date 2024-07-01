@@ -24,6 +24,11 @@ public class CommonOptionTypeEntity extends BaseEntity {
     private String name;
 
     /**
+     * 选项类别（0：自定义，1：交易方式，2：收费方式）
+     */
+    private Byte category;
+
+    /**
      * 上级ID
      */
     private Long parentId;

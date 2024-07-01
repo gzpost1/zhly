@@ -73,10 +73,12 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
     public CommonOption queryForDetailByName(CommonOption commonOption) {
         AssertUtil.notBlank(commonOption.getName(), "常用选项名称不能为空");
         AssertUtil.notNull(commonOption.getCompanyId(), "企业Id不能为空");
+        AssertUtil.notNull(commonOption.getTypeCategory(), "选项类别不能为空");
         // 获取常用选项
         LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
                 .eq(CommonOptionEntity::getName, commonOption.getName())
-                .eq(CommonOptionEntity::getCompanyId, commonOption.getCompanyId());
+                .eq(CommonOptionEntity::getCompanyId, commonOption.getCompanyId())
+                .eq(CommonOptionEntity::getTypeCategory, commonOption.getTypeCategory());
         List<CommonOptionEntity> commonOptionEntityList = commonOptionMapper.selectList(queryWrapper);
         AssertUtil.notEmpty(commonOptionEntityList, "常用选项不存在");
         CommonOptionEntity commonOptionEntity = commonOptionEntityList.get(0);
@@ -204,6 +206,7 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
         LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
                 .eq(Objects.nonNull(pageQuery.getCompanyId()), CommonOptionEntity::getCompanyId, pageQuery.getCompanyId())
                 .eq(Objects.nonNull(pageQuery.getTypeId()), CommonOptionEntity::getTypeId, pageQuery.getTypeId())
+                .eq(Objects.nonNull(pageQuery.getCategory()), CommonOptionEntity::getTypeCategory, pageQuery.getCategory())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), CommonOptionEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CommonOptionEntity::getStatus, pageQuery.getStatus());
         IPage<CommonOptionEntity> commonOptionEntityPage = commonOptionMapper.selectPage(
@@ -260,6 +263,7 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
         AssertUtil.notBlank(commonOption.getName(), "常用选项名称不能为空");
         LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
                 .eq(CommonOptionEntity::getCompanyId, commonOption.getCompanyId())
+                .eq(CommonOptionEntity::getTypeCategory, commonOption.getTypeCategory())
                 // 更新的话排除自身
                 .ne(Objects.nonNull(commonOption.getId()), CommonOptionEntity::getId, commonOption.getId());
         List<CommonOptionEntity> commonOptionEntityList = commonOptionMapper.selectList(queryWrapper);

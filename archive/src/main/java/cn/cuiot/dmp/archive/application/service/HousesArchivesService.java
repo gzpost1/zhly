@@ -50,6 +50,7 @@ public interface HousesArchivesService extends IService<HousesArchivesEntity> {
 
     /**
      * 根据房屋ids查询房屋信息
+     *
      * @param ids
      * @return
      */
@@ -59,5 +60,7 @@ public interface HousesArchivesService extends IService<HousesArchivesEntity> {
      * 获取组织楼盘房屋树
      */
     List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree(HouseTreeQueryDto houseTreeQueryDto);
+
+    void fullContractInfo(List<HousesArchivesEntity> records);
 
 }

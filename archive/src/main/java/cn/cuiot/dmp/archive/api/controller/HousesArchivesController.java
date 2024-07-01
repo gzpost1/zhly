@@ -122,37 +122,11 @@ public class HousesArchivesController extends BaseController {
         wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         List<HousesArchivesEntity> records = res.getRecords();
-        fullContractInfo(records);
+        housesArchivesService.fullContractInfo(records);
         return IdmResDTO.success(res);
     }
 
-    /**
-     * 填充房屋关联的意向合同和租赁合同
-     * @param records
-     */
-    public void fullContractInfo(List<HousesArchivesEntity> records) {
-        List<Long> houseIds = records.stream().map(HousesArchivesEntity::getId).collect(Collectors.toList());
-        IdsReq houseIdsReq = new IdsReq();
-        houseIdsReq.setIds(houseIds);
-        IdmResDTO<ContractStatusVo> resDTO = contractFeignService.queryConctactStatusByHouseIds(houseIdsReq);
-        if(!Objects.equals(resDTO.getCode(),ResultCode.SUCCESS.getCode())){
-            return;
-        }
-        ContractStatusVo contractStatusVo = resDTO.getData();
-        Map<Long, List<ContractStatus>> intentionMap = Optional.ofNullable(contractStatusVo.getIntentionMap()).orElse(Maps.newHashMap());
-        Map<Long, List<ContractStatus>> leaseMap = Optional.ofNullable(contractStatusVo.getLeaseMap()).orElse(Maps.newHashMap());
-        records.forEach(h->{
-            Long houseId = h.getId();
-            List<ContractStatus> intentionStatuses = intentionMap.get(houseId);
-            List<ContractStatus> leaseStatuses = leaseMap.get(houseId);
-            if(CollectionUtils.isNotEmpty(intentionStatuses)){
-                h.setIntentionStatuses(intentionStatuses);
-            }
-            if(CollectionUtils.isNotEmpty(leaseStatuses)){
-                h.setLeaseStatuses(leaseStatuses);
-            }
-        });
-    }
+
 
     /**
      * 创建
