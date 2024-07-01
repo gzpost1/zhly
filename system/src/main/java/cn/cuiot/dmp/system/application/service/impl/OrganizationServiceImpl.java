@@ -40,6 +40,7 @@ import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.domain.entity.Organization;
 import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.domain.query.OrganizationCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.CustomConfigDetailRepository;
 import cn.cuiot.dmp.system.domain.repository.FormConfigTypeRepository;
 import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
@@ -162,6 +163,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private ContentApiFeignService contentApiFeignService;
+
+    @Autowired
+    private CustomConfigDetailRepository customConfigDetailRepository;
 
     /**
      * 根据用户类型返回
@@ -1037,6 +1041,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         formConfigTypeRepository.queryByCompany(companyId, EntityConstants.ENABLED);
         // 初始化审核配置
         auditConfigService.queryByCompany(companyId);
+        // 初始化合同相关的系统选项值
+        customConfigDetailRepository.initCustomConfigDetail(companyId);
         return organizationRepository.updateInitFlag(companyId, EntityConstants.ENABLED);
     }
 

@@ -3,6 +3,8 @@ package cn.cuiot.dmp.system.api.controller;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.AuditConfigTypeDTO;
@@ -37,6 +39,16 @@ public class AuditConfigTypeController {
     public List<AuditConfigTypeDTO> queryByCompany(@RequestBody @Valid AuditConfigTypeQueryDTO queryDTO) {
         Long companyId = LoginInfoHolder.getCurrentOrgId();
         return auditConfigTypeService.queryByCompany(companyId);
+    }
+
+    /**
+     * 根据条件查询审核配置列表
+     */
+    @PostMapping("/queryForList")
+    public List<AuditConfigTypeRspDTO> queryForList(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+        queryDTO.setCompanyId(companyId);
+        return auditConfigTypeService.queryForList(queryDTO);
     }
 
     /**

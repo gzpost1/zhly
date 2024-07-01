@@ -3,6 +3,7 @@ package cn.cuiot.dmp.lease.controller;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.lease.dto.contractTemplate.ContractTemplateCreateDTO;
@@ -74,6 +75,16 @@ public class ContractTemplateController {
     @PostMapping("/update")
     public boolean updateContractTemplate(@RequestBody @Valid ContractTemplateUpdateDTO updateDTO) {
         return contractTemplateService.updateContractTemplate(updateDTO);
+    }
+
+    /**
+     * 更新状态
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "updateContractTemplateStatus", operationName = "更新合同模板状态", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
+    @PostMapping("/updateStatus")
+    public boolean updateContractTemplateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
+        return contractTemplateService.updateContractTemplateStatus(updateStatusParam);
     }
 
     /**

@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.domain.repository.impl;
 
+import cn.cuiot.dmp.common.constant.CustomConfigConstant;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.StreamUtil;
@@ -101,8 +102,32 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
                 .collect(Collectors.toList()));
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void initCustomConfigDetail(Long companyId) {
+        AssertUtil.notNull(companyId, "企业ID不能为空");
+        LambdaQueryWrapper<CustomConfigDetailEntity> queryWrapper = new LambdaQueryWrapper<CustomConfigDetailEntity>()
+                .eq(CustomConfigDetailEntity::getCompanyId, companyId)
+                .eq(CustomConfigDetailEntity::getCustomConfigId, CustomConfigConstant.FIRST_CONTRACT_CUSTOM_CONFIG_ID);
+        List<CustomConfigDetailEntity> customConfigDetailEntitiesCurrent = customConfigDetailMapper.selectList(queryWrapper);
+        if (CollectionUtils.isNotEmpty(customConfigDetailEntitiesCurrent)) {
+            return;
+        }
+        List<CustomConfigDetailEntity> customConfigDetailEntities = new ArrayList<>();
+        CustomConfigConstant.CONTRACT_DETAIL_MAP_INIT.forEach((k, v) -> v.forEach(o -> {
+            CustomConfigDetailEntity customConfigDetailEntity = new CustomConfigDetailEntity();
+            customConfigDetailEntity.setId(IdWorker.getId());
+            customConfigDetailEntity.setCompanyId(companyId);
+            customConfigDetailEntity.setName(o.substring(0, o.length() - 2));
+            customConfigDetailEntity.setCustomConfigId(k);
+            customConfigDetailEntity.setSort(Byte.valueOf(o.substring(o.length() - 1)));
+            customConfigDetailEntities.add(customConfigDetailEntity);
+        }));
+        customConfigDetailMapper.batchSaveCustomConfigDetails(customConfigDetailEntities);
+    }
+
     private void batchSaveCustomConfigDetails(Long customConfigId, List<CustomConfigDetail> customConfigDetails, Long companyId) {
-        List<CustomConfigDetailEntity> CustomConfigDetailEntities = customConfigDetails.stream()
+        List<CustomConfigDetailEntity> customConfigDetailEntities = customConfigDetails.stream()
                 .map(o -> {
                     CustomConfigDetailEntity customConfigDetailEntity = new CustomConfigDetailEntity();
                     BeanUtils.copyProperties(o, customConfigDetailEntity);
@@ -112,7 +137,7 @@ public class CustomConfigDetailRepositoryImpl implements CustomConfigDetailRepos
                     return customConfigDetailEntity;
                 })
                 .collect(Collectors.toList());
-        customConfigDetailMapper.batchSaveCustomConfigDetails(CustomConfigDetailEntities);
+        customConfigDetailMapper.batchSaveCustomConfigDetails(customConfigDetailEntities);
     }
 
     private void batchUpdateCustomConfigDetails(Long customConfigId, List<CustomConfigDetail> customConfigDetails,
