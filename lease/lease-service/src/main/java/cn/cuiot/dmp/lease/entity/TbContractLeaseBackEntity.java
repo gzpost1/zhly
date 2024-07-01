@@ -40,6 +40,7 @@ public class TbContractLeaseBackEntity extends Model<TbContractLeaseBackEntity> 
     /**
      * 合同id
      */
+    @NotNull(message = "退租合同id不能为空")
     private Long contractId;
 
     /**
@@ -47,16 +48,19 @@ public class TbContractLeaseBackEntity extends Model<TbContractLeaseBackEntity> 
      */
     @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern="yyyy-MM-dd")
+    @NotNull(message = "退租日期不能为空")
     private LocalDate endDate;
 
     /**
      * 退租类型
      */
+    @NotNull(message = "退租类型不能为空")
     private String type;
 
     /**
      * 退租原因
      */
+    @NotNull(message = "退租原因不能为空")
     private String reason;
 
     /**
@@ -64,6 +68,7 @@ public class TbContractLeaseBackEntity extends Model<TbContractLeaseBackEntity> 
      */
     @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern="yyyy-MM-dd")
+    @NotNull(message = "物业验收交接日期不能为空")
     private LocalDate handoverDate;
 
     /**

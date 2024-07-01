@@ -24,7 +24,6 @@ create table tb_contract_intention
 )
     comment '意向合同';
 
--- auto-generated definition
 create table tb_contract_cancel
 (
     id                    bigint        not null
@@ -35,7 +34,7 @@ create table tb_contract_cancel
     date                  date          null comment '退订日期',
     reason                varchar(255)  null comment '退订原因',
     remark                longtext      null comment '退订说明',
-    path                  varchar(512)  not null comment '退订附件',
+    path                  varchar(512)  null comment '退订附件',
     create_time           datetime      null,
     update_time           datetime      null,
     create_user           bigint        null,
@@ -51,6 +50,8 @@ create table tb_contract_cancel
             on delete cascade
 )
     comment '退订或作废信息';
+
+
 
 
 
@@ -175,9 +176,6 @@ create table tb_contract_lease_back
             on delete cascade
 )
     comment '退租信息';
-
-
-
 
 
 CREATE FUNCTION getUserName(userid INT)

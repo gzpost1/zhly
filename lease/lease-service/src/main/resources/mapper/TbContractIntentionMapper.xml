@@ -174,4 +174,8 @@
             </if>
         </if>
     </sql>
+    
+    <select id="statisticsContract" resultType="cn.cuiot.dmp.base.infrastructure.dto.BaseVO">
+        select count(*) value,contract_status name from tb_contract_intention where deleted=0 group by contract_status
+    </select>
 </mapper>

@@ -72,8 +72,15 @@ public class BaseContractEntity extends Model {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private LocalDate cantractDate;
 
+    /**
+     * 签订查询开始日期
+     */
     @TableField(exist = false)
     private LocalDate cantractBeginDate;
+
+    /**
+     * 签订查询结束日期
+     */
     @TableField(exist = false)
     private LocalDate cantractEndDate;
 
@@ -94,12 +101,12 @@ public class BaseContractEntity extends Model {
     private LocalDate endDate;
 
     /**
-     * 查询开始日期 开始日期
+     * 查询合同开始日期 开始日期
      */
     @TableField(exist = false)
     private LocalDate beginDateBegin;
     /**
-     * 查询开始日期 结束日期
+     * 查询合同开始日期 结束日期
      */
     @TableField(exist = false)
     private LocalDate beginDateEnd;
@@ -153,6 +160,12 @@ public class BaseContractEntity extends Model {
     private String createUserName;
     @TableField(exist = false)
     private String updateUserName;
+    /**
+     * true为按照条件筛选签约关联时候可用的租赁合同
+     */
+    @TableField(exist = false)
+    private Boolean usefullLease ;
+
 
 
 }

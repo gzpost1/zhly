@@ -1,10 +1,13 @@
 package cn.cuiot.dmp.lease.service;
 
+import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
-import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
+import cn.cuiot.dmp.common.bean.PageQuery;
+import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
-import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
+import cn.cuiot.dmp.lease.dto.contract.TbContractLeaseParam;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -71,9 +74,31 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         }
         List<TbContractLeaseEntity> list = super.list(params);
         list.forEach(c -> {
-            baseContractService.fullInfo(c);
+            baseContractService.fillBindHouseInfo(c);
         });
         return list;
+    }
+    @Override
+    public PageResult<TbContractLeaseEntity> page(PageQuery param) {
+        TbContractLeaseParam params = (TbContractLeaseParam) param;
+        String houseName = params.getHouseName();
+        if (StringUtils.isNotEmpty(houseName)) {
+            List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
+            params.setQueryIds(queryIds);
+        }
+        PageResult<TbContractLeaseEntity> page = super.page(param);
+        page.getRecords().forEach(c -> {
+            baseContractService.fillBindHouseInfo(c);
+        });
+        return page;
+    }
+
+    @Override
+    public TbContractLeaseEntity getById(Serializable id) {
+        AssertUtil.notNull(id,"id不能为空");
+        TbContractLeaseEntity leaseEntity = super.getById(id);
+        baseContractService.fillBindHouseInfo(leaseEntity);
+        return leaseEntity;
     }
 
     /**
@@ -85,6 +110,12 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         queryWrapper.last("limit 1");
         TbContractLeaseEntity contractLeaseEntity = (TbContractLeaseEntity) getOne(queryWrapper);
         contractLeaseEntity.setReletContractId(null);
+        contractLeaseEntity.setContractStatus(ContractEnum.STATUS_USELESS.getCode());
+        contractLeaseEntity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
         saveOrUpdate(contractLeaseEntity);
+    }
+
+    public List<BaseVO> statisticsContract() {
+        return baseMapper.statisticsContract();
     }
 }

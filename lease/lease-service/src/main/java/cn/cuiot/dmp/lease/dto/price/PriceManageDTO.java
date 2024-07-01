@@ -90,6 +90,11 @@ public class PriceManageDTO implements Serializable {
     private String auditRemark;
 
     /**
+     * 作废备注
+     */
+    private String invalidRemark;
+
+    /**
      * 定价管理明细房屋列表
      */
     private List<String> houseIds;
