@@ -34,4 +34,9 @@ public class MessagePageQuery extends PageQuery {
      * 消息时间筛选 - 小于等于
      */
     private Date messageLeTime;
+
+    /**
+     * 消息分类
+     */
+    private String msgType;
 }

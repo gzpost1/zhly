@@ -54,6 +54,9 @@ public class ChargeManagerController {
     @Autowired
     private SystemToFlowService systemToFlowService;
 
+    public static final String SERVICETYPENAME = "缴费管理";
+
+
     /**
      * 获取房屋欠费等相关信息
      *
@@ -245,9 +248,9 @@ public class ChargeManagerController {
      * @param createDto
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/create")
-    @LogRecord(operationCode = "create", operationName = "缴费管理-创建", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
+    @LogRecord(operationCode = "create", operationName = "缴费管理-创建", serviceType = ServiceTypeConst.RECEIVED_MANAGER, serviceTypeName = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO create(@RequestBody @Valid ChargeManagerInsertVo createDto) {
         tbChargeManagerService.saveData(createDto, ChargeTypeEnum.MANUAL_CREATE.getCode(), null);
         return IdmResDTO.success();
@@ -259,9 +262,9 @@ public class ChargeManagerController {
      * @param idParam
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/updateHangUpStatus")
-    @LogRecord(operationCode = "updateHangUpStatus", operationName = "缴费管理-挂起/解挂", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
+    @LogRecord(operationCode = "updateHangUpStatus", operationName = "缴费管理-挂起/解挂", serviceType = ServiceTypeConst.RECEIVED_MANAGER, serviceTypeName = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO updateHangUpStatus(@RequestBody @Valid ChargeAbrogateInsertDto idParam) {
         TbChargeManager entity = tbChargeManagerService.getById(idParam.getDataId());
         AssertUtil.notNull(entity, "数据不存在");
@@ -276,9 +279,9 @@ public class ChargeManagerController {
      * @param idParam
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/abrogateStatus")
-    @LogRecord(operationCode = "abrogateStatus", operationName = "缴费管理-作废", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
+    @LogRecord(operationCode = "abrogateStatus", operationName = "缴费管理-作废", serviceType = ServiceTypeConst.RECEIVED_MANAGER, serviceTypeName = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO abrogateStatus(@RequestBody @Valid ChargeAbrogateInsertDto idParam) {
         TbChargeManager entity = tbChargeManagerService.getById(idParam.getDataId());
         AssertUtil.notNull(entity, "数据不存在");
@@ -295,9 +298,9 @@ public class ChargeManagerController {
      * @param
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/receivedAmount")
-    @LogRecord(operationCode = "receivedAmount", operationName = "缴费管理-收款", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
+    @LogRecord(operationCode = "receivedAmount", operationName = "缴费管理-收款", serviceType = ServiceTypeConst.RECEIVED_MANAGER, serviceTypeName = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO receivedAmount(@RequestBody @Valid ChargeReceiptsReceivedDto dto) {
         tbChargeManagerService.receivedAmount(dto);
         return IdmResDTO.success();

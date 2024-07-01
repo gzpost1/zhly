@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.charge.ChargeCollectionPlanBuildingMapper">
+
+  <insert id="batchInsert" parameterType="collection">
+    INSERT INTO tb_charge_collection_plan_building(charge_collection_plan_id,building_id)
+    VALUES
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.chargeCollectionPlanId}, #{item.buildingId})
+    </foreach>
+  </insert>
+
+  <select id="getBuildingNamesByPlanId" parameterType="collection" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeBuildingDto">
+    SELECT
+    a.charge_collection_plan_id dataId, b.name buildingName
+    FROM
+    tb_charge_collection_plan_building a
+    INNER JOIN tb_building_archives b ON a.building_id = b.id
+    <where>
+      b.deleted = 0
+      AND a.charge_collection_plan_id IN
+      (
+      <foreach collection="list" index="index" item="item" separator=",">
+        #{item}
+      </foreach>
+      )
+    </where>
+    GROUP BY a.charge_collection_plan_id, b.id
+  </select>
+</mapper>

@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description 收费管理-收银台-缴费管理-分页查询
@@ -20,6 +21,11 @@ public class TbChargeManagerQuery extends PageQuery {
     private Long houseId;
 
     /**
+     * 客户id
+     */
+    private Long customerUserId;
+
+    /**
      * 应收编码
      */
     private String receivableCode;
@@ -28,6 +34,11 @@ public class TbChargeManagerQuery extends PageQuery {
      * 应收状态 0未交款 1已交款 2已交清
      */
     private Byte receivbleStatus;
+
+    /**
+     * 应收状态 0未交款 1已交款 2已交清
+     */
+    private List<Byte> receivbleStatusList;
 
     /**
      * 挂起状态 0未挂起 1已挂起

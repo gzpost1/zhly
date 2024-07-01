@@ -5,12 +5,16 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.dto.BusinessAndOrgDto;
 import cn.cuiot.dmp.base.application.dto.BusinessAndOrgNameDto;
 import cn.cuiot.dmp.base.application.service.SystemUtilService;
+import cn.cuiot.dmp.base.infrastructure.constants.OperationConstant;
 import cn.cuiot.dmp.base.infrastructure.dto.BatcheOperation;
 import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskConfigInsertDto;
 import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskConfigUpdateDto;
 import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskInfoPageDto;
@@ -21,15 +25,18 @@ import cn.cuiot.dmp.baseconfig.custommenu.service.TbFlowTaskConfigService;
 import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskConfigVo;
 import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskInfoVo;
 import cn.cuiot.dmp.baseconfig.flow.dto.TbFlowPageDto;
+import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
 import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -59,6 +66,10 @@ public class TbFlowTaskInfoController {
     private SystemUtilService systemUtilService;
     @Autowired
     private SystemToFlowService systemToFlowService;
+
+    public static final String SERVICETYPENAME = "任务配置";
+    public static final String OPTTARGETINFONAME = "任务";
+
 
     /**
      * 获取分页
@@ -116,10 +127,16 @@ public class TbFlowTaskInfoController {
      */
     @RequiresPermissions
     @PostMapping("/create")
-    @LogRecord(operationCode = "taskCreate", operationName = "任务配置创建", serviceType = ServiceTypeConst.BASE_CONFIG)
+    @LogRecord(operationCode = "taskCreate", operationName = "任务配置创建", serviceType = ServiceTypeConst.BASE_CONFIG,serviceTypeName = SERVICETYPENAME)
     public IdmResDTO create(@RequestBody @Valid FlowTaskConfigInsertDto createDto) {
         validateBusinessAndOrg(createDto.getName(),null);
-        flowTaskConfigService.create(createDto);
+        Long id = flowTaskConfigService.create(createDto);
+
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name(OPTTARGETINFONAME)
+                .targetDatas(Lists.newArrayList(new OptTargetData(createDto.getName(),id.toString())))
+                .build());
+
         return IdmResDTO.success();
     }
 
@@ -147,11 +164,16 @@ public class TbFlowTaskInfoController {
      */
     @RequiresPermissions
     @PostMapping("/update")
-    @LogRecord(operationCode = "taskUpdate", operationName = "任务配置更新", serviceType = ServiceTypeConst.BASE_CONFIG)
+    @LogRecord(operationCode = "taskUpdate", operationName = "任务配置更新", serviceType = ServiceTypeConst.BASE_CONFIG,serviceTypeName = SERVICETYPENAME)
     public IdmResDTO update(@RequestBody @Valid FlowTaskConfigUpdateDto updateDto) {
         validateBusinessAndOrg(updateDto.getName(),updateDto.getId());
 
         flowTaskConfigService.updateData(updateDto);
+
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name(OPTTARGETINFONAME)
+                .targetDatas(Lists.newArrayList(new OptTargetData(updateDto.getName(),updateDto.getId().toString())))
+                .build());
 
         return IdmResDTO.success();
     }
@@ -164,9 +186,17 @@ public class TbFlowTaskInfoController {
      */
     @RequiresPermissions
     @PostMapping("/delete")
-    @LogRecord(operationCode = "taskDelete", operationName = "任务配置删除", serviceType = ServiceTypeConst.BASE_CONFIG)
+    @LogRecord(operationCode = "taskDelete", operationName = "任务配置删除", serviceType = ServiceTypeConst.BASE_CONFIG,serviceTypeName = SERVICETYPENAME)
     public IdmResDTO delete(@RequestBody @Valid DeleteParam deleteParam) {
+        TbFlowTaskConfig taskConfig = flowTaskConfigService.getById(deleteParam.getId());
+        AssertUtil.notNull(taskConfig,"流程配置不存在");
+
         flowTaskConfigService.delete(Lists.newArrayList(deleteParam.getId()));
+
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name(OPTTARGETINFONAME)
+                .targetDatas(Lists.newArrayList(new OptTargetData(taskConfig.getName(),deleteParam.getId().toString())))
+                .build());
         return IdmResDTO.success();
     }
 
@@ -178,9 +208,17 @@ public class TbFlowTaskInfoController {
      */
     @RequiresPermissions
     @PostMapping("/updateStatus")
-    @LogRecord(operationCode = "taskUpdateStatus", operationName = "任务配置更新状态", serviceType = ServiceTypeConst.BASE_CONFIG)
+    @LogRecord(operationCode = "taskUpdateStatus", operationName = "任务配置更新状态", serviceType = ServiceTypeConst.BASE_CONFIG,serviceTypeName = SERVICETYPENAME)
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
+        TbFlowTaskConfig taskConfig = flowTaskConfigService.getById(updateStatusParam.getId());
+        AssertUtil.notNull(taskConfig,"流程配置不存在");
+
         flowTaskConfigService.updateStatus(updateStatusParam);
+
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name(OPTTARGETINFONAME)
+                .targetDatas(Lists.newArrayList(new OptTargetData(taskConfig.getName(),updateStatusParam.getId().toString())))
+                .build());
 
         return IdmResDTO.success();
     }
@@ -190,9 +228,26 @@ public class TbFlowTaskInfoController {
      */
     @RequiresPermissions
     @PostMapping("/batchedOperation")
-    @LogRecord(operationCode = "flowBatchedOperation", operationName = "任务配置批量修改", serviceType = ServiceTypeConst.BASE_CONFIG)
+    @LogRecord(operationCode = "flowBatchedOperation", operationName = "任务配置批量修改", serviceType = ServiceTypeConst.BASE_CONFIG,serviceTypeName = SERVICETYPENAME)
     public IdmResDTO batchedOperation(@RequestBody @Valid BatcheOperation batcheOperation) {
         flowTaskConfigService.batchedOperation(batcheOperation);
+        if(Objects.equals(batcheOperation.getOperaTionType(), OperationConstant.DELETE)){
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .name(OPTTARGETINFONAME)
+                    .targetDatas(Lists.newArrayList(new OptTargetData("批量删除", StringUtils.join(batcheOperation.getIds(),","))))
+                    .build());
+        }else if(Objects.equals(batcheOperation.getOperaTionType(), OperationConstant.STATUS)){
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .name(OPTTARGETINFONAME)
+                    .targetDatas(Lists.newArrayList(new OptTargetData("批量删除", StringUtils.join(batcheOperation.getIds(),","))))
+                    .build());
+        }else if(Objects.equals(batcheOperation.getOperaTionType(), OperationConstant.MOVE)){
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .name(OPTTARGETINFONAME)
+                    .targetDatas(Lists.newArrayList(new OptTargetData("批量删除", StringUtils.join(batcheOperation.getIds(),","))))
+                    .build());
+        }
+
         return IdmResDTO.success();
     }
 }

@@ -12,6 +12,8 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.enums.*;
 import cn.cuiot.dmp.lease.mapper.charge.TbChargeManagerMapper;
+import cn.cuiot.dmp.lease.vo.ChargeCollectionManageVo;
+import cn.cuiot.dmp.lease.vo.ChargeManagerCustomerStatisticsVo;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -24,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -295,5 +299,34 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
 
     public void insertList(List<TbChargeManager> saveChargeMangeList) {
         baseMapper.insertList(saveChargeMangeList);
+    }
+
+    /**
+     * 催款管理分页
+     */
+    public IPage<ChargeCollectionManageVo> queryCollectionManagePage(ChargeCollectionManageQuery query) {
+        return baseMapper.queryCollectionManagePage(new Page(query.getPageNo(), query.getPageSize()), query);
+    }
+
+    /**
+     * 用户应收统计
+     */
+    public ChargeManagerCustomerStatisticsVo customerStatistics(TbChargeManagerQuery query) {
+        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        //获取前一天23:59:59
+        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now(), LocalTime.MAX)
+                .withNano(999999000));
+        query.setDueDateEnd(date);
+        query.setReceivbleStatusList(Arrays.asList(ChargeReceivbleEnum.UNPAID.getCode(), ChargeReceivbleEnum.PAID.getCode()));
+        query.setAbrogateStatus(EntityConstants.DISABLED);
+        query.setHangUpStatus(EntityConstants.DISABLED);
+        return baseMapper.customerStatistics(query);
+    }
+
+    /**
+     * 查询用户欠费统计用于发送消息
+     */
+    public IPage<ChargeCollectionManageSendDto> queryUserArrearsStatistics(Page<?> page, ChargeCollectionManageSendQuery query) {
+        return baseMapper.queryUserArrearsStatistics(page, query);
     }
 }

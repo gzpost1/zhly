@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.charge.ChargeCollectionPlanItemMapper">
+
+  <insert id="batchInsert" parameterType="collection">
+    INSERT INTO tb_charge_collection_plan_item(charge_collection_plan_id,charge_item_id)
+    VALUES
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.chargeCollectionPlanId}, #{item.chargeItemId})
+    </foreach>
+  </insert>
+
+  <select id="getChargeItemNamesByPlanId" parameterType="collection" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeChargeItemDto">
+    SELECT
+    a.charge_collection_plan_id dataId, b.name chargeItemName
+    FROM
+    tb_charge_collection_plan_item a
+    INNER JOIN common_option_setting b ON a.charge_item_id = b.id
+    <where>
+      b.deleted_flag = 0
+      AND a.charge_collection_plan_id IN
+      (
+      <foreach collection="list" index="index" item="item" separator=",">
+        #{item}
+      </foreach>
+      )
+    </where>
+    GROUP BY a.charge_collection_plan_id, b.id
+  </select>
+</mapper>

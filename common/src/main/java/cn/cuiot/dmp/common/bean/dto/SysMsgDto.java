@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.common.bean.dto;//	模板
 
 import cn.cuiot.dmp.common.constant.MsgDataType;
+import cn.cuiot.dmp.common.constant.MsgTypeConstant;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -36,6 +37,12 @@ public class SysMsgDto {
      * @see MsgDataType
      */
     private String dataType;
+
+    /**
+     * 消息类型
+     * @see MsgTypeConstant
+     */
+    private String msgType;
 
     /**
      * 消息（非空）
