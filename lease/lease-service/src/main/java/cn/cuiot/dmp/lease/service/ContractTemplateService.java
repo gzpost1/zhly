@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
@@ -123,6 +124,17 @@ public class ContractTemplateService extends ServiceImpl<ContractTemplateMapper,
         ContractTemplateEntity contractTemplateEntity = Optional.ofNullable(getById(updateDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(updateDTO, contractTemplateEntity);
+        return updateById(contractTemplateEntity);
+    }
+
+    /**
+     * 更新状态
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateContractTemplateStatus(UpdateStatusParam updateStatusParam) {
+        ContractTemplateEntity contractTemplateEntity = Optional.ofNullable(getById(updateStatusParam.getId()))
+                .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
+        contractTemplateEntity.setStatus(updateStatusParam.getStatus());
         return updateById(contractTemplateEntity);
     }
 
