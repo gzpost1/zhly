@@ -108,7 +108,7 @@ public class PriceManageController {
      */
     @RequiresPermissions
     @LogRecord(operationCode = "invalidPriceManage", operationName = "作废定价管理", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
-    @PostMapping("/update")
+    @PostMapping("/invalid")
     public boolean invalidPriceManage(@RequestBody @Valid PriceManageAuditDTO auditDTO) {
         return priceManageService.invalidPriceManage(auditDTO);
     }
