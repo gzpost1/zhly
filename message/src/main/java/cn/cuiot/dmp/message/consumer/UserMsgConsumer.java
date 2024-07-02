@@ -56,7 +56,7 @@ public class UserMsgConsumer {
     public void userBusinessMessageConsumer(@Payload UserBusinessMessageAcceptDto dto) {
         log.info("userBusinessMessageInput:{}", JsonUtil.writeValueAsString(dto));
         if (Objects.equals(dto.getMsgType(), InformTypeConstant.SYS_MSG)) {
-            if (CollectionUtils.isEmpty(dto.getSmsMsgDto())) {
+            if (CollectionUtils.isEmpty(dto.getSysMsgDto())) {
                 return;
             }
             List<UserMessageEntity> userMessageEntities = dto.getSysMsgDto().stream().map(item -> {

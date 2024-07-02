@@ -220,7 +220,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
             LambdaQueryWrapper<HousesArchivesEntity> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.in(HousesArchivesEntity::getLoupanId, buidingIdList);
             if(houseTreeQueryDto.getIsSelectHouseArrears()){
-                String lastSql = String.format("and id in (SELECT DISTINCT house_id FROM tb_charge_manager WHERE deleted = 0 AND company_id = %s AND receivble_status int (0,1) AND abrogate_status = 0)",
+                String lastSql = String.format("and id in (SELECT DISTINCT house_id FROM tb_charge_manager WHERE deleted = 0 AND company_id = %s AND receivble_status in (0,1) AND abrogate_status = 0)",
                         houseTreeQueryDto.getOrgId());
                 queryWrapper.last(lastSql);
             }

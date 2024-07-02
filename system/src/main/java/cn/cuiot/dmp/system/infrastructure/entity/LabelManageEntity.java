@@ -1,14 +1,10 @@
 package cn.cuiot.dmp.system.infrastructure.entity;
 
-import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import cn.cuiot.dmp.base.infrastructure.persistence.mapper.BaseEntity;
 import cn.cuiot.dmp.common.enums.LabelManageTypeEnum;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.util.List;
 
 /**
  * 系统配置-标签管理表
@@ -35,9 +31,8 @@ public class LabelManageEntity extends BaseEntity {
     private Byte labelManageType;
 
     /**
-     * 标签列表
+     * 标签名称
      */
-    @TableField(typeHandler = JsonTypeHandler.class)
-    private List<String> labelList;
+    private String labelName;
 
 }

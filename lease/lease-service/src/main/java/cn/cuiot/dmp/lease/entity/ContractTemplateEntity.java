@@ -45,7 +45,7 @@ public class ContractTemplateEntity extends BaseEntity {
     /**
      * 模板用途
      */
-    private String usage;
+    private String templateUsage;
 
     /**
      * 模板备注
