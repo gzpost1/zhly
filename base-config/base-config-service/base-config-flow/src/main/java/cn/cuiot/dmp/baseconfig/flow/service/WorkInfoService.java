@@ -631,7 +631,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO commentAndSuper(BatchBusinessDto handleDataDTOs) {
         List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
         //督办信息
-        for(String instId :handleDataDTOs.getProcessInstanceId() ){
+        List<String> processInstanceIds = Optional.ofNullable(handleDataDTOs.getProcessInstanceId()).orElse(new ArrayList<>());
+        for(String instId :processInstanceIds ){
             HandleDataDTO dataDTO = new HandleDataDTO();
             dataDTO.setProcessInstanceId(instId);
             dataDTO.setComments(handleDataDTOs.getComments());
@@ -642,7 +643,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         }
 
         //评论信息
-        for(String taskId :handleDataDTOs.getTaskIds() ){
+        List<String> taskIds = Optional.ofNullable(handleDataDTOs.getTaskIds()).orElse(new ArrayList<>());
+        for(String taskId :taskIds ){
             HandleDataDTO dataDTO = new HandleDataDTO();
             dataDTO.setTaskId(taskId);
             dataDTO.setComments(handleDataDTOs.getComments());
