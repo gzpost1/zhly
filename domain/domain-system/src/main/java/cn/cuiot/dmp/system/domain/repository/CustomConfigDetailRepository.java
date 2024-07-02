@@ -30,4 +30,6 @@ public interface CustomConfigDetailRepository {
      */
     void batchDeleteCustomConfigDetails(List<Long> customConfigIdList, Long companyId);
 
+    void initCustomConfigDetail(Long companyId);
+
 }

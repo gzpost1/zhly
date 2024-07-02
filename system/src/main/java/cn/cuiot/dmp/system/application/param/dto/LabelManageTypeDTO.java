@@ -35,6 +35,6 @@ public class LabelManageTypeDTO implements Serializable {
     /**
      * 标签管理详情
      */
-    private LabelManageEntity labelManage;
+    private List<LabelManageEntity> labelManageList;
 
 }

@@ -7,6 +7,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.system.application.param.dto.AuditConfigTypeStatusDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.AuditConfigEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.AuditConfigMapper;
 import cn.hutool.core.util.StrUtil;
@@ -63,6 +64,15 @@ public class AuditConfigService extends ServiceImpl<AuditConfigMapper, AuditConf
         auditConfigEntity.setStatus(updateStatusParam.getStatus());
         return updateById(auditConfigEntity);
     }
+
+    /**
+     * 批量更新状态
+     */
+    public boolean batchUpdateStatus(AuditConfigTypeStatusDTO auditConfigTypeStatusDTO) {
+        AssertUtil.notEmpty(auditConfigTypeStatusDTO.getAuditConfigList(), "审核配置列表不能为空");
+        return updateBatchById(auditConfigTypeStatusDTO.getAuditConfigList());
+    }
+
 
     /**
      * 初始化审核配置

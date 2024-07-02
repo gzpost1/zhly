@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.common.bean.dto;//	模板
 
+import cn.cuiot.dmp.common.constant.InformTypeConstant;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -17,7 +18,7 @@ public class UserMessageAcceptDto {
     /**
      * 消息分类
      *
-     * @see cn.cuiot.dmp.common.constant.MsgTypeConstant
+     * @see InformTypeConstant
      */
     private byte msgType;
 

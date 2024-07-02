@@ -51,5 +51,7 @@ public class TbContractIntentionMoneyParam extends PageQuery implements Serializ
      */
     private String remark;
 
+    private Long contractId;
+
 
 }

@@ -30,6 +30,11 @@ public interface CommonOptionTypeService {
     List<CommonOptionTypeTreeNodeVO> queryByCompany(CommonOptionTypeQueryDTO queryDTO);
 
     /**
+     * 查询自定选项树（包含分类/选项名称/选项值）
+     */
+    List<CommonOptionTypeTreeNodeVO> queryCommonOptionTypeTree(CommonOptionTypeQueryDTO queryDTO);
+
+    /**
      * 编辑时查询类型列表（排除当前节点）
      */
     List<CommonOptionTypeTreeNodeVO> queryExcludeChild(CommonOptionTypeQueryDTO queryDTO);

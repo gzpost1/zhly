@@ -29,6 +29,14 @@ import java.util.Map;
 public interface SystemApiFeignService {
 
     /**
+     * 获取权限菜单
+     */
+    @GetMapping(value = "/api/getPermissionMenus", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<CommonMenuDto>> getPermissionMenus(
+            @RequestParam(value = "orgId", required = false) String orgId,
+            @RequestParam(value = "userId", required = false) String userId);
+
+    /**
      * 查询角色
      */
     @PostMapping(value = "/api/lookUpRoleList", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -137,4 +145,9 @@ public interface SystemApiFeignService {
     @PostMapping(value = "/api/lookUpUserIdsByBuildingIds", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<Map<Long, List<Long>>> lookUpUserIdsByBuildingIds(@RequestBody @Valid UserHouseAuditBuildingReqDTO reqDTO);
 
+    /**
+     * 批量查询表单配置-常用选项设置数据
+     */
+    @PostMapping(value = "/api/batchQueryCommonOptionSetting", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<CommonOptionSettingRspDTO>> batchQueryCommonOptionSetting(@RequestBody @Valid CommonOptionSettingReqDTO dto);
 }

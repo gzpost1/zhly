@@ -118,7 +118,7 @@ public class TbFlowTaskConfigService extends ServiceImpl<TbFlowTaskConfigMapper,
      * @param createDto
      */
     @Transactional(rollbackFor = Exception.class)
-    public void create(FlowTaskConfigInsertDto createDto) {
+    public Long create(FlowTaskConfigInsertDto createDto) {
         //创建任务配置
         TbFlowTaskConfig entity = new TbFlowTaskConfig();
         BeanUtils.copyProperties(createDto, entity);
@@ -132,6 +132,8 @@ public class TbFlowTaskConfigService extends ServiceImpl<TbFlowTaskConfigMapper,
 
         //创建流程和组织的中间表
         flowTaskOrgService.saveFlowOrg(entity.getId(), createDto.getOrgId());
+
+        return entity.getId();
     }
 
     /**

@@ -677,6 +677,10 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //更新挂起时间
         updateBusinessPendingDate(handleDataDTO);
 
+        //设置回退标识
+        taskService.setVariable(String.valueOf(operationDto.getTaskId()),"rollback","true");
+
+
         //更新主流程状态
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), workBusinessTypeInfo.getProcInstId());
         Task task = taskService.createTaskQuery().taskId(String.valueOf(operationDto.getTaskId())).singleResult();
@@ -684,8 +688,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
                 rollBackNode).changeState();
 
-        //设置回退标识
-        taskService.setVariable(String.valueOf(operationDto.getTaskId()),"rollback","true");
+
 
         return IdmResDTO.success();
 
@@ -1813,6 +1816,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return archiveList.stream().collect(Collectors.toMap(BuildingArchive::getId,BuildingArchive::getName));
     }
 
+    /**
+     * 撤销
+     * @param businessDto
+     * @return
+     */
     public IdmResDTO revokeWorkOrder(ProcessBusinessDto businessDto) {
 
         //获取工单信息

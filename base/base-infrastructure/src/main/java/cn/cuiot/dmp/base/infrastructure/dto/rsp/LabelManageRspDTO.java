@@ -32,8 +32,8 @@ public class LabelManageRspDTO implements Serializable {
     private Byte labelManageType;
 
     /**
-     * 标签列表
+     * 标签名称
      */
-    private List<String> labelList;
+    private String labelName;
 
 }

@@ -21,4 +21,11 @@ public interface MqMsgChannel {
     @Output(USERMESSAGEOUTPUT)
     SubscribableChannel userMessageOutput();
 
+    /**
+     * 用户业务消息
+     */
+    String USEBUSINESSRMESSAGEINPUT = "userBusinessMessageInput";
+
+    @Input(USEBUSINESSRMESSAGEINPUT)
+    SubscribableChannel userBusinessMessageInput();
 }

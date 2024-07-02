@@ -24,6 +24,11 @@ public class CommonOptionType implements Serializable {
     private String name;
 
     /**
+     * 选项类别
+     */
+    private Byte category;
+
+    /**
      * 上级ID
      */
     private Long parentId;

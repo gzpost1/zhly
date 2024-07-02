@@ -65,4 +65,14 @@ public class UserMessageController {
     public Long getUnreadMessageCount() {
         return userMessageService.getUnreadMessageCount();
     }
+
+    /**
+     * 一键已读
+     * @return
+     */
+    @PostMapping("/realAllMessage")
+    public Boolean realAllMessage() {
+        userMessageService.realAllMessage();
+        return true;
+    }
 }

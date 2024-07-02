@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionTypeCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionTypeQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.CommonOptionTypeUpdateDTO;
@@ -48,6 +49,8 @@ public class CommonOptionTypeController {
      */
     @PostMapping("/queryExcludeChild")
     public List<CommonOptionTypeTreeNodeVO> queryExcludeChild(@RequestBody @Valid CommonOptionTypeQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+        queryDTO.setCompanyId(companyId);
         return commonOptionTypeService.queryExcludeChild(queryDTO);
     }
 
@@ -56,7 +59,19 @@ public class CommonOptionTypeController {
      */
     @PostMapping("/queryByCompany")
     public List<CommonOptionTypeTreeNodeVO> queryByCompany(@RequestBody @Valid CommonOptionTypeQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+        queryDTO.setCompanyId(companyId);
         return commonOptionTypeService.queryByCompany(queryDTO);
+    }
+
+    /**
+     * 根据条件查询企业的表单配置详情
+     */
+    @PostMapping("/queryCommonOptionTypeTree")
+    public List<CommonOptionTypeTreeNodeVO> queryCommonOptionTypeTree(@RequestBody @Valid CommonOptionTypeQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+        queryDTO.setCompanyId(companyId);
+        return commonOptionTypeService.queryCommonOptionTypeTree(queryDTO);
     }
 
     /**
@@ -86,6 +101,8 @@ public class CommonOptionTypeController {
     @LogRecord(operationCode = "deleteCommonOptionType", operationName = "删除常用选项分类", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/delete")
     public int delete(@RequestBody @Valid CommonOptionTypeQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+        queryDTO.setCompanyId(companyId);
         return commonOptionTypeService.deleteCommonOptionType(queryDTO);
     }
 

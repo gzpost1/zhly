@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.charge.ChargeNoticeMapper">
+
+    <select id="queryForPage" parameterType="cn.cuiot.dmp.lease.dto.charge.ChargeNoticePageQuery"
+            resultType="cn.cuiot.dmp.lease.vo.ChargeNoticePageVo">
+        SELECT a.*
+        FROM tb_charge_notice a
+        <if test="params.buildings != null and params.buildings.size() > 0">
+            INNER JOIN tb_charge_notice_building b on a.id = b.charge_notice_id
+        </if>
+        <if test="params.chargeItems != null and params.chargeItems.size() > 0">
+            INNER JOIN tb_charge_notice_item c on a.id = c.charge_notice_id
+        </if>
+        <where>
+            a.deleted = 0
+            <if test="params.companyId != null">
+                AND a.company_id = #{params.companyId}
+            </if>
+            <if test="params.id != null">
+                AND a.id = #{params.id}
+            </if>
+            <if test="params.buildings != null and params.buildings.size() > 0">
+                AND b.building_id IN (
+                <foreach collection="params.buildings" item="item" index="index" separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+            <if test="params.chargeItems != null and params.chargeItems.size() > 0">
+                AND c.charge_item_id IN (
+                <foreach collection="params.chargeItems" item="item" index="index" separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="queryChargeNoticeInfo" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeNoticeSendDto"
+            parameterType="cn.cuiot.dmp.lease.dto.charge.ChargeNoticeSendQuery">
+        SELECT
+        a.id,
+        a.customer_user_id customerUserId,
+        a.charge_item_id chargeItemId
+        FROM
+        tb_charge_manager a
+        INNER JOIN tb_charge_notice_item b ON a.charge_item_id = b.charge_item_id AND b.charge_notice_id = #{params.id}
+        INNER JOIN tb_charge_notice_building c ON a.loupan_id = c.building_id AND c.charge_notice_id = #{params.id}
+        WHERE
+        a.deleted = 0
+        AND a.company_id = #{params.companyId}
+        AND a.receivble_status IN ( 0, 1 )
+        AND a.abrogate_status = 0
+        AND a.hang_up_status = 0
+        AND a.ownership_period_begin <![CDATA[ >= ]]> #{params.ownershipPeriodBegin}
+        AND a.ownership_period_end <![CDATA[ <= ]]> #{params.ownershipPeriodEnd}
+    </select>
+</mapper>

@@ -30,4 +30,10 @@ public class TbContractIntentionMoneyService extends BaseMybatisServiceImpl<TbCo
     public void clearMoney() {
         baseMapper.clearMoney();
     }
+
+    public void removeByContractId(Long id){
+        LambdaQueryWrapper<TbContractIntentionMoneyEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TbContractIntentionMoneyEntity::getContractId,id);
+        remove(queryWrapper);
+    }
 }

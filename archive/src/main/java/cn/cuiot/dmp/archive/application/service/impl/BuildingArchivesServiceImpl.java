@@ -195,7 +195,7 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
     }
 
     @Override
-    public List<DepartmentTreeRspDTO> getDepartmentBuildingTree(Long orgId, Long userId) {
+    public List<DepartmentTreeRspDTO> getDepartmentBuildingTree(Long orgId, Long userId,String keyWords) {
         AssertUtil.notNull(orgId, "企业id不能为空");
         AssertUtil.notNull(userId, "用户id不能为空");
         List<DepartmentTreeRspDTO> departmentTreeRspList = apiSystemService.lookUpDepartmentTree(orgId, userId);
@@ -205,6 +205,7 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
         List<Long> departmentIdList = getDepartmentIdList(departmentTreeRspList.get(0));
         BuildingArchivesPageQuery pageQuery = new BuildingArchivesPageQuery();
         pageQuery.setDepartmentIdList(departmentIdList);
+        pageQuery.setName(keyWords);
         List<BuildingArchives> buildingArchivesList = buildingArchivesRepository.queryForList(pageQuery);
         fillDepartmentBuildingTree(departmentTreeRspList.get(0), buildingArchivesList);
         return departmentTreeRspList;
@@ -245,6 +246,7 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
                 departmentTreeRspDTO.setDepartmentName(buildingArchives.getName());
                 departmentTreeRspDTO.setType(BuildingArchivesConstant.BUILDING_ARCHIVES_TYPE);
                 departmentTreeRspDTO.setParentId(rootTreeNode.getId());
+                departmentTreeRspDTO.setChildren(new ArrayList<>());
                 rootTreeNode.getChildren().add(departmentTreeRspDTO);
             }
         }
