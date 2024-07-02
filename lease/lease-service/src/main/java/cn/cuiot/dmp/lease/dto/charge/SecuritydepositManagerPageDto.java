@@ -12,7 +12,7 @@ import java.util.Date;
  * @Created by libo
  */
 @Data
-public class SecuritydepositManagerPageDto {
+public class SecuritydepositManagerPageDto implements ChargeItemNameSet{
     /**
      * id
      */
@@ -42,6 +42,11 @@ public class SecuritydepositManagerPageDto {
      * 收费项目id
      */
     private Long chargeItemId;
+
+    /**
+     * 收费项目名称
+     */
+    private String chargeItemName;
 
     /**
      * 收费标准 0自定义金额

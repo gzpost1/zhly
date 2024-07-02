@@ -12,7 +12,7 @@ import java.util.Date;
  * @Created by libo
  */
 @Data
-public class ChargeManagerPageDto {
+public class ChargeManagerPageDto implements ChargeItemNameSet{
     /**
      * 应收编码
      */
@@ -71,7 +71,7 @@ public class ChargeManagerPageDto {
     /**
      * 收费项目名称
      */
-    private Long chargeItemName;
+    private String chargeItemName;
 
     /**
      * 应收金额/本金

@@ -21,6 +21,7 @@ import cn.cuiot.dmp.lease.enums.ChargeHangUpEnum;
 import cn.cuiot.dmp.lease.enums.ChargeReceivbleEnum;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
+import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
@@ -55,7 +56,8 @@ public class ReceivableGenerationController {
     private ChargeHouseAndUserService chargeHouseAndUserService;
     @Autowired
     private SystemToFlowService systemToFlowService;
-
+    @Autowired
+    private ChargeInfoFillService chargeInfoFillService;
 
     /**
      * 获取分页
@@ -104,6 +106,9 @@ public class ReceivableGenerationController {
                     }
                 }
             }
+
+            chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(),ChargeManagerPageDto.class);
+
         }
         return IdmResDTO.success().body(chargeManagerPageDtoIPage);
     }
@@ -140,6 +145,9 @@ public class ReceivableGenerationController {
                 chargeManagerDetailDto.setHouseCode(houseInfoDtos.get(0).getHouseCode());
                 chargeManagerDetailDto.setHouseName(houseInfoDtos.get(0).getHouseName());
             }
+
+            chargeInfoFillService.fillinfo(Lists.newArrayList(chargeManagerDetailDto),ChargeManagerDetailDto.class);
+
         }
         return IdmResDTO.success().body(chargeManagerDetailDto);
     }
@@ -210,6 +218,9 @@ public class ReceivableGenerationController {
     @PostMapping("/queryForReceivedPage")
     public IdmResDTO<IPage<TbChargeReceived>> queryForReceivedPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeReceived> tbChargeHangupIPage = tbChargeManagerService.queryForReceivedPage(queryDto);
+        if(Objects.nonNull(tbChargeHangupIPage) && CollectionUtils.isNotEmpty(tbChargeHangupIPage.getRecords())){
+            chargeInfoFillService.fillinfo(tbChargeHangupIPage.getRecords(),TbChargeReceived.class);
+        }
         return IdmResDTO.success().body(tbChargeHangupIPage);
     }
 
