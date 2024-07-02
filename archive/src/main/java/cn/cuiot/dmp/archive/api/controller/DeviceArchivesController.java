@@ -83,19 +83,21 @@ public class DeviceArchivesController extends BaseController {
      */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<DeviceArchivesEntity>> queryForPage(@RequestBody @Valid DeviceArchivesQuery query) {
-        // 获取当前平台下的楼盘列表
-        DepartmentReqDto dto = new DepartmentReqDto();
-        dto.setDeptId(LoginInfoHolder.getCurrentOrgId());
-        dto.setSelfReturn(true);
-        List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
-        if (CollectionUtils.isEmpty(buildingArchives)) {
-            return IdmResDTO.success(new Page<>());
-        }
-        List<Long> buildingIdList = buildingArchives.stream()
-                .map(BuildingArchive::getId)
-                .collect(Collectors.toList());
         LambdaQueryWrapper<DeviceArchivesEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(CollectionUtils.isNotEmpty(buildingIdList), DeviceArchivesEntity::getLoupanId, buildingIdList);
+        if (Objects.isNull(query.getLoupanId())) {
+            // 获取当前平台下的楼盘列表
+            DepartmentReqDto dto = new DepartmentReqDto();
+            dto.setDeptId(LoginInfoHolder.getCurrentOrgId());
+            dto.setSelfReturn(true);
+            List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
+            if (CollectionUtils.isEmpty(buildingArchives)) {
+                return IdmResDTO.success(new Page<>());
+            }
+            List<Long> buildingIdList = buildingArchives.stream()
+                    .map(BuildingArchive::getId)
+                    .collect(Collectors.toList());
+            wrapper.in(CollectionUtils.isNotEmpty(buildingIdList), DeviceArchivesEntity::getLoupanId, buildingIdList);
+        }
         wrapper.eq(Objects.nonNull(query.getId()), DeviceArchivesEntity::getId, query.getId());
         wrapper.eq(Objects.nonNull(query.getLoupanId()), DeviceArchivesEntity::getLoupanId, query.getLoupanId());
         wrapper.like(StringUtils.isNotBlank(query.getDeviceName()), DeviceArchivesEntity::getDeviceName, query.getDeviceName());

@@ -82,19 +82,21 @@ public class RoomArchivesController extends BaseController {
      */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<RoomArchivesEntity>> queryForPage(@RequestBody @Valid RoomArchivesQuery query) {
-        // 获取当前平台下的楼盘列表
-        DepartmentReqDto dto = new DepartmentReqDto();
-        dto.setDeptId(LoginInfoHolder.getCurrentOrgId());
-        dto.setSelfReturn(true);
-        List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
-        if (CollectionUtils.isEmpty(buildingArchives)) {
-            return IdmResDTO.success(new Page<>());
-        }
-        List<Long> buildingIdList = buildingArchives.stream()
-                .map(BuildingArchive::getId)
-                .collect(Collectors.toList());
         LambdaQueryWrapper<RoomArchivesEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(CollectionUtils.isNotEmpty(buildingIdList), RoomArchivesEntity::getLoupanId, buildingIdList);
+        if (Objects.isNull(query.getLoupanId())) {
+            // 获取当前平台下的楼盘列表
+            DepartmentReqDto dto = new DepartmentReqDto();
+            dto.setDeptId(LoginInfoHolder.getCurrentOrgId());
+            dto.setSelfReturn(true);
+            List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
+            if (CollectionUtils.isEmpty(buildingArchives)) {
+                return IdmResDTO.success(new Page<>());
+            }
+            List<Long> buildingIdList = buildingArchives.stream()
+                    .map(BuildingArchive::getId)
+                    .collect(Collectors.toList());
+            wrapper.in(CollectionUtils.isNotEmpty(buildingIdList), RoomArchivesEntity::getLoupanId, buildingIdList);
+        }
         wrapper.eq(Objects.nonNull(query.getLoupanId()), RoomArchivesEntity::getLoupanId, query.getLoupanId());
         wrapper.like(StringUtils.isNotBlank(query.getName()), RoomArchivesEntity::getName, query.getName());
         wrapper.like(StringUtils.isNotBlank(query.getOwnershipUnit()), RoomArchivesEntity::getOwnershipUnit, query.getOwnershipUnit());
