@@ -6,6 +6,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.lease.dto.price.*;
+import cn.cuiot.dmp.lease.entity.PriceManageRecordEntity;
 import cn.cuiot.dmp.lease.service.PriceManageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -121,6 +122,14 @@ public class PriceManageController {
     @PostMapping("/delete")
     public boolean deletePriceManage(@RequestBody @Valid IdParam idParam) {
         return priceManageService.deletePriceManage(idParam.getId());
+    }
+
+    /**
+     * 通过定价管理id查询定价管理记录
+     */
+    @PostMapping("/queryRecordByPriceId")
+    public PageResult<PriceManageRecordEntity> queryRecordByPriceId(@RequestBody @Valid PriceManageRecordPageQueryDTO pageQueryDTO) {
+        return priceManageService.queryRecordByPriceId(pageQueryDTO);
     }
 
 }

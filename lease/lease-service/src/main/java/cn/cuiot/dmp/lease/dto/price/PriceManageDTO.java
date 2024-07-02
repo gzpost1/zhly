@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.dto.price;
 
+import cn.cuiot.dmp.lease.entity.PriceManageDetailEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -135,5 +136,10 @@ public class PriceManageDTO implements Serializable {
      * 更新者名称
      */
     private String updatedName;
+
+    /**
+     * 定价管理明细列表
+     */
+    private List<PriceManageDetailEntity> priceManageDetailEntities;
 
 }

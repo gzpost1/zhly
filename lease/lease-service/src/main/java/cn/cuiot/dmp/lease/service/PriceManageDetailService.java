@@ -4,6 +4,7 @@ import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.lease.dto.price.PriceManageDetailCreateDTO;
 import cn.cuiot.dmp.lease.entity.PriceManageDetailEntity;
 import cn.cuiot.dmp.lease.mapper.PriceManageDetailMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +23,20 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class PriceManageDetailService extends ServiceImpl<PriceManageDetailMapper, PriceManageDetailEntity> {
+
+    /**
+     * 通过定价管理id查询定价管理明细
+     */
+    public List<PriceManageDetailEntity> queryByPriceId(Long priceId) {
+        AssertUtil.notNull(priceId, "定价管理id不能为空");
+        LambdaQueryWrapper<PriceManageDetailEntity> queryWrapper = new LambdaQueryWrapper<PriceManageDetailEntity>()
+                .eq(PriceManageDetailEntity::getPriceId, priceId);
+        List<PriceManageDetailEntity> priceManageDetailEntities = list(queryWrapper);
+        if (CollectionUtils.isEmpty(priceManageDetailEntities)) {
+            return new ArrayList<>();
+        }
+        return priceManageDetailEntities;
+    }
 
     /**
      * 保存房屋定价明细

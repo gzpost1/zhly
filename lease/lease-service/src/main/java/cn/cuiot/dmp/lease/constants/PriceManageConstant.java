@@ -13,6 +13,5 @@ public class PriceManageConstant {
     public static final String OPERATE_SUBMIT = "提交";
     public static final String OPERATE_SUBMIT_AUDIT = "提交审核";
     public static final String OPERATE_INVALID = "作废";
-    public static final String OPERATE_INVALID_AUDIT = "作废审核";
 
 }
