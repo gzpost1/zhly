@@ -28,6 +28,6 @@ public enum ChargeReceivbleEnum {
 
     //进行作废操作，已开交、已交清的状态不显示作废按钮
     public static boolean isShowAbrogate(Byte code) {
-        return Lists.newArrayList(UNPAID.getCode(), PAID.getCode()).contains(code);
+        return Lists.newArrayList(PAID_OFF.getCode(), PAID.getCode()).contains(code);
     }
 }

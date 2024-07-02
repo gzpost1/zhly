@@ -131,6 +131,11 @@ public class ChargeManagerPageDto implements ChargeItemNameSet{
      */
     private Integer totalOwe = 0;
 
+    /**
+     * 违约金税额 单次税额：违约金*税率=违约金税额，计算累计的违约金税额
+     */
+    private Integer liquidatedDamagesTax = 0;
+
     public Integer getTotalOwe() {
         return receivableAmount - receivableAmountReceived;
     }
