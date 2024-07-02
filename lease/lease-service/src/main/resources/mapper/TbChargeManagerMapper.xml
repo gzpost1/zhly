@@ -402,9 +402,9 @@
         round(SUM(a.receivable_amount - a.receivable_amount_received) / 1000, 2) amount
         FROM
         tb_charge_manager a
-        <if test="params.operationType != null and params.operationType == 2">
-            INNER JOIN tb_charge_collection_plan_building b ON a.loupan_id = b.building_id
-            INNER JOIN tb_charge_collection_plan_item c ON a.charge_item_id = c.charge_item_id
+        <if test="params.operationType == 2">
+            INNER JOIN tb_charge_collection_plan_building b ON a.loupan_id = b.building_id AND b.charge_collection_plan_id = #{params.planId}
+            INNER JOIN tb_charge_collection_plan_item c ON a.charge_item_id = c.charge_item_id AND c.charge_collection_plan_id = #{params.planId}
         </if>
         <where>
             a.deleted = 0
@@ -412,22 +412,14 @@
             AND a.receivble_status IN (0,1)
             AND a.abrogate_status = 0
             AND a.hang_up_status = 0
-            AND a.due_date <![CDATA[ < ]]> #{params.dueDate}
-            <choose>
-                <when test="params.operationType != null and params.operationType == 2">
-                    AND b.charge_collection_plan_id = #{params.planId}
-                    AND c.charge_collection_plan_id = #{params.planId}
-                </when>
-                <otherwise>
-                    <if test="params.customerUserIds != null and params.customerUserIds.size() > 0">
-                        AND a.customer_user_id IN (
-                        <foreach collection="params.customerUserIds" index="index" item="item" separator=",">
-                            #{item}
-                        </foreach>
-                        )
-                    </if>
-                </otherwise>
-            </choose>
+            AND a.due_date <![CDATA[ <= ]]> #{params.dueDate}
+            <if test="params.customerUserIds != null and params.customerUserIds.size() > 0">
+                AND a.customer_user_id IN (
+                <foreach collection="params.customerUserIds" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
         </where>
         GROUP BY a.customer_user_id
     </select>
