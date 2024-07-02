@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import cn.cuiot.dmp.base.infrastructure.utils.MathTool;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -13,7 +14,7 @@ import java.util.Date;
  * @Created by libo
  */
 @Data
-public class ChargeManagerPageDto implements ChargeItemNameSet{
+public class ChargeManagerPageDto implements ChargeItemNameSet {
     /**
      * 应收编码
      */
@@ -154,5 +155,9 @@ public class ChargeManagerPageDto implements ChargeItemNameSet{
 
     public void setTotalOwe(Integer totalOwe) {
         this.totalOwe = totalOwe;
+    }
+
+    public Integer getReceivableAmountTax() {
+        return MathTool.percentCalculate(getReceivableAmount(), receivableAmountRate);
     }
 }
