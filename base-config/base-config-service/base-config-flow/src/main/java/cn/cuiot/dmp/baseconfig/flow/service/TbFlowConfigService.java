@@ -104,7 +104,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
      * @param createDto
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveFlow(FlowEngineInsertDto createDto) {
+    public Long saveFlow(FlowEngineInsertDto createDto) {
         TbFlowConfig tbFlowConfig = new TbFlowConfig();
         tbFlowConfig.setName(createDto.getName());
         tbFlowConfig.setBusinessTypeId(createDto.getBusinessTypeId());
@@ -159,6 +159,8 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
 
         tbFlowConfig.setProcess(processJson);
         save(tbFlowConfig);
+
+        return tbFlowConfig.getId();
     }
 
     public ChildNode processJson(String processJson) {
@@ -342,6 +344,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         if (Objects.equals(batcheOperation.getOperaTionType(), OperationConstant.DELETE)) {
             //删除
             this.delete(batcheOperation.getIds());
+
         } else if (Objects.equals(batcheOperation.getOperaTionType(), OperationConstant.STATUS)) {
             //修改状态
             LambdaUpdateWrapper<TbFlowConfig> updateWrapper = new LambdaUpdateWrapper<>();

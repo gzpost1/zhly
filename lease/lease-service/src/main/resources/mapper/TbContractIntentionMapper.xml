@@ -5,120 +5,177 @@
     <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.TbContractIntentionEntity">
         <result column="id" property="id"/>
         <result column="contract_no" property="contractNo"/>
+        <result column="contract_lease_id" property="contractLeaseId"/>
         <result column="name" property="name"/>
         <result column="cantract_date" property="cantractDate"/>
         <result column="begin_date" property="beginDate"/>
         <result column="end_date" property="endDate"/>
         <result column="follow_up" property="followUp"/>
+        <result column="followUpName" property="followUpName"/>
         <result column="client" property="client"/>
         <result column="remark" property="remark"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
         <result column="create_user" property="createUser"/>
         <result column="update_user" property="updateUser"/>
+        <result column="createUserName" property="createUserName"/>
+        <result column="updateUserName" property="updateUserName"/>
         <result column="status" property="status"/>
         <result column="deleted" property="deleted"/>
         <result column="contract_status" property="contractStatus"/>
         <result column="audit_status" property="auditStatus"/>
+        <result column="label" property="label"/>
+        <result column="customer_name" property="clientName"/>
+        <result column="contact_phone" property="clientPhone"/>
         <collection property="moneyList"
-                    select="cn.cuiot.dmp.lease.mapper.TbContractIntentionBindInfoMapper.queryMoneyInfoByIntentionId"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractBindInfoMapper.queryMoneyInfoByIntentionId"
+                    column="id">
+        </collection>
+        <collection property="cancelInfo"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractCancelMapper.selectIntentionCancel"
+                    column="id">
+        </collection>
+        <collection property="uselessInfo"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractCancelMapper.selectIntentionUseless"
                     column="id">
         </collection>
     </resultMap>
 
     <select id="selectById" resultMap="BaseResultMap">
-        select *
-        from tb_contract_intention
-        where id = #{id}
+        select
+        <include refid="Base_Column_List"/>
+        from tb_contract_intention ci
+        left join user u on ci.follow_up = u.id
+        left join tb_customer c on ci.client = c.id
+        where ci.id = #{id}
     </select>
 
     <select id="list" resultMap="BaseResultMap" parameterType="cn.cuiot.dmp.lease.entity.TbContractIntentionEntity">
         select
         <include refid="Base_Column_List"/>
-        from tb_contract_intention
+        from tb_contract_intention ci
+        left join user u on ci.follow_up = u.id
+        left join tb_customer c on ci.client = c.id
         <where>
             <include refid="dynamic_where"/>
         </where>
+        order by ifnull(ci.update_time,ci.create_time) desc
     </select>
+
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id,
-        contract_no,
-        name,
-        cantract_date,
-        begin_date,
-        end_date,
-        follow_up,
-        client,
-        remark,
-        create_time,
-        update_time,
-        create_user,
-        update_user,
-        status,
-        deleted,
-        contract_status,audit_status
+        ci.id,
+        ci.contract_no,contract_lease_id,
+        ci.name,
+        ci.cantract_date,
+        ci.begin_date,
+        ci.end_date,
+        ci.follow_up,
+        ci.client,
+        ci.remark,
+        ci.create_time,
+        ifnull(ci.update_time,ci.create_time) update_time,
+        ci.create_user,
+        ifnull(ci.update_user,ci.create_user) update_user,
+        ci.status,
+        ci.deleted,
+        ci.contract_status,ci.audit_status,ci.label,c.customer_name,u.name followUpName,c.contact_phone,
+        getUserName(ci.create_user) createUserName,getUserName(ifnull(ci.update_user,ci.create_user)) updateUserName
     </sql>
 
     <sql id="dynamic_where">
         <if test="params != null">
             <if test="params.id != null">
-                and id = #{params.id}
+                and ci.id = #{params.id}
+            </if>
+            <if test="params.queryIds!=null and params.queryIds.size()>0">
+                and ci.id in
+                <foreach collection="params.queryIds" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="params.contractLeaseId != null">
+                and ci.contract_lease_id = #{params.contractLeaseId}
             </if>
             <if test="params.contractNo != null and params.contractNo.trim() != ''">
-                and contract_no like CONCAT('%','${params.contractNo}','%' )
+                and ci.contract_no like CONCAT('%','${params.contractNo}','%' )
+            </if>
+            <if test="params.label != null and params.label.trim() != ''">
+                and ci.label like CONCAT('%','${params.label}','%' )
             </if>
             <if test="params.name != null and params.name.trim() != ''">
-                and name like CONCAT('%','${params.name}','%' )
+                and ci.name like CONCAT('%','${params.name}','%' )
             </if>
             <if test="params.cantractDate != null">
-                <!--  and  cantract_date between #{params.beginDate} and #{params.endDate}  -->
-                and cantract_date = #{params.cantractDate}
+                and ci.cantract_date = #{params.cantractDate}
+            </if>
+            <if test="params.cantractBeginDate != null">
+                and ci.cantract_date >= #{params.cantractBeginDate}
+            </if>
+            <if test="params.cantractEndDate != null">
+                and ci.cantract_date  <![CDATA[<=]]>  #{params.cantractEndDate}
+            </if>
+            <if test="params.beginDateBegin != null">
+                and ci.begin_date >= #{params.beginDateBegin}
+            </if>
+            <if test="params.beginDateEnd != null">
+                and ci.begin_date   <![CDATA[<=]]>  #{params.beginDateEnd}
+            </if>
+            <if test="params.endDateBegin != null">
+                and ci.end_date >= #{params.beginDateBegin}
+            </if>
+            <if test="params.endDateEnd != null">
+                and ci.end_date   <![CDATA[<=]]>  #{params.endDateEnd}
             </if>
             <if test="params.beginDate != null">
-                <!--  and  begin_date between #{params.beginDate} and #{params.endDate}  -->
-                and begin_date = #{params.beginDate}
+                and ci.begin_date = #{params.beginDate}
             </if>
             <if test="params.endDate != null">
-                <!--  and  end_date between #{params.beginDate} and #{params.endDate}  -->
-                and end_date = #{params.endDate}
+                and ci.end_date = #{params.endDate}
             </if>
             <if test="params.followUp != null and params.followUp.trim() != ''">
-                and follow_up like CONCAT('%','${params.followUp}','%' )
+                and ci.follow_up like CONCAT('%','${params.followUp}','%' )
+            </if>
+            <if test="params.followUpName != null and params.followUpName.trim() != ''">
+                and u.name like CONCAT('%','${params.followUpName}','%' )
             </if>
             <if test="params.client != null and params.client.trim() != ''">
-                and client like CONCAT('%','${params.client}','%' )
+                and ci.client like CONCAT('%','${params.client}','%' )
             </if>
             <if test="params.remark != null and params.remark.trim() != ''">
-                and remark = #{params.remark}
+                and ci.remark = #{params.remark}
             </if>
             <if test="params.createTime != null">
                 <!--  and  create_time between #{params.beginDate} and #{params.endDate}  -->
-                and create_time = #{params.createTime}
+                and ci.create_time = #{params.createTime}
             </if>
             <if test="params.updateTime != null">
                 <!--  and  update_time between #{params.beginDate} and #{params.endDate}  -->
-                and update_time = #{params.updateTime}
+                and ci.update_time = #{params.updateTime}
             </if>
             <if test="params.createUser != null">
-                and create_user = #{params.createUser}
+                and ci.create_user = #{params.createUser}
             </if>
             <if test="params.updateUser != null">
-                and update_user = #{params.updateUser}
+                and ci.update_user = #{params.updateUser}
             </if>
             <if test="params.status != null">
-                and status = #{params.status}
+                and ci.status = #{params.status}
             </if>
             <if test="params.deleted != null">
-                and deleted = #{params.deleted}
+                and ci.deleted = #{params.deleted}
             </if>
             <if test="params.contractStatus != null">
-                and contract_status = #{params.contractStatus}
+                and ci.contract_status = #{params.contractStatus}
             </if>
             <if test="params.auditStatus != null">
-                and audit_status = #{params.auditStatus}
+                and ci.audit_status = #{params.auditStatus}
             </if>
         </if>
     </sql>
+    
+    <select id="statisticsContract" resultType="cn.cuiot.dmp.base.infrastructure.dto.BaseVO">
+        select count(*) value,contract_status name from tb_contract_intention where deleted=0 group by contract_status
+    </select>
 </mapper>

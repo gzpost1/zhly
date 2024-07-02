@@ -75,4 +75,42 @@ public class ServiceTypeConst {
      */
     public static final String CONTRACT_INTENTION = "106";
 
+    //----------------------------------收费管理----------------------------------start
+    /**
+     * 平台日志
+     * 收费管理-收银台-缴费管理
+     */
+    public static final String RECEIVED_MANAGER = "120";
+
+    /**
+     * 平台日志
+     * 收费管理-收银台-应收生成明细
+     */
+    public static final String RECEIVED_GENERATE = "121";
+
+    /**
+     * 平台日志
+     * 收费管理-收银台-押金管理
+     */
+    public static final String SECURITYDEPOSITMANAGER = "122";
+
+
+    /**
+     * 平台日志
+     * 收费管理-收银台-自动生成计划
+     */
+    public static final String CHARGEPLAIN = "123";
+
+    /**
+     * 平台日志
+     * 收费管理-催款管理
+     */
+    public static final String CHARGE_COLLECTION_MANAGE = "124";
+
+    /**
+     * 平台日志
+     * 收费管理-通知单
+     */
+    public static final String CHARGE_NOTICE = "125";
+    //----------------------------------收费管理----------------------------------end
 }

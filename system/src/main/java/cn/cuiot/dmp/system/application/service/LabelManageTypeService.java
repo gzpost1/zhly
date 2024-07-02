@@ -68,7 +68,7 @@ public class LabelManageTypeService extends ServiceImpl<LabelManageTypeMapper, L
             LabelManageTypeDTO labelManageTypeDTO = queryByType(key);
             LabelManageTypeRspDTO labelManageTypeRspDTO = new LabelManageTypeRspDTO();
             BeanUtils.copyProperties(labelManageTypeDTO, labelManageTypeRspDTO);
-            labelManageTypeRspDTO.setLabelManage(value.get(0));
+            labelManageTypeRspDTO.setLabelManageList(value);
             labelManageTypeDTOList.add(labelManageTypeRspDTO);
         });
         return labelManageTypeDTOList;
@@ -84,7 +84,7 @@ public class LabelManageTypeService extends ServiceImpl<LabelManageTypeMapper, L
         List<LabelManageTypeDTO> LabelManageTypeDTOList = new ArrayList<>();
         labelManageMap.forEach((key, value) -> {
             LabelManageTypeDTO labelManageTypeDTO = queryByType(key);
-            labelManageTypeDTO.setLabelManage(value.get(0));
+            labelManageTypeDTO.setLabelManageList(value);
             LabelManageTypeDTOList.add(labelManageTypeDTO);
         });
         return LabelManageTypeDTOList;

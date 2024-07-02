@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author caorui
@@ -33,8 +34,18 @@ public class CommonOptionPageQuery extends PageQuery {
     private Long typeId;
 
     /**
+     * 选项类别
+     */
+    private Byte category;
+
+    /**
      * 状态(0:禁用,1:正常)
      */
     private Byte status;
+
+    /**
+     * 分类id列表
+     */
+    private List<Long> typeIdList;
 
 }

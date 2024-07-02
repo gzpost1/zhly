@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,7 +23,7 @@ public class TreeNode<T extends TreeNode<T>> implements Serializable {
     //private boolean selected=false;
     //private boolean checked=false;
     //private boolean expand=false;
-    private List<T> children = null;
+    private List<T> children = new ArrayList<>();
 
     public TreeNode() {
     }
