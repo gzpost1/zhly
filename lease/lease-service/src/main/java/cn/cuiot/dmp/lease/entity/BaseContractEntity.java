@@ -85,6 +85,18 @@ public class BaseContractEntity extends Model {
     private LocalDate cantractEndDate;
 
     /**
+     * 退租查询起始日期
+     */
+    @TableField(exist = false)
+    private LocalDate leaseBackBeginDate;
+
+    /**
+     * 退租查询终止日期
+     */
+    @TableField(exist = false)
+    private LocalDate leaseBackEndDate;
+
+    /**
      * 合同开始日期
      */
     @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")

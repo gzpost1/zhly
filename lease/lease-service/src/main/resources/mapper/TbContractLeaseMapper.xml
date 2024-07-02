@@ -59,6 +59,7 @@
         <include refid="Base_Column_List"/>
         from tb_contract_lease ci
         left join user u on ci.follow_up = u.id
+        left join tb_contract_lease_back b on ci.id = b.contract_id
         <where>
             <include refid="dynamic_where"/>
         </where>
@@ -104,6 +105,12 @@
             </if>
             <if test="params.cantractEndDate != null">
                 and ci.cantract_date  <![CDATA[<=]]>  #{params.cantractEndDate}
+            </if>
+            <if test="params.leaseBackBeginDate != null">
+                and b.end_date >= #{params.leaseBackBeginDate}
+            </if>
+            <if test="params.leaseBackEndDate != null">
+                and b.end_date  <![CDATA[<=]]>  #{params.leaseBackEndDate}
             </if>
             <if test="params.beginDateBegin != null">
                 and ci.begin_date >= #{params.beginDateBegin}

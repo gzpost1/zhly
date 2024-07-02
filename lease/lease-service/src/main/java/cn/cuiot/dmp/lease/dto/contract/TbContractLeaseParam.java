@@ -79,10 +79,42 @@ public class TbContractLeaseParam extends PageQuery implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private LocalDate firstDate;
 
+    private LocalDate cantractBeginDate;
+
+    private LocalDate cantractEndDate;
+    /**
+     * 退租查询起始日期
+     */
+    private LocalDate leaseBackBeginDate;
+
+    /**
+     * 退租查询终止日期
+     */
+    private LocalDate leaseBackEndDate;
+    /**
+     * 查询开始日期 开始日期
+     */
+    private LocalDate beginDateBegin;
+    /**
+     * 查询开始日期 结束日期
+     */
+    private LocalDate beginDateEnd;
+    /**
+     * 合同结束日期 开始日期
+     */
+    private LocalDate endDateBegin;
+    /**
+     * 合同结束日期 结束日期
+     */
+    private LocalDate endDateEnd;
+
     /**
      * 跟进人
+
      */
     private String followUp;
+    private String followUpName;
+
 
     /**
      * 租赁用途
@@ -170,9 +202,7 @@ public class TbContractLeaseParam extends PageQuery implements Serializable {
     /**
      * 意向标(房屋名称)
      */
-    @TableField(exist = false)
     private String houseName;
-    private String followUpName;
 
 
     /**
