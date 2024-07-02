@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
 import cn.cuiot.dmp.common.bean.PageQuery;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
@@ -37,10 +39,14 @@ public class ChargeNoticeSendQuery extends PageQuery {
     /**
      * 所属账期-开始时间 前端不用传
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date ownershipPeriodBegin;
 
     /**
      * 所属账期-结束时间 前端不用传
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date ownershipPeriodEnd;
 }

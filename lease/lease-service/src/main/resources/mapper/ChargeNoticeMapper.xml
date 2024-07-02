@@ -46,7 +46,8 @@
         a.charge_item_id chargeItemId
         FROM
         tb_charge_manager a
-        INNER JOIN tb_charge_notice_item c ON a.charge_item_id = c.charge_item_id
+        INNER JOIN tb_charge_notice_item b ON a.charge_item_id = b.charge_item_id AND b.charge_notice_id = #{params.id}
+        INNER JOIN tb_charge_notice_building c ON a.loupan_id = c.building_id AND c.charge_notice_id = #{params.id}
         WHERE
         a.deleted = 0
         AND a.company_id = #{params.companyId}
@@ -55,6 +56,5 @@
         AND a.hang_up_status = 0
         AND a.ownership_period_begin <![CDATA[ >= ]]> #{params.ownershipPeriodBegin}
         AND a.ownership_period_end <![CDATA[ <= ]]> #{params.ownershipPeriodEnd}
-        AND c.charge_item_id = #{params.id}
     </select>
 </mapper>
