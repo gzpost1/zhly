@@ -100,7 +100,7 @@ public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMa
     public void saveAuditLog(AuditParam auditParam, Integer contractType, String operate) {
         String logMsg = getAuditMsg(auditParam, contractType, operate);
         String operation = operate + "审核";
-        saveIntentionLog(auditParam.getId(), operation, logMsg);
+        saveLog(auditParam.getId(), operation, logMsg,contractType);
     }
 
 

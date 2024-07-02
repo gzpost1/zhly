@@ -207,7 +207,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         contractCancelService.saveOrUpdate(contractCancelEntity);
         String operMsg = "作废了租赁合同" + System.lineSeparator() +
                 "作废备注:" + contractCancelEntity.getRemark();
-        contractLogService.saveIntentionLog(id, OPERATE_USELESS, operMsg);
+        contractLogService.saveLeaseLog(id, OPERATE_USELESS, operMsg);
         return service.updateById(queryEntity);
     }
 
