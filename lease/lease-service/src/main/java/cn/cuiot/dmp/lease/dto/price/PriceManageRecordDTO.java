@@ -31,6 +31,11 @@ public class PriceManageRecordDTO implements Serializable {
     private Long operatorId;
 
     /**
+     * 操作人名称
+     */
+    private String operatorName;
+
+    /**
      * 操作时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -40,5 +45,10 @@ public class PriceManageRecordDTO implements Serializable {
      * 审核备注
      */
     private String auditRemark;
+
+    /**
+     * 作废备注
+     */
+    private String invalidRemark;
 
 }
