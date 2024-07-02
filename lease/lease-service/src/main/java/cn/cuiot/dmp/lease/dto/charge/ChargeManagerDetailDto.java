@@ -13,40 +13,14 @@ import java.math.BigDecimal;
 @Data
 public class ChargeManagerDetailDto extends ChargeManagerPageDto{
     /**
-     * 房屋名称
-     */
-    private String houseName;
-
-    /**
-     * 房屋编号
-     */
-    private String houseCode;
-
-    /**
-     * 本金税率
-     */
-    private BigDecimal receivableAmountRate;
-
-
-    /**
      * 本金不含税	应收金额-应收金额*税率=本金不含税
      */
     private Integer receivableAmountNotTax = 0;
 
     /**
-     * 本金实收
-     */
-    private Integer receivableAmountReceived = 0;
-
-    /**
      * 本金欠收	应收金额-本金实收=本金欠收
      */
     private Integer receivableAmountOwe = 0;
-
-    /**
-     * 违约金税额 单次税额：违约金*税率=违约金税额，计算累计的违约金税额
-     */
-    private Integer liquidatedDamagesTax = 0;
 
     /**
      * 违约金额不含税 单次：违约金-违约金*税率=违约金额不含税  计算累计的违约金不含税
