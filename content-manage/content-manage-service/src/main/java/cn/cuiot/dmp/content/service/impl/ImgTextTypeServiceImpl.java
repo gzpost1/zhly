@@ -66,6 +66,7 @@ public class ImgTextTypeServiceImpl extends ServiceImpl<ImgTextTypeMapper, ImgTe
         if (CollUtil.isNotEmpty(contentImgTextEntities)) {
             throw new BusinessException(ResultCode.IMG_TEXT_TYPE_EXISTS_DATA);
         }
+        removeById(id);
         return null;
     }
 
