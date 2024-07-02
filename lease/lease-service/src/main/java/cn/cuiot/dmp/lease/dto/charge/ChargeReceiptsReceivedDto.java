@@ -24,19 +24,16 @@ public class ChargeReceiptsReceivedDto {
     /**
      * 交易方式
      */
-    @NotNull(message = "交易方式不能为空")
     private Long transactionMode;
 
     /**
      * 入账银行
      */
-    @NotBlank (message = "入账银行不能为空")
     private String accountBank;
 
     /**
      * 入账账号
      */
-    @NotBlank(message = "入账账号不能为空")
     private String accountNumber;
 
     /**
@@ -47,7 +44,6 @@ public class ChargeReceiptsReceivedDto {
     /**
      * 交款人
      */
-    @NotNull(message = "交款人不能为空")
     private Long customerUserId;
 
     /**
