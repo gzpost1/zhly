@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class LabelManageUpdateDTO extends LabelManageCreateDTO{
+public class LabelManageUpdateDTO extends LabelManageCreateDTO {
 
     private static final long serialVersionUID = 2602122766859347063L;
 

@@ -4,6 +4,7 @@ import cn.cuiot.dmp.common.enums.LabelManageTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author caorui
@@ -33,6 +34,6 @@ public class LabelManageTypeRspDTO implements Serializable {
     /**
      * 标签管理详情
      */
-    private LabelManageRspDTO labelManage;
+    private List<LabelManageRspDTO> labelManageList;
 
 }
