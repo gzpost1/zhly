@@ -44,7 +44,7 @@ public class ContractTemplateCreateDTO implements Serializable {
      * 模板用途
      */
     @NotBlank(message = "模板用途不能为空")
-    private String usage;
+    private String templateUsage;
 
     /**
      * 模板备注

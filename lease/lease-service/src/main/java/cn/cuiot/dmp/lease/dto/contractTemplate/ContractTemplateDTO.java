@@ -54,7 +54,7 @@ public class ContractTemplateDTO implements Serializable {
     /**
      * 模板用途
      */
-    private String usage;
+    private String templateUsage;
 
     /**
      * 模板备注
