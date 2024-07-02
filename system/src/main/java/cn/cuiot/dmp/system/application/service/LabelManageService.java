@@ -12,9 +12,11 @@ import cn.cuiot.dmp.system.infrastructure.persistence.mapper.LabelManageMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -53,6 +55,7 @@ public class LabelManageService extends ServiceImpl<LabelManageMapper, LabelMana
         Long companyId = LoginInfoHolder.getCurrentOrgId();
         AssertUtil.notNull(companyId, "企业id不能为空");
         createDTO.setCompanyId(companyId);
+        checkSave(createDTO.getCompanyId(), createDTO.getLabelManageType(), createDTO.getLabelName());
         LabelManageEntity labelManageEntity = new LabelManageEntity();
         BeanUtils.copyProperties(createDTO, labelManageEntity);
         return save(labelManageEntity);
@@ -64,8 +67,33 @@ public class LabelManageService extends ServiceImpl<LabelManageMapper, LabelMana
     public boolean updateLabelManage(LabelManageUpdateDTO updateDTO) {
         LabelManageEntity labelManageEntity = Optional.ofNullable(getById(updateDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
-        labelManageEntity.setLabelList(updateDTO.getLabelList());
+        checkSave(labelManageEntity.getCompanyId(), labelManageEntity.getLabelManageType(), updateDTO.getLabelName());
+        labelManageEntity.setLabelName(updateDTO.getLabelName());
         return updateById(labelManageEntity);
+    }
+
+    /**
+     * 删除
+     */
+    public boolean deleteLabelManage(Long id) {
+        return removeById(id);
+    }
+
+    private void checkSave(Long companyId, Byte labelManageType, String labelName) {
+        AssertUtil.notNull(labelManageType, "标签管理类型不能为空");
+        AssertUtil.notNull(companyId, "企业id不能为空");
+        LambdaQueryWrapper<LabelManageEntity> queryWrapper = new LambdaQueryWrapper<LabelManageEntity>()
+                .eq(LabelManageEntity::getCompanyId, companyId)
+                .eq(LabelManageEntity::getLabelManageType, labelManageType);
+        List<LabelManageEntity> labelManageEntityList = list(queryWrapper);
+        if (CollectionUtils.isEmpty(labelManageEntityList)) {
+            return;
+        }
+        for (LabelManageEntity labelManageEntity : labelManageEntityList) {
+            if (labelManageEntity.getLabelName().equals(labelName)) {
+                throw new BusinessException(ResultCode.INVALID_PARAM_TYPE, "标签名称不可重复");
+            }
+        }
     }
 
 }

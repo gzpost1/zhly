@@ -84,4 +84,14 @@ public class LabelManageTypeController {
         return labelManageService.updateLabelManage(updateDTO);
     }
 
+    /**
+     * 删除标签
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "deleteLabelManage", operationName = "删除标签", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @PostMapping("/deleteLabel")
+    public boolean deleteLabelManage(@RequestBody @Valid IdParam idParam) {
+        return labelManageService.deleteLabelManage(idParam.getId());
+    }
+
 }
