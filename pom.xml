@@ -18,7 +18,6 @@
         <module>message</module>
         <module>content-manage</module>
         <module>lease</module>
->>>>>>>>> Temporary merge branch 2
     </modules>
 
     <parent>
