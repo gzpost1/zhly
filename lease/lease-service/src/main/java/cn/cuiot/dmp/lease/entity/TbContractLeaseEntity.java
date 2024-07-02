@@ -147,7 +147,7 @@ public class TbContractLeaseEntity extends BaseContractEntity {
      */
 //    private Integer contractStatus;
 
-    private Integer templateId;
+    private Long templateId;
 
     /**
      * 续租日期
