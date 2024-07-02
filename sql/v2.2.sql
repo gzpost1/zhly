@@ -99,41 +99,44 @@ create table tb_contract_log
     comment '合同操作日志';
 
 
--- auto-generated definition
 create table tb_contract_lease
 (
-    id              bigint       not null
+    id                bigint       not null
         primary key,
-    contract_no     varchar(30)  null comment '合同编号',
-    name            varchar(100) not null comment '合同名称',
-    begin_date      date         not null comment '合同开始日期',
-    end_date        date         not null comment '合同结束日期',
-    cantract_date   date         null comment '签订日期',
-    first_date      date         null comment '首期应收日期',
-    follow_up       varchar(30)  not null comment '跟进人',
-    purpose         varchar(30)  not null comment '租赁用途',
-    type            varchar(30)  not null comment '合同类型',
-    property        varchar(30)  not null comment '合同性质',
-    label           text         null comment '标签',
-    remark          longtext     null comment '备注',
-    client          varchar(30)  null comment '签订客户',
-    form            longtext     null comment '合同表单',
-    main_body       json         null comment '合同主体',
-    path            text         null comment '其他功能-附件',
-    create_time     datetime     null,
-    update_time     datetime     null,
-    create_user     bigint       null,
-    update_user     bigint       null,
-    status          tinyint(1)   null,
-    deleted         tinyint(1)   null,
-    contract_status int          null comment '合同状态',
-    audit_status    int          null comment '审核状态 1审核中,待审核 2 审核通过 3.未通过',
-    template_id     bigint       null comment '合同模板id',
-    relet_date      date         null comment '续租日期',
-    relet_remark    text         null comment '续租说明',
-    relet_path      varchar(512) null comment '续组附件'
+    contract_no       varchar(30)  null comment '合同编号',
+    name              varchar(100) not null comment '合同名称',
+    begin_date        date         not null comment '合同开始日期',
+    end_date          date         not null comment '合同结束日期',
+    cantract_date     date         null comment '签订日期',
+    first_date        date         null comment '首期应收日期',
+    follow_up         varchar(30)  not null comment '跟进人',
+    purpose           varchar(30)  not null comment '租赁用途',
+    type              varchar(30)  not null comment '合同类型',
+    property          varchar(30)  not null comment '合同性质',
+    label             text         null comment '标签',
+    remark            longtext     null comment '备注',
+    client            varchar(30)  null comment '签订客户',
+    form              longtext     null comment '合同表单',
+    main_body         json         null comment '合同主体',
+    path              text         null comment '其他功能-附件',
+    create_time       datetime     null,
+    update_time       datetime     null,
+    create_user       bigint       null,
+    update_user       bigint       null,
+    status            tinyint(1)   null,
+    deleted           tinyint(1)   null,
+    contract_status   int          null comment '合同状态',
+    audit_status      int          null comment '审核状态 1审核中,待审核 2 审核通过 3.未通过',
+    template_id       bigint       null comment '合同模板id',
+    relet_date        date         null comment '续租日期',
+    relet_remark      text         null comment '续租说明',
+    relet_path        varchar(512) null comment '续组附件',
+    relet_contract_id bigint       null comment '续租关联的合同id',
+    form_data          text         null comment '表单值'
 )
     comment '租赁合同';
+
+
 
 
 -- auto-generated definition

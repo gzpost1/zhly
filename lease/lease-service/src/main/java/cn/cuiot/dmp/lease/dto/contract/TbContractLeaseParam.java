@@ -73,6 +73,11 @@ public class TbContractLeaseParam extends PageQuery implements Serializable {
     private LocalDate cantractDate;
 
     /**
+     * 合同表单值
+     */
+    private String formData;
+
+    /**
      * 首期应收日期
      */
     @JsonFormat(pattern="yyyy-MM-dd", timezone = "GMT+8")

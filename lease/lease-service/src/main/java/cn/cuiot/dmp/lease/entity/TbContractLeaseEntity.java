@@ -99,6 +99,10 @@ public class TbContractLeaseEntity extends BaseContractEntity {
      * 合同表单
      */
     private String form;
+    /**
+     * 合同表单值
+     */
+    private String formData;
 
     /**
      * 合同主体

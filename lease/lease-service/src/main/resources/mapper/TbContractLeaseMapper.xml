@@ -35,6 +35,7 @@
         <result column="relet_date" property="reletDate"/>
         <result column="relet_remark" property="reletRemark"/>
         <result column="relet_path" property="reletPath"/>
+        <result column="form_data" property="formData"/>
         <result column="relet_contract_id" property="reletContractId"/>
         <collection property="uselessInfo"
                     select="cn.cuiot.dmp.lease.mapper.TbContractCancelMapper.selectLeaseUseless"
@@ -68,7 +69,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        ci.id,ci.relet_contract_id, ci.contract_no, ci.name, ci.begin_date, ci.end_date, ci.cantract_date, ci.first_date, ci.follow_up, ci.purpose, ci.type, ci.property, ci.label, ci.remark, ci.client, ci.form, ci.main_body, ci.path, ci.create_time,  ifnull(ci.update_time,ci.create_time) update_time, ci.create_user,  ifnull(ci.update_user,ci.create_user) update_user,getUserName(ci.create_user) createUserName,getUserName(ifnull(ci.update_user,ci.create_user)) updateUserName, ci.status, ci.deleted, ci.contract_status, ci.audit_status,ci.template_id,ci.relet_date,ci.relet_remark,ci.relet_path,u.name followUpName
+        ci.id,ci.form_data,ci.relet_contract_id, ci.contract_no, ci.name, ci.begin_date, ci.end_date, ci.cantract_date, ci.first_date, ci.follow_up, ci.purpose, ci.type, ci.property, ci.label, ci.remark, ci.client, ci.form, ci.main_body, ci.path, ci.create_time,  ifnull(ci.update_time,ci.create_time) update_time, ci.create_user,  ifnull(ci.update_user,ci.create_user) update_user,getUserName(ci.create_user) createUserName,getUserName(ifnull(ci.update_user,ci.create_user)) updateUserName, ci.status, ci.deleted, ci.contract_status, ci.audit_status,ci.template_id,ci.relet_date,ci.relet_remark,ci.relet_path,u.name followUpName
     </sql>
 
     <sql id="dynamic_where">
