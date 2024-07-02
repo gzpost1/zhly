@@ -18,5 +18,5 @@ public class SysBusinessMsgDto extends SysMsgBaseDto{
     /**
      * 接收人（非空）
      */
-    private Long acceptor;
+    private Long accepter;
 }

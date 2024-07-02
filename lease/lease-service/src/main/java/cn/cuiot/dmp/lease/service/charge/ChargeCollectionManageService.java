@@ -174,7 +174,7 @@ public class ChargeCollectionManageService {
         return list.stream().map(item -> {
             SysBusinessMsgDto msgDto = new SysBusinessMsgDto();
             msgDto.setSendId(LoginInfoHolder.getCurrentUserId());
-            msgDto.setAcceptor(item.getCustomerUserId());
+            msgDto.setAccepter(item.getCustomerUserId());
             msgDto.setDataType(MsgDataType.COLLECTION_NOTICE);
             msgDto.setMsgType(MsgTypeConstant.CHARGE_COLLECTION_NOTICE);
             msgDto.setMessageTime(new Date());
