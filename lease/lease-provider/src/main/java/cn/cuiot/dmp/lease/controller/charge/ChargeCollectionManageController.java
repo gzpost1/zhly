@@ -88,7 +88,7 @@ public class ChargeCollectionManageController {
      */
     @RequiresPermissions
     @PostMapping("sengMsg")
-    @LogRecord(operationCode = "delete", operationName = "收费管理-催款管理-发送通知", serviceType = ServiceTypeConst.CHARGE_COLLECTION_MANAGE)
+    @LogRecord(operationCode = "sengMsg", operationName = "收费管理-催款管理-发送通知", serviceType = ServiceTypeConst.CHARGE_COLLECTION_MANAGE)
     public IdmResDTO<?> sengMsg(@RequestBody @Valid ChargeCollectionManageSendQuery query) {
         //获取前一天23:59:59
         Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now(), LocalTime.MAX)

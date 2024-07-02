@@ -90,7 +90,7 @@ public class ChargeNoticeController {
      */
     @RequiresPermissions
     @PostMapping("sengMsg")
-    @LogRecord(operationCode = "delete", operationName = "收费管理-通知单-发送通知", serviceType = ServiceTypeConst.CHARGE_NOTICE)
+    @LogRecord(operationCode = "sengMsg", operationName = "收费管理-通知单-发送通知", serviceType = ServiceTypeConst.CHARGE_NOTICE)
     public IdmResDTO<?> sengMsg(@RequestBody @Valid ChargeNoticeSendQuery query) {
         chargeNoticeService.sengMsg(query);
         return IdmResDTO.success();
