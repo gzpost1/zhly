@@ -272,7 +272,7 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
 
                 records.forEach(item ->{
                     //设置项目名称
-                    item.setChargeItemName(map.containsKey(item.getChargeItemId()) ? map.get(item.getCustomerUserId()).getName() : "");
+                    item.setChargeItemName(map.containsKey(item.getChargeItemId()) ? map.get(item.getChargeItemId()).getName() : "");
                     //设置所属账期-开始时间
                     item.setOwnershipPeriodBegin(noticeEntity.getOwnershipPeriodBegin());
                     //设置所属账期-结束时间
