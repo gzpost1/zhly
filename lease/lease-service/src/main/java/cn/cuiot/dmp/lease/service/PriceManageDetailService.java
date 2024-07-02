@@ -13,7 +13,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +66,27 @@ public class PriceManageDetailService extends ServiceImpl<PriceManageDetailMappe
         LambdaUpdateWrapper<PriceManageDetailEntity> updateWrapper = new LambdaUpdateWrapper<PriceManageDetailEntity>()
                 .eq(PriceManageDetailEntity::getPriceId, priceId);
         remove(updateWrapper);
+    }
+
+    /**
+     * 根据房屋id查询对应的最新定价
+     */
+    public Map<Long, Integer> batchQueryHousePriceForMap(List<Long> ids) {
+        LambdaQueryWrapper<PriceManageDetailEntity> queryWrapper = new LambdaQueryWrapper<PriceManageDetailEntity>()
+                .in(PriceManageDetailEntity::getHouseId, ids)
+                .orderByDesc(PriceManageDetailEntity::getCreatedOn);
+        List<PriceManageDetailEntity> priceManageDetailEntities = list(queryWrapper);
+        if (CollectionUtils.isEmpty(priceManageDetailEntities)) {
+            return new HashMap<>();
+        }
+        Map<Long, List<PriceManageDetailEntity>> priceManageDetailMap = priceManageDetailEntities.stream()
+                .collect(Collectors.groupingBy(PriceManageDetailEntity::getHouseId));
+        Map<Long, Integer> housePriceMap = new HashMap<>();
+        priceManageDetailMap.forEach((k, v) -> {
+            int price = v.get(0).getPrice();
+            housePriceMap.put(k, price);
+        });
+        return housePriceMap;
     }
 
 }
