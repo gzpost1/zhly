@@ -22,5 +22,13 @@ public class MsgTypeConstant {
      */
     public final static String CLUE = "clue";
 
+    /**
+     * 收费账单通知
+     */
+    public final static String CHARGE_BILL_NOTICE = "charge_bill_notice";
 
+    /**
+     * 收费催款通知
+     */
+    public final static String CHARGE_COLLECTION_NOTICE = "charge_collection_notice";
 }
