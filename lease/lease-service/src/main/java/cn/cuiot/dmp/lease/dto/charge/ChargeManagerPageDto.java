@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -135,6 +136,17 @@ public class ChargeManagerPageDto implements ChargeItemNameSet{
      * 违约金税额 单次税额：违约金*税率=违约金税额，计算累计的违约金税额
      */
     private Integer liquidatedDamagesTax = 0;
+
+
+    /**
+     * 本金税率
+     */
+    private BigDecimal receivableAmountRate;
+
+    /**
+     * 本金税额	应收金额*税率=本金税额
+     */
+    private Integer receivableAmountTax = 0;
 
     public Integer getTotalOwe() {
         return receivableAmount - receivableAmountReceived;
