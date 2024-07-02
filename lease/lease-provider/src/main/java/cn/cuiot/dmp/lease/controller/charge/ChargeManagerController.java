@@ -252,6 +252,7 @@ public class ChargeManagerController {
     @PostMapping("/create")
     @LogRecord(operationCode = "create", operationName = "缴费管理-创建", serviceType = ServiceTypeConst.RECEIVED_MANAGER, serviceTypeName = ServiceTypeConst.BASE_CONFIG)
     public IdmResDTO create(@RequestBody @Valid ChargeManagerInsertVo createDto) {
+        createDto.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         tbChargeManagerService.saveData(createDto, ChargeTypeEnum.MANUAL_CREATE.getCode(), null);
         return IdmResDTO.success();
     }
