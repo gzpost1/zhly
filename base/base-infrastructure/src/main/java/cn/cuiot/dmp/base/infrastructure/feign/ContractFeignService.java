@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 合同Feign服务
@@ -33,4 +34,11 @@ public interface ContractFeignService {
      */
     @PostMapping(value = "/api/queryConctactStatusByHouseIds", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<ContractStatusVo> queryConctactStatusByHouseIds(@RequestBody @Valid IdsReq idsReq);
+
+    /**
+     * 根据房屋id查询对应的最新定价
+     */
+    @PostMapping(value = "/api/batchQueryHousePriceForMap", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<Map<Long, Integer>> batchQueryHousePriceForMap(@RequestBody @Valid IdsReq idsReq);
+
 }
