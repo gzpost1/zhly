@@ -137,12 +137,10 @@ create table tb_contract_lease
     comment '租赁合同';
 
 
-
-
 -- auto-generated definition
 create table tb_contract_charge
 (
-    id          bigint         not null
+    id          bigint auto_increment
         primary key,
     contract_id bigint         null comment '合同编号',
     project     varchar(100)   null comment '交费项目',
@@ -160,6 +158,8 @@ create table tb_contract_charge
             on delete cascade
 )
     comment '费用条款';
+
+
 
 
 -- auto-generated definition
