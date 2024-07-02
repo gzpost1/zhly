@@ -124,7 +124,7 @@ public class ContentImgTextController extends BaseController {
      * @return
      */
     @GetMapping("/getAuditStatusNum")
-    public List<AuditStatusNumVo> getAuditStatusNum(@RequestParam("typeId") Long typeId) {
+    public List<AuditStatusNumVo> getAuditStatusNum(@RequestParam(value = "typeId",required = false) Long typeId) {
         return contentImgTextService.getAuditStatusNum(typeId);
     }
 }
