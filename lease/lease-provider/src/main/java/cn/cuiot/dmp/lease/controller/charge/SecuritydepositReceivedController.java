@@ -8,6 +8,7 @@ import cn.cuiot.dmp.lease.dto.charge.HouseInfoDto;
 import cn.cuiot.dmp.lease.dto.charge.SecuritydepositManagerPageDto;
 import cn.cuiot.dmp.lease.dto.charge.SecuritydepositManagerQuery;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
+import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
 import cn.cuiot.dmp.lease.service.charge.TbSecuritydepositManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
@@ -38,7 +39,8 @@ public class SecuritydepositReceivedController {
     private TbSecuritydepositManagerService securitydepositManagerService;
     @Autowired
     private ChargeHouseAndUserService chargeHouseAndUserService;
-
+    @Autowired
+    private ChargeInfoFillService chargeInfoFillService;
 
     /**
      * 获取分页
@@ -77,6 +79,9 @@ public class SecuritydepositReceivedController {
                     }
                 }
             }
+
+            chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(),SecuritydepositManagerPageDto.class);
+
         }
         return IdmResDTO.success().body(chargeManagerPageDtoIPage);
     }

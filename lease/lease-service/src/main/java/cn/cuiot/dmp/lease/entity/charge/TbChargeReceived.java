@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.lease.entity.charge;
 
+import cn.cuiot.dmp.lease.dto.charge.ChargeItemNameSet;
+import cn.cuiot.dmp.lease.dto.charge.TransactionModeNameSet;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -17,7 +19,7 @@ import org.springframework.format.annotation.DateTimeFormat;
  */
 @Data
 @TableName(value = "tb_charge_received",autoResultMap = true)
-public class TbChargeReceived {
+public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameSet {
     @TableId(value = "id", type = IdType.INPUT)
     private Long id;
 
@@ -90,6 +92,12 @@ public class TbChargeReceived {
     private Long transactionMode;
 
     /**
+     * 交易方式名称
+     */
+    @TableField(exist = false)
+    private String transactionModeName;
+
+    /**
      * 入账银行
      */
     @TableField(value = "account_bank")
@@ -141,6 +149,9 @@ public class TbChargeReceived {
      */
     @TableField(value = "charge_item_id")
     private Long chargeItemId;
+
+    @TableField(exist = false)
+    private String chargeItemName;
 
     /**
      * 所属账期-开始时间

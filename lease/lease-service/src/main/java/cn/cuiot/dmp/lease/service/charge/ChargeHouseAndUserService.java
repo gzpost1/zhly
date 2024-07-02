@@ -21,7 +21,7 @@ public class ChargeHouseAndUserService {
     @Autowired
     private TbChargeManagerMapper chargeManagerMapper;
 
-    public List<HouseInfoDto> getHouseInfoByIds(ArrayList<Long> ids) {
+    public List<HouseInfoDto> getHouseInfoByIds(List<Long> ids) {
         return chargeManagerMapper.getHouseInfoByIds(ids);
     }
 

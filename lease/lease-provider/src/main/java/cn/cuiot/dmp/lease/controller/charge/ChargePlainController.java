@@ -10,12 +10,10 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.cuiot.dmp.lease.dto.charge.ChargePlainInsertDto;
-import cn.cuiot.dmp.lease.dto.charge.ChargePlainPageDto;
-import cn.cuiot.dmp.lease.dto.charge.ChargePlainQuery;
-import cn.cuiot.dmp.lease.dto.charge.ChargePlainUpdateDto;
+import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargePlain;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
+import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
 import cn.cuiot.dmp.lease.service.charge.TbChargePlainService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.commons.collections4.CollectionUtils;
@@ -45,6 +43,8 @@ public class ChargePlainController {
     private TbChargePlainService chargePlainService;
     @Autowired
     private SystemToFlowService systemToFlowService;
+    @Autowired
+    private ChargeInfoFillService chargeInfoFillService;
 
     /**
      * 获取分页
@@ -69,6 +69,9 @@ public class ChargePlainController {
                     baseUserDtos.stream().filter(baseUserDto -> Objects.equals(e.getCreateUser(), baseUserDto.getId())).findFirst().ifPresent(baseUserDto -> e.setCreateUserName(baseUserDto.getName()));
                 });
             }
+
+            chargeInfoFillService.fillinfo(tbFlowPageDtoIPage.getRecords(), ChargePlainPageDto.class);
+
         }
         return IdmResDTO.success().body(tbFlowPageDtoIPage);
     }
