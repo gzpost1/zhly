@@ -4,10 +4,9 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.content.constant.ContentConstants;
-import cn.cuiot.dmp.content.conver.NoticeConvert;
 import cn.cuiot.dmp.content.dal.entity.ContentAudit;
 import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.param.dto.NoticeCreateDto;
@@ -80,7 +79,7 @@ public class NoticeController extends BaseController {
      * 保存
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "saveNotice", operationName = "保存公告", serviceType = "notice",serviceTypeName = "公告管理")
+    @LogRecord(operationCode = "saveNotice", operationName = "保存公告", serviceType = "notice", serviceTypeName = "公告管理")
     @PostMapping("/create")
     public int saveNotice(@RequestBody @Valid NoticeCreateDto createDTO) {
         String orgId = getOrgId();
@@ -92,7 +91,7 @@ public class NoticeController extends BaseController {
      * 更新
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateNotice", operationName = "更新公告", serviceType = "notice",serviceTypeName = "公告管理")
+    @LogRecord(operationCode = "updateNotice", operationName = "更新公告", serviceType = "notice", serviceTypeName = "公告管理")
     @PostMapping("/update")
     public int updateNotice(@RequestBody @Valid NoticeUpdateDto updateDtO) {
         return noticeService.updateNotice(updateDtO);
@@ -102,7 +101,7 @@ public class NoticeController extends BaseController {
      * 删除
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "deleteNotice", operationName = "删除公告", serviceType = "notice",serviceTypeName = "公告管理")
+    @LogRecord(operationCode = "deleteNotice", operationName = "删除公告", serviceType = "notice", serviceTypeName = "公告管理")
     @PostMapping("/delete")
     public Boolean deleteNotice(@RequestBody @Valid IdParam idParam) {
         return noticeService.removeById(idParam.getId());
@@ -110,14 +109,41 @@ public class NoticeController extends BaseController {
 
     /**
      * 发布公告
+     *
      * @param publishReqVo
      * @return
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "publishNotice", operationName = "发布公告", serviceType = "notice",serviceTypeName = "公告管理")
+    @LogRecord(operationCode = "publishNotice", operationName = "发布公告", serviceType = "notice", serviceTypeName = "公告管理")
     @PostMapping("/publish")
     public Boolean publish(@RequestBody @Valid PublishReqVo publishReqVo) {
         return noticeService.publish(publishReqVo);
     }
 
+
+    /**
+     * 停启用
+     *
+     * @param updateStatusParam
+     * @return
+     */
+    @PostMapping("/updateStatus")
+    public Boolean updateStatus(@RequestBody UpdateStatusParam updateStatusParam) {
+        ContentNoticeEntity contentNoticeEntity = noticeService.getById(updateStatusParam.getId());
+        if (contentNoticeEntity == null) {
+            return false;
+        }
+        contentNoticeEntity.setStatus(updateStatusParam.getStatus());
+        return noticeService.updateById(contentNoticeEntity);
+    }
+
+    /**
+     * 获取公告列表
+     *
+     * @return
+     */
+    @PostMapping("/getNoticeList")
+    public IPage<NoticeVo> getAppNoticePage(@RequestBody @Valid NoticPageQuery pageQuery) {
+        return noticeService.getAppNoticePage(pageQuery);
+    }
 }

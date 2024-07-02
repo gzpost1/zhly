@@ -48,15 +48,6 @@ public class ContentConstants {
          */
         public static final Byte PUBLISHED = 2;
 
-        /**
-         * 已过期
-         */
-        public static final Byte EXPIRED = 3;
-
-        /**
-         * 停止发布
-         */
-        public static final Byte STOP_PUBLISH = 4;
     }
 
     /**

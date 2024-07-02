@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.message.controller;//	模板
+package cn.cuiot.dmp.message.controller.app;//	模板
 
 import cn.cuiot.dmp.base.application.annotation.ResolveExtData;
 import cn.cuiot.dmp.message.dal.entity.UserMessageEntity;

@@ -72,7 +72,8 @@ public class ContentNoticeEntity extends YjBaseEntity implements Serializable {
     /**
      * 消息通知
      */
-    private Byte inform;
+    @TableField(typeHandler = JsonTypeHandler.class)
+    private List<Byte> inform;
 
     /**
      * 公告详情

@@ -8,6 +8,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.MsgExistDataIdReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
+import cn.cuiot.dmp.common.bean.dto.SmsMsgDto;
 import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
 import cn.cuiot.dmp.common.constant.*;
@@ -78,7 +79,8 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     @Transactional
     public int saveNotice(NoticeCreateDto createDTO) {
         ContentNoticeEntity contentNoticeEntity = NoticeConvert.INSTANCE.convert(createDTO);
-        contentNoticeEntity.setStatus(EntityConstants.ENABLED);
+        contentNoticeEntity.setStatus(EntityConstants.DISABLED);
+        contentNoticeEntity.setPublishStatus(ContentConstants.PublishStatus.UNPUBLISHED);
         AuditConfigTypeReqDTO reqDTO = new AuditConfigTypeReqDTO().setCompanyId(LoginInfoHolder.getCurrentOrgId())
                 .setAuditConfigType(AuditConfigTypeEnum.NOTICE_MANAGE.getCode()).setName("新增公告");
         AuditConfigRspDTO auditConfigRspDTO = systemConverService.lookUpAuditConfig(reqDTO);
@@ -162,6 +164,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                 }
             }
             contentNoticeEntity.setPublishStatus(publishReqVo.getPublishStatus());
+            contentNoticeEntity.setStatus(EntityConstants.ENABLED);
             this.baseMapper.updateById(contentNoticeEntity);
             return true;
         }
@@ -173,6 +176,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         initQuery(pageQuery);
         pageQuery.setPublishStatus(ContentConstants.PublishStatus.PUBLISHED);
+        pageQuery.setStatus(EntityConstants.ENABLED);
         PageHelper.orderBy("effective_start_time desc");
         IPage<ContentNoticeEntity> noticeEntityIPage = this.baseMapper.queryForPage(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery, ContentConstants.DataType.NOTICE);
         return NoticeConvert.INSTANCE.convert(noticeEntityIPage);
@@ -198,17 +202,25 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                 BaseUserReqDto reqDto = new BaseUserReqDto();
                 reqDto.setDeptIdList(noticeEntity.getDepartments().stream().map(Long::parseLong).collect(Collectors.toList()));
                 List<Long> longs = systemConverService.lookUpUserIds(reqDto);
-                if (CollUtil.isEmpty(longs)) {
+                if (CollUtil.isEmpty(longs) || CollUtil.isEmpty(noticeEntity.getInform())) {
                     return;
                 }
-                if (ContentConstants.MsgInform.SYSTEM.equals(noticeEntity.getInform())) {
-                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SYS_MSG).setSysMsgDto(
-                            new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
-                                    .setDataJson(noticeEntity).setMessageTime(new Date()));
+                if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM) && noticeEntity.getInform().contains(ContentConstants.MsgInform.SMS)) {
+                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType((byte) (MsgTypeConstant.SYS_MSG + MsgTypeConstant.SMS));
+                    SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
+                            .setDataJson(noticeEntity).setMessageTime(new Date());
+                    SmsMsgDto smsMsgDto = new SmsMsgDto();
+                    userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
+                    msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+                            .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON).build());
+                } else if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM)) {
+                    SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDetail())
+                            .setDataJson(noticeEntity).setMessageTime(new Date());
+                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SYS_MSG).setSysMsgDto(sysMsgDto);
                     msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
                             .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                             .build());
-                } else if (ContentConstants.MsgInform.SMS.equals(noticeEntity.getInform())) {
+                } else if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SMS)) {
 //                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SMS).setSmsMsgDto(new SmsMsgDto()
 //                            .setTelNumbers());
 //                    msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
@@ -227,8 +239,8 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     public NoticeVo queryForAppDetail(Long id) {
         ContentNoticeEntity contentNoticeEntity = this.baseMapper.selectById(id);
         NoticeVo noticeVo = NoticeConvert.INSTANCE.convert(contentNoticeEntity);
-        Byte publishStatus = NoticeConvert.INSTANCE.checkEffectiveStatus(noticeVo);
-        if (ContentConstants.PublishStatus.STOP_PUBLISH.equals(publishStatus) || ContentConstants.PublishStatus.EXPIRED.equals(publishStatus)) {
+        Byte effectiveStatus = NoticeConvert.INSTANCE.checkEffectiveStatus(noticeVo);
+        if (ContentConstants.PublishStatus.UNPUBLISHED.equals(noticeVo.getPublishStatus()) || !EntityConstants.NORMAL.equals(effectiveStatus)) {
             throw new BusinessException(ResultCode.EFFECTIVE_TIME_EXPIRED);
         }
         return noticeVo;
@@ -268,4 +280,5 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         }
         return false;
     }
+
 }

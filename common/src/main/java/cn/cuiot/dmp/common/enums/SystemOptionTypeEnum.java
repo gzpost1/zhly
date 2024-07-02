@@ -25,7 +25,8 @@ public enum SystemOptionTypeEnum {
     CODE_ARCHIVE((byte) 6, "二维码档案"),
     CUSTOMER_INFO((byte) 7, "客户信息"),
     WORK_OPTION((byte) 8, "工单选项"),
-    CLUE_OPTION((byte) 9, "线索选项");
+    CLUE_OPTION((byte) 9, "线索选项"),
+    NOTICE_TYPE((byte) 10, "公告类型");
 
     private final Byte code;
     private final String message;

@@ -196,8 +196,10 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
                                 () -> new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, e.getName() + "对象的表单配置为空"));
                         FormObjectOperates formObjectOperates = new FormObjectOperates();
                         BeanUtils.copyProperties(formConfigRspDTO, formObjectOperates);
+                        e.setFormOperates(formObjectOperates);
                     });
 
+                    childNode.getProps().setTaskConfig(flowTaskConfigVo);
                     childNode.getProps().setFormPerms(null);
                 } else {
                     childNode.getProps().setFormPerms(formConfigRspDTOS.stream().map(e -> {
@@ -214,6 +216,9 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
         } else {
             if (Objects.nonNull(childNode.getProps())) {
                 childNode.getProps().setFormPerms(null);
+            }
+            if (Objects.nonNull(childNode.getChildren())) {
+                processChildNode(childNode.getChildren());
             }
         }
     }

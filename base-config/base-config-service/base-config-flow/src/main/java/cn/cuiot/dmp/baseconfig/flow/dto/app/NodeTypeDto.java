@@ -13,7 +13,12 @@ import java.util.List;
 public class NodeTypeDto {
 
     /**
-     * 节点类型
+     * 节点名称
      */
-    private List<String> processNodeType;
+    private String processNodeName;
+
+    /**
+     * 子节点id
+     */
+    private String processNodeId;
 }

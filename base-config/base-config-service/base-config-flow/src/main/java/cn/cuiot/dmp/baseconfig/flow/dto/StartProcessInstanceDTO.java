@@ -73,4 +73,8 @@ public class StartProcessInstanceDTO {
      * 新增的提交的表单信息
      */
     private CommitProcessEntity commitProcess;
+    /**
+     * 老工单id
+     */
+    private Long oldProcInstId;
 }

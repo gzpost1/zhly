@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.system.application.param.dto.auth.SmsCodeCheckResDto;
+import cn.cuiot.dmp.system.application.param.dto.auth.SmsCodeResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.KaptchaResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SecretKeyResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
@@ -53,4 +55,24 @@ public interface VerifyService {
      */
     boolean searchSensitiveWord(String username);
 
+    /**
+     * 验证图形验证码
+     * @param kaptchaText
+     * @param sid
+     * @return
+     */
+    boolean checkKaptchaText(String kaptchaText, String sid);
+
+    /**
+     * 发送短信验证码
+     * @param phoneNumber
+     * @param userId
+     * @return
+     */
+    SmsCodeResDto sendPhoneSmsCode(String phoneNumber, Long userId);
+
+    /**
+     * 校验短信验证码
+     */
+    SmsCodeCheckResDto checkPhoneSmsCode(String phoneNumber, Long userId, String smsCode,Boolean needDeleteCache);
 }

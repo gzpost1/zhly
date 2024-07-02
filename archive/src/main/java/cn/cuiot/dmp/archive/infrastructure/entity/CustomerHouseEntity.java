@@ -79,4 +79,9 @@ public class CustomerHouseEntity extends YjBaseEntity {
      */
     private String remark;
 
+    /**
+     * 楼盘ID
+     */
+    private Long loupanId;
+
 }

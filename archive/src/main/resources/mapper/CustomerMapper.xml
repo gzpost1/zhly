@@ -93,6 +93,12 @@
             <if test="param.id != null">
                 and a.id=#{param.id}
             </if>
+            <if test="param.excludeId != null">
+                and a.id!=#{param.excludeId}
+            </if>
+            <if test="param.houseId != null">
+                and a.id in (select customer_id from tb_customer_house where house_id=#{param.houseId})
+            </if>
             <if test="param.keyword != null and param.keyword != ''">
                 and (a.customer_name like CONCAT('%',#{param.keyword}, '%') or a.contact_phone=#{param.keywordPhone})
             </if>

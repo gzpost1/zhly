@@ -22,8 +22,8 @@ public class NoticeVo extends ContentNoticeEntity {
 
     private String creatUserName;
 
-    private Byte publishStatus;
-
     private ContentAudit contentAudit;
+
+    private Byte effectiveStatus;
 
 }
