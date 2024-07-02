@@ -27,10 +27,6 @@ public class ChargeManagerDetailDto extends ChargeManagerPageDto{
      */
     private BigDecimal receivableAmountRate;
 
-    /**
-     * 本金税额	应收金额*税率=本金税额
-     */
-    private Integer receivableAmountTax = 0;
 
     /**
      * 本金不含税	应收金额-应收金额*税率=本金不含税
@@ -68,19 +64,9 @@ public class ChargeManagerDetailDto extends ChargeManagerPageDto{
     private Integer liquidatedDamagesReceived = 0;
 
     /**
-     * 欠收合计 应收金额-本金实收=欠收合计
-     */
-    private Integer totalOwe = 0;
-
-    /**
      * 实收合计 本金实收+违约金实收=实收合计
      */
     private Integer totalReceived = 0;
-
-
-    public Integer getReceivableAmountTax() {
-        return MathTool.rounding(getReceivableAmount(), receivableAmountRate);
-    }
 
     public Integer getReceivableAmountNotTax() {
         return getReceivableAmount() - getReceivableAmountTax();
@@ -90,9 +76,6 @@ public class ChargeManagerDetailDto extends ChargeManagerPageDto{
         return getReceivableAmountReceived() + getLiquidatedDamagesReceived();
     }
 
-    public Integer getTotalOwe() {
-        return getReceivableAmount() - getReceivableAmountReceived();
-    }
 
     public Integer getReceivableAmountOwe() {
         return getReceivableAmount() - getReceivableAmountReceived();
