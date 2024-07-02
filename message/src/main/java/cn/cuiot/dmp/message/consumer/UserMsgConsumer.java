@@ -61,7 +61,7 @@ public class UserMsgConsumer {
             }
             List<UserMessageEntity> userMessageEntities = dto.getSysMsgDto().stream().map(item -> {
                 UserMessageEntity userMessage = new UserMessageEntity();
-                BeanUtils.copyProperties(dto, userMessage);
+                BeanUtils.copyProperties(item, userMessage);
                 userMessage.init();
                 return userMessage;
             }).collect(Collectors.toList());
