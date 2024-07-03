@@ -60,7 +60,7 @@ public class PriceManageController {
     @RequiresPermissions
     @LogRecord(operationCode = "savePriceManage", operationName = "保存定价管理", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @PostMapping("/save")
-    public boolean savePriceManage(@RequestBody @Valid PriceManageCreateDTO createDTO) {
+    public Long savePriceManage(@RequestBody @Valid PriceManageCreateDTO createDTO) {
         return priceManageService.savePriceManage(createDTO);
     }
 
