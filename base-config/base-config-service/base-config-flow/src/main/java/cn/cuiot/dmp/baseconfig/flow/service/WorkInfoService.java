@@ -170,14 +170,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         });
         processVariables.putAll(formValue);
 
-        String taskId = startProcessInstanceDTO.getTaskId();
+
         Task task =null;
         //再次发起
-        if(StringUtils.isNotBlank(startProcessInstanceDTO.getTaskId())){
-            task = taskService.createTaskQuery().taskId(taskId).singleResult();
-            if(!Objects.equals(task.getAssignee(),String.valueOf(LoginInfoHolder.getCurrentUserId()))){
-               throw new RuntimeException(ErrorCode.NOT_OPERATION.getMessage());
-            }
+        if(StringUtils.isNotBlank(startProcessInstanceDTO.getProcessInstanceId())){
+            List<Task> tasks = taskService.createTaskQuery().processInstanceId(startProcessInstanceDTO.getProcessInstanceId()).list();
+            task=tasks.get(0);
             runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
         }else{
             task = startWorkOrder(startProcessInstanceDTO,processVariables);
