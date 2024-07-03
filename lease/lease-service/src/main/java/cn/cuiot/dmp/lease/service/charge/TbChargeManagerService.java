@@ -314,7 +314,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
     public ChargeManagerCustomerStatisticsVo customerStatistics(TbChargeManagerQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         //获取前一天23:59:59
-        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now(), LocalTime.MAX)
+        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MAX)
                 .withNano(999999000));
         query.setDueDateEnd(date);
         query.setReceivbleStatusList(Arrays.asList(ChargeReceivbleEnum.UNPAID.getCode(), ChargeReceivbleEnum.PAID.getCode()));

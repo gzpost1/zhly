@@ -54,7 +54,7 @@ public class ChargeCollectionManageController {
     @PostMapping("queryForPage")
     public IdmResDTO<IPage<ChargeCollectionManageVo>> queryForPage(@RequestBody ChargeCollectionManageQuery query) {
         //获取前一天23:59:59
-        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now(), LocalTime.MAX)
+        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MAX)
                 .withNano(999999000));
         query.setDueDate(date);
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
@@ -91,7 +91,7 @@ public class ChargeCollectionManageController {
     @LogRecord(operationCode = "sengMsg", operationName = "收费管理-催款管理-发送通知", serviceType = ServiceTypeConst.CHARGE_COLLECTION_MANAGE)
     public IdmResDTO<?> sengMsg(@RequestBody @Valid ChargeCollectionManageSendQuery query) {
         //获取前一天23:59:59
-        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now(), LocalTime.MAX)
+        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MAX)
                 .withNano(999999000));
         query.setOperationType(ChargeCollectionTypeEnum.MANUAL.getCode());
         query.setDueDate(date);
