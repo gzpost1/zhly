@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -110,6 +111,11 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet{
      * 交易方式
      */
     private Long transactionMode;
+
+    /**
+     * 交易方式名称
+     */
+    private String transactionModeName;
 
     /**
      * 入账银行
