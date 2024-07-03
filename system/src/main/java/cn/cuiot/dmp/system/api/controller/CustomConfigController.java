@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Objects;
 
 /**
  * 系统配置-初始化配置-常用选项-系统选项名称
@@ -48,7 +49,9 @@ public class CustomConfigController extends BaseController {
      */
     @PostMapping("/queryForDetailByName")
     public CustomConfigVO queryForDetailByName(@RequestBody @Valid CustomConfigDTO customConfigDTO) {
-        customConfigDTO.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        if (Objects.isNull(customConfigDTO.getCompanyId())) {
+            customConfigDTO.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        }
         return customConfigService.queryForDetailByName(customConfigDTO);
     }
 
