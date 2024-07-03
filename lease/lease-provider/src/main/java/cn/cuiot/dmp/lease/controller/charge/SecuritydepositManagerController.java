@@ -178,6 +178,9 @@ public class SecuritydepositManagerController {
         entity.setAccountBank(dto.getAccountBank());
         entity.setAccountNumber(dto.getAccountNumber());
         entity.setReceivedDate(new Date());
+        entity.setReceivableAmountReceived(entity.getReceivableAmount());
+        entity.setReceivedDate(new Date());
+        entity.setStatus(SecurityDepositStatusEnum.PAID_OFF.getCode());
         securitydepositManagerService.updateById(entity);
         return IdmResDTO.success();
     }
