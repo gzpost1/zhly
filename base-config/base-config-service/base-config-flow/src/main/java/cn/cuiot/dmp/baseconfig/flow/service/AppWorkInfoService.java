@@ -1111,21 +1111,49 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             return ButtonBusinessEnums.NOT_BUTTON.getCode();
         }
         //未完成就可以撤回
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(workInfoDto.getProcInstId()).list();
         if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.BUTTON.getCode())){
-            List<Task> taskList = taskService.createTaskQuery().processInstanceId(workInfoDto.getProcInstId()).list();
             if(CollectionUtil.isNotEmpty(taskList)){
                 return ButtonBusinessEnums.BUTTON.getCode();
             }
         }
         //在指定节点之前可以撤回
-        if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.APPOINT.getCode())){
-            Integer num = baseMapper.queryHistoricTaskNumber(workInfoDto.getRevokeNodeId(), workInfoDto.getProcInstId());
-            if(num<1){
+        if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.APPOINT.getCode()) && CollectionUtil.isNotEmpty(taskList)){
+
+            Process mainProcess = repositoryService.getBpmnModel(workInfoDto.getProcessDefinitionId()).getMainProcess();
+
+            String dingDing = mainProcess.getAttributeValue(FLOWABLE_NAME_SPACE, FLOWABLE_NAME_SPACE_NAME);
+            JSONObject mainJson = JSONObject.parseObject(dingDing, new TypeReference<JSONObject>() {
+            });
+            String processJson = mainJson.getString(VIEW_PROCESS_JSON_NAME);
+            ChildNode childNode = processJson(processJson);
+
+            List<String> parentIds = queryParentIds(workInfoDto.getRevokeNodeId(), childNode);
+            if(parentIds.contains(taskList.get(0).getTaskDefinitionKey())){
                 return ButtonBusinessEnums.BUTTON.getCode();
             }
         }
 
         return ButtonBusinessEnums.NOT_BUTTON.getCode();
+    }
+
+    /**
+     * 获取节点的父id信息
+     * @param nodeId
+     * @param childNode
+     * @return
+     */
+    public List<String> queryParentIds(String nodeId,ChildNode childNode){
+        List<String> parentIds = new ArrayList<>();
+        ChildNode chilNodedren = childNode.getChildren();
+        while (true){
+            if(Objects.equals(chilNodedren.getId(),nodeId)){
+                break;
+            }
+            parentIds.add(chilNodedren.getId());
+            chilNodedren = chilNodedren.getChildren();
+        }
+        return parentIds;
     }
 
     /**
