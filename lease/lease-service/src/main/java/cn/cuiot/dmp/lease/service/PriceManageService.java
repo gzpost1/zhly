@@ -256,6 +256,40 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
         return priceManageRecordService.queryByPriceId(pageQueryDTO);
     }
 
+    /**
+     * 通过定价管理状态查询统计数量
+     */
+    public List<PriceManageCountDTO> queryCountByStatus() {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+        AssertUtil.notNull(companyId, "企业id不能为空");
+        List<PriceManageEntity> priceManageEntityList = list();
+        if (CollectionUtils.isEmpty(priceManageEntityList)) {
+            return PriceManageConstant.Price_Manage_Status.stream()
+                    .map(o -> {
+                        PriceManageCountDTO priceManageCountDTO = new PriceManageCountDTO();
+                        priceManageCountDTO.setStatus(o);
+                        priceManageCountDTO.setCount(0);
+                        return priceManageCountDTO;
+                    })
+                    .collect(Collectors.toList());
+        }
+        return PriceManageConstant.Price_Manage_Status.stream()
+                .map(o -> {
+                    PriceManageCountDTO priceManageCountDTO = new PriceManageCountDTO();
+                    priceManageCountDTO.setStatus(o);
+                    if (PriceManageStatusEnum.ALL_STATUS.getCode().equals(o)) {
+                        priceManageCountDTO.setCount(priceManageEntityList.size());
+                    } else {
+                        long count = priceManageEntityList.stream()
+                                .filter(item -> o.equals(item.getStatus()))
+                                .count();
+                        priceManageCountDTO.setCount((int) count);
+                    }
+                    return priceManageCountDTO;
+                })
+                .collect(Collectors.toList());
+    }
+
     private PageResult<PriceManageDTO> priceManageEntity2PriceManageDTOs(IPage<PriceManageEntity> priceManageEntityIPage) {
         PageResult<PriceManageDTO> priceManageDTOPageResult = new PageResult<>();
         List<PriceManageDTO> priceManageDTOList = priceManageEntityIPage.getRecords().stream()

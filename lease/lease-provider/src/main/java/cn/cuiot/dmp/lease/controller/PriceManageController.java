@@ -132,4 +132,12 @@ public class PriceManageController {
         return priceManageService.queryRecordByPriceId(pageQueryDTO);
     }
 
+    /**
+     * 通过定价管理状态查询统计数量
+     */
+    @PostMapping("/queryCountByStatus")
+    public List<PriceManageCountDTO> queryCountByStatus() {
+        return priceManageService.queryCountByStatus();
+    }
+
 }
