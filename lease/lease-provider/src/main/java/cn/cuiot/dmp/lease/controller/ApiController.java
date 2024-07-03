@@ -46,7 +46,7 @@ public class ApiController {
     /**
      * 根据房屋id查询对应的最新定价
      */
-    @PostMapping(value = "/api/batchQueryHousePriceForMap", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/batchQueryHousePriceForMap", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<Map<Long, Integer>> batchQueryHousePriceForMap(@RequestBody @Valid IdsReq idsReq){
         return IdmResDTO.success(priceManageDetailService.batchQueryHousePriceForMap(idsReq.getIds()));
     }

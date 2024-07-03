@@ -42,6 +42,11 @@ public class PriceManageRecordDTO implements Serializable {
     private Date operateTime;
 
     /**
+     * 审核结果
+     */
+    private String auditResult;
+
+    /**
      * 审核备注
      */
     private String auditRemark;
