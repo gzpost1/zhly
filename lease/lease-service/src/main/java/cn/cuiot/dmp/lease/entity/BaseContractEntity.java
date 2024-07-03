@@ -167,6 +167,13 @@ public class BaseContractEntity extends Model {
      */
     @TableField(exist = false)
     private List<TbContractLeaseBackEntity> leaseBackList;
+    /**
+     * 续租合同
+     */
+    @TableField(exist = false)
+    private TbContractLeaseEntity reletLeaseContract;
+
+
 
     @TableField(exist = false)
     private String createUserName;

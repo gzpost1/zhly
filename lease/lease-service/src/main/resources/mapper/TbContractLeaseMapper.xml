@@ -45,6 +45,14 @@
                     select="cn.cuiot.dmp.lease.mapper.TbContractLeaseBackMapper.selectLeaseBack"
                     column="id">
         </collection>
+        <collection property="chargeList" ofType="cn.cuiot.dmp.lease.entity.TbContractChargeEntity"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractChargeMapper.selectCharge"
+                    column="id">
+        </collection>
+        <collection property="reletLeaseContract" ofType="cn.cuiot.dmp.lease.entity.TbContractLeaseEntity"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper.selectReletLeaseContract"
+                    column="id">
+        </collection>
     </resultMap>
 
     <select id="selectById" resultMap="BaseResultMap">
@@ -54,6 +62,16 @@
         left join user u on ci.follow_up = u.id
         where ci.id = #{id}
     </select>
+
+    <select id="selectReletLeaseContract" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_contract_lease ci
+        left join user u on ci.follow_up = u.id
+        where ci.relet_contract_id = #{id}
+    </select>
+
+
 
     <select id="list" resultMap="BaseResultMap" parameterType="cn.cuiot.dmp.lease.entity.TbContractLeaseEntity">
         select
