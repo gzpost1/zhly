@@ -148,6 +148,13 @@ public class ReceivableGenerationController {
 
             chargeInfoFillService.fillinfo(Lists.newArrayList(chargeManagerDetailDto),ChargeManagerDetailDto.class);
 
+            //填充操作人员名称
+            BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
+            baseUserReqDto.setUserIdList(Lists.newArrayList(chargeManagerDetailDto.getCreateUser()));
+            List<BaseUserDto> baseUserDtos = systemToFlowService.lookUpUserList(baseUserReqDto);
+            if(CollectionUtils.isNotEmpty(baseUserDtos)){
+                chargeManagerDetailDto.setCreateUserName(baseUserDtos.get(0).getName());
+            }
         }
         return IdmResDTO.success().body(chargeManagerDetailDto);
     }

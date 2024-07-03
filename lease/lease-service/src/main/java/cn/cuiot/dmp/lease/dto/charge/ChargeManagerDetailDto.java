@@ -42,6 +42,13 @@ public class ChargeManagerDetailDto extends ChargeManagerPageDto{
      */
     private Integer totalReceived = 0;
 
+    /**
+     * 创建用户名称
+     */
+    private String createUserName;
+
+    private Long createUser;
+
     public Integer getReceivableAmountNotTax() {
         return getReceivableAmount() - getReceivableAmountTax();
     }
