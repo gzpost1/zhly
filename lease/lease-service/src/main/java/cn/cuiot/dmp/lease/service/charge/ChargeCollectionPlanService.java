@@ -358,7 +358,7 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
      */
     public void senMsg(List<ChargeCollectionPlanEntity> list) {
         //获取前一天23:59:59
-        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now(), LocalTime.MAX)
+        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MAX)
                 .withNano(999999000));
         if (CollectionUtils.isNotEmpty(list)) {
             for (ChargeCollectionPlanEntity planEntity : list) {
