@@ -301,6 +301,11 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
     @TableField(exist = false)
     private Long qrCodeId;
 
+    /**
+     * 最新定价
+     */
+    @TableField(exist = false)
+    private Integer latestPrice;
 
     /**
      * 意向合同状态
