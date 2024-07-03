@@ -24,13 +24,14 @@ create table tb_contract_intention
 )
     comment '意向合同';
 
+-- auto-generated definition
 create table tb_contract_cancel
 (
-    id                    bigint        not null
+    id                    bigint auto_increment
         primary key,
     intention_contract_id bigint        null comment '意向合同id',
     lease_contract_id     bigint        null comment '租赁合同id',
-    name                  varchar(60)   not null comment '合同名称',
+    name                  varchar(60)   null comment '合同名称',
     date                  date          null comment '退订日期',
     reason                varchar(255)  null comment '退订原因',
     remark                longtext      null comment '退订说明',
@@ -50,6 +51,8 @@ create table tb_contract_cancel
             on delete cascade
 )
     comment '退订或作废信息';
+
+
 
 
 

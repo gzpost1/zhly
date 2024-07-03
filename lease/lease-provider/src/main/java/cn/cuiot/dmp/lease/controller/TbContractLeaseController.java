@@ -112,15 +112,15 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     @RequiresPermissions
     @PostMapping("/leaseBack")
     public boolean leaseBack(@RequestBody @Valid TbContractLeaseBackEntity leaseBackEntity) {
-        Long id = leaseBackEntity.getId();
-        TbContractLeaseEntity queryEntity = getContract(id);
+        Long contractId = leaseBackEntity.getContractId();
+        TbContractLeaseEntity queryEntity = getContract(contractId);
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_LEASE_BACK);
         Long leaseBackId = SnowflakeIdWorkerUtil.nextId();
         leaseBackEntity.setId(leaseBackId);
         leaseBackService.saveOrUpdate(leaseBackEntity);
         String remark = Optional.ofNullable(leaseBackEntity.getRemark()).orElse("无");
         String operMsg = "退租了租赁合同" + System.lineSeparator() + "退租说明:" + remark;
-        contractLogService.saveLog(id, OPERATE_LEASE_BACK, CONTRACT_LEASE_TYPE, operMsg, String.valueOf(leaseBackId), leaseBackEntity.getPath());
+        contractLogService.saveLog(contractId, OPERATE_LEASE_BACK, CONTRACT_LEASE_TYPE, operMsg, String.valueOf(leaseBackId), leaseBackEntity.getPath());
         return service.updateById(queryEntity);
     }
 
