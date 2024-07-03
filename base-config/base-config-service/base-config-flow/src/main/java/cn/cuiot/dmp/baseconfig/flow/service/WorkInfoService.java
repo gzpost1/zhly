@@ -1659,25 +1659,25 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public Byte checkRevokeType(WorkInfoEntity workInfoDto){
-
-        //查询当前任务节点
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(workInfoDto.getProcInstId()).list();
-        //不存在任务信息则表示流程已经结束
-        if(CollectionUtil.isEmpty(taskList)){
-            return ButtonBusinessEnums.NOT_BUTTON.getCode();
-        }
         //表示流程不支持撤销
         if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.NOT_BUTTON.getCode())){
             return ButtonBusinessEnums.NOT_BUTTON.getCode();
         }
         //未完成就可以撤回
         if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.BUTTON.getCode())){
-            return ButtonBusinessEnums.BUTTON.getCode();
+            List<Task> taskList = taskService.createTaskQuery().processInstanceId(workInfoDto.getProcInstId()).list();
+            if(CollectionUtil.isNotEmpty(taskList)){
+                return ButtonBusinessEnums.BUTTON.getCode();
+            }
         }
-        //同节点可以撤回
-        if(Objects.equals(workInfoDto.getRevokeNodeId(),taskList.get(0).getTaskDefinitionKey())){
-            return ButtonBusinessEnums.BUTTON.getCode();
+        //在指定节点之前可以撤回
+        if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.APPOINT.getCode())){
+            Integer num = baseMapper.queryHistoricTaskNumber(workInfoDto.getRevokeNodeId(), workInfoDto.getProcInstId());
+            if(num<1){
+                return ButtonBusinessEnums.BUTTON.getCode();
+            }
         }
+
         return ButtonBusinessEnums.NOT_BUTTON.getCode();
     }
 

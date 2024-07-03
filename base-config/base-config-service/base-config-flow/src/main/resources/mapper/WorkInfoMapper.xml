@@ -626,6 +626,11 @@
         and END_TIME_ is null
     </select>
 
+    <select id="queryHistoricTaskNumber" resultType="java.lang.Integer">
+        select count(*) from act_hi_taskinst where TASK_DEF_KEY_ =#{taskDefinitionKey} and PROC_INST_ID_ =#{processInstanceId}
+
+    </select>
+
     <select id="queryAgencyHandlingNumber" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.AgencyHandlingDto">
         select count(*) as AgencyNumber from act_ru_task t1 left join tb_node_type t2 on t1.PROC_DEF_ID_ = t2.process_definition_id
         where t1.TASK_DEF_KEY_ = t2.node_id and t2.node_type = #{query.nodeType} and t1.ASSIGNEE_= #{query.assignee}

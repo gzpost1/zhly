@@ -7,7 +7,9 @@ package cn.cuiot.dmp.baseconfig.flow.enums;
 public enum ButtonBusinessEnums {
 
     NOT_BUTTON((byte) 0,"不能点击"),
-    BUTTON((byte) 1,"可以点击")
+    BUTTON((byte) 1,"可以点击"),
+
+    APPOINT((byte)2,"指定节点可点击")
     ;
     private Byte code;
 
