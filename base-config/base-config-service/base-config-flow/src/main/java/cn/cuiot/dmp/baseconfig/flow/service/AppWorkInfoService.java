@@ -594,8 +594,6 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
                 .eq(Objects.nonNull(dto.getNodeId()),CommitProcessEntity::getNodeId,dto.getNodeId());
         if(Objects.nonNull(dto.getUserId())){
             processLw.eq(CommitProcessEntity::getUserId,dto.getUserId());
-        }else{
-            processLw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
         }
         processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId())
                 .orderByDesc(CommitProcessEntity::getCreateTime);
@@ -1106,25 +1104,54 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      */
     public Byte checkRevokeType(WorkInfoDto workInfoDto){
 
-        //查询当前任务节点
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(workInfoDto.getProcInstId()).list();
-        //不存在任务信息则表示流程已经结束
-        if(CollectionUtil.isEmpty(taskList)){
-            return ButtonBusinessEnums.NOT_BUTTON.getCode();
-        }
         //表示流程不支持撤销
         if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.NOT_BUTTON.getCode())){
             return ButtonBusinessEnums.NOT_BUTTON.getCode();
         }
         //未完成就可以撤回
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(workInfoDto.getProcInstId()).list();
         if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.BUTTON.getCode())){
-            return ButtonBusinessEnums.NOT_BUTTON.getCode();
+            if(CollectionUtil.isNotEmpty(taskList)){
+                return ButtonBusinessEnums.BUTTON.getCode();
+            }
         }
-        //同节点可以撤回
-        if(Objects.equals(workInfoDto.getRevokeNodeId(),taskList.get(0).getTaskDefinitionKey())){
-            return ButtonBusinessEnums.BUTTON.getCode();
+        //在指定节点之前可以撤回
+        if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.APPOINT.getCode()) && CollectionUtil.isNotEmpty(taskList)){
+
+            Process mainProcess = repositoryService.getBpmnModel(workInfoDto.getProcessDefinitionId()).getMainProcess();
+
+            String dingDing = mainProcess.getAttributeValue(FLOWABLE_NAME_SPACE, FLOWABLE_NAME_SPACE_NAME);
+            JSONObject mainJson = JSONObject.parseObject(dingDing, new TypeReference<JSONObject>() {
+            });
+            String processJson = mainJson.getString(VIEW_PROCESS_JSON_NAME);
+            ChildNode childNode = processJson(processJson);
+
+            List<String> parentIds = queryParentIds(workInfoDto.getRevokeNodeId(), childNode);
+            if(parentIds.contains(taskList.get(0).getTaskDefinitionKey())){
+                return ButtonBusinessEnums.BUTTON.getCode();
+            }
         }
+
         return ButtonBusinessEnums.NOT_BUTTON.getCode();
+    }
+
+    /**
+     * 获取节点的父id信息
+     * @param nodeId
+     * @param childNode
+     * @return
+     */
+    public List<String> queryParentIds(String nodeId,ChildNode childNode){
+        List<String> parentIds = new ArrayList<>();
+        ChildNode chilNodedren = childNode.getChildren();
+        while (true){
+            if(Objects.equals(chilNodedren.getId(),nodeId)){
+                break;
+            }
+            parentIds.add(chilNodedren.getId());
+            chilNodedren = chilNodedren.getChildren();
+        }
+        return parentIds;
     }
 
     /**

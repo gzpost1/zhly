@@ -170,14 +170,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         });
         processVariables.putAll(formValue);
 
-        String taskId = startProcessInstanceDTO.getTaskId();
+
         Task task =null;
         //再次发起
-        if(StringUtils.isNotBlank(startProcessInstanceDTO.getTaskId())){
-            task = taskService.createTaskQuery().taskId(taskId).singleResult();
-            if(!Objects.equals(task.getAssignee(),String.valueOf(LoginInfoHolder.getCurrentUserId()))){
-               throw new RuntimeException(ErrorCode.NOT_OPERATION.getMessage());
-            }
+        if(StringUtils.isNotBlank(startProcessInstanceDTO.getProcessInstanceId())){
+            List<Task> tasks = taskService.createTaskQuery().processInstanceId(startProcessInstanceDTO.getProcessInstanceId()).list();
+            task=tasks.get(0);
             runtimeService.setVariables(task.getProcessInstanceId(),processVariables);
         }else{
             task = startWorkOrder(startProcessInstanceDTO,processVariables);
@@ -507,6 +505,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO assignee(HandleDataDTO handleDataDTO) {
         //校验是不是本企业的人操作
         checkWorkOrder(handleDataDTO.getProcessInstanceId());
+        String taskId = handleDataDTO.getTaskId();
         //记录转办信息
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_TRANSFER.getCode());
@@ -516,8 +515,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
-        if(StringUtils.isNotEmpty(handleDataDTO.getTaskId())){
-            checkTaskInfo(handleDataDTO.getTaskId());
+        if(StringUtils.isNotEmpty(taskId)){
+            checkTaskInfo(taskId);
             //审批中心转办
             assigneeByProcInstId(handleDataDTO);
             return IdmResDTO.success();
@@ -1206,6 +1205,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public void checkWorkOrder(String processInstanceId){
         if(Objects.nonNull(processInstanceId)){
             WorkInfoEntity workInfo = getWorkInfo(processInstanceId);
+            log.error("workInfo.getCompanyId():"+workInfo.getCompanyId()+"LoginInfoHolder.getCurrentOrgId():"
+            +LoginInfoHolder.getCurrentOrgId()+"flag"+Objects.equals(workInfo.getCompanyId(),LoginInfoHolder.getCurrentOrgId())
+            );
             AssertUtil.isTrue(Objects.equals(workInfo.getCompanyId(),LoginInfoHolder.getCurrentOrgId()),ResultCode.NO_OPERATION_PERMISSION.getMessage());
         }
     }
@@ -1659,28 +1661,57 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public Byte checkRevokeType(WorkInfoEntity workInfoDto){
-
-        //查询当前任务节点
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(workInfoDto.getProcInstId()).list();
-        //不存在任务信息则表示流程已经结束
-        if(CollectionUtil.isEmpty(taskList)){
-            return ButtonBusinessEnums.NOT_BUTTON.getCode();
-        }
         //表示流程不支持撤销
         if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.NOT_BUTTON.getCode())){
             return ButtonBusinessEnums.NOT_BUTTON.getCode();
         }
         //未完成就可以撤回
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(workInfoDto.getProcInstId()).list();
         if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.BUTTON.getCode())){
-            return ButtonBusinessEnums.BUTTON.getCode();
+
+            if(CollectionUtil.isNotEmpty(taskList)){
+                return ButtonBusinessEnums.BUTTON.getCode();
+            }
         }
-        //同节点可以撤回
-        if(Objects.equals(workInfoDto.getRevokeNodeId(),taskList.get(0).getTaskDefinitionKey())){
-            return ButtonBusinessEnums.BUTTON.getCode();
+        //在指定节点之前可以撤回
+        if(Objects.equals(workInfoDto.getRevokeType(),ButtonBusinessEnums.APPOINT.getCode()) && CollectionUtil.isNotEmpty(taskList)){
+
+            Process mainProcess = repositoryService.getBpmnModel(workInfoDto.getProcessDefinitionId()).getMainProcess();
+
+            String dingDing = mainProcess.getAttributeValue(FLOWABLE_NAME_SPACE, FLOWABLE_NAME_SPACE_NAME);
+            JSONObject mainJson = JSONObject.parseObject(dingDing, new TypeReference<JSONObject>() {
+            });
+            String processJson = mainJson.getString(VIEW_PROCESS_JSON_NAME);
+            ChildNode childNode = processJson(processJson);
+
+            List<String> parentIds = queryParentIds(workInfoDto.getRevokeNodeId(), childNode);
+            if(parentIds.contains(taskList.get(0).getTaskDefinitionKey())){
+                return ButtonBusinessEnums.BUTTON.getCode();
+            }
         }
+
         return ButtonBusinessEnums.NOT_BUTTON.getCode();
     }
 
+
+    /**
+     * 获取节点的父id信息
+     * @param nodeId
+     * @param childNode
+     * @return
+     */
+    public List<String> queryParentIds(String nodeId,ChildNode childNode){
+        List<String> parentIds = new ArrayList<>();
+        ChildNode chilNodedren = childNode.getChildren();
+        while (true){
+            if(Objects.equals(chilNodedren.getId(),nodeId)){
+                break;
+            }
+            parentIds.add(chilNodedren.getId());
+            chilNodedren = chilNodedren.getChildren();
+        }
+        return parentIds;
+    }
     /**
      * 获取部门信息
      * @param dto
@@ -1913,8 +1944,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 .eq(Objects.nonNull(dto.getNodeId()),CommitProcessEntity::getNodeId,dto.getNodeId());
                 if(Objects.isNull(dto.getUserId())){
                     processLw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
-                }else{
-                    processLw.eq(CommitProcessEntity::getUserId,dto.getUserId());
                 }
         processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId())
                 .orderByDesc(CommitProcessEntity::getCreateTime);

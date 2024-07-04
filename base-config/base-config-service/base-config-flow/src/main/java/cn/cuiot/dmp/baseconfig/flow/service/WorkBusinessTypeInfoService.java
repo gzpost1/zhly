@@ -46,7 +46,7 @@ public class WorkBusinessTypeInfoService extends ServiceImpl<WorkBusinessTypeInf
         }
 
         workBusinessTypeInfoEntity.setNode(userTask.getId());
-        workBusinessTypeInfoEntity.setUserId(task.getAssignee() == null ? null : Long.valueOf(task.getAssignee()));
+//        workBusinessTypeInfoEntity.setUserId(task.getAssignee() == null ? null : Long.valueOf(task.getAssignee()));
         this.save(workBusinessTypeInfoEntity);
     }
 
