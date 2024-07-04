@@ -6,6 +6,7 @@ import cn.cuiot.dmp.lease.entity.PriceManageDetailEntity;
 import cn.cuiot.dmp.lease.mapper.PriceManageDetailMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -66,6 +67,27 @@ public class PriceManageDetailService extends ServiceImpl<PriceManageDetailMappe
         LambdaUpdateWrapper<PriceManageDetailEntity> updateWrapper = new LambdaUpdateWrapper<PriceManageDetailEntity>()
                 .eq(PriceManageDetailEntity::getPriceId, priceId);
         remove(updateWrapper);
+    }
+
+    /**
+     * 复制新增定价明细
+     */
+    public void copyPriceManageDetail(Long priceId, Long copyPriceId){
+        AssertUtil.notNull(priceId, "定价管理id不能为空");
+        AssertUtil.notNull(copyPriceId, "复制定价管理id不能为空");
+        LambdaQueryWrapper<PriceManageDetailEntity> queryWrapper = new LambdaQueryWrapper<PriceManageDetailEntity>()
+                .eq(PriceManageDetailEntity::getPriceId, priceId);
+        List<PriceManageDetailEntity> priceManageDetailEntities = list(queryWrapper);
+        if (CollectionUtils.isEmpty(priceManageDetailEntities)) {
+            return;
+        }
+        List<PriceManageDetailEntity> copyPriceManageDetailEntities = priceManageDetailEntities.stream()
+                .peek(o->{
+                    o.setId(IdWorker.getId());
+                    o.setPriceId(copyPriceId);
+                })
+                .collect(Collectors.toList());
+        saveBatch(copyPriceManageDetailEntities);
     }
 
     /**

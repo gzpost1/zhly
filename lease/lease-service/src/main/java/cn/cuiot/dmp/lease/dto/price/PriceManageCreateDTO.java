@@ -79,6 +79,6 @@ public class PriceManageCreateDTO implements Serializable {
      */
     @Valid
     @NotEmpty
-    private List<PriceManageDetailCreateDTO> priceManageDetailCreateList;
+    private List<PriceManageDetailCreateDTO> priceManageDetailEntities;
 
 }

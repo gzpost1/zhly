@@ -13,6 +13,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public enum PriceManageStatusEnum {
 
+    ALL_STATUS((byte) 0, "全部"),
     DRAFT_STATUS((byte) 1, "草稿"),
     AUDIT_STATUS((byte) 2, "审核中"),
     PASS_STATUS((byte) 3, "审核通过"),

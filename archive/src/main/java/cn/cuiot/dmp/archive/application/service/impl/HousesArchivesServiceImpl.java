@@ -203,7 +203,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
     @Override
     public List<HousesArchivesVo> queryHousesList(IdsReq ids) {
         LambdaQueryWrapper<HousesArchivesEntity> queryWrapper = new LambdaQueryWrapper<HousesArchivesEntity>();
-        queryWrapper.in(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(ids.getIds()),HousesArchivesEntity::getId,ids.getIds());
+        queryWrapper.in(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(ids.getIds()), HousesArchivesEntity::getId, ids.getIds());
         List<HousesArchivesEntity> houseList = baseMapper.selectList(queryWrapper);
         List<HousesArchivesVo> housesArchivesVos = BeanUtil.copyToList(houseList, HousesArchivesVo.class);
         return housesArchivesVos;
@@ -211,15 +211,15 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
 
     @Override
     public List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree(HouseTreeQueryDto houseTreeQueryDto) {
-        List<DepartmentTreeRspDTO> departmentTreeRspList = buildingArchivesService.getDepartmentBuildingTree(houseTreeQueryDto.getOrgId(), houseTreeQueryDto.getUserId(),houseTreeQueryDto.getKeyWords());
+        List<DepartmentTreeRspDTO> departmentTreeRspList = buildingArchivesService.getDepartmentBuildingTree(houseTreeQueryDto.getOrgId(), houseTreeQueryDto.getUserId(), houseTreeQueryDto.getKeyWords());
         if (CollectionUtils.isEmpty(departmentTreeRspList)) {
             return new ArrayList<>();
         }
         List<Long> buidingIdList = getBuidingIdList(departmentTreeRspList.get(0));
-        if(CollectionUtils.isNotEmpty(buidingIdList)){
+        if (CollectionUtils.isNotEmpty(buidingIdList)) {
             LambdaQueryWrapper<HousesArchivesEntity> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.in(HousesArchivesEntity::getLoupanId, buidingIdList);
-            if(houseTreeQueryDto.getIsSelectHouseArrears()){
+            if (houseTreeQueryDto.getIsSelectHouseArrears()) {
                 String lastSql = String.format("and id in (SELECT DISTINCT house_id FROM tb_charge_manager WHERE deleted = 0 AND company_id = %s AND receivble_status in (0,1) AND abrogate_status = 0)",
                         houseTreeQueryDto.getOrgId());
                 queryWrapper.last(lastSql);
@@ -261,21 +261,21 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         entity.setResourceTypeName(configIdNameMap.get(entity.getResourceType()));
         entity.setParkingAreaName(configIdNameMap.get(entity.getParkingArea()));
         entity.setOwnershipAttributeName(configIdNameMap.get(entity.getOwnershipAttribute()));
-        if (Objects.nonNull(entity.getRecommended())){
-            if (entity.getRecommended() == (byte)0){
+        if (Objects.nonNull(entity.getRecommended())) {
+            if (entity.getRecommended() == (byte) 0) {
                 entity.setResourceTypeName("否");
             } else {
                 entity.setRecommendedName("是");
             }
         }
-        if (Objects.nonNull(entity.getUtilizationRate())){
+        if (Objects.nonNull(entity.getUtilizationRate())) {
             DecimalFormat df = new DecimalFormat("0.00%");
             entity.setUtilizationRateName(df.format(entity.getUtilizationRate()));
         }
         if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i< entity.getBasicServices().size(); i++){
-                if (i == entity.getBasicServices().size()-1){
+            for (int i = 0; i < entity.getBasicServices().size(); i++) {
+                if (i == entity.getBasicServices().size() - 1) {
                     sb.append(configIdNameMap.get(entity.getBasicServices().get(i)));
                 } else {
                     sb.append(configIdNameMap.get(entity.getBasicServices().get(i))).append("，");
@@ -288,13 +288,13 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         return entity;
     }
 
-    private void addListCanNull(Set<Long> configIdList, Long configId){
-        if (Objects.nonNull(configId)){
+    private void addListCanNull(Set<Long> configIdList, Long configId) {
+        if (Objects.nonNull(configId)) {
             configIdList.add(configId);
         }
     }
 
-    private void getConfigIdFromEntity(HousesArchivesEntity entity, Set<Long> configIdList){
+    private void getConfigIdFromEntity(HousesArchivesEntity entity, Set<Long> configIdList) {
         addListCanNull(configIdList, entity.getHouseType());
         addListCanNull(configIdList, entity.getOrientation());
         addListCanNull(configIdList, entity.getPropertyType());
@@ -311,7 +311,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
 
     private List<Long> getBuidingIdList(DepartmentTreeRspDTO rootTreeNode) {
         List<Long> treeIdList = new ArrayList<>();
-        if(BuildingArchivesConstant.BUILDING_ARCHIVES_TYPE.equals(rootTreeNode.getType())){
+        if (BuildingArchivesConstant.BUILDING_ARCHIVES_TYPE.equals(rootTreeNode.getType())) {
             treeIdList.add(rootTreeNode.getId());
         }
         if (CollectionUtils.isNotEmpty(rootTreeNode.getChildren())) {
@@ -343,6 +343,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
 
     /**
      * 填充房屋关联的意向合同和租赁合同
+     *
      * @param records
      */
     @Override
@@ -351,21 +352,25 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         IdsReq houseIdsReq = new IdsReq();
         houseIdsReq.setIds(houseIds);
         IdmResDTO<ContractStatusVo> resDTO = contractFeignService.queryConctactStatusByHouseIds(houseIdsReq);
-        if(!Objects.equals(resDTO.getCode(),ResultCode.SUCCESS.getCode())){
+        Map<Long, Integer> housePriceMap = contractFeignService.batchQueryHousePriceForMap(houseIdsReq).getData();
+        if (!Objects.equals(resDTO.getCode(), ResultCode.SUCCESS.getCode())) {
             return;
         }
         ContractStatusVo contractStatusVo = resDTO.getData();
         Map<Long, List<ContractStatus>> intentionMap = Optional.ofNullable(contractStatusVo.getIntentionMap()).orElse(Maps.newHashMap());
         Map<Long, List<ContractStatus>> leaseMap = Optional.ofNullable(contractStatusVo.getLeaseMap()).orElse(Maps.newHashMap());
-        records.forEach(h->{
+        records.forEach(h -> {
             Long houseId = h.getId();
             List<ContractStatus> intentionStatuses = intentionMap.get(houseId);
             List<ContractStatus> leaseStatuses = leaseMap.get(houseId);
-            if(CollectionUtils.isNotEmpty(intentionStatuses)){
+            if (CollectionUtils.isNotEmpty(intentionStatuses)) {
                 h.setIntentionStatuses(intentionStatuses);
             }
-            if(CollectionUtils.isNotEmpty(leaseStatuses)){
+            if (CollectionUtils.isNotEmpty(leaseStatuses)) {
                 h.setLeaseStatuses(leaseStatuses);
+            }
+            if (housePriceMap.containsKey(h.getId())) {
+                h.setLatestPrice(housePriceMap.get(h.getId()));
             }
         });
     }

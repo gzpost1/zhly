@@ -56,6 +56,11 @@ public class PriceManageRecordEntity implements Serializable {
     private Date operateTime;
 
     /**
+     * 审核结果
+     */
+    private String auditResult;
+
+    /**
      * 审核备注
      */
     private String auditRemark;
@@ -74,11 +79,12 @@ public class PriceManageRecordEntity implements Serializable {
     private Integer deletedFlag;
 
     public PriceManageRecordEntity(Long priceId, String operateName, Long operatorId, Date operateTime,
-                                   String auditRemark, String invalidRemark) {
+                                   String auditResult, String auditRemark, String invalidRemark) {
         this.priceId = priceId;
         this.operateName = operateName;
         this.operatorId = operatorId;
         this.operateTime = operateTime;
+        this.auditResult = auditResult;
         this.auditRemark = auditRemark;
         this.invalidRemark = invalidRemark;
     }

@@ -83,6 +83,11 @@ public class CluePageQueryDTO extends PageQuery {
     private Long resultId;
 
     /**
+     * 完成人ID
+     */
+    private Long finishUserId;
+
+    /**
      * 完成开始时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
