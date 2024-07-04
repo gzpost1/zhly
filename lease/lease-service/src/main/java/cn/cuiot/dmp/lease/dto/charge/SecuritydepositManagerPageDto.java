@@ -15,7 +15,7 @@ import java.util.Date;
 @Data
 public class SecuritydepositManagerPageDto implements ChargeItemNameSet{
     /**
-     * id
+     *  应收编码/实收编码
      */
     private Long id;
 
@@ -38,6 +38,11 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet{
      * 房屋名称
      */
     private String houseName;
+
+    /**
+     * 房屋编号
+     */
+    private String houseCode;
 
     /**
      * 收费项目id

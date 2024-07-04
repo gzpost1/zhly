@@ -15,7 +15,7 @@ import java.util.Date;
 @Data
 public class SecuritydepositManagerQuery extends PageQuery {
     /**
-     * 应收编码
+     * 应收编码/实收编码
      */
     private String receivableCode;
 
