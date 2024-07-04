@@ -49,6 +49,12 @@
       <if test="query.houseId != null">
           and house_id = #{query.houseId}
       </if>
+      <if test="query.houseIdByName != null">
+          and house_id = #{query.houseIdByName}
+      </if>
+      <if test="query.houseIdByCode != null">
+          and house_id = #{query.houseIdByCode}
+      </if>
       <if test="query.customerUserId != null">
           and customer_user_id = #{query.customerUserId}
       </if>

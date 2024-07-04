@@ -30,6 +30,16 @@ public class SecuritydepositManagerQuery extends PageQuery {
     private Long houseId;
 
     /**
+     * 房屋id根据名称
+     */
+    private Long houseIdByName;
+
+    /**
+     * 房屋id根据编码
+     */
+    private Long houseIdByCode;
+
+    /**
      * 所属账期-开始时间
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd")
