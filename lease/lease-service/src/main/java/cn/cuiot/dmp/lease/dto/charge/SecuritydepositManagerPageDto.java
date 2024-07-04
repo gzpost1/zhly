@@ -13,7 +13,7 @@ import java.util.Date;
  * @Created by libo
  */
 @Data
-public class SecuritydepositManagerPageDto implements ChargeItemNameSet{
+public class SecuritydepositManagerPageDto implements ChargeItemNameSet,TransactionModeNameSet{
     /**
      *  应收编码/实收编码
      */

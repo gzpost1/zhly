@@ -130,13 +130,15 @@
 
     <update id="receivedAmount">
         UPDATE tb_charge_manager
-        set liquidated_damages_need     = liquidated_damages_need + #{received.liquidatedDamagesNeed},
-            liquidated_damages_received = liquidated_damages_received + #{received.liquidatedDamagesReceived},
-            liquidated_damages_tax      = liquidated_damages_tax + #{received.liquidatedDamagesTax},
-            liquidated_damages_not_tax  = liquidated_damages_not_tax + #{received.liquidatedDamagesNotTax},
-            receivable_amount_received  = receivable_amount_received + #{received.receivableAmountReceived},
-            receivble_status            = if(
-                    receivable_amount_received + #{received.liquidatedDamagesReceived} = receivable_amount, 2, 1)
+        set
+        receivble_status            = if(
+        receivable_amount_received + #{received.liquidatedDamagesReceived} = receivable_amount, 2, 1),
+        liquidated_damages_need     = liquidated_damages_need + #{received.liquidatedDamagesNeed},
+        liquidated_damages_received = liquidated_damages_received + #{received.liquidatedDamagesReceived},
+        liquidated_damages_tax      = liquidated_damages_tax + #{received.liquidatedDamagesTax},
+        liquidated_damages_not_tax  = liquidated_damages_not_tax + #{received.liquidatedDamagesNotTax},
+        receivable_amount_received  = receivable_amount_received + #{received.receivableAmountReceived}
+
         where id = #{received.chargeId}
           and hang_up_status = 0
           and receivble_status in (0, 1)

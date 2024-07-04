@@ -74,8 +74,9 @@
 
   <update id="refund">
       update tb_securitydeposit_manager
-      set returned_amount = returned_amount + #{query.refundAmount},
-          `status`        = if(receivable_amount_received > (returned_amount + #{query.refundAmount}), 2, 3)
+      set
+          `status`        = if(receivable_amount_received > (returned_amount + #{query.refundAmount}), 2, 3),
+           returned_amount = returned_amount + #{query.refundAmount}
       where id = #{query.depositId}
         and `status` in (1, 2)
         and receivable_amount_received >= returned_amount + #{query.refundAmount}

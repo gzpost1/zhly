@@ -144,6 +144,18 @@ public class ChargeManagerController {
             }
 
             chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(),ChargeManagerPageDto.class);
+
+            //填充房屋编码和名称
+            List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(houseIds);
+            if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
+                Map<Long, HouseInfoDto> houseMap = houseInfoDtos.stream().collect(Collectors.toMap(HouseInfoDto::getHouseId, Function.identity()));
+                for (ChargeManagerPageDto record : chargeManagerPageDtoIPage.getRecords()) {
+                    if(houseMap.containsKey(record.getHouseId())){
+                        record.setHouseCode(houseMap.get(record.getHouseId()).getHouseCode());
+                        record.setHouseName(houseMap.get(record.getHouseId()).getHouseName());
+                    }
+                }
+            }
         }
         return IdmResDTO.success().body(chargeManagerPageDtoIPage);
     }
