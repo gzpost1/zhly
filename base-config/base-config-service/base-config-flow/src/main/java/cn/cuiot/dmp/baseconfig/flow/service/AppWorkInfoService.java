@@ -594,8 +594,6 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
                 .eq(Objects.nonNull(dto.getNodeId()),CommitProcessEntity::getNodeId,dto.getNodeId());
         if(Objects.nonNull(dto.getUserId())){
             processLw.eq(CommitProcessEntity::getUserId,dto.getUserId());
-        }else{
-            processLw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
         }
         processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId())
                 .orderByDesc(CommitProcessEntity::getCreateTime);

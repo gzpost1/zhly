@@ -505,6 +505,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO assignee(HandleDataDTO handleDataDTO) {
         //校验是不是本企业的人操作
         checkWorkOrder(handleDataDTO.getProcessInstanceId());
+        String taskId = handleDataDTO.getTaskId();
         //记录转办信息
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_TRANSFER.getCode());
@@ -514,8 +515,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
-        if(StringUtils.isNotEmpty(handleDataDTO.getTaskId())){
-            checkTaskInfo(handleDataDTO.getTaskId());
+        if(StringUtils.isNotEmpty(taskId)){
+            checkTaskInfo(taskId);
             //审批中心转办
             assigneeByProcInstId(handleDataDTO);
             return IdmResDTO.success();
@@ -1204,6 +1205,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public void checkWorkOrder(String processInstanceId){
         if(Objects.nonNull(processInstanceId)){
             WorkInfoEntity workInfo = getWorkInfo(processInstanceId);
+            log.error("workInfo.getCompanyId():"+workInfo.getCompanyId()+"LoginInfoHolder.getCurrentOrgId():"
+            +LoginInfoHolder.getCurrentOrgId()+"flag"+Objects.equals(workInfo.getCompanyId(),LoginInfoHolder.getCurrentOrgId())
+            );
             AssertUtil.isTrue(Objects.equals(workInfo.getCompanyId(),LoginInfoHolder.getCurrentOrgId()),ResultCode.NO_OPERATION_PERMISSION.getMessage());
         }
     }
@@ -1940,8 +1944,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 .eq(Objects.nonNull(dto.getNodeId()),CommitProcessEntity::getNodeId,dto.getNodeId());
                 if(Objects.isNull(dto.getUserId())){
                     processLw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
-                }else{
-                    processLw.eq(CommitProcessEntity::getUserId,dto.getUserId());
                 }
         processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId())
                 .orderByDesc(CommitProcessEntity::getCreateTime);
