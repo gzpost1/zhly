@@ -34,7 +34,7 @@ public class ChargeCollectionRecordEntity {
     private Long customerUserId;
 
     /**
-     * 通知渠道（1:短信，2:微信）
+     * 通知渠道（1：系统消息；2：短信）
      */
     @TableField(value = "channel")
     private Byte channel;
