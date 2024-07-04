@@ -55,10 +55,10 @@ public class TbChargeReceivedService extends ServiceImpl<TbChargeReceivedMapper,
             wrapper.eq(TbChargeReceived::getChargeItemId, query.getChargeItemId());
         }
         if(Objects.nonNull(query.getOwnershipPeriodBegin())){
-            wrapper.gt(TbChargeReceived::getOwnershipPeriodBegin, query.getOwnershipPeriodBegin());
+            wrapper.ge(TbChargeReceived::getOwnershipPeriodBegin, query.getOwnershipPeriodBegin());
         }
         if(Objects.nonNull(query.getOwnershipPeriodEnd())){
-            wrapper.gt(TbChargeReceived::getOwnershipPeriodEnd, query.getOwnershipPeriodEnd());
+            wrapper.le(TbChargeReceived::getOwnershipPeriodEnd, query.getOwnershipPeriodEnd());
         }
         wrapper.orderByDesc(TbChargeReceived::getCreateTime);
         return this.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);

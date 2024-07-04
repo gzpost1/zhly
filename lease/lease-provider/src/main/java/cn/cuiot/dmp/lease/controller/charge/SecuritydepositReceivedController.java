@@ -76,6 +76,8 @@ public class SecuritydepositReceivedController {
                 for (SecuritydepositManagerPageDto record : chargeManagerPageDtoIPage.getRecords()) {
                     if (userInfoMap.containsKey(record.getHouseId())) {
                         record.setHouseName(userInfoMap.get(record.getHouseId()).getHouseName());
+                        record.setHouseCode(userInfoMap.get(record.getHouseId()).getHouseCode());
+
                     }
                 }
             }
