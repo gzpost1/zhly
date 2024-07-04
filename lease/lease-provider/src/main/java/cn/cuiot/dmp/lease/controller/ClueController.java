@@ -133,8 +133,6 @@ public class ClueController {
     @LogRecord(operationCode = "batchDistributeClue", operationName = "批量分配线索", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @PostMapping("/batchDistribute")
     public boolean batchDistributeClue(@RequestBody @Valid ClueBatchUpdateDTO batchUpdateDTO) {
-        Long userId = LoginInfoHolder.getCurrentUserId();
-        batchUpdateDTO.setCurrentFollowerId(userId);
         return clueService.batchDistributeClue(batchUpdateDTO);
     }
 
