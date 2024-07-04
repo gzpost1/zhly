@@ -1943,8 +1943,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 .eq(Objects.nonNull(dto.getNodeId()),CommitProcessEntity::getNodeId,dto.getNodeId());
                 if(Objects.isNull(dto.getUserId())){
                     processLw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
-                }else{
-                    processLw.eq(CommitProcessEntity::getUserId,dto.getUserId());
                 }
         processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId())
                 .orderByDesc(CommitProcessEntity::getCreateTime);
