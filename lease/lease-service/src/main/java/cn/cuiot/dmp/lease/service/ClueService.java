@@ -268,6 +268,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         clueEntityList.forEach(o -> {
             o.setResultId(batchUpdateDTO.getResultId());
             o.setFinishTime(new Date());
+            o.setFinishUserId(batchUpdateDTO.getFinishUserId());
             o.setStatus(ClueStatusEnum.FINISH_STATUS.getCode());
             if (StringUtils.isNotBlank(batchUpdateDTO.getRemark())) {
                 o.setRemark(batchUpdateDTO.getRemark());
