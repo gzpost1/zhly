@@ -1204,6 +1204,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public void checkWorkOrder(String processInstanceId){
         if(Objects.nonNull(processInstanceId)){
             WorkInfoEntity workInfo = getWorkInfo(processInstanceId);
+            log.error("workInfo.getCompanyId():"+workInfo.getCompanyId()+"LoginInfoHolder.getCurrentOrgId():"
+            +LoginInfoHolder.getCurrentOrgId()+"flag"+Objects.equals(workInfo.getCompanyId(),LoginInfoHolder.getCurrentOrgId())
+            );
             AssertUtil.isTrue(Objects.equals(workInfo.getCompanyId(),LoginInfoHolder.getCurrentOrgId()),ResultCode.NO_OPERATION_PERMISSION.getMessage());
         }
     }
