@@ -505,6 +505,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO assignee(HandleDataDTO handleDataDTO) {
         //校验是不是本企业的人操作
         checkWorkOrder(handleDataDTO.getProcessInstanceId());
+        String taskId = handleDataDTO.getTaskId();
         //记录转办信息
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_TRANSFER.getCode());
@@ -514,8 +515,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
-        if(StringUtils.isNotEmpty(handleDataDTO.getTaskId())){
-            checkTaskInfo(handleDataDTO.getTaskId());
+        if(StringUtils.isNotEmpty(taskId)){
+            checkTaskInfo(taskId);
             //审批中心转办
             assigneeByProcInstId(handleDataDTO);
             return IdmResDTO.success();
