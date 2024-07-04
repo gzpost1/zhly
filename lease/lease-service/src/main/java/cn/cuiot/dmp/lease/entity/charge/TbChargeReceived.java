@@ -20,11 +20,14 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Data
 @TableName(value = "tb_charge_received",autoResultMap = true)
 public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameSet {
+    /**
+     * 实收id
+     */
     @TableId(value = "id", type = IdType.INPUT)
     private Long id;
 
     /**
-     * 收款id
+     * 应收id
      */
     @TableField(value = "charge_id")
     private Long chargeId;

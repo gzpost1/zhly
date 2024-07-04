@@ -378,12 +378,8 @@ public class AppAuthService {
         checkAndClearLoginFailedCount(userDto.getId());
 
         //更新登录时间
-        if(StringUtils.isNotBlank(dto.getOpenid())){
-            userDto.setOpenid(dto.getOpenid());
-        }
         UserEntity updateEntity = new UserEntity();
         updateEntity.setId(userDto.getId());
-        updateEntity.setOpenid(dto.getOpenid());
         updateEntity.setLastOnlineIp(dto.getIpAddr());
         updateEntity.setLastOnlineOn(LocalDateTime.now());
         appUserService.updateAppUser(updateEntity);
@@ -555,7 +551,6 @@ public class AppAuthService {
             //更新登录时间
             UserEntity updateEntity = new UserEntity();
             updateEntity.setId(userDto.getId());
-            updateEntity.setOpenid(dto.getOpenid());
             updateEntity.setLastOnlineIp(dto.getIpAddr());
             updateEntity.setLastOnlineOn(LocalDateTime.now());
             appUserService.updateAppUser(updateEntity);
@@ -572,7 +567,6 @@ public class AppAuthService {
                 userEntity.setPhoneNumber(new PhoneNumber(dto.getPhoneNumber()).getEncryptedValue());
                 userEntity.setStatus(UserStatusEnum.OPEN.getValue());
                 userEntity.setUserType(userType);
-                userEntity.setOpenid(dto.getOpenid());
                 userEntity.setDeletedFlag(EntityConstants.NOT_DELETED.intValue());
                 userEntity.setLastOnlineIp(dto.getIpAddr());
                 userEntity.setLastOnlineOn(LocalDateTime.now());
@@ -585,14 +579,10 @@ public class AppAuthService {
                 //更新登录时间
                 UserEntity updateEntity = new UserEntity();
                 updateEntity.setId(userDto.getId());
-                updateEntity.setOpenid(dto.getOpenid());
                 updateEntity.setLastOnlineIp(dto.getIpAddr());
                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                 appUserService.updateAppUser(updateEntity);
             }
-        }
-        if(StringUtils.isNotBlank(dto.getOpenid())){
-            userDto.setOpenid(dto.getOpenid());
         }
         //生成与设置token
         genSetAppToken(userDto);
@@ -810,7 +800,7 @@ public class AppAuthService {
         AppUserDto userDto = null;
         //员工
         if (UserTypeEnum.USER.getValue().equals(userType)) {
-
+            //appUserService.getUserByOpenid(openid, userType)
             userDto = appUserService
                     .getUserByPhoneAndUserType(currentUser.getPhoneNumber(), userType);
             if (Objects.isNull(userDto)) {
@@ -840,7 +830,9 @@ public class AppAuthService {
             //更新登录时间
             UserEntity updateEntity = new UserEntity();
             updateEntity.setId(userDto.getId());
-            updateEntity.setOpenid(openid);
+            if(StringUtils.isBlank(userDto.getOpenid())) {
+                updateEntity.setOpenid(openid);
+            }
             updateEntity.setLastOnlineIp(ipAddr);
             updateEntity.setLastOnlineOn(LocalDateTime.now());
             appUserService.updateAppUser(updateEntity);
@@ -873,14 +865,16 @@ public class AppAuthService {
                 //更新登录时间
                 UserEntity updateEntity = new UserEntity();
                 updateEntity.setId(userDto.getId());
-                updateEntity.setOpenid(openid);
+                if(StringUtils.isBlank(userDto.getOpenid())) {
+                    updateEntity.setOpenid(openid);
+                }
                 updateEntity.setLastOnlineIp(ipAddr);
                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                 appUserService.updateAppUser(updateEntity);
             }
         }
-        if(StringUtils.isNotBlank(dto.getOpenid())){
-            userDto.setOpenid(dto.getOpenid());
+        if(StringUtils.isBlank(userDto.getOpenid())) {
+            userDto.setOpenid(openid);
         }
         //生成与设置token
         genSetAppToken(userDto);

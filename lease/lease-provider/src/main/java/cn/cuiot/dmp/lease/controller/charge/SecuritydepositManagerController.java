@@ -136,7 +136,7 @@ public class SecuritydepositManagerController {
     public IdmResDTO refund(@RequestBody @Valid SecuritydepositRefundDto dto) {
         TbSecuritydepositManager entity = securitydepositManagerService.getById(dto.getDepositId());
         AssertUtil.notNull(entity, "数据不存在");
-        AssertUtil.isTrue(Lists.newArrayList(SecurityDepositStatusEnum.PAID_OFF, SecurityDepositStatusEnum.NOT_REFUNDED).contains(entity.getStatus()), "只有已交清或者未退完方可退款");
+        AssertUtil.isTrue(Lists.newArrayList(SecurityDepositStatusEnum.PAID_OFF.getCode(), SecurityDepositStatusEnum.NOT_REFUNDED.getCode()).contains(entity.getStatus()), "只有已交清或者未退完方可退款");
 
         securitydepositManagerService.refund(dto);
         return IdmResDTO.success();
@@ -178,6 +178,9 @@ public class SecuritydepositManagerController {
         entity.setAccountBank(dto.getAccountBank());
         entity.setAccountNumber(dto.getAccountNumber());
         entity.setReceivedDate(new Date());
+        entity.setReceivableAmountReceived(entity.getReceivableAmount());
+        entity.setReceivedDate(new Date());
+        entity.setStatus(SecurityDepositStatusEnum.PAID_OFF.getCode());
         securitydepositManagerService.updateById(entity);
         return IdmResDTO.success();
     }

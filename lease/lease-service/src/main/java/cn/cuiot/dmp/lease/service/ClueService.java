@@ -85,6 +85,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .ge(Objects.nonNull(queryDTO.getBeginTime()), ClueEntity::getCreatedOn, queryDTO.getBeginTime())
                 .le(Objects.nonNull(queryDTO.getEndTime()), ClueEntity::getCreatedOn, queryDTO.getEndTime())
                 .eq(Objects.nonNull(queryDTO.getResultId()), ClueEntity::getResultId, queryDTO.getResultId())
+                .eq(Objects.nonNull(queryDTO.getFinishUserId()), ClueEntity::getFinishUserId, queryDTO.getFinishUserId())
                 .ge(Objects.nonNull(queryDTO.getFinishBeginTime()), ClueEntity::getFinishTime, queryDTO.getFinishBeginTime())
                 .le(Objects.nonNull(queryDTO.getFinishEndTime()), ClueEntity::getFinishTime, queryDTO.getFinishEndTime())
                 .eq(Objects.nonNull(queryDTO.getCurrentFollowerId()), ClueEntity::getCurrentFollowerId, queryDTO.getCurrentFollowerId())
@@ -124,6 +125,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .ge(Objects.nonNull(queryDTO.getBeginTime()), ClueEntity::getCreatedOn, queryDTO.getBeginTime())
                 .le(Objects.nonNull(queryDTO.getEndTime()), ClueEntity::getCreatedOn, queryDTO.getEndTime())
                 .eq(Objects.nonNull(queryDTO.getResultId()), ClueEntity::getResultId, queryDTO.getResultId())
+                .eq(Objects.nonNull(queryDTO.getFinishUserId()), ClueEntity::getFinishUserId, queryDTO.getFinishUserId())
                 .ge(Objects.nonNull(queryDTO.getFinishBeginTime()), ClueEntity::getFinishTime, queryDTO.getFinishBeginTime())
                 .le(Objects.nonNull(queryDTO.getFinishEndTime()), ClueEntity::getFinishTime, queryDTO.getFinishEndTime())
                 .eq(Objects.nonNull(queryDTO.getCurrentFollowerId()), ClueEntity::getCurrentFollowerId, queryDTO.getCurrentFollowerId())
@@ -266,6 +268,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         clueEntityList.forEach(o -> {
             o.setResultId(batchUpdateDTO.getResultId());
             o.setFinishTime(new Date());
+            o.setFinishUserId(batchUpdateDTO.getFinishUserId());
             o.setStatus(ClueStatusEnum.FINISH_STATUS.getCode());
             if (StringUtils.isNotBlank(batchUpdateDTO.getRemark())) {
                 o.setRemark(batchUpdateDTO.getRemark());

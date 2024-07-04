@@ -60,7 +60,7 @@ public class PriceManageController {
     @RequiresPermissions
     @LogRecord(operationCode = "savePriceManage", operationName = "保存定价管理", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @PostMapping("/save")
-    public boolean savePriceManage(@RequestBody @Valid PriceManageCreateDTO createDTO) {
+    public Long savePriceManage(@RequestBody @Valid PriceManageCreateDTO createDTO) {
         return priceManageService.savePriceManage(createDTO);
     }
 
@@ -130,6 +130,14 @@ public class PriceManageController {
     @PostMapping("/queryRecordByPriceId")
     public PageResult<PriceManageRecordEntity> queryRecordByPriceId(@RequestBody @Valid PriceManageRecordPageQueryDTO pageQueryDTO) {
         return priceManageService.queryRecordByPriceId(pageQueryDTO);
+    }
+
+    /**
+     * 通过定价管理状态查询统计数量
+     */
+    @PostMapping("/queryCountByStatus")
+    public List<PriceManageCountDTO> queryCountByStatus() {
+        return priceManageService.queryCountByStatus();
     }
 
 }

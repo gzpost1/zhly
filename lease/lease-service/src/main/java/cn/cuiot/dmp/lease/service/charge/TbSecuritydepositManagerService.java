@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -64,6 +65,7 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
         TbSecuritydepositRefund refund = new TbSecuritydepositRefund();
         BeanUtils.copyProperties(dto, refund);
         refund.setId(IdWorker.getId());
+        refund.setRefundTime(new Date());
         securitydepositRefundService.save(refund);
     }
 

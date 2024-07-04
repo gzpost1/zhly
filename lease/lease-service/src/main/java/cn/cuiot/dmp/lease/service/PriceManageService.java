@@ -1,11 +1,16 @@
 package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
+import cn.cuiot.dmp.common.constant.AuditConfigConstant;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -121,26 +126,27 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
      * 保存草稿
      */
     @Transactional(rollbackFor = Exception.class)
-    public boolean savePriceManage(PriceManageCreateDTO createDTO) {
+    public Long savePriceManage(PriceManageCreateDTO createDTO) {
         Long userId = LoginInfoHolder.getCurrentUserId();
         Long companyId = LoginInfoHolder.getCurrentOrgId();
         AssertUtil.notNull(companyId, "企业id不能为空");
         createDTO.setCompanyId(companyId);
         PriceManageEntity priceManageEntity = new PriceManageEntity();
         BeanUtils.copyProperties(createDTO, priceManageEntity);
-        List<String> houseIds = createDTO.getPriceManageDetailCreateList().stream()
+        List<String> houseIds = createDTO.getPriceManageDetailEntities().stream()
                 .map(o -> o.getHouseId().toString())
                 .collect(Collectors.toList());
         priceManageEntity.setId(IdWorker.getId());
         priceManageEntity.setHouseIds(houseIds);
         priceManageEntity.setStatus(PriceManageStatusEnum.DRAFT_STATUS.getCode());
         // 保存定价明细
-        priceManageDetailService.savePriceManageDetailList(priceManageEntity.getId(), createDTO.getPriceManageDetailCreateList());
+        priceManageDetailService.savePriceManageDetailList(priceManageEntity.getId(), createDTO.getPriceManageDetailEntities());
         // 保存定价操作记录
         PriceManageRecordEntity priceManageRecordEntity = new PriceManageRecordEntity(priceManageEntity.getId(),
-                PriceManageConstant.OPERATE_CREATE, userId, new Date(), null, null);
+                PriceManageConstant.OPERATE_CREATE, userId, new Date(), null, null, null);
         priceManageRecordService.savePriceManageRecord(priceManageRecordEntity);
-        return save(priceManageEntity);
+        save(priceManageEntity);
+        return priceManageEntity.getId();
     }
 
     /**
@@ -151,13 +157,13 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
         PriceManageEntity priceManageEntity = Optional.ofNullable(getById(updateDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         BeanUtils.copyProperties(updateDTO, priceManageEntity);
-        List<String> houseIds = updateDTO.getPriceManageDetailCreateList().stream()
+        List<String> houseIds = updateDTO.getPriceManageDetailEntities().stream()
                 .map(o -> o.getHouseId().toString())
                 .collect(Collectors.toList());
         priceManageEntity.setHouseIds(houseIds);
         // 先删除定价明细，再新增定价明细
         priceManageDetailService.deletePriceManageDetailList(priceManageEntity.getId());
-        priceManageDetailService.savePriceManageDetailList(priceManageEntity.getId(), updateDTO.getPriceManageDetailCreateList());
+        priceManageDetailService.savePriceManageDetailList(priceManageEntity.getId(), updateDTO.getPriceManageDetailEntities());
         return updateById(priceManageEntity);
     }
 
@@ -172,6 +178,8 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
         BeanUtils.copyProperties(priceManageEntity, copyPriceManageEntity);
         copyPriceManageEntity.setId(IdWorker.getId());
         copyPriceManageEntity.setName(priceManageEntity.getName() + "(1)");
+        // 复制新增定价明细
+        priceManageDetailService.copyPriceManageDetail(id, copyPriceManageEntity.getId());
         return save(copyPriceManageEntity);
     }
 
@@ -181,14 +189,25 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
     @Transactional(rollbackFor = Exception.class)
     public boolean submitPriceManage(Long id) {
         Long userId = LoginInfoHolder.getCurrentUserId();
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
         PriceManageEntity priceManageEntity = Optional.ofNullable(getById(id))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         AssertUtil.isTrue(PriceManageStatusEnum.DRAFT_STATUS.getCode().equals(priceManageEntity.getStatus()),
                 "只能提交草稿数据");
-        priceManageEntity.setStatus(PriceManageStatusEnum.AUDIT_STATUS.getCode());
+        // 如果定价管理-定价单提交未开启审核管理，则直接转到审核通过状态
+        AuditConfigTypeReqDTO reqDTO = new AuditConfigTypeReqDTO(companyId, AuditConfigTypeEnum.PRICE_MANAGE.getCode(),
+                AuditConfigConstant.PRICE_MANAGE_INIT.get(0));
+        List<AuditConfigTypeRspDTO> auditConfigTypeRspDTOS = systemApiFeignService.lookUpAuditConfig(reqDTO).getData();
+        AssertUtil.notEmpty(auditConfigTypeRspDTOS, "审核管理未初始化");
+        byte auditStatus = auditConfigTypeRspDTOS.get(0).getAuditConfigList().get(0).getStatus();
+        if (EntityConstants.ENABLED.equals(auditStatus)) {
+            priceManageEntity.setStatus(PriceManageStatusEnum.AUDIT_STATUS.getCode());
+        } else {
+            priceManageEntity.setStatus(PriceManageStatusEnum.PASS_STATUS.getCode());
+        }
         // 保存定价操作记录
         PriceManageRecordEntity priceManageRecordEntity = new PriceManageRecordEntity(priceManageEntity.getId(),
-                PriceManageConstant.OPERATE_SUBMIT, userId, new Date(), null, null);
+                PriceManageConstant.OPERATE_SUBMIT, userId, new Date(), null, null, null);
         priceManageRecordService.savePriceManageRecord(priceManageRecordEntity);
         return updateById(priceManageEntity);
     }
@@ -207,8 +226,14 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
             priceManageEntity.setAuditRemark(auditDTO.getRemark());
         }
         // 保存定价操作记录
+        String auditResult;
+        if (PriceManageStatusEnum.PASS_STATUS.getCode().equals(auditDTO.getStatus())) {
+            auditResult = "通过";
+        } else {
+            auditResult = "不通过";
+        }
         PriceManageRecordEntity priceManageRecordEntity = new PriceManageRecordEntity(priceManageEntity.getId(),
-                PriceManageConstant.OPERATE_SUBMIT_AUDIT, userId, new Date(), auditDTO.getRemark(), null);
+                PriceManageConstant.OPERATE_SUBMIT_AUDIT, userId, new Date(), auditResult, auditDTO.getRemark(), null);
         priceManageRecordService.savePriceManageRecord(priceManageRecordEntity);
         return updateById(priceManageEntity);
     }
@@ -227,7 +252,7 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
         }
         // 保存定价操作记录
         PriceManageRecordEntity priceManageRecordEntity = new PriceManageRecordEntity(priceManageEntity.getId(),
-                PriceManageConstant.OPERATE_SUBMIT_AUDIT, userId, new Date(), null, auditDTO.getRemark());
+                PriceManageConstant.OPERATE_INVALID, userId, new Date(), null, null, auditDTO.getRemark());
         priceManageRecordService.savePriceManageRecord(priceManageRecordEntity);
         return updateById(priceManageEntity);
     }
@@ -245,6 +270,40 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
      */
     public PageResult<PriceManageRecordEntity> queryRecordByPriceId(PriceManageRecordPageQueryDTO pageQueryDTO) {
         return priceManageRecordService.queryByPriceId(pageQueryDTO);
+    }
+
+    /**
+     * 通过定价管理状态查询统计数量
+     */
+    public List<PriceManageCountDTO> queryCountByStatus() {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+        AssertUtil.notNull(companyId, "企业id不能为空");
+        List<PriceManageEntity> priceManageEntityList = list();
+        if (CollectionUtils.isEmpty(priceManageEntityList)) {
+            return PriceManageConstant.Price_Manage_Status.stream()
+                    .map(o -> {
+                        PriceManageCountDTO priceManageCountDTO = new PriceManageCountDTO();
+                        priceManageCountDTO.setStatus(o);
+                        priceManageCountDTO.setCount(0);
+                        return priceManageCountDTO;
+                    })
+                    .collect(Collectors.toList());
+        }
+        return PriceManageConstant.Price_Manage_Status.stream()
+                .map(o -> {
+                    PriceManageCountDTO priceManageCountDTO = new PriceManageCountDTO();
+                    priceManageCountDTO.setStatus(o);
+                    if (PriceManageStatusEnum.ALL_STATUS.getCode().equals(o)) {
+                        priceManageCountDTO.setCount(priceManageEntityList.size());
+                    } else {
+                        long count = priceManageEntityList.stream()
+                                .filter(item -> o.equals(item.getStatus()))
+                                .count();
+                        priceManageCountDTO.setCount((int) count);
+                    }
+                    return priceManageCountDTO;
+                })
+                .collect(Collectors.toList());
     }
 
     private PageResult<PriceManageDTO> priceManageEntity2PriceManageDTOs(IPage<PriceManageEntity> priceManageEntityIPage) {

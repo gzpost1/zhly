@@ -10,6 +10,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
+import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.conver.ImgTextConvert;
 import cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity;
@@ -30,6 +31,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,7 @@ import java.util.stream.Collectors;
  * @data 2024/5/28 14:42
  */
 @Service("imgTextService")
+@Slf4j
 public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper, ContentImgTextEntity> implements ContentImgTextService {
 
     @Autowired
@@ -70,6 +73,7 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
     @Override
     public IPage<ImgTextVo> queryForPage(ContentImgTextPageQuery pageQuery) {
         initQuery(pageQuery);
+        log.info("imgTextService-queryForPage-params:{}", JsonUtil.writeValueAsString(pageQuery));
         IPage<ContentImgTextEntity> imgTextEntityIPage = this.baseMapper.queryForPage(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery, ContentConstants.DataType.IMG_TEXT);
         IPage<ImgTextVo> pageResult = new Page<>();
         if (CollUtil.isNotEmpty(imgTextEntityIPage.getRecords())) {
@@ -173,6 +177,9 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
             DepartmentReqDto query = new DepartmentReqDto();
             query.setDeptIdList(pageQuery.getDepartments());
             pageQuery.setDepartments(systemConverService.getDeptIds(query));
+            DepartmentReqDto reqDto = new DepartmentReqDto();
+            reqDto.setDeptId(LoginInfoHolder.getCurrentDeptId());
+            pageQuery.setBuildings(archiveConverService.lookupBuildingArchiveByDepartmentList(reqDto));
         }
     }
 }

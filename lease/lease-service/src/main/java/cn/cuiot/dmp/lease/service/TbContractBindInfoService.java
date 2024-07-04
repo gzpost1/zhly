@@ -142,6 +142,9 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
         List<TbContractChargeEntity> chargeList = entity.getChargeList();
         if(CollectionUtils.isNotEmpty(chargeList)){
             chargeService.removeByContractId(id);
+            chargeList.forEach(c->{
+                c.setContractId(id);
+            });
             chargeService.saveOrUpdateBatch(chargeList);
         }
 

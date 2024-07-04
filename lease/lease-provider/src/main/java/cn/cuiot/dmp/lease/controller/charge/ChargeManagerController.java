@@ -144,6 +144,18 @@ public class ChargeManagerController {
             }
 
             chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(),ChargeManagerPageDto.class);
+
+            //填充房屋编码和名称
+            List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(houseIds);
+            if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
+                Map<Long, HouseInfoDto> houseMap = houseInfoDtos.stream().collect(Collectors.toMap(HouseInfoDto::getHouseId, Function.identity()));
+                for (ChargeManagerPageDto record : chargeManagerPageDtoIPage.getRecords()) {
+                    if(houseMap.containsKey(record.getHouseId())){
+                        record.setHouseCode(houseMap.get(record.getHouseId()).getHouseCode());
+                        record.setHouseName(houseMap.get(record.getHouseId()).getHouseName());
+                    }
+                }
+            }
         }
         return IdmResDTO.success().body(chargeManagerPageDtoIPage);
     }
@@ -313,7 +325,7 @@ public class ChargeManagerController {
         TbChargeManager entity = tbChargeManagerService.getById(idParam.getDataId());
         AssertUtil.notNull(entity, "数据不存在");
         AssertUtil.isFalse(ChargeReceivbleEnum.isShowAbrogate(entity.getReceivbleStatus()), "已开交、已交清的状态不显示作废按钮");
-        AssertUtil.isTrue(Objects.equals(ChargeHangUpEnum.HANG_UP.getCode(), entity.getHangUpStatus()), "已挂起的数据不能作废");
+        AssertUtil.isFalse(Objects.equals(ChargeHangUpEnum.HANG_UP.getCode(), entity.getHangUpStatus()), "已挂起的数据不能作废");
 
         tbChargeManagerService.abrogateStatus(entity, idParam.getAbrogateDesc());
         return IdmResDTO.success();

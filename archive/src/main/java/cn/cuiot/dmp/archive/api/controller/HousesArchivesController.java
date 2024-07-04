@@ -124,6 +124,9 @@ public class HousesArchivesController extends BaseController {
         }
         wrapper.orderByDesc(HousesArchivesEntity::getCreateTime);
         IPage<HousesArchivesEntity> res = housesArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
+        if (CollectionUtils.isEmpty(res.getRecords())) {
+            return IdmResDTO.success(res);
+        }
         List<HousesArchivesEntity> records = res.getRecords();
         housesArchivesService.fullContractInfo(records);
         return IdmResDTO.success(res);
