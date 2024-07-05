@@ -6,7 +6,6 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
-import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
@@ -15,7 +14,8 @@ import cn.cuiot.dmp.lease.dto.contract.AuditParam;
 import cn.cuiot.dmp.lease.entity.BaseContractEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
-import cn.cuiot.dmp.lease.entity.TbContractLeaseRelateEntity;
+import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static cn.cuiot.dmp.common.constant.AuditContractConstant.*;
-import static cn.cuiot.dmp.common.constant.AuditContractConstant.AUDIT_CONFIG_INTENTION_USELESS;
 
 /**
  * 租赁合同 服务实现类
@@ -48,7 +47,8 @@ public class BaseContractService {
     @Autowired
     TbContractLeaseRelateService leaseRelateService;
     @Autowired
-    TbContractLeaseService contractLeaseService;
+    TbContractLeaseMapper contractLeaseMapper;
+
 
 
     /**
@@ -263,7 +263,7 @@ public class BaseContractService {
                     break;
                 case STATUS_RELETING:
                     TbContractLeaseEntity leaseEntity = (TbContractLeaseEntity) entity;
-                    contractLeaseService.cancelReletBind(leaseEntity.getId());
+                    cancelReletBind(leaseEntity.getId());
                     leaseRelateService.removeRelated(leaseEntity.getId(),RELATE_NEW_LEASE_TYPE);
                     leaseRelateService.removeRelated(leaseEntity.getReletContractId(),RELATE_ORI_LEASE_TYPE);
                     contractStatus = handleContractStatusByDate(type, beginDate, endDate);
@@ -274,6 +274,20 @@ public class BaseContractService {
             }
         }
         return contractStatus;
+    }
+
+    /**
+     * 取消续租合同关联
+     */
+    public void cancelReletBind(Long reletContractId) {
+        LambdaQueryWrapper<TbContractLeaseEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TbContractLeaseEntity::getReletContractId,reletContractId);
+        queryWrapper.last("limit 1");
+        TbContractLeaseEntity contractLeaseEntity = (TbContractLeaseEntity) contractLeaseMapper.selectOne(queryWrapper);
+        contractLeaseEntity.setReletContractId(null);
+        contractLeaseEntity.setContractStatus(ContractEnum.STATUS_USELESS.getCode());
+        contractLeaseEntity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
+        contractLeaseMapper.updateById(contractLeaseEntity);
     }
 
     /**
