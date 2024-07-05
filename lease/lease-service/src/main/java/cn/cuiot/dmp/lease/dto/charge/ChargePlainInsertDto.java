@@ -66,4 +66,9 @@ public class ChargePlainInsertDto {
      * 收费对象
      */
     private Long receivableObj;
+
+    /**
+     * 应收日期
+     */
+    private Integer dueDateNum;
 }

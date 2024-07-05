@@ -84,7 +84,7 @@ public class ChargeManagerController {
         if (Objects.nonNull(ownerInfo)) {
             chargeHouseDetailDto.setOwnerName(ownerInfo.getOwnerName());
             if(StringUtils.isNotBlank(ownerInfo.getOwnerPhone())){
-                chargeHouseDetailDto.setOwnerPhone(StringUtils.join(Arrays.stream(StringUtils.split(ownerInfo.getOwnerPhone(),",")).map(e -> Sm4.decrypt(e)).toArray()));
+                chargeHouseDetailDto.setOwnerPhone(StringUtils.join(Arrays.stream(StringUtils.split(ownerInfo.getOwnerPhone(),",")).map(e -> Sm4.decrypt(e)).toArray(),","));
             }
         }
         chargeHouseDetailDto.setHouseId(idParam.getId());
@@ -109,9 +109,11 @@ public class ChargeManagerController {
      */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<ChargeManagerPageDto>> queryForPage(@RequestBody TbChargeManagerQuery query) {
-        AssertUtil.notNull(query.getHouseId(), "房屋id不能为空");
-        query.setAbrogateStatus(ChargeAbrogateEnum.NORMAL.getCode());
-        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        if(!query.isSelectPlan()){
+            AssertUtil.notNull(query.getHouseId(), "房屋id不能为空");
+            query.setAbrogateStatus(ChargeAbrogateEnum.NORMAL.getCode());
+            query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        }
 
         IPage<ChargeManagerPageDto> chargeManagerPageDtoIPage = tbChargeManagerService.queryForPage(query);
         if (Objects.nonNull(chargeManagerPageDtoIPage) && CollectionUtils.isNotEmpty(chargeManagerPageDtoIPage.getRecords())) {

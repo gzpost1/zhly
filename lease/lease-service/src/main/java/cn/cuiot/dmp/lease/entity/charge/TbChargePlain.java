@@ -92,4 +92,9 @@ public class TbChargePlain extends YjBaseEntity {
      * 收费对象
      */
     private Long receivableObj;
+
+    /**
+     * 应收日期
+     */
+    private Integer dueDateNum;
 }
