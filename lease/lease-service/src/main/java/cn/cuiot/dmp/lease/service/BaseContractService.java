@@ -77,7 +77,6 @@ public class BaseContractService {
      * @return
      */
     public BaseContractEntity handleAuditContractStatus(BaseContractEntity entity, AuditParam param) {
-        Integer oriContractStatus = entity.getContractStatus();
         Integer auditStatus = handleAuditStatus(param.getAuditStatus());
         int type = CONTRACT_INTENTION_TYPE;
         //租赁合同
@@ -92,20 +91,6 @@ public class BaseContractService {
         entity.setAuditStatus(auditStatus);
         entity.setContractStatus(contractStatus);
 
-//        //签约失败
-//        if (Objects.equals(auditStatus, ContractEnum.AUDIT_REFUSE) &&
-//                Objects.equals(oriContractStatus, ContractEnum.STATUS_SIGNING)) {
-//            TbContractIntentionEntity intentionEntity = (TbContractIntentionEntity) entity;
-//            intentionEntity.setContractLeaseId(null);
-//            //同时删除租赁合同的关联合同
-//            leaseRelateService.removeRelated(intentionEntity.getContractLeaseId(), RELATE_INTENTION_TYPE);
-//            //续约失败
-//        } else if (Objects.equals(auditStatus, ContractEnum.AUDIT_REFUSE) && Objects.equals(oriContractStatus, ContractEnum.STATUS_RELETING)) {
-//            TbContractLeaseEntity leaseEntity = (TbContractLeaseEntity) entity;
-//            contractLeaseService.cancelReletBind(leaseEntity.getId());
-//            leaseRelateService.removeRelated(leaseEntity.getId(),RELATE_NEW_LEASE_TYPE);
-//            leaseRelateService.removeRelated(leaseEntity.getReletContractId(),RELATE_ORI_LEASE_TYPE);
-//        }
         return entity;
     }
 
@@ -244,7 +229,8 @@ public class BaseContractService {
                     TbContractLeaseEntity leaseEntity = (TbContractLeaseEntity) entity;
                     Long reletContractId = leaseEntity.getReletContractId();
                     leaseRelateService.enableRelate(leaseEntity.getId(),RELATE_NEW_LEASE_TYPE);
-                    leaseRelateService.enableRelate(reletContractId,RELATE_ORI_LEASE_TYPE);
+//                    leaseRelateService.enableRelate(reletContractId,RELATE_ORI_LEASE_TYPE);
+                    leaseRelateService.enableRelateExtId(Long.valueOf(leaseEntity.getContractNo()),RELATE_ORI_LEASE_TYPE);
                     contractStatus = ContractEnum.STATUS_RELET.getCode();
                     break;
             }
@@ -266,7 +252,8 @@ public class BaseContractService {
                     TbContractLeaseEntity leaseEntity = (TbContractLeaseEntity) entity;
                     cancelReletBind(leaseEntity.getId());
                     leaseRelateService.removeRelated(leaseEntity.getId(),RELATE_NEW_LEASE_TYPE);
-                    leaseRelateService.removeRelated(leaseEntity.getReletContractId(),RELATE_ORI_LEASE_TYPE);
+                    leaseRelateService.removeRelatedExtId(Long.valueOf(leaseEntity.getContractNo()),RELATE_ORI_LEASE_TYPE);
+//                    leaseRelateService.removeRelated(leaseEntity.getReletContractId(),RELATE_ORI_LEASE_TYPE);
                     contractStatus = handleContractStatusByDate(type, beginDate, endDate);
                     break;
                 default:

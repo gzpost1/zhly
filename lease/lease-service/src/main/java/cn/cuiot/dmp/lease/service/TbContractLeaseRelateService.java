@@ -48,6 +48,12 @@ public class TbContractLeaseRelateService extends BaseMybatisServiceImpl<TbContr
         queryWrapper.eq(TbContractLeaseRelateEntity::getType,type);
         remove(queryWrapper);
     }
+    public void removeRelatedExtId(Long extId,Integer type){
+        LambdaQueryWrapper<TbContractLeaseRelateEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TbContractLeaseRelateEntity::getExtId,extId);
+        queryWrapper.eq(TbContractLeaseRelateEntity::getType,type);
+        remove(queryWrapper);
+    }
 
     public void enableRelate(Long contractId,Integer type){
         LambdaQueryWrapper<TbContractLeaseRelateEntity> queryWrapper = new LambdaQueryWrapper<>();
@@ -58,6 +64,15 @@ public class TbContractLeaseRelateService extends BaseMybatisServiceImpl<TbContr
         TbContractLeaseRelateEntity leaseRelateEntity = (TbContractLeaseRelateEntity) getOne(queryWrapper);
         leaseRelateEntity.setStatus(EntityConstants.ENABLED);
         updateById(leaseRelateEntity);
-
+    }
+    public void enableRelateExtId(Long extId,Integer type){
+        LambdaQueryWrapper<TbContractLeaseRelateEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TbContractLeaseRelateEntity::getExtId,extId);
+        queryWrapper.eq(TbContractLeaseRelateEntity::getType,type);
+//        queryWrapper.eq(TbContractLeaseRelateEntity::getExtId,extContractNo);
+        queryWrapper.last("limit 1");
+        TbContractLeaseRelateEntity leaseRelateEntity = (TbContractLeaseRelateEntity) getOne(queryWrapper);
+        leaseRelateEntity.setStatus(EntityConstants.ENABLED);
+        updateById(leaseRelateEntity);
     }
 }
