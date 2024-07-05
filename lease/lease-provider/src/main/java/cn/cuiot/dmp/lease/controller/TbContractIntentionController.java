@@ -193,13 +193,6 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         TbContractIntentionEntity queryEntity = getContract(param.getId());
         Integer contractStatus = queryEntity.getContractStatus();
         TbContractIntentionEntity auditContractIntentionEntity = (TbContractIntentionEntity) baseContractService.handleAuditContractStatus(queryEntity, param);
-        //如果是签约不通过,这取消关联
-//        if (Objects.equals(contractStatus, ContractEnum.STATUS_SIGNING.getCode())
-//                && Objects.equals(param.getAuditStatus(), ContractEnum.AUDIT_REFUSE.getCode())) {
-//            queryEntity.setContractLeaseId(null);
-//            //同时删除租赁合同的关联合同
-//            leaseRelateService.removeRelated(queryEntity.getContractLeaseId(),RELATE_TYPE);
-//        }
         contractLogService.saveAuditLogMsg(contractStatus, param,CONTRACT_INTENTION_TYPE);
         return service.updateById(auditContractIntentionEntity);
     }

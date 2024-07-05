@@ -8,6 +8,7 @@ import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.dto.contract.*;
@@ -236,11 +237,6 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         TbContractLeaseEntity queryEntity = getContract(id);
         Integer contractStatus = queryEntity.getContractStatus();
         TbContractLeaseEntity auditContractIntentionEntity = (TbContractLeaseEntity) baseContractService.handleAuditContractStatus(queryEntity, param);
-//        //如果是续租中不通过,这取消关联
-//        if (Objects.equals(contractStatus, ContractEnum.STATUS_RELETING.getCode())
-//                && Objects.equals(param.getAuditStatus(), ContractEnum.AUDIT_REFUSE.getCode())) {
-//            service.cancelReletBind(id);
-//        }
         contractLogService.saveAuditLogMsg(contractStatus, param,CONTRACT_LEASE_TYPE);
         return service.updateById(auditContractIntentionEntity);
     }
@@ -251,12 +247,12 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
      * @return
      */
     @PostMapping("/queryBindContract")
-    public List<TbContractLeaseRelateEntity> queryBindContract(@RequestBody @Valid IdParam param) {
-        LambdaQueryWrapper<TbContractLeaseRelateEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TbContractLeaseRelateEntity::getContractId,param.getId());
-        queryWrapper.eq(TbContractLeaseRelateEntity::getStatus, EntityConstants.ENABLED);
-        queryWrapper.orderByDesc(TbContractLeaseRelateEntity::getDatetime);
-        List leaseRelateList = leaseRelateService.list(queryWrapper);
+    public PageResult queryBindContract(@RequestBody @Valid LeaseBindParam param) {
+        TbContractLeaseRelateParam queryParam = new TbContractLeaseRelateParam();
+        queryParam.setContractId(param.getId());
+        queryParam.setStatus(EntityConstants.ENABLED);
+        param.setDescs(new String[]{TbContractLeaseRelateEntity.DATETIME});
+        PageResult<TbContractLeaseRelateEntity> leaseRelateList = leaseRelateService.page(queryParam);
         return leaseRelateList;
     }
 
