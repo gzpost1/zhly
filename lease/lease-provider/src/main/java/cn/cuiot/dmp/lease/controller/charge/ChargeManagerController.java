@@ -109,9 +109,11 @@ public class ChargeManagerController {
      */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<ChargeManagerPageDto>> queryForPage(@RequestBody TbChargeManagerQuery query) {
-        AssertUtil.notNull(query.getHouseId(), "房屋id不能为空");
-        query.setAbrogateStatus(ChargeAbrogateEnum.NORMAL.getCode());
-        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        if(!query.isSelectPlan()){
+            AssertUtil.notNull(query.getHouseId(), "房屋id不能为空");
+            query.setAbrogateStatus(ChargeAbrogateEnum.NORMAL.getCode());
+            query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        }
 
         IPage<ChargeManagerPageDto> chargeManagerPageDtoIPage = tbChargeManagerService.queryForPage(query);
         if (Objects.nonNull(chargeManagerPageDtoIPage) && CollectionUtils.isNotEmpty(chargeManagerPageDtoIPage.getRecords())) {
