@@ -120,7 +120,12 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         }
     }
 
-    private static void setDueDate(Integer dueDateNum, TbChargeManager tbChargeManager) {
+    /**
+     * 获取指定日期时的收费时间
+     * @param dueDateNum
+     * @param tbChargeManager
+     */
+    public static void setDueDate(Integer dueDateNum, TbChargeManager tbChargeManager) {
         int dayOfMonth = DateTimeUtil.dateToLocalDate(DateUtil.endOfMonth(tbChargeManager.getOwnershipPeriodBegin())).getDayOfMonth();
         if(dayOfMonth <= dueDateNum){
             tbChargeManager.setDueDate(DateTimeUtil.getStartTime(DateUtil.endOfMonth(tbChargeManager.getOwnershipPeriodBegin())));
