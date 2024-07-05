@@ -29,4 +29,9 @@ public class ChargePlainQuery extends PageQuery {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 收费对象
+     */
+    private Long receivableObj;
 }

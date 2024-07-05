@@ -22,12 +22,13 @@
     <result column="cron_time" jdbcType="TIME" property="cronTime" />
     <result column="status" jdbcType="TINYINT" property="status" />
     <result column="receivable_obj" jdbcType="BIGINT" property="receivable_obj" />
+    <result column="due_date_num" jdbcType="INTEGER" property="dueDateNum" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, receivable_amount_rate, charge_item_id, charge_standard, receivable_amount, company_id, 
     update_time, update_user, create_time, create_user, deleted, cron_type, cron_begin_date, 
-    cron_end_date, cron_appoint_date, cron_time, `status`,receivable_obj
+    cron_end_date, cron_appoint_date, cron_time, `status`,receivable_obj,due_date_num
   </sql>
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.lease.dto.charge.ChargePlainPageDto">
@@ -38,6 +39,9 @@
       deleted = 0
       <if test="query.companyId != null">
         and company_id = #{query.companyId}
+      </if>
+      <if test="query.receivableObj != null">
+        and receivable_obj = #{query.receivableObj}
       </if>
       <if test="query.chargeItemId != null">
         and charge_item_id = #{query.chargeItemId}
