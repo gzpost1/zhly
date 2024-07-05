@@ -136,7 +136,7 @@ public class SystemToFlowService {
     /**
      * 查询楼房选项
      */
-    List<BuildingArchive> buildingArchiveQueryForList(@RequestBody @Valid BuildingArchiveReq buildingArchiveReq){
+    public List<BuildingArchive> buildingArchiveQueryForList(@RequestBody @Valid BuildingArchiveReq buildingArchiveReq){
         try {
             IdmResDTO<List<BuildingArchive>> listIdmResDTO = archiveFeignService
                     .buildingArchiveQueryForList(buildingArchiveReq);
