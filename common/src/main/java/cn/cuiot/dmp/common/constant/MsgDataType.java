@@ -13,6 +13,11 @@ public class MsgDataType {
     public final static String NOTICE = "notice";
 
     /**
+     * 线索分配通知：分配线索后，向被分配人发送通知
+     */
+    public final static String CLUE_DISTRIBUTE = "clueDistribute";
+
+    /**
      * 工单完成通知：工单完成，向发起人发送通知
      */
     public final static String WORK_INFO_COMPLETED = "workInfoCompleted";

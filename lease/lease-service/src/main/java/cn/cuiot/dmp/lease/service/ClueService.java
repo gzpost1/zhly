@@ -4,16 +4,22 @@ import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
-import cn.cuiot.dmp.common.constant.PageResult;
-import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.constant.SystemFormConfigConstant;
+import cn.cuiot.dmp.common.bean.dto.SmsMsgDto;
+import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
+import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
+import cn.cuiot.dmp.common.constant.*;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.content.config.MsgChannel;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.lease.constants.ClueConstant;
 import cn.cuiot.dmp.lease.dto.clue.*;
 import cn.cuiot.dmp.lease.entity.ClueEntity;
 import cn.cuiot.dmp.lease.entity.ClueRecordEntity;
@@ -32,8 +38,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeTypeUtils;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -56,6 +65,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     @Autowired
     private ArchiveFeignService archiveFeignService;
 
+    @Autowired
+    private MsgChannel msgChannel;
+
     /**
      * 查询详情
      */
@@ -68,6 +80,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         fillBuildingName(Lists.newArrayList(clueDTO));
         fillUserName(Lists.newArrayList(clueDTO));
         fillSystemOptionName(Lists.newArrayList(clueDTO));
+        fillCustomerName(Lists.newArrayList(clueDTO));
         return clueDTO;
     }
 
@@ -178,11 +191,23 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean distributeClue(ClueDistributeDTO distributeDTO) {
+        String userName = LoginInfoHolder.getCurrentUsername();
         ClueEntity clueEntity = Optional.ofNullable(getById(distributeDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         clueEntity.setCurrentFollowerId(distributeDTO.getCurrentFollowerId());
         clueEntity.setStatus(ClueStatusEnum.FOLLOW_STATUS.getCode());
         clueEntity.setDistributeTime(new Date());
+        // 发送分配线索通知
+        UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto()
+                .setMsgType((byte) (InformTypeConstant.SYS_MSG + InformTypeConstant.SMS));
+        SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(Lists.newArrayList(distributeDTO.getCurrentFollowerId()))
+                .setDataId(clueEntity.getId()).setDataType(MsgDataType.CLUE_DISTRIBUTE)
+                .setMessage(String.format(ClueConstant.CLUE_DISTRIBUTE_MSG, userName, clueEntity.getName()))
+                .setMessageTime(new Date()).setMsgType(MsgTypeConstant.CLUE);
+        SmsMsgDto smsMsgDto = new SmsMsgDto();
+        userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
+        msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+                .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON).build());
         return updateById(clueEntity);
     }
 
@@ -300,6 +325,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         fillBuildingName(clueDTOList);
         fillUserName(clueDTOList);
         fillSystemOptionName(clueDTOList);
+        fillCustomerName(clueDTOList);
         clueDTOPageResult.setList(clueDTOList);
         clueDTOPageResult.setCurrentPage((int) clueEntityIPage.getCurrent());
         clueDTOPageResult.setPageSize((int) clueEntityIPage.getSize());
@@ -411,33 +437,60 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         });
     }
 
+    /**
+     * 使用客户id列表查询出，对应的客户名称
+     *
+     * @param clueDTOList 线索列表
+     */
+    private void fillCustomerName(List<ClueDTO> clueDTOList) {
+        if (CollectionUtils.isEmpty(clueDTOList)) {
+            return;
+        }
+        Set<Long> customerIdList = new HashSet<>();
+        clueDTOList.forEach(o -> {
+            if (Objects.nonNull(o.getCustomerUserId())) {
+                customerIdList.add(o.getCustomerUserId());
+            }
+        });
+        CustomerUseReqDto reqDto = new CustomerUseReqDto();
+        reqDto.setCustomerIdList(new ArrayList<>(customerIdList));
+        List<CustomerUserRspDto> customerUserRspDtoList = archiveFeignService.lookupCustomerUsers(reqDto).getData();
+        Map<Long, String> customerMap = customerUserRspDtoList.stream().collect(Collectors.toMap(CustomerUserRspDto::getCustomerId,
+                CustomerUserRspDto::getCustomerName));
+        clueDTOList.forEach(o -> {
+            if (Objects.nonNull(o.getCustomerUserId()) && customerMap.containsKey(o.getCustomerUserId())) {
+                o.setCustomerUserName(customerMap.get(o.getCustomerUserId()));
+            }
+        });
+    }
+
     private void initQueryWrapperByFollowDay(LambdaQueryWrapper<ClueEntity> queryWrapper, Byte clueFollowDay) {
         LocalDate now = LocalDate.now();
         if (ClueFollowDayEnum.ZERO_THREE_DAY.getCode().equals(clueFollowDay)) {
             queryWrapper.ge(ClueEntity::getCurrentFollowTime, now.minusDays(3));
-            queryWrapper.or(wp-> wp.isNull(ClueEntity::getCurrentFollowTime)
+            queryWrapper.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
                     .ge(ClueEntity::getDistributeTime, now.minusDays(3)));
         } else if (ClueFollowDayEnum.THREE_SEVEN_DAY.getCode().equals(clueFollowDay)) {
-            queryWrapper.and(wp-> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(7))
+            queryWrapper.and(wp -> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(7))
                     .le(ClueEntity::getCurrentFollowTime, now.minusDays(3)));
-            queryWrapper.or(wp-> wp.isNull(ClueEntity::getCurrentFollowTime)
+            queryWrapper.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
                     .ge(ClueEntity::getDistributeTime, now.minusDays(7))
                     .le(ClueEntity::getDistributeTime, now.minusDays(3)));
         } else if (ClueFollowDayEnum.SEVEN_FIFTEEN_DAY.getCode().equals(clueFollowDay)) {
-            queryWrapper.and(wp-> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(15))
+            queryWrapper.and(wp -> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(15))
                     .le(ClueEntity::getCurrentFollowTime, now.minusDays(7)));
-            queryWrapper.or(wp-> wp.isNull(ClueEntity::getCurrentFollowTime)
+            queryWrapper.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
                     .ge(ClueEntity::getDistributeTime, now.minusDays(15))
                     .le(ClueEntity::getDistributeTime, now.minusDays(7)));
         } else if (ClueFollowDayEnum.FIFTEEN_THIRTY_DAY.getCode().equals(clueFollowDay)) {
-            queryWrapper.and(wp-> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(30))
+            queryWrapper.and(wp -> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(30))
                     .le(ClueEntity::getCurrentFollowTime, now.minusDays(15)));
-            queryWrapper.or(wp-> wp.isNull(ClueEntity::getCurrentFollowTime)
+            queryWrapper.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
                     .ge(ClueEntity::getDistributeTime, now.minusDays(30))
                     .le(ClueEntity::getDistributeTime, now.minusDays(15)));
         } else if (ClueFollowDayEnum.THIRTY_MORE_DAY.getCode().equals(clueFollowDay)) {
             queryWrapper.le(ClueEntity::getCurrentFollowTime, now.minusDays(30));
-            queryWrapper.or(wp-> wp.isNull(ClueEntity::getCurrentFollowTime)
+            queryWrapper.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
                     .le(ClueEntity::getDistributeTime, now.minusDays(30)));
         }
     }
