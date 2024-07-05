@@ -182,6 +182,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         clueEntity.setCurrentFollowerId(distributeDTO.getCurrentFollowerId());
         clueEntity.setStatus(ClueStatusEnum.FOLLOW_STATUS.getCode());
+        clueEntity.setDistributeTime(new Date());
         return updateById(clueEntity);
     }
 
@@ -249,6 +250,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         clueEntityList.forEach(o -> {
             o.setStatus(ClueStatusEnum.FOLLOW_STATUS.getCode());
             o.setCurrentFollowerId(batchUpdateDTO.getCurrentFollowerId());
+            o.setDistributeTime(new Date());
         });
         return updateBatchById(clueEntityList);
     }
