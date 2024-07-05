@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.base.infrastructure.dto.req;
 
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
@@ -12,6 +14,8 @@ import java.io.Serializable;
  */
 @Data
 @Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class AuditConfigTypeReqDTO implements Serializable {
 
     private static final long serialVersionUID = 7488192730375382775L;

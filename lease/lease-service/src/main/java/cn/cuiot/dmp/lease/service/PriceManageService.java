@@ -1,11 +1,16 @@
 package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
+import cn.cuiot.dmp.common.constant.AuditConfigConstant;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -184,11 +189,22 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
     @Transactional(rollbackFor = Exception.class)
     public boolean submitPriceManage(Long id) {
         Long userId = LoginInfoHolder.getCurrentUserId();
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
         PriceManageEntity priceManageEntity = Optional.ofNullable(getById(id))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         AssertUtil.isTrue(PriceManageStatusEnum.DRAFT_STATUS.getCode().equals(priceManageEntity.getStatus()),
                 "只能提交草稿数据");
-        priceManageEntity.setStatus(PriceManageStatusEnum.AUDIT_STATUS.getCode());
+        // 如果定价管理-定价单提交未开启审核管理，则直接转到审核通过状态
+        AuditConfigTypeReqDTO reqDTO = new AuditConfigTypeReqDTO(companyId, AuditConfigTypeEnum.PRICE_MANAGE.getCode(),
+                AuditConfigConstant.PRICE_MANAGE_INIT.get(0));
+        List<AuditConfigTypeRspDTO> auditConfigTypeRspDTOS = systemApiFeignService.lookUpAuditConfig(reqDTO).getData();
+        AssertUtil.notEmpty(auditConfigTypeRspDTOS, "审核管理未初始化");
+        byte auditStatus = auditConfigTypeRspDTOS.get(0).getAuditConfigList().get(0).getStatus();
+        if (EntityConstants.ENABLED.equals(auditStatus)) {
+            priceManageEntity.setStatus(PriceManageStatusEnum.AUDIT_STATUS.getCode());
+        } else {
+            priceManageEntity.setStatus(PriceManageStatusEnum.PASS_STATUS.getCode());
+        }
         // 保存定价操作记录
         PriceManageRecordEntity priceManageRecordEntity = new PriceManageRecordEntity(priceManageEntity.getId(),
                 PriceManageConstant.OPERATE_SUBMIT, userId, new Date(), null, null, null);
