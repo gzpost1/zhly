@@ -220,7 +220,7 @@ public class BaseContractService {
                 //签约中
                 case STATUS_SIGNING:
                     TbContractIntentionEntity intentionEntity = (TbContractIntentionEntity) entity;
-                    leaseRelateService.enableRelate(intentionEntity.getContractLeaseId(), RELATE_INTENTION_TYPE, intentionEntity.getId());
+                    leaseRelateService.enableRelate(intentionEntity.getContractLeaseId(), RELATE_INTENTION_TYPE);
                     contractStatus = ContractEnum.STATUS_SIGNED.getCode();
                     break;
                 //退定中
@@ -242,8 +242,9 @@ public class BaseContractService {
                 //续租中
                 case STATUS_RELETING:
                     TbContractLeaseEntity leaseEntity = (TbContractLeaseEntity) entity;
-                    leaseRelateService.enableRelate(leaseEntity.getId(),RELATE_NEW_LEASE_TYPE,leaseEntity.getReletContractId());
-                    leaseRelateService.enableRelate(leaseEntity.getReletContractId(),RELATE_ORI_LEASE_TYPE,leaseEntity.getId());
+                    Long reletContractId = leaseEntity.getReletContractId();
+                    leaseRelateService.enableRelate(leaseEntity.getId(),RELATE_NEW_LEASE_TYPE);
+                    leaseRelateService.enableRelate(reletContractId,RELATE_ORI_LEASE_TYPE);
                     contractStatus = ContractEnum.STATUS_RELET.getCode();
                     break;
             }
