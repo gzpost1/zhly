@@ -6,6 +6,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
@@ -14,6 +15,7 @@ import cn.cuiot.dmp.lease.dto.contract.AuditParam;
 import cn.cuiot.dmp.lease.entity.BaseContractEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
+import cn.cuiot.dmp.lease.entity.TbContractLeaseRelateEntity;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,10 +35,20 @@ import static cn.cuiot.dmp.common.constant.AuditContractConstant.AUDIT_CONFIG_IN
  */
 @Service
 public class BaseContractService {
+    //签约 关联合同 意向合同
+    public static final int RELATE_INTENTION_TYPE = 1;
+    //续租 关联合同 新生成续租合同的关联 续租
+    public static final int RELATE_NEW_LEASE_TYPE = 2;
+    //续租 关联合同 续租合同的原合同关联
+    public static final int RELATE_ORI_LEASE_TYPE = 3;
     @Autowired
     SystemApiFeignService systemApiFeignService;
     @Autowired
     TbContractBindInfoService bindInfoService;
+    @Autowired
+    TbContractLeaseRelateService leaseRelateService;
+    @Autowired
+    TbContractLeaseService contractLeaseService;
 
 
     /**
@@ -45,12 +57,12 @@ public class BaseContractService {
      * @param contractEntity
      */
     public void fillBindHouseInfo(BaseContractEntity contractEntity) {
-        if(Objects.isNull(contractEntity)) {
+        if (Objects.isNull(contractEntity)) {
             return;
         }
-        Integer type =  CONTRACT_INTENTION_TYPE;
+        Integer type = CONTRACT_INTENTION_TYPE;
         if (contractEntity instanceof TbContractLeaseEntity) {
-            type =  CONTRACT_LEASE_TYPE;
+            type = CONTRACT_LEASE_TYPE;
         }
         List<HousesArchivesVo> housesArchivesVos = bindInfoService.queryBindHouseInfoByContractId(contractEntity.getId(), type);
         if (Objects.nonNull(housesArchivesVos)) {
@@ -65,6 +77,7 @@ public class BaseContractService {
      * @return
      */
     public BaseContractEntity handleAuditContractStatus(BaseContractEntity entity, AuditParam param) {
+        Integer oriContractStatus = entity.getContractStatus();
         Integer auditStatus = handleAuditStatus(param.getAuditStatus());
         int type = CONTRACT_INTENTION_TYPE;
         //租赁合同
@@ -74,10 +87,25 @@ public class BaseContractService {
         } else if (entity instanceof TbContractIntentionEntity) {
             type = CONTRACT_INTENTION_TYPE;
         }
-        Integer contractStatus = handleContractStatus(entity.getContractStatus(), param.getAuditStatus(), type,
+        Integer contractStatus = handleContractStatus(entity, entity.getContractStatus(), param.getAuditStatus(), type,
                 entity.getBeginDate(), entity.getEndDate());
         entity.setAuditStatus(auditStatus);
         entity.setContractStatus(contractStatus);
+
+//        //签约失败
+//        if (Objects.equals(auditStatus, ContractEnum.AUDIT_REFUSE) &&
+//                Objects.equals(oriContractStatus, ContractEnum.STATUS_SIGNING)) {
+//            TbContractIntentionEntity intentionEntity = (TbContractIntentionEntity) entity;
+//            intentionEntity.setContractLeaseId(null);
+//            //同时删除租赁合同的关联合同
+//            leaseRelateService.removeRelated(intentionEntity.getContractLeaseId(), RELATE_INTENTION_TYPE);
+//            //续约失败
+//        } else if (Objects.equals(auditStatus, ContractEnum.AUDIT_REFUSE) && Objects.equals(oriContractStatus, ContractEnum.STATUS_RELETING)) {
+//            TbContractLeaseEntity leaseEntity = (TbContractLeaseEntity) entity;
+//            contractLeaseService.cancelReletBind(leaseEntity.getId());
+//            leaseRelateService.removeRelated(leaseEntity.getId(),RELATE_NEW_LEASE_TYPE);
+//            leaseRelateService.removeRelated(leaseEntity.getReletContractId(),RELATE_ORI_LEASE_TYPE);
+//        }
         return entity;
     }
 
@@ -163,11 +191,13 @@ public class BaseContractService {
         } else {
             //如果不需要审核,默认走通过合同流程
             auditStatus = ContractEnum.AUDIT_PASS.getCode();
-            contractStatus = handleContractStatus(contractStatus, ContractEnum.AUDIT_PASS.getCode(), type, entity.getBeginDate(), entity.getEndDate());
+            contractStatus = handleContractStatus(entity, contractStatus, ContractEnum.AUDIT_PASS.getCode(), type, entity.getBeginDate(), entity.getEndDate());
         }
         entity.setAuditStatus(auditStatus);
         entity.setContractStatus(contractStatus);
     }
+
+
 
     /**
      * 根据审核通过与否 更改合同的合同状态
@@ -175,9 +205,9 @@ public class BaseContractService {
      * @param auditStatus 审核 2.审核通过 3.审核不通过
      * @param type        合同类型 1.意向合同 2.租赁合同
      */
-    public Integer handleContractStatus(Integer contractStatus, Integer auditStatus, Integer type, LocalDate beginDate, LocalDate endDate) {
+    public Integer handleContractStatus(BaseContractEntity entity, Integer contractStatus, Integer auditStatus, Integer type, LocalDate beginDate, LocalDate endDate) {
 
-        //签约,退定,作废成功 审核通过的按照审核状态修改合同状态为 已签约,已退定,已作废
+        //审核通过
         if (Objects.equals(auditStatus, ContractEnum.AUDIT_PASS.getCode())) {
             switch (ContractEnum.getEnumByCode(contractStatus)) {
                 case STATUS_COMMITING:
@@ -189,6 +219,8 @@ public class BaseContractService {
                     break;
                 //签约中
                 case STATUS_SIGNING:
+                    TbContractIntentionEntity intentionEntity = (TbContractIntentionEntity) entity;
+                    leaseRelateService.enableRelate(intentionEntity.getContractLeaseId(), RELATE_INTENTION_TYPE, intentionEntity.getId());
                     contractStatus = ContractEnum.STATUS_SIGNED.getCode();
                     break;
                 //退定中
@@ -209,16 +241,33 @@ public class BaseContractService {
                     break;
                 //续租中
                 case STATUS_RELETING:
+                    TbContractLeaseEntity leaseEntity = (TbContractLeaseEntity) entity;
+                    leaseRelateService.enableRelate(leaseEntity.getId(),RELATE_NEW_LEASE_TYPE,leaseEntity.getReletContractId());
+                    leaseRelateService.enableRelate(leaseEntity.getReletContractId(),RELATE_ORI_LEASE_TYPE,leaseEntity.getId());
                     contractStatus = ContractEnum.STATUS_RELET.getCode();
                     break;
             }
-            //   被拒绝的处理
+            //   审核失败
         } else if (Objects.equals(auditStatus, ContractEnum.AUDIT_REFUSE.getCode())) {
             switch (ContractEnum.getEnumByCode(contractStatus)) {
                 case STATUS_COMMITING:
                     contractStatus = ContractEnum.STATUS_DARFT.getCode();
                     break;
                 //除了提交中被拒绝改为草稿,其余都是走时间判断状态
+                case STATUS_SIGNING:
+                    TbContractIntentionEntity intentionEntity = (TbContractIntentionEntity) entity;
+                    intentionEntity.setContractLeaseId(null);
+                    //同时删除租赁合同的关联合同
+                    leaseRelateService.removeRelated(intentionEntity.getContractLeaseId(), RELATE_INTENTION_TYPE);
+                    contractStatus = handleContractStatusByDate(type, beginDate, endDate);
+                    break;
+                case STATUS_RELETING:
+                    TbContractLeaseEntity leaseEntity = (TbContractLeaseEntity) entity;
+                    contractLeaseService.cancelReletBind(leaseEntity.getId());
+                    leaseRelateService.removeRelated(leaseEntity.getId(),RELATE_NEW_LEASE_TYPE);
+                    leaseRelateService.removeRelated(leaseEntity.getReletContractId(),RELATE_ORI_LEASE_TYPE);
+                    contractStatus = handleContractStatusByDate(type, beginDate, endDate);
+                    break;
                 default:
                     contractStatus = handleContractStatusByDate(type, beginDate, endDate);
                     break;

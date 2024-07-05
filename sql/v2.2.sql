@@ -183,6 +183,30 @@ create table tb_contract_lease_back
 )
     comment '退租信息';
 
+-- auto-generated definition
+create table tb_contract_lease_relate
+(
+    id          bigint auto_increment
+        primary key,
+    contract_id bigint       null comment '合同id',
+    name        varchar(100) null comment '合同名称',
+    datetime    datetime     null comment '关联时间',
+    operator_id bigint       null comment '操作人',
+    operator    varchar(255) null comment '操作人',
+    type        int          null comment '合同类型',
+    ext_id      bigint       null comment '关联id',
+    create_time datetime     null,
+    update_time datetime     null,
+    create_user bigint       null,
+    update_user bigint       null,
+    reason      varchar(512) null comment '关联原因',
+    constraint fk_relate
+        foreign key (contract_id) references tb_contract_lease (id)
+            on delete cascade
+)
+    comment '租赁合同关联信息';
+
+
 
 CREATE FUNCTION getUserName(userid INT)
     RETURNS varchar(255)

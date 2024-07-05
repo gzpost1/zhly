@@ -45,10 +45,17 @@ public class BaseContractEntity extends Model {
     private String contractNo;
 
     /**
+     * 合同名称
+     */
+    @NotNull(message = "合同名称不能为空")
+    private String name;
+
+    /**
      * 意向标(房屋名称)
      */
     @TableField(exist = false)
     private String houseName;
+
     /**
      * 审核状态
      * 1:审核中待审核 2:审核通过 3:未通过
@@ -184,6 +191,7 @@ public class BaseContractEntity extends Model {
      */
     @TableField(exist = false)
     private Boolean usefullLease ;
+
 
 
 

@@ -27,6 +27,7 @@ import java.util.Optional;
 import static cn.cuiot.dmp.common.constant.AuditContractConstant.*;
 import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_INTENTION_TYPE;
 import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_LEASE_TYPE;
+import static cn.cuiot.dmp.lease.service.BaseContractService.RELATE_INTENTION_TYPE;
 
 
 /**
@@ -51,6 +52,8 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
     BaseContractService baseContractService;
     @Autowired
     TbContractLeaseService contractLeaseService;
+    @Autowired
+    TbContractLeaseRelateService leaseRelateService;
 
     /**
      * 保存草稿
@@ -105,13 +108,15 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         TbContractIntentionEntity queryEntity = getContract(id);
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_SIGN_CONTRACT);
         queryEntity.setContractLeaseId(contractLeaseId);
+        //记录租赁合同关联信息
+        leaseRelateService.saveLeaseRelated(queryEntity, RELATE_INTENTION_TYPE,contractLeaseId);
         String operMsg = "签约了意向合同,关联的租赁合同为:"
                 + contractLease.getName() + "(编号" + contractLease.getContractNo() + ")";
         String leaseOperMsg = "在意向合同中签约了本租赁合同" + System.lineSeparator() + "意向合同编码:" + queryEntity.getContractNo();
-        contractLogService.saveLog(id, OPERATE_SIGN_CONTRACT, CONTRACT_INTENTION_TYPE, operMsg, String.valueOf(contractLease.getId()), null);
+        contractLogService.saveLog(id, OPERATE_SIGN_CONTRACT, CONTRACT_INTENTION_TYPE, operMsg, contractLease.getContractNo(), null);
         //租赁合同也需要记录日志
         contractLogService.saveLog(contractLease.getId(), OPERATE_SIGN_LEASE_CONTRACT, CONTRACT_LEASE_TYPE,
-                leaseOperMsg, String.valueOf(queryEntity.getId()), null);
+                leaseOperMsg,  queryEntity.getContractNo(), null);
         return service.updateById(queryEntity);
     }
 
@@ -188,6 +193,13 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         TbContractIntentionEntity queryEntity = getContract(param.getId());
         Integer contractStatus = queryEntity.getContractStatus();
         TbContractIntentionEntity auditContractIntentionEntity = (TbContractIntentionEntity) baseContractService.handleAuditContractStatus(queryEntity, param);
+        //如果是签约不通过,这取消关联
+//        if (Objects.equals(contractStatus, ContractEnum.STATUS_SIGNING.getCode())
+//                && Objects.equals(param.getAuditStatus(), ContractEnum.AUDIT_REFUSE.getCode())) {
+//            queryEntity.setContractLeaseId(null);
+//            //同时删除租赁合同的关联合同
+//            leaseRelateService.removeRelated(queryEntity.getContractLeaseId(),RELATE_TYPE);
+//        }
         contractLogService.saveAuditLogMsg(contractStatus, param,CONTRACT_INTENTION_TYPE);
         return service.updateById(auditContractIntentionEntity);
     }

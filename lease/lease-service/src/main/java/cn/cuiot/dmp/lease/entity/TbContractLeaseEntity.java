@@ -38,11 +38,6 @@ public class TbContractLeaseEntity extends BaseContractEntity {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 合同名称
-     */
-    @NotNull(message = "合同名称不能为空")
-    private String name;
 
 
     /**
