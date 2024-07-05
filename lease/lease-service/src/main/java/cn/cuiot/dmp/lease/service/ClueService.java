@@ -351,6 +351,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         BuildingArchiveReq buildingArchiveReq = new BuildingArchiveReq();
         buildingArchiveReq.setIdList(new ArrayList<>(buildingIdList));
         List<BuildingArchive> buildingArchiveList = archiveFeignService.buildingArchiveQueryForList(buildingArchiveReq).getData();
+        if (CollectionUtils.isEmpty(buildingArchiveList)) {
+            return;
+        }
         Map<Long, List<BuildingArchive>> buildingMap = buildingArchiveList.stream()
                 .collect(Collectors.groupingBy(BuildingArchive::getId));
         clueDTOList.forEach(o -> {
@@ -386,6 +389,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         reqDto.setUserIdList(new ArrayList<>(userIdList));
         List<BaseUserDto> baseUserDtoList = systemApiFeignService.lookUpUserList(reqDto).getData();
         Map<Long, String> userMap = baseUserDtoList.stream().collect(Collectors.toMap(BaseUserDto::getId, BaseUserDto::getName));
+        if (userMap.isEmpty()) {
+            return;
+        }
         clueDTOList.forEach(o -> {
             if (StringUtils.isNotBlank(o.getCreatedBy()) && userMap.containsKey(Long.valueOf(o.getCreatedBy()))) {
                 o.setCreatedName(userMap.get(Long.valueOf(o.getCreatedBy())));
@@ -424,6 +430,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         customConfigDetailReqDTO.setCustomConfigDetailIdList(new ArrayList<>(configIdList));
         Map<Long, String> systemOptionMap = systemApiFeignService.batchQueryCustomConfigDetailsForMap(customConfigDetailReqDTO)
                 .getData();
+        if (systemOptionMap.isEmpty()) {
+            return;
+        }
         clueDTOList.forEach(o -> {
             if (Objects.nonNull(o.getSourceId()) && systemOptionMap.containsKey(o.getSourceId())) {
                 o.setSourceIdName(systemOptionMap.get(o.getSourceId()));
@@ -455,6 +464,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         CustomerUseReqDto reqDto = new CustomerUseReqDto();
         reqDto.setCustomerIdList(new ArrayList<>(customerIdList));
         List<CustomerUserRspDto> customerUserRspDtoList = archiveFeignService.lookupCustomerUsers(reqDto).getData();
+        if (CollectionUtils.isEmpty(customerUserRspDtoList)) {
+            return;
+        }
         Map<Long, String> customerMap = customerUserRspDtoList.stream().collect(Collectors.toMap(CustomerUserRspDto::getCustomerId,
                 CustomerUserRspDto::getCustomerName));
         clueDTOList.forEach(o -> {
