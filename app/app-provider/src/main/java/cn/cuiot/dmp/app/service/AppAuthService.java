@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.app.service;
 
 import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
+import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_INVALID;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_OLD_INVALID;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_LOCKED_ERROR;
@@ -27,11 +28,13 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonMenuDto;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.SecurityConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
+import cn.cuiot.dmp.common.utils.ValidateUtil;
 import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.AuthContants;
 import cn.cuiot.dmp.domain.types.Password;
@@ -712,6 +715,12 @@ public class AppAuthService {
         Integer userType = dto.getUserType();
         String password = dto.getPassword();
 
+        // 判断密码不符合规则
+        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
+                || ValidateUtil.checkBoardContinuousChar(password)) {
+            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
+        }
+
         AppUserDto userDto = appUserService.getUserByPhoneAndUserType(userAccount, userType);
         if (Objects.isNull(userDto)) {
             throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
@@ -769,6 +778,12 @@ public class AppAuthService {
         dto.setPassword(aes.getDecodeValue(dto.getPassword()));
 
         String password = dto.getPassword();
+
+        // 判断密码不符合规则
+        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
+                || ValidateUtil.checkBoardContinuousChar(password)) {
+            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
+        }
 
         AppUserDto userDto = appUserService.getUserById(dto.getUserId());
         if (Objects.isNull(userDto)) {
