@@ -965,6 +965,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         if(StringUtils.isNotEmpty(assigneeDto.getTaskId())){
             checkTaskInfo(String.valueOf(assigneeDto.getTaskId()));
             taskService.setAssignee(String.valueOf(assigneeDto.getTaskId()),String.valueOf(assigneeDto.getUserIds().get(0)));
+            return IdmResDTO.success();
         }
         checkWorkOrder(assigneeDto.getProcessInstanceId());
         //查出当前节点的所有人员信息
