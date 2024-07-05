@@ -39,6 +39,9 @@
       <if test="query.companyId != null">
         and company_id = #{query.companyId}
       </if>
+      <if test="query.receivableObj != null">
+        and receivable_obj = #{query.receivableObj}
+      </if>
       <if test="query.chargeItemId != null">
         and charge_item_id = #{query.chargeItemId}
       </if>

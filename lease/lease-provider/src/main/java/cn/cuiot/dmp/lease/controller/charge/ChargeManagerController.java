@@ -84,7 +84,7 @@ public class ChargeManagerController {
         if (Objects.nonNull(ownerInfo)) {
             chargeHouseDetailDto.setOwnerName(ownerInfo.getOwnerName());
             if(StringUtils.isNotBlank(ownerInfo.getOwnerPhone())){
-                chargeHouseDetailDto.setOwnerPhone(StringUtils.join(Arrays.stream(StringUtils.split(ownerInfo.getOwnerPhone(),",")).map(e -> Sm4.decrypt(e)).toArray()));
+                chargeHouseDetailDto.setOwnerPhone(StringUtils.join(Arrays.stream(StringUtils.split(ownerInfo.getOwnerPhone(),",")).map(e -> Sm4.decrypt(e)).toArray(),","));
             }
         }
         chargeHouseDetailDto.setHouseId(idParam.getId());
