@@ -288,6 +288,7 @@ public class AppAuthService {
                 userEntity.setCreatedByType(OperateByTypeEnum.SYSTEM.getValue());
                 appUserService.createAppUser(userEntity);
                 userDto = appUserConverter.toAppUserDto(userEntity);
+                userDto.setPhoneNumber(phone);
             } else {
                 //更新登录时间
                 UserEntity updateEntity = new UserEntity();
@@ -578,6 +579,7 @@ public class AppAuthService {
                 userEntity.setCreatedByType(OperateByTypeEnum.SYSTEM.getValue());
                 appUserService.createAppUser(userEntity);
                 userDto = appUserConverter.toAppUserDto(userEntity);
+                userDto.setPhoneNumber(dto.getPhoneNumber());
             } else {
                 //更新登录时间
                 UserEntity updateEntity = new UserEntity();
@@ -856,25 +858,6 @@ public class AppAuthService {
                     .getUserByPhoneAndUserType(currentUser.getPhoneNumber(), userType);
             //非员工
             if (Objects.isNull(userDto)) {
-                /*String password = randomPwUtils
-                        .getRandomPassword((int) (8 + Math.random() * (20 - 8 + 1)));
-                UserEntity userEntity = new UserEntity();
-                userEntity.setName("用户昵称");
-                userEntity.setUsername(userDto.getPhoneNumber() + userType);
-                userEntity.setPassword(new Password(password).getHashEncryptValue());
-                userEntity.setPhoneNumber(
-                        new PhoneNumber(userDto.getPhoneNumber()).getEncryptedValue());
-                userEntity.setStatus(UserStatusEnum.OPEN.getValue());
-                userEntity.setUserType(userType);
-                userEntity.setOpenid(openid);
-                userEntity.setDeletedFlag(EntityConstants.NOT_DELETED.intValue());
-                userEntity.setLastOnlineIp(ipAddr);
-                userEntity.setLastOnlineOn(LocalDateTime.now());
-                userEntity.setCreatedOn(LocalDateTime.now());
-                userEntity.setCreatedBy(OperateByTypeEnum.SYSTEM.name().toLowerCase());
-                userEntity.setCreatedByType(OperateByTypeEnum.SYSTEM.getValue());
-                appUserService.createAppUser(userEntity);
-                userDto = appUserConverter.toAppUserDto(userEntity);*/
                 throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST, "用户不存在");
             } else {
                 //更新登录时间
