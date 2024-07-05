@@ -63,9 +63,20 @@ public class ClueDTO implements Serializable {
     private String sourceIdName;
 
     /**
+     * 分配时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date distributeTime;
+
+    /**
      * 关联客户ID
      */
     private Long customerUserId;
+
+    /**
+     * 关联客户名称
+     */
+    private String customerUserName;
 
     /**
      * 完成人ID

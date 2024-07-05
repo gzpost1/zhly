@@ -413,17 +413,30 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         LocalDate now = LocalDate.now();
         if (ClueFollowDayEnum.ZERO_THREE_DAY.getCode().equals(clueFollowDay)) {
             queryWrapper.ge(ClueEntity::getCurrentFollowTime, now.minusDays(3));
+            queryWrapper.or(wp-> wp.isNull(ClueEntity::getCurrentFollowTime)
+                    .ge(ClueEntity::getDistributeTime, now.minusDays(3)));
         } else if (ClueFollowDayEnum.THREE_SEVEN_DAY.getCode().equals(clueFollowDay)) {
-            queryWrapper.ge(ClueEntity::getCurrentFollowTime, now.minusDays(7));
-            queryWrapper.le(ClueEntity::getCurrentFollowTime, now.minusDays(3));
+            queryWrapper.and(wp-> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(7))
+                    .le(ClueEntity::getCurrentFollowTime, now.minusDays(3)));
+            queryWrapper.or(wp-> wp.isNull(ClueEntity::getCurrentFollowTime)
+                    .ge(ClueEntity::getDistributeTime, now.minusDays(7))
+                    .le(ClueEntity::getDistributeTime, now.minusDays(3)));
         } else if (ClueFollowDayEnum.SEVEN_FIFTEEN_DAY.getCode().equals(clueFollowDay)) {
-            queryWrapper.ge(ClueEntity::getCurrentFollowTime, now.minusDays(15));
-            queryWrapper.le(ClueEntity::getCurrentFollowTime, now.minusDays(7));
+            queryWrapper.and(wp-> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(15))
+                    .le(ClueEntity::getCurrentFollowTime, now.minusDays(7)));
+            queryWrapper.or(wp-> wp.isNull(ClueEntity::getCurrentFollowTime)
+                    .ge(ClueEntity::getDistributeTime, now.minusDays(15))
+                    .le(ClueEntity::getDistributeTime, now.minusDays(7)));
         } else if (ClueFollowDayEnum.FIFTEEN_THIRTY_DAY.getCode().equals(clueFollowDay)) {
-            queryWrapper.ge(ClueEntity::getCurrentFollowTime, now.minusDays(30));
-            queryWrapper.le(ClueEntity::getCurrentFollowTime, now.minusDays(15));
+            queryWrapper.and(wp-> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(30))
+                    .le(ClueEntity::getCurrentFollowTime, now.minusDays(15)));
+            queryWrapper.or(wp-> wp.isNull(ClueEntity::getCurrentFollowTime)
+                    .ge(ClueEntity::getDistributeTime, now.minusDays(30))
+                    .le(ClueEntity::getDistributeTime, now.minusDays(15)));
         } else if (ClueFollowDayEnum.THIRTY_MORE_DAY.getCode().equals(clueFollowDay)) {
             queryWrapper.le(ClueEntity::getCurrentFollowTime, now.minusDays(30));
+            queryWrapper.or(wp-> wp.isNull(ClueEntity::getCurrentFollowTime)
+                    .le(ClueEntity::getDistributeTime, now.minusDays(30)));
         }
     }
 
