@@ -75,12 +75,12 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
     /**
      * 执行频率-指定日期-开始时间
      */
-    private Integer cronBeginDate;
+    private String cronBeginDate;
 
     /**
      * 执行频率-指定日期-结束时间
      */
-    private Integer cronEndDate;
+    private String cronEndDate;
 
     /**
      * 执行频率-指定日期 1-31

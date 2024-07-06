@@ -16,8 +16,8 @@
     <result column="create_user" jdbcType="BIGINT" property="createUser" />
     <result column="deleted" jdbcType="TINYINT" property="deleted" />
     <result column="cron_type" jdbcType="TINYINT" property="cronType" />
-    <result column="cron_begin_date" jdbcType="INTEGER" property="cronBeginDate" />
-    <result column="cron_end_date" jdbcType="INTEGER" property="cronEndDate" />
+    <result column="cron_begin_date" jdbcType="VARCHAR" property="cronBeginDate" />
+    <result column="cron_end_date" jdbcType="VARCHAR" property="cronEndDate" />
     <result column="cron_appoint_date" jdbcType="INTEGER" property="cronAppointDate" />
     <result column="cron_time" jdbcType="TIME" property="cronTime" />
     <result column="status" jdbcType="TINYINT" property="status" />

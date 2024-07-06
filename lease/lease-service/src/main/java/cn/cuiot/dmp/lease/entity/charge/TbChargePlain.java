@@ -62,13 +62,13 @@ public class TbChargePlain extends YjBaseEntity {
      * 执行频率-指定日期-开始时间
      */
     @TableField(value = "cron_begin_date")
-    private Integer cronBeginDate;
+    private String cronBeginDate;
 
     /**
      * 执行频率-指定日期-结束时间
      */
     @TableField(value = "cron_end_date")
-    private Integer cronEndDate;
+    private String cronEndDate;
 
     /**
      * 执行频率-指定日期 1-31
