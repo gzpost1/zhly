@@ -93,5 +93,5 @@ public class TbChargeManagerQuery extends PageQuery {
      */
     private Long receivblePlanId;
 
-    private boolean isSelectPlan = false;
+    private Boolean selectPlan = false;
 }
