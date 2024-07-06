@@ -107,4 +107,9 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
      * 收费对象名称
      */
     private String receivableObjName;
+
+    /**
+     * 应收日期
+     */
+    private Integer dueDateNum;
 }
