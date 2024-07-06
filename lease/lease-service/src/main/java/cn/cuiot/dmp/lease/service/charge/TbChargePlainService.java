@@ -18,6 +18,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -126,7 +127,7 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
                 } else {
                     //指定日期
                     DateTime dateTime = DateUtil.beginOfMonth(new Date());
-                    for (int i = 0; i < (tbChargePlain.getCronEndDate() - tbChargePlain.getCronBeginDate()); i++) {
+                    for (int i = 0; i < (Integer.valueOf(tbChargePlain.getCronEndDate() )- Integer.valueOf(tbChargePlain.getCronBeginDate())); i++) {
                         ChargeManagerInsertVo appointCreate = new ChargeManagerInsertVo();
                         BeanUtils.copyProperties(createDto, appointCreate);
                         appointCreate.setOwnershipPeriodBegin(DateUtil.beginOfMonth(DateUtil.offsetMonth(dateTime, i)));
@@ -190,11 +191,14 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
     @Transactional(rollbackFor = Exception.class)
     public void createChargePlainMonthTask(List<TbChargePlain> list) {
         int month = LocalDate.now().getMonth().getValue();
+        int year = LocalDate.now().getYear();
         int dayOfMonth = LocalDate.now().getDayOfMonth();
         int endDayOfMonth = DateTimeUtil.dateToLocalDate(DateUtil.endOfMonth(new Date())).getDayOfMonth();
 
+
         list = list.stream().filter(e -> {
-            if (month == e.getCronBeginDate()) {
+            String[] split = StringUtils.split(e.getCronBeginDate(), "-");
+            if (month == Integer.valueOf(split[1]) && year == Integer.valueOf(split[0])) {
                 if (dayOfMonth == e.getCronAppointDate()) {
                     return true;
                 }
