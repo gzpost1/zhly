@@ -109,7 +109,7 @@ public class ChargeManagerController {
      */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<ChargeManagerPageDto>> queryForPage(@RequestBody TbChargeManagerQuery query) {
-        if(!query.isSelectPlan()){
+        if(!query.getSelectPlan()){
             AssertUtil.notNull(query.getHouseId(), "房屋id不能为空");
             query.setAbrogateStatus(ChargeAbrogateEnum.NORMAL.getCode());
             query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
