@@ -62,7 +62,7 @@ public class BaseAuthInterceptor implements HandlerInterceptor {
                 loginInfo.setUserId(claims.get(AuthContants.USERID) != null ? Long
                         .valueOf(claims.get(AuthContants.USERID).toString()) : null);
                 loginInfo.setUsername(
-                        claims.get(AuthContants.USERNAME) != null ? claims.get(AuthContants.USERID)
+                        claims.get(AuthContants.USERNAME) != null ? claims.get(AuthContants.USERNAME)
                                 .toString() : null);
                 loginInfo.setPhoneNumber(claims.get(AuthContants.USER_PHONE) != null ? claims
                         .get(AuthContants.USER_PHONE).toString() : null);
