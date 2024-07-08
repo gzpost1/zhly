@@ -76,6 +76,9 @@
             <if test="param.endReplyTime !=null">
                 and t.create_time <![CDATA[<=]]> #{param.endReplyTime}
             </if>
+            <if test="param.userId != null">
+                and t.user_id=#{param.userId}
+            </if>
             <if test="param.deptIds != null and param.deptIds.size() >0">
                 AND t.dept_id in
                 <foreach collection="param.deptIds" item="itemDeptId" open="(" separator="," close=")">

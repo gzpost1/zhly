@@ -95,6 +95,8 @@ public class AppUserFeedbackController {
         if (Objects.isNull(query.getBuildingId())) {
             throw new BusinessException(ResultCode.PARAM_CANNOT_NULL, "楼盘ID不能为空");
         }
+        Long currentUserId = LoginInfoHolder.getCurrentUserId();
+        query.setUserId(currentUserId);
         IPage<UserFeedbackEntity> pageData = userFeedbackService.queryForPage(query);
         return IdmResDTO.success(pageData);
     }
