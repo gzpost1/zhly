@@ -314,9 +314,10 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
         return list.stream().map(item -> {
             SysBusinessMsgDto msgDto = new SysBusinessMsgDto();
             msgDto.setSendId(LoginInfoHolder.getCurrentUserId());
-            msgDto.setAcceptors(item.getCustomerUserId());
+            msgDto.setAccepter(item.getCustomerUserId());
             msgDto.setDataId(item.getId());
             msgDto.setDataType(MsgDataType.CHARGE_NOTICE);
+            msgDto.setMsgType(MsgTypeConstant.CHARGE_BILL_NOTICE);
             msgDto.setMessageTime(new Date());
             msgDto.setDataJson(JsonUtil.writeValueAsString(item));
 

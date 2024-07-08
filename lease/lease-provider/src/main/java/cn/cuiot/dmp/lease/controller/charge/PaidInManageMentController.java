@@ -7,6 +7,7 @@ import cn.cuiot.dmp.lease.dto.charge.CustomerUserInfo;
 import cn.cuiot.dmp.lease.dto.charge.PaidInManageMentQuery;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
+import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeReceivedService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.commons.collections4.CollectionUtils;
@@ -36,7 +37,8 @@ public class PaidInManageMentController {
     private TbChargeReceivedService tbChargeReceivedService;
     @Autowired
     private ChargeHouseAndUserService chargeHouseAndUserService;
-
+    @Autowired
+    private ChargeInfoFillService chargeInfoFillService;
     /**
      * 获取分页
      *
@@ -64,6 +66,9 @@ public class PaidInManageMentController {
                     }
                 }
             }
+
+            chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(),TbChargeReceived.class);
+
         }
         return IdmResDTO.success().body(chargeManagerPageDtoIPage);
     }

@@ -120,7 +120,12 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         }
     }
 
-    private static void setDueDate(Integer dueDateNum, TbChargeManager tbChargeManager) {
+    /**
+     * 获取指定日期时的收费时间
+     * @param dueDateNum
+     * @param tbChargeManager
+     */
+    public static void setDueDate(Integer dueDateNum, TbChargeManager tbChargeManager) {
         int dayOfMonth = DateTimeUtil.dateToLocalDate(DateUtil.endOfMonth(tbChargeManager.getOwnershipPeriodBegin())).getDayOfMonth();
         if(dayOfMonth <= dueDateNum){
             tbChargeManager.setDueDate(DateTimeUtil.getStartTime(DateUtil.endOfMonth(tbChargeManager.getOwnershipPeriodBegin())));
@@ -314,7 +319,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
     public ChargeManagerCustomerStatisticsVo customerStatistics(TbChargeManagerQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         //获取前一天23:59:59
-        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now(), LocalTime.MAX)
+        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MAX)
                 .withNano(999999000));
         query.setDueDateEnd(date);
         query.setReceivbleStatusList(Arrays.asList(ChargeReceivbleEnum.UNPAID.getCode(), ChargeReceivbleEnum.PAID.getCode()));

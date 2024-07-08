@@ -1,9 +1,11 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import cn.cuiot.dmp.base.infrastructure.utils.MathTool;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -12,7 +14,7 @@ import java.util.Date;
  * @Created by libo
  */
 @Data
-public class ChargeManagerPageDto {
+public class ChargeManagerPageDto implements ChargeItemNameSet {
     /**
      * 应收编码
      */
@@ -71,7 +73,7 @@ public class ChargeManagerPageDto {
     /**
      * 收费项目名称
      */
-    private Long chargeItemName;
+    private String chargeItemName;
 
     /**
      * 应收金额/本金
@@ -131,11 +133,31 @@ public class ChargeManagerPageDto {
      */
     private Integer totalOwe = 0;
 
+    /**
+     * 违约金税额 单次税额：违约金*税率=违约金税额，计算累计的违约金税额
+     */
+    private Integer liquidatedDamagesTax = 0;
+
+
+    /**
+     * 本金税率
+     */
+    private BigDecimal receivableAmountRate;
+
+    /**
+     * 本金税额	应收金额*税率=本金税额
+     */
+    private Integer receivableAmountTax = 0;
+
     public Integer getTotalOwe() {
         return receivableAmount - receivableAmountReceived;
     }
 
     public void setTotalOwe(Integer totalOwe) {
         this.totalOwe = totalOwe;
+    }
+
+    public Integer getReceivableAmountTax() {
+        return MathTool.percentCalculate(getReceivableAmount(), receivableAmountRate);
     }
 }

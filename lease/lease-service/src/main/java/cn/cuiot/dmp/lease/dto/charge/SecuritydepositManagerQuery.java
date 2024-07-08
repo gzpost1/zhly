@@ -15,7 +15,7 @@ import java.util.Date;
 @Data
 public class SecuritydepositManagerQuery extends PageQuery {
     /**
-     * 应收编码
+     * 应收编码/实收编码
      */
     private String receivableCode;
 
@@ -28,6 +28,16 @@ public class SecuritydepositManagerQuery extends PageQuery {
      * 房屋id
      */
     private Long houseId;
+
+    /**
+     * 房屋id根据名称
+     */
+    private Long houseIdByName;
+
+    /**
+     * 房屋id根据编码
+     */
+    private Long houseIdByCode;
 
     /**
      * 所属账期-开始时间

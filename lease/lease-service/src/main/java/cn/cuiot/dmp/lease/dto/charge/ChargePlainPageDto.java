@@ -14,7 +14,7 @@ import java.util.Date;
  * @Created by libo
  */
 @Data
-public class ChargePlainPageDto {
+public class ChargePlainPageDto implements ChargeItemNameSet {
     /**
      * id
      */
@@ -29,6 +29,11 @@ public class ChargePlainPageDto {
      * 收费项目id
      */
     private Long chargeItemId;
+
+    /**
+     * 收费项目名称
+     */
+    private String chargeItemName;
 
     /**
      * 收费标准 0自定义金额
@@ -70,12 +75,12 @@ public class ChargePlainPageDto {
     /**
      * 执行频率-指定日期-开始时间
      */
-    private Integer cronBeginDate;
+    private String cronBeginDate;
 
     /**
      * 执行频率-指定日期-结束时间
      */
-    private Integer cronEndDate;
+    private String cronEndDate;
 
     /**
      * 执行频率-指定日期 1-31
@@ -97,4 +102,14 @@ public class ChargePlainPageDto {
      * 收费对象
      */
     private Long receivableObj;
+
+    /**
+     * 收费对象名称
+     */
+    private String receivableObjName;
+
+    /**
+     * 应收日期
+     */
+    private Integer dueDateNum;
 }

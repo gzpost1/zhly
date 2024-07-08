@@ -66,19 +66,7 @@
     </sql>
 
     <select id="queryForPage" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeManagerPageDto">
-        select id,
-               customer_user_id,
-               charge_item_id,
-               receivable_amount,
-               ownership_period_begin,
-               ownership_period_end,
-               create_time,
-               due_date,
-               receivble_plan_id,
-               receivble_status,
-               hang_up_status,
-               abrogate_status,
-               house_id
+        select *
         from tb_charge_manager
         where deleted = 0
         <if test="query.houseId != null">
@@ -142,13 +130,15 @@
 
     <update id="receivedAmount">
         UPDATE tb_charge_manager
-        set liquidated_damages_need     = liquidated_damages_need + #{received.liquidatedDamagesNeed},
-            liquidated_damages_received = liquidated_damages_received + #{received.liquidatedDamagesReceived},
-            liquidated_damages_tax      = liquidated_damages_tax + #{received.liquidatedDamagesTax},
-            liquidated_damages_not_tax  = liquidated_damages_not_tax + #{received.liquidatedDamagesNotTax},
-            receivable_amount_received  = receivable_amount_received + #{received.receivableAmountReceived},
-            receivble_status            = if(
-                    receivable_amount_received + #{received.liquidatedDamagesReceived} = receivable_amount, 2, 1)
+        set
+        receivble_status            = if(
+        receivable_amount_received + #{received.liquidatedDamagesReceived} = receivable_amount, 2, 1),
+        liquidated_damages_need     = liquidated_damages_need + #{received.liquidatedDamagesNeed},
+        liquidated_damages_received = liquidated_damages_received + #{received.liquidatedDamagesReceived},
+        liquidated_damages_tax      = liquidated_damages_tax + #{received.liquidatedDamagesTax},
+        liquidated_damages_not_tax  = liquidated_damages_not_tax + #{received.liquidatedDamagesNotTax},
+        receivable_amount_received  = receivable_amount_received + #{received.receivableAmountReceived}
+
         where id = #{received.chargeId}
           and hang_up_status = 0
           and receivble_status in (0, 1)

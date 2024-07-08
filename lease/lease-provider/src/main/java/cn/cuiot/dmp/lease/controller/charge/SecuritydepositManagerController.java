@@ -14,6 +14,7 @@ import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositManager;
 import cn.cuiot.dmp.lease.enums.ChargeTypeEnum;
 import cn.cuiot.dmp.lease.enums.SecurityDepositStatusEnum;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
+import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeAbrogateService;
 import cn.cuiot.dmp.lease.service.charge.TbSecuritydepositManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -48,7 +49,8 @@ public class SecuritydepositManagerController {
     private TbSecuritydepositManagerService securitydepositManagerService;
     @Autowired
     private ChargeHouseAndUserService chargeHouseAndUserService;
-
+    @Autowired
+    private ChargeInfoFillService chargeInfoFillService;
     /**
      * 获取分页
      *
@@ -86,6 +88,9 @@ public class SecuritydepositManagerController {
                     }
                 }
             }
+
+            chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(),SecuritydepositManagerPageDto.class);
+
         }
 
         return IdmResDTO.success().body(chargeManagerPageDtoIPage);
@@ -112,6 +117,9 @@ public class SecuritydepositManagerController {
             if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
                 securitydepositManagerDto.setHouseName(houseInfoDtos.get(0).getHouseName());
             }
+
+            chargeInfoFillService.fillinfo(Lists.newArrayList(securitydepositManagerDto),SecuritydepositManagerDto.class);
+
         }
         return IdmResDTO.success().body(securitydepositManagerDto);
     }
@@ -128,7 +136,7 @@ public class SecuritydepositManagerController {
     public IdmResDTO refund(@RequestBody @Valid SecuritydepositRefundDto dto) {
         TbSecuritydepositManager entity = securitydepositManagerService.getById(dto.getDepositId());
         AssertUtil.notNull(entity, "数据不存在");
-        AssertUtil.isTrue(Lists.newArrayList(SecurityDepositStatusEnum.PAID_OFF, SecurityDepositStatusEnum.NOT_REFUNDED).contains(entity.getStatus()), "只有已交清或者未退完方可退款");
+        AssertUtil.isTrue(Lists.newArrayList(SecurityDepositStatusEnum.PAID_OFF.getCode(), SecurityDepositStatusEnum.NOT_REFUNDED.getCode()).contains(entity.getStatus()), "只有已交清或者未退完方可退款");
 
         securitydepositManagerService.refund(dto);
         return IdmResDTO.success();
@@ -170,6 +178,9 @@ public class SecuritydepositManagerController {
         entity.setAccountBank(dto.getAccountBank());
         entity.setAccountNumber(dto.getAccountNumber());
         entity.setReceivedDate(new Date());
+        entity.setReceivableAmountReceived(entity.getReceivableAmount());
+        entity.setReceivedDate(new Date());
+        entity.setStatus(SecurityDepositStatusEnum.PAID_OFF.getCode());
         securitydepositManagerService.updateById(entity);
         return IdmResDTO.success();
     }

@@ -6,6 +6,8 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CommonOptionSettingReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonOptionSettingRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.enums.CustomerIdentityTypeEnum;
@@ -19,7 +21,9 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.enums.*;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
+import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
+import cn.cuiot.dmp.system.domain.repository.CommonOptionTypeRepository;
 import cn.cuiot.dmp.util.Sm4;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
@@ -34,7 +38,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +59,8 @@ public class ChargeManagerController {
     private ChargeHouseAndUserService chargeHouseAndUserService;
     @Autowired
     private SystemToFlowService systemToFlowService;
+    @Autowired
+    private ChargeInfoFillService chargeInfoFillService;
 
     public static final String SERVICETYPENAME = "缴费管理";
 
@@ -76,7 +84,7 @@ public class ChargeManagerController {
         if (Objects.nonNull(ownerInfo)) {
             chargeHouseDetailDto.setOwnerName(ownerInfo.getOwnerName());
             if(StringUtils.isNotBlank(ownerInfo.getOwnerPhone())){
-                chargeHouseDetailDto.setOwnerPhone(StringUtils.join(Arrays.stream(StringUtils.split(ownerInfo.getOwnerPhone(),",")).map(e -> Sm4.decrypt(e)).toArray()));
+                chargeHouseDetailDto.setOwnerPhone(StringUtils.join(Arrays.stream(StringUtils.split(ownerInfo.getOwnerPhone(),",")).map(e -> Sm4.decrypt(e)).toArray(),","));
             }
         }
         chargeHouseDetailDto.setHouseId(idParam.getId());
@@ -101,9 +109,11 @@ public class ChargeManagerController {
      */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<ChargeManagerPageDto>> queryForPage(@RequestBody TbChargeManagerQuery query) {
-        AssertUtil.notNull(query.getHouseId(), "房屋id不能为空");
-        query.setAbrogateStatus(ChargeAbrogateEnum.NORMAL.getCode());
-        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        if(!query.getSelectPlan()){
+            AssertUtil.notNull(query.getHouseId(), "房屋id不能为空");
+            query.setAbrogateStatus(ChargeAbrogateEnum.NORMAL.getCode());
+            query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        }
 
         IPage<ChargeManagerPageDto> chargeManagerPageDtoIPage = tbChargeManagerService.queryForPage(query);
         if (Objects.nonNull(chargeManagerPageDtoIPage) && CollectionUtils.isNotEmpty(chargeManagerPageDtoIPage.getRecords())) {
@@ -111,23 +121,40 @@ public class ChargeManagerController {
             List<Long> userIds = chargeManagerPageDtoIPage.getRecords().stream().map(ChargeManagerPageDto::getCustomerUserId).collect(Collectors.toList());
 
             List<CustomerUserInfo> userInfoList = chargeHouseAndUserService.getUserInfo(houseIds, userIds);
+
             if (CollectionUtils.isNotEmpty(userInfoList)) {
                 for (ChargeManagerPageDto record : chargeManagerPageDtoIPage.getRecords()) {
-                    for (CustomerUserInfo userInfo : userInfoList) {
-                        if (Objects.equals(record.getCustomerUserId(), userInfo.getCustomerUserId())) {
-                            record.setCustomerUserName(userInfo.getCustomerUserName());
-                            record.setCustomerUserPhone(userInfo.getCustomerUserPhone());
+                    if(CollectionUtils.isNotEmpty(userInfoList)){
+                        for (CustomerUserInfo userInfo : userInfoList) {
+                            if (Objects.equals(record.getCustomerUserId(), userInfo.getCustomerUserId())) {
+                                record.setCustomerUserName(userInfo.getCustomerUserName());
+                                record.setCustomerUserPhone(userInfo.getCustomerUserPhone());
 
-                            if (Objects.equals(record.getHouseId(), userInfo.getHouseId())) {
-                                if (Objects.nonNull(userInfo.getIdentityType())) {
-                                    CustomerIdentityTypeEnum customerIdentityTypeEnum = CustomerIdentityTypeEnum.parseByCode(userInfo.getIdentityType().toString());
-                                    if (Objects.nonNull(customerIdentityTypeEnum)) {
-                                        record.setCustomerUserRoleName(customerIdentityTypeEnum.getName());
+                                if (Objects.equals(record.getHouseId(), userInfo.getHouseId())) {
+                                    if (Objects.nonNull(userInfo.getIdentityType())) {
+                                        CustomerIdentityTypeEnum customerIdentityTypeEnum = CustomerIdentityTypeEnum.parseByCode(userInfo.getIdentityType().toString());
+                                        if (Objects.nonNull(customerIdentityTypeEnum)) {
+                                            record.setCustomerUserRoleName(customerIdentityTypeEnum.getName());
+                                        }
                                     }
+                                    break;
                                 }
-                                break;
                             }
                         }
+                    }
+                }
+            }
+
+            chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(),ChargeManagerPageDto.class);
+
+            //填充房屋编码和名称
+            List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(houseIds);
+            if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
+                Map<Long, HouseInfoDto> houseMap = houseInfoDtos.stream().collect(Collectors.toMap(HouseInfoDto::getHouseId, Function.identity()));
+                for (ChargeManagerPageDto record : chargeManagerPageDtoIPage.getRecords()) {
+                    if(houseMap.containsKey(record.getHouseId())){
+                        record.setHouseCode(houseMap.get(record.getHouseId()).getHouseCode());
+                        record.setHouseName(houseMap.get(record.getHouseId()).getHouseName());
                     }
                 }
             }
@@ -166,6 +193,16 @@ public class ChargeManagerController {
             if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
                 chargeManagerDetailDto.setHouseCode(houseInfoDtos.get(0).getHouseCode());
                 chargeManagerDetailDto.setHouseName(houseInfoDtos.get(0).getHouseName());
+            }
+
+            chargeInfoFillService.fillinfo(Lists.newArrayList(chargeManagerDetailDto),ChargeManagerDetailDto.class);
+
+            //填充操作人员名称
+            BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
+            baseUserReqDto.setUserIdList(Lists.newArrayList(chargeManagerDetailDto.getCreateUser()));
+            List<BaseUserDto> baseUserDtos = systemToFlowService.lookUpUserList(baseUserReqDto);
+            if(CollectionUtils.isNotEmpty(baseUserDtos)){
+                chargeManagerDetailDto.setCreateUserName(baseUserDtos.get(0).getName());
             }
         }
         return IdmResDTO.success().body(chargeManagerDetailDto);
@@ -239,6 +276,9 @@ public class ChargeManagerController {
     @PostMapping("/queryForReceivedPage")
     public IdmResDTO<IPage<TbChargeReceived>> queryForReceivedPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeReceived> tbChargeHangupIPage = tbChargeManagerService.queryForReceivedPage(queryDto);
+        if(Objects.nonNull(tbChargeHangupIPage) && CollectionUtils.isNotEmpty(tbChargeHangupIPage.getRecords())){
+            chargeInfoFillService.fillinfo(tbChargeHangupIPage.getRecords(),TbChargeReceived.class);
+        }
         return IdmResDTO.success().body(tbChargeHangupIPage);
     }
 
@@ -287,7 +327,7 @@ public class ChargeManagerController {
         TbChargeManager entity = tbChargeManagerService.getById(idParam.getDataId());
         AssertUtil.notNull(entity, "数据不存在");
         AssertUtil.isFalse(ChargeReceivbleEnum.isShowAbrogate(entity.getReceivbleStatus()), "已开交、已交清的状态不显示作废按钮");
-        AssertUtil.isTrue(Objects.equals(ChargeHangUpEnum.HANG_UP.getCode(), entity.getHangUpStatus()), "已挂起的数据不能作废");
+        AssertUtil.isFalse(Objects.equals(ChargeHangUpEnum.HANG_UP.getCode(), entity.getHangUpStatus()), "已挂起的数据不能作废");
 
         tbChargeManagerService.abrogateStatus(entity, idParam.getAbrogateDesc());
         return IdmResDTO.success();

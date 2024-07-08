@@ -27,7 +27,7 @@ public class ChargeCollectionPlanCreateDto {
     private String name;
 
     /**
-     * 通知渠道（1:短信，2:微信）
+     * 通知渠道（1：系统消息；2：短信）
      */
     @NotNull(message = "通知渠道不能为空")
     private Byte channel;

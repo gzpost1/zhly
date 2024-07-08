@@ -92,4 +92,6 @@ public class TbChargeManagerQuery extends PageQuery {
      * 自动生成计划编码
      */
     private Long receivblePlanId;
+
+    private Boolean selectPlan = false;
 }

@@ -1,27 +1,24 @@
 package cn.cuiot.dmp.lease.entity.charge;
 
-import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.Date;
 
 /**
  * 收费管理-催款记录
  *
  * @author zc
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-@TableName(value = "tb_charge_collection_record")
-public class ChargeCollectionRecordEntity extends YjBaseEntity {
+@Document("tb_charge_collection_record")
+public class ChargeCollectionRecordEntity {
     /**
      * id
      */
-    @TableId(value = "id", type = IdType.INPUT)
+    @TableId("id")
     private Long id;
 
     /**
@@ -37,7 +34,7 @@ public class ChargeCollectionRecordEntity extends YjBaseEntity {
     private Long customerUserId;
 
     /**
-     * 通知渠道（1:短信，2:微信）
+     * 通知渠道（1：系统消息；2：短信）
      */
     @TableField(value = "channel")
     private Byte channel;
@@ -47,4 +44,20 @@ public class ChargeCollectionRecordEntity extends YjBaseEntity {
      */
     @TableField(value = "`type`")
     private Byte type;
+
+    /**
+     * 催款时间
+     */
+    @TableField(value = "date")
+    private Date date;
+
+    /**
+     * 创建人
+     */
+    @TableField(value = "create_user")
+    private Long createUser;
+
+    public static final String MONGODB_COMPANY_ID = "companyId";
+    public static final String MONGODB_CUSTOMER_USER_ID = "customerUserId";
+    public static final String MONGODB_DATE = "date";
 }

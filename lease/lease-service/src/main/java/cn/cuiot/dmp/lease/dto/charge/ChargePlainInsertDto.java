@@ -43,12 +43,12 @@ public class ChargePlainInsertDto {
     /**
      * 执行频率-指定日期-开始时间
      */
-    private Integer cronBeginDate;
+    private String cronBeginDate;
 
     /**
      * 执行频率-指定日期-结束时间
      */
-    private Integer cronEndDate;
+    private String cronEndDate;
 
     /**
      * 执行频率-指定日期 1-31
@@ -66,4 +66,9 @@ public class ChargePlainInsertDto {
      * 收费对象
      */
     private Long receivableObj;
+
+    /**
+     * 应收日期
+     */
+    private Integer dueDateNum;
 }

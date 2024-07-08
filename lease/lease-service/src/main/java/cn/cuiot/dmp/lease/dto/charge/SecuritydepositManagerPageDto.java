@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -12,9 +13,9 @@ import java.util.Date;
  * @Created by libo
  */
 @Data
-public class SecuritydepositManagerPageDto {
+public class SecuritydepositManagerPageDto implements ChargeItemNameSet,TransactionModeNameSet{
     /**
-     * id
+     *  应收编码/实收编码
      */
     private Long id;
 
@@ -39,9 +40,19 @@ public class SecuritydepositManagerPageDto {
     private String houseName;
 
     /**
+     * 房屋编号
+     */
+    private String houseCode;
+
+    /**
      * 收费项目id
      */
     private Long chargeItemId;
+
+    /**
+     * 收费项目名称
+     */
+    private String chargeItemName;
 
     /**
      * 收费标准 0自定义金额
@@ -105,6 +116,11 @@ public class SecuritydepositManagerPageDto {
      * 交易方式
      */
     private Long transactionMode;
+
+    /**
+     * 交易方式名称
+     */
+    private String transactionModeName;
 
     /**
      * 入账银行

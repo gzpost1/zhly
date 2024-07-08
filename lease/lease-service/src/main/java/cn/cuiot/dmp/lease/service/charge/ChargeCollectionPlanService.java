@@ -3,6 +3,7 @@ package cn.cuiot.dmp.lease.service.charge;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.common.constant.InformTypeConstant;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -11,7 +12,6 @@ import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.ChargeCollectionPlanBuildingEntity;
 import cn.cuiot.dmp.lease.entity.charge.ChargeCollectionPlanEntity;
 import cn.cuiot.dmp.lease.entity.charge.ChargeCollectionPlanItemEntity;
-import cn.cuiot.dmp.lease.enums.ChargeCollectionPlainChannelEnum;
 import cn.cuiot.dmp.lease.enums.ChargeCollectionPlainCronTypeEnum;
 import cn.cuiot.dmp.lease.enums.ChargeCollectionTypeEnum;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
@@ -35,10 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Maps.newHashMap;
@@ -238,8 +235,8 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
      * 数据校验
      */
     private void dataCheck(ChargeCollectionPlanCreateDto dto) {
-        ChargeCollectionPlainChannelEnum channelEnum = ChargeCollectionPlainChannelEnum.getByCode(dto.getChannel());
-        if (Objects.isNull(channelEnum)) {
+        List<Byte> msgTypes = Arrays.asList(InformTypeConstant.SMS, InformTypeConstant.SYS_MSG);
+        if (!msgTypes.contains(dto.getChannel())) {
             throw new BusinessException(ResultCode.REQ_PARAM_ERROR, "通知渠道错误");
         }
         Byte cronType = dto.getCronType();
@@ -358,7 +355,7 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
      */
     public void senMsg(List<ChargeCollectionPlanEntity> list) {
         //获取前一天23:59:59
-        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now(), LocalTime.MAX)
+        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MAX)
                 .withNano(999999000));
         if (CollectionUtils.isNotEmpty(list)) {
             for (ChargeCollectionPlanEntity planEntity : list) {

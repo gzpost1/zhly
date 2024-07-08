@@ -2,20 +2,20 @@ package cn.cuiot.dmp.lease.controller.charge;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.cuiot.dmp.lease.dto.charge.ChargePlainInsertDto;
-import cn.cuiot.dmp.lease.dto.charge.ChargePlainPageDto;
-import cn.cuiot.dmp.lease.dto.charge.ChargePlainQuery;
-import cn.cuiot.dmp.lease.dto.charge.ChargePlainUpdateDto;
+import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargePlain;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
+import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
 import cn.cuiot.dmp.lease.service.charge.TbChargePlainService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.commons.collections4.CollectionUtils;
@@ -28,7 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +47,8 @@ public class ChargePlainController {
     private TbChargePlainService chargePlainService;
     @Autowired
     private SystemToFlowService systemToFlowService;
+    @Autowired
+    private ChargeInfoFillService chargeInfoFillService;
 
     /**
      * 获取分页
@@ -69,6 +73,22 @@ public class ChargePlainController {
                     baseUserDtos.stream().filter(baseUserDto -> Objects.equals(e.getCreateUser(), baseUserDto.getId())).findFirst().ifPresent(baseUserDto -> e.setCreateUserName(baseUserDto.getName()));
                 });
             }
+
+            chargeInfoFillService.fillinfo(tbFlowPageDtoIPage.getRecords(), ChargePlainPageDto.class);
+
+            //填充对象名称
+            List<Long> receivableIds = tbFlowPageDtoIPage.getRecords().stream().map(ChargePlainPageDto::getReceivableObj).collect(Collectors.toList());
+            BuildingArchiveReq buildingArchiveReq = new BuildingArchiveReq();
+            buildingArchiveReq.setIdList(receivableIds);
+            List<BuildingArchive> buildingArchives = systemToFlowService.buildingArchiveQueryForList(buildingArchiveReq);
+            if(CollectionUtils.isNotEmpty(buildingArchives)){
+                Map<Long, BuildingArchive> archiveMap = buildingArchives.stream().collect(Collectors.toMap(BuildingArchive::getId, Function.identity()));
+                for (ChargePlainPageDto record : tbFlowPageDtoIPage.getRecords()) {
+                    if(archiveMap.containsKey(record.getReceivableObj())){
+                        record.setReceivableObjName(archiveMap.get(record.getReceivableObj()).getName());
+                    }
+                }
+            }
         }
         return IdmResDTO.success().body(tbFlowPageDtoIPage);
     }
@@ -80,7 +100,7 @@ public class ChargePlainController {
      * @param createDto
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/create")
     @LogRecord(operationCode = "create", operationName = "自动生成计划-创建", serviceType = ServiceTypeConst.CHARGEPLAIN)
     public IdmResDTO create(@RequestBody @Valid ChargePlainInsertDto createDto) {
@@ -96,7 +116,7 @@ public class ChargePlainController {
      * @param updateDto
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/update")
     @LogRecord(operationCode = "update", operationName = "自动生成计划-修改", serviceType = ServiceTypeConst.CHARGEPLAIN)
     public IdmResDTO update(@RequestBody @Valid ChargePlainUpdateDto updateDto) {
@@ -112,7 +132,7 @@ public class ChargePlainController {
      * @param updateStatusParam
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/updateStatus")
     @LogRecord(operationCode = "updateStatus", operationName = "自动生成计划-更新状态", serviceType = ServiceTypeConst.CHARGEPLAIN)
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
@@ -129,7 +149,7 @@ public class ChargePlainController {
      * @param deleteParam
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/delete")
     @LogRecord(operationCode = "delete", operationName = "自动生成计划-删除", serviceType = ServiceTypeConst.CHARGEPLAIN)
     public IdmResDTO delete(@RequestBody @Valid DeleteParam deleteParam) {

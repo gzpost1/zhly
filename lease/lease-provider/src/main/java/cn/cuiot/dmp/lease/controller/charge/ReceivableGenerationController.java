@@ -21,6 +21,7 @@ import cn.cuiot.dmp.lease.enums.ChargeHangUpEnum;
 import cn.cuiot.dmp.lease.enums.ChargeReceivbleEnum;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
+import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
@@ -55,7 +56,8 @@ public class ReceivableGenerationController {
     private ChargeHouseAndUserService chargeHouseAndUserService;
     @Autowired
     private SystemToFlowService systemToFlowService;
-
+    @Autowired
+    private ChargeInfoFillService chargeInfoFillService;
 
     /**
      * 获取分页
@@ -104,6 +106,9 @@ public class ReceivableGenerationController {
                     }
                 }
             }
+
+            chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(),ChargeManagerPageDto.class);
+
         }
         return IdmResDTO.success().body(chargeManagerPageDtoIPage);
     }
@@ -139,6 +144,16 @@ public class ReceivableGenerationController {
             if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
                 chargeManagerDetailDto.setHouseCode(houseInfoDtos.get(0).getHouseCode());
                 chargeManagerDetailDto.setHouseName(houseInfoDtos.get(0).getHouseName());
+            }
+
+            chargeInfoFillService.fillinfo(Lists.newArrayList(chargeManagerDetailDto),ChargeManagerDetailDto.class);
+
+            //填充操作人员名称
+            BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
+            baseUserReqDto.setUserIdList(Lists.newArrayList(chargeManagerDetailDto.getCreateUser()));
+            List<BaseUserDto> baseUserDtos = systemToFlowService.lookUpUserList(baseUserReqDto);
+            if(CollectionUtils.isNotEmpty(baseUserDtos)){
+                chargeManagerDetailDto.setCreateUserName(baseUserDtos.get(0).getName());
             }
         }
         return IdmResDTO.success().body(chargeManagerDetailDto);
@@ -210,6 +225,9 @@ public class ReceivableGenerationController {
     @PostMapping("/queryForReceivedPage")
     public IdmResDTO<IPage<TbChargeReceived>> queryForReceivedPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeReceived> tbChargeHangupIPage = tbChargeManagerService.queryForReceivedPage(queryDto);
+        if(Objects.nonNull(tbChargeHangupIPage) && CollectionUtils.isNotEmpty(tbChargeHangupIPage.getRecords())){
+            chargeInfoFillService.fillinfo(tbChargeHangupIPage.getRecords(),TbChargeReceived.class);
+        }
         return IdmResDTO.success().body(tbChargeHangupIPage);
     }
 
@@ -243,7 +261,7 @@ public class ReceivableGenerationController {
         TbChargeManager entity = tbChargeManagerService.getById(idParam.getDataId());
         AssertUtil.notNull(entity, "数据不存在");
         AssertUtil.isFalse(ChargeReceivbleEnum.isShowAbrogate(entity.getReceivbleStatus()), "已开交、已交清的状态不显示作废按钮");
-        AssertUtil.isTrue(Objects.equals(ChargeHangUpEnum.HANG_UP.getCode(), entity.getHangUpStatus()), "已挂起的数据不能作废");
+        AssertUtil.isFalse(Objects.equals(ChargeHangUpEnum.HANG_UP.getCode(), entity.getHangUpStatus()), "已挂起的数据不能作废");
 
         tbChargeManagerService.abrogateStatus(entity, idParam.getAbrogateDesc());
         return IdmResDTO.success();

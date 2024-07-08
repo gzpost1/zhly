@@ -7,6 +7,7 @@ import cn.cuiot.dmp.common.bean.dto.SysBusinessMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserBusinessMessageAcceptDto;
 import cn.cuiot.dmp.common.constant.InformTypeConstant;
 import cn.cuiot.dmp.common.constant.MsgDataType;
+import cn.cuiot.dmp.common.constant.MsgTypeConstant;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
@@ -18,6 +19,7 @@ import cn.cuiot.dmp.lease.vo.ChargeCollectionManageVo;
 import cn.cuiot.dmp.lease.vo.ChargeCollectionRecordVo;
 import cn.cuiot.dmp.util.Sm4;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.collections.CollectionUtils;
@@ -65,22 +67,24 @@ public class ChargeCollectionManageService {
             List<Long> customerUserIds = page.getRecords().stream().map(ChargeCollectionManageVo::getCustomerUserId)
                     .filter(Objects::nonNull).collect(Collectors.toList());
 
-            //查询记录统计
-            ChargeCollectionRecordStatisticsQuery statisticsQuery = new ChargeCollectionRecordStatisticsQuery();
-            statisticsQuery.setCompanyId(query.getCompanyId());
-            statisticsQuery.setCustomerUserIds(customerUserIds);
-            List<ChargeCollectionRecordStatisticsDto> recordStatisticsDtoList = chargeCollectionRecordService.getStatistics(statisticsQuery);
-            Map<Long, ChargeCollectionRecordStatisticsDto> recordStatisticsMap = recordStatisticsDtoList.stream()
-                    .collect(Collectors.toMap(ChargeCollectionRecordStatisticsDto::getCustomerUserId, e -> e));
+            if (CollectionUtils.isNotEmpty(customerUserIds)) {
+                //查询记录统计
+                ChargeCollectionRecordStatisticsQuery statisticsQuery = new ChargeCollectionRecordStatisticsQuery();
+                statisticsQuery.setCompanyId(query.getCompanyId());
+                statisticsQuery.setCustomerUserIds(customerUserIds);
+                List<ChargeCollectionRecordStatisticsDto> recordStatisticsDtoList = chargeCollectionRecordService.getStatistics(statisticsQuery);
+                Map<Long, ChargeCollectionRecordStatisticsDto> recordStatisticsMap = recordStatisticsDtoList.stream()
+                        .collect(Collectors.toMap(ChargeCollectionRecordStatisticsDto::getCustomerUserId, e -> e));
 
-            //设置上次催款时间、累计催款次数
-            page.getRecords().forEach(item -> {
-                if (recordStatisticsMap.containsKey(item.getCustomerUserId())) {
-                    ChargeCollectionRecordStatisticsDto recordStatisticsDto = recordStatisticsMap.get(item.getCustomerUserId());
-                    item.setLastNoticeTime(recordStatisticsDto.getLastNoticeTime());
-                    item.setTotalNoticeNum(recordStatisticsDto.getTotalNoticeNum());
-                }
-            });
+                //设置上次催款时间、累计催款次数
+                page.getRecords().forEach(item -> {
+                    if (recordStatisticsMap.containsKey(item.getCustomerUserId())) {
+                        ChargeCollectionRecordStatisticsDto recordStatisticsDto = recordStatisticsMap.get(item.getCustomerUserId());
+                        item.setLastNoticeTime(recordStatisticsDto.getLastNoticeTime());
+                        item.setTotalNoticeNum(recordStatisticsDto.getTotalNoticeNum());
+                    }
+                });
+            }
         }
         return page;
     }
@@ -170,8 +174,9 @@ public class ChargeCollectionManageService {
         return list.stream().map(item -> {
             SysBusinessMsgDto msgDto = new SysBusinessMsgDto();
             msgDto.setSendId(LoginInfoHolder.getCurrentUserId());
-            msgDto.setAcceptors(item.getCustomerUserId());
+            msgDto.setAccepter(item.getCustomerUserId());
             msgDto.setDataType(MsgDataType.COLLECTION_NOTICE);
+            msgDto.setMsgType(MsgTypeConstant.CHARGE_COLLECTION_NOTICE);
             msgDto.setMessageTime(new Date());
             msgDto.setDataJson(JsonUtil.writeValueAsString(item));
             msgDto.setMessage(fillTemplate(item.getTotal(), item.getAmount()));
@@ -219,16 +224,18 @@ public class ChargeCollectionManageService {
         Long currentUserId = LoginInfoHolder.getCurrentUserId();
         List<ChargeCollectionRecordEntity> recordList = customerUserIds.stream().map(item -> {
             ChargeCollectionRecordEntity record = new ChargeCollectionRecordEntity();
+            record.setId(IdWorker.getId());
             record.setChannel(channel);
             record.setCompanyId(companyId);
             record.setCustomerUserId(item);
             record.setType(operationType);
             record.setCreateUser(currentUserId);
+            record.setDate(new Date());
             return record;
         }).collect(Collectors.toList());
 
         if (CollectionUtils.isNotEmpty(recordList)) {
-            chargeCollectionRecordService.saveBatch(recordList);
+            chargeCollectionRecordService.batchSave(recordList);
         }
     }
 }

@@ -5,6 +5,7 @@ import cn.cuiot.dmp.lease.dto.charge.ChargeHangupQueryDto;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeHangup;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -24,6 +25,7 @@ public class TbChargeAbrogateService extends ServiceImpl<TbChargeAbrogateMapper,
      */
     public void saveData(Long id, Byte dataType, String abrogateDesc) {
         TbChargeAbrogate tbChargeAbrogate = new TbChargeAbrogate();
+        tbChargeAbrogate.setId(IdWorker.getId());
         tbChargeAbrogate.setDataId(id);
         tbChargeAbrogate.setDataType(dataType);
         tbChargeAbrogate.setAbrogateDesc(abrogateDesc);

@@ -47,4 +47,9 @@ public class ChargeNoticeVo {
      * 备注
      */
     private String remark;
+
+    /**
+     * 停启用状态（0停用，1启用）
+     */
+    private Byte status;
 }
