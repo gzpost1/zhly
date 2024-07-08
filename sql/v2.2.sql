@@ -200,6 +200,7 @@ create table tb_contract_lease_relate
     create_user bigint       null,
     update_user bigint       null,
     reason      varchar(512) null comment '关联原因',
+    status      bigint       null comment '0.未生效 1生效',
     constraint fk_relate
         foreign key (contract_id) references tb_contract_lease (id)
             on delete cascade
@@ -208,8 +209,9 @@ create table tb_contract_lease_relate
 
 
 
-CREATE FUNCTION getUserName(userid INT)
-    RETURNS varchar(255)
+
+CREATE FUNCTION getUserName(userid LONG)
+    RETURNS varchar(512)
 BEGIN
     return (select name from user where id = userid);
 END;

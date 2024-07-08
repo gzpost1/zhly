@@ -102,10 +102,10 @@
                 and ci.relet_contract_id = #{params.reletContractId}
             </if>
             <if test=" params.contractNo != null and params.contractNo.trim() != ''">
-                and ci.contract_no like CONCAT('%','${params.contractNo}','%' )
+                and ci.contract_no like CONCAT('%',#{params.contractNo},'%' )
             </if>
             <if test=" params.name != null and params.name.trim() != ''">
-                and ci.name like CONCAT('%','${params.name}','%' )
+                and ci.name like CONCAT('%',#{params.name},'%' )
             </if>
             <if test=" params.beginDate != null">
                 <!--  and  begin_date between #{params.beginDate} and #{params.endDate}  -->
@@ -148,19 +148,19 @@
                 and ci.first_date = #{params.firstDate}
             </if>
             <if test=" params.followUp != null and params.followUp.trim() != ''">
-                and ci.follow_up like CONCAT('%','${params.followUp}','%' )
+                and ci.follow_up like CONCAT('%',#{params.followUp},'%' )
             </if>
             <if test="params.followUpName != null and params.followUpName.trim() != ''">
-                and u.name like CONCAT('%','${params.followUpName}','%' )
+                and u.name like CONCAT('%',#{params.followUpName},'%' )
             </if>
             <if test=" params.purpose != null and params.purpose.trim() != ''">
-                and ci.purpose like CONCAT('%','${params.purpose}','%' )
+                and ci.purpose like CONCAT('%',#{params.purpose},'%' )
             </if>
             <if test=" params.type != null and params.type.trim() != ''">
-                and ci.type like CONCAT('%','${params.type}','%' )
+                and ci.type like CONCAT('%',#{params.type},'%' )
             </if>
             <if test=" params.property != null and params.property.trim() != ''">
-                and ci.property like CONCAT('%','${params.property}','%' )
+                and ci.property like CONCAT('%',#{params.property},'%' )
             </if>
             <if test=" params.label != null and params.label.trim() != ''">
                 and ci.label = #{params.label}
@@ -169,7 +169,7 @@
                 and ci.remark = #{params.remark}
             </if>
             <if test=" params.client != null and params.client.trim() != ''">
-                and ci.client like CONCAT('%','${params.client}','%' )
+                and ci.client like CONCAT('%',#{params.client},'%' )
             </if>
             <if test=" params.form != null and params.form.trim() != ''">
                 and ci.form = #{params.form}
@@ -197,9 +197,6 @@
             <if test=" params.status != null">
                 and ci.status = #{params.status}
             </if>
-            <if test=" params.deleted != null">
-                and ci.deleted = #{params.deleted}
-            </if>
             <if test=" params.contractStatus != null">
                 and ci.contract_status = #{params.contractStatus}
             </if>
@@ -209,6 +206,7 @@
             <if test=" params.usefullLease != null">
                 and ci.id not in (select ifnull(contract_lease_id,-1) from tb_contract_intention where deleted=0 and contract_lease_id is not null)
             </if>
+            and ci.deleted=0
         </if>
     </sql>
 
