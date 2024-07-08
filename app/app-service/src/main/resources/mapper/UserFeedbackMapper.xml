@@ -69,10 +69,10 @@
                 </foreach>
             </if>
             <if test="param.startReplyTime !=null">
-                and t.t.create_time <![CDATA[>=]]> #{param.startReplyTime}
+                and t.create_time <![CDATA[>=]]> #{param.startReplyTime}
             </if>
             <if test="param.endReplyTime !=null">
-                and t.t.create_time <![CDATA[<=]]> #{param.endReplyTime}
+                and t.create_time <![CDATA[<=]]> #{param.endReplyTime}
             </if>
             <if test="param.deptIds != null and param.deptIds.size() >0">
                 AND t.dept_id in
