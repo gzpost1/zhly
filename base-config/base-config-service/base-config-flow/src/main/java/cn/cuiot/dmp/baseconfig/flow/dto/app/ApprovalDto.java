@@ -18,8 +18,12 @@ public class ApprovalDto {
     /**
      * 任务id
      */
-    @NotNull(message = "任务id不能为空")
     private Long taskId;
+
+    /**
+     * 工单id
+     */
+    private Long processInstanceId;
 
     /**
      * 补充说明
