@@ -75,7 +75,7 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
         List<CommonOptionType> commonOptionTypeList = new ArrayList<>();
         // 如果该企业下没有数据，默认创建一条"全部"作为根节点的数据
         if (CollectionUtils.isEmpty(commonOptionTypeEntityList)) {
-            CommonOptionTypeEntity commonOptionTypeEntity = initRootNode(companyId);
+            CommonOptionTypeEntity commonOptionTypeEntity = initRootNode(companyId, category);
             CommonOptionType commonOptionType = new CommonOptionType();
             BeanUtils.copyProperties(commonOptionTypeEntity, commonOptionType);
             commonOptionTypeList.add(commonOptionType);
@@ -135,7 +135,7 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
         return commonOptionTypeEntityList.get(0).getId();
     }
 
-    private CommonOptionTypeEntity initRootNode(Long companyId) {
+    private CommonOptionTypeEntity initRootNode(Long companyId, Byte category) {
         CommonOptionTypeEntity commonOptionTypeEntity = new CommonOptionTypeEntity();
         commonOptionTypeEntity.setId(IdWorker.getId());
         commonOptionTypeEntity.setCompanyId(companyId);
@@ -143,6 +143,7 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
         commonOptionTypeEntity.setLevelType(CommonOptionConstant.ROOT_LEVEL_TYPE);
         commonOptionTypeEntity.setParentId(CommonOptionConstant.DEFAULT_PARENT_ID);
         commonOptionTypeEntity.setPathName(CommonOptionConstant.ROOT_NAME);
+        commonOptionTypeEntity.setCategory(category);
         commonOptionTypeMapper.insert(commonOptionTypeEntity);
         return commonOptionTypeEntity;
     }
