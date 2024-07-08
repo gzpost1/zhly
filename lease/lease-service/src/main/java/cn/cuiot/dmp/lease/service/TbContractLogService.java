@@ -57,6 +57,9 @@ public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMa
     public void saveLeaseLog(Long contractId, String operate, String operDesc) {
         saveLog(contractId, operate, CONTRACT_LEASE_TYPE, operDesc, null, null);
     }
+    public void saveLog(Long contractId, String operate, String operDesc,Integer contractType) {
+        saveLog(contractId, operate, contractType, operDesc, null, null);
+    }
 
 
     /**
@@ -97,7 +100,7 @@ public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMa
     public void saveAuditLog(AuditParam auditParam, Integer contractType, String operate) {
         String logMsg = getAuditMsg(auditParam, contractType, operate);
         String operation = operate + "审核";
-        saveIntentionLog(auditParam.getId(), operation, logMsg);
+        saveLog(auditParam.getId(), operation, logMsg,contractType);
     }
 
 
@@ -124,7 +127,7 @@ public class TbContractLogService extends BaseMybatisServiceImpl<TbContractLogMa
 
     public void saveOperateLog(Long contractId, String operate, Integer contractType){
         String operateMsg = getOperateMsg(contractType, operate);
-        saveIntentionLog(contractId,operate,operateMsg);
+        saveLog(contractId,operate,operateMsg,contractType);
     }
 
 

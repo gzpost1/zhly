@@ -223,7 +223,7 @@ public class TbContractLeaseParam extends PageQuery implements Serializable {
      */
     private String reletPath;
 
-    private Integer templateId;
+    private Long templateId;
 
     private Long reletContractId;
 
