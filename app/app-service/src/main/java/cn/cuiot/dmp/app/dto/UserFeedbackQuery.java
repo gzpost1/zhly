@@ -67,4 +67,8 @@ public class UserFeedbackQuery extends PageQuery {
      */
     private String deptPath;
 
+    /**
+     * 用户ID
+     */
+    private Long userId;
 }
