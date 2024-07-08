@@ -106,7 +106,6 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
         } else {
             imgTextEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_PASSED);
         }
-        imgTextEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_ING);
         imgTextEntity.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         int insert = this.baseMapper.insert(imgTextEntity);
         contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.IMG_TEXT, LoginInfoHolder.getCurrentDeptId(), createDTO.getBuildings(), imgTextEntity.getId());
