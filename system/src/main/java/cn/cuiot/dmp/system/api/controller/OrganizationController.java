@@ -124,13 +124,8 @@ public class OrganizationController extends BaseController {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT);
         }
         ValidateUtil.validate(dto);
-        String orgId = getOrgId();
-        dto.setLoginOrgId(Long.parseLong(orgId));
-        // 组织为空则使用当前登陆用户的组织
-        if (StringUtils.isEmpty(dto.getDeptId())) {
-            String deptId = userService.getDeptId(getUserId(), orgId);
-            dto.setDeptId(deptId);
-        }
+        dto.setLoginOrgId(LoginInfoHolder.getCurrentOrgId());
+        dto.setLoginUserId(LoginInfoHolder.getCurrentUserId());
         return organizationService.commercialOrgList(dto);
     }
 

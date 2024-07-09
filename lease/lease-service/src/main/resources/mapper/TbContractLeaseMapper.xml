@@ -25,8 +25,8 @@
         <result column="update_time" property="updateTime"/>
         <result column="create_user" property="createUser"/>
         <result column="update_user" property="updateUser"/>
-        <result column="createUserName" property="createUserName"/>
-        <result column="updateUserName" property="updateUserName"/>
+<!--        <result column="createUserName" property="createUserName"/>-->
+<!--        <result column="updateUserName" property="updateUserName"/>-->
         <result column="status" property="status"/>
         <result column="deleted" property="deleted"/>
         <result column="contract_status" property="contractStatus"/>
@@ -37,6 +37,8 @@
         <result column="relet_path" property="reletPath"/>
         <result column="form_data" property="formData"/>
         <result column="relet_contract_id" property="reletContractId"/>
+        <collection property="createUserName"  select="querySysUserName" column="create_user" jdbcType="VARCHAR" javaType="string"></collection>
+        <collection property="updateUserName"  select="querySysUserName" column="update_user"  jdbcType="VARCHAR" javaType="string"></collection>
         <collection property="uselessInfo"
                     select="cn.cuiot.dmp.lease.mapper.TbContractCancelMapper.selectLeaseUseless"
                     column="id">
@@ -54,6 +56,10 @@
                     column="id">
         </collection>
     </resultMap>
+
+    <select id="querySysUserName" resultType="string">
+        select name from user where id =#{userId}
+    </select>
 
     <select id="selectById" resultMap="BaseResultMap">
         select
@@ -73,6 +79,7 @@
 
 
 
+
     <select id="list" resultMap="BaseResultMap" parameterType="cn.cuiot.dmp.lease.entity.TbContractLeaseEntity">
         select
         <include refid="Base_Column_List"/>
@@ -87,7 +94,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        ci.id,ci.form_data,ci.relet_contract_id, ci.contract_no, ci.name, ci.begin_date, ci.end_date, ci.cantract_date, ci.first_date, ci.follow_up, ci.purpose, ci.type, ci.property, ci.label, ci.remark, ci.client, ci.form, ci.main_body, ci.path, ci.create_time,  ifnull(ci.update_time,ci.create_time) update_time, ci.create_user,  ifnull(ci.update_user,ci.create_user) update_user,getUserName(ci.create_user) createUserName,getUserName(ifnull(ci.update_user,ci.create_user)) updateUserName, ci.status, ci.deleted, ci.contract_status, ci.audit_status,ci.template_id,ci.relet_date,ci.relet_remark,ci.relet_path,u.name followUpName
+        ci.id,ci.form_data,ci.relet_contract_id, ci.contract_no, ci.name, ci.begin_date, ci.end_date, ci.cantract_date, ci.first_date, ci.follow_up, ci.purpose, ci.type, ci.property, ci.label, ci.remark, ci.client, ci.form, ci.main_body, ci.path, ci.create_time,  ifnull(ci.update_time,ci.create_time) update_time, ci.create_user,  ifnull(ci.update_user,ci.create_user) update_user, ci.status, ci.deleted, ci.contract_status, ci.audit_status,ci.template_id,ci.relet_date,ci.relet_remark,ci.relet_path,u.name followUpName
     </sql>
 
     <sql id="dynamic_where">
@@ -138,7 +145,7 @@
                 and ci.begin_date   <![CDATA[<=]]>  #{params.beginDateEnd}
             </if>
             <if test="params.endDateBegin != null">
-                and ci.end_date >= #{params.beginDateBegin}
+                and ci.end_date >= #{params.endDateBegin}
             </if>
             <if test="params.endDateEnd != null">
                 and ci.end_date   <![CDATA[<=]]>  #{params.endDateEnd}

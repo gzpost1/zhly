@@ -150,4 +150,10 @@ public class UserFeedbackEntity implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
 
+
+    /**
+     * 头像
+     */
+    @TableField(exist = false)
+    private String avatar;
 }

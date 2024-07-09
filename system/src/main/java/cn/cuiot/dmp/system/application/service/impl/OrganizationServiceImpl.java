@@ -682,18 +682,29 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public PageResult<ListOrganizationVO> commercialOrgList(ListOrganizationDto dto) {
-        // 获取子组织
-        if (StringUtils.isNotBlank(dto.getDeptId())) {
-            List deptIds = departmentService
-                    .getChildrenDepartmentIds(String.valueOf(dto.getLoginOrgId()),
-                            Long.valueOf(dto.getDeptId()));
-            dto.setDeptIds(deptIds);
-        }
-        // 根据手机号查询租户id
-        if (!StringUtils.isEmpty(dto.getPhoneNumber())) {
-            String orgId = organizationDao
-                    .getOrgIdByUserPhoneNumber(Sm4.encryption(dto.getPhoneNumber()));
-            dto.setOrgId(orgId);
+        //获取当前登录用户的企业信息
+        Organization sessionOrg = organizationRepository
+                .find(new OrganizationId(dto.getLoginOrgId()));
+        if(OrgTypeEnum.PLATFORM.getValue().equals(sessionOrg.getOrgTypeId().getValue())){
+            if (StringUtils.isBlank(dto.getDeptId())) {
+                String deptId = userService.getDeptId(dto.getLoginUserId().toString(), dto.getLoginOrgId().toString());
+                dto.setDeptId(deptId);
+            }
+            // 获取子组织
+            if (StringUtils.isNotBlank(dto.getDeptId())) {
+                List deptIds = departmentService
+                        .getChildrenDepartmentIds(String.valueOf(dto.getLoginOrgId()),
+                                Long.valueOf(dto.getDeptId()));
+                dto.setDeptIds(deptIds);
+            }
+            // 根据手机号查询企业id
+            if (!StringUtils.isEmpty(dto.getPhoneNumber())) {
+                String orgId = organizationDao
+                        .getOrgIdByUserPhoneNumber(Sm4.encryption(dto.getPhoneNumber()));
+                dto.setOrgId(orgId);
+            }
+        }else{
+            dto.setOrgId(dto.getLoginOrgId().toString());
         }
         PageMethod.startPage(dto.getPageNo(), dto.getPageSize());
         List<ListOrganizationVO> voList = organizationDao.getCommercialOrgList(dto);

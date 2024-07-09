@@ -107,8 +107,11 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     @Override
     public boolean update(@RequestBody @Validated(BeanValidationGroup.Update.class) TbContractLeaseEntity entity) {
         Long id = entity.getId();
-        baseContractService.handleAuditStatusByConfig(entity, OPERATE_CHANGE);
-        contractLogService.saveOperateLog(id, OPERATE_CHANGE, CONTRACT_LEASE_TYPE);
+        Integer contractStatus = entity.getContractStatus();
+        if (!Objects.equals(contractStatus, ContractEnum.STATUS_DARFT.getCode())) {
+            baseContractService.handleAuditStatusByConfig(entity, OPERATE_CHANGE);
+            contractLogService.saveOperateLog(id, OPERATE_CHANGE, CONTRACT_LEASE_TYPE);
+        }
         return service.updateById(entity);
     }
 
@@ -154,9 +157,9 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         service.saveOrUpdate(contractLeaseReletEntity);
 
         //记录被续租合同的和续租合同关联关系
-        leaseRelateService.saveLeaseRelated(contractLeaseReletEntity,RELATE_NEW_LEASE_TYPE,queryEntity.getId());
+        leaseRelateService.saveLeaseRelated(contractLeaseReletEntity, RELATE_NEW_LEASE_TYPE, queryEntity.getId());
         //记录新的续租和原有合同关联关系
-        leaseRelateService.saveLeaseRelated(queryEntity,RELATE_ORI_LEASE_TYPE,contractLeaseReletEntity.getId());
+        leaseRelateService.saveLeaseRelated(queryEntity, RELATE_ORI_LEASE_TYPE, contractLeaseReletEntity.getId());
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_LEASE_RELET);
         String reletRemark = Optional.ofNullable(param.getContractLeaseReletEntity().getReletRemark()).orElse("无");
         String operMsg = "续租了租赁合同" + System.lineSeparator() + "续租新生成的合同编码:" + contractLeaseReletEntity.getContractNo() + System.lineSeparator()
@@ -237,12 +240,13 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         TbContractLeaseEntity queryEntity = getContract(id);
         Integer contractStatus = queryEntity.getContractStatus();
         TbContractLeaseEntity auditContractIntentionEntity = (TbContractLeaseEntity) baseContractService.handleAuditContractStatus(queryEntity, param);
-        contractLogService.saveAuditLogMsg(contractStatus, param,CONTRACT_LEASE_TYPE);
+        contractLogService.saveAuditLogMsg(contractStatus, param, CONTRACT_LEASE_TYPE);
         return service.updateById(auditContractIntentionEntity);
     }
 
     /**
      * 关联合同信息
+     *
      * @param param
      * @return
      */
@@ -258,15 +262,17 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
 
     /**
      * 统计合同状态
+     *
      * @return
      */
     @PostMapping("/statisticsContract")
-    public List<BaseVO> statisticsContract(){
+    public List<BaseVO> statisticsContract() {
         return service.statisticsContract();
     }
 
     /**
      * 生成新的续租合同
+     *
      * @param param
      * @return
      */
@@ -275,7 +281,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         TbContractLeaseEntity contractLeaseReletEntity = param.getContractLeaseReletEntity();
         Long id = Optional.ofNullable(contractLeaseReletEntity.getId()).orElse(SnowflakeIdWorkerUtil.nextId());
         String contractNo = Optional.ofNullable(contractLeaseReletEntity.getContractNo()).orElse(String.valueOf(SnowflakeIdWorkerUtil.nextId()));
-        AssertUtil.notNull(contractLeaseReletEntity.getReletDate(),"续租日期不能为空");
+        AssertUtil.notNull(contractLeaseReletEntity.getReletDate(), "续租日期不能为空");
         String name = contractLeaseReletEntity.getName();
         contractLeaseReletEntity.setName("【续租】" + name);
         contractLeaseReletEntity.setId(id);

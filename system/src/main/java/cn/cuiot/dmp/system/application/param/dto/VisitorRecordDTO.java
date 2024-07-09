@@ -26,6 +26,11 @@ public class VisitorRecordDTO implements Serializable {
     private Long buildingId;
 
     /**
+     * 楼盘名称
+     */
+    private String buildingName;
+
+    /**
      * 访客姓名
      */
     private String name;
