@@ -596,7 +596,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO refuse(BatchBusinessDto handleDataDTO) {
         List<WorkBusinessTypeInfoEntity> buList = new ArrayList<>();
-        for(String tasId : handleDataDTO.getTaskIds()){
+        List<String> taskIds = Optional.ofNullable(handleDataDTO.getTaskIds()).orElse(new ArrayList<>());
+        for(String tasId : taskIds){
             //校验任务信息
             checkTaskInfo(tasId);
             HandleDataDTO dto = new HandleDataDTO();
@@ -691,8 +692,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         String rollBackNode = queryRollBackNode(task);
         runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
                 rollBackNode).changeState();
-
-
 
         return IdmResDTO.success();
 

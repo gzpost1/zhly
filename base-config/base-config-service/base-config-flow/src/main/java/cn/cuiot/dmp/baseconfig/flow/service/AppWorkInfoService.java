@@ -831,12 +831,15 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         if(Objects.isNull(task)){
             throw new RuntimeException(ErrorCode.TASK_COMPLETE.getMessage());
         }
+
+        //设置回退标识
+        taskService.setVariable(String.valueOf(handleDataDTO.getTaskId()),"rollback","true");
+
         String rollBackNode = queryRollBackNode(task);
         runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
                 rollBackNode).changeState();
 
-        //设置回退标识
-        taskService.setVariable(String.valueOf(handleDataDTO.getTaskId()),"rollback","true");
+
 
         return IdmResDTO.success();
     }
