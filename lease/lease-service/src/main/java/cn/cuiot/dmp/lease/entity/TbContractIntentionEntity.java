@@ -4,10 +4,7 @@ import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -45,14 +42,9 @@ public class TbContractIntentionEntity extends BaseContractEntity {
     /**
      * 租赁合同id
      */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private Long contractLeaseId;
 
-
-    /**
-     * 合同名称
-     */
-    @NotNull(message = "合同名称不能为空")
-    private String name;
 
 
     /**

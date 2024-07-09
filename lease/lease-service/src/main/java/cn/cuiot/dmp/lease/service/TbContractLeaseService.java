@@ -101,19 +101,7 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         return leaseEntity;
     }
 
-    /**
-     * 取消续租合同关联
-     */
-    public void cancelReletBind(Long reletContractId) {
-        LambdaQueryWrapper<TbContractLeaseEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TbContractLeaseEntity::getReletContractId,reletContractId);
-        queryWrapper.last("limit 1");
-        TbContractLeaseEntity contractLeaseEntity = (TbContractLeaseEntity) getOne(queryWrapper);
-        contractLeaseEntity.setReletContractId(null);
-        contractLeaseEntity.setContractStatus(ContractEnum.STATUS_USELESS.getCode());
-        contractLeaseEntity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
-        saveOrUpdate(contractLeaseEntity);
-    }
+
 
     public List<BaseVO> statisticsContract() {
         return baseMapper.statisticsContract();
