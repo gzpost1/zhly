@@ -22,6 +22,11 @@ public class ChargeNoticeSendDto {
     private Long customerUserId;
 
     /**
+     * 用户id
+     */
+    private Long userId;
+
+    /**
      * 企业ID
      */
     private Long companyId;

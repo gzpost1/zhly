@@ -1,7 +1,10 @@
 package cn.cuiot.dmp.lease.service.charge;
 
+import cn.cuiot.dmp.base.application.service.impl.ApiArchiveServiceImpl;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.common.bean.dto.SmsBusinessMsgDto;
 import cn.cuiot.dmp.common.bean.dto.SysBusinessMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserBusinessMessageAcceptDto;
@@ -50,6 +53,8 @@ public class ChargeCollectionManageService {
     private SystemToFlowService systemToFlowService;
     @Autowired
     private ChargeMsgChannel chargeMsgChannel;
+    @Autowired
+    private ApiArchiveServiceImpl apiArchiveService;
 
     /**
      * 分页
@@ -148,6 +153,9 @@ public class ChargeCollectionManageService {
                                 .build());
                     }
                 } else {
+                    //绑定用户id
+                    bindUserId(records);
+
                     List<SysBusinessMsgDto> collect = constructorSysBusinessMsgDtos(records);
                     if (CollectionUtils.isNotEmpty(collect)) {
                         //发送系统消息
@@ -171,10 +179,10 @@ public class ChargeCollectionManageService {
      * 构造系统消息
      */
     private List<SysBusinessMsgDto> constructorSysBusinessMsgDtos(List<ChargeCollectionManageSendDto> list) {
-        return list.stream().map(item -> {
+        return list.stream().filter(e -> Objects.nonNull(e.getUserId())).map(item -> {
             SysBusinessMsgDto msgDto = new SysBusinessMsgDto();
             msgDto.setSendId(LoginInfoHolder.getCurrentUserId());
-            msgDto.setAccepter(item.getCustomerUserId());
+            msgDto.setAccepter(item.getUserId());
             msgDto.setDataType(MsgDataType.COLLECTION_NOTICE);
             msgDto.setMsgType(MsgTypeConstant.CHARGE_COLLECTION_NOTICE);
             msgDto.setMessageTime(new Date());
@@ -236,6 +244,27 @@ public class ChargeCollectionManageService {
 
         if (CollectionUtils.isNotEmpty(recordList)) {
             chargeCollectionRecordService.batchSave(recordList);
+        }
+    }
+
+    /**
+     * 根据客户id绑定用户id
+     */
+    private void bindUserId(List<ChargeCollectionManageSendDto> records) {
+        //获取用户id列表
+        List<Long> customerUserIds = records.stream().map(ChargeCollectionManageSendDto::getCustomerUserId)
+                .collect(Collectors.toList());
+        CustomerUseReqDto dto = new CustomerUseReqDto();
+        dto.setCustomerIdList(customerUserIds);
+        List<CustomerUserRspDto> userList = apiArchiveService.lookupCustomerUsers(dto);
+        if (CollectionUtils.isNotEmpty(userList)) {
+            Map<Long, CustomerUserRspDto> map = userList.stream().collect(Collectors.toMap(CustomerUserRspDto::getCustomerId, e -> e));
+            records.forEach(item ->{
+                if (map.containsKey(item.getCustomerUserId())) {
+                    CustomerUserRspDto user = map.get(item.getCustomerUserId());
+                    item.setUserId(user.getUserId());
+                }
+            });
         }
     }
 }
