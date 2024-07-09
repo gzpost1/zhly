@@ -145,7 +145,7 @@
                 and ci.begin_date   <![CDATA[<=]]>  #{params.beginDateEnd}
             </if>
             <if test="params.endDateBegin != null">
-                and ci.end_date >= #{params.beginDateBegin}
+                and ci.end_date >= #{params.endDateBegin}
             </if>
             <if test="params.endDateEnd != null">
                 and ci.end_date   <![CDATA[<=]]>  #{params.endDateEnd}
