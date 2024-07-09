@@ -69,4 +69,9 @@ public class ListOrganizationDto{
      **/
     private Long loginOrgId;
 
+    /**
+     *  当前登录账户ID(内部用)
+     **/
+    private Long loginUserId;
+
 }

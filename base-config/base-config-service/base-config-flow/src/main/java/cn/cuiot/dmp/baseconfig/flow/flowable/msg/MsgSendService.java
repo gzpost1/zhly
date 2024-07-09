@@ -11,6 +11,7 @@ import cn.cuiot.dmp.baseconfig.flow.utils.BpmnModelUtils;
 import cn.cuiot.dmp.common.bean.dto.SmsMsgDto;
 import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
+import cn.cuiot.dmp.common.constant.BaseConfigMessage;
 import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.InformTypeConstant;
 import cn.cuiot.dmp.common.utils.JsonUtil;
@@ -29,7 +30,7 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
-
+import cn.cuiot.dmp.common.constant.MsgTypeConstant;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -71,7 +72,8 @@ public class MsgSendService {
             if(StringUtils.isNotBlank(flowCOnfig.getNotifySetting()) && StringUtils.contains(flowCOnfig.getNotifySetting(),"1")){
                 //发送系统消息
                 UserMessageAcceptDto SYS_MSG = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SYS_MSG).setSysMsgDto(
-                        new SysMsgDto().setAcceptors(msg.getUsers()).setDataId(msg.getDataId()).setDataType(msg.getDataType()).setMessage(msg.getMessage())
+                        new SysMsgDto().setMsgType(MsgTypeConstant.WORK_INFO).setAcceptors(msg.getUsers()).setDataId(msg.getDataId()).setDataType(msg.getDataType())
+                                .setMessage(BaseConfigMessage.getMessageByType(msg.getDataType(),(msg.getMessage())))
                                 .setDataJson(msg.getDataJson()).setMessageTime(new Date()));
                 msgChannel.userMessageOutput().send(MessageBuilder.withPayload(SYS_MSG)
                         .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)

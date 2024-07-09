@@ -324,6 +324,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             }
             entity.setCustomerId(startProcessInstanceDTO.getCustomerId());
         }
+        if(Objects.isNull(entity.getActualUserId())){
+            entity.setActualUserId(LoginInfoHolder.getCurrentUserId());
+        }
         entity.setCompanyId(flowConfig.getCompanyId());
         entity.setProcInstId(task.getProcessInstanceId());
         entity.setPropertyId(startProcessInstanceDTO.getPropertyId());
@@ -1021,7 +1024,15 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         BaseUserDto actualUser = queryBaseUserInfo(resultDto.getActualUserId());
         resultDto.setActualUserPhone(actualUser.getPhoneNumber());
         resultDto.setActualUserName(actualUser.getName());
-
+        if(Objects.nonNull(resultDto.getCustomerId())){
+            CustomerUseReqDto reqDto = new CustomerUseReqDto();
+            reqDto.setCustomerIdList(Arrays.asList(resultDto.getCustomerId()));
+            List<CustomerUserRspDto> customerUserRspDtos = apiArchiveService.lookupCustomerUsers(reqDto);
+            if(CollectionUtils.isNotEmpty(customerUserRspDtos)){
+                resultDto.setActualUserPhone(customerUserRspDtos.get(0).getContactPhone());
+                resultDto.setActualUserName(customerUserRspDtos.get(0).getCustomerName());
+            }
+        }
         //获取挂起时间
         BusinessTypeInfoDto businessTypeInfoDto = BusinessTypeInfoDto.builder().businessType(BUSINESS_BYPE_PENDING).
                 procInstId(Long.parseLong(resultDto.getProcInstId())).build();

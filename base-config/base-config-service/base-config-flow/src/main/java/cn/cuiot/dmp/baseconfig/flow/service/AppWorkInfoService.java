@@ -831,12 +831,15 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         if(Objects.isNull(task)){
             throw new RuntimeException(ErrorCode.TASK_COMPLETE.getMessage());
         }
+
+        //设置回退标识
+        taskService.setVariable(String.valueOf(handleDataDTO.getTaskId()),"rollback","true");
+
         String rollBackNode = queryRollBackNode(task);
         runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
                 rollBackNode).changeState();
 
-        //设置回退标识
-        taskService.setVariable(String.valueOf(handleDataDTO.getTaskId()),"rollback","true");
+
 
         return IdmResDTO.success();
     }
@@ -948,7 +951,14 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      */
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO appAssignee(AppAssigneeDto assigneeDto) {
-
+        if (Objects.isNull(assigneeDto.getTaskId())){
+            Task task =taskService.createTaskQuery().processInstanceId(String.valueOf(assigneeDto.getProcessInstanceId())).
+                    taskAssignee(String.valueOf(LoginInfoHolder.getCurrentUserId()))
+                    .singleResult();
+            AssertUtil.isFalse(Objects.isNull(task),ErrorCode.TASK_COMPLETE.getMessage());
+            assigneeDto.setTaskId(task.getId());
+        }
+        checkTaskInfo(assigneeDto.getTaskId());
         HandleDataDTO handleDataDTO = new HandleDataDTO();
         handleDataDTO.setTaskId(String.valueOf(assigneeDto.getTaskId()));
         handleDataDTO.setProcessInstanceId(assigneeDto.getProcessInstanceId());
@@ -1508,7 +1518,13 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public IdmResDTO approvalConsent(ApprovalDto approvalDto) {
         //保存节点自选人信息
         Map<String, List<UserInfo>> processUsers = approvalDto.getProcessUsers();
-        Task task = taskService.createTaskQuery().taskId(String.valueOf(approvalDto.getTaskId())).singleResult();
+        Task task= null;
+        if(Objects.nonNull(approvalDto.getTaskId())){
+             task =  taskService.createTaskQuery().taskId(String.valueOf(approvalDto.getTaskId())).singleResult();
+        }else{
+            task =taskService.createTaskQuery().processInstanceId(String.valueOf(approvalDto.getProcessInstanceId())).taskAssignee(String.valueOf(LoginInfoHolder.getCurrentUserId()))
+                    .singleResult();
+        }
         if(Objects.isNull(task)){
             return IdmResDTO.error(ErrorCode.TASK_COMPLETE.getCode(), ErrorCode.TASK_COMPLETE.getMessage());
         }
@@ -1560,6 +1576,12 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      */
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO approvalRejection(ApprovalDto approvalDto) {
+        if(Objects.isNull(approvalDto.getTaskId())){
+          Task  task =taskService.createTaskQuery().processInstanceId(String.valueOf(approvalDto.getProcessInstanceId())).taskAssignee(String.valueOf(LoginInfoHolder.getCurrentUserId()))
+                    .singleResult();
+            AssertUtil.isFalse(Objects.isNull(task),ErrorCode.TASK_COMPLETE.getMessage());
+            approvalDto.setTaskId(Long.parseLong(task.getId()));
+        }
         checkTaskInfo(String.valueOf(approvalDto.getTaskId()));
         HandleDataDTO dto = new HandleDataDTO();
         dto.setTaskId(String.valueOf(approvalDto.getTaskId()));

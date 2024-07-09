@@ -2,6 +2,7 @@ package cn.cuiot.dmp.baseconfig.controller.app;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.constant.PermissionContants;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.AppAssigneeDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
@@ -373,7 +374,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("reportRepairsStart")
-    @RequiresPermissions("allowUserType=client")
+    @RequiresPermissions(allowUserType = PermissionContants.USER_CLIENT)
     public IdmResDTO reportRepairsStart(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
         return appWorkInfoService.reportRepairsStart(startProcessInstanceDTO);
     }
@@ -384,7 +385,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryReportRepairs")
-    @RequiresPermissions("allowUserType=client")
+    @RequiresPermissions(allowUserType = PermissionContants.USER_CLIENT)
     public IdmResDTO<IPage<RepairReportDto>> queryReportRepairs(@RequestBody @Valid RepairReportQuery query){
         return appWorkInfoService.queryReportRepairs(query);
     }
