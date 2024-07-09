@@ -207,12 +207,3 @@ create table tb_contract_lease_relate
 )
     comment '租赁合同关联信息';
 
-
-
-
-CREATE FUNCTION getUserName(userid LONG)
-    RETURNS varchar(512)
-BEGIN
-    return (select name from user where id = userid);
-END;
-
