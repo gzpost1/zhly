@@ -1,10 +1,13 @@
 package cn.cuiot.dmp.lease.service.charge;
 
+import cn.cuiot.dmp.base.application.service.impl.ApiArchiveServiceImpl;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CommonOptionSettingReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonOptionSettingRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.common.bean.dto.SmsBusinessMsgDto;
 import cn.cuiot.dmp.common.bean.dto.SysBusinessMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserBusinessMessageAcceptDto;
@@ -64,6 +67,8 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
     private SystemToFlowService systemToFlowService;
     @Autowired
     private ChargeMsgChannel chargeMsgChannel;
+    @Autowired
+    private ApiArchiveServiceImpl apiArchiveService;
 
     public IPage<ChargeNoticePageVo> queryForPage(ChargeNoticePageQuery query) {
         IPage<ChargeNoticePageVo> page = baseMapper.queryForPage(new Page<>(query.getPageNo(), query.getPageSize()), query);
@@ -293,6 +298,9 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
                                 .build());
                     }
                 } else {
+                    //绑定用户id
+                    bindUserId(records);
+
                     List<SysBusinessMsgDto> collect = constructorSysBusinessMsgDtos(records);
                     if (CollectionUtils.isNotEmpty(collect)) {
                         //发送系统消息
@@ -311,10 +319,10 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
      * 构造系统消息
      */
     private List<SysBusinessMsgDto> constructorSysBusinessMsgDtos(List<ChargeNoticeSendDto> list) {
-        return list.stream().map(item -> {
+        return list.stream().filter(e -> Objects.nonNull(e.getUserId())).map(item -> {
             SysBusinessMsgDto msgDto = new SysBusinessMsgDto();
             msgDto.setSendId(LoginInfoHolder.getCurrentUserId());
-            msgDto.setAccepter(item.getCustomerUserId());
+            msgDto.setAccepter(item.getUserId());
             msgDto.setDataId(item.getId());
             msgDto.setDataType(MsgDataType.CHARGE_NOTICE);
             msgDto.setMsgType(MsgTypeConstant.CHARGE_BILL_NOTICE);
@@ -363,5 +371,26 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
      */
     private static String dateFormat(Date date) {
         return DateTimeUtil.localDateToString(DateTimeUtil.dateToLocalDate(date), "yyyy年MM月dd日");
+    }
+
+    /**
+     * 根据客户id绑定用户id
+     */
+    private void bindUserId(List<ChargeNoticeSendDto> records) {
+        //获取用户id列表
+        List<Long> customerUserIds = records.stream().map(ChargeNoticeSendDto::getCustomerUserId)
+                .collect(Collectors.toList());
+        CustomerUseReqDto dto = new CustomerUseReqDto();
+        dto.setCustomerIdList(customerUserIds);
+        List<CustomerUserRspDto> userList = apiArchiveService.lookupCustomerUsers(dto);
+        if (CollectionUtils.isNotEmpty(userList)) {
+            Map<Long, CustomerUserRspDto> map = userList.stream().collect(Collectors.toMap(CustomerUserRspDto::getCustomerId, e -> e));
+            records.forEach(item ->{
+                if (map.containsKey(item.getCustomerUserId())) {
+                    CustomerUserRspDto user = map.get(item.getCustomerUserId());
+                    item.setUserId(user.getUserId());
+                }
+            });
+        }
     }
 }
