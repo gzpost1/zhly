@@ -66,6 +66,7 @@ public class ContentModuleBannerServiceImpl extends ServiceImpl<ContentModuleBan
     @Override
     public IPage<ContentModuleBanner> queryForPage(ModuleBannerPageQuery pageQuery) {
         LambdaQueryWrapper<ContentModuleBanner> queryWrapper = buildCommonQueryWrapper(pageQuery);
+        queryWrapper.orderByDesc(ContentModuleBanner::getEffectiveStartTime);
         queryWrapper.orderByDesc(ContentModuleBanner::getCreateTime);
         return page(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()), queryWrapper);
     }

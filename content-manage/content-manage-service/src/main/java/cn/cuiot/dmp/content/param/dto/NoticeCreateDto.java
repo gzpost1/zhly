@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.content.param.dto;//	模板
 
 import lombok.Data;
+import org.jpedal.parser.shape.D;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
@@ -80,4 +81,6 @@ public class NoticeCreateDto {
      * 企业ID
      */
     private Long companyId;
+
+    private List<DepartBuildDto> departBuilds;
 }
