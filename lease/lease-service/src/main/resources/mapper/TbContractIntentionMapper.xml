@@ -18,8 +18,8 @@
         <result column="update_time" property="updateTime"/>
         <result column="create_user" property="createUser"/>
         <result column="update_user" property="updateUser"/>
-        <result column="createUserName" property="createUserName"/>
-        <result column="updateUserName" property="updateUserName"/>
+<!--        <result column="createUserName" property="createUserName"/>-->
+<!--        <result column="updateUserName" property="updateUserName"/>-->
         <result column="status" property="status"/>
         <result column="deleted" property="deleted"/>
         <result column="contract_status" property="contractStatus"/>
@@ -39,6 +39,8 @@
                     select="cn.cuiot.dmp.lease.mapper.TbContractCancelMapper.selectIntentionUseless"
                     column="id">
         </collection>
+        <collection property="createUserName"  select="cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper.querySysUserName" column="create_user" jdbcType="VARCHAR" javaType="string"></collection>
+        <collection property="updateUserName"  select="cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper.querySysUserName" column="update_user"  jdbcType="VARCHAR" javaType="string"></collection>
     </resultMap>
 
     <select id="selectById" resultMap="BaseResultMap">
@@ -80,8 +82,7 @@
         ifnull(ci.update_user,ci.create_user) update_user,
         ci.status,
         ci.deleted,
-        ci.contract_status,ci.audit_status,ci.label,c.customer_name,u.name followUpName,c.contact_phone,
-        getUserName(ci.create_user) createUserName,getUserName(ifnull(ci.update_user,ci.create_user)) updateUserName
+        ci.contract_status,ci.audit_status,ci.label,c.customer_name,u.name followUpName,c.contact_phone
     </sql>
 
     <sql id="dynamic_where">
