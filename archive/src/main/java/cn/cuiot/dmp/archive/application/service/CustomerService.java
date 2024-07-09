@@ -285,6 +285,13 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
     public void saveRelateList(Long customerId, CustomerDto dto) {
         List<CustomerHouseDto> houseList = dto.getHouseList();
         if (CollectionUtils.isNotEmpty(houseList)) {
+
+            if(houseList.size()!=houseList.stream().filter(distinctByKey(CustomerHouseDto::getHouseId))
+                    .collect(Collectors.toList()).size()){
+                throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,
+                        "操作失败，一套房屋仅可被一个客户绑定一次");
+            }
+
             Map<String, Long> houseMap = getHouseMap(
                     houseList.stream().map(ite -> ite.getHouseId()).collect(Collectors.toList()));
             customerHouseService.saveBatch(houseList.stream().map(item -> {
@@ -386,11 +393,14 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
      */
     public List<CustomerDto> analysisImportData(Long currentOrgId, List<String> headers,
             List<List<Object>> dataList) {
+
         int colSize = headers.size();
+
         List<CustomerDto> resultList = Lists.newArrayList();
+
         List<ArchiveOptionItemVo> optionItems = archiveOptionService
                 .getArchiveOptionItems(SystemOptionTypeEnum.CUSTOMER_INFO.getCode());
-        int houseStartColIndex = CustomerConstants.IDX_CREDIT_LEVEL + 1;
+
         int row = 3;
         for (List<Object> data : dataList) {
             row = row + 1;
@@ -473,12 +483,12 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
             //性别
             if (StringUtils
                     .isNotBlank(StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_SEX)))) {
-                Long certificateType = archiveOptionService.getArchiveOptionItemId(optionItems,
+                Long sexId = archiveOptionService.getArchiveOptionItemId(optionItems,
                         CustomerConstants.CONFIG_SEX,
                         StrUtil.toStringOrNull(data.get(CustomerConstants.IDX_SEX)));
-                AssertUtil.notNull(certificateType,
+                AssertUtil.notNull(sexId,
                         "导入失败，第" + row + "行，填写的" + headers.get(CustomerConstants.IDX_SEX) + "不存在");
-                dto.setCertificateType(certificateType.toString());
+                dto.setSex(sexId.toString());
             }
 
             //客户分类
@@ -517,6 +527,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 dto.setCreditLevel(creditLevel.toString());
             }
             List<CustomerHouseDto> houseList = Lists.newArrayList();
+            int houseStartColIndex = CustomerConstants.IDX_CREDIT_LEVEL + 1;
             while (true) {
                 if ((houseStartColIndex + 4) >= colSize) {
                     break;
@@ -525,13 +536,25 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 //房屋ID
                 Long houseId = NumberUtil
                         .parseLong(StrUtil.toStringOrNull(data.get(houseStartColIndex)), null);
+                //身份
+                String identityTypeName = StrUtil.toStringOrNull(data.get(houseStartColIndex + 1));
+
+                //迁入日期
+                String moveInDateStr = StrUtil.toStringOrNull(data.get(houseStartColIndex + 2));
+
+                //迁出日期
+                String moveOutDateStr = StrUtil.toStringOrNull(data.get(houseStartColIndex + 3));
+
+                if(StringUtils.isNotBlank(identityTypeName)||StringUtils.isNotBlank(moveInDateStr)||StringUtils.isNotBlank(moveOutDateStr)){
+                    AssertUtil.notNull(houseId,"导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 1) + "为空");
+                }
+
                 if(Objects.nonNull(houseId)){
                     HousesArchivesEntity entity = housesArchivesMapper.selectById(houseId);
                     AssertUtil.notNull(entity,
                             "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex) + "不存在");
                     houseDto.setHouseId(houseId);
-                    //身份
-                    String identityTypeName = StrUtil.toStringOrNull(data.get(houseStartColIndex + 1));
+
                     AssertUtil.notBlank(identityTypeName,
                             "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 1) + "为空");
                     CustomerIdentityTypeEnum identityTypeEnum = CustomerIdentityTypeEnum
@@ -540,8 +563,6 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                             "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 1) + "不存在");
                     houseDto.setIdentityType(identityTypeEnum.getCode());
 
-                    //迁入日期
-                    String moveInDateStr = StrUtil.toStringOrNull(data.get(houseStartColIndex + 2));
                     AssertUtil.notBlank(moveInDateStr,
                             "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 2) + "为空");
                     try {
@@ -552,9 +573,6 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                                 "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 2)
                                         + "格式有误");
                     }
-
-                    //迁出日期
-                    String moveOutDateStr = StrUtil.toStringOrNull(data.get(houseStartColIndex + 3));
                     if (StringUtils.isNotBlank(moveOutDateStr)) {
                         try {
                             houseDto.setMoveOutDate(
@@ -567,8 +585,10 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                     }
                     houseList.add(houseDto);
                 }
+
                 houseStartColIndex = houseStartColIndex + 4;
             }
+            AssertUtil.notEmpty(houseList,"导入失败，第" + row + "行，必须填写一个关联房屋信息");
             //根据房屋ID去重
             houseList = houseList.stream().filter(distinctByKey(CustomerHouseDto::getHouseId))
                     .collect(Collectors.toList());
@@ -629,9 +649,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
             exportVo.setCertificateTypeName(getItemName(optionItems,parseLong(vo.getCertificateType())));
             exportVo.setCertificateCdoe(vo.getCertificateCdoe());
             exportVo.setContactName(vo.getContactName());
-            if(StringUtils.isNotBlank(vo.getContactPhone())){
-                exportVo.setContactPhone(Sm4.decrypt(vo.getContactPhone()));
-            }
+            exportVo.setContactPhone(vo.getContactPhone());
             exportVo.setEmail(vo.getEmail());
             exportVo.setSexName(getItemName(optionItems,parseLong(vo.getSex())));
             exportVo.setCustomerCateName(getItemName(optionItems,parseLong(vo.getCustomerCate())));
