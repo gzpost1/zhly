@@ -690,6 +690,12 @@ public class AppAuthService {
         if (StringUtils.isBlank(dto.getKid())) {
             throw new BusinessException(ResultCode.KID_IS_EMPTY, "密钥ID为空");
         }
+        String password = dto.getPassword();
+        // 判断密码不符合规则
+        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
+                || ValidateUtil.checkBoardContinuousChar(password)) {
+            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
+        }
         /**
          * 短信验证码参数校验
          */
@@ -715,13 +721,6 @@ public class AppAuthService {
 
         String userAccount = dto.getPhoneNumber();
         Integer userType = dto.getUserType();
-        String password = dto.getPassword();
-
-        // 判断密码不符合规则
-        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
-                || ValidateUtil.checkBoardContinuousChar(password)) {
-            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
-        }
 
         AppUserDto userDto = appUserService.getUserByPhoneAndUserType(userAccount, userType);
         if (Objects.isNull(userDto)) {
@@ -756,6 +755,13 @@ public class AppAuthService {
         if (StringUtils.isBlank(dto.getKid())) {
             throw new BusinessException(ResultCode.KID_IS_EMPTY, "密钥ID为空");
         }
+        String password = dto.getPassword();
+        // 判断密码不符合规则
+        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
+                || ValidateUtil.checkBoardContinuousChar(password)) {
+            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
+        }
+
         /**
          * 短信验证码参数校验
          */
@@ -777,15 +783,7 @@ public class AppAuthService {
         }
         Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
         // 密码解密
-        dto.setPassword(aes.getDecodeValue(dto.getPassword()));
-
-        String password = dto.getPassword();
-
-        // 判断密码不符合规则
-        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
-                || ValidateUtil.checkBoardContinuousChar(password)) {
-            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
-        }
+        dto.setPassword(aes.getDecodeValue(password));
 
         AppUserDto userDto = appUserService.getUserById(dto.getUserId());
         if (Objects.isNull(userDto)) {

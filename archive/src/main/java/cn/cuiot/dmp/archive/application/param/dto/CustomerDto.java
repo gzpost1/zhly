@@ -107,7 +107,7 @@ public class CustomerDto implements Serializable {
     /**
      * 证件号码
      */
-    @Length(max = 30, message = "证件号码限50字")
+    @Length(max = 50, message = "证件号码限50字")
     private String certificateCdoe;
 
     /**
