@@ -280,7 +280,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         //续租合同
         TbContractLeaseEntity contractLeaseReletEntity = param.getContractLeaseReletEntity();
         Long id = Optional.ofNullable(contractLeaseReletEntity.getId()).orElse(SnowflakeIdWorkerUtil.nextId());
-        String contractNo = Optional.ofNullable(contractLeaseReletEntity.getContractNo()).orElse(String.valueOf(SnowflakeIdWorkerUtil.nextId()));
+        String contractNo = String.valueOf(SnowflakeIdWorkerUtil.nextId());
         AssertUtil.notNull(contractLeaseReletEntity.getReletDate(), "续租日期不能为空");
         String name = contractLeaseReletEntity.getName();
         contractLeaseReletEntity.setName("【续租】" + name);
@@ -289,6 +289,10 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         contractLeaseReletEntity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
         contractLeaseReletEntity.setContractStatus(ContractEnum.STATUS_DARFT.getCode());
         contractLeaseReletEntity.setReletContractId(param.getId());
+        contractLeaseReletEntity.setCreateUser(null);
+        contractLeaseReletEntity.setCreateTime(null);
+        contractLeaseReletEntity.setUpdateUser(null);
+        contractLeaseReletEntity.setUpdateTime(null);
         return contractLeaseReletEntity;
     }
 
