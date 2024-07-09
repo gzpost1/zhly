@@ -1030,7 +1030,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             List<CustomerUserRspDto> customerUserRspDtos = apiArchiveService.lookupCustomerUsers(reqDto);
             if(CollectionUtils.isNotEmpty(customerUserRspDtos)){
                 resultDto.setActualUserPhone(customerUserRspDtos.get(0).getContactPhone());
-                resultDto.setActualUserName(customerUserRspDtos.get(0).getUserName());
+                resultDto.setActualUserName(customerUserRspDtos.get(0).getCustomerName());
             }
         }
         //获取挂起时间
