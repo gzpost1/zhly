@@ -2,6 +2,7 @@ package cn.cuiot.dmp.archive.infrastructure.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
+import cn.cuiot.dmp.common.bean.dto.NameUrlDto;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;

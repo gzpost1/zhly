@@ -262,6 +262,10 @@ public class MinioFileStorage extends FileStorage {
                 String dateDir = DateTimeUtil.dateToString(new Date(), "yyyyMM");
                 String objectName =
                         param.getDir() + "/" + dateDir + "/" + param.getTaskId() + "." + suffix;
+                if(Boolean.TRUE.equals(param.getOriginName())){
+                    objectName =
+                            param.getDir() + "/" + dateDir + "/" + param.getTaskId() + "/" + param.getFileName();
+                }
 
                 List<ComposeSource> sourceObjectList = objectItems.stream()
                         .map(ite -> ComposeSource.builder()
