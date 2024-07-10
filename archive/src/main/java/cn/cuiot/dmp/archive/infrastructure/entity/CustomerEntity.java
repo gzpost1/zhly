@@ -21,7 +21,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName(value = "tb_customer", autoResultMap = true,resultMap = "BaseResultMap")
+@TableName(value = "tb_customer", autoResultMap = true)
 public class CustomerEntity extends YjBaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -131,7 +131,7 @@ public class CustomerEntity extends YjBaseEntity {
      * 附件
      */
     @TableField(typeHandler = JsonTypeHandler.class)
-    private List<NameUrlDto> attachments;
+    private List<String> attachments;
 
 
     /**
