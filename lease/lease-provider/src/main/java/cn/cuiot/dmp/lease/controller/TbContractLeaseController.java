@@ -279,7 +279,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     private TbContractLeaseEntity getContractLeaseEntity(ContractReletParam param) {
         //续租合同
         TbContractLeaseEntity contractLeaseReletEntity = param.getContractLeaseReletEntity();
-        Long id = Optional.ofNullable(contractLeaseReletEntity.getId()).orElse(SnowflakeIdWorkerUtil.nextId());
+        Long id = SnowflakeIdWorkerUtil.nextId();
         String contractNo = String.valueOf(SnowflakeIdWorkerUtil.nextId());
         AssertUtil.notNull(contractLeaseReletEntity.getReletDate(), "续租日期不能为空");
         String name = contractLeaseReletEntity.getName();
