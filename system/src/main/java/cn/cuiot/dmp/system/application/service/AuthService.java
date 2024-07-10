@@ -2,6 +2,7 @@ package cn.cuiot.dmp.system.application.service;
 
 import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
 import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_INVALID;
+import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_EXIST;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_OLD_INVALID;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_NOT_EXIST;
@@ -59,6 +60,20 @@ public class AuthService {
     }
 
     /**
+     * 根据手机号和用户身份获取用户信息
+     */
+    public UserEntity getUserByPhoneAndUserType(String phone, Integer userType) {
+        String encryptedPhone = Sm4.encryption(phone);
+        UserEntity dto = userEntityMapper.getUserByPhoneAndUserType(encryptedPhone, userType);
+        if (Objects.nonNull(dto)) {
+            if (StringUtils.isNotBlank(dto.getPhoneNumber())) {
+                dto.setPhoneNumber(Sm4.decrypt(dto.getPhoneNumber()));
+            }
+        }
+        return dto;
+    }
+
+    /**
      * 根据ID获取用户信息
      */
     public UserEntity getUserById(Long userId) {
@@ -90,6 +105,13 @@ public class AuthService {
         if (!res.getCheckSucceed()) {
             throw new BusinessException(SMS_TEXT_ERROR);
         }
+        UserEntity existUser = getUserByPhoneAndUserType(dto.getPhoneNumber(), userEntity.getUserType());
+        if(Objects.nonNull(existUser)){
+            if(!userEntity.getId().equals(existUser.getId())){
+                throw new BusinessException(PHONE_NUMBER_EXIST);
+            }
+        }
+
         String encryptedPhone = Sm4.encryption(dto.getPhoneNumber());
         UserEntity updateEntity = new UserEntity();
         updateEntity.setId(dto.getUserId());
@@ -118,22 +140,11 @@ public class AuthService {
         if (StringUtils.isBlank(dto.getKid())) {
             throw new BusinessException(ResultCode.KID_IS_EMPTY, "密钥ID为空");
         }
-        String password = dto.getPassword();
-        // 判断密码不符合规则
-        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
-                || ValidateUtil.checkBoardContinuousChar(password)) {
-            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
-        }
         /**
          * 短信验证码参数校验
          */
         if (StringUtils.isBlank(dto.getSmsCode())) {
             throw new BusinessException(ResultCode.SMS_TEXT_IS_EMPTY, "请输入验证码");
-        }
-        SmsCodeCheckResDto res = verifyService
-                .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), dto.getSmsCode(), true);
-        if (!res.getCheckSucceed()) {
-            throw new BusinessException(SMS_TEXT_OLD_INVALID);
         }
         /**
          * 获取AES密钥信息
@@ -145,7 +156,20 @@ public class AuthService {
         }
         Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
         // 密码解密
-        dto.setPassword(aes.getDecodeValue(password));
+        dto.setPassword(aes.getDecodeValue(dto.getPassword()));
+
+        String password = dto.getPassword();
+        // 判断密码不符合规则
+        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
+                || ValidateUtil.checkBoardContinuousChar(password)) {
+            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
+        }
+
+        SmsCodeCheckResDto res = verifyService
+                .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), dto.getSmsCode(), true);
+        if (!res.getCheckSucceed()) {
+            throw new BusinessException(SMS_TEXT_OLD_INVALID);
+        }
 
         UserEntity userEntity = getUserById(dto.getUserId());
         if (Objects.isNull(userEntity)) {

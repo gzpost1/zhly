@@ -27,4 +27,6 @@ public interface UserEntityMapper extends IotBaseMapper<UserEntity> {
     int delUserLabel(@Param("idList") List<Long> idList);
 
     int delUserRole(@Param("idList") List<Long> idList);
+
+    UserEntity getUserByPhoneAndUserType(@Param("encryptedPhone") String encryptedPhone, @Param("userType") Integer userType);
 }
