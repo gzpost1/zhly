@@ -261,6 +261,9 @@ public class AmazonS3FileStorage extends FileStorage {
         String dateDir = DateTimeUtil.dateToString(new Date(), "yyyyMM");
         String objectDir =param.getDir() + "/" + dateDir;
         String objectName =objectDir+ "/" + param.getTaskId() + "." + suffix;
+        if(Boolean.TRUE.equals(param.getOriginName())){
+            objectName = objectDir+ "/" + param.getTaskId() + "/" + param.getFileName();
+        }
         if(chunkIndex.equals(0)){
             InitiateMultipartUploadResult initiateResult = initiateMultipartUpload(
                     bucketName, objectName, contentType);

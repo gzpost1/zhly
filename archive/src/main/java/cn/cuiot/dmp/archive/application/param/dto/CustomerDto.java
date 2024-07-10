@@ -120,7 +120,7 @@ public class CustomerDto implements Serializable {
     /**
      * 附件
      */
-    private List<NameUrlDto> attachments;
+    private List<String> attachments;
 
     /**
      * 备注

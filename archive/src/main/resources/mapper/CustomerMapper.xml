@@ -22,8 +22,7 @@
         <result column="certificate_cdoe" property="certificateCdoe" />
         <result column="address" property="address" />
         <result column="attachments" jdbcType="VARCHAR" property="attachments"
-                javaType="cn.cuiot.dmp.common.bean.dto.NameUrlDto"
-                typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.ListJsonTypeHandler" />
+                typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler" />
         <result column="status" property="status" />
         <result column="remark" property="remark" />
         <result column="update_time" property="updateTime" />
