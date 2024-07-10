@@ -128,9 +128,6 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
             DepartmentReqDto query = new DepartmentReqDto();
             query.setDeptIdList(pageQuery.getDepartments());
             pageQuery.setDepartments(systemConverService.getDeptIds(query));
-//            DepartmentReqDto reqDto = new DepartmentReqDto();
-//            reqDto.setDeptId(LoginInfoHolder.getCurrentDeptId());
-//            pageQuery.setBuildings(archiveConverService.lookupBuildingArchiveByDepartmentList(reqDto));
         }
     }
 
