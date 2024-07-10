@@ -374,4 +374,28 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
             }
         });
     }
+
+    @Override
+    public void fillBuildingName(List<HousesArchivesEntity> records) {
+        if (CollectionUtils.isEmpty(records)) {
+            return;
+        }
+        // 查询楼盘名称
+        Set<Long> loupanIdSet = new HashSet<>();
+        records.forEach(o -> {
+            if (Objects.nonNull(o.getLoupanId())) {
+                loupanIdSet.add(o.getLoupanId());
+            }
+        });
+        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(loupanIdSet);
+        if (loupanIdNameMap.isEmpty()) {
+            return;
+        }
+        records.forEach(o -> {
+            if (Objects.nonNull(o.getLoupanId()) && loupanIdNameMap.containsKey(o.getLoupanId())) {
+                o.setLoupanIdName(loupanIdNameMap.get(o.getLoupanId()));
+            }
+        });
+    }
+
 }
