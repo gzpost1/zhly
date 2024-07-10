@@ -63,4 +63,6 @@ public interface HousesArchivesService extends IService<HousesArchivesEntity> {
 
     void fullContractInfo(List<HousesArchivesEntity> records);
 
+    void fillBuildingName(List<HousesArchivesEntity> records);
+
 }
