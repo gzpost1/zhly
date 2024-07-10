@@ -690,23 +690,14 @@ public class AppAuthService {
         if (StringUtils.isBlank(dto.getKid())) {
             throw new BusinessException(ResultCode.KID_IS_EMPTY, "密钥ID为空");
         }
-        String password = dto.getPassword();
-        // 判断密码不符合规则
-        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
-                || ValidateUtil.checkBoardContinuousChar(password)) {
-            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
-        }
+
         /**
          * 短信验证码参数校验
          */
         if (StringUtils.isBlank(dto.getSmsCode())) {
             throw new BusinessException(ResultCode.SMS_TEXT_IS_EMPTY, "请输入验证码");
         }
-        SmsCodeCheckResDto res = appVerifyService
-                .checkPhoneSmsCode(dto.getPhoneNumber(), null, dto.getSmsCode(), true);
-        if (!res.getCheckSucceed()) {
-            throw new BusinessException(SMS_TEXT_OLD_INVALID);
-        }
+
         /**
          * 获取AES密钥信息
          */
@@ -718,6 +709,19 @@ public class AppAuthService {
         Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
         // 密码解密
         dto.setPassword(aes.getDecodeValue(dto.getPassword()));
+
+        String password = dto.getPassword();
+        // 判断密码不符合规则
+        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
+                || ValidateUtil.checkBoardContinuousChar(password)) {
+            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
+        }
+
+        SmsCodeCheckResDto res = appVerifyService
+                .checkPhoneSmsCode(dto.getPhoneNumber(), null, dto.getSmsCode(), true);
+        if (!res.getCheckSucceed()) {
+            throw new BusinessException(SMS_TEXT_OLD_INVALID);
+        }
 
         String userAccount = dto.getPhoneNumber();
         Integer userType = dto.getUserType();
@@ -755,24 +759,13 @@ public class AppAuthService {
         if (StringUtils.isBlank(dto.getKid())) {
             throw new BusinessException(ResultCode.KID_IS_EMPTY, "密钥ID为空");
         }
-        String password = dto.getPassword();
-        // 判断密码不符合规则
-        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
-                || ValidateUtil.checkBoardContinuousChar(password)) {
-            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
-        }
-
         /**
          * 短信验证码参数校验
          */
         if (StringUtils.isBlank(dto.getSmsCode())) {
             throw new BusinessException(ResultCode.SMS_TEXT_IS_EMPTY, "请输入验证码");
         }
-        SmsCodeCheckResDto res = appVerifyService
-                .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), dto.getSmsCode(), true);
-        if (!res.getCheckSucceed()) {
-            throw new BusinessException(SMS_TEXT_OLD_INVALID);
-        }
+
         /**
          * 获取AES密钥信息
          */
@@ -783,7 +776,20 @@ public class AppAuthService {
         }
         Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
         // 密码解密
-        dto.setPassword(aes.getDecodeValue(password));
+        dto.setPassword(aes.getDecodeValue(dto.getPassword()));
+
+        String password = dto.getPassword();
+        // 判断密码不符合规则
+        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
+                || ValidateUtil.checkBoardContinuousChar(password)) {
+            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
+        }
+
+        SmsCodeCheckResDto res = appVerifyService
+                .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), dto.getSmsCode(), true);
+        if (!res.getCheckSucceed()) {
+            throw new BusinessException(SMS_TEXT_OLD_INVALID);
+        }
 
         AppUserDto userDto = appUserService.getUserById(dto.getUserId());
         if (Objects.isNull(userDto)) {

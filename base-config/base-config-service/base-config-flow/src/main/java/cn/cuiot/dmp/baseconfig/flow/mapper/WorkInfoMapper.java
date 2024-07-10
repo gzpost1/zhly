@@ -56,7 +56,7 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
 
     Page<AppWorkInfoDto> queryMyMake(Page<AppWorkInfoDto> page,@Param("query") WorkOrderSuperQuery query);
 
-    Page<RepairReportDto> queryReportRepairs(Page<RepairReportDto> page, RepairReportQuery query);
+    Page<RepairReportDto> queryReportRepairs(Page<RepairReportDto> page,@Param("query") RepairReportQuery query);
 
     Page<CustomerWorkOrderDto> queryCustomerWorkOrder(Page<CustomerWorkOrderDto> page, @Param("query") QueryCustomerWorkOrderDto req);
 

@@ -24,7 +24,7 @@
     <sql id="Base_Column_List">
         id, publish_source, departments, buildings, title, `type`, digest, effective_start_time, effective_end_time, inform, detail, status, audit_status, publish_status, create_user, create_time, update_user, update_time
     </sql>
-    <select id="queryForPage" resultType="cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity">
+    <select id="queryForPage" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from tb_content_notice
@@ -32,7 +32,7 @@
             <include refid="condition_sql_where"/>
         </trim>
     </select>
-    <select id="queryForList" resultType="cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity">
+    <select id="queryForList" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from tb_content_notice
