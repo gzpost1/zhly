@@ -128,6 +128,7 @@ public class HousesArchivesController extends BaseController {
             return IdmResDTO.success(res);
         }
         List<HousesArchivesEntity> records = res.getRecords();
+        housesArchivesService.fillBuildingName(records);
         housesArchivesService.fullContractInfo(records);
         return IdmResDTO.success(res);
     }
