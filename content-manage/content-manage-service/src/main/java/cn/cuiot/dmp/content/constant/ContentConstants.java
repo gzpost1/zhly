@@ -105,4 +105,17 @@ public class ContentConstants {
          */
         public static final Byte SMS = 2;
     }
+
+    public static class Noticed{
+
+        /**
+         * 已通知
+         */
+        public static final Byte NOTICED = 1;
+
+        /**
+         * 未通知
+         */
+        public static final Byte UN_NOTICE = 0;
+    }
 }

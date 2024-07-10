@@ -10,7 +10,9 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.hutool.core.collection.CollUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
  * @data 2024/5/30 17:18
  */
 @Service
+@Slf4j
 public class SystemConverService {
 
     @Autowired
@@ -58,7 +61,9 @@ public class SystemConverService {
         if (CollUtil.isEmpty(data)) {
             return new HashMap<>();
         }
-        return data.stream().collect(Collectors.toMap(BaseUserDto::getId, baseUserDto -> baseUserDto, (k1, k2) -> k1, HashMap::new));
+        HashMap<Long, BaseUserDto> collect = data.stream().collect(Collectors.toMap(BaseUserDto::getId, baseUserDto -> baseUserDto, (k1, k2) -> k1, HashMap::new));
+        log.info("getUserMapByIds-resp:{}",collect);
+        return collect;
     }
 
     public List<BaseUserDto> lookUpUserList(BaseUserReqDto reqDto) {
@@ -66,9 +71,13 @@ public class SystemConverService {
     }
 
     public List<Long> lookUpUserIds(BaseUserReqDto reqDto) {
+        log.info("lookUpUserIds.params:{}",JsonUtil.writeValueAsString(reqDto));
         List<BaseUserDto> userDtoList = systemApiFeignService.lookUpUserList(reqDto).getData();
+        log.info("lookUpUserIds.resp:{}",JsonUtil.writeValueAsString(userDtoList));
         if (CollUtil.isNotEmpty(userDtoList)) {
-            return userDtoList.stream().map(BaseUserDto::getId).collect(Collectors.toList());
+            List<Long> userIds = userDtoList.stream().map(BaseUserDto::getId).collect(Collectors.toList());
+            log.info("lookUpUserIds-resp:{}", userIds);
+            return userIds;
         }
         return new ArrayList<>();
     }
@@ -76,7 +85,9 @@ public class SystemConverService {
     public AuditConfigRspDTO lookUpAuditConfig(AuditConfigTypeReqDTO reqDTO) {
         List<AuditConfigTypeRspDTO> auditConfigTypeRspDTOS = systemApiFeignService.lookUpAuditConfig(reqDTO).getData();
         if (CollUtil.isNotEmpty(auditConfigTypeRspDTOS) && CollUtil.isNotEmpty(auditConfigTypeRspDTOS.get(0).getAuditConfigList())) {
-            return auditConfigTypeRspDTOS.get(0).getAuditConfigList().get(0);
+            AuditConfigRspDTO auditConfigRspDTO = auditConfigTypeRspDTOS.get(0).getAuditConfigList().get(0);
+            log.info("lookUpAuditConfig-resp:{}", JsonUtil.writeValueAsString(auditConfigRspDTO));
+            return auditConfigRspDTO;
         }
         return null;
     }
@@ -89,6 +100,7 @@ public class SystemConverService {
      */
     public Map<Long, List<Long>> lookUpUserIdsByBuildingIds(@RequestBody @Valid UserHouseAuditBuildingReqDTO reqDTO) {
         Map<Long, List<Long>> data = systemApiFeignService.lookUpUserIdsByBuildingIds(reqDTO).getData();
+        log.info("lookUpUserIdsByBuildingIds-resp:{}",data);
         return data;
     }
 

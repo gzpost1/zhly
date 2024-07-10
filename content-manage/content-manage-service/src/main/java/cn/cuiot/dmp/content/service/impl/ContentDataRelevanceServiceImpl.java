@@ -2,7 +2,9 @@ package cn.cuiot.dmp.content.service.impl;//	模板
 
 import cn.cuiot.dmp.content.dal.entity.ContentDataRelevance;
 import cn.cuiot.dmp.content.dal.mapper.ContentDataRelevanceMapper;
+import cn.cuiot.dmp.content.param.dto.DepartBuildDto;
 import cn.cuiot.dmp.content.service.ContentDataRelevanceService;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,7 @@ public class ContentDataRelevanceServiceImpl extends ServiceImpl<ContentDataRele
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void batchSaveContentDataRelevance(Byte dataType, Long deptId, List<Long> buildings, Long id) {
         LambdaQueryWrapper<ContentDataRelevance> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContentDataRelevance::getDataId, id);
@@ -64,4 +67,26 @@ public class ContentDataRelevanceServiceImpl extends ServiceImpl<ContentDataRele
             });
         }
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public void batchSaveContentDataRelevance(Byte dataType, List<DepartBuildDto> departBuilds, Long id) {
+        LambdaQueryWrapper<ContentDataRelevance> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ContentDataRelevance::getDataId, id);
+        wrapper.eq(ContentDataRelevance::getDataType, dataType);
+        this.baseMapper.delete(wrapper);
+        if (CollUtil.isNotEmpty(departBuilds)) {
+            for (DepartBuildDto departBuild : departBuilds) {
+                ContentDataRelevance contentDataRelevance = new ContentDataRelevance();
+                contentDataRelevance.setDepartmentId(departBuild.getDepartment());
+                contentDataRelevance.setDataType(dataType);
+                contentDataRelevance.setBuildId(departBuild.getBuilding());
+                contentDataRelevance.setDataId(id);
+                save(contentDataRelevance);
+            }
+        }
+
+    }
+
+
 }

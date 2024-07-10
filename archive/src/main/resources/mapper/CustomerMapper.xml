@@ -21,10 +21,9 @@
         <result column="certificate_type" property="certificateType" />
         <result column="certificate_cdoe" property="certificateCdoe" />
         <result column="address" property="address" />
-        <result column="attachments"
-                jdbcType="VARCHAR"
-                property="attachments"
-                typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+        <result column="attachments" jdbcType="VARCHAR" property="attachments"
+                javaType="cn.cuiot.dmp.common.bean.dto.NameUrlDto"
+                typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.ListJsonTypeHandler" />
         <result column="status" property="status" />
         <result column="remark" property="remark" />
         <result column="update_time" property="updateTime" />
@@ -98,6 +97,9 @@
             </if>
             <if test="param.houseId != null">
                 and a.id in (select customer_id from tb_customer_house where house_id=#{param.houseId})
+            </if>
+            <if test="param.loupanId != null">
+                and a.id in (select customer_id from tb_customer_house where loupan_id=#{param.loupanId})
             </if>
             <if test="param.keyword != null and param.keyword != ''">
                 and (a.customer_name like CONCAT('%',#{param.keyword}, '%') or a.contact_phone=#{param.keywordPhone})

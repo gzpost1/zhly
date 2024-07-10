@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.archive.application.param.dto;
 
+import cn.cuiot.dmp.common.bean.dto.NameUrlDto;
 import java.io.Serializable;
 import java.util.List;
 import javax.validation.Valid;
@@ -119,7 +120,7 @@ public class CustomerDto implements Serializable {
     /**
      * 附件
      */
-    private List<String> attachments;
+    private List<NameUrlDto> attachments;
 
     /**
      * 备注

@@ -16,6 +16,7 @@ import cn.cuiot.dmp.content.param.req.PublishReqVo;
 import cn.cuiot.dmp.content.param.vo.NoticeVo;
 import cn.cuiot.dmp.content.service.ContentAuditService;
 import cn.cuiot.dmp.content.service.NoticeService;
+import cn.cuiot.dmp.content.task.NoticePublishTask;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -146,4 +147,5 @@ public class NoticeController extends BaseController {
     public IPage<NoticeVo> getAppNoticePage(@RequestBody @Valid NoticPageQuery pageQuery) {
         return noticeService.getAppNoticePage(pageQuery);
     }
+
 }

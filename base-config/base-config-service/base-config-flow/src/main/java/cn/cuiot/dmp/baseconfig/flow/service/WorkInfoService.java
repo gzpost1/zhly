@@ -144,7 +144,16 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO) {
         JSONObject formData = startProcessInstanceDTO.getFormData();
         UserInfo startUserInfo = startProcessInstanceDTO.getStartUserInfo();
-        Authentication.setAuthenticatedUserId(startUserInfo.getId());
+        //处理代录工单
+        if(Objects.nonNull(startProcessInstanceDTO.getCustomerId())){
+            //根据客户id获取对应的用户信息
+            CustomerUseReqDto reqDto = new CustomerUseReqDto();
+            reqDto.setCustomerIdList(Arrays.asList(startProcessInstanceDTO.getCustomerId()));
+            List<CustomerUserRspDto> customerUserRspDtos = apiArchiveService.lookupCustomerUsers(reqDto);
+            if(CollectionUtils.isNotEmpty(customerUserRspDtos) && Objects.nonNull(customerUserRspDtos.get(0).getUserId())){
+                startUserInfo.setId(String.valueOf(customerUserRspDtos.get(0).getUserId()));
+            }
+        }
         Map<String,Object> processVariables= new HashMap<>();
         processVariables.put(WorkOrderConstants.FORM_VAR,formData);
 
@@ -596,8 +605,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO refuse(BatchBusinessDto handleDataDTO) {
         List<WorkBusinessTypeInfoEntity> buList = new ArrayList<>();
-        List<String> taskIds = Optional.ofNullable(handleDataDTO.getTaskIds()).orElse(new ArrayList<>());
-        for(String tasId : taskIds){
+        for(String tasId : handleDataDTO.getTaskIds()){
             //校验任务信息
             checkTaskInfo(tasId);
             HandleDataDTO dto = new HandleDataDTO();
@@ -692,6 +700,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         String rollBackNode = queryRollBackNode(task);
         runtimeService.createChangeActivityStateBuilder().processInstanceId(task.getProcessInstanceId()).moveActivityIdTo(task.getTaskDefinitionKey(),
                 rollBackNode).changeState();
+
+
 
         return IdmResDTO.success();
 
@@ -1023,7 +1033,15 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         BaseUserDto actualUser = queryBaseUserInfo(resultDto.getActualUserId());
         resultDto.setActualUserPhone(actualUser.getPhoneNumber());
         resultDto.setActualUserName(actualUser.getName());
-
+        if(Objects.nonNull(resultDto.getCustomerId())){
+            CustomerUseReqDto reqDto = new CustomerUseReqDto();
+            reqDto.setCustomerIdList(Arrays.asList(resultDto.getCustomerId()));
+            List<CustomerUserRspDto> customerUserRspDtos = apiArchiveService.lookupCustomerUsers(reqDto);
+            if(CollectionUtils.isNotEmpty(customerUserRspDtos)){
+                resultDto.setActualUserPhone(customerUserRspDtos.get(0).getContactPhone());
+                resultDto.setActualUserName(customerUserRspDtos.get(0).getCustomerName());
+            }
+        }
         //获取挂起时间
         BusinessTypeInfoDto businessTypeInfoDto = BusinessTypeInfoDto.builder().businessType(BUSINESS_BYPE_PENDING).
                 procInstId(Long.parseLong(resultDto.getProcInstId())).build();

@@ -99,4 +99,9 @@ public class ContentNoticeEntity extends YjBaseEntity implements Serializable {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 是否已通知
+     */
+    private Byte noticed;
 }
