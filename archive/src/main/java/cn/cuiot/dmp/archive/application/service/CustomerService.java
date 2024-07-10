@@ -256,7 +256,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         }
         CustomerEntity entity = new CustomerEntity();
         BeanUtils.copyProperties(dto, entity);
-        entity.setAttachments(dto.getAttachments());
+        //entity.setAttachments(dto.getAttachments());
         entity.setStatus(EntityConstants.ENABLED);
         customerMapper.insert(entity);
         Long customerId = entity.getId();
@@ -274,7 +274,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         }
         CustomerEntity entity = new CustomerEntity();
         BeanUtils.copyProperties(dto, entity);
-        entity.setAttachments(dto.getAttachments());
+        //entity.setAttachments(dto.getAttachments());
         customerMapper.updateById(entity);
         Long customerId = entity.getId();
         customerHouseService.deleteByCustomerId(customerId);
