@@ -2,6 +2,7 @@ package cn.cuiot.dmp.archive.infrastructure.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
+import cn.cuiot.dmp.common.bean.dto.NameUrlDto;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -20,7 +21,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName(value = "tb_customer", autoResultMap = true)
+@TableName(value = "tb_customer", autoResultMap = true,resultMap = "BaseResultMap")
 public class CustomerEntity extends YjBaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -130,7 +131,7 @@ public class CustomerEntity extends YjBaseEntity {
      * 附件
      */
     @TableField(typeHandler = JsonTypeHandler.class)
-    private List<String> attachments;
+    private List<NameUrlDto> attachments;
 
 
     /**

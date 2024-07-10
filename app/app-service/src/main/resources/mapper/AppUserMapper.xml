@@ -14,6 +14,7 @@
             </if>
             AND u.deleted_flag = 0
         </trim>
+        limit 1
     </select>
 
     <select id="selectUserByOpenid" resultType="cn.cuiot.dmp.app.dto.AppUserDto">

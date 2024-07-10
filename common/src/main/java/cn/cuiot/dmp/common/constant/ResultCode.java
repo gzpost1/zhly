@@ -94,7 +94,7 @@ public enum ResultCode {
 
 
     CANNOT_DELETE_ORGOWNER("050036", "不能删除账户所有者"),
-    PHONE_NUMBER_EXIST("050039", "手机号已存在"),
+    PHONE_NUMBER_EXIST("050039", "该手机号已存在"),
     USERNAME_SEARCH_IN_INVALID("050040", "用户名称仅支持中文、大小写字母、数字"),
     SMS_COUNT_EXCEEDS_LIMIT_CUSTOM("050034", "获取验证码每日不得超过%s次"),
 
