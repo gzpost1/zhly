@@ -269,6 +269,7 @@ public class OssUploadService {
         request.setChunk(param.getChunk());
         request.setChunkTotal(param.getChunkTotal());
         request.setPrivateRead(param.getPrivateRead());
+        request.setOriginName(param.getOriginName());
         ChunkUploadResponse chunkUploadResponse = ossTemplate.chunkUpload(request);
         String presignedObjectUrl = ossTemplate.getObjectUrl(chunkUploadResponse.getBucketName(),
                 chunkUploadResponse.getObjectName(), UrlType.PRESIGNED_URL, param.getExpires());
