@@ -27,6 +27,7 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.google.common.collect.Lists;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URLDecoder;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -277,7 +278,7 @@ public class OssUploadService {
                 .status(chunkUploadResponse.getStatus())
                 .bucketName(chunkUploadResponse.getBucketName())
                 .objectName(chunkUploadResponse.getObjectName())
-                .url(chunkUploadResponse.getUrl())
+                .url(URLDecoder.decode(chunkUploadResponse.getUrl()))
                 .presignedObjectUrl(presignedObjectUrl)
                 .build();
     }
