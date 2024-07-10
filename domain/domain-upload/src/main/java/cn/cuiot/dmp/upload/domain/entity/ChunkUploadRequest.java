@@ -54,4 +54,9 @@ public class ChunkUploadRequest implements Serializable {
      * 是否私有读
      */
     private Boolean privateRead;
+
+    /**
+     * 是否原名上传
+     */
+    private Boolean originName=false;
 }
