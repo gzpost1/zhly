@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @Description 收费管理-收银台-缴费管理分页详情
@@ -158,6 +159,9 @@ public class ChargeManagerPageDto implements ChargeItemNameSet {
     }
 
     public Integer getReceivableAmountTax() {
+        if(Objects.isNull(receivableAmountRate)){
+            return 0;
+        }
         return MathTool.percentCalculate(getReceivableAmount(), receivableAmountRate);
     }
 }
