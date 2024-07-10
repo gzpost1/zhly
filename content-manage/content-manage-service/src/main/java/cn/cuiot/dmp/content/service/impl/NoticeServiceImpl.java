@@ -90,7 +90,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
             contentNoticeEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_PASSED);
         }
         int insert = this.baseMapper.insert(contentNoticeEntity);
-        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, createDTO.getDepartments(), createDTO.getBuildings(), contentNoticeEntity.getId());
+        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, createDTO.getDepartBuilds(), contentNoticeEntity.getId());
         return insert;
     }
 
@@ -108,7 +108,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
             contentNoticeEntity.setAuditStatus(ContentConstants.AuditStatus.AUDIT_PASSED);
         }
         int update = this.baseMapper.updateById(contentNoticeEntity);
-        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, updateDtO.getDepartments(), updateDtO.getBuildings(), contentNoticeEntity.getId());
+        contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, updateDtO.getDepartBuilds(), contentNoticeEntity.getId());
         return update;
     }
 

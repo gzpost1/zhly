@@ -73,6 +73,7 @@ public class SystemConverService {
     public List<Long> lookUpUserIds(BaseUserReqDto reqDto) {
         log.info("lookUpUserIds.params:{}",JsonUtil.writeValueAsString(reqDto));
         List<BaseUserDto> userDtoList = systemApiFeignService.lookUpUserList(reqDto).getData();
+        log.info("lookUpUserIds.resp:{}",JsonUtil.writeValueAsString(userDtoList));
         if (CollUtil.isNotEmpty(userDtoList)) {
             List<Long> userIds = userDtoList.stream().map(BaseUserDto::getId).collect(Collectors.toList());
             log.info("lookUpUserIds-resp:{}", userIds);

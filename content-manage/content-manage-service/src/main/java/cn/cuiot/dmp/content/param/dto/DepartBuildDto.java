@@ -21,5 +21,5 @@ public class DepartBuildDto {
     /**
      * 楼盘
      */
-    private List<Long> buildings;
+    private Long building;
 }
