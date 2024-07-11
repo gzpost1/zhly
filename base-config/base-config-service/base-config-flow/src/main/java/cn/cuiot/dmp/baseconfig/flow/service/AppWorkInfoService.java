@@ -1877,7 +1877,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             if(Objects.nonNull(businessTypeInfo)){
                 childNode.setCreateTime(businessTypeInfo.getStartTime());
             }
-            if(Objects.isNull(childNode.getChildren())){
+            if(Objects.isNull(childNode.getId())){
                 break;
             }
             childNode = childNode.getChildren();
