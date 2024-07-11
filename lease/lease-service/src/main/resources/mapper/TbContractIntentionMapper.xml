@@ -26,7 +26,7 @@
         <result column="audit_status" property="auditStatus"/>
         <result column="label" property="label"/>
         <result column="customer_name" property="clientName"/>
-        <result column="contact_phone" property="clientPhone"/>
+        <result column="contact_phone" property="clientPhone" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.EncryptPhoneTypeHandler"/>
         <collection property="moneyList"
                     select="cn.cuiot.dmp.lease.mapper.TbContractBindInfoMapper.queryMoneyInfoByIntentionId"
                     column="id">
