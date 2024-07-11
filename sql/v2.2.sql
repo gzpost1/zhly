@@ -64,7 +64,7 @@ create table tb_contract_bind_info
 (
     intention_id bigint null comment '合同id',
     bind_id      bigint null comment '关联id',
-    type         bigint null comment '1.意向合同关联房屋   3.租赁合同关联房屋'
+    type         bigint null comment '1.意向合同关联房屋   2.租赁合同关联房屋'
 )
     comment '意向合同关联信息';
 
