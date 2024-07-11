@@ -63,7 +63,7 @@ public class ContractTemplateService extends ServiceImpl<ContractTemplateMapper,
     public List<ContractTemplateDTO> queryForList(ContractTemplatePageQueryDTO queryDTO) {
         LambdaQueryWrapper<ContractTemplateEntity> queryWrapper = new LambdaQueryWrapper<ContractTemplateEntity>()
                 .like(StringUtils.isNotBlank(queryDTO.getName()), ContractTemplateEntity::getName, queryDTO.getName())
-                .eq(Objects.nonNull(queryDTO.getId()), ContractTemplateEntity::getId, queryDTO.getId())
+                .eq(StringUtils.isNotBlank(queryDTO.getId()), ContractTemplateEntity::getId, queryDTO.getId())
                 .eq(Objects.nonNull(queryDTO.getNatureId()), ContractTemplateEntity::getNatureId, queryDTO.getNatureId())
                 .eq(Objects.nonNull(queryDTO.getTypeId()), ContractTemplateEntity::getTypeId, queryDTO.getTypeId())
                 .eq(Objects.nonNull(queryDTO.getStatus()), ContractTemplateEntity::getStatus, queryDTO.getStatus())
@@ -89,7 +89,7 @@ public class ContractTemplateService extends ServiceImpl<ContractTemplateMapper,
     public PageResult<ContractTemplateDTO> queryForPage(ContractTemplatePageQueryDTO queryDTO) {
         LambdaQueryWrapper<ContractTemplateEntity> queryWrapper = new LambdaQueryWrapper<ContractTemplateEntity>()
                 .like(StringUtils.isNotBlank(queryDTO.getName()), ContractTemplateEntity::getName, queryDTO.getName())
-                .eq(Objects.nonNull(queryDTO.getId()), ContractTemplateEntity::getId, queryDTO.getId())
+                .eq(StringUtils.isNotBlank(queryDTO.getId()), ContractTemplateEntity::getId, queryDTO.getId())
                 .eq(Objects.nonNull(queryDTO.getNatureId()), ContractTemplateEntity::getNatureId, queryDTO.getNatureId())
                 .eq(Objects.nonNull(queryDTO.getTypeId()), ContractTemplateEntity::getTypeId, queryDTO.getTypeId())
                 .eq(Objects.nonNull(queryDTO.getStatus()), ContractTemplateEntity::getStatus, queryDTO.getStatus())
