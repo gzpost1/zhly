@@ -21,6 +21,9 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
 
@@ -98,11 +101,19 @@ public class ChargeCollectionRecordService {
             if (Objects.nonNull(params.getCustomerUserId())) {
                 query.addCriteria(Criteria.where(ChargeCollectionRecordEntity.MONGODB_CUSTOMER_USER_ID).is(params.getCustomerUserId()));
             }
-            if (Objects.nonNull(params.getBeginTime())) {
-                query.addCriteria(Criteria.where(ChargeCollectionRecordEntity.MONGODB_DATE).gte(params.getBeginTime()));
-            }
-            if (Objects.nonNull(params.getEndTime())) {
-                query.addCriteria(Criteria.where(ChargeCollectionRecordEntity.MONGODB_DATE).lte(params.getEndTime()));
+
+            //时间查询
+            if (Objects.nonNull(params.getBeginTime()) || Objects.nonNull(params.getEndTime())) {
+                Criteria criteria = Criteria.where(ChargeCollectionRecordEntity.MONGODB_DATE);
+                if (Objects.nonNull(params.getBeginTime())) {
+                    LocalDateTime beginTime = LocalDateTime.of(params.getBeginTime(), LocalTime.MIN);
+                    criteria.gte(beginTime.toInstant(ZoneOffset.UTC));
+                }
+                if (Objects.nonNull(params.getEndTime())) {
+                    LocalDateTime endTime = LocalDateTime.of(params.getEndTime(), LocalTime.MAX).withNano(99999000);
+                    criteria.lte(endTime.toInstant(ZoneOffset.UTC));
+                }
+                query.addCriteria(criteria);
             }
 
             //计算总数
