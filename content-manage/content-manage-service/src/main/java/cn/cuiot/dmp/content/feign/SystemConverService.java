@@ -62,7 +62,7 @@ public class SystemConverService {
             return new HashMap<>();
         }
         HashMap<Long, BaseUserDto> collect = data.stream().collect(Collectors.toMap(BaseUserDto::getId, baseUserDto -> baseUserDto, (k1, k2) -> k1, HashMap::new));
-        log.info("getUserMapByIds-resp:{}",collect);
+        log.info("getUserMapByIds-resp:{}", collect);
         return collect;
     }
 
@@ -71,9 +71,7 @@ public class SystemConverService {
     }
 
     public List<Long> lookUpUserIds(BaseUserReqDto reqDto) {
-        log.info("lookUpUserIds.params:{}",JsonUtil.writeValueAsString(reqDto));
         List<BaseUserDto> userDtoList = systemApiFeignService.lookUpUserList(reqDto).getData();
-        log.info("lookUpUserIds.resp:{}",JsonUtil.writeValueAsString(userDtoList));
         if (CollUtil.isNotEmpty(userDtoList)) {
             List<Long> userIds = userDtoList.stream().map(BaseUserDto::getId).collect(Collectors.toList());
             log.info("lookUpUserIds-resp:{}", userIds);
@@ -100,7 +98,7 @@ public class SystemConverService {
      */
     public Map<Long, List<Long>> lookUpUserIdsByBuildingIds(@RequestBody @Valid UserHouseAuditBuildingReqDTO reqDTO) {
         Map<Long, List<Long>> data = systemApiFeignService.lookUpUserIdsByBuildingIds(reqDTO).getData();
-        log.info("lookUpUserIdsByBuildingIds-resp:{}",data);
+        log.info("lookUpUserIdsByBuildingIds-resp:{}", data);
         return data;
     }
 
