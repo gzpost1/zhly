@@ -36,6 +36,7 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.MessageHeaders;
@@ -56,6 +57,7 @@ import static com.google.common.collect.Maps.*;
  *
  * @author zc
  */
+@Slf4j
 @Service
 public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeNoticeEntity> {
 
@@ -291,6 +293,7 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
                 if (Objects.equals(query.getMsgType(), InformTypeConstant.SMS)) {
                     List<SmsBusinessMsgDto> msgDto = constructorSmsBusinessMsgDto(records);
                     if (CollectionUtils.isNotEmpty(msgDto)) {
+                        log.info("==============客户账单通知单发送短信==============");
                         //发送短信
                         UserBusinessMessageAcceptDto messageAcceptDto = new UserBusinessMessageAcceptDto().setMsgType(InformTypeConstant.SMS).setSmsMsgDto(msgDto);
                         chargeMsgChannel.userBusinessMessageOutput().send(MessageBuilder.withPayload(messageAcceptDto)
@@ -303,11 +306,14 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
 
                     List<SysBusinessMsgDto> collect = constructorSysBusinessMsgDtos(records);
                     if (CollectionUtils.isNotEmpty(collect)) {
+                        log.info("==============客户账单通知单发送系统消息==============");
                         //发送系统消息
                         UserBusinessMessageAcceptDto msgDto = new UserBusinessMessageAcceptDto().setMsgType(InformTypeConstant.SYS_MSG).setSysMsgDto(collect);
                         chargeMsgChannel.userBusinessMessageOutput().send(MessageBuilder.withPayload(msgDto)
                                 .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                                 .build());
+                    }else {
+                        log.info("==============客户账单通知单发送系统信息失败，用户id为空==============");
                     }
                 }
             }
