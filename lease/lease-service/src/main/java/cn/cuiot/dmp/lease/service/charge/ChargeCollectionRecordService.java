@@ -8,6 +8,7 @@ import cn.cuiot.dmp.lease.entity.charge.ChargeCollectionRecordEntity;
 import cn.cuiot.dmp.lease.vo.ChargeCollectionRecordVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -81,6 +82,9 @@ public class ChargeCollectionRecordService {
         }
         if (Objects.nonNull(params.getEndTime())) {
             query.addCriteria(Criteria.where(ChargeCollectionRecordEntity.MONGODB_DATE).lte(params.getEndTime()));
+        }
+        if (StringUtils.isNotBlank(params.getId())) {
+            query.addCriteria(Criteria.where(ChargeCollectionRecordEntity.MONGODB_ID).is(params.getId()));
         }
 
         //计算总数
