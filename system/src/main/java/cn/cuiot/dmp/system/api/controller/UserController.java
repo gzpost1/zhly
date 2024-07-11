@@ -11,6 +11,7 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.annotation.ResolveExtData;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -115,6 +116,7 @@ public class UserController extends BaseController {
     /**
      * 用户列表筛选-分页
      */
+    @ResolveExtData
     @GetMapping(value = "/user/listUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<UserDataResDTO> getPage(
             @RequestParam(value = "username", required = false) String username,

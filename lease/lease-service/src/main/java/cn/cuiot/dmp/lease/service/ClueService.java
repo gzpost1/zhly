@@ -88,8 +88,10 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
      * 查询列表
      */
     public List<ClueDTO> queryForList(CluePageQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
         LambdaQueryWrapper<ClueEntity> queryWrapper = new LambdaQueryWrapper<ClueEntity>()
                 .like(StringUtils.isNotBlank(queryDTO.getName()), ClueEntity::getName, queryDTO.getName())
+                .eq(Objects.nonNull(companyId), ClueEntity::getCompanyId, companyId)
                 .eq(Objects.nonNull(queryDTO.getDepartmentId()), ClueEntity::getDepartmentId, queryDTO.getDepartmentId())
                 .eq(Objects.nonNull(queryDTO.getBuildingId()), ClueEntity::getBuildingId, queryDTO.getBuildingId())
                 .eq(Objects.nonNull(queryDTO.getSourceId()), ClueEntity::getSourceId, queryDTO.getSourceId())
@@ -128,8 +130,10 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
      * 查询分页列表
      */
     public PageResult<ClueDTO> queryForPage(CluePageQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
         LambdaQueryWrapper<ClueEntity> queryWrapper = new LambdaQueryWrapper<ClueEntity>()
                 .like(StringUtils.isNotBlank(queryDTO.getName()), ClueEntity::getName, queryDTO.getName())
+                .eq(Objects.nonNull(companyId), ClueEntity::getCompanyId, companyId)
                 .eq(Objects.nonNull(queryDTO.getDepartmentId()), ClueEntity::getDepartmentId, queryDTO.getDepartmentId())
                 .eq(Objects.nonNull(queryDTO.getBuildingId()), ClueEntity::getBuildingId, queryDTO.getBuildingId())
                 .eq(Objects.nonNull(queryDTO.getSourceId()), ClueEntity::getSourceId, queryDTO.getSourceId())

@@ -25,6 +25,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.MessageHeaders;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
  * @Author: zc
  * @Date: 2024-06-25
  */
+@Slf4j
 @Service
 public class ChargeCollectionManageService {
 
@@ -146,6 +148,7 @@ public class ChargeCollectionManageService {
                 if (Objects.equals(query.getMsgType(), InformTypeConstant.SMS)) {
                     List<SmsBusinessMsgDto> msgDto = constructorSmsBusinessMsgDto(records);
                     if (CollectionUtils.isNotEmpty(msgDto)) {
+                        log.info("==============催款管理发送短信==============");
                         //发送短信
                         UserBusinessMessageAcceptDto messageAcceptDto = new UserBusinessMessageAcceptDto().setMsgType(InformTypeConstant.SMS).setSmsMsgDto(msgDto);
                         chargeMsgChannel.userBusinessMessageOutput().send(MessageBuilder.withPayload(messageAcceptDto)
@@ -158,11 +161,14 @@ public class ChargeCollectionManageService {
 
                     List<SysBusinessMsgDto> collect = constructorSysBusinessMsgDtos(records);
                     if (CollectionUtils.isNotEmpty(collect)) {
+                        log.info("==============催款管理发送系统信息==============");
                         //发送系统消息
                         UserBusinessMessageAcceptDto msgDto = new UserBusinessMessageAcceptDto().setMsgType(InformTypeConstant.SYS_MSG).setSysMsgDto(collect);
                         chargeMsgChannel.userBusinessMessageOutput().send(MessageBuilder.withPayload(msgDto)
                                 .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                                 .build());
+                    }else {
+                        log.info("==============催款管理发送系统信息失败，用户id为空==============");
                     }
                 }
 

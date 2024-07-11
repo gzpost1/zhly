@@ -132,6 +132,8 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
                     userHouseBuildingDTO.setUserId(userId);
                     userHouseBuildingDTO.setBuildingId(o);
                     userHouseBuildingDTO.setBuildingName(buildingArchive.getName());
+                    userHouseBuildingDTO.setCompanyId(buildingArchive.getCompanyId());
+                    userHouseBuildingDTO.setDepartmentId(buildingArchive.getDepartmentId());
                     return userHouseBuildingDTO;
                 })
                 .collect(Collectors.toList());

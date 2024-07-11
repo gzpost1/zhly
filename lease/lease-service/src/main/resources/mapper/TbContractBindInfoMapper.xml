@@ -77,7 +77,7 @@
         from tb_contract_bind_info b inner join tb_houses_archives h on b.bind_id=h.id
         <where>
             <if test="name != null and name !=''">
-                and h.name like CONCAT('%','${name}','%' )
+                and h.room_num like CONCAT('%','${name}','%' )
             </if>
         </where>
     </select>
