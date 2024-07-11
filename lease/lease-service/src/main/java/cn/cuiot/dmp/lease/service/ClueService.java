@@ -467,8 +467,15 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         if (CollectionUtils.isEmpty(customerUserRspDtoList)) {
             return;
         }
-        Map<Long, String> customerMap = customerUserRspDtoList.stream().collect(Collectors.toMap(CustomerUserRspDto::getCustomerId,
-                CustomerUserRspDto::getCustomerName));
+        // 分组取第一条数据
+        Map<Long, String> customerMap = customerUserRspDtoList.stream()
+                .collect(Collectors.groupingBy(
+                        CustomerUserRspDto::getCustomerId,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                list -> list.get(0).getCustomerName()
+                        )
+                ));
         clueDTOList.forEach(o -> {
             if (Objects.nonNull(o.getCustomerUserId()) && customerMap.containsKey(o.getCustomerUserId())) {
                 o.setCustomerUserName(customerMap.get(o.getCustomerUserId()));
