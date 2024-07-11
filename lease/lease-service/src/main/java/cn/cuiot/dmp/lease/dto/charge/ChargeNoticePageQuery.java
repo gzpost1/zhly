@@ -19,7 +19,7 @@ public class ChargeNoticePageQuery extends PageQuery {
     /**
      * 通知单号
      */
-    private Long id;
+    private String id;
 
     /**
      * 楼盘id列表
