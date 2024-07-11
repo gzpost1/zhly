@@ -132,7 +132,7 @@
         UPDATE tb_charge_manager
         set
         receivble_status            = if(
-        receivable_amount_received + #{received.liquidatedDamagesReceived} = receivable_amount, 2, 1),
+        receivable_amount_received + #{received.receivableAmountReceived} = receivable_amount, 2, 1),
         liquidated_damages_need     = liquidated_damages_need + #{received.liquidatedDamagesNeed},
         liquidated_damages_received = liquidated_damages_received + #{received.liquidatedDamagesReceived},
         liquidated_damages_tax      = liquidated_damages_tax + #{received.liquidatedDamagesTax},
@@ -143,7 +143,7 @@
           and hang_up_status = 0
           and receivble_status in (0, 1)
           and abrogate_status = 0
-          and receivable_amount >= receivable_amount_received + #{received.liquidatedDamagesReceived}
+          and receivable_amount >= receivable_amount_received + #{received.receivableAmountReceived}
     </update>
 
     <select id="getHouseInfoByIds" resultType="cn.cuiot.dmp.lease.dto.charge.HouseInfoDto">
