@@ -76,7 +76,7 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
     public List<PriceManageDTO> queryForList(PriceManagePageQueryDTO queryDTO) {
         LambdaQueryWrapper<PriceManageEntity> queryWrapper = new LambdaQueryWrapper<PriceManageEntity>()
                 .like(StringUtils.isNotBlank(queryDTO.getName()), PriceManageEntity::getName, queryDTO.getName())
-                .eq(Objects.nonNull(queryDTO.getId()), PriceManageEntity::getId, queryDTO.getId())
+                .eq(StringUtils.isNotBlank(queryDTO.getId()), PriceManageEntity::getId, queryDTO.getId())
                 .in(Objects.nonNull(queryDTO.getHouseId()), PriceManageEntity::getHouseIds, queryDTO.getHouseId())
                 .eq(Objects.nonNull(queryDTO.getCategoryId()), PriceManageEntity::getCategoryId, queryDTO.getCategoryId())
                 .eq(Objects.nonNull(queryDTO.getTypeId()), PriceManageEntity::getTypeId, queryDTO.getTypeId())
@@ -105,7 +105,7 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
     public PageResult<PriceManageDTO> queryForPage(PriceManagePageQueryDTO queryDTO) {
         LambdaQueryWrapper<PriceManageEntity> queryWrapper = new LambdaQueryWrapper<PriceManageEntity>()
                 .like(StringUtils.isNotBlank(queryDTO.getName()), PriceManageEntity::getName, queryDTO.getName())
-                .eq(Objects.nonNull(queryDTO.getId()), PriceManageEntity::getId, queryDTO.getId())
+                .eq(StringUtils.isNotBlank(queryDTO.getId()), PriceManageEntity::getId, queryDTO.getId())
                 .in(Objects.nonNull(queryDTO.getHouseId()), PriceManageEntity::getHouseIds, queryDTO.getHouseId())
                 .eq(Objects.nonNull(queryDTO.getCategoryId()), PriceManageEntity::getCategoryId, queryDTO.getCategoryId())
                 .eq(Objects.nonNull(queryDTO.getTypeId()), PriceManageEntity::getTypeId, queryDTO.getTypeId())
@@ -178,6 +178,7 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
         BeanUtils.copyProperties(priceManageEntity, copyPriceManageEntity);
         copyPriceManageEntity.setId(IdWorker.getId());
         copyPriceManageEntity.setName(priceManageEntity.getName() + "(1)");
+        copyPriceManageEntity.setStatus(PriceManageStatusEnum.DRAFT_STATUS.getCode());
         // 复制新增定价明细
         priceManageDetailService.copyPriceManageDetail(id, copyPriceManageEntity.getId());
         return save(copyPriceManageEntity);
@@ -192,8 +193,6 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
         Long companyId = LoginInfoHolder.getCurrentOrgId();
         PriceManageEntity priceManageEntity = Optional.ofNullable(getById(id))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
-        AssertUtil.isTrue(PriceManageStatusEnum.DRAFT_STATUS.getCode().equals(priceManageEntity.getStatus()),
-                "只能提交草稿数据");
         // 如果定价管理-定价单提交未开启审核管理，则直接转到审核通过状态
         AuditConfigTypeReqDTO reqDTO = new AuditConfigTypeReqDTO(companyId, AuditConfigTypeEnum.PRICE_MANAGE.getCode(),
                 AuditConfigConstant.PRICE_MANAGE_INIT.get(0));

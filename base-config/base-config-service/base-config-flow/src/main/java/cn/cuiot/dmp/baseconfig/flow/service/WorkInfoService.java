@@ -1030,9 +1030,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         resultDto.setPhone(baseUserDto.getPhoneNumber());
         resultDto.setUserName(baseUserDto.getName());
         //获取报单人信息
-        BaseUserDto actualUser = queryBaseUserInfo(resultDto.getActualUserId());
-        resultDto.setActualUserPhone(actualUser.getPhoneNumber());
-        resultDto.setActualUserName(actualUser.getName());
+
+        resultDto.setActualUserPhone(baseUserDto.getPhoneNumber());
+        resultDto.setActualUserName(baseUserDto.getName());
         if(Objects.nonNull(resultDto.getCustomerId())){
             CustomerUseReqDto reqDto = new CustomerUseReqDto();
             reqDto.setCustomerIdList(Arrays.asList(resultDto.getCustomerId()));
@@ -1069,8 +1069,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public BaseUserDto queryBaseUserInfo(Long userId){
         BaseUserReqDto reqDto = new BaseUserReqDto();
         reqDto.setUserId(userId);
+        log.error("请求参数"+JsonUtil.writeValueAsString(reqDto));
         IdmResDTO<BaseUserDto> baseUserDtoIdmResDTO = systemApiFeignService.lookUpUserInfo(reqDto);
-        if(baseUserDtoIdmResDTO == null){
+        if(Objects.isNull(baseUserDtoIdmResDTO.getData())){
             throw new RuntimeException("用户信息不存在");
         }
         return baseUserDtoIdmResDTO.getData();

@@ -38,4 +38,9 @@ public class CommonOptionTypeVO implements Serializable {
      */
     private Long companyId;
 
+    /**
+     * 选项类别
+     */
+    private Byte category;
+
 }

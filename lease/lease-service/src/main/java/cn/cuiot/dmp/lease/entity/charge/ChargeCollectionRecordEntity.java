@@ -60,4 +60,5 @@ public class ChargeCollectionRecordEntity {
     public static final String MONGODB_COMPANY_ID = "companyId";
     public static final String MONGODB_CUSTOMER_USER_ID = "customerUserId";
     public static final String MONGODB_DATE = "date";
+    public static final String MONGODB_ID = "id";
 }

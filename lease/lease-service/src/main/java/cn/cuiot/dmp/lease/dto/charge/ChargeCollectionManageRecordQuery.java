@@ -20,7 +20,7 @@ public class ChargeCollectionManageRecordQuery extends PageQuery {
     /**
      * 催款编号
      */
-    private Long id;
+    private String id;
 
     /**
      * 企业ID 前端不用传

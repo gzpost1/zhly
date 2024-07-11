@@ -20,7 +20,7 @@ public class ContractTemplatePageQueryDTO extends PageQuery {
     /**
      * 合同模板编码
      */
-    private Long id;
+    private String id;
 
     /**
      * 合同模板名称

@@ -6,6 +6,7 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.TreeUtil;
 import cn.cuiot.dmp.system.application.constant.CommonOptionConstant;
+import cn.cuiot.dmp.system.application.enums.CommonOptionTypeCategoryEnum;
 import cn.cuiot.dmp.system.application.param.vo.CommonOptionTypeTreeNodeVO;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOption;
 import cn.cuiot.dmp.system.domain.aggregate.CommonOptionPageQuery;
@@ -131,7 +132,11 @@ public class CommonOptionTypeRepositoryImpl implements CommonOptionTypeRepositor
                 .eq(CommonOptionTypeEntity::getParentId, CommonOptionConstant.DEFAULT_PARENT_ID)
                 .eq(CommonOptionTypeEntity::getCategory, category);
         List<CommonOptionTypeEntity> commonOptionTypeEntityList = commonOptionTypeMapper.selectList(queryWrapper);
-        AssertUtil.notEmpty(commonOptionTypeEntityList, "该企业下不存在常用选项分类");
+
+        CommonOptionTypeCategoryEnum nameByCode = CommonOptionTypeCategoryEnum.getCategoryNameByCode(category);
+        String categoryName = Objects.nonNull(nameByCode) ? nameByCode.getName() : category + "";
+        AssertUtil.notEmpty(commonOptionTypeEntityList, "该企业下不存在" + categoryName + "分类");
+
         return commonOptionTypeEntityList.get(0).getId();
     }
 
