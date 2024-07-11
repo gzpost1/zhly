@@ -112,4 +112,12 @@ public interface UserDataDao {
      * @param deptId 部门id
      */
     List<UserDataEntity> getUserByDeptId(@Param("deptId") Long deptId);
+
+    /**
+     * 根据条件查找user列表
+     *
+     * @param params
+     * @return
+     */
+    List<UserDataEntity> lookUpUserList(Map<String, Object> params);
 }
