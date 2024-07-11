@@ -389,7 +389,7 @@
         a.customer_user_id,
         a.company_id,
         COUNT(1) total,
-        round(SUM(a.receivable_amount - a.receivable_amount_received) / 1000, 2) amount
+        round(SUM(a.receivable_amount - a.receivable_amount_received) / 100, 2) amount
         FROM
         tb_charge_manager a
         <if test="params.operationType == 2">
