@@ -13,6 +13,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.constants.PriceManageConstant;
 import cn.cuiot.dmp.lease.dto.price.*;
@@ -202,7 +203,13 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
         if (EntityConstants.ENABLED.equals(auditStatus)) {
             priceManageEntity.setStatus(PriceManageStatusEnum.AUDIT_STATUS.getCode());
         } else {
-            priceManageEntity.setStatus(PriceManageStatusEnum.PASS_STATUS.getCode());
+            // 如果当前日期大于等于执行日期，则变更状态为已执行
+            Date now = new Date();
+            if (now.compareTo(priceManageEntity.getExecuteDate()) >= 0) {
+                priceManageEntity.setStatus(PriceManageStatusEnum.EXECUTED_STATUS.getCode());
+            } else {
+                priceManageEntity.setStatus(PriceManageStatusEnum.PASS_STATUS.getCode());
+            }
         }
         // 保存定价操作记录
         PriceManageRecordEntity priceManageRecordEntity = new PriceManageRecordEntity(priceManageEntity.getId(),
