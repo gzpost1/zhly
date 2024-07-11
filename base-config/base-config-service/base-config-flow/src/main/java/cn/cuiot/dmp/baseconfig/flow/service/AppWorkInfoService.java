@@ -1865,24 +1865,21 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         JSONObject mainJson = JSONObject.parseObject(dingDing, new TypeReference<JSONObject>() {
         });
         String processJson = mainJson.getString(VIEW_PROCESS_JSON_NAME);
-        ChildNode childNode = JSONObject.parseObject(processJson, new TypeReference<ChildNode>() {
+        ChildNode childNodes = JSONObject.parseObject(processJson, new TypeReference<ChildNode>() {
         });
-
+        ChildNode childNode = childNodes;
         while (true){
-            if(Objects.equals(childNode.getId(), WorkOrderConstants.USER_ROOT)){
-                childNode.setCreateTime(entity.getCreateTime());
-                continue;
+            if(Objects.isNull(childNode.getId())){
+                break;
             }
             WorkBusinessTypeInfoEntity businessTypeInfo = queryWorkBusinessTypeInfo(Long.parseLong(entity.getProcInstId()), childNode.getId());
             if(Objects.nonNull(businessTypeInfo)){
                 childNode.setCreateTime(businessTypeInfo.getStartTime());
             }
-            if(Objects.isNull(childNode.getId())){
-                break;
-            }
+
             childNode = childNode.getChildren();
         }
-        resultDto.setProcess(JsonUtil.writeValueAsString(childNode));
+        resultDto.setProcess(JsonUtil.writeValueAsString(childNodes));
 
         //查询当前所处的节点
         List<Task> tasks = taskService.createTaskQuery().processInstanceId(String.valueOf(entity.getProcInstId())).list();
@@ -1894,7 +1891,17 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             resultDto.setCommitProcess(processEntity.getCommitProcess());
         }
     }
-
+    public ChildNode getChildNode(ChildNode childNode,WorkInfoEntity entity){
+        String nodeId = childNode.getId();
+        if(Objects.isNull(nodeId)){
+            return childNode;
+        }
+        WorkBusinessTypeInfoEntity businessTypeInfo = queryWorkBusinessTypeInfo(Long.parseLong(entity.getProcInstId()), childNode.getId());
+        if(Objects.nonNull(businessTypeInfo)){
+            childNode.setCreateTime(businessTypeInfo.getStartTime());
+        }
+        return getChildNode(childNode.getChildren(),entity);
+    }
     /**
      * 查询root节点提交的数据信息
      * @param procInstId
