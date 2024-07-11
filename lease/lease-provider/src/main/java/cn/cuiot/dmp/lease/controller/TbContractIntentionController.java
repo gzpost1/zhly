@@ -5,6 +5,10 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseCurdController;
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
+import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.dto.contract.*;
@@ -12,7 +16,9 @@ import cn.cuiot.dmp.lease.entity.TbContractCancelEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.service.*;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -54,6 +61,8 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
     TbContractLeaseService contractLeaseService;
     @Autowired
     TbContractLeaseRelateService leaseRelateService;
+    @Autowired
+    SystemApiFeignService systemApiFeignService;
 
     /**
      * 保存草稿
@@ -68,7 +77,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         entity.setId(id);
         entity.setAuditStatus(ContractEnum.AUDIT_WAITING_COMMIT.getCode());
         entity.setContractStatus(ContractEnum.STATUS_DARFT.getCode());
-        contractLogService.saveOperateLog(id,OPERATE_NEW,CONTRACT_INTENTION_TYPE);
+        contractLogService.saveOperateLog(id, OPERATE_NEW, CONTRACT_INTENTION_TYPE);
         return service.save(entity);
     }
 
@@ -86,7 +95,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         entity.setId(id);
         //需要审核
         baseContractService.handleAuditStatusByConfig(entity, OPERATE_COMMIT);
-        contractLogService.saveOperateLog(id,OPERATE_NEW,CONTRACT_INTENTION_TYPE);
+        contractLogService.saveOperateLog(id, OPERATE_COMMIT, CONTRACT_INTENTION_TYPE);
         return service.saveOrUpdate(entity);
     }
 
@@ -109,14 +118,14 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_SIGN_CONTRACT);
         queryEntity.setContractLeaseId(contractLeaseId);
         //记录租赁合同关联信息
-        leaseRelateService.saveLeaseRelated(queryEntity, RELATE_INTENTION_TYPE,contractLeaseId);
+        leaseRelateService.saveLeaseRelated(queryEntity, RELATE_INTENTION_TYPE, contractLeaseId);
         String operMsg = "签约了意向合同,关联的租赁合同为:"
                 + contractLease.getName() + "(编号" + contractLease.getContractNo() + ")";
         String leaseOperMsg = "在意向合同中签约了本租赁合同" + System.lineSeparator() + "意向合同编码:" + queryEntity.getContractNo();
         contractLogService.saveLog(id, OPERATE_SIGN_CONTRACT, CONTRACT_INTENTION_TYPE, operMsg, contractLease.getContractNo(), null);
         //租赁合同也需要记录日志
         contractLogService.saveLog(contractLease.getId(), OPERATE_SIGN_LEASE_CONTRACT, CONTRACT_LEASE_TYPE,
-                leaseOperMsg,  queryEntity.getContractNo(), null);
+                leaseOperMsg, queryEntity.getContractNo(), null);
         return service.updateById(queryEntity);
     }
 
@@ -132,24 +141,42 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
     public boolean cancel(@RequestBody @Valid ContractParam param) {
         Long id = param.getId();
         TbContractCancelEntity contractCancelEntity = param.getContractCancelEntity();
+        String reasonId = contractCancelEntity.getReason();
         AssertUtil.notNull(id, "合同id不能为空");
         AssertUtil.notNull(contractCancelEntity, "退订信息不能为空");
         AssertUtil.notNull(contractCancelEntity.getDate(), "退定日期不能为空");
-        AssertUtil.notNull(contractCancelEntity.getReason(), "退定原因不能为空");
+        AssertUtil.notNull(reasonId, "退定原因不能为空");
         TbContractIntentionEntity queryEntity = getContract(id);
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_CANCEL);
         contractCancelEntity.setIntentionContractId(id);
         contractCancelEntity.setId(SnowflakeIdWorkerUtil.nextId());
         contractCancelService.saveOrUpdate(contractCancelEntity);
+
+        String cancelReson = getCancelReson(Long.valueOf(reasonId));
+
         String operMsg = "退定了意向合同" + System.lineSeparator() +
-                "退定原因:" + contractCancelEntity.getReason() + System.lineSeparator() + "退定备注:" + contractCancelEntity.getRemark();
-        contractLogService.saveLog(id, OPERATE_CANCEL,CONTRACT_INTENTION_TYPE, operMsg,null,contractCancelEntity.getPath());
+                "退定原因:" + cancelReson + System.lineSeparator() + "退定备注:" + contractCancelEntity.getRemark();
+        contractLogService.saveLog(id, OPERATE_CANCEL, CONTRACT_INTENTION_TYPE, operMsg, null, contractCancelEntity.getPath());
         return service.updateById(queryEntity);
+    }
+
+    private String getCancelReson(Long id) {
+        ArrayList<Long> param = Lists.newArrayList();
+        param.add(id);
+        CustomConfigDetailReqDTO dto = new CustomConfigDetailReqDTO();
+        dto.setCustomConfigDetailIdList(param);
+        IdmResDTO<List<CustomConfigDetailRspDTO>> listIdmResDTO = systemApiFeignService.batchQueryCustomConfigDetails(dto);
+        List<CustomConfigDetailRspDTO> data = listIdmResDTO.getData();
+        if (CollectionUtils.isNotEmpty(data)) {
+            CustomConfigDetailRspDTO customConfigDetailRspDTO = data.get(0);
+            return customConfigDetailRspDTO.getName();
+        }
+        return null;
     }
 
     private TbContractIntentionEntity getContract(Long id) {
         TbContractIntentionEntity contract = service.getById(id);
-        AssertUtil.notNull(contract,"合同不存在!");
+        AssertUtil.notNull(contract, "合同不存在!");
         return contract;
     }
 
@@ -169,7 +196,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         TbContractIntentionEntity queryEntity = getContract(id);
         baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_USELESS);
         Long useLessId = SnowflakeIdWorkerUtil.nextId();
-        if(Objects.isNull(contractCancelEntity.getId())){
+        if (Objects.isNull(contractCancelEntity.getId())) {
             contractCancelEntity.setId(useLessId);
         }
         contractCancelEntity.setIntentionContractId(id);
@@ -193,7 +220,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         TbContractIntentionEntity queryEntity = getContract(param.getId());
         Integer contractStatus = queryEntity.getContractStatus();
         TbContractIntentionEntity auditContractIntentionEntity = (TbContractIntentionEntity) baseContractService.handleAuditContractStatus(queryEntity, param);
-        contractLogService.saveAuditLogMsg(contractStatus, param,CONTRACT_INTENTION_TYPE);
+        contractLogService.saveAuditLogMsg(contractStatus, param, CONTRACT_INTENTION_TYPE);
         return service.updateById(auditContractIntentionEntity);
     }
 
@@ -232,10 +259,11 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
 
     /**
      * 统计合同状态
+     *
      * @return
      */
     @PostMapping("/statisticsContract")
-    public List<BaseVO> statisticsContract(){
+    public List<BaseVO> statisticsContract() {
         return service.statisticsContract();
     }
 

@@ -2,7 +2,10 @@ package cn.cuiot.dmp.archive;
 
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
+import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -35,6 +38,8 @@ public class ArchivesTest {
     ArchiveFeignService archiveFeignService;
     @Autowired
     TbContractBindInfoService bindInfoService;
+    @Autowired
+    SystemApiFeignService systemApiFeignService;
 
 
     @Test
@@ -53,6 +58,16 @@ public class ArchivesTest {
         System.out.println(listIdmResDTO);
         System.out.println(idmResDTO);
 
+    }
+    @Test
+    public void test1(){
+        ArrayList<Long> param = Lists.newArrayList();
+        param.add(1809392171948245000L);
+        CustomConfigDetailReqDTO dto = new CustomConfigDetailReqDTO();
+        dto.setCustomConfigDetailIdList(param);
+        IdmResDTO<List<CustomConfigDetailRspDTO>> listIdmResDTO = systemApiFeignService.batchQueryCustomConfigDetails(dto);
+        CustomConfigDetailRspDTO customConfigDetailRspDTO = listIdmResDTO.getData().get(0);
+        System.out.println(customConfigDetailRspDTO.getName());
     }
 
     @Test

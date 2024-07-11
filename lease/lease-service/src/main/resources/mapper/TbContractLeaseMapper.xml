@@ -105,6 +105,12 @@
             <if test=" params.templateId != null">
                 and ci.template_id = #{params.templateId}
             </if>
+            <if test="params.queryIds!=null and params.queryIds.size()>0">
+                and ci.id in
+                <foreach collection="params.queryIds" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
             <if test=" params.reletContractId != null">
                 and ci.relet_contract_id = #{params.reletContractId}
             </if>

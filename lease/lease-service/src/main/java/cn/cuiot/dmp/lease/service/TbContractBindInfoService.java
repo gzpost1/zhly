@@ -49,7 +49,12 @@ public class TbContractBindInfoService extends BaseMybatisServiceImpl<TbContract
      * @return
      */
     public List<Long> queryContractIdsByHouseName(String name) {
-        return baseMapper.queryContractIdsByHouseName(name);
+        List<Long> ids = baseMapper.queryContractIdsByHouseName(name);
+        if(CollectionUtils.isEmpty(ids)){
+             ids = Lists.newArrayList();
+            ids.add(-999L);
+        }
+        return ids;
     }
     /**
      * 根据合同id删除关联关系
