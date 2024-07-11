@@ -172,13 +172,13 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
             if (CollUtil.isEmpty(pageQuery.getDepartments())) {
                 List<Long> departments = Collections.singletonList(LoginInfoHolder.getCurrentDeptId());
                 pageQuery.setDepartments(departments);
+                DepartmentReqDto query = new DepartmentReqDto();
+                query.setDeptIdList(pageQuery.getDepartments());
+                pageQuery.setDepartments(systemConverService.getDeptIds(query));
+                DepartmentReqDto reqDto = new DepartmentReqDto();
+                reqDto.setDeptId(LoginInfoHolder.getCurrentDeptId());
+                pageQuery.setBuildings(archiveConverService.lookupBuildingArchiveByDepartmentList(reqDto));
             }
-            DepartmentReqDto query = new DepartmentReqDto();
-            query.setDeptIdList(pageQuery.getDepartments());
-            pageQuery.setDepartments(systemConverService.getDeptIds(query));
-            DepartmentReqDto reqDto = new DepartmentReqDto();
-            reqDto.setDeptId(LoginInfoHolder.getCurrentDeptId());
-            pageQuery.setBuildings(archiveConverService.lookupBuildingArchiveByDepartmentList(reqDto));
         }
     }
 }
