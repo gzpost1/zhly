@@ -2,6 +2,7 @@ package cn.cuiot.dmp.app.service;
 
 import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
 import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_INVALID;
+import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_EXIST;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_OLD_INVALID;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_LOCKED_ERROR;
@@ -627,14 +628,23 @@ public class AppAuthService {
             throw new BusinessException(ResultCode.PHONE_NUMBER_IS_INVALID, "新手机号不能与旧手机号一致");
         }
         SmsCodeCheckResDto res = appVerifyService
-                .checkPhoneSmsCode(oldPhone, dto.getUserId(), dto.getPreSmsCode(), true);
-        if (!res.getCheckSucceed()) {
-            throw new BusinessException(SMS_TEXT_OLD_INVALID);
-        }
-        res = appVerifyService
                 .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), dto.getSmsCode(), true);
         if (!res.getCheckSucceed()) {
             throw new BusinessException(SMS_TEXT_ERROR);
+        }
+
+        AppUserDto existUser = appUserService
+                .getUserByPhoneAndUserType(dto.getPhoneNumber(), userDto.getUserType());
+        if(Objects.nonNull(existUser)){
+            if(!userDto.getId().equals(existUser.getId())){
+                throw new BusinessException(PHONE_NUMBER_EXIST);
+            }
+        }
+
+        res = appVerifyService
+                .checkPhoneSmsCode(oldPhone, dto.getUserId(), dto.getPreSmsCode(), true);
+        if (!res.getCheckSucceed()) {
+            throw new BusinessException(SMS_TEXT_OLD_INVALID);
         }
         appUserService.changePhone(dto.getUserId(), dto.getPhoneNumber());
     }

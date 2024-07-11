@@ -111,6 +111,9 @@ public class CustomerController {
     public IdmResDTO create(@RequestBody @Valid CustomerDto dto) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
         dto.setCompanyId(currentOrgId);
+        if(CollectionUtils.isEmpty(dto.getAttachments())){
+            dto.setAttachments(Lists.newArrayList());
+        }
         customerService.createCustomer(dto);
         return IdmResDTO.success();
     }
@@ -127,6 +130,9 @@ public class CustomerController {
         }
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
         dto.setCompanyId(currentOrgId);
+        if(CollectionUtils.isEmpty(dto.getAttachments())){
+            dto.setAttachments(Lists.newArrayList());
+        }
         customerService.updateCustomer(dto);
         return IdmResDTO.success();
     }

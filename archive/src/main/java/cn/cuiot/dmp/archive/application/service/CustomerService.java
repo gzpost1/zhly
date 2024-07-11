@@ -103,6 +103,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 .contactName(query.getContactName())
                 .status(query.getStatus())
                 .houseId(query.getHouseId())
+                .loupanId(query.getLoupanId())
                 .build();
         if(StringUtils.isNotBlank(query.getKeyword())){
             criteriaQuery.setKeywordPhone(Sm4.encryption(query.getKeyword()));
@@ -166,6 +167,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 .contactName(query.getContactName())
                 .status(query.getStatus())
                 .houseId(query.getHouseId())
+                .loupanId(query.getLoupanId())
                 .build();
         if(StringUtils.isNotBlank(query.getKeyword())){
             criteriaQuery.setKeywordPhone(Sm4.encryption(query.getKeyword()));
@@ -254,6 +256,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         }
         CustomerEntity entity = new CustomerEntity();
         BeanUtils.copyProperties(dto, entity);
+        //entity.setAttachments(dto.getAttachments());
         entity.setStatus(EntityConstants.ENABLED);
         customerMapper.insert(entity);
         Long customerId = entity.getId();
@@ -271,6 +274,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         }
         CustomerEntity entity = new CustomerEntity();
         BeanUtils.copyProperties(dto, entity);
+        //entity.setAttachments(dto.getAttachments());
         customerMapper.updateById(entity);
         Long customerId = entity.getId();
         customerHouseService.deleteByCustomerId(customerId);
