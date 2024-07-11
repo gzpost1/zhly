@@ -1202,7 +1202,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         params.put("roleIdList", query.getRoleIdList());
         params.put("userIdList", query.getUserIdList());
         params.put("deptIds", query.getDeptIdList());
-        List<UserDataEntity> entities = userDataDao.searchList(params);
+        List<UserDataEntity> entities = userDataDao.lookUpUserList(params);
         if (CollectionUtils.isNotEmpty(entities)) {
             List<BaseUserDto> dtoList = userAssembler
                     .dataEntityListToBaseUserDtoList(entities);
@@ -1223,7 +1223,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     public BaseUserDto lookUpUserInfo(BaseUserReqDto query) {
         Map<String, Object> params = Maps.newHashMap();
         params.put("userId", query.getUserId());
-        List<UserDataEntity> entities = userDataDao.searchList(params);
+        List<UserDataEntity> entities = userDataDao.lookUpUserList(params);
         if (CollectionUtils.isNotEmpty(entities)) {
             List<BaseUserDto> dtoList = userAssembler
                     .dataEntityListToBaseUserDtoList(entities);
