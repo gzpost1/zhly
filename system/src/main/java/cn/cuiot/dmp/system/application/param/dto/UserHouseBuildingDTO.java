@@ -30,4 +30,14 @@ public class UserHouseBuildingDTO implements Serializable {
      */
     private String buildingName;
 
+    /**
+     * 企业ID
+     */
+    private Long companyId;
+
+    /**
+     * 部门ID
+     */
+    private Long departmentId;
+
 }

@@ -46,7 +46,8 @@ public class PriceManageRecordService extends ServiceImpl<PriceManageRecordMappe
     public PageResult<PriceManageRecordEntity> queryByPriceId(PriceManageRecordPageQueryDTO pageQueryDTO) {
         AssertUtil.notNull(pageQueryDTO.getPriceId(), "定价管理id不能为空");
         LambdaQueryWrapper<PriceManageRecordEntity> queryWrapper = new LambdaQueryWrapper<PriceManageRecordEntity>()
-                .eq(PriceManageRecordEntity::getPriceId, pageQueryDTO.getPriceId());
+                .eq(PriceManageRecordEntity::getPriceId, pageQueryDTO.getPriceId())
+                .orderByDesc(PriceManageRecordEntity::getOperateTime);
         IPage<PriceManageRecordEntity> priceManageRecordEntityIPage = page(new Page<>(pageQueryDTO.getPageNo(),
                 pageQueryDTO.getPageSize()), queryWrapper);
         if (CollectionUtils.isEmpty(priceManageRecordEntityIPage.getRecords())) {
