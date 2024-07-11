@@ -232,4 +232,85 @@
         and u.user_type = 1
     </select>
 
+
+    <select id="lookUpUserList" parameterType="java.util.Map" resultType="cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity">
+        SELECT u.*,
+        uo.pk_org_id,
+        o.id as org_id,
+        o.org_name as org_name,
+        o.org_type_id as org_type_id,
+        d.id as dept_id,
+        d.department_name as dept_name,
+        d.path_name as dept_path_name,
+        d.`path` as path,
+        d.`path` as dept_path,
+        r.id as role_id,
+        r.role_name,
+        r.role_key,
+        p.post_name
+        FROM user u
+        left join user_org uo on uo.pk_user_id = u.id
+        left join organization o on uo.pk_org_id = o.id
+        left join department d on uo.pk_dept_id = d.id
+        left join user_role ur on ur.pk_user_id = u.id
+        left join role r on ur.pk_role_id = r.id
+        left join tb_sys_post p on p.id = u.post_id
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="userId != null">
+                AND u.id = #{userId}
+            </if>
+            <if test="userIdList != null and userIdList.size() >0">
+                AND u.id in
+                <foreach collection="userIdList" item="userIdItem" open="(" separator="," close=")">
+                    #{userIdItem}
+                </foreach>
+            </if>
+            <if test="userName != null and userName != ''">
+                AND u.username like CONCAT('%',#{userName},'%')
+            </if>
+            <if test="name != null and name != ''">
+                AND u.name like CONCAT('%',#{name},'%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND u.phone_number = #{phone}
+            </if>
+            <if test="phoneNumber != null and phoneNumber != ''">
+                AND u.phone_number = #{phoneNumber}
+            </if>
+            <if test="status != null">
+                AND u.`status`= #{status}
+            </if>
+            <if test="orgId != null and orgId != -1">
+                AND uo.pk_org_id = #{orgId}
+            </if>
+            <if test="deptIds != null and deptIds.size >0">
+                AND uo.pk_dept_id in
+                <foreach collection="deptIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="path!=null and path != ''">
+                AND d.path like concat(#{path}, '%')
+            </if>
+            <if test="pathList != null and pathList.size >0">
+                AND uo.pk_dept_id in (
+                select id
+                from department
+                where path in
+                <foreach collection="pathList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                )
+            </if>
+            <if test="roleIdList != null and roleIdList.size() >0">
+                AND r.id in
+                <foreach collection="roleIdList" item="roleId" open="(" separator="," close=")">
+                    #{roleId}
+                </foreach>
+            </if>
+            AND u.deleted_flag = 0
+        </trim>
+        order by u.created_on desc,u.id desc
+    </select>
+
 </mapper>
