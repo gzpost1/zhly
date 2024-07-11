@@ -20,7 +20,7 @@ public class PriceManagePageQueryDTO extends PageQuery {
     /**
      * 定价单编码
      */
-    private Long id;
+    private String id;
 
     /**
      * 定价单名称
