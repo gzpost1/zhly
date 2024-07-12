@@ -115,10 +115,11 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
         TbContractLeaseEntity contractLease = contractLeaseService.getById(contractLeaseId);
         AssertUtil.notNull(contractLease, "租赁合同不存在");
         TbContractIntentionEntity queryEntity = getContract(id);
-        baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_SIGN_CONTRACT);
+
         queryEntity.setContractLeaseId(contractLeaseId);
         //记录租赁合同关联信息
         leaseRelateService.saveLeaseRelated(queryEntity, RELATE_INTENTION_TYPE, contractLeaseId);
+        baseContractService.handleAuditStatusByConfig(queryEntity, OPERATE_SIGN_CONTRACT);
         String operMsg = "签约了意向合同,关联的租赁合同为:"
                 + contractLease.getName() + "(编号" + contractLease.getContractNo() + ")";
         String leaseOperMsg = "在意向合同中签约了本租赁合同" + System.lineSeparator() + "意向合同编码:" + queryEntity.getContractNo();
