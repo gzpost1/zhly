@@ -115,7 +115,7 @@ public class HousesArchivesController extends BaseController {
         wrapper.eq(Objects.nonNull(query.getStatus()), HousesArchivesEntity::getStatus, query.getStatus());
         wrapper.eq(Objects.nonNull(query.getOwnershipAttribute()), HousesArchivesEntity::getOwnershipAttribute, query.getOwnershipAttribute());
         wrapper.eq(Objects.nonNull(query.getRoomNum()), HousesArchivesEntity::getRoomNum, query.getRoomNum());
-        wrapper.eq(Objects.nonNull(query.getCode()), HousesArchivesEntity::getCode, query.getCode());
+        wrapper.and(StringUtils.isNotEmpty(query.getCode()),t->t.like(HousesArchivesEntity::getCode, query.getCode()).or().like( HousesArchivesEntity::getRoomNum, query.getCode()));
         if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())) {
             wrapper.like(HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
         }
