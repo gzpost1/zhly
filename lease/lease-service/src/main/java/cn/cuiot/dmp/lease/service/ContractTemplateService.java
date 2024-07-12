@@ -61,7 +61,9 @@ public class ContractTemplateService extends ServiceImpl<ContractTemplateMapper,
      * 查询列表
      */
     public List<ContractTemplateDTO> queryForList(ContractTemplatePageQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
         LambdaQueryWrapper<ContractTemplateEntity> queryWrapper = new LambdaQueryWrapper<ContractTemplateEntity>()
+                .eq(Objects.nonNull(companyId), ContractTemplateEntity::getCompanyId, companyId)
                 .like(StringUtils.isNotBlank(queryDTO.getName()), ContractTemplateEntity::getName, queryDTO.getName())
                 .eq(StringUtils.isNotBlank(queryDTO.getId()), ContractTemplateEntity::getId, queryDTO.getId())
                 .eq(Objects.nonNull(queryDTO.getNatureId()), ContractTemplateEntity::getNatureId, queryDTO.getNatureId())
@@ -87,7 +89,9 @@ public class ContractTemplateService extends ServiceImpl<ContractTemplateMapper,
      * 查询分页列表
      */
     public PageResult<ContractTemplateDTO> queryForPage(ContractTemplatePageQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
         LambdaQueryWrapper<ContractTemplateEntity> queryWrapper = new LambdaQueryWrapper<ContractTemplateEntity>()
+                .eq(Objects.nonNull(companyId), ContractTemplateEntity::getCompanyId, companyId)
                 .like(StringUtils.isNotBlank(queryDTO.getName()), ContractTemplateEntity::getName, queryDTO.getName())
                 .eq(StringUtils.isNotBlank(queryDTO.getId()), ContractTemplateEntity::getId, queryDTO.getId())
                 .eq(Objects.nonNull(queryDTO.getNatureId()), ContractTemplateEntity::getNatureId, queryDTO.getNatureId())
