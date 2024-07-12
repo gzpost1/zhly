@@ -376,6 +376,7 @@ public class AppWorkOrderController {
     @PostMapping("reportRepairsStart")
     @RequiresPermissions(allowUserType = PermissionContants.USER_CLIENT)
     public IdmResDTO reportRepairsStart(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
+        startProcessInstanceDTO.setWorkSource(WorkSourceEnums.CUSTOMER_BILL_LADING.getCode());
         return appWorkInfoService.reportRepairsStart(startProcessInstanceDTO);
     }
 

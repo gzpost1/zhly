@@ -192,4 +192,7 @@ public class WorkInfoDto extends PageQuery {
      * 提交的信息
      */
     private CommitProcessEntity commitProcess;
+
+
+
 }
