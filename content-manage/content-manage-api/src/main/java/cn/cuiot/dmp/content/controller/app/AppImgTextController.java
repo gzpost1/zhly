@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Collections;
 
 /**
  * app-图文
@@ -37,6 +38,7 @@ public class AppImgTextController {
     @PostMapping("/queryForPage")
     public IPage<ImgTextVo> queryForPage(@RequestBody @Valid ContentImgTextPageQuery pageQuery) {
         pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        pageQuery.setBuildings(Collections.singletonList(LoginInfoHolder.getCommunityId()));
         return imgTextService.queryForPage(pageQuery);
     }
 
