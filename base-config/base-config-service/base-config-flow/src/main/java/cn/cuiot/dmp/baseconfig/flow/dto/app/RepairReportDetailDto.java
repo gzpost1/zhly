@@ -6,6 +6,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author pengjian
@@ -77,4 +78,16 @@ public class RepairReportDetailDto {
      * 当前所在节点 为空则表示流程已结束
      */
     private String currentNode;
+
+    /**
+     * 流程定义id
+     */
+    private  String processDefinitionId;
+
+    /**
+     * 组织ids
+     */
+    private List<Long> orgIds;
+
+
 }

@@ -2,6 +2,7 @@ package cn.cuiot.dmp.content.controller.app;//	模板
 
 import cn.cuiot.dmp.base.application.annotation.ResolveExtData;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.param.query.NoticPageQuery;
 import cn.cuiot.dmp.content.param.vo.NoticeVo;
 import cn.cuiot.dmp.content.service.NoticeService;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Collections;
 
 /**
  * app-公告
@@ -35,6 +37,12 @@ public class AppNoticeController {
      */
     @PostMapping("/getNoticeList")
     public IPage<NoticeVo> getAppNoticePage(@RequestBody @Valid NoticPageQuery pageQuery) {
+        if (ContentConstants.PublishSource.MANAGE.equals(pageQuery.getPublishSource())) {
+            pageQuery.setDepartments(Collections.singletonList(LoginInfoHolder.getCurrentDeptId()));
+        } else if (ContentConstants.PublishSource.APP.equals(pageQuery.getPublishSource())) {
+            pageQuery.setBuildings(Collections.singletonList(LoginInfoHolder.getCommunityId()));
+        }
+        pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         return noticeService.getAppNoticePage(pageQuery);
     }
 
