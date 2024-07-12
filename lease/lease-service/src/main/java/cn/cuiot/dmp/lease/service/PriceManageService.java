@@ -75,7 +75,9 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
      * 查询列表
      */
     public List<PriceManageDTO> queryForList(PriceManagePageQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
         LambdaQueryWrapper<PriceManageEntity> queryWrapper = new LambdaQueryWrapper<PriceManageEntity>()
+                .eq(Objects.nonNull(companyId), PriceManageEntity::getCompanyId, companyId)
                 .like(StringUtils.isNotBlank(queryDTO.getName()), PriceManageEntity::getName, queryDTO.getName())
                 .eq(StringUtils.isNotBlank(queryDTO.getId()), PriceManageEntity::getId, queryDTO.getId())
                 .like(Objects.nonNull(queryDTO.getHouseId()), PriceManageEntity::getHouseIds, queryDTO.getHouseId())
@@ -104,7 +106,9 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
      * 查询分页列表
      */
     public PageResult<PriceManageDTO> queryForPage(PriceManagePageQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
         LambdaQueryWrapper<PriceManageEntity> queryWrapper = new LambdaQueryWrapper<PriceManageEntity>()
+                .eq(Objects.nonNull(companyId), PriceManageEntity::getCompanyId, companyId)
                 .like(StringUtils.isNotBlank(queryDTO.getName()), PriceManageEntity::getName, queryDTO.getName())
                 .eq(StringUtils.isNotBlank(queryDTO.getId()), PriceManageEntity::getId, queryDTO.getId())
                 .like(Objects.nonNull(queryDTO.getHouseId()), PriceManageEntity::getHouseIds, queryDTO.getHouseId())
