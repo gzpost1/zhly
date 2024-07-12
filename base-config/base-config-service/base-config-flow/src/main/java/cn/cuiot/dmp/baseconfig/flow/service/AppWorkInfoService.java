@@ -1463,10 +1463,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         if(Objects.isNull(works)){
             return IdmResDTO.error(ErrorCode.NOT_FOUND.getCode(),ErrorCode.NOT_FOUND.getMessage());
         }
-        //判断是否是本人撤销，不是本人撤销提示没有权限
-        if(!Objects.equals(LoginInfoHolder.getCurrentUserId(),works.get(0).getCreateUser())){
-            return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
-        }
+
         //判断流程是否可以撤销,不可以撤销提示没有权限
         WorkInfoDto workDto = BeanMapper.map(works.get(0), WorkInfoDto.class);
         Byte businessType = checkRevokeType(workDto);
@@ -1735,8 +1732,14 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //查询流程状态与按钮信息
         queryButtonStatus(resultDto,workInfoEntity);
 
+        resultDto.setProcessDefinitionId(workInfoEntity.getProcessDefinitionId());
+        if(StringUtils.isNotEmpty(workInfoEntity.getOrgIds())){
+            resultDto.setOrgIds(getOrgIds(workInfoEntity.getOrgIds()));
+        }
+
         return IdmResDTO.success(resultDto);
     }
+
 
     /**
      * 查询流程的状态与填充按钮信息
@@ -1752,8 +1755,11 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             //存在被驳回的记录
             if(Objects.nonNull(workBusinessTypeInfo)){
                 //驳回原因
+                String reasonMessage = getReasonMessage(workBusinessTypeInfo.getReason(), workBusinessTypeInfo.getComments());
+
                 String message = SupplementExplanationEnum.getSupplementExplanation(BusinessInfoEnums.BUSINESS_REFUSE.getCode()).getMessage();
-                resultDto.setContent(message+workBusinessTypeInfo.getComments());
+
+                resultDto.setContent(String.format(message,reasonMessage));
             }
             resultDto.setStatus(WorkInfoEnums.FINISH.getCode());
         }
@@ -1769,8 +1775,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             }
             //当不是超时自动终止则表示是手动终止
             if(Objects.equals(workBusinessTypeInfo.getBusinessType(),BusinessInfoEnums.BUSINESS_CLOSE.getCode())){
+                String reasonMessage = getReasonMessage(workBusinessTypeInfo.getReason(), workBusinessTypeInfo.getComments());
                 String message = SupplementExplanationEnum.getSupplementExplanation(BusinessInfoEnums.BUSINESS_CLOSE.getCode()).getMessage();
-                resultDto.setContent(message+workBusinessTypeInfo.getComments());
+                resultDto.setContent(String.format(message,reasonMessage));
             }
             resultDto.setStatus(WorkInfoEnums.FINISH.getCode());
         }
@@ -1793,7 +1800,8 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
                 WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(Long.parseLong(entity.getProcInstId()),
                         Arrays.asList(BusinessInfoEnums.BUSINESS_TIME_OUT.getCode(),BusinessInfoEnums.BUSINESS_ROLLBACK.getCode()));
                 if(Objects.nonNull(workBusinessTypeInfo)){
-                    resultDto.setContent(String.format(message,workBusinessTypeInfo.getComments()));
+                    String reasonMessage = getReasonMessage(workBusinessTypeInfo.getReason(), workBusinessTypeInfo.getComments());
+                    resultDto.setContent(String.format(message,reasonMessage));
                 }
             }
             //判断是否展示评价按钮
@@ -1821,6 +1829,35 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         }
     }
 
+    /**
+     * 获取消息
+     * @param reasonId
+     * @param comments
+     * @return
+     */
+    public String getReasonMessage(String reasonId,String comments){
+        String reasonMessage = "";
+        if (StringUtils.isNotBlank(reasonId)){
+            Map<Long, String> reasonMap = queryCustomConfigDetail(reasonId);
+            reasonMessage = reasonMap.get(Long.parseLong(reasonId));
+            if(StringUtils.isNotBlank(comments)){
+                reasonMessage=reasonMessage+"("+comments+")";
+            }
+        }
+        return  reasonMessage;
+    }
+    /**
+     * 根据原因编码查询原因
+     * @param reasonId
+     * @return
+     */
+    public Map<Long, String> queryCustomConfigDetail(String reasonId){
+        CustomConfigDetailReqDTO reqDto = new CustomConfigDetailReqDTO();
+        reqDto.setCustomConfigDetailIdList(Arrays.asList(Long.parseLong(reasonId)));
+        IdmResDTO<Map<Long, String>> mapIdmResDTO = systemApiFeignService.batchQueryCustomConfigDetailsForMap(reqDto);
+        Map<Long, String> data = Optional.ofNullable(mapIdmResDTO.getData()).orElse(new HashMap());
+        return data;
+    }
     /**
      * 根据流程定义id与节点id获取流程节点信息
      * @param processDefinitionId
