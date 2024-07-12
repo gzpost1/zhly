@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author hantingyao
@@ -132,4 +133,16 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
             this.baseMapper.deleteBatchIds(ids);
         }
     }
+
+    @Override
+    public List<Long> queryByDataId(Long dataId) {
+        LambdaQueryWrapper<UserMessageEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserMessageEntity::getDataId, dataId);
+        List<UserMessageEntity> userMessageEntities = this.baseMapper.selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(userMessageEntities)) {
+            return userMessageEntities.stream().map(UserMessageEntity::getAccepter).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
+    }
+
 }

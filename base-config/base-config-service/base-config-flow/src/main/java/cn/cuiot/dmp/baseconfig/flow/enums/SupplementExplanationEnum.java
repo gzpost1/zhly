@@ -8,9 +8,9 @@ import java.util.Objects;
  */
 public enum SupplementExplanationEnum {
 
-    REJECT((byte)7,"您的工单被驳回，驳回理由："),
+    REJECT((byte)7,"您的工单被驳回，驳回理由：%s"),
 
-    TERMINATION((byte)4,"您的工单被终止，终止原因："),
+    TERMINATION((byte)4,"您的工单被终止，终止原因：%s"),
 
     FALL_BACK((byte)8,"您的工单被退回，退回原因：%s，您可以重新修改内容后再次提交工单"),
 
