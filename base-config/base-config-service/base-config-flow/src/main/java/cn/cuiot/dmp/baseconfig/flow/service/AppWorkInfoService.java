@@ -1465,8 +1465,13 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         }
 
         //判断流程是否可以撤销,不可以撤销提示没有权限
-        WorkInfoDto workDto = BeanMapper.map(works.get(0), WorkInfoDto.class);
-        Byte businessType = checkRevokeType(workDto);
+        WorkInfoEntity workInfoEntity = works.get(0);
+        WorkInfoDto workInfoDto = new WorkInfoDto();
+        workInfoDto.setRevokeType(workInfoEntity.getRevokeType());
+        workInfoDto.setProcInstId(workInfoEntity.getProcInstId());
+        workInfoDto.setRevokeNodeId(workInfoEntity.getRevokeNodeId());
+        workInfoDto.setProcessDefinitionId(workInfoEntity.getProcessDefinitionId());
+        Byte businessType = checkRevokeType(workInfoDto);
         if(Objects.equals(businessType, ButtonBusinessEnums.NOT_BUTTON)){
             return IdmResDTO.error(ResultCode.NO_OPERATION_PERMISSION.getCode(), ResultCode.NO_OPERATION_PERMISSION.getMessage());
         }
