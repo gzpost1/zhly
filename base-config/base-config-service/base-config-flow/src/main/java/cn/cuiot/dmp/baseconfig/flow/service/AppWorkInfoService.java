@@ -605,6 +605,12 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             resultDto.setCommitProcess(Arrays.asList(processList.get(0)));
         }
 
+        List<WorkInfoEntity> workInfoEntities = queryWorkInfo(dto.getProcInstId());
+        if(CollectionUtil.isNotEmpty(workInfoEntities)){
+            resultDto.setProcessDefinitionId(workInfoEntities.get(0).getProcessDefinitionId());
+            resultDto.setOrgIds(getOrgIds(workInfoEntities.get(0).getOrgIds()));
+        }
+
         return IdmResDTO.success(resultDto);
     }
 

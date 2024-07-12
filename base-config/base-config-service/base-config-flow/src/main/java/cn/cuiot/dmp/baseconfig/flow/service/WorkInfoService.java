@@ -955,6 +955,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public List<Long> getOrgIds(String deptIds){
+        if(StringUtils.isBlank(deptIds)){
+            return new ArrayList<>();
+        }
         String[] stringArray = deptIds.split(",",-1);
         return Arrays.stream(stringArray)
                 .map(e->Long.parseLong(e.trim())) // 将String转换为Long
@@ -1976,7 +1979,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(CollectionUtils.isNotEmpty(processList)){
             resultDto.setCommitProcess(Arrays.asList(processList.get(0)));
         }
-
+        List<WorkInfoEntity> workInfoEntities = queryWorkInfo(dto.getProcInstId());
+        if(CollectionUtil.isNotEmpty(workInfoEntities)){
+            resultDto.setProcessDefinitionId(workInfoEntities.get(0).getProcessDefinitionId());
+            resultDto.setOrgIds(getOrgIds(workInfoEntities.get(0).getOrgIds()));
+        }
         return IdmResDTO.success(resultDto);
     }
 
