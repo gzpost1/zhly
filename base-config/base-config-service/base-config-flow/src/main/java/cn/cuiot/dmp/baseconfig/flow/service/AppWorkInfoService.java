@@ -601,7 +601,10 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
         ProcessResultDto resultDto = new ProcessResultDto();
         resultDto.setProcess(processJson);
-        resultDto.setCommitProcess(processList);
+        if(CollectionUtil.isNotEmpty(processList)){
+            resultDto.setCommitProcess(Arrays.asList(processList.get(0)));
+        }
+
         return IdmResDTO.success(resultDto);
     }
 
@@ -1481,7 +1484,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         handleDataDTO.setComments(businessDto.getComments());
         handleDataDTO.setReason(businessDto.getReason());
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
+
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_REVOKE.getCode());
+        businessTypeInfo.setNode(WorkOrderConstants.USER_ROOT);
         workBusinessTypeInfoService.save(businessTypeInfo);
 
         //更新主流程为已撤销
