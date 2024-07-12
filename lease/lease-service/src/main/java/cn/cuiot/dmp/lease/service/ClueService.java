@@ -326,10 +326,10 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                     return clueDTO;
                 })
                 .collect(Collectors.toList());
-//        fillBuildingName(clueDTOList);
-//        fillUserName(clueDTOList);
-//        fillSystemOptionName(clueDTOList);
-//        fillCustomerName(clueDTOList);
+        fillBuildingName(clueDTOList);
+        fillUserName(clueDTOList);
+        fillSystemOptionName(clueDTOList);
+        fillCustomerName(clueDTOList);
         clueDTOPageResult.setList(clueDTOList);
         clueDTOPageResult.setCurrentPage((int) clueEntityIPage.getCurrent());
         clueDTOPageResult.setPageSize((int) clueEntityIPage.getSize());
