@@ -46,11 +46,13 @@ public class UserMsgConsumer {
 
     //TODO
     private List<UserMessageEntity> dealMsgByType(UserMessageEntity userMessage, SysMsgDto sysMsgDto) {
+        List<Long> accepters = userMessageService.queryByDataId(sysMsgDto.getDataId());
         List<UserMessageEntity> userMessageEntities = new ArrayList<>();
         sysMsgDto.getAcceptors().forEach(acceptor -> {
-            UserMessageEntity userMessageEntity = BeanUtil.copyProperties(userMessage, UserMessageEntity.class);
-            userMessageEntity.setAccepter(acceptor);
-            userMessageEntities.add(userMessageEntity);
+            if (!accepters.contains(acceptor)) {
+                UserMessageEntity userMessageEntity = BeanUtil.copyProperties(userMessage, UserMessageEntity.class);
+                userMessageEntity.setAccepter(acceptor);
+            }
         });
         return userMessageEntities;
     }

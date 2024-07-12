@@ -45,4 +45,11 @@ public interface UserMessageService extends IService<UserMessageEntity> {
      * 读取所有消息
      */
     void realAllMessage();
+
+    /**
+     * 查询某条数据已经被接受的人
+     * @param dataId
+     * @return
+     */
+    List<Long> queryByDataId(Long dataId);
 }
