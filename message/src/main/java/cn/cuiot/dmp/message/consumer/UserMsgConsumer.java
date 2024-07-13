@@ -40,8 +40,10 @@ public class UserMsgConsumer {
             UserMessageEntity userMessage = UserMessageConvert.INSTANCE.concert(userMessageAcceptDto.getSysMsgDto());
             userMessage.init();
             List<UserMessageEntity> userMessageEntities = dealMsgByType(userMessage, userMessageAcceptDto.getSysMsgDto());
+            System.out.println(JsonUtil.writeValueAsString(userMessageEntities));
             userMessageService.saveBatch(userMessageEntities);
         }
+
     }
 
     //TODO
@@ -52,6 +54,7 @@ public class UserMsgConsumer {
             if (!accepters.contains(acceptor)) {
                 UserMessageEntity userMessageEntity = BeanUtil.copyProperties(userMessage, UserMessageEntity.class);
                 userMessageEntity.setAccepter(acceptor);
+                userMessageEntities.add(userMessageEntity);
             }
         });
         return userMessageEntities;
