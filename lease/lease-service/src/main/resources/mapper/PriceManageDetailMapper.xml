@@ -12,7 +12,7 @@
         pmd.price_id = pm.id
         and pm.status = 5
         <if test="ids!=null and ids.size()>0">
-            pmd.house_id in
+            and pmd.house_id in
             <foreach collection="ids" item="id" open="(" close=")" separator=",">
                 #{id}
             </foreach>
