@@ -227,7 +227,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         }
         if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM) && noticeEntity.getInform().contains(ContentConstants.MsgInform.SMS)) {
             UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType((byte) (InformTypeConstant.SYS_MSG + InformTypeConstant.SMS));
-            SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDigest())
+            SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage("你收到一条公告通知，公告名称:"+noticeEntity.getTitle()+",点击查看详情")
                     .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE);
             SmsMsgDto smsMsgDto = new SmsMsgDto();
             userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
@@ -235,7 +235,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
             msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
                     .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON).build());
         } else if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM)) {
-            SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage(noticeEntity.getDigest())
+            SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage("你收到一条公告通知，公告名称:"+noticeEntity.getTitle()+",点击查看详情")
                     .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE);
             UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SYS_MSG).setSysMsgDto(sysMsgDto);
             log.info("notice-sendMsg-userMessageAcceptDto:{}", JsonUtil.writeValueAsString(userMessageAcceptDto));
