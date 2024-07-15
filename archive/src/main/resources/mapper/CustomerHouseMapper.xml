@@ -94,7 +94,6 @@
             tb_customer_house b
         WHERE
             a.id = b.customer_id
-            AND b.house_id = 1807963720061145089
             AND a.deleted = 0
             AND b.deleted = 0
         <if test="param.companyId != null">
