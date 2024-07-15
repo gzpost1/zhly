@@ -72,7 +72,7 @@ public class PriceManageDetailService extends ServiceImpl<PriceManageDetailMappe
     /**
      * 复制新增定价明细
      */
-    public void copyPriceManageDetail(Long priceId, Long copyPriceId){
+    public void copyPriceManageDetail(Long priceId, Long copyPriceId) {
         AssertUtil.notNull(priceId, "定价管理id不能为空");
         AssertUtil.notNull(copyPriceId, "复制定价管理id不能为空");
         LambdaQueryWrapper<PriceManageDetailEntity> queryWrapper = new LambdaQueryWrapper<PriceManageDetailEntity>()
@@ -82,7 +82,7 @@ public class PriceManageDetailService extends ServiceImpl<PriceManageDetailMappe
             return;
         }
         List<PriceManageDetailEntity> copyPriceManageDetailEntities = priceManageDetailEntities.stream()
-                .peek(o->{
+                .peek(o -> {
                     o.setId(IdWorker.getId());
                     o.setPriceId(copyPriceId);
                 })
@@ -94,10 +94,10 @@ public class PriceManageDetailService extends ServiceImpl<PriceManageDetailMappe
      * 根据房屋id查询对应的最新定价
      */
     public Map<Long, Integer> batchQueryHousePriceForMap(List<Long> ids) {
-        LambdaQueryWrapper<PriceManageDetailEntity> queryWrapper = new LambdaQueryWrapper<PriceManageDetailEntity>()
-                .in(PriceManageDetailEntity::getHouseId, ids)
-                .orderByDesc(PriceManageDetailEntity::getCreatedOn);
-        List<PriceManageDetailEntity> priceManageDetailEntities = list(queryWrapper);
+        if (CollectionUtils.isEmpty(ids)) {
+            return new HashMap<>();
+        }
+        List<PriceManageDetailEntity> priceManageDetailEntities = baseMapper.batchQueryHousePrice(ids);
         if (CollectionUtils.isEmpty(priceManageDetailEntities)) {
             return new HashMap<>();
         }

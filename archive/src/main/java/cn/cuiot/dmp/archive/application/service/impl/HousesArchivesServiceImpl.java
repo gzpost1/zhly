@@ -369,7 +369,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
             if (CollectionUtils.isNotEmpty(leaseStatuses)) {
                 h.setLeaseStatuses(leaseStatuses);
             }
-            if (housePriceMap.containsKey(h.getId())) {
+            if (!housePriceMap.isEmpty() && housePriceMap.containsKey(h.getId())) {
                 h.setLatestPrice(housePriceMap.get(h.getId()));
             }
         });
