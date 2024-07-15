@@ -55,7 +55,8 @@ public class VisitorRecordService extends ServiceImpl<VisitorRecordMapper, Visit
      */
     public List<VisitorRecordDTO> queryForList(VisitorRecordPageQueryDTO queryDTO) {
         LambdaQueryWrapper<VisitorRecordEntity> queryWrapper = new LambdaQueryWrapper<VisitorRecordEntity>()
-                .eq(Objects.nonNull(queryDTO.getCreatorId()), VisitorRecordEntity::getCreatedBy, queryDTO.getCreatorId());
+                .eq(Objects.nonNull(queryDTO.getCreatorId()), VisitorRecordEntity::getCreatedBy, queryDTO.getCreatorId())
+                .orderByDesc(VisitorRecordEntity::getVisitTime);
         List<VisitorRecordEntity> visitorRecordEntityList = list(queryWrapper);
         if (CollectionUtils.isEmpty(visitorRecordEntityList)) {
             return new ArrayList<>();
@@ -74,7 +75,8 @@ public class VisitorRecordService extends ServiceImpl<VisitorRecordMapper, Visit
      */
     public PageResult<VisitorRecordDTO> queryForPage(VisitorRecordPageQueryDTO queryDTO) {
         LambdaQueryWrapper<VisitorRecordEntity> queryWrapper = new LambdaQueryWrapper<VisitorRecordEntity>()
-                .eq(Objects.nonNull(queryDTO.getCreatorId()), VisitorRecordEntity::getCreatedBy, queryDTO.getCreatorId());
+                .eq(Objects.nonNull(queryDTO.getCreatorId()), VisitorRecordEntity::getCreatedBy, queryDTO.getCreatorId())
+                .orderByDesc(VisitorRecordEntity::getVisitTime);
         IPage<VisitorRecordEntity> visitorRecordEntityIPage = page(new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize()), queryWrapper);
         if (CollectionUtils.isEmpty(visitorRecordEntityIPage.getRecords())) {
             return new PageResult<>();
