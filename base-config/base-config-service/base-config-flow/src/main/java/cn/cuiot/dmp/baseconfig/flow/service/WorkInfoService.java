@@ -734,32 +734,42 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO businessPending(BatchBusinessDto handleDataDTOs) {
 
        List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
+       AssertUtil.isFalse(
+               org.apache.commons.collections4.CollectionUtils.isEmpty(handleDataDTOs.getProcessInstanceId()) &&
+               org.apache.commons.collections4.CollectionUtils.isEmpty(handleDataDTOs.getTaskIds()) ,"挂起参数不能为空"
+       );
        //工单中心挂起
-        for(String processInstanceId : handleDataDTOs.getProcessInstanceId()){
-            checkWorkOrder(processInstanceId);
-            HandleDataDTO dataDTO = new HandleDataDTO();
-            dataDTO.setProcessInstanceId(processInstanceId);
-            dataDTO.setComments(handleDataDTOs.getComments());
-            dataDTO.setReason(handleDataDTOs.getReason());
-            WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dataDTO);
-            businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_PENDING.getCode());
-            businessTypeInfoEntities.add(businessTypeInfo);
-           //更新主流程状态
-            updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), businessTypeInfo.getProcInstId());
-       }
-        //审批中心挂起
-        for(String taskId : handleDataDTOs.getTaskIds()){
-            checkTaskInfo(taskId);
-            HandleDataDTO dataDTO = new HandleDataDTO();
-            dataDTO.setTaskId(taskId);
-            dataDTO.setComments(handleDataDTOs.getComments());
-            dataDTO.setReason(handleDataDTOs.getReason());
-            WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dataDTO);
-            businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_PENDING.getCode());
-            businessTypeInfoEntities.add(businessTypeInfo);
-            //更新主流程状态
-            updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), businessTypeInfo.getProcInstId());
+        if(CollectionUtils.isNotEmpty(handleDataDTOs.getProcessInstanceId())){
+            for(String processInstanceId : handleDataDTOs.getProcessInstanceId()){
+                checkWorkOrder(processInstanceId);
+                HandleDataDTO dataDTO = new HandleDataDTO();
+                dataDTO.setProcessInstanceId(processInstanceId);
+                dataDTO.setComments(handleDataDTOs.getComments());
+                dataDTO.setReason(handleDataDTOs.getReason());
+                WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dataDTO);
+                businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_PENDING.getCode());
+                businessTypeInfoEntities.add(businessTypeInfo);
+                //更新主流程状态
+                updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), businessTypeInfo.getProcInstId());
+            }
         }
+
+        if(CollectionUtils.isNotEmpty(handleDataDTOs.getTaskIds())){
+            for(String taskId : handleDataDTOs.getTaskIds()){
+                checkTaskInfo(taskId);
+                HandleDataDTO dataDTO = new HandleDataDTO();
+                dataDTO.setTaskId(taskId);
+                dataDTO.setComments(handleDataDTOs.getComments());
+                dataDTO.setReason(handleDataDTOs.getReason());
+                WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dataDTO);
+                businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_PENDING.getCode());
+                businessTypeInfoEntities.add(businessTypeInfo);
+                //更新主流程状态
+                updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), businessTypeInfo.getProcInstId());
+            }
+        }
+        //审批中心挂起
+
         if(CollectionUtils.isNotEmpty(businessTypeInfoEntities)){
             workBusinessTypeInfoService.saveBatch(businessTypeInfoEntities);
         }
