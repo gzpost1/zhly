@@ -25,6 +25,7 @@ import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
@@ -500,21 +501,24 @@ public class UserController extends BaseController {
     /**
      * 查询登录用户信息
      */
+    @ResolveExtData
     @PostMapping(value = "/getLoginUserInfo", produces = "application/json;charset=UTF-8")
     public UserResDTO queryUserById() {
         // 获取session中的userId
-        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
-        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
-        // 判断是否具有查询权限
-        UserResDTO userResDTO = userService
-                .getUserMenuByUserIdAndOrgId(sessionUserId, sessionOrgId);
-        if (userResDTO == null) {
-            // 账号不存在
-            throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
+        Long sessionUserId = LoginInfoHolder.getCurrentUserId();
+        Long sessionOrgId = LoginInfoHolder.getCurrentOrgId();
+
+        UserResDTO userResDTO = userService.getUserById(sessionUserId.toString());
+
+        if (UserTypeEnum.USER.getValue().equals(userResDTO.getUserType())) {
+            userResDTO = userService
+                    .getUserMenuByUserIdAndOrgId(sessionUserId.toString(), sessionOrgId.toString());
+            if (userResDTO == null) {
+                // 账号不存在
+                throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
+            }
         }
-        //对加密的手机号码解密--2020/12/08
-        //增加手机号为空判断，在不为空的情况下才做解密处理 --2020/12/15
-        if (null != userResDTO.getPhoneNumber()) {
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(userResDTO.getPhoneNumber())) {
             userResDTO.setPhoneNumber(Sm4.decrypt(userResDTO.getPhoneNumber()));
         }
         //安全考虑去除密码返回
