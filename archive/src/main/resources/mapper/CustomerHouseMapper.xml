@@ -83,4 +83,33 @@
             t.id DESC
     </select>
 
+    <select id="queryHouseCustomerList"
+            resultType="cn.cuiot.dmp.archive.infrastructure.vo.HouseCustomerVo">
+        SELECT
+            a.id,
+            a.customer_name,
+            b.identity_type
+        FROM
+            tb_customer a,
+            tb_customer_house b
+        WHERE
+            a.id = b.customer_id
+            AND b.house_id = 1807963720061145089
+            AND a.deleted = 0
+            AND b.deleted = 0
+        <if test="param.companyId != null">
+            and a.company_id=#{param.companyId}
+        </if>
+        <if test="param.excludeId != null">
+            and a.id!=#{param.excludeId}
+        </if>
+        <if test="param.houseId != null">
+            and b.house_id=#{param.houseId}
+        </if>
+        GROUP BY
+            a.id,a.customer_name,b.identity_type
+        ORDER BY
+            a.id DESC
+    </select>
+
 </mapper>
