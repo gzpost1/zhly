@@ -955,6 +955,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public List<Long> getOrgIds(String deptIds){
+        if(StringUtils.isBlank(deptIds)){
+            return new ArrayList<>();
+        }
         String[] stringArray = deptIds.split(",",-1);
         return Arrays.stream(stringArray)
                 .map(e->Long.parseLong(e.trim())) // 将String转换为Long
@@ -1898,6 +1901,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         handleDataDTO.setReason(businessDto.getReason());
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_REVOKE.getCode());
+        businessTypeInfo.setNode(WorkOrderConstants.USER_ROOT);
         workBusinessTypeInfoService.save(businessTypeInfo);
 
         //更新主流程为已撤销
@@ -1972,7 +1976,14 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         ProcessResultDto resultDto = new ProcessResultDto();
         resultDto.setProcess(processJson);
-        resultDto.setCommitProcess(processList);
+        if(CollectionUtils.isNotEmpty(processList)){
+            resultDto.setCommitProcess(Arrays.asList(processList.get(0)));
+        }
+        List<WorkInfoEntity> workInfoEntities = queryWorkInfo(dto.getProcInstId());
+        if(CollectionUtil.isNotEmpty(workInfoEntities)){
+            resultDto.setProcessDefinitionId(workInfoEntities.get(0).getProcessDefinitionId());
+            resultDto.setOrgIds(getOrgIds(workInfoEntities.get(0).getOrgIds()));
+        }
         return IdmResDTO.success(resultDto);
     }
 

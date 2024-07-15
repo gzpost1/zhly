@@ -28,5 +28,13 @@ public class ProcessResultDto {
      */
     private Integer nodeCount;
 
+    /**
+     * 流程定义id
+     */
+    private  String ProcessDefinitionId;
 
+    /**
+     * 组织信息
+     */
+    private List<Long> orgIds;
 }
