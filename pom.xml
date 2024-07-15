@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.6.13</version>
+        <version>2.7.18</version>
         <relativePath/>
     </parent>
 
@@ -65,6 +65,7 @@
         <nacos-client.version>2.2.4</nacos-client.version>
         <redisson.version>3.18.0</redisson.version>
         <mysql.version>5.1.46</mysql.version>
+        <spring-framework.version>5.3.37</spring-framework.version>
     </properties>
 
     <dependencyManagement>
