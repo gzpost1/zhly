@@ -510,7 +510,7 @@ public class AppAuthService {
         SmsCodeCheckResDto res = appVerifyService
                 .checkPhoneSmsCode(dto.getPhoneNumber(), null, dto.getSmsCode(), true);
         if (!res.getCheckSucceed()) {
-            throw new BusinessException(SMS_TEXT_OLD_INVALID);
+            throw new BusinessException(SMS_TEXT_OLD_INVALID,"短信验证码错误");
         }
 
         String userAccount = dto.getPhoneNumber();
