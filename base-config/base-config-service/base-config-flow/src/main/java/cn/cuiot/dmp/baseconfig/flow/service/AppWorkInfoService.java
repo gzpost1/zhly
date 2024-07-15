@@ -1822,7 +1822,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             }
             //判断是否展示评价按钮
             NodeTypeEntity nodeInfo = getNodeInfo(entity.getProcessDefinitionId(), tasks.get(0).getTaskDefinitionKey());
-            if(Objects.equals(nodeInfo.getNodeType(), WorkOrderConstants.COMMENT_NODE_TYPE)){
+            if(Objects.nonNull(nodeInfo) && Objects.equals(nodeInfo.getNodeType(), WorkOrderConstants.COMMENT_NODE_TYPE)){
                 resultDto.setEvaluate(ButtonBusinessEnums.BUTTON.getCode());
             }
             //判断是否可以撤回

@@ -85,7 +85,7 @@ public class AppWorkOrderController {
      */
     @PostMapping("start")
     @LogRecord(operationCode = "appStartWork", operationName = "app启动工单", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    @RequiresPermissions
+    @RequiresPermissions(allowUserType = PermissionContants.USER_ALL)
     public IdmResDTO start(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
         startProcessInstanceDTO.setWorkSource(WorkSourceEnums.WORK_SOURCE_MAKE.getCode());
         return appWorkInfoService.start(startProcessInstanceDTO);
