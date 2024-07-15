@@ -1,12 +1,17 @@
 package cn.cuiot.dmp.archive.application.service;
 
+import cn.cuiot.dmp.archive.application.param.query.CustomerQuery;
 import cn.cuiot.dmp.archive.infrastructure.entity.CustomerHouseEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.CustomerHouseMapper;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerHouseVo;
+import cn.cuiot.dmp.archive.infrastructure.vo.CustomerVo;
+import cn.cuiot.dmp.archive.infrastructure.vo.HouseCustomerVo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.Sm4;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import java.util.List;
@@ -53,4 +58,12 @@ public class CustomerHouseService extends ServiceImpl<CustomerHouseMapper, Custo
         customerHouseMapper.update(null, lambdaUpdate);*/
         customerHouseMapper.deleteByCustomerId(customerId);
     }
+
+    /**
+     * 房屋关联客户列表
+     */
+    public IPage<HouseCustomerVo> queryHouseCustomerList(CustomerQuery query) {
+        return customerHouseMapper.queryHouseCustomerList(new Page<HouseCustomerVo>(query.getPageNo(), query.getPageSize()),query);
+    }
+
 }

@@ -86,7 +86,9 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
      * 查询列表
      */
     public List<UserHouseAuditDTO> queryForList(UserHouseAuditPageQueryDTO queryDTO) {
-
+        if(StringUtils.isNotBlank(queryDTO.getPhoneNumber())){
+            queryDTO.setPhoneNumber(Sm4.encryption(queryDTO.getPhoneNumber()));
+        }
         List<UserHouseAuditDTO> selectList = userHouseAuditMapper.queryForList(queryDTO);
         if (CollectionUtils.isEmpty(selectList)) {
             return new ArrayList<>();
@@ -100,6 +102,9 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
      * 查询分页列表
      */
     public IPage<UserHouseAuditDTO> queryForPage(UserHouseAuditPageQueryDTO queryDTO) {
+        if(StringUtils.isNotBlank(queryDTO.getPhoneNumber())){
+            queryDTO.setPhoneNumber(Sm4.encryption(queryDTO.getPhoneNumber()));
+        }
         IPage<UserHouseAuditDTO> page = userHouseAuditMapper
                 .queryForList(new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize()), queryDTO);
         if (CollectionUtils.isNotEmpty(page.getRecords())) {
