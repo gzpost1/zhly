@@ -113,6 +113,7 @@ public class ChargeManagerController {
             AssertUtil.notNull(query.getHouseId(), "房屋id不能为空");
             query.setAbrogateStatus(ChargeAbrogateEnum.NORMAL.getCode());
             query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+            query.setReceivbleStatusList(Lists.newArrayList(ChargeReceivbleEnum.UNPAID.getCode(), ChargeReceivbleEnum.PAID.getCode()));
         }
 
         IPage<ChargeManagerPageDto> chargeManagerPageDtoIPage = tbChargeManagerService.queryForPage(query);

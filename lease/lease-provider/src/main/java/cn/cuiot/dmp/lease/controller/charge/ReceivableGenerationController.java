@@ -17,6 +17,7 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeHangup;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.enums.ChargeAbrogateEnum;
+import cn.cuiot.dmp.lease.enums.ChargeAbrogateTypeEnum;
 import cn.cuiot.dmp.lease.enums.ChargeHangUpEnum;
 import cn.cuiot.dmp.lease.enums.ChargeReceivbleEnum;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
@@ -195,6 +196,7 @@ public class ReceivableGenerationController {
      */
     @PostMapping("/queryForAbrogatePage")
     public IdmResDTO<IPage<TbChargeAbrogate>> queryForAbrogatePage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
+        queryDto.setDataType( ChargeAbrogateTypeEnum.CHARGE.getCode());
         IPage<TbChargeAbrogate> tbChargeHangupIPage = tbChargeManagerService.queryForAbrogatePage(queryDto);
         if(Objects.nonNull(tbChargeHangupIPage) && CollectionUtils.isNotEmpty(tbChargeHangupIPage.getRecords())){
             List<Long> userIds = tbChargeHangupIPage.getRecords().stream().map(TbChargeAbrogate::getCreateUser).distinct().collect(Collectors.toList());
