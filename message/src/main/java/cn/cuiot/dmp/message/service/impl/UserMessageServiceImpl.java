@@ -45,16 +45,20 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
             Query query = new Query();
             query.addCriteria(Criteria.where("accepter").is(LoginInfoHolder.getCurrentUserId()));
             if (Objects.nonNull(pageQuery.getDataType())) {
-                query.addCriteria(new Criteria().andOperator(Criteria.where("dataType").is(pageQuery.getDataType())));
+                query.addCriteria(Criteria.where("dataType").is(pageQuery.getDataType()));
             }
-            if (Objects.nonNull(pageQuery.getMessageGtTime())) {
-                query.addCriteria(Criteria.where("messageTime").gte(pageQuery.getMessageGtTime()));
-            }
-            if (Objects.nonNull(pageQuery.getMessageLeTime())) {
-                query.addCriteria(Criteria.where("messageTime").lte(pageQuery.getMessageLeTime()));
+            if (Objects.nonNull(pageQuery.getMessageGtTime()) || Objects.nonNull(pageQuery.getMessageLeTime())) {
+                Criteria criteria = Criteria.where("messageTime");
+                if (Objects.nonNull(pageQuery.getMessageGtTime())) {
+                    criteria.gte(pageQuery.getMessageGtTime());
+                }
+                if (Objects.nonNull(pageQuery.getMessageLeTime())) {
+                    criteria.lte(pageQuery.getMessageLeTime());
+                }
+                query.addCriteria(criteria);
             }
             if (StrUtil.isNotEmpty(pageQuery.getMsgType())) {
-                query.addCriteria(new Criteria().andOperator(Criteria.where("msgType").is(pageQuery.getMsgType())));
+                query.addCriteria(Criteria.where("msgType").is(pageQuery.getMsgType()));
             }
             //计算总数
             long total = mongoTemplate.count(query, UserMessageEntity.class);
