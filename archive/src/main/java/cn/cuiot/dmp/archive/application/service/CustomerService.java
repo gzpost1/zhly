@@ -24,6 +24,7 @@ import cn.cuiot.dmp.archive.infrastructure.vo.CustomerHouseVo;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerMemberVo;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerVehicleVo;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerVo;
+import cn.cuiot.dmp.archive.infrastructure.vo.HouseCustomerVo;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgBindingNameConstants;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgTagConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
@@ -730,6 +731,13 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
             }
         }
         return list;
+    }
+
+    /**
+     * 房屋关联客户列表
+     */
+    public IPage<HouseCustomerVo> queryHouseCustomerList(CustomerQuery query) {
+        return customerHouseService.queryHouseCustomerList(query);
     }
 
 }
