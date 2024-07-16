@@ -1410,7 +1410,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //保存操作信息
         List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
         //工单中心终止流程
-        for(String instId:handleDataDTOs.getProcessInstanceId()){
+        List<String> processInstanceIds = Optional.ofNullable(handleDataDTOs.getProcessInstanceId()).orElse(new ArrayList<>());
+        for(String instId:processInstanceIds){
             //校验工单信息
             checkWorkOrder(instId);
             HandleDataDTO dataDTO = new HandleDataDTO();
@@ -1433,7 +1434,9 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             msgSendService.sendProcess(workBusinessTypeInfo.getProcInstId().toString(), MsgDataType.WORK_INFO_CANCEL);
         }
         //审批中心终止流程
-        for(String taskId : handleDataDTOs.getTaskIds()){
+        List<String> teskIds = Optional.ofNullable(handleDataDTOs.getTaskIds()).orElse(new ArrayList<>());
+
+        for(String taskId :teskIds){
             //校验任务信息
             checkTaskInfo(taskId);
             HandleDataDTO dataDTO = new HandleDataDTO();
