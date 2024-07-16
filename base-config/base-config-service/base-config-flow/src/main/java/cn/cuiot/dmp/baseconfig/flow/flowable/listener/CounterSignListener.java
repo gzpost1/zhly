@@ -231,7 +231,7 @@ public class CounterSignListener implements ExecutionListener {
 
                 } else if (TO_SUSPEND.equals(handler)) {
                     //找不到审批人且是自动挂起
-                    assigneeList.add(DEFAULT_NULL_ASSIGNEE);
+                    assigneeList.add(DEFAULT_NULL_SUSPEND);
                     execution.setVariable(variable, assigneeList);
 
                     List<Task> list = taskService.createTaskQuery()
