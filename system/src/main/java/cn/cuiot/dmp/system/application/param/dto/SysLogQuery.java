@@ -38,4 +38,8 @@ public class SysLogQuery extends PageQuery {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date optEndTime;
 
+    /**
+     * 当前登录企业ID
+     */
+    private Long orgId;
 }

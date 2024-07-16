@@ -12,6 +12,11 @@ import lombok.Data;
 public class UserCsvDto {
 
     /**
+     * 用户主键id
+     */
+    private Long id;
+
+    /**
      * 用户名
      */
     private String username;
@@ -36,7 +41,8 @@ public class UserCsvDto {
         this.password = password;
     }
 
-    public UserCsvDto(String username, String phoneNumber, String password) {
+    public UserCsvDto(Long userId,String username, String phoneNumber, String password) {
+        this.id= userId;
         this.username = username;
         this.password = password;
         this.phoneNumber = phoneNumber;

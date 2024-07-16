@@ -1243,12 +1243,12 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             //工单创建人与当前重新发起人不一致，不能重新发起
             List<WorkInfoEntity> work = queryWorkInfo(Long.parseLong(startProcessInstanceDTO.getProcessInstanceId()));
 
-            if(Objects.equals(work.get(0).getCreateUser(),String.valueOf(LoginInfoHolder.getCurrentUserId()))){
+            if(!Objects.equals(work.get(0).getCreateUser(),LoginInfoHolder.getCurrentUserId())){
                 throw new BusinessException(ErrorCode.NOT_OPERATION.getCode(), ErrorCode.NOT_OPERATION.getMessage());
             }
             //当前不是root节点不能够重新发起
 
-            if(Objects.equals(WorkOrderConstants.USER_ROOT,tasks.get(0).getTaskDefinitionKey())){
+            if(!Objects.equals(WorkOrderConstants.USER_ROOT,tasks.get(0).getTaskDefinitionKey())){
                 throw new BusinessException(ErrorCode.NOT_OPERATION.getCode(), ErrorCode.NOT_OPERATION.getMessage());
             }
             task=tasks.get(0);
