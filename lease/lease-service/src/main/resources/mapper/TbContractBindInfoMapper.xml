@@ -45,7 +45,7 @@
 
     <select id="queryConctactStatusByHouseIds"
             resultType="cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus">
-        select bind_id houseId, begin_date, end_date, contract_status, type
+        select bind_id houseId, begin_date, end_date, contract_status, b.type
         from tb_contract_bind_info b
                      left join tb_contract_intention i on b.contract_id = i.id
         where b.type = 1
@@ -58,7 +58,7 @@
                 </foreach>
             </if>
         union
-        select bind_id houseId, begin_date, end_date, contract_status, type
+        select bind_id houseId, begin_date, end_date, contract_status, b.type
         from tb_contract_bind_info b
                      left join tb_contract_lease i on b.contract_id = i.id
         where b.type = 2

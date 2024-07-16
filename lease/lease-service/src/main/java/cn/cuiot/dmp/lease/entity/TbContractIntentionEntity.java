@@ -98,7 +98,7 @@ public class TbContractIntentionEntity extends BaseContractEntity {
 
     @Override
     public void setContractStatus(Integer contractStatus) {
-        if (Objects.equals(contractStatus, ContractEnum.STATUS_SIGNED.getCode())) {
+        if (Objects.equals(contractStatus, ContractEnum.STATUS_SIGNED.getCode())&&Objects.isNull(getCantractDate())) {
             LocalDate now = LocalDate.now();
             setCantractDate(now);
         }

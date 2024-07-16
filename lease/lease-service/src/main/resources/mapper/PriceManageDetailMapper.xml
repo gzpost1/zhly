@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.PriceManageDetailMapper">
+
+    <select id="batchQueryHousePrice" resultType="cn.cuiot.dmp.lease.entity.PriceManageDetailEntity">
+        select
+        pmd.*
+        from
+        price_manage_detail pmd,
+        price_manage pm
+        where
+        pmd.price_id = pm.id
+        and pm.status = 5
+        <if test="ids!=null and ids.size()>0">
+            and pmd.house_id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        order by
+        pmd.created_on desc
+    </select>
+
+</mapper>

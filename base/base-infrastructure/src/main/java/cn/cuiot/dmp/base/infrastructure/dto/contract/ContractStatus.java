@@ -27,7 +27,7 @@ public class ContractStatus implements Serializable {
     private LocalDate endDate;
     private Integer contractStatus;
     /**
-     * 1.意向合同 3.租赁合同
+     * 1.意向合同 2.租赁合同
      */
     private Integer type;
 

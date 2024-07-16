@@ -2,12 +2,13 @@
 <configuration>
     <Properties>
         <Property name="LOG_HOME">./log</Property>
-        <Property name="pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%X{traceId}] [%thread] [%F:%method] - %msg%n</Property>
+        <Property name="pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%X{traceId}] [%thread] %logger{36} - %msg%n</Property>
     </Properties>
     <!-- 先定义所有的appender -->
     <Appenders>
         <!-- 这个输出控制台的配置 -->
         <Console name="CONSOLE" target="SYSTEM_OUT">
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
             <PatternLayout>
                 <Pattern>${pattern}</Pattern>
             </PatternLayout>
@@ -43,8 +44,20 @@
             <AppenderRef ref="APPINFO_APPENDER"/>
             <AppenderRef ref="CONSOLE"/>
         </AsyncRoot>
+        <AsyncLogger name="org.apache.ibatis" level="DEBUG" includeLocation="false" additivity="false">
+            <AppenderRef ref="APPINFO_APPENDER"/>
+            <AppenderRef ref="CONSOLE"/>
+        </AsyncLogger>
+        <AsyncLogger name="org.mybatis" level="DEBUG" includeLocation="false" additivity="false">
+            <AppenderRef ref="APPINFO_APPENDER"/>
+            <AppenderRef ref="CONSOLE"/>
+        </AsyncLogger>
+        <AsyncLogger name="java.sql.PreparedStatement" level="DEBUG" includeLocation="false" additivity="false">
+            <AppenderRef ref="APPINFO_APPENDER"/>
+            <AppenderRef ref="CONSOLE"/>
+        </AsyncLogger>
         <!-- 常打印的应用日志，建议独立配置，并采用异步模式。name根据实际的包名修改，生产环境中additivity建议设置为false以避免在root logger中重复打印 -->
-        <AsyncLogger name="com.cuiot" level="INFO" includeLocation="false" additivity="false">
+        <AsyncLogger name="cn.cuiot.dmp" level="DEBUG" includeLocation="false" additivity="false">
             <AppenderRef ref="APPINFO_APPENDER"/>
             <AppenderRef ref="CONSOLE"/>
         </AsyncLogger>
