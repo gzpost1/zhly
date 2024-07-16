@@ -237,17 +237,6 @@ public class CounterSignListener implements ExecutionListener {
                     assigneeList.add(DEFAULT_NULL_SUSPEND);
                     execution.setVariable(variable, assigneeList);
 
-                    List<Task> list = taskService.createTaskQuery()
-                            .processDefinitionId(execution.getProcessDefinitionId())
-                            .taskDefinitionKey(userTask.getId())
-                            .list();
-
-                    //挂起流程
-                    if (CollectionUtils.isNotEmpty(list)) {
-                        //保存超时信息和挂起信息
-                        workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.SUSPEND,null);
-                    }
-
                     //更新工单信息
                     workInfoService.updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
                 } else {
