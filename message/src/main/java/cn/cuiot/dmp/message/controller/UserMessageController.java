@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.message.controller;//	模板
 
 import cn.cuiot.dmp.base.application.annotation.ResolveExtData;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.message.dal.entity.UserMessageEntity;
 import cn.cuiot.dmp.message.param.MessagePageQuery;
 import cn.cuiot.dmp.message.param.MessagePageQueryReq;
@@ -37,6 +38,7 @@ public class UserMessageController {
      */
     @PostMapping("/getMessage")
     public IPage<UserMessageEntity> getMessage(@RequestBody MessagePageQuery pageQuery) {
+        pageQuery.setUserType(LoginInfoHolder.getCurrentUserType());
         return userMessageService.getMessage(pageQuery);
     }
 

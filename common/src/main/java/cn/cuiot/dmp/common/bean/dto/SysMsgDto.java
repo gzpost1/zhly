@@ -65,4 +65,16 @@ public class SysMsgDto extends SysMsgBaseDto {
         super.setMessageTime(messageTime);
         return this;
     }
+
+    @Override
+    public SysMsgDto setBuildingId(Long buildingId) {
+        super.setBuildingId(buildingId);
+        return this;
+    }
+
+    @Override
+    public SysMsgDto setUserType(Integer userType) {
+        super.setUserType(userType);
+        return this;
+    }
 }

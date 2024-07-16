@@ -29,6 +29,7 @@ import cn.cuiot.dmp.content.param.vo.NoticeVo;
 import cn.cuiot.dmp.content.service.ContentDataRelevanceService;
 import cn.cuiot.dmp.content.service.NoticeService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -70,8 +71,10 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     @Override
     public NoticeVo queryForDetail(Long id) {
         ContentNoticeEntity contentNoticeEntity = this.baseMapper.selectById(id);
-        NoticeVo noticeVo = NoticeConvert.INSTANCE.convert(contentNoticeEntity);
-        return noticeVo;
+        if (contentNoticeEntity == null) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
+        return NoticeConvert.INSTANCE.convert(contentNoticeEntity);
     }
 
     @Override
@@ -196,13 +199,13 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     @Override
     //TODO 缺少短信通知
     public void sendNoticeMessage(ContentNoticeEntity noticeEntity) {
-        log.info("sendNoticeMessage-params:{}",JsonUtil.writeValueAsString(noticeEntity));
+        log.info("sendNoticeMessage-params:{}", JsonUtil.writeValueAsString(noticeEntity));
         if (ContentConstants.PublishSource.MANAGE.equals(noticeEntity.getPublishSource())) {
             if (CollUtil.isNotEmpty(noticeEntity.getDepartments())) {
                 BaseUserReqDto reqDto = new BaseUserReqDto();
                 reqDto.setDeptIdList(noticeEntity.getDepartments().stream().map(Long::parseLong).collect(Collectors.toList()));
                 List<Long> longs = systemConverService.lookUpUserIds(reqDto);
-                sendMsg(noticeEntity, longs);
+                sendMsg(noticeEntity, longs, UserTypeEnum.USER.getValue(),null);
             }
         } else if (ContentConstants.PublishSource.APP.equals(noticeEntity.getPublishSource())) {
             if (CollUtil.isNotEmpty(noticeEntity.getBuildings())) {
@@ -212,31 +215,31 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                 for (String building : noticeEntity.getBuildings()) {
                     if (map.containsKey(Long.parseLong(building))) {
                         List<Long> longs = map.get(Long.parseLong(building));
-                        sendMsg(noticeEntity, longs);
+                        sendMsg(noticeEntity, longs,UserTypeEnum.OWNER.getValue(),Long.parseLong(building));
                     }
                 }
             }
         }
     }
 
-    private void sendMsg(ContentNoticeEntity noticeEntity, List<Long> longs) {
-        log.info("sendMsg-params:noticeEntity:{},userIds:{}",JsonUtil.writeValueAsString(noticeEntity),longs);
+    private void sendMsg(ContentNoticeEntity noticeEntity, List<Long> longs,Integer userType,Long building) {
+        log.info("sendMsg-params:noticeEntity:{},userIds:{}", JsonUtil.writeValueAsString(noticeEntity), longs);
         if (CollUtil.isEmpty(longs) || CollUtil.isEmpty(noticeEntity.getInform())) {
             log.info("notice-sendMsg:userid is entity -> return");
             return;
         }
         if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM) && noticeEntity.getInform().contains(ContentConstants.MsgInform.SMS)) {
             UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType((byte) (InformTypeConstant.SYS_MSG + InformTypeConstant.SMS));
-            SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage("你收到一条公告通知，公告名称:"+noticeEntity.getTitle()+",点击查看详情")
-                    .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE);
+            SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage("你收到一条公告通知，公告名称:" + noticeEntity.getTitle() + ",点击查看详情")
+                    .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE).setUserType(userType).setBuildingId(building);
             SmsMsgDto smsMsgDto = new SmsMsgDto();
             userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
             log.info("notice-sendMsg-userMessageAcceptDto:{}", JsonUtil.writeValueAsString(userMessageAcceptDto));
             msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
                     .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON).build());
         } else if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM)) {
-            SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage("你收到一条公告通知，公告名称:"+noticeEntity.getTitle()+",点击查看详情")
-                    .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE);
+            SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage("你收到一条公告通知，公告名称:" + noticeEntity.getTitle() + ",点击查看详情")
+                    .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE).setUserType(userType).setBuildingId(building);
             UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SYS_MSG).setSysMsgDto(sysMsgDto);
             log.info("notice-sendMsg-userMessageAcceptDto:{}", JsonUtil.writeValueAsString(userMessageAcceptDto));
             msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
@@ -255,6 +258,9 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     @Override
     public NoticeVo queryForAppDetail(Long id) {
         ContentNoticeEntity contentNoticeEntity = this.baseMapper.selectById(id);
+        if (contentNoticeEntity == null) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
         NoticeVo noticeVo = NoticeConvert.INSTANCE.convert(contentNoticeEntity);
         Byte effectiveStatus = NoticeConvert.INSTANCE.checkEffectiveStatus(noticeVo);
         if (ContentConstants.PublishStatus.UNPUBLISHED.equals(noticeVo.getPublishStatus()) || !EntityConstants.NORMAL.equals(effectiveStatus)) {
