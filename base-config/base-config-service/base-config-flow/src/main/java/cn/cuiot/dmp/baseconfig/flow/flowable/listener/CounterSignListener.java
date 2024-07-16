@@ -6,9 +6,11 @@ import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.UserInfo;
 import cn.cuiot.dmp.baseconfig.flow.enums.AssigneeTypeEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.TimeLimitHandleEnums;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkBusinessEnums;
+import cn.cuiot.dmp.baseconfig.flow.enums.WorkOrderStatusEnums;
 import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
 import cn.cuiot.dmp.baseconfig.flow.service.TbFlowConfigOrgService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkBusinessTypeInfoService;
+import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
@@ -61,7 +63,8 @@ public class CounterSignListener implements ExecutionListener {
     private SystemToFlowService systemToFlowService;
     @Autowired
     private TbFlowConfigOrgService flowConfigOrgService;
-
+    @Autowired
+    private WorkInfoService workInfoService;
     /**
      * 任务启动时的监听器
      *
@@ -241,11 +244,12 @@ public class CounterSignListener implements ExecutionListener {
 
                     //挂起流程
                     if (CollectionUtils.isNotEmpty(list)) {
-                        for (Task task : list) {
-                            //保存超时信息和挂起信息
-                            workBusinessTypeInfoService.saveBusinessInfo(task, userTask, WorkBusinessEnums.SUSPEND, "处理人为空，系统自动挂起");
-                        }
+                        //保存超时信息和挂起信息
+                        workBusinessTypeInfoService.saveBusinessInfo(list.get(0), userTask, WorkBusinessEnums.SUSPEND,null);
                     }
+
+                    //更新工单信息
+                    workInfoService.updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), Long.valueOf(execution.getProcessInstanceId()));
                 } else {
 
                     assigneeList.add(DEFAULT_NULL_ASSIGNEE);
