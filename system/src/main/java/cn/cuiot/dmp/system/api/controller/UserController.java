@@ -72,6 +72,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -394,6 +395,17 @@ public class UserController extends BaseController {
         userBo.setDeptId(dto.getDeptId());
         List<UserExportVo> dataList = userService.exportUsers(userBo);
 
+        //设置日志操作对象内容
+        if(CollectionUtils.isNotEmpty(dataList)){
+            //设置日志操作对象内容
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .name("用户")
+                    .targetDatas(dataList.stream().map(item->{
+                        return new OptTargetData(item.getUsername(),item.getId());
+                    }).collect(Collectors.toList()))
+                    .build());
+        }
+
         List<Map<String, Object>> sheetsList = new ArrayList<>();
 
         Map<String, Object> sheet1 = ExcelUtils
@@ -461,6 +473,17 @@ public class UserController extends BaseController {
         userBo.setImportDtoList(importDtoList);
 
         List<UserImportDownloadVo> dataList = userService.importUsers(userBo);
+
+        //设置日志操作对象内容
+        if(CollectionUtils.isNotEmpty(dataList)){
+            //设置日志操作对象内容
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .name("用户")
+                    .targetDatas(dataList.stream().map(item->{
+                        return new OptTargetData(item.getUsername(),item.getId().toString());
+                    }).collect(Collectors.toList()))
+                    .build());
+        }
 
         /*List<Map<String, Object>> sheetsList = new ArrayList<>();
 

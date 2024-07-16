@@ -106,7 +106,7 @@ public class LogRecordAspect {
         operateLogDto.setOrgId(StrUtil.toStringOrNull(LoginInfoHolder.getCurrentOrgId()));
         //请求时间
         operateLogDto.setRequestTime(
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         //请求IP
         operateLogDto.setRequestIp(IpUtil.getIpAddr(request));
         //操作者ID

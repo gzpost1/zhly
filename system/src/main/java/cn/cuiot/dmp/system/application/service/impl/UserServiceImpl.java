@@ -525,6 +525,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         String loginUserId = userBo.getLoginUserId();
         String deptId = userBo.getDeptId();
 
+        //设置日志操作对象内容
+        setOptTargetInfo(ids);
+
         /**
          * 判断所选组织部门是否可选
          */
@@ -583,9 +586,6 @@ public class UserServiceImpl extends BaseController implements UserService {
             // 设备模块使用了缓存，系统模块姓名或手机号变更需要清除redisKey
             redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + pkUserId);
         }
-
-        //设置日志操作对象内容
-        setOptTargetInfo(ids);
     }
 
     /**
@@ -598,6 +598,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         List<Long> ids = userBo.getIds();
         String loginUserId = userBo.getLoginUserId();
         Byte status = userBo.getStatus();
+
+        //设置日志操作对象内容
+        setOptTargetInfo(ids);
 
         /**
          * 判断所选组织部门是否可选
@@ -649,8 +652,6 @@ public class UserServiceImpl extends BaseController implements UserService {
             userEntity.updatedByPortal(loginUserId);
             userRepository.save(userEntity);
         }
-        //设置日志操作对象内容
-        setOptTargetInfo(ids);
 
     }
 
@@ -680,6 +681,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         String sessionOrgId = userBo.getOrgId();
         List<Long> ids = userBo.getIds();
         String loginUserId = userBo.getLoginUserId();
+
+        //设置日志操作对象内容
+        setOptTargetInfo(ids);
 
         // 查询该账户的账户所有者
         Long orgOwner = userDao.findOrgOwner(sessionOrgId);
@@ -931,6 +935,7 @@ public class UserServiceImpl extends BaseController implements UserService {
             downloadVo.setUsername(userBo.getUsername());
             downloadVo.setPhoneNumber(userBo.getPhoneNumber());
             downloadVo.setPassword(userBo.getPassword());
+            downloadVo.setId(userBo.getId());
             resultList.add(downloadVo);
         }
 
