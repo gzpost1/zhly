@@ -45,4 +45,9 @@ public class TbFlowConfigQuery extends PageQuery {
      * 是否允许客户端发起工单 0否 1是
      */
     private Byte isSelectAppUser;
+
+    /**
+     * 楼盘ID
+     */
+    private Long communityId;
 }

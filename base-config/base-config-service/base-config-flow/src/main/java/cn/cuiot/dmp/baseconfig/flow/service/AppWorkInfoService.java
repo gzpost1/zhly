@@ -250,7 +250,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     }
 
     public WorkInfoDto queryWorkInfoDto(WorkProcInstDto dto){
-       checkWorkOrder(dto.getProcInstId());
+//       checkWorkOrder(dto.getProcInstId());
         //获取工单详情
         WorkInfoDto resultDto = getBaseMapper().queryWorkOrderDetailInfo(dto);
         //填充组织名称
@@ -351,8 +351,34 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             WorkBusinessTypeInfoEntity businessTypeInfo = queryWorkBusinessById(null, Long.parseLong(resultDto.getProcInstId()));
             resultDto.setBusinessTime(businessTypeInfo.getStartTime());
         }
+
+        if(resultDto.getStatus().equals(WorkInfoEnums.WITHDRAWN.getCode())){
+            WorkBusinessTypeInfoEntity businessTypeInfo = queryWorkBusinessByWithdrawn(Long.parseLong(resultDto.getProcInstId()),BusinessInfoEnums.BUSINESS_REVOKE.getCode());
+            resultDto.setBusinessTime(businessTypeInfo.getStartTime());
+        }
     }
 
+    /**
+     * 查询撤回时间
+     * @param procInstId
+     * @param procInstId
+     * @return
+     */
+    public WorkBusinessTypeInfoEntity queryWorkBusinessByWithdrawn(Long procInstId,Byte businessType){
+        LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkBusinessTypeInfoEntity::getProcInstId,procInstId)
+                .eq(WorkBusinessTypeInfoEntity::getBusinessType, businessType);
+        List<WorkBusinessTypeInfoEntity> list = workBusinessTypeInfoService.list(lw);
+        return CollectionUtils.isEmpty(list)?null:list.get(0);
+    }
+
+
+    /**
+     * 查询挂起信息
+     * @param nodeId
+     * @param procInstId
+     * @return
+     */
     public WorkBusinessTypeInfoEntity queryWorkBusinessById(String nodeId,Long procInstId){
         LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
         lw.eq(Objects.nonNull(nodeId),WorkBusinessTypeInfoEntity::getNode,nodeId)
@@ -1677,6 +1703,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         Map formValue = JSONObject.parseObject(formData.toJSONString(), new TypeReference<Map>() {
         });
         processVariables.putAll(formValue);
+        processVariables.put(WorkOrderConstants.FORM_VAR,formData);
         Task task =null;
         //再次发起
         if(StringUtils.isNotBlank(startProcessInstanceDTO.getProcessInstanceId())){
@@ -1859,6 +1886,8 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             if(StringUtils.isNotBlank(comments)){
                 reasonMessage=reasonMessage+"("+comments+")";
             }
+        }else{
+            reasonMessage=comments;
         }
         return  reasonMessage;
     }

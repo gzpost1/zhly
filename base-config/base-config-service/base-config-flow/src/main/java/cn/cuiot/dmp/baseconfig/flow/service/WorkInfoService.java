@@ -735,7 +735,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
        List<WorkBusinessTypeInfoEntity> businessTypeInfoEntities = new ArrayList<>();
        //工单中心挂起
-        for(String processInstanceId : handleDataDTOs.getProcessInstanceId()){
+        List<String> processInstanceIds = Optional.ofNullable(handleDataDTOs.getProcessInstanceId()).orElse(new ArrayList<>());
+        for(String processInstanceId : processInstanceIds){
             checkWorkOrder(processInstanceId);
             HandleDataDTO dataDTO = new HandleDataDTO();
             dataDTO.setProcessInstanceId(processInstanceId);
@@ -748,7 +749,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             updateWorkInfo(WorkOrderStatusEnums.Suspended.getStatus(), businessTypeInfo.getProcInstId());
        }
         //审批中心挂起
-        for(String taskId : handleDataDTOs.getTaskIds()){
+        List<String> taskIds = Optional.ofNullable(handleDataDTOs.getTaskIds()).orElse(new ArrayList<>());
+        for(String taskId : taskIds){
             checkTaskInfo(taskId);
             HandleDataDTO dataDTO = new HandleDataDTO();
             dataDTO.setTaskId(taskId);
