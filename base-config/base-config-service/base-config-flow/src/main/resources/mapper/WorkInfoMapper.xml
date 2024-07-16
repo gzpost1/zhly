@@ -506,7 +506,7 @@
     </sql>
 
     <sql id="queryMyMakeSql">
-        t1.work_name,t1.create_user,t1.create_time,t1.work_time_out as outTime,t2.node_id,t1.proc_inst_id
+        t1.work_name,t1.create_user,t1.create_time,t1.work_time_out as outTime,t2.node_id,t1.proc_inst_id,t1.status
     </sql>
     <select id="queryMyMake" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
     select
