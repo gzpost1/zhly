@@ -333,7 +333,7 @@
                 and t1.status = #{query.status}
             </if>
             <if test="query.timeOut !=null and query.timeOut==1">
-                t1.work_time_out = #{query.timeOut}
+                and t1.work_time_out = #{query.timeOut}
             </if>
         </where>
         group by t1.proc_inst_id
@@ -506,7 +506,7 @@
     </sql>
 
     <sql id="queryMyMakeSql">
-        t1.work_name,t1.create_user,t1.create_time,t1.work_time_out as outTime,t2.node_id,t1.proc_inst_id
+        t1.work_name,t1.create_user,t1.create_time,t1.work_time_out as outTime,t2.node_id,t1.proc_inst_id,t1.status
     </sql>
     <select id="queryMyMake" resultType="cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto">
     select
