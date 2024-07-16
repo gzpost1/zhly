@@ -228,6 +228,7 @@ public enum ResultCode {
     EFFECTIVE_TIME_EXPIRED("1800001", "已过生效时间"),
     IMG_TEXT_TYPE_EXISTS("1800002", "类型名称已存在"),
     IMG_TEXT_TYPE_EXISTS_DATA("1800003", "该类型下存在图文，不可删除"),
+    DATA_NOT_EXIST("1800004", "内容不存在"),
 
     COMPLETE_RATIO_ERROR("1900001","未达到完成比列，不能提交"),
 
