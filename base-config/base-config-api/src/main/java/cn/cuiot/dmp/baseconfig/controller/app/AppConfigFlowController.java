@@ -2,7 +2,6 @@ package cn.cuiot.dmp.baseconfig.controller.app;
 
 import cn.cuiot.dmp.base.application.service.ApiArchiveService;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
-import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.baseconfig.flow.dto.FlowEngineVo;
@@ -64,6 +63,9 @@ public class AppConfigFlowController {
             query.setIsSelectAppUser(null);
         } else if (Objects.equals(LoginInfoHolder.getCurrentUserType(), UserTypeEnum.OWNER.getValue())) {
             //获取小区信息
+            if (Objects.isNull(query.getCommunityId())) {
+                query.setCommunityId(LoginInfoHolder.getCommunityId());
+            }
             BuildingArchive buildingArchive = apiArchiveService.lookupBuildingArchiveInfo(LoginInfoHolder.getCommunityId());
             AssertUtil.isTrue(Objects.nonNull(buildingArchive) && Objects.nonNull(buildingArchive.getDepartmentId()), "小区不存在");
             query.setIsSelectAppUser(EntityConstants.YES);

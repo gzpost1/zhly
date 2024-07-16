@@ -39,4 +39,15 @@ public class MessagePageQuery extends PageQuery {
      * 消息分类
      */
     private String msgType;
+
+    /**
+     * 楼盘id(客户端必传)
+     */
+    private Long buildingId;
+
+    /**
+     * 用户类型（非空）
+     * 见 UserTypeEnum
+     */
+    private Integer userType;
 }

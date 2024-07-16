@@ -333,7 +333,7 @@
                 and t1.status = #{query.status}
             </if>
             <if test="query.timeOut !=null and query.timeOut==1">
-                t1.work_time_out = #{query.timeOut}
+                and t1.work_time_out = #{query.timeOut}
             </if>
         </where>
         group by t1.proc_inst_id
@@ -566,7 +566,7 @@
             <if test="query.status !=null and query.status==1">
                 and status in (1,3)
             </if>
-            <if test="query.status !=null and query.status==2">
+            <if test="query.status !=null and query.status==3">
                 and status =5
             </if>
         </where>

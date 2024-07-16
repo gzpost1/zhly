@@ -250,7 +250,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     }
 
     public WorkInfoDto queryWorkInfoDto(WorkProcInstDto dto){
-       checkWorkOrder(dto.getProcInstId());
+//       checkWorkOrder(dto.getProcInstId());
         //获取工单详情
         WorkInfoDto resultDto = getBaseMapper().queryWorkOrderDetailInfo(dto);
         //填充组织名称
@@ -351,8 +351,34 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             WorkBusinessTypeInfoEntity businessTypeInfo = queryWorkBusinessById(null, Long.parseLong(resultDto.getProcInstId()));
             resultDto.setBusinessTime(businessTypeInfo.getStartTime());
         }
+
+        if(resultDto.getStatus().equals(WorkInfoEnums.WITHDRAWN.getCode())){
+            WorkBusinessTypeInfoEntity businessTypeInfo = queryWorkBusinessByWithdrawn(Long.parseLong(resultDto.getProcInstId()),BusinessInfoEnums.BUSINESS_REVOKE.getCode());
+            resultDto.setBusinessTime(businessTypeInfo.getStartTime());
+        }
     }
 
+    /**
+     * 查询撤回时间
+     * @param procInstId
+     * @param procInstId
+     * @return
+     */
+    public WorkBusinessTypeInfoEntity queryWorkBusinessByWithdrawn(Long procInstId,Byte businessType){
+        LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkBusinessTypeInfoEntity::getProcInstId,procInstId)
+                .eq(WorkBusinessTypeInfoEntity::getBusinessType, businessType);
+        List<WorkBusinessTypeInfoEntity> list = workBusinessTypeInfoService.list(lw);
+        return CollectionUtils.isEmpty(list)?null:list.get(0);
+    }
+
+
+    /**
+     * 查询挂起信息
+     * @param nodeId
+     * @param procInstId
+     * @return
+     */
     public WorkBusinessTypeInfoEntity queryWorkBusinessById(String nodeId,Long procInstId){
         LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
         lw.eq(Objects.nonNull(nodeId),WorkBusinessTypeInfoEntity::getNode,nodeId)
@@ -1210,15 +1236,18 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //再次发起
         if(StringUtils.isNotBlank(startProcessInstanceDTO.getProcessInstanceId())){
             List<Task> tasks = taskService.createTaskQuery().processInstanceId(startProcessInstanceDTO.getProcessInstanceId()).list();
+
             if(Objects.isNull(tasks)){
                 throw new BusinessException(ErrorCode.NOT_FOUND.getCode(), ErrorCode.NOT_FOUND.getMessage());
             }
             //工单创建人与当前重新发起人不一致，不能重新发起
             List<WorkInfoEntity> work = queryWorkInfo(Long.parseLong(startProcessInstanceDTO.getProcessInstanceId()));
-            if(Objects.equals(work.get(0).getCreateUser(),LoginInfoHolder.getCurrentUserId())){
+
+            if(Objects.equals(work.get(0).getCreateUser(),String.valueOf(LoginInfoHolder.getCurrentUserId()))){
                 throw new BusinessException(ErrorCode.NOT_OPERATION.getCode(), ErrorCode.NOT_OPERATION.getMessage());
             }
             //当前不是root节点不能够重新发起
+
             if(Objects.equals(WorkOrderConstants.USER_ROOT,tasks.get(0).getTaskDefinitionKey())){
                 throw new BusinessException(ErrorCode.NOT_OPERATION.getCode(), ErrorCode.NOT_OPERATION.getMessage());
             }
@@ -1677,6 +1706,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         Map formValue = JSONObject.parseObject(formData.toJSONString(), new TypeReference<Map>() {
         });
         processVariables.putAll(formValue);
+        processVariables.put(WorkOrderConstants.FORM_VAR,formData);
         Task task =null;
         //再次发起
         if(StringUtils.isNotBlank(startProcessInstanceDTO.getProcessInstanceId())){
@@ -1822,7 +1852,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             }
             //判断是否展示评价按钮
             NodeTypeEntity nodeInfo = getNodeInfo(entity.getProcessDefinitionId(), tasks.get(0).getTaskDefinitionKey());
-            if(Objects.nonNull(nodeInfo) && Objects.equals(nodeInfo.getNodeType(), WorkOrderConstants.COMMENT_NODE_TYPE)){
+            if(Objects.equals(nodeInfo.getNodeType(), WorkOrderConstants.COMMENT_NODE_TYPE)){
                 resultDto.setEvaluate(ButtonBusinessEnums.BUTTON.getCode());
             }
             //判断是否可以撤回
@@ -1859,6 +1889,8 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             if(StringUtils.isNotBlank(comments)){
                 reasonMessage=reasonMessage+"("+comments+")";
             }
+        }else{
+            reasonMessage=comments;
         }
         return  reasonMessage;
     }
