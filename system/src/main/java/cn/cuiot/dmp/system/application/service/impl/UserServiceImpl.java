@@ -12,6 +12,9 @@ import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -396,7 +399,7 @@ public class UserServiceImpl extends BaseController implements UserService {
                     userEntity.getId().getValue(),
                     Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
 
-            UserCsvDto userCsvDto = new UserCsvDto(userEntity.getUsername(),phoneNumber, password);
+            UserCsvDto userCsvDto = new UserCsvDto(userEntity.getId().getValue(),userEntity.getUsername(),phoneNumber, password);
 
             return userCsvDto;
         } catch (Exception e) {
@@ -580,6 +583,9 @@ public class UserServiceImpl extends BaseController implements UserService {
             // 设备模块使用了缓存，系统模块姓名或手机号变更需要清除redisKey
             redisUtil.del(CacheConst.USER_CACHE_KEY_PREFIX + pkUserId);
         }
+
+        //设置日志操作对象内容
+        setOptTargetInfo(ids);
     }
 
     /**
@@ -642,6 +648,26 @@ public class UserServiceImpl extends BaseController implements UserService {
             userEntity.setStatus(UserStatusEnum.valueOf(status.intValue()));
             userEntity.updatedByPortal(loginUserId);
             userRepository.save(userEntity);
+        }
+        //设置日志操作对象内容
+        setOptTargetInfo(ids);
+
+    }
+
+    /**
+     * 设置操作对象
+     * @param ids
+     */
+    private void setOptTargetInfo(List<Long> ids){
+        List<UserDataEntity> listByIds = userDataDao.selectListByIds(ids);
+        if(CollectionUtils.isNotEmpty(listByIds)){
+            //设置日志操作对象内容
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .name("用户")
+                    .targetDatas(listByIds.stream().map(item->{
+                        return new OptTargetData(item.getUsername(),item.getId().toString());
+                    }).collect(Collectors.toList()))
+                    .build());
         }
     }
 
@@ -1153,7 +1179,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         if (!userRepository.save(userDataEntity)) {
             throw new BusinessException(ResultCode.UPDATE_PASSWORD_FAIL);
         }
-        UserCsvDto userCsvDto = new UserCsvDto(userDataEntity.getUsername(),userDataEntity.getDecryptedPhoneNumber(), password);
+        UserCsvDto userCsvDto = new UserCsvDto(userId,userDataEntity.getUsername(),userDataEntity.getDecryptedPhoneNumber(), password);
         return userCsvDto;
     }
 
