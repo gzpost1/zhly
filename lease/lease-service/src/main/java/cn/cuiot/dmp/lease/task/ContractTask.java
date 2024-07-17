@@ -34,9 +34,11 @@ public class ContractTask {
     public ReturnT<String> syncContractIntentionStatus(String param) {
         log.info("--------------------更新意向合同状态 开始-------------------");
         LambdaQueryWrapper<TbContractIntentionEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.notIn(TbContractIntentionEntity::getContractStatus, ContractEnum.STATUS_SIGNING.getCode(),
-                ContractEnum.STATUS_SIGNED.getCode(), ContractEnum.STATUS_CANCELING.getCode(), ContractEnum.STATUS_CANCELING.getCode(),
-                ContractEnum.STATUS_USELESSING.getCode(), ContractEnum.STATUS_USELESS.getCode());
+//        queryWrapper.notIn(TbContractIntentionEntity::getContractStatus, ContractEnum.STATUS_SIGNING.getCode(),
+//                ContractEnum.STATUS_SIGNED.getCode(), ContractEnum.STATUS_CANCELING.getCode(), ContractEnum.STATUS_CANCELING.getCode(),
+//                ContractEnum.STATUS_USELESSING.getCode(), ContractEnum.STATUS_USELESS.getCode());
+        queryWrapper.in(TbContractIntentionEntity::getContractStatus, ContractEnum.STATUS_WAITING.getCode(),
+                ContractEnum.STATUS_EXECUTING.getCode(),ContractEnum.STATUS_EXPIRED.getCode());
         LocalDate now = LocalDate.now();
         List<TbContractIntentionEntity> list = contractIntentionService.list(queryWrapper);
         list.forEach(c -> {
@@ -80,7 +82,7 @@ public class ContractTask {
                 c.setContractStatus(ContractEnum.STATUS_EXPIRED.getCode());
                 //执行中
             } else {
-                c.setContractStatus(ContractEnum.STATUS_EXECUTING.getCode());
+                c.setContractStatus(ContractEnum.STATUS_EXPIRED_WAITING.getCode());
             }
         });
         contractLeaseService.saveOrUpdateBatch(list);
