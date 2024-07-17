@@ -45,9 +45,4 @@ public class MessagePageQuery extends PageQuery {
      */
     private Long buildingId;
 
-    /**
-     * 用户类型（非空）
-     * 见 UserTypeEnum
-     */
-    private Integer userType;
 }

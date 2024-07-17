@@ -4,6 +4,9 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseRoleDto;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseRoleReqDto;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -135,22 +138,23 @@ public class RoleServiceImpl implements RoleService {
             }
         }
 
+        //设置日志操作对象内容
+        setOptTargetInfo(deleteIdList,null);
+
+        /*List<RoleEntity> roleEntityList = this.roleDao
+                .selectRoleByRoleIds(deleteIdList);
+        String[] operationTargetArray = new String[roleEntityList.size()];
+        for (int i = 0; i < roleEntityList.size(); i++) {
+            operationTargetArray[i] = roleEntityList.get(i).getRoleName();
+        }
+        roleBo.setOperationTarget(operationTargetArray);*/
+
         for (Long deleteId : deleteIdList) {
             // 预置角色不能删除
             DEFAULT_ROLE_ID.stream().filter(s -> s.equals(deleteId)).findAny().ifPresent(s -> {
                 throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION,"该角色不能删除");
             });
         }
-
-        // 获取操作对象
-        List<RoleEntity> roleEntityList = this.roleDao
-                .selectRoleByRoleIds(deleteIdList);
-
-        String[] operationTargetArray = new String[roleEntityList.size()];
-        for (int i = 0; i < roleEntityList.size(); i++) {
-            operationTargetArray[i] = roleEntityList.get(i).getRoleName();
-        }
-        roleBo.setOperationTarget(operationTargetArray);
 
         // 查询角色关联的用户
         List<Map<String, Long>> userIdList = this.roleDao
@@ -174,6 +178,24 @@ public class RoleServiceImpl implements RoleService {
         this.roleDao.deleteBatchMenuRole(roleBo.getSessionOrgId(), deleteIdList);
 
         return count;
+    }
+
+    /**
+     * 设置日志操作对象内容
+     */
+    private void setOptTargetInfo(List<Long> ids,String operationName){
+        List<RoleEntity> listByIds = this.roleDao
+                .selectRoleByRoleIds(ids);
+        if(org.apache.commons.collections.CollectionUtils.isNotEmpty(listByIds)){
+            //设置日志操作对象内容
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .operationName(operationName)
+                    .name("用户")
+                    .targetDatas(listByIds.stream().map(item->{
+                        return new OptTargetData(item.getRoleName(),item.getId().toString());
+                    }).collect(Collectors.toList()))
+                    .build());
+        }
     }
 
     @Override
@@ -365,10 +387,14 @@ public class RoleServiceImpl implements RoleService {
     public void updateStatus(UpdateStatusParam updateStatusParam, Long sessionUserId,
             Long sessionOrgId) {
         Long roleId = updateStatusParam.getId();
+
+        setOptTargetInfo(Lists.newArrayList(roleId),EntityConstants.ENABLED.equals(updateStatusParam.getStatus())?"启用角色":"停用角色");
+
         RoleDTO roleDTO = this.roleDao.selectRoleById(sessionOrgId,roleId);
         if(Objects.isNull(roleDTO)){
             throw new BusinessException(ResultCode.ROLE_NOT_EXIST);
         }
+
         // 预置角色不能启停用
         DEFAULT_ROLE_ID.stream().filter(s -> s.equals(roleId)).findAny().ifPresent(s -> {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);

@@ -5,6 +5,9 @@ import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.*;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.bean.dto.SmsMsgDto;
 import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
@@ -29,7 +32,6 @@ import cn.cuiot.dmp.content.param.vo.NoticeVo;
 import cn.cuiot.dmp.content.service.ContentDataRelevanceService;
 import cn.cuiot.dmp.content.service.NoticeService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -37,6 +39,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.MessageHeaders;
@@ -94,6 +97,12 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         }
         int insert = this.baseMapper.insert(contentNoticeEntity);
         contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, createDTO.getDepartBuilds(), contentNoticeEntity.getId());
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("公告")
+                .targetDatas(Lists.newArrayList(new OptTargetData(contentNoticeEntity.getTitle(), contentNoticeEntity.getId().toString())))
+                .build());
+
         return insert;
     }
 
@@ -112,6 +121,11 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         }
         int update = this.baseMapper.updateById(contentNoticeEntity);
         contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.NOTICE, updateDtO.getDepartBuilds(), contentNoticeEntity.getId());
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("公告")
+                .targetDatas(Lists.newArrayList(new OptTargetData(contentNoticeEntity.getTitle(), contentNoticeEntity.getId().toString())))
+                .build());
         return update;
     }
 
@@ -169,6 +183,11 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
             contentNoticeEntity.setPublishStatus(publishReqVo.getPublishStatus());
             contentNoticeEntity.setStatus(EntityConstants.ENABLED);
             this.baseMapper.updateById(contentNoticeEntity);
+            //设置日志操作对象内容
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .name("公告")
+                    .targetDatas(Lists.newArrayList(new OptTargetData(contentNoticeEntity.getTitle(), contentNoticeEntity.getId().toString())))
+                    .build());
             return true;
         }
         return false;
@@ -205,7 +224,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                 BaseUserReqDto reqDto = new BaseUserReqDto();
                 reqDto.setDeptIdList(noticeEntity.getDepartments().stream().map(Long::parseLong).collect(Collectors.toList()));
                 List<Long> longs = systemConverService.lookUpUserIds(reqDto);
-                sendMsg(noticeEntity, longs, UserTypeEnum.USER.getValue(),null);
+                sendMsg(noticeEntity, longs, null);
             }
         } else if (ContentConstants.PublishSource.APP.equals(noticeEntity.getPublishSource())) {
             if (CollUtil.isNotEmpty(noticeEntity.getBuildings())) {
@@ -215,14 +234,14 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                 for (String building : noticeEntity.getBuildings()) {
                     if (map.containsKey(Long.parseLong(building))) {
                         List<Long> longs = map.get(Long.parseLong(building));
-                        sendMsg(noticeEntity, longs,UserTypeEnum.OWNER.getValue(),Long.parseLong(building));
+                        sendMsg(noticeEntity, longs, Long.parseLong(building));
                     }
                 }
             }
         }
     }
 
-    private void sendMsg(ContentNoticeEntity noticeEntity, List<Long> longs,Integer userType,Long building) {
+    private void sendMsg(ContentNoticeEntity noticeEntity, List<Long> longs, Long building) {
         log.info("sendMsg-params:noticeEntity:{},userIds:{}", JsonUtil.writeValueAsString(noticeEntity), longs);
         if (CollUtil.isEmpty(longs) || CollUtil.isEmpty(noticeEntity.getInform())) {
             log.info("notice-sendMsg:userid is entity -> return");
@@ -231,7 +250,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM) && noticeEntity.getInform().contains(ContentConstants.MsgInform.SMS)) {
             UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType((byte) (InformTypeConstant.SYS_MSG + InformTypeConstant.SMS));
             SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage("你收到一条公告通知，公告名称:" + noticeEntity.getTitle() + ",点击查看详情")
-                    .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE).setUserType(userType).setBuildingId(building);
+                    .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE).setBuildingId(building);
             SmsMsgDto smsMsgDto = new SmsMsgDto();
             userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
             log.info("notice-sendMsg-userMessageAcceptDto:{}", JsonUtil.writeValueAsString(userMessageAcceptDto));
@@ -239,7 +258,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                     .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON).build());
         } else if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SYSTEM)) {
             SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage("你收到一条公告通知，公告名称:" + noticeEntity.getTitle() + ",点击查看详情")
-                    .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE).setUserType(userType).setBuildingId(building);
+                    .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE).setBuildingId(building);
             UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SYS_MSG).setSysMsgDto(sysMsgDto);
             log.info("notice-sendMsg-userMessageAcceptDto:{}", JsonUtil.writeValueAsString(userMessageAcceptDto));
             msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)

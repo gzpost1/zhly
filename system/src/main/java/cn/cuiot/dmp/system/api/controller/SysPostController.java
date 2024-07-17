@@ -4,6 +4,9 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.utils.AssertUtil;
@@ -13,6 +16,7 @@ import cn.cuiot.dmp.system.application.service.SysPostService;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SysPostQuery;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.SysPostEntity;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
 import javax.validation.Valid;
@@ -68,7 +72,7 @@ public class SysPostController {
      * 创建
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "createPost", operationName = "创建岗位", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "createPost", operationName = "添加岗位", serviceType = "postMng",serviceTypeName = "岗位管理")
     @PostMapping("/create")
     public IdmResDTO create(@RequestBody @Valid SysPostCmd cmd) {
         AssertUtil
@@ -77,7 +81,15 @@ public class SysPostController {
                                         LoginInfoHolder.getCurrentOrgId()),
                         "岗位名称已存在");
         cmd.setSessionOrgId(LoginInfoHolder.getCurrentOrgId());
-        sysPostService.create(cmd);
+        SysPostEntity entity = sysPostService.create(cmd);
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("岗位")
+                .targetDatas(
+                        Lists.newArrayList(new OptTargetData(entity.getPostName(),entity.getId().toString())))
+                .build());
+
         return IdmResDTO.success(null);
     }
 
@@ -85,7 +97,7 @@ public class SysPostController {
      * 修改
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updatePost", operationName = "修改岗位", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "updatePost", operationName = "编辑岗位", serviceType = "postMng",serviceTypeName = "岗位管理")
     @PostMapping("/update")
     public IdmResDTO update(@RequestBody @Valid SysPostCmd cmd) {
         AssertUtil.isTrue(Objects.nonNull(cmd.getId()), "主键ID不能为空");
@@ -95,6 +107,14 @@ public class SysPostController {
                                         LoginInfoHolder.getCurrentOrgId()),
                         "岗位名称已存在");
         cmd.setSessionOrgId(LoginInfoHolder.getCurrentOrgId());
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("岗位")
+                .targetDatas(
+                        Lists.newArrayList(new OptTargetData(cmd.getPostName(),cmd.getId().toString())))
+                .build());
+
         sysPostService.update(cmd);
         return IdmResDTO.success(null);
     }
@@ -103,7 +123,7 @@ public class SysPostController {
      * 启停用
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updatePostStatus", operationName = "启停用岗位", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "updatePostStatus", operationName = "启停用岗位", serviceType = "postMng",serviceTypeName = "岗位管理")
     @PostMapping("/updateStatus")
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         Long sessionUserId = LoginInfoHolder.getCurrentUserId();
@@ -116,7 +136,7 @@ public class SysPostController {
      * 删除
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "deletePost", operationName = "删除岗位", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "deletePost", operationName = "删除岗位", serviceType = "postMng",serviceTypeName = "岗位管理")
     @PostMapping("/delete")
     public IdmResDTO delete(@RequestBody @Valid IdParam idParam) {
         Long sessionUserId = LoginInfoHolder.getCurrentUserId();

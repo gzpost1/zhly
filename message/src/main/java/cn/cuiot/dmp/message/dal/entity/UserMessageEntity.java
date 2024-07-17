@@ -86,12 +86,6 @@ public class UserMessageEntity {
      */
     private Long buildingId;
 
-    /**
-     * 用户类型（非空）
-     * 见 UserTypeEnum
-     */
-    private Integer userType;
-
     public void init() {
         this.createTime = new Date();
         this.readStatus = StatusConstans.UNREAD;

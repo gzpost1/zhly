@@ -14,7 +14,7 @@ import org.springframework.util.MimeTypeUtils;
  * @Created by libo
  */
 @Service
-public class SendService {
+public class LogSendService {
     @Autowired
     private MsgChannel msgChannel;
 
