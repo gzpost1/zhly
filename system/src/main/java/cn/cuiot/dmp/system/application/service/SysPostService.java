@@ -2,11 +2,15 @@ package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.system.application.param.command.SysPostCmd;
+import cn.cuiot.dmp.system.infrastructure.entity.RoleEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SysPostQuery;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.SysPostEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.SysPostMapper;
@@ -16,8 +20,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -94,10 +100,11 @@ public class SysPostService {
     /**
      * 创建
      */
-    public void create(SysPostCmd cmd) {
+    public SysPostEntity create(SysPostCmd cmd) {
         SysPostEntity entity = BeanMapper.map(cmd, SysPostEntity.class);
         entity.setOrgId(cmd.getSessionOrgId());
         sysPostMapper.insert(entity);
+        return entity;
     }
 
     /**
@@ -119,6 +126,10 @@ public class SysPostService {
     public void updateStatus(UpdateStatusParam param, Long sessionUserId,
             Long sessionOrgId) {
         SysPostEntity dbEntity = sysPostMapper.selectById(param.getId());
+
+        //设置日志操作对象内容
+        setOptTargetInfo(dbEntity,EntityConstants.ENABLED.equals(param.getStatus())?"启用岗位":"停用岗位");
+
         if (!dbEntity.getOrgId().equals(sessionOrgId)) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
@@ -136,6 +147,10 @@ public class SysPostService {
      */
     public void delete(IdParam idParam, Long sessionUserId, Long sessionOrgId) {
         SysPostEntity dbEntity = sysPostMapper.selectById(idParam.getId());
+
+        //设置日志操作对象内容
+        setOptTargetInfo(dbEntity,null);
+
         if (!dbEntity.getOrgId().equals(sessionOrgId)) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
@@ -143,6 +158,20 @@ public class SysPostService {
             throw new BusinessException(ResultCode.REQ_PARAM_ERROR, "该岗位已绑定用户，不可删除");
         }
         sysPostMapper.deleteByIdWithAllField(dbEntity);
+    }
+
+    /**
+     * 设置日志操作对象内容
+     */
+    private void setOptTargetInfo(SysPostEntity dbEntity,String operationName){
+        if(Objects.nonNull(dbEntity)){
+            //设置日志操作对象内容
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .operationName(operationName)
+                    .name("岗位")
+                    .targetDatas(Lists.newArrayList(new OptTargetData(dbEntity.getPostName(),dbEntity.getId().toString())))
+                    .build());
+        }
     }
 
     /**

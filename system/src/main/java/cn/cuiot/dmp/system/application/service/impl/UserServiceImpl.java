@@ -17,6 +17,7 @@ import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
 import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.RegexConst;
@@ -526,7 +527,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         String deptId = userBo.getDeptId();
 
         //设置日志操作对象内容
-        setOptTargetInfo(ids);
+        setOptTargetInfo(ids,null);
 
         /**
          * 判断所选组织部门是否可选
@@ -600,7 +601,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         Byte status = userBo.getStatus();
 
         //设置日志操作对象内容
-        setOptTargetInfo(ids);
+        setOptTargetInfo(ids, EntityConstants.ENABLED.equals(status)?"启用用户":"停用用户");
 
         /**
          * 判断所选组织部门是否可选
@@ -659,11 +660,12 @@ public class UserServiceImpl extends BaseController implements UserService {
      * 设置操作对象
      * @param ids
      */
-    private void setOptTargetInfo(List<Long> ids){
+    private void setOptTargetInfo(List<Long> ids,String operationName){
         List<UserDataEntity> listByIds = userDataDao.selectListByIds(ids);
         if(CollectionUtils.isNotEmpty(listByIds)){
             //设置日志操作对象内容
             LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .operationName(operationName)
                     .name("用户")
                     .targetDatas(listByIds.stream().map(item->{
                         return new OptTargetData(item.getUsername(),item.getId().toString());
@@ -683,7 +685,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         String loginUserId = userBo.getLoginUserId();
 
         //设置日志操作对象内容
-        setOptTargetInfo(ids);
+        setOptTargetInfo(ids,null);
 
         // 查询该账户的账户所有者
         Long orgOwner = userDao.findOrgOwner(sessionOrgId);
