@@ -1181,24 +1181,6 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         return ButtonBusinessEnums.NOT_BUTTON.getCode();
     }
 
-    /**
-     * 获取节点的父id信息
-     * @param nodeId
-     * @param childNode
-     * @return
-     */
-    public List<String> queryParentIds(String nodeId,ChildNode childNode){
-        List<String> parentIds = new ArrayList<>();
-        ChildNode chilNodedren = childNode.getChildren();
-        while (true){
-            if(Objects.equals(chilNodedren.getId(),nodeId)){
-                break;
-            }
-            parentIds.add(chilNodedren.getId());
-            chilNodedren = chilNodedren.getChildren();
-        }
-        return parentIds;
-    }
 
     /**
      * 启动任务
@@ -1765,7 +1747,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public IdmResDTO<RepairReportDetailDto> queryRepairReportDetail(ProcessBusinessDto dto) {
         //查询工单信息
         List<WorkInfoEntity> workInfoEntities = queryWorkInfo(dto.getProcessInstanceId());
-        if(Objects.isNull(workInfoEntities)){
+        if(CollectionUtil.isEmpty(workInfoEntities)){
             throw new BusinessException(ErrorCode.NOT_FOUND.getCode(),ErrorCode.NOT_FOUND.getMessage());
         }
         WorkInfoEntity workInfoEntity = workInfoEntities.get(0);
@@ -1793,6 +1775,8 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
      * @param entity
      */
     public void queryButtonStatus(RepairReportDetailDto resultDto,WorkInfoEntity entity){
+
+        List<Task> tasks = taskService.createTaskQuery().processInstanceId(entity.getProcInstId()).list();
         //状态为已完成
         if(Objects.equals(entity.getStatus(), WorkOrderStatusEnums.completed.getStatus())){
             //已完成中包含拒绝
@@ -1832,7 +1816,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         if(Objects.equals(entity.getStatus(), WorkOrderStatusEnums.progress.getStatus()) ||
                 Objects.equals(entity.getStatus(), WorkOrderStatusEnums.Suspended.getStatus())){
             resultDto.setStatus(WorkInfoEnums.PROCESSING.getCode());
-            List<Task> tasks = taskService.createTaskQuery().processInstanceId(entity.getProcInstId()).list();
+
             if(CollectionUtils.isEmpty(tasks)){
                 throw new BusinessException(ErrorCode.NOT_FOUND.getCode(),ErrorCode.NOT_FOUND.getMessage());
             }
@@ -1852,7 +1836,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             }
             //判断是否展示评价按钮
             NodeTypeEntity nodeInfo = getNodeInfo(entity.getProcessDefinitionId(), tasks.get(0).getTaskDefinitionKey());
-            if(Objects.equals(nodeInfo.getNodeType(), WorkOrderConstants.COMMENT_NODE_TYPE)){
+            if(Objects.nonNull(nodeInfo) && Objects.equals(nodeInfo.getNodeType(), WorkOrderConstants.COMMENT_NODE_TYPE)){
                 resultDto.setEvaluate(ButtonBusinessEnums.BUTTON.getCode());
             }
             //判断是否可以撤回
@@ -1861,8 +1845,20 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
                 resultDto.setRevokeType(ButtonBusinessEnums.BUTTON.getCode());
             }
             //同节点可以撤回
-            if(Objects.equals(entity.getRevokeNodeId(),tasks.get(0).getTaskDefinitionKey())){
-                resultDto.setRevokeType(ButtonBusinessEnums.BUTTON.getCode());
+            if(Objects.equals(entity.getRevokeType(),ButtonBusinessEnums.APPOINT.getCode())){
+                Process mainProcess = repositoryService.getBpmnModel(entity.getProcessDefinitionId()).getMainProcess();
+
+                String dingDing = mainProcess.getAttributeValue(FLOWABLE_NAME_SPACE, FLOWABLE_NAME_SPACE_NAME);
+                JSONObject mainJson = JSONObject.parseObject(dingDing, new TypeReference<JSONObject>() {
+                });
+                String processJson = mainJson.getString(VIEW_PROCESS_JSON_NAME);
+                ChildNode childNode = processJson(processJson);
+
+                List<String> parentIds = queryParentIds(entity.getRevokeNodeId(), childNode);
+                if(parentIds.contains(tasks.get(0).getTaskDefinitionKey())){
+
+                    resultDto.setRevokeType(ButtonBusinessEnums.BUTTON.getCode());
+                }
             }
 
             //当前所处的节点
@@ -1875,6 +1871,25 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         }
     }
 
+
+    /**
+     * 获取节点的父id信息
+     * @param nodeId
+     * @param childNode
+     * @return
+     */
+    public List<String> queryParentIds(String nodeId,ChildNode childNode){
+        List<String> parentIds = new ArrayList<>();
+        ChildNode chilNodedren = childNode.getChildren();
+        while (true){
+            if(Objects.equals(chilNodedren.getId(),nodeId)){
+                break;
+            }
+            parentIds.add(chilNodedren.getId());
+            chilNodedren = chilNodedren.getChildren();
+        }
+        return parentIds;
+    }
     /**
      * 获取消息
      * @param reasonId
