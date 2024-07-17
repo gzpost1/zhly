@@ -340,7 +340,7 @@ public class UserController extends BaseController {
      * 批量启停用
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "changeUserStatus", operationName = "批量启停用用户", serviceType = "user",serviceTypeName = "用户管理")
+    @LogRecord(operationCode = "changeUserStatus", operationName = "启停用用户", serviceType = "user",serviceTypeName = "用户管理")
     @PostMapping(value = "/user/changeUserStatus", produces = MediaType.APPLICATION_JSON_VALUE)
     public IdmResDTO changeUserStatus(@RequestBody @Valid ChangeUserStatusDTO dto) {
 

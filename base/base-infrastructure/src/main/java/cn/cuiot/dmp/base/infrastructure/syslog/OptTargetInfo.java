@@ -25,6 +25,11 @@ public class OptTargetInfo implements Serializable {
     private Long companyId;
 
     /**
+     * 操作名称
+     */
+    private String operationName;
+
+    /**
      * 对象类型名称
      */
     private String name;

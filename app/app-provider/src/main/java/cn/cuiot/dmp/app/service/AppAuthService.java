@@ -132,7 +132,6 @@ public class AppAuthService {
         List<AppUserDto> appUserDtos = appUserService.selectUserByOpenid(openid);
         if (CollectionUtils.isNotEmpty(appUserDtos)) {
             for (AppUserDto userDto : appUserDtos) {
-
                 if (UserTypeEnum.USER.getValue().equals(userDto.getUserType())) {
                     if (!EntityConstants.DISABLED.equals(userDto.getStatus())) {
                         Long pkOrgId = appUserService.getOrgId(userDto.getId());

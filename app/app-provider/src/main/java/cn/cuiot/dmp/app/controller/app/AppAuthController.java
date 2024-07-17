@@ -18,8 +18,12 @@ import cn.cuiot.dmp.app.dto.user.SmsCodeResDto;
 import cn.cuiot.dmp.app.dto.user.SwitchUserTypeDto;
 import cn.cuiot.dmp.app.service.AppAuthService;
 import cn.cuiot.dmp.app.service.AppVerifyService;
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.annotation.ResolveExtData;
 import cn.cuiot.dmp.base.application.service.WeChatMiniAppService;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -79,6 +83,7 @@ public class AppAuthController {
     /**
      * 小程序授权登录
      */
+    @LogRecord(operationCode = "miniLogin", operationName = "登录系统", serviceType = "login",serviceTypeName = "登录")
     @PostMapping("miniLogin")
     public IdmResDTO miniLogin(@RequestBody @Valid MiniLoginDto dto) {
         //根据微信获取的code置换手机号
@@ -91,6 +96,13 @@ public class AppAuthController {
         String ipAddr = IpUtil.getIpAddr(request);
 
         AppUserDto userDto = appAuthService.miniLogin(phone, userType, openid, ipAddr);
+
+        //设置日志操作对象内容
+        if(StringUtils.isNotBlank(userDto.getOrgId())){
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .companyId(Long.valueOf(userDto.getOrgId()))
+                    .build());
+        }
 
         return IdmResDTO.success(userDto);
     }
@@ -116,22 +128,40 @@ public class AppAuthController {
     /**
      * 密码登录
      */
+    @LogRecord(operationCode = "pwdLogin", operationName = "登录系统", serviceType = "login",serviceTypeName = "登录")
     @PostMapping("pwdLogin")
     public IdmResDTO pwdLogin(@RequestBody @Valid PwdLoginDto dto) {
         String ipAddr = IpUtil.getIpAddr(request);
         dto.setIpAddr(ipAddr);
         AppUserDto userDto = appAuthService.pwdLogin(dto);
+
+        //设置日志操作对象内容
+        if(StringUtils.isNotBlank(userDto.getOrgId())){
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .companyId(Long.valueOf(userDto.getOrgId()))
+                    .build());
+        }
+
         return IdmResDTO.success(userDto);
     }
 
     /**
      * 手机号登录
      */
+    @LogRecord(operationCode = "phoneLogin", operationName = "登录系统", serviceType = "login",serviceTypeName = "登录")
     @PostMapping("phoneLogin")
     public IdmResDTO phoneLogin(@RequestBody @Valid PhoneLoginDto dto) {
         String ipAddr = IpUtil.getIpAddr(request);
         dto.setIpAddr(ipAddr);
         AppUserDto userDto = appAuthService.phoneLogin(dto);
+
+        //设置日志操作对象内容
+        if(StringUtils.isNotBlank(userDto.getOrgId())){
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .companyId(Long.valueOf(userDto.getOrgId()))
+                    .build());
+        }
+
         return IdmResDTO.success(userDto);
     }
 
@@ -243,6 +273,8 @@ public class AppAuthController {
     /**
      * 用户登出
      */
+    @ResolveExtData
+    @LogRecord(operationCode = "logOut", operationName = "退出系统", serviceType = "logOut",serviceTypeName = "退出")
     @PostMapping("logOut")
     public IdmResDTO logOut() {
         appAuthService.logOut(request);
