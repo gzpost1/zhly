@@ -3,7 +3,7 @@ package cn.cuiot.dmp.base.application.aop;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.constant.OperationSourceContants;
 import cn.cuiot.dmp.base.application.dto.ResponseWrapper;
-import cn.cuiot.dmp.base.application.rocketmq.SendService;
+import cn.cuiot.dmp.base.application.rocketmq.LogSendService;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
 import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
@@ -56,7 +56,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class LogRecordAspect {
 
     @Autowired
-    private SendService sendService;
+    private LogSendService sendService;
 
     /**
      * 小程序特殊操作路径
@@ -79,8 +79,10 @@ public class LogRecordAspect {
 
         // 执行方法
         Object obj = null;
+        Boolean proceedSuccess = false;
         try {
             obj = joinPoint.proceed();
+            proceedSuccess=true;
         } catch (Throwable e) {
             log.error("LogRecordAspect joinPoint.proceed error", e);
             operateLogDto.setLogLevel(LogLevelEnum.ERROR.getCode());
@@ -89,7 +91,9 @@ public class LogRecordAspect {
             throw e;
         } finally {
             // 方法执行后
-            this.afterProceed(joinPoint, operateLogDto, obj);
+            if(proceedSuccess) {
+                this.afterProceed(joinPoint, operateLogDto, obj);
+            }
             LogContextHolder.remove();
         }
         return obj;
@@ -213,6 +217,15 @@ public class LogRecordAspect {
                 if(StringUtils.isNotBlank(optTargetInfo.getOperationName())){
                     operateLogDto.setOperationName(optTargetInfo.getOperationName());
                 }
+                if(StringUtils.isBlank(operateLogDto.getOperationById())){
+                    operateLogDto.setOperationById(StrUtil.toStringOrNull(optTargetInfo.getOperationById()));
+                }
+                if(StringUtils.isBlank(operateLogDto.getOperationByName())){
+                    operateLogDto.setOperationByName(StrUtil.toStringOrNull(optTargetInfo.getOperationByName()));
+                }
+                if(Objects.isNull(operateLogDto.getUserType())){
+                    operateLogDto.setUserType(optTargetInfo.getUserType());
+                }
             }
             // 发送记录日志消息
             sendService.sendOperaLog(operateLogDto);
@@ -238,6 +251,9 @@ public class LogRecordAspect {
      * 转换操作对象内容为字符串
      */
     private String getOptTargetInfoStr(OptTargetInfo optTargetInfo) {
+        if(Objects.isNull(optTargetInfo)){
+            return "";
+        }
         StringBuilder stringBuilder = new StringBuilder("");
         if (Objects.nonNull(optTargetInfo)) {
             String name = optTargetInfo.getName();

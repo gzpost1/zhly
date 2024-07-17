@@ -12,6 +12,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.Sm4;
@@ -169,6 +170,9 @@ public class LoginController extends BaseController {
         if(StringUtils.isNotBlank(loginResDTO.getOrgId())){
             LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
                     .companyId(Long.valueOf(loginResDTO.getOrgId()))
+                    .operationById(loginResDTO.getUserId())
+                    .operationByName(loginResDTO.getName())
+                    .userType(UserTypeEnum.USER.getValue())
                     .build());
         }
 
