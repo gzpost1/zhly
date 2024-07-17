@@ -13,6 +13,7 @@ import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.MsgTypeConstant;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.ChargeCollectionRecordEntity;
 import cn.cuiot.dmp.lease.enums.ChargeMsgTemplateEnum;
@@ -194,6 +195,8 @@ public class ChargeCollectionManageService {
             msgDto.setMessageTime(new Date());
             msgDto.setDataJson(JsonUtil.writeValueAsString(item));
             msgDto.setMessage(fillTemplate(item.getTotal(), item.getAmount()));
+            msgDto.setBuildingId(item.getBuildingId());
+            msgDto.setUserType(UserTypeEnum.OWNER.getValue());
             return msgDto;
         }).collect(Collectors.toList());
     }

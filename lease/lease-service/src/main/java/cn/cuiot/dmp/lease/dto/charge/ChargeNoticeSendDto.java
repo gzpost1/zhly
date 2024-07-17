@@ -37,6 +37,11 @@ public class ChargeNoticeSendDto {
     private Long chargeItemId;
 
     /**
+     * 楼盘id
+     */
+    private Long buildingId;
+
+    /**
      * 收费项目名称
      */
     private String chargeItemName;
