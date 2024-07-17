@@ -236,13 +236,13 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
         //删除账单
         removeById(id);
 
-        //删除楼盘信息
-        chargeNoticeBuildingMapper.delete(new LambdaQueryWrapper<ChargeNoticeBuildingEntity>()
-                .eq(ChargeNoticeBuildingEntity::getChargeNoticeId, id));
-
-        //删除收费项目信息
-        chargeNoticeItemMapper.delete(new LambdaQueryWrapper<ChargeNoticeItemEntity>()
-                .eq(ChargeNoticeItemEntity::getChargeNoticeId, id));
+//        //删除楼盘信息
+//        chargeNoticeBuildingMapper.delete(new LambdaQueryWrapper<ChargeNoticeBuildingEntity>()
+//                .eq(ChargeNoticeBuildingEntity::getChargeNoticeId, id));
+//
+//        //删除收费项目信息
+//        chargeNoticeItemMapper.delete(new LambdaQueryWrapper<ChargeNoticeItemEntity>()
+//                .eq(ChargeNoticeItemEntity::getChargeNoticeId, id));
     }
 
     /**
