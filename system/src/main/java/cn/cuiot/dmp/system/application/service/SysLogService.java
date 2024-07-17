@@ -56,6 +56,7 @@ public class SysLogService {
 
         //query.addCriteria(Criteria.where("serviceTypeName").not());
         query.addCriteria(Criteria.where("serviceTypeName").ne(null));
+        query.addCriteria(Criteria.where("serviceTypeName").ne("null"));
 
         //计算总数
         long total = mongoTemplate.count(query, OperateLogEntity.class);
