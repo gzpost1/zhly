@@ -40,9 +40,9 @@ public class SysLogService {
             //模糊匹配
             Pattern pattern = Pattern
                     .compile("^.*" + param.getServiceTypeName() + ".*$", Pattern.CASE_INSENSITIVE);
-            query.addCriteria(Criteria.where("serviceTypeName").regex(pattern).not().ne("null"));
+            query.addCriteria(Criteria.where("serviceTypeName").regex(pattern).exists(true).ne("null"));
         }else{
-            query.addCriteria(Criteria.where("serviceTypeName").not().ne("null"));
+            query.addCriteria(Criteria.where("serviceTypeName").exists(true).ne("null"));
         }
         //时间查询
         if (Objects.nonNull(param.getOptStartTime())||Objects.nonNull(param.getOptEndTime())) {
