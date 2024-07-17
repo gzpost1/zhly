@@ -40,7 +40,9 @@ public class SysLogService {
             //模糊匹配
             Pattern pattern = Pattern
                     .compile("^.*" + param.getServiceTypeName() + ".*$", Pattern.CASE_INSENSITIVE);
-            query.addCriteria(Criteria.where("serviceTypeName").regex(pattern));
+            query.addCriteria(Criteria.where("serviceTypeName").regex(pattern).not().ne("null"));
+        }else{
+            query.addCriteria(Criteria.where("serviceTypeName").not().ne("null"));
         }
         //时间查询
         if (Objects.nonNull(param.getOptStartTime())||Objects.nonNull(param.getOptEndTime())) {
@@ -53,10 +55,6 @@ public class SysLogService {
             }
             query.addCriteria(criteria);
         }
-
-        //query.addCriteria(Criteria.where("serviceTypeName").not());
-        query.addCriteria(Criteria.where("serviceTypeName").ne(null));
-        query.addCriteria(Criteria.where("serviceTypeName").ne("null"));
 
         //计算总数
         long total = mongoTemplate.count(query, OperateLogEntity.class);
