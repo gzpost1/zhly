@@ -1,5 +1,8 @@
 package cn.cuiot.dmp.content.service.impl;//	模板
 
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.dal.entity.ContentAudit;
 import cn.cuiot.dmp.content.dal.mapper.ContentAuditMapper;
@@ -10,6 +13,7 @@ import cn.cuiot.dmp.content.service.ContentAuditService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +47,11 @@ public class ContentAuditServiceImpl extends ServiceImpl<ContentAuditMapper, Con
                 contentAudit.setAuditUserName(LoginInfoHolder.getCurrentName());
                 contentAudit.setAuditTime(new Date());
                 this.baseMapper.insert(contentAudit);
+                //设置日志操作对象内容
+                LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                        .name("审核")
+                        .targetDatas(Lists.newArrayList(new OptTargetData(contentAudit.getDataId().toString(),contentAudit.getId().toString())))
+                        .build());
             }
         }
         return null;

@@ -38,7 +38,6 @@ public class UserMessageController {
      */
     @PostMapping("/getMessage")
     public IPage<UserMessageEntity> getMessage(@RequestBody MessagePageQuery pageQuery) {
-        pageQuery.setUserType(LoginInfoHolder.getCurrentUserType());
         return userMessageService.getMessage(pageQuery);
     }
 

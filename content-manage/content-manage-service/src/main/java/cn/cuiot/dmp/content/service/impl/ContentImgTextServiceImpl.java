@@ -8,6 +8,9 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.utils.JsonUtil;
@@ -31,6 +34,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -109,6 +113,11 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
         imgTextEntity.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         int insert = this.baseMapper.insert(imgTextEntity);
         contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.IMG_TEXT, LoginInfoHolder.getCurrentDeptId(), createDTO.getBuildings(), imgTextEntity.getId());
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("图文管理")
+                .targetDatas(Lists.newArrayList(new OptTargetData(imgTextEntity.getTitle(),imgTextEntity.getId().toString())))
+                .build());
         return insert;
     }
 
@@ -127,6 +136,11 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
         }
         int update = this.baseMapper.updateById(imgTextEntity);
         contentDataRelevanceService.batchSaveContentDataRelevance(ContentConstants.DataType.IMG_TEXT, LoginInfoHolder.getCurrentDeptId(), updateDtO.getBuildings(), imgTextEntity.getId());
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("图文管理")
+                .targetDatas(Lists.newArrayList(new OptTargetData(imgTextEntity.getTitle(),imgTextEntity.getId().toString())))
+                .build());
         return update;
     }
 

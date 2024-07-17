@@ -98,6 +98,14 @@ public class SystemConverService {
      */
     public Map<Long, List<Long>> lookUpUserIdsByBuildingIds(@RequestBody @Valid UserHouseAuditBuildingReqDTO reqDTO) {
         Map<Long, List<Long>> data = systemApiFeignService.lookUpUserIdsByBuildingIds(reqDTO).getData();
+        if (data != null) {
+            for (Long key : data.keySet()) {
+                if (CollUtil.isNotEmpty(data.get(key))) {
+                    List<Long> collect = data.get(key).stream().distinct().collect(Collectors.toList());
+                    data.put(key, collect);
+                }
+            }
+        }
         log.info("lookUpUserIdsByBuildingIds-resp:{}", data);
         return data;
     }

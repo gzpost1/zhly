@@ -1,6 +1,9 @@
 package cn.cuiot.dmp.content.service.impl;//	模板
 
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.content.constant.ApplicationConfigConstants;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.dal.entity.ContentModule;
@@ -8,6 +11,7 @@ import cn.cuiot.dmp.content.dal.mapper.ContentModuleMapper;
 import cn.cuiot.dmp.content.service.ContentModuleService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,6 +90,11 @@ public class ContentModuleServiceImpl implements ContentModuleService {
         }
         contentModule.setShowed(statusParam.getStatus());
         contentModuleMapper.updateById(contentModule);
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("module")
+                .targetDatas(Lists.newArrayList(new OptTargetData(contentModule.getModuleName(), contentModule.getId().toString())))
+                .build());
         return true;
     }
 
@@ -96,6 +105,11 @@ public class ContentModuleServiceImpl implements ContentModuleService {
             return false;
         }
         contentModuleMapper.updateById(contentModule);
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("module")
+                .targetDatas(Lists.newArrayList(new OptTargetData(contentModule.getModuleName(), contentModule.getId().toString())))
+                .build());
         return true;
     }
 
