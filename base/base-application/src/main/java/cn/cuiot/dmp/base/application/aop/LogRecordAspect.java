@@ -252,16 +252,13 @@ public class LogRecordAspect {
             return "";
         }
         StringBuilder stringBuilder = new StringBuilder("");
-        if (Objects.nonNull(optTargetInfo)) {
-            String name = optTargetInfo.getName();
-            stringBuilder.append(name);
-            List<OptTargetData> targetDatas = optTargetInfo.getTargetDatas();
-            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(targetDatas)) {
-                stringBuilder.append("{");
-                stringBuilder.append(Joiner.on(",").join(targetDatas.stream().map(item->item.getDataName()+"("+item.getDataId()+")").collect(
-                        Collectors.toList())));
-                stringBuilder.append("}");
-            }
+        List<OptTargetData> targetDatas = optTargetInfo.getTargetDatas();
+        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(targetDatas)) {
+            stringBuilder.append(optTargetInfo.getName());
+            stringBuilder.append("{");
+            stringBuilder.append(Joiner.on(",").join(targetDatas.stream().map(item->item.getDataName()+"("+item.getDataId()+")").collect(
+                    Collectors.toList())));
+            stringBuilder.append("}");
         }
         return stringBuilder.toString();
     }
