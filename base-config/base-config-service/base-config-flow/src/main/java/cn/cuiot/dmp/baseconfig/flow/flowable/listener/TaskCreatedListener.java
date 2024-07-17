@@ -1,12 +1,16 @@
 package cn.cuiot.dmp.baseconfig.flow.flowable.listener;
 
 import cn.cuiot.dmp.base.infrastructure.utils.SpringContextHolder;
+import cn.cuiot.dmp.baseconfig.flow.enums.WorkBusinessEnums;
 import cn.cuiot.dmp.baseconfig.flow.flowable.msg.MsgSendService;
+import cn.cuiot.dmp.baseconfig.flow.service.WorkBusinessTypeInfoService;
 import cn.cuiot.dmp.common.constant.MsgDataType;
+import org.flowable.bpmn.model.UserTask;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.delegate.TaskListener;
 import org.flowable.task.service.delegate.DelegateTask;
+import org.flowable.task.service.impl.persistence.entity.TaskEntityImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +30,8 @@ public class TaskCreatedListener implements TaskListener {
     private TaskService taskService;
     @Autowired
     private MsgSendService msgSendService;
+    @Autowired
+    private WorkBusinessTypeInfoService workBusinessTypeInfoService;
 
     @Override
     public void notify(DelegateTask delegateTask) {
@@ -43,6 +49,15 @@ public class TaskCreatedListener implements TaskListener {
                     //发送消息
                     msgSendService.sendProcess(delegateTask.getProcessInstanceId(), MsgDataType.WORK_INFO_TURNDOWN);
                 }
+            }else if(DEFAULT_NULL_SUSPEND.equals(delegateTask.getAssignee())){
+                //保存超时信息和挂起信息
+                UserTask userTask = new UserTask();
+                userTask.setId(delegateTask.getTaskDefinitionKey());
+
+                TaskEntityImpl taskEntity = new TaskEntityImpl();
+                taskEntity.setId(delegateTask.getId());
+                taskEntity.setProcessInstanceId(delegateTask.getProcessInstanceId());
+                workBusinessTypeInfoService.saveBusinessInfo(taskEntity, userTask, WorkBusinessEnums.SUSPEND,"审批人为空,自动挂起");
             }
     }
 }
