@@ -17,6 +17,7 @@ import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.ChargeNoticeBuildingEntity;
 import cn.cuiot.dmp.lease.entity.charge.ChargeNoticeEntity;
@@ -235,13 +236,13 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
         //删除账单
         removeById(id);
 
-        //删除楼盘信息
-        chargeNoticeBuildingMapper.delete(new LambdaQueryWrapper<ChargeNoticeBuildingEntity>()
-                .eq(ChargeNoticeBuildingEntity::getChargeNoticeId, id));
-
-        //删除收费项目信息
-        chargeNoticeItemMapper.delete(new LambdaQueryWrapper<ChargeNoticeItemEntity>()
-                .eq(ChargeNoticeItemEntity::getChargeNoticeId, id));
+//        //删除楼盘信息
+//        chargeNoticeBuildingMapper.delete(new LambdaQueryWrapper<ChargeNoticeBuildingEntity>()
+//                .eq(ChargeNoticeBuildingEntity::getChargeNoticeId, id));
+//
+//        //删除收费项目信息
+//        chargeNoticeItemMapper.delete(new LambdaQueryWrapper<ChargeNoticeItemEntity>()
+//                .eq(ChargeNoticeItemEntity::getChargeNoticeId, id));
     }
 
     /**
@@ -334,6 +335,8 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
             msgDto.setMsgType(MsgTypeConstant.CHARGE_BILL_NOTICE);
             msgDto.setMessageTime(new Date());
             msgDto.setDataJson(JsonUtil.writeValueAsString(item));
+            msgDto.setBuildingId(item.getBuildingId());
+            msgDto.setUserType(UserTypeEnum.OWNER.getValue());
 
             String date = dateFormat(item.getOwnershipPeriodBegin()) + "-" + dateFormat(item.getOwnershipPeriodEnd());
             msgDto.setMessage(fillTemplate(date, item.getChargeItemName()));

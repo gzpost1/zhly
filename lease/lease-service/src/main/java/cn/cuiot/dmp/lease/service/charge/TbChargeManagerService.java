@@ -92,7 +92,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
             if (betweenMonth == 0) {
                 TbChargeManager tbChargeManager = getTbChargeManager(createDto, createType, receivblePlanId);
                 setDueDate(createDto.getDueDateNum(), tbChargeManager);
-
+                save(tbChargeManager);
             } else {
                 betweenMonth += 1;
                 for (long l = 0; l < betweenMonth; l++) {
