@@ -175,9 +175,6 @@ public class LogRecordAspect {
             operateLogDto.setServiceType(logRecord.serviceType());
             //业务类型名称
             operateLogDto.setServiceTypeName(logRecord.serviceTypeName());
-            if(StringUtils.isBlank(operateLogDto.getServiceTypeName())){
-                operateLogDto.setServiceTypeName(operateLogDto.getServiceType());
-            }
         }
 
         return operateLogDto;
