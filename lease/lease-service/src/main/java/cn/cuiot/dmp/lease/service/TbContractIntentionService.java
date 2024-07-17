@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 意向合同 服务实现类
@@ -117,4 +118,17 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     public List<BaseVO> statisticsContract() {
         return baseMapper.statisticsContract();
     }
+
+    /**
+     * 查询已经有关联的租赁合同
+     * @return
+     */
+    public List<Long> queryBindContractLeaseId(){
+        LambdaQueryWrapper<TbContractIntentionEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.isNotNull(TbContractIntentionEntity::getContractLeaseId);
+        List<TbContractIntentionEntity> intentionEntities = baseMapper.selectList(queryWrapper);
+        List<Long> leaseIds = intentionEntities.stream().map(TbContractIntentionEntity::getContractLeaseId).distinct().collect(Collectors.toList());
+        return leaseIds;
+    }
+
 }
