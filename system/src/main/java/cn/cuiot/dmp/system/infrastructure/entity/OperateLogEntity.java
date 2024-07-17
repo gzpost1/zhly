@@ -1,5 +1,9 @@
 package cn.cuiot.dmp.system.infrastructure.entity;
 
+import static cn.cuiot.dmp.common.constant.EntityConstants.BLANK_STR;
+import static cn.cuiot.dmp.common.constant.EntityConstants.NULL_STR;
+
+import java.util.Objects;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 
@@ -101,4 +105,18 @@ public class OperateLogEntity {
      * 响应参数
      */
     private String responseParams;
+
+    public String getOperationTargetInfo() {
+        if(Objects.isNull(operationTargetInfo)||NULL_STR.equals(operationTargetInfo)){
+            return BLANK_STR;
+        }
+        return operationTargetInfo;
+    }
+
+    public String getServiceTypeName() {
+        if(Objects.isNull(serviceTypeName)||NULL_STR.equals(serviceTypeName)){
+            return BLANK_STR;
+        }
+        return serviceTypeName;
+    }
 }
