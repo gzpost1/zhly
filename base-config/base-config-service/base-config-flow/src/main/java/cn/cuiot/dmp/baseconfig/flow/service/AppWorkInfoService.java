@@ -649,7 +649,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public IdmResDTO completeTask(CompleteTaskDto taskDto) {
 
         Task task = taskService.createTaskQuery().taskId(String.valueOf(taskDto.getTaskId())).singleResult();
-        if(StringUtils.isNotEmpty(taskDto.getCompletionRatio())){
+        if(StringUtils.isEmpty(taskDto.getCompletionRatio())){
             //未达到完成比列不允许提交
             Assert.isTrue(checkCompletionRatio(taskDto,task),() -> new BusinessException(ResultCode.COMPLETE_RATIO_ERROR));
 
