@@ -204,9 +204,15 @@ public class LogRecordAspect {
             //设置操作对象内容
             OptTargetInfo optTargetInfo = LogContextHolder.getOptTargetInfo();
             operateLogDto.setOperationTargetInfo(getOptTargetInfoStr(optTargetInfo));
-            //针对类似登录接口手动获取orgId
-            if(StringUtils.isBlank(operateLogDto.getOrgId())&&Objects.nonNull(optTargetInfo)){
-                operateLogDto.setOrgId(StrUtil.toStringOrNull(optTargetInfo.getCompanyId()));
+
+            if(Objects.nonNull(optTargetInfo)){
+                //针对类似登录接口手动获取orgId
+                if(StringUtils.isBlank(operateLogDto.getOrgId())){
+                    operateLogDto.setOrgId(StrUtil.toStringOrNull(optTargetInfo.getCompanyId()));
+                }
+                if(StringUtils.isNotBlank(optTargetInfo.getOperationName())){
+                    operateLogDto.setOperationName(optTargetInfo.getOperationName());
+                }
             }
             // 发送记录日志消息
             sendService.sendOperaLog(operateLogDto);
