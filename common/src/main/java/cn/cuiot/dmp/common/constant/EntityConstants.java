@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.common.constant;
 
+import org.jpedal.parser.shape.S;
+
 /**
  * 常用变量
  * @author: wuyongchong
@@ -47,4 +49,14 @@ public final class EntityConstants {
      * 未生效
      */
     public static final Byte NOT_EFFECTIVE = 0;
+
+    /**
+     * null 字符串
+     */
+    public static final String NULL_STR="null";
+
+    /**
+     * 空 字符串
+     */
+    public static final String BLANK_STR="";
 }
