@@ -30,6 +30,21 @@ public class OptTargetInfo implements Serializable {
     private String operationName;
 
     /**
+     * 操作者ID
+     */
+    private String operationById;
+
+    /**
+     * 操作者名称
+     */
+    private String operationByName;
+
+    /**
+     * 用户类型
+     */
+    private Integer userType;
+
+    /**
      * 对象类型名称
      */
     private String name;

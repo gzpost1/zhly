@@ -318,7 +318,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         //设置日志操作对象内容
         LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
                 .name("企业")
-                .targetDatas(Lists.newArrayList(new OptTargetData(organization.getCompanyName(), organization.getId().toString())))
+                .targetDatas(Lists.newArrayList(new OptTargetData(organization.getCompanyName(), organization.getId().getValue().toString())))
                 .build());
 
         //保存菜单权限
@@ -454,7 +454,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         //设置日志操作对象内容
         LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
                 .name("企业")
-                .targetDatas(Lists.newArrayList(new OptTargetData(oldOrganization.getOrgName(), oldOrganization.getId().toString())))
+                .targetDatas(Lists.newArrayList(new OptTargetData(oldOrganization.getOrgName(), oldOrganization.getId().getValue().toString())))
                 .build());
 
         //判断登录用户是否有权限修改
@@ -631,12 +631,24 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public GetOrganizationVO findOne(String pkOrgId, String sessionUserId, String sessionOrgId) {
 
-        //查看数据权限判断
-        String loginDeptId = userService.getDeptId(sessionUserId, sessionOrgId);
+        //获取当前登录用户的账号信息
+        Organization sessionOrg = organizationRepository
+                .find(new OrganizationId(sessionOrgId));
+
+        if (!OrgTypeEnum.PLATFORM.getValue()
+                .equals(sessionOrg.getOrgTypeId().getValue())) {
+            if(!pkOrgId.equals(sessionOrgId)){
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            }
+        }
+
         String grantDeptId = userDao.getUserGrantDeptId(Long.parseLong(pkOrgId));
+
+        //查看数据权限判断
+        /*String loginDeptId = userService.getDeptId(sessionUserId, sessionOrgId);
         if (!departmentUtil.checkPrivilege(loginDeptId, grantDeptId)) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
-        }
+        }*/
 
         Organization organization = organizationRepository.find(new OrganizationId(pkOrgId));
 
@@ -659,7 +671,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         /**
          * 设置所属组织信息
          */
-        if (grantDeptId != null) {
+        if (Objects.nonNull(grantDeptId)) {
             DepartmentEntity departmentEntity = departmentDao
                     .selectByPrimary(Long.parseLong(grantDeptId));
             vo.setDeptId(Long.parseLong(grantDeptId));
@@ -879,8 +891,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         //设置日志操作对象内容
         LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                 .operationName(EntityConstants.ENABLED.equals(updateStatusParam.getStatus())?"启用企业":"禁用企业")
                 .name("企业")
-                .targetDatas(Lists.newArrayList(new OptTargetData(find.getCompanyName(), find.getId().toString())))
+                .targetDatas(Lists.newArrayList(new OptTargetData(find.getCompanyName(), find.getId().getValue().toString())))
                 .build());
 
         Organization organization = Organization.builder()
