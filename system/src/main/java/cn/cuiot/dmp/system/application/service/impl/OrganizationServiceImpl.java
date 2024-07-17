@@ -322,7 +322,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         //设置日志操作对象内容
         LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
                 .name("企业")
-                .targetDatas(Lists.newArrayList(new OptTargetData(organization.getCompanyName(), organization.getId().toString())))
+                .targetDatas(Lists.newArrayList(new OptTargetData(organization.getCompanyName(), organization.getId().getValue().toString())))
                 .build());
 
         //保存菜单权限
@@ -458,7 +458,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         //设置日志操作对象内容
         LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
                 .name("企业")
-                .targetDatas(Lists.newArrayList(new OptTargetData(oldOrganization.getOrgName(), oldOrganization.getId().toString())))
+                .targetDatas(Lists.newArrayList(new OptTargetData(oldOrganization.getOrgName(), oldOrganization.getId().getValue().toString())))
                 .build());
 
         //判断登录用户是否有权限修改
@@ -883,8 +883,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         //设置日志操作对象内容
         LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                 .operationName(EntityConstants.ENABLED.equals(updateStatusParam.getStatus())?"启用企业":"禁用企业")
                 .name("企业")
-                .targetDatas(Lists.newArrayList(new OptTargetData(find.getCompanyName(), find.getId().toString())))
+                .targetDatas(Lists.newArrayList(new OptTargetData(find.getCompanyName(), find.getId().getValue().toString())))
                 .build());
 
         Organization organization = Organization.builder()
