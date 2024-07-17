@@ -138,9 +138,9 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
                         BeanUtils.copyProperties(createDto, appointCreate);
                         appointCreate.setOwnershipPeriodBegin(DateUtil.beginOfMonth(DateUtil.offsetMonth(dateTime, i)));
                         appointCreate.setOwnershipPeriodEnd(DateUtil.endOfMonth(appointCreate.getOwnershipPeriodBegin()));
-                        createDto.setDueDateNum(tbChargePlain.getDueDateNum());
+                        appointCreate.setDueDateNum(tbChargePlain.getDueDateNum());
 
-                        makeChargeByPlan(tbChargePlain, createDto, saveChargeMangeList);
+                        makeChargeByPlan(tbChargePlain, appointCreate, saveChargeMangeList);
                     }
                 }
 
