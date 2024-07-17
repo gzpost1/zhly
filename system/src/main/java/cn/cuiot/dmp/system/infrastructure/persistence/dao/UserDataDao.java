@@ -120,4 +120,12 @@ public interface UserDataDao {
      * @return
      */
     List<UserDataEntity> lookUpUserList(Map<String, Object> params);
+
+    /**
+     * 根据ids获取用户列表
+     * @param ids
+     * @return
+     */
+    List<UserDataEntity> selectListByIds(@Param("ids") List<Long> ids);
+
 }

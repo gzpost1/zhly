@@ -106,7 +106,7 @@ public class LogRecordAspect {
         operateLogDto.setOrgId(StrUtil.toStringOrNull(LoginInfoHolder.getCurrentOrgId()));
         //请求时间
         operateLogDto.setRequestTime(
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         //请求IP
         operateLogDto.setRequestIp(IpUtil.getIpAddr(request));
         //操作者ID
@@ -202,7 +202,12 @@ public class LogRecordAspect {
             //设置响应内容
             operateLogDto.setResponseParams(obj == null ? "" : JsonUtil.writeValueAsString(obj));
             //设置操作对象内容
-            operateLogDto.setOperationTargetInfo(getOptTargetInfoStr(LogContextHolder.getOptTargetInfo()));
+            OptTargetInfo optTargetInfo = LogContextHolder.getOptTargetInfo();
+            operateLogDto.setOperationTargetInfo(getOptTargetInfoStr(optTargetInfo));
+            //针对类似登录接口手动获取orgId
+            if(StringUtils.isBlank(operateLogDto.getOrgId())&&Objects.nonNull(optTargetInfo)){
+                operateLogDto.setOrgId(StrUtil.toStringOrNull(optTargetInfo.getCompanyId()));
+            }
             // 发送记录日志消息
             sendService.sendOperaLog(operateLogDto);
         } catch (Exception e) {

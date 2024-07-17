@@ -33,6 +33,9 @@ public class SysLogService {
         if (StringUtils.isNotBlank(param.getOperationSource())) {
             query.addCriteria(Criteria.where("operationSource").is(param.getOperationSource()));
         }
+        if (Objects.nonNull(param.getOrgId())) {
+            query.addCriteria(Criteria.where("orgId").is(param.getOrgId().toString()));
+        }
         if (StringUtils.isNotBlank(param.getServiceTypeName())) {
             //模糊匹配
             Pattern pattern = Pattern
