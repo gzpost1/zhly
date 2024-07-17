@@ -1825,7 +1825,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             if(Objects.equals(tasks.get(0).getTaskDefinitionKey(),WorkOrderConstants.USER_ROOT)){
                 String message = SupplementExplanationEnum.getSupplementExplanation(BusinessInfoEnums.BUSINESS_ROLLBACK.getCode()).getMessage();
                 //可以重新提交
-                resultDto.setResubmit(ButtonBusinessEnums.BUTTON.getCode());
+                if(Objects.equals(entity.getCreateUser(),LoginInfoHolder.getCurrentUserId())){
+                    resultDto.setResubmit(ButtonBusinessEnums.BUTTON.getCode());
+                }
                 //查询被退回的原因
                 WorkBusinessTypeInfoEntity workBusinessTypeInfo = getWorkBusinessTypeInfo(Long.parseLong(entity.getProcInstId()),
                         Arrays.asList(BusinessInfoEnums.BUSINESS_TIME_OUT.getCode(),BusinessInfoEnums.BUSINESS_ROLLBACK.getCode()));
@@ -1841,11 +1843,11 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             }
             //判断是否可以撤回
             //未完成就可以撤回
-            if(Objects.equals(entity.getRevokeType(),ButtonBusinessEnums.BUTTON.getCode())){
+            if(Objects.equals(entity.getRevokeType(),ButtonBusinessEnums.BUTTON.getCode()) && Objects.equals(entity.getCreateUser(),LoginInfoHolder.getCurrentUserId())){
                 resultDto.setRevokeType(ButtonBusinessEnums.BUTTON.getCode());
             }
             //同节点可以撤回
-            if(Objects.equals(entity.getRevokeType(),ButtonBusinessEnums.APPOINT.getCode())){
+            if(Objects.equals(entity.getRevokeType(),ButtonBusinessEnums.APPOINT.getCode())  && Objects.equals(entity.getCreateUser(),LoginInfoHolder.getCurrentUserId())){
                 Process mainProcess = repositoryService.getBpmnModel(entity.getProcessDefinitionId()).getMainProcess();
 
                 String dingDing = mainProcess.getAttributeValue(FLOWABLE_NAME_SPACE, FLOWABLE_NAME_SPACE_NAME);
