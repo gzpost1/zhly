@@ -60,6 +60,12 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
             if (StrUtil.isNotEmpty(pageQuery.getMsgType())) {
                 query.addCriteria(Criteria.where("msgType").is(pageQuery.getMsgType()));
             }
+            if (Objects.nonNull(pageQuery.getBuildingId())) {
+                query.addCriteria(Criteria.where("buildingId").is(pageQuery.getBuildingId()));
+            }
+            if (Objects.nonNull(pageQuery.getUserType())) {
+                query.addCriteria(Criteria.where("userType").is(pageQuery.getUserType()));
+            }
             //计算总数
             long total = mongoTemplate.count(query, UserMessageEntity.class);
 
@@ -83,6 +89,8 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
             queryWrapper.eq(Objects.nonNull(pageQuery.getReadStatus()), UserMessageEntity::getReadStatus, pageQuery.getReadStatus());
             queryWrapper.eq(Objects.nonNull(pageQuery.getDataType()), UserMessageEntity::getDataType, pageQuery.getDataType());
             queryWrapper.eq(StrUtil.isNotEmpty(pageQuery.getMsgType()), UserMessageEntity::getMsgType, pageQuery.getMsgType());
+            queryWrapper.eq(Objects.nonNull(pageQuery.getBuildingId()),UserMessageEntity::getBuildingId,pageQuery.getBuildingId());
+            queryWrapper.eq(Objects.nonNull(pageQuery.getUserType()),UserMessageEntity::getUserType,pageQuery.getUserType());
             queryWrapper.ge(Objects.nonNull(pageQuery.getMessageGtTime()), UserMessageEntity::getMessageTime, pageQuery.getMessageGtTime());
             queryWrapper.le(Objects.nonNull(pageQuery.getMessageLeTime()), UserMessageEntity::getMessageTime, pageQuery.getMessageLeTime());
             queryWrapper.orderByDesc(UserMessageEntity::getMessageTime);
