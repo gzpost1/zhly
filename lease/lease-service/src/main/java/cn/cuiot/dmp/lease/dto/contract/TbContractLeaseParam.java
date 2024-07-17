@@ -41,6 +41,9 @@ public class TbContractLeaseParam extends PageQuery implements Serializable {
     private Long id;
     private List<Long> queryIds;
 
+
+    private List<Long> queryNotInIds;
+
     /**
      * 合同编号
      */

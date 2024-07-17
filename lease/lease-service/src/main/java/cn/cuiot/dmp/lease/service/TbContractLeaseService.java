@@ -1,6 +1,5 @@
 package cn.cuiot.dmp.lease.service;
 
-import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
 import cn.cuiot.dmp.common.bean.PageQuery;
@@ -8,10 +7,14 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.dto.contract.TbContractLeaseParam;
+import cn.cuiot.dmp.lease.entity.BaseContractEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -86,7 +89,17 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
             List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
             params.setQueryIds(queryIds);
         }
-        PageResult<TbContractLeaseEntity> page = super.page(param);
+        PageResult<TbContractLeaseEntity> page = super.page(params);
+        page.getRecords().forEach(c -> {
+            baseContractService.fillBindHouseInfo(c);
+        });
+        return page;
+    }
+    public PageResult<TbContractLeaseEntity> pageNoSigned(PageQuery param) {
+        TbContractLeaseParam params = (TbContractLeaseParam) param;
+        List<Long> leaseIds = contractIntentionService.queryBindContractLeaseId();
+        params.setQueryNotInIds(leaseIds);
+        PageResult<TbContractLeaseEntity> page = super.page(params);
         page.getRecords().forEach(c -> {
             baseContractService.fillBindHouseInfo(c);
         });

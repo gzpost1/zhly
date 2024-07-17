@@ -34,4 +34,9 @@ public class ChargeCollectionManageSendDto {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 企业ID
+     */
+    private Long buildingId;
 }

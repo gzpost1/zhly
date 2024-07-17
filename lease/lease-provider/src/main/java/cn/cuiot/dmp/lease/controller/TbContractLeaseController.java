@@ -19,6 +19,7 @@ import cn.cuiot.dmp.lease.entity.TbContractLeaseRelateEntity;
 import cn.cuiot.dmp.lease.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -270,6 +271,16 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         return service.statisticsContract();
     }
 
+    /**
+     * 查询未关联意向合同的租赁合同
+     * @param params
+     * @return
+     */
+    @PostMapping("/pageNoSigned")
+    public PageResult<TbContractLeaseEntity> pageNoSigned(
+            @RequestBody TbContractLeaseParam params) {
+        return service.pageNoSigned(params);
+    }
     /**
      * 生成新的续租合同
      *

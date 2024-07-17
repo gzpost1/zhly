@@ -227,8 +227,8 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long planId) {
         removeById(planId);
-        deleteBuildingByPlanId(planId);
-        deleteChargeItemByPlanId(planId);
+//        deleteBuildingByPlanId(planId);
+//        deleteChargeItemByPlanId(planId);
     }
 
     /**
