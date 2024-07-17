@@ -184,7 +184,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("revokeWorkOrder")
-    @RequiresPermissions()
+    @RequiresPermissions(allowUserType = PermissionContants.USER_ALL)
     @LogRecord(operationCode = "revokeWorkOrder", operationName = "app工单撤回", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO revokeWorkOrder(@RequestBody ProcessBusinessDto businessDto){
         return appWorkInfoService.revokeWorkOrder(businessDto);
