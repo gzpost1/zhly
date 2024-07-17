@@ -3,8 +3,14 @@ package cn.cuiot.dmp.system.api.controller;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
+import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
+import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameReqDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyByNameResDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyReqDto;
@@ -13,8 +19,10 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.InsertSonDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UpdateDepartmentDto;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentTreeVO;
 
+import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import javax.validation.Valid;
 
 import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentUserVO;
@@ -67,26 +75,41 @@ public class DepartmentController extends BaseController {
      * 新增组织
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "insertSonDepartment", operationName = "新增组织", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "insertSonDepartment", operationName = "添加组织", serviceType = "department",serviceTypeName = "组织管理")
     @PostMapping(value = "/insertSonDepartment", produces = MediaType.APPLICATION_JSON_VALUE)
     public Long insertSonDepartment(@RequestBody @Valid InsertSonDepartmentDto dto) {
         dto.setPkOrgId(Long.parseLong(getOrgId()));
         dto.setCreateBy(getUserId());
         dto.setUserId(getUserId());
-        return departmentService.insertSonDepartment(dto);
+        Long deptId = departmentService.insertSonDepartment(dto);
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("组织")
+                .targetDatas(Lists.newArrayList(new OptTargetData(dto.getDepartmentName(),deptId.toString())))
+                .build());
+
+        return deptId;
     }
 
     /**
      * 修改组织
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateDepartment", operationName = "修改组织", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "updateDepartment", operationName = "修改组织", serviceType = "department",serviceTypeName = "组织管理")
     @PostMapping(value = "/updateDepartment", produces = MediaType.APPLICATION_JSON_VALUE)
     public int updateDepartment(@RequestBody @Valid UpdateDepartmentDto dto) {
         String orgId = getOrgId();
         dto.setPkOrgId(Long.parseLong(orgId));
         dto.setOrgId(orgId);
         dto.setUserId(getUserId());
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("组织")
+                .targetDatas(Lists.newArrayList(new OptTargetData(dto.getDepartmentName(),dto.getId().toString())))
+                .build());
+
         return departmentService.updateDepartment(dto);
     }
 
@@ -94,7 +117,7 @@ public class DepartmentController extends BaseController {
      * 删除组织
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "deleteDepartment", operationName = "删除组织", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "deleteDepartment", operationName = "删除组织", serviceType = "department",serviceTypeName = "组织管理")
     @GetMapping(value = "/deleteDepartment", produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteDepartment(Long id) {
         UpdateDepartmentDto updateDepartmentDto = new UpdateDepartmentDto();
@@ -102,6 +125,17 @@ public class DepartmentController extends BaseController {
         updateDepartmentDto.setId(id);
         updateDepartmentDto.setOrgId(orgId);
         updateDepartmentDto.setUserId(getUserId());
+
+        DepartmentEntity departmentEntity = departmentService.getDeptById(id.toString());
+        if(Objects.isNull(departmentEntity)){
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST,"组织不存在");
+        }
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("组织")
+                .targetDatas(Lists.newArrayList(new OptTargetData(departmentEntity.getDepartmentName(),departmentEntity.getId().toString())))
+                .build());
+
         departmentService.deleteDepartment(updateDepartmentDto);
     }
 

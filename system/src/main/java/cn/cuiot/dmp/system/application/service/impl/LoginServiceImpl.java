@@ -365,7 +365,7 @@ public class LoginServiceImpl implements LoginService {
     public void saveLog2Db(boolean isSuccess, OperateLogDto platformOperateLogDTO,
             HttpServletRequest request) {
         platformOperateLogDTO.setRequestTime(
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         platformOperateLogDTO.setRequestIp(IpUtil.getIpAddr(request));
         if (isSuccess) {
             // 操作成功

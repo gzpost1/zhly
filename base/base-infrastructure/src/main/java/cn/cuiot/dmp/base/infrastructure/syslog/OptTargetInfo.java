@@ -20,6 +20,11 @@ import lombok.NoArgsConstructor;
 public class OptTargetInfo implements Serializable {
 
     /**
+     * 企业ID
+     */
+    private Long companyId;
+
+    /**
      * 对象类型名称
      */
     private String name;

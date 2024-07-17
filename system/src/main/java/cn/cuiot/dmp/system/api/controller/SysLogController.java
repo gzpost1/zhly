@@ -33,6 +33,7 @@ public class SysLogController {
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<OperateLogEntity>> queryForPage(@RequestBody SysLogQuery query) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
+        query.setOrgId(currentOrgId);
         IPage<OperateLogEntity> pageData = sysLogService.queryForPage(query);
         return IdmResDTO.success(pageData);
     }

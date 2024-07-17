@@ -29,4 +29,6 @@ public class UserImportDownloadVo implements Serializable {
     @Excel(name = "密码", orderNum = "2", width = 20)
     private String password;
 
+
+    private Long id;
 }

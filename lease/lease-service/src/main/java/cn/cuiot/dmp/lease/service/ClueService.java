@@ -18,6 +18,7 @@ import cn.cuiot.dmp.common.constant.*;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.lease.config.MsgChannel;
 import cn.cuiot.dmp.lease.constants.ClueConstant;
 import cn.cuiot.dmp.lease.dto.clue.*;
@@ -207,7 +208,8 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(Lists.newArrayList(distributeDTO.getCurrentFollowerId()))
                 .setDataId(clueEntity.getId()).setDataType(MsgDataType.CLUE_DISTRIBUTE)
                 .setMessage(String.format(ClueConstant.CLUE_DISTRIBUTE_MSG, userName, clueEntity.getName()))
-                .setMessageTime(new Date()).setMsgType(MsgTypeConstant.CLUE);
+                .setMessageTime(new Date()).setMsgType(MsgTypeConstant.CLUE)
+                .setUserType(UserTypeEnum.USER.getValue());
         SmsMsgDto smsMsgDto = new SmsMsgDto();
         userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
         msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)

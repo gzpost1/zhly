@@ -313,4 +313,16 @@
         order by u.created_on desc,u.id desc
     </select>
 
+    <select id="selectListByIds"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity">
+        SELECT u.*
+        FROM user u
+        <where>
+            u.id in
+            <foreach collection="ids" item="userIdItem" open="(" separator="," close=")">
+                #{userIdItem}
+            </foreach>
+        </where>
+    </select>
+
 </mapper>
