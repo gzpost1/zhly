@@ -129,7 +129,11 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
                 } else {
                     //指定日期
                     DateTime dateTime = DateUtil.beginOfMonth(new Date());
-                    for (int i = 0; i < (Integer.valueOf(tbChargePlain.getCronEndDate() )- Integer.valueOf(tbChargePlain.getCronBeginDate())); i++) {
+                    //开始 2024-07
+                    long monthBetween = DateUtil.betweenMonth(DateTimeUtil.stringToDate(tbChargePlain.getCronEndDate()+"-01",DateTimeUtil.DEFAULT_DATE_FORMAT),
+                            DateTimeUtil.stringToDate(tbChargePlain.getCronBeginDate()+"-01",DateTimeUtil.DEFAULT_DATE_FORMAT),true);
+
+                    for (int i = 0; i < monthBetween; i++) {
                         ChargeManagerInsertVo appointCreate = new ChargeManagerInsertVo();
                         BeanUtils.copyProperties(createDto, appointCreate);
                         appointCreate.setOwnershipPeriodBegin(DateUtil.beginOfMonth(DateUtil.offsetMonth(dateTime, i)));
