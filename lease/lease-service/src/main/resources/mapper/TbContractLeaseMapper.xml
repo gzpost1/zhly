@@ -111,6 +111,12 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="params.queryNotInIds!=null and params.queryNotInIds.size()>0">
+                and ci.id not in
+                <foreach collection="params.queryNotInIds" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
             <if test=" params.reletContractId != null">
                 and ci.relet_contract_id = #{params.reletContractId}
             </if>

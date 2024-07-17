@@ -91,16 +91,16 @@
     <select id="selectIntentionCancel" resultMap="BaseResultMap">
         select *
         from tb_contract_cancel
-        where type=0 and intention_contract_id = #{id}
+        where type=0 and intention_contract_id = #{id} order by ifnull(update_time,create_time) desc limit 1
     </select>
     <select id="selectIntentionUseless" resultMap="BaseResultMap">
         select *
         from tb_contract_cancel
-        where type=1 and intention_contract_id = #{id}
+        where type=1 and intention_contract_id = #{id} order by ifnull(update_time,create_time) desc limit 1
     </select>
     <select id="selectLeaseUseless" resultMap="BaseResultMap">
         select *
         from tb_contract_cancel
-        where type=1 and lease_contract_id = #{id}
+        where type=1 and lease_contract_id = #{id} order by ifnull(update_time,create_time) desc limit 1
     </select>
 </mapper>

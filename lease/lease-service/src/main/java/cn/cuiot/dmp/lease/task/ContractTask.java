@@ -2,7 +2,9 @@ package cn.cuiot.dmp.lease.task;//	模板
 
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
+import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.service.TbContractIntentionService;
+import cn.cuiot.dmp.lease.service.TbContractLeaseService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -19,6 +21,8 @@ public class ContractTask {
 
     @Autowired
     TbContractIntentionService contractIntentionService;
+    @Autowired
+    TbContractLeaseService contractLeaseService;
 
     /**
      * 定时更新意向合同状态
@@ -50,6 +54,37 @@ public class ContractTask {
         });
         contractIntentionService.saveOrUpdateBatch(list);
         log.info("--------------------更新意向合同状态 结束-------------------");
+        return ReturnT.SUCCESS;
+    }
+    /**
+     * 定时更新租赁合同状态
+     *
+     * @param param
+     * @return
+     */
+    @XxlJob("更新租赁合同状态")
+    public ReturnT<String> syncContractLeaseStatus(String param) {
+        log.info("--------------------更新租赁合同状态 开始-------------------");
+        LambdaQueryWrapper<TbContractLeaseEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(TbContractLeaseEntity::getContractStatus, ContractEnum.STATUS_WAITING.getCode(),
+                ContractEnum.STATUS_EXECUTING.getCode(),ContractEnum.STATUS_EXPIRED.getCode());
+        LocalDate now = LocalDate.now();
+        List<TbContractLeaseEntity> list = contractLeaseService.list(queryWrapper);
+        list.forEach(c -> {
+            LocalDate beginDate = c.getBeginDate();
+            LocalDate endDate = c.getEndDate();
+            //待执行
+            if (beginDate.isAfter(now)) {
+                //已过期
+            } else if (endDate.isBefore(now)) {
+                c.setContractStatus(ContractEnum.STATUS_EXPIRED.getCode());
+                //执行中
+            } else {
+                c.setContractStatus(ContractEnum.STATUS_EXECUTING.getCode());
+            }
+        });
+        contractLeaseService.saveOrUpdateBatch(list);
+        log.info("--------------------更新租赁合同状态 结束-------------------");
         return ReturnT.SUCCESS;
     }
 

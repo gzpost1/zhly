@@ -39,6 +39,8 @@ public class BaseContractEntity extends Model {
 
     @TableField(exist = false)
     private List<Long> queryIds;
+    @TableField(exist = false)
+    private List<Long> queryNotInIds;
     /**
      * 合同编号
      */
