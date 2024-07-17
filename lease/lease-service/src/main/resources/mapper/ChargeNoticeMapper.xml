@@ -43,7 +43,8 @@
         SELECT
         a.id,
         a.customer_user_id customerUserId,
-        a.charge_item_id chargeItemId
+        a.charge_item_id chargeItemId,
+        a.loupan_id buildingId
         FROM
         tb_charge_manager a
         INNER JOIN tb_charge_notice_item b ON a.charge_item_id = b.charge_item_id AND b.charge_notice_id = #{params.id}
