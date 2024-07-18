@@ -3,6 +3,7 @@ package cn.cuiot.dmp.lease.task;//	模板
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
+import cn.cuiot.dmp.lease.service.BaseContractService;
 import cn.cuiot.dmp.lease.service.TbContractIntentionService;
 import cn.cuiot.dmp.lease.service.TbContractLeaseService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -15,6 +16,9 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_INTENTION_TYPE;
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_LEASE_TYPE;
+
 @Component
 @Slf4j
 public class ContractTask {
@@ -23,6 +27,8 @@ public class ContractTask {
     TbContractIntentionService contractIntentionService;
     @Autowired
     TbContractLeaseService contractLeaseService;
+    @Autowired
+    BaseContractService baseContractService;
 
     /**
      * 定时更新意向合同状态
@@ -39,20 +45,12 @@ public class ContractTask {
 //                ContractEnum.STATUS_USELESSING.getCode(), ContractEnum.STATUS_USELESS.getCode());
         queryWrapper.in(TbContractIntentionEntity::getContractStatus, ContractEnum.STATUS_WAITING.getCode(),
                 ContractEnum.STATUS_EXECUTING.getCode(),ContractEnum.STATUS_EXPIRED.getCode());
-        LocalDate now = LocalDate.now();
         List<TbContractIntentionEntity> list = contractIntentionService.list(queryWrapper);
         list.forEach(c -> {
             LocalDate beginDate = c.getBeginDate();
             LocalDate endDate = c.getEndDate();
-            //待执行
-            if (beginDate.isAfter(now)) {
-                //已过期
-            } else if (endDate.isBefore(now)) {
-                c.setContractStatus(ContractEnum.STATUS_EXPIRED.getCode());
-                //执行中
-            } else {
-                c.setContractStatus(ContractEnum.STATUS_EXECUTING.getCode());
-            }
+            Integer contractStatusByDate = baseContractService.handleContractStatusByDate(CONTRACT_INTENTION_TYPE, beginDate, endDate);
+            c.setContractStatus(contractStatusByDate);
         });
         contractIntentionService.saveOrUpdateBatch(list);
         log.info("--------------------更新意向合同状态 结束-------------------");
@@ -69,21 +67,13 @@ public class ContractTask {
         log.info("--------------------更新租赁合同状态 开始-------------------");
         LambdaQueryWrapper<TbContractLeaseEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(TbContractLeaseEntity::getContractStatus, ContractEnum.STATUS_WAITING.getCode(),
-                ContractEnum.STATUS_EXECUTING.getCode(),ContractEnum.STATUS_EXPIRED.getCode());
-        LocalDate now = LocalDate.now();
+                ContractEnum.STATUS_EXECUTING.getCode(),ContractEnum.STATUS_EXPIRED.getCode(),ContractEnum.STATUS_EXPIRED_WAITING.getCode());
         List<TbContractLeaseEntity> list = contractLeaseService.list(queryWrapper);
         list.forEach(c -> {
             LocalDate beginDate = c.getBeginDate();
             LocalDate endDate = c.getEndDate();
-            //待执行
-            if (beginDate.isAfter(now)) {
-                //已过期
-            } else if (endDate.isBefore(now)) {
-                c.setContractStatus(ContractEnum.STATUS_EXPIRED.getCode());
-                //执行中
-            } else {
-                c.setContractStatus(ContractEnum.STATUS_EXPIRED_WAITING.getCode());
-            }
+            Integer contractStatusByDate = baseContractService.handleContractStatusByDate(CONTRACT_LEASE_TYPE, beginDate, endDate);
+            c.setContractStatus(contractStatusByDate);
         });
         contractLeaseService.saveOrUpdateBatch(list);
         log.info("--------------------更新租赁合同状态 结束-------------------");
