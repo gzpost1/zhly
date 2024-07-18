@@ -620,6 +620,8 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
                 .eq(Objects.nonNull(dto.getNodeId()),CommitProcessEntity::getNodeId,dto.getNodeId());
         if(Objects.nonNull(dto.getUserId())){
             processLw.eq(CommitProcessEntity::getUserId,dto.getUserId());
+        }else{
+            processLw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
         }
         processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId())
                 .orderByDesc(CommitProcessEntity::getCreateTime);
@@ -628,7 +630,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         ProcessResultDto resultDto = new ProcessResultDto();
         resultDto.setProcess(processJson);
         if(CollectionUtil.isNotEmpty(processList)){
-            resultDto.setCommitProcess(Arrays.asList(processList.get(0)));
+            List<CommitProcessEntity> processEntities = processList.stream().filter(item -> Objects.equals(item.getBusinessTypeId(),
+                    processList.get(0).getBusinessTypeId())).collect(Collectors.toList());
+            resultDto.setCommitProcess(processEntities);
         }
 
         List<WorkInfoEntity> workInfoEntities = queryWorkInfo(dto.getProcInstId());
