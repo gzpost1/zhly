@@ -772,7 +772,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         Integer rate = childNodeByNodeId.getProps().getFormTaskAccessRate()*100;
         //实际比例
         Integer ratio = (int) (Double.parseDouble(taskDto.getCompletionRatio())*100);
-        if(ratio>rate){
+        if(rate>ratio){
             return false;
         }
         return true;
