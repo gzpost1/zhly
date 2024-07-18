@@ -70,6 +70,7 @@
       <if test="query.selectReceived != null and query.selectReceived.toString() == '1'.toString() ">
           and receivable_amount_received &gt; 0
       </if>
+      order by create_time desc
   </select>
 
   <update id="refund">
