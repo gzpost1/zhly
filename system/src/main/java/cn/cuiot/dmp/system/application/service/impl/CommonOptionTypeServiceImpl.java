@@ -87,6 +87,7 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
         pageQuery.setCompanyId(queryDTO.getCompanyId());
         pageQuery.setCategory(queryDTO.getCategory());
         pageQuery.setTypeIdList(getTypeIdList(commonOptionTypeTreeNodeVOList.get(0)));
+        pageQuery.setStatus(queryDTO.getStatus());
         List<CommonOption> commonOptionList = commonOptionRepository.queryCommonOptionListByType(pageQuery);
         fillCommonOptionTypeTree(commonOptionTypeTreeNodeVOList.get(0), commonOptionList);
         return commonOptionTypeTreeNodeVOList;

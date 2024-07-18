@@ -35,4 +35,9 @@ public class CommonOptionTypeQueryDTO implements Serializable {
      */
     private Long companyId;
 
+    /**
+     * 启用状态查询
+     */
+    private Byte status;
+
 }
