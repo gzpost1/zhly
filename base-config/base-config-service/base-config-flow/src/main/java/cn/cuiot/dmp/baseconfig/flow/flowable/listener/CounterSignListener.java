@@ -126,9 +126,6 @@ public class CounterSignListener implements ExecutionListener {
                 List<String> assigneeUsers = (List<String>) execution.getVariable(currentActivityId);
                 if (assigneeUsers != null) {
                     assigneeList.addAll(assigneeUsers);
-                }else {
-                    assigneeList.add(DEFAULT_NULL_COPLITE);
-                    execution.setVariable(variable,assigneeList);
                 }
 
             } else if (StringUtils.equalsAnyIgnoreCase(AssigneeTypeEnums.LEADER_TOP.getTypeName(),assignedType)) {
