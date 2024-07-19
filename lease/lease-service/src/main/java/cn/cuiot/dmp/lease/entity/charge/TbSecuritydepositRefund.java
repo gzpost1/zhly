@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.entity.charge;
 
+import cn.cuiot.dmp.lease.dto.charge.RefundModeNameSet;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -15,7 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
  */
 @Data
 @TableName(value = "tb_securitydeposit_refund")
-public class TbSecuritydepositRefund {
+public class TbSecuritydepositRefund implements RefundModeNameSet {
     @TableId(value = "id", type = IdType.INPUT)
     private Long id;
 
@@ -44,6 +45,14 @@ public class TbSecuritydepositRefund {
      */
     @TableField(value = "refund_mode")
     private Long refundMode;
+
+
+    /**
+     * 退款方式
+     */
+    @TableField(exist = false)
+    private String refundModeName;
+
 
     /**
      * 退款银行

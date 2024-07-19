@@ -11,6 +11,7 @@ import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositManager;
+import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositRefund;
 import cn.cuiot.dmp.lease.enums.ChargeTypeEnum;
 import cn.cuiot.dmp.lease.enums.SecurityDepositStatusEnum;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
@@ -119,6 +120,7 @@ public class SecuritydepositManagerController {
             }
 
             chargeInfoFillService.fillinfo(Lists.newArrayList(securitydepositManagerDto),SecuritydepositManagerDto.class);
+            chargeInfoFillService.fillinfo(Lists.newArrayList(securitydepositManagerDto.getSecuritydepositRefundList()), TbSecuritydepositRefund.class);
 
         }
         return IdmResDTO.success().body(securitydepositManagerDto);
