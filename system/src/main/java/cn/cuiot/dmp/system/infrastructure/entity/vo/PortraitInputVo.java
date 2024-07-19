@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.infrastructure.entity.vo;
 
+import cn.cuiot.dmp.common.bean.PageQuery;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,7 +12,7 @@ import java.util.Date;
  * @create 2024/7/18 20:37
  */
 @Data
-public class PortraitInputVo {
+public class PortraitInputVo extends PageQuery {
 
     /**
      * 名字
