@@ -522,7 +522,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_TRANSFER.getCode());
         businessTypeInfo.setDeliver(handleDataDTO.getUserIds().stream().map(String::valueOf).collect(Collectors.joining(",")));
-        workBusinessTypeInfoService.save(businessTypeInfo);
         //更新挂起时间
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
@@ -530,7 +529,18 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         if(StringUtils.isNotEmpty(taskId)){
             checkTaskInfo(taskId);
             //审批中心转办
-            assigneeByProcInstId(handleDataDTO);
+            Task task = taskService.createTaskQuery().taskId(handleDataDTO.getTaskId()).singleResult();
+            if(Objects.nonNull(task)){
+                List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery()
+                        .processInstanceId(task.getProcessInstanceId()).taskAssignee(String.valueOf(handleDataDTO.getUserIds().get(0)))
+                        .taskDefinitionKey(task.getTaskDefinitionKey()).orderByTaskId().desc().list();
+                if(CollectionUtil.isNotEmpty(hisTasks)){
+                    return IdmResDTO.error(ErrorCode.TASK_ALREADY_EXISTS.getCode(), ErrorCode.TASK_ALREADY_EXISTS.getMessage());
+                }
+            }
+            updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
+            workBusinessTypeInfoService.save(businessTypeInfo);
+            taskService.setAssignee(handleDataDTO.getTaskId(),String.valueOf(handleDataDTO.getUserIds().get(0)));
             return IdmResDTO.success();
         }
         //查出当前节点的所有人员信息
@@ -540,8 +550,10 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //查询该节点下所有任务信息
         List<String> hisTaskIds = baseMapper.queryHistoricTask( tasks.get(0).getTaskDefinitionKey(),tasks.get(0).getProcessInstanceId());
         if(tasks.size()!=hisTaskIds.size()){
-            throw new RuntimeException("部分任务已结束，不能转办");
+            return IdmResDTO.error(ErrorCode.TASK_COMPLETE.getCode(),ErrorCode.TASK_COMPLETE.getMessage());
         }
+        updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
+        workBusinessTypeInfoService.save(businessTypeInfo);
         //执行加签操作
         AddMultiInstanceUserTaskService multiInstanceUserTaskService = new AddMultiInstanceUserTaskService(managementService);
         Integer instance = 1;

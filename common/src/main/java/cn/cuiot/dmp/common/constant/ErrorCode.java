@@ -18,7 +18,7 @@ public enum ErrorCode implements IExceptionType {
 
     TASK_COMPLETE("00008","任务已结束"),
 
-    TASK_ALREADY_EXISTS("00009","任务已存在")
+    TASK_ALREADY_EXISTS("00009","所选人员已存在该任务")
     ;
 
     private String code;
