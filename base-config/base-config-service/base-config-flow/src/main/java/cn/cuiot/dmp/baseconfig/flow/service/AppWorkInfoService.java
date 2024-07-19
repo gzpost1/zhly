@@ -623,8 +623,13 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         }else{
             processLw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
         }
-        processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId())
-                .orderByDesc(CommitProcessEntity::getCreateTime);
+        if(Objects.nonNull(dto.getBusinessTypeId())){
+            processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId());
+        }else{
+            processLw.isNull(CommitProcessEntity::getBusinessTypeId);
+        }
+
+        processLw.orderByDesc(CommitProcessEntity::getCreateTime);
         List<CommitProcessEntity> processList = commitProcessService.list(processLw);
 
         ProcessResultDto resultDto = new ProcessResultDto();

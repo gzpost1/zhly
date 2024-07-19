@@ -1971,15 +1971,23 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 .eq(Objects.nonNull(dto.getNodeId()),CommitProcessEntity::getNodeId,dto.getNodeId());
                 if(Objects.isNull(dto.getUserId())){
                     processLw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
+                }else{
+                    processLw.eq(CommitProcessEntity::getUserId,dto.getUserId());
                 }
-        processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId())
-                .orderByDesc(CommitProcessEntity::getCreateTime);
+        if(Objects.nonNull(dto.getBusinessTypeId())){
+            processLw.eq(Objects.nonNull(dto.getBusinessTypeId()),CommitProcessEntity::getBusinessTypeId,dto.getBusinessTypeId());
+        }else{
+            processLw.isNull(CommitProcessEntity::getBusinessTypeId);
+        }
+        processLw.orderByDesc(CommitProcessEntity::getCreateTime);
         List<CommitProcessEntity> processList = commitProcessService.list(processLw);
 
         ProcessResultDto resultDto = new ProcessResultDto();
         resultDto.setProcess(processJson);
         if(CollectionUtils.isNotEmpty(processList)){
-            resultDto.setCommitProcess(Arrays.asList(processList.get(0)));
+            List<CommitProcessEntity> processEntities = processList.stream().filter(item -> Objects.equals(item.getBusinessTypeId(),
+                    processList.get(0).getBusinessTypeId())).collect(Collectors.toList());
+            resultDto.setCommitProcess(processEntities);
         }
         List<WorkInfoEntity> workInfoEntities = queryWorkInfo(dto.getProcInstId());
         if(CollectionUtil.isNotEmpty(workInfoEntities)){
