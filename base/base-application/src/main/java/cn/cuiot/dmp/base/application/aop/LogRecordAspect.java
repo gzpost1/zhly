@@ -131,7 +131,7 @@ public class LogRecordAspect {
         operateLogDto.setOperationSource(operationSource);
         if(StringUtils.isBlank(operateLogDto.getOperationSource())){
             operateLogDto.setOperationSource(OperationSourceContants.WEB_END);
-            if(request.getServletPath().contains(APP_PATH)){
+            if(request.getServletPath().contains(APP_PATH)||StringUtils.isNotBlank(request.getHeader(AuthContants.COMMUNITY))){
                 if (UserTypeEnum.USER.getValue().equals(userType)) {
                     operateLogDto.setOperationSource(OperationSourceContants.APP_MANAGE_END);
                 }else {

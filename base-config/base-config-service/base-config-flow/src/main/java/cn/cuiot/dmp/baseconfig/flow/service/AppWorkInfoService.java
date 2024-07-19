@@ -653,7 +653,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public IdmResDTO completeTask(CompleteTaskDto taskDto) {
 
         Task task = taskService.createTaskQuery().taskId(String.valueOf(taskDto.getTaskId())).singleResult();
-        if(StringUtils.isEmpty(taskDto.getCompletionRatio())){
+        if(StringUtils.isNotEmpty(taskDto.getCompletionRatio())){
             //未达到完成比列不允许提交
             Assert.isTrue(checkCompletionRatio(taskDto,task),() -> new BusinessException(ResultCode.COMPLETE_RATIO_ERROR));
 
@@ -772,7 +772,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         Integer rate = childNodeByNodeId.getProps().getFormTaskAccessRate()*100;
         //实际比例
         Integer ratio = (int) (Double.parseDouble(taskDto.getCompletionRatio())*100);
-        if(ratio>rate){
+        if(rate>ratio){
             return false;
         }
         return true;
@@ -1012,6 +1012,15 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
         //单个转办
         if(StringUtils.isNotEmpty(assigneeDto.getTaskId())){
+            Task task = taskService.createTaskQuery().taskId(assigneeDto.getTaskId()).singleResult();
+            if(Objects.nonNull(task)){
+                List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery()
+                        .processInstanceId(task.getProcessInstanceId()).taskAssignee(String.valueOf(assigneeDto.getUserIds().get(0)))
+                        .taskDefinitionKey(task.getTaskDefinitionKey()).orderByTaskId().desc().list();
+                if(CollectionUtil.isNotEmpty(hisTasks)){
+                    throw new RuntimeException("用户已参与该任务，不能再次转办");
+                }
+            }
             checkTaskInfo(String.valueOf(assigneeDto.getTaskId()));
             taskService.setAssignee(String.valueOf(assigneeDto.getTaskId()),String.valueOf(assigneeDto.getUserIds().get(0)));
             return IdmResDTO.success();
