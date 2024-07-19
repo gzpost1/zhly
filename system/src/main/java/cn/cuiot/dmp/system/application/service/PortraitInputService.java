@@ -20,6 +20,7 @@ import cn.cuiot.dmp.system.infrastructure.persistence.mapper.PortraitInputMapper
 import cn.cuiot.dmp.system.infrastructure.utils.MD5Util;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.lettuce.core.ScriptOutputType;
 import lombok.extern.slf4j.Slf4j;
@@ -75,12 +76,19 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         }
         Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
         // 密码解密
-        createDto.setPassword(aes.getDecodeValue(createDto.getPassword()));
+        if(StringUtils.isNotBlank(createDto.getPassword())){
+            createDto.setPassword(aes.getDecodeValue(createDto.getPassword()));
+        }
 
-        createDto.setPhone(aes.getDecodeValue(createDto.getPhone()));
-
-        createDto.setCardNo(aes.getDecodeValue(createDto.getCardNo()));
-        createDto.setIdCardNo(aes.getDecodeValue(createDto.getIdCardNo()));
+        if(StringUtils.isNotBlank(createDto.getCardNo())){
+            createDto.setCardNo(aes.getDecodeValue(createDto.getCardNo()));
+        }
+        if(StringUtils.isNotBlank(createDto.getPhone())){
+            createDto.setPhone(aes.getDecodeValue(createDto.getPhone()));
+        }
+        if(StringUtils.isNotBlank(createDto.getIdCardNo())){
+            createDto.setIdCardNo(aes.getDecodeValue(createDto.getIdCardNo()));
+        }
 
         //获取大华配置
         PortraitInputInfoDto inputDto =  getBaseMapper().queryPlatfromInfo(PortraitInputConstant.PLATFORM_TYPE_DH);
@@ -114,7 +122,7 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         if(StringUtils.equals(body.getResult(),PortraitInputConstant.RESULT_DH)){
             log.info("注册成功："+JsonUtil.writeValueAsString(body));
         }else{
-            throw new RuntimeException("注册失败");
+            throw new RuntimeException("注册失败"+body.getMsg());
         }
 
     }
@@ -150,7 +158,7 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
             return resp.getJSONObject("data").getString("admitGuid");
 
         }else{
-            throw new RuntimeException("识别主体创建异常");
+            throw new RuntimeException("识别主体创建异常"+ resp.getString("msg"));
         }
     }
     /**
@@ -190,7 +198,9 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
      */
     public IdmResDTO<IPage<PortraitInputVo>> queryPortraitInputInfo(PortraitInputVo para) {
         para.setCreateUser(LoginInfoHolder.getCurrentUserId());
-        IPage<PortraitInputVo> page = getBaseMapper().queryPortraitInputInfo(para);
+        Page<PortraitInputVo> page = getBaseMapper().queryPortraitInputInfo
+                (new Page<>(para.getPageNo()
+                        ,para.getPageSize()),para);
         return IdmResDTO.success(page);
     }
 

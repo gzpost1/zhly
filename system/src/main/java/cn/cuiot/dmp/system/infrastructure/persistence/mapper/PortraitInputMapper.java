@@ -6,6 +6,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputInfoDto;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.PortraitInputVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -17,6 +18,5 @@ public interface PortraitInputMapper extends BaseMapper<PortraitInputEntity> {
 
     PortraitInputInfoDto queryPlatfromInfo(String platformType);
 
-
-    IPage<PortraitInputVo> queryPortraitInputInfo(@Param("query") PortraitInputVo para);
+    Page<PortraitInputVo> queryPortraitInputInfo(Page<PortraitInputVo> portraitInputVoPage,@Param("query") PortraitInputVo para);
 }
