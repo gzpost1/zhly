@@ -137,6 +137,12 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
      */
     private Date receivedDate;
 
+
+    /**
+     * 备注
+     */
+    private String remark;
+
     public Integer getUnreturnedAmount() {
         return receivableAmount - returnedAmount;
     }

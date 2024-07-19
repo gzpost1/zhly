@@ -121,4 +121,9 @@ public class TbSecuritydepositManager extends YjBaseEntity {
      * 所属楼盘id
      */
     private Long loupanId;
+
+    /**
+     * 备注
+     */
+    private String remark;
 }

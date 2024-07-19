@@ -27,12 +27,13 @@
       <result column="account_bank" jdbcType="VARCHAR" property="accountBank" />
       <result column="account_number" jdbcType="VARCHAR" property="accountNumber" />
       <result column="received_date" jdbcType="TIMESTAMP" property="receivedDate" />
+      <result column="remark" jdbcType="VARCHAR" property="remark" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, customer_user_id, house_id, charge_item_id, charge_standard, receivable_amount, 
     ownership_period_begin, ownership_period_end, company_id, update_time, update_user, 
-    create_time, create_user, deleted, due_date, `status`, receivable_amount_received, 
+    create_time, create_user, deleted, due_date, `status`, receivable_amount_received, remark,
     returned_amount,transaction_mode,account_bank,account_number,received_date,loupan_id
   </sql>
 
