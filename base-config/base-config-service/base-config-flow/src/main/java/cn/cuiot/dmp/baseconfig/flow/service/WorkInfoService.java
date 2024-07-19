@@ -573,7 +573,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                     .processInstanceId(task.getProcessInstanceId()).taskAssignee(String.valueOf(handleDataDTO.getUserIds().get(0)))
                     .taskDefinitionKey(task.getTaskDefinitionKey()).orderByTaskId().desc().list();
             if(CollectionUtil.isNotEmpty(hisTasks)){
-                throw new RuntimeException("用户已参与该任务，不能再次转办");
+                return IdmResDTO.error(ErrorCode.TASK_ALREADY_EXISTS.getCode(), ErrorCode.TASK_ALREADY_EXISTS.getMessage());
             }
         }
 
