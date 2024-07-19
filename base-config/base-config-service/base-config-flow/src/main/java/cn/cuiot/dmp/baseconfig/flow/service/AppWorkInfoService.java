@@ -1012,6 +1012,15 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
         //单个转办
         if(StringUtils.isNotEmpty(assigneeDto.getTaskId())){
+            Task task = taskService.createTaskQuery().taskId(assigneeDto.getTaskId()).singleResult();
+            if(Objects.nonNull(task)){
+                List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery()
+                        .processInstanceId(task.getProcessInstanceId()).taskAssignee(String.valueOf(assigneeDto.getUserIds().get(0)))
+                        .taskDefinitionKey(task.getTaskDefinitionKey()).orderByTaskId().desc().list();
+                if(CollectionUtil.isNotEmpty(hisTasks)){
+                    throw new RuntimeException("用户已参与该任务，不能再次转办");
+                }
+            }
             checkTaskInfo(String.valueOf(assigneeDto.getTaskId()));
             taskService.setAssignee(String.valueOf(assigneeDto.getTaskId()),String.valueOf(assigneeDto.getUserIds().get(0)));
             return IdmResDTO.success();
