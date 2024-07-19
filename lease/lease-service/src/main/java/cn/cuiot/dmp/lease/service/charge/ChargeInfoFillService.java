@@ -31,6 +31,7 @@ public class ChargeInfoFillService {
 
         boolean isChargeItemFlag = ChargeItemNameSet.class.isAssignableFrom(clazz);
         boolean transactionModeFlag = TransactionModeNameSet.class.isAssignableFrom(clazz);
+        boolean refundModeNameFlag = RefundModeNameSet.class.isAssignableFrom(clazz);
 
         for (T record : records) {
             if(isChargeItemFlag){
@@ -38,6 +39,9 @@ public class ChargeInfoFillService {
             }
             if(transactionModeFlag){
                 carteIds.add(((TransactionModeNameSet)record).getTransactionMode());
+            }
+            if(refundModeNameFlag){
+                carteIds.add(((RefundModeNameSet)record).getRefundMode());
             }
         }
 
@@ -62,6 +66,13 @@ public class ChargeInfoFillService {
                         Long chargeItemId = ((TransactionModeNameSet) record).getTransactionMode();
                         if (changeItemMap.containsKey(chargeItemId)) {
                             ((TransactionModeNameSet) record).setTransactionModeName(changeItemMap.get(chargeItemId).getName());
+                        }
+                    }
+
+                    if(refundModeNameFlag){
+                        Long refundMode = ((RefundModeNameSet) record).getRefundMode();
+                        if (changeItemMap.containsKey(refundMode)) {
+                            ((RefundModeNameSet) record).setRefundModeName(changeItemMap.get(refundMode).getName());
                         }
                     }
                 }
