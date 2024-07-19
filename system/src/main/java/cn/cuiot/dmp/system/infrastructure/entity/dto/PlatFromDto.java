@@ -28,7 +28,7 @@ public class PlatFromDto {
     /**
      * 平台名称
      */
-    private String platfrom_name;
+    private String platfromName;
 
     /**
      * app_key
