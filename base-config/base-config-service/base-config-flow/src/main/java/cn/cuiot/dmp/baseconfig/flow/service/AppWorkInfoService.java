@@ -695,8 +695,8 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             //由于任务前面已经保存，这个地方直接更新就行
             LambdaUpdateWrapper<CommitProcessEntity> lw =new LambdaUpdateWrapper<>();
             lw.eq(CommitProcessEntity::getProcInstId,task.getProcessInstanceId()).eq(CommitProcessEntity::getNodeId,task.getTaskDefinitionKey())
-                    .eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId()).
-                    set(CommitProcessEntity::getBusinessTypeId,businessTypeInfo.getId());
+                    .eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId()).isNull(CommitProcessEntity::getBusinessTypeId)
+                    .set(CommitProcessEntity::getBusinessTypeId,businessTypeInfo.getId());
             commitProcessService.update(lw);
         }
         //如果节点存在挂起数据，将挂起数据结束
