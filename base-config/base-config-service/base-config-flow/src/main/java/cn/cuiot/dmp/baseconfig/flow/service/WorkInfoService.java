@@ -1969,9 +1969,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         LambdaQueryWrapper<CommitProcessEntity> processLw = new LambdaQueryWrapper<>();
         processLw.eq(Objects.nonNull(dto.getProcInstId()),CommitProcessEntity::getProcInstId,dto.getProcInstId())
                 .eq(Objects.nonNull(dto.getNodeId()),CommitProcessEntity::getNodeId,dto.getNodeId());
-                if(Objects.isNull(dto.getUserId())){
-                    processLw.eq(CommitProcessEntity::getUserId,LoginInfoHolder.getCurrentUserId());
-                }else{
+                if(!Objects.isNull(dto.getUserId())){
                     processLw.eq(CommitProcessEntity::getUserId,dto.getUserId());
                 }
         if(Objects.nonNull(dto.getBusinessTypeId())){
