@@ -1004,14 +1004,16 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(handleDataDTO);
         businessTypeInfo.setBusinessType(BusinessInfoEnums.BUSINESS_TRANSFER.getCode());
         businessTypeInfo.setDeliver(assigneeDto.getUserIds().stream().map(String::valueOf).collect(Collectors.joining(",")));
-        workBusinessTypeInfoService.save(businessTypeInfo);
+
 
         //更新挂起时间
         handleDataDTO.setNodeId(businessTypeInfo.getNode());
         updateBusinessPendingDate(handleDataDTO);
-        updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
+
+
         //单个转办
         if(StringUtils.isNotEmpty(assigneeDto.getTaskId())){
+            checkTaskInfo(String.valueOf(assigneeDto.getTaskId()));
             Task task = taskService.createTaskQuery().taskId(assigneeDto.getTaskId()).singleResult();
             if(Objects.nonNull(task)){
                 List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery()
@@ -1021,11 +1023,17 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
                     return IdmResDTO.error(ErrorCode.TASK_ALREADY_EXISTS.getCode(), ErrorCode.TASK_ALREADY_EXISTS.getMessage());
                 }
             }
-            checkTaskInfo(String.valueOf(assigneeDto.getTaskId()));
+            workBusinessTypeInfoService.save(businessTypeInfo);
+            updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
             taskService.setAssignee(String.valueOf(assigneeDto.getTaskId()),String.valueOf(assigneeDto.getUserIds().get(0)));
             return IdmResDTO.success();
         }
+
+
         checkWorkOrder(assigneeDto.getProcessInstanceId());
+
+        workBusinessTypeInfoService.save(businessTypeInfo);
+        updateWorkInfo(WorkOrderStatusEnums.progress.getStatus(), businessTypeInfo.getProcInstId());
         //查出当前节点的所有人员信息
 
         List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
