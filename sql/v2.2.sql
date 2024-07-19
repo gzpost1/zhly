@@ -31,7 +31,7 @@ create table tb_contract_cancel
         primary key,
     intention_contract_id bigint        null comment '意向合同id',
     lease_contract_id     bigint        null comment '租赁合同id',
-    name                  varchar(60)   null comment '合同名称',
+    name                  varchar(100)   null comment '合同名称',
     date                  date          null comment '退订日期',
     reason                varchar(255)  null comment '退订原因',
     remark                longtext      null comment '退订说明',

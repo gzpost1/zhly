@@ -1,11 +1,14 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import cn.cuiot.dmp.lease.enums.SecurityDepositStatusEnum;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.google.common.collect.Lists;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @Description 押金分页
@@ -144,6 +147,9 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
     private String remark;
 
     public Integer getUnreturnedAmount() {
+        if(Lists.newArrayList(SecurityDepositStatusEnum.UNPAID.getCode(),SecurityDepositStatusEnum.CANCELLED.getCode()).contains(status)){
+            return 0;
+        }
         return receivableAmount - returnedAmount;
     }
 }

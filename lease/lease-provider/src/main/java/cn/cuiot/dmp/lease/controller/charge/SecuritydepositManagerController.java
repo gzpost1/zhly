@@ -2,18 +2,22 @@ package cn.cuiot.dmp.lease.controller.charge;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.enums.CustomerIdentityTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
+import cn.cuiot.dmp.lease.entity.charge.TbChargeAbrogate;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositManager;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositRefund;
 import cn.cuiot.dmp.lease.enums.ChargeTypeEnum;
 import cn.cuiot.dmp.lease.enums.SecurityDepositStatusEnum;
+import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeAbrogateService;
@@ -52,6 +56,9 @@ public class SecuritydepositManagerController {
     private ChargeHouseAndUserService chargeHouseAndUserService;
     @Autowired
     private ChargeInfoFillService chargeInfoFillService;
+
+    @Autowired
+    private SystemToFlowService systemToFlowService;
     /**
      * 获取分页
      *
@@ -117,6 +124,24 @@ public class SecuritydepositManagerController {
             List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(Lists.newArrayList(houseIds));
             if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
                 securitydepositManagerDto.setHouseName(houseInfoDtos.get(0).getHouseName());
+            }
+
+            //填充操作人名称
+            if(CollectionUtils.isNotEmpty(securitydepositManagerDto.getAbrogateList())){
+                List<Long> abrogateUserIds = securitydepositManagerDto.getAbrogateList().stream().map(TbChargeAbrogate::getCreateUser).distinct().collect(Collectors.toList());
+                BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
+                baseUserReqDto.setUserIdList(abrogateUserIds);
+                List<BaseUserDto> baseUserDtoList = systemToFlowService.lookUpUserList(baseUserReqDto);
+                if(CollectionUtils.isNotEmpty(baseUserDtoList)){
+                    for (TbChargeAbrogate record : securitydepositManagerDto.getAbrogateList()) {
+                        for (BaseUserDto baseUserDto : baseUserDtoList) {
+                            if(Objects.equals(record.getCreateUser(),baseUserDto.getId())){
+                                record.setOperatorName(baseUserDto.getName());
+                                break;
+                            }
+                        }
+                    }
+                }
             }
 
             chargeInfoFillService.fillinfo(Lists.newArrayList(securitydepositManagerDto),SecuritydepositManagerDto.class);
