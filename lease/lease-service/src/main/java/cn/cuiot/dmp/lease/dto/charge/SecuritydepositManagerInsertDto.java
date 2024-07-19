@@ -59,4 +59,9 @@ public class SecuritydepositManagerInsertDto {
      * 所属楼盘id
      */
     private Long loupanId;
+
+    /**
+     * 备注
+     */
+    private String remark;
 }
