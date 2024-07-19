@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.PortraitInputMapper">
+
+
+    <select id="queryPlatfromInfo" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputInfoDto">
+        select app_key,app_secret,project_guid from tb_platfrom_info where platfrom_type= #{platformType}
+    </select>
+
+    <select id="queryPortraitInputInfo" resultType="cn.cuiot.dmp.system.infrastructure.entity.vo.PortraitInputVo">
+        select  url,phone,card_no,id_card_no,password,tag,create_user,name from tb_portrait_input where create_user = #{query.createUser}
+    </select>
+</mapper>

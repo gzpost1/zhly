@@ -567,34 +567,18 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
 
     public IdmResDTO assigneeByProcInstId(HandleDataDTO handleDataDTO){
+        Task task = taskService.createTaskQuery().taskId(handleDataDTO.getTaskId()).singleResult();
+        if(Objects.nonNull(task)){
+            List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery()
+                    .processInstanceId(task.getProcessInstanceId()).taskAssignee(String.valueOf(handleDataDTO.getUserIds().get(0)))
+                    .taskDefinitionKey(task.getTaskDefinitionKey()).orderByTaskId().desc().list();
+            if(CollectionUtil.isNotEmpty(hisTasks)){
+                throw new RuntimeException("用户已参与该任务，不能再次转办");
+            }
+        }
 
         taskService.setAssignee(handleDataDTO.getTaskId(),String.valueOf(handleDataDTO.getUserIds().get(0)));
 
-//        // 查询与流程实例ID相关联的所有任务
-//        List<Task> tasks = Optional.ofNullable(taskService.createTaskQuery().processInstanceId(handleDataDTO.getProcessInstanceId()).list())
-//                .orElseThrow(()->new RuntimeException("任务信息不存在"));
-//        //加签
-//        List<Long> assignees = tasks.stream().map(item->Long.parseLong(item.getAssignee())).collect(Collectors.toList());
-//        List<Long> countSigeList =handleDataDTO.getUserIds().stream().filter(item->!assignees.contains(item)).collect(Collectors.toList());
-//        if(CollectionUtils.isNotEmpty(countSigeList)){
-//            countSigeList.stream().forEach(item->{
-//                Map<String,Object> variableMap= new HashMap<>();
-//                variableMap.put("assigneeName",String.valueOf(item));
-//                runtimeService.addMultiInstanceExecution(tasks.get(0).getTaskDefinitionKey(), tasks.get(0).getProcessInstanceId(), variableMap);
-//            });
-//        }
-//
-//        if(StringUtils.isNotEmpty(handleDataDTO.getTaskId())){
-//            Task task = taskService.createTaskQuery().taskId(handleDataDTO.getTaskId()).singleResult();
-//            List<Task> collect = tasks.stream().filter(item -> Objects.equals(handleDataDTO.getTaskId(), item.getId())).collect(Collectors.toList());
-//            runtimeService.deleteMultiInstanceExecution(collect.get(0).getExecutionId(),true);
-//        }else{
-//            //减签
-//            tasks.stream().filter(item->!handleDataDTO.getUserIds().contains(Long.parseLong(item.getAssignee())))
-//                    .forEach(it->{
-//                        runtimeService.deleteMultiInstanceExecution(it.getExecutionId(),true);
-//                    });
-//        }
         return IdmResDTO.success();
     }
     /**
@@ -1791,6 +1775,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         //转办
         userInfos.stream().forEach(item->{
+
             taskService.setAssignee(String.valueOf(item.getTaskId()),
                     String.valueOf(item.getUserId()));
         });
