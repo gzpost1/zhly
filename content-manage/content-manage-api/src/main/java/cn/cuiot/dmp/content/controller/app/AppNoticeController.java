@@ -2,6 +2,10 @@ package cn.cuiot.dmp.content.controller.app;//	模板
 
 import cn.cuiot.dmp.base.application.annotation.ResolveExtData;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.param.query.NoticPageQuery;
 import cn.cuiot.dmp.content.param.vo.NoticeVo;
@@ -72,5 +76,29 @@ public class AppNoticeController {
             return;
         }
         noticeService.getMyNotice(LoginInfoHolder.getCommunityId());
+    }
+
+    /**
+     * 消息里通过id查详情
+     *
+     * @param idParam
+     * @return
+     */
+    @PostMapping("getByIdMsg")
+    public IdmResDTO<NoticeVo> getByIdMsg(@RequestBody @Valid IdParam idParam) {
+        NoticeVo noticeVo = noticeService.queryForDetail(idParam.getId());
+        if (!EntityConstants.NORMAL.equals(noticeVo.getEffectiveStatus())) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
+        if (!EntityConstants.ENABLED.equals(noticeVo.getStatus())) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
+        if (!ContentConstants.AuditStatus.AUDIT_PASSED.equals(noticeVo.getAuditStatus())) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
+        if (!ContentConstants.PublishStatus.PUBLISHED.equals(noticeVo.getPublishStatus())) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
+        return IdmResDTO.success(noticeVo);
     }
 }

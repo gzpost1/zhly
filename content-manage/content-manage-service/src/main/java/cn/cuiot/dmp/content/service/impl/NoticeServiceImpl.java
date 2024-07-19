@@ -77,7 +77,10 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
         if (contentNoticeEntity == null) {
             throw new BusinessException(ResultCode.DATA_NOT_EXIST);
         }
-        return NoticeConvert.INSTANCE.convert(contentNoticeEntity);
+        Byte effectiveStatus = NoticeConvert.INSTANCE.checkEffectiveStatus(contentNoticeEntity);
+        NoticeVo noticeVo = NoticeConvert.INSTANCE.convert(contentNoticeEntity);
+        noticeVo.setEffectiveStatus(effectiveStatus);
+        return noticeVo;
     }
 
     @Override
