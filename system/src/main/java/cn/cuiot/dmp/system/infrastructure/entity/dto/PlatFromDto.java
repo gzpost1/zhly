@@ -15,20 +15,14 @@ public class PlatFromDto {
     private Long id;
 
     /**
-     * 序号
+     * 平台id
      */
-    private Integer sort;
-
-
-    /**
-     * 平台类型
-     */
-    private String platfromType;
+    private String platformId;
 
     /**
-     * 平台名称
+     * 公司id
      */
-    private String platfromName;
+    private Long companyId;
 
     /**
      * app_key

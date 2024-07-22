@@ -24,22 +24,16 @@ public class PlatfromInfoEntity implements Serializable {
     private Long id;
 
 
-    /**
-     * 平台类型
-     */
-    private String platfromType;
-
 
     /**
-     * 平台名称
+     * 平台id
      */
-    private String platfromName;
-
+    private String platformId;
 
     /**
-     * 序号
+     * 公司id
      */
-    private Integer sort;
+    private Long companyId;
 
 
     /**
