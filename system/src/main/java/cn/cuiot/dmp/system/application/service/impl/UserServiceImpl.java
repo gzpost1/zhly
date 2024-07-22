@@ -12,8 +12,12 @@ import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.RegexConst;
@@ -396,7 +400,7 @@ public class UserServiceImpl extends BaseController implements UserService {
                     userEntity.getId().getValue(),
                     Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
 
-            UserCsvDto userCsvDto = new UserCsvDto(userEntity.getUsername(),phoneNumber, password);
+            UserCsvDto userCsvDto = new UserCsvDto(userEntity.getId().getValue(),userEntity.getUsername(),phoneNumber, password);
 
             return userCsvDto;
         } catch (Exception e) {
@@ -522,6 +526,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         String loginUserId = userBo.getLoginUserId();
         String deptId = userBo.getDeptId();
 
+        //设置日志操作对象内容
+        setOptTargetInfo(ids,null);
+
         /**
          * 判断所选组织部门是否可选
          */
@@ -593,6 +600,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         String loginUserId = userBo.getLoginUserId();
         Byte status = userBo.getStatus();
 
+        //设置日志操作对象内容
+        setOptTargetInfo(ids, EntityConstants.ENABLED.equals(status)?"启用用户":"停用用户");
+
         /**
          * 判断所选组织部门是否可选
          */
@@ -643,6 +653,25 @@ public class UserServiceImpl extends BaseController implements UserService {
             userEntity.updatedByPortal(loginUserId);
             userRepository.save(userEntity);
         }
+
+    }
+
+    /**
+     * 设置操作对象
+     * @param ids
+     */
+    private void setOptTargetInfo(List<Long> ids,String operationName){
+        List<UserDataEntity> listByIds = userDataDao.selectListByIds(ids);
+        if(CollectionUtils.isNotEmpty(listByIds)){
+            //设置日志操作对象内容
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .operationName(operationName)
+                    .name("用户")
+                    .targetDatas(listByIds.stream().map(item->{
+                        return new OptTargetData(item.getUsername(),item.getId().toString());
+                    }).collect(Collectors.toList()))
+                    .build());
+        }
     }
 
     /**
@@ -654,6 +683,9 @@ public class UserServiceImpl extends BaseController implements UserService {
         String sessionOrgId = userBo.getOrgId();
         List<Long> ids = userBo.getIds();
         String loginUserId = userBo.getLoginUserId();
+
+        //设置日志操作对象内容
+        setOptTargetInfo(ids,null);
 
         // 查询该账户的账户所有者
         Long orgOwner = userDao.findOrgOwner(sessionOrgId);
@@ -905,6 +937,7 @@ public class UserServiceImpl extends BaseController implements UserService {
             downloadVo.setUsername(userBo.getUsername());
             downloadVo.setPhoneNumber(userBo.getPhoneNumber());
             downloadVo.setPassword(userBo.getPassword());
+            downloadVo.setId(userBo.getId());
             resultList.add(downloadVo);
         }
 
@@ -1153,7 +1186,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         if (!userRepository.save(userDataEntity)) {
             throw new BusinessException(ResultCode.UPDATE_PASSWORD_FAIL);
         }
-        UserCsvDto userCsvDto = new UserCsvDto(userDataEntity.getUsername(),userDataEntity.getDecryptedPhoneNumber(), password);
+        UserCsvDto userCsvDto = new UserCsvDto(userId,userDataEntity.getUsername(),userDataEntity.getDecryptedPhoneNumber(), password);
         return userCsvDto;
     }
 
@@ -1202,7 +1235,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         params.put("roleIdList", query.getRoleIdList());
         params.put("userIdList", query.getUserIdList());
         params.put("deptIds", query.getDeptIdList());
-        List<UserDataEntity> entities = userDataDao.searchList(params);
+        List<UserDataEntity> entities = userDataDao.lookUpUserList(params);
         if (CollectionUtils.isNotEmpty(entities)) {
             List<BaseUserDto> dtoList = userAssembler
                     .dataEntityListToBaseUserDtoList(entities);
@@ -1223,7 +1256,7 @@ public class UserServiceImpl extends BaseController implements UserService {
     public BaseUserDto lookUpUserInfo(BaseUserReqDto query) {
         Map<String, Object> params = Maps.newHashMap();
         params.put("userId", query.getUserId());
-        List<UserDataEntity> entities = userDataDao.searchList(params);
+        List<UserDataEntity> entities = userDataDao.lookUpUserList(params);
         if (CollectionUtils.isNotEmpty(entities)) {
             List<BaseUserDto> dtoList = userAssembler
                     .dataEntityListToBaseUserDtoList(entities);

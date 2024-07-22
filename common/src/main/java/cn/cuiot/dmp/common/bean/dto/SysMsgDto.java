@@ -1,61 +1,80 @@
 package cn.cuiot.dmp.common.bean.dto;//	模板
 
-import cn.cuiot.dmp.common.constant.MsgDataType;
-import cn.cuiot.dmp.common.constant.MsgTypeConstant;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.util.Date;
 import java.util.List;
 
-/** 系统消息
+/**
+ * 系统消息
+ *
  * @author hantingyao
  * @Description
  * @data 2024/6/14 10:26
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
-public class SysMsgDto {
-
-    /**
-     * 发送人
-     */
-    private Long sendId;
+public class SysMsgDto extends SysMsgBaseDto {
 
     /**
      * 接收人（非空）
      */
     private List<Long> acceptors;
 
-    /**
-     * 数据ID（非空）
-     */
-    private Long dataId;
+    @Override
+    public SysMsgDto setSendId(Long sendId) {
+        super.setSendId(sendId);
+        return this;
+    }
 
-    /**
-     * 数据类型（非空）
-     * @see MsgDataType
-     */
-    private String dataType;
+    @Override
+    public SysMsgDto setDataId(Long dataId) {
+        super.setDataId(dataId);
+        return this;
+    }
 
-    /**
-     * 消息类型
-     * @see MsgTypeConstant
-     */
-    private String msgType;
+    @Override
+    public SysMsgDto setDataType(String dataType) {
+        super.setDataType(dataType);
+        return this;
+    }
 
-    /**
-     * 消息（非空）
-     */
-    private String message;
+    @Override
+    public SysMsgDto setMsgType(String msgType) {
+        super.setMsgType(msgType);
+        return this;
+    }
 
-    /**
-     * 补充消息，可根据数据类型另行处理
-     */
-    private Object dataJson;
+    @Override
+    public SysMsgDto setMessage(String message) {
+        super.setMessage(message);
+        return this;
+    }
 
-    /**
-     * 消息发送时间（非空）
-     */
-    private Date messageTime;
+    @Override
+    public SysMsgDto setDataJson(Object dataJson) {
+        super.setDataJson(dataJson);
+        return this;
+    }
+
+    @Override
+    public SysMsgDto setMessageTime(Date messageTime) {
+        super.setMessageTime(messageTime);
+        return this;
+    }
+
+    @Override
+    public SysMsgDto setBuildingId(Long buildingId) {
+        super.setBuildingId(buildingId);
+        return this;
+    }
+
+    @Override
+    public SysMsgDto setUserType(Integer userType) {
+        super.setUserType(userType);
+        return this;
+    }
 }

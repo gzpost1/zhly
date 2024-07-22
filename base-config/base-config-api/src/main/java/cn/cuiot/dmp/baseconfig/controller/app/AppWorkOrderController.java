@@ -2,6 +2,7 @@ package cn.cuiot.dmp.baseconfig.controller.app;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.constant.PermissionContants;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.AppAssigneeDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
@@ -84,7 +85,7 @@ public class AppWorkOrderController {
      */
     @PostMapping("start")
     @LogRecord(operationCode = "appStartWork", operationName = "app启动工单", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
-    @RequiresPermissions
+    @RequiresPermissions(allowUserType = PermissionContants.USER_ALL)
     public IdmResDTO start(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
         startProcessInstanceDTO.setWorkSource(WorkSourceEnums.WORK_SOURCE_MAKE.getCode());
         return appWorkInfoService.start(startProcessInstanceDTO);
@@ -183,7 +184,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("revokeWorkOrder")
-    @RequiresPermissions()
+    @RequiresPermissions(allowUserType = PermissionContants.USER_ALL)
     @LogRecord(operationCode = "revokeWorkOrder", operationName = "app工单撤回", serviceType = ServiceTypeConst.WORK_BASE_CONFIG)
     public IdmResDTO revokeWorkOrder(@RequestBody ProcessBusinessDto businessDto){
         return appWorkInfoService.revokeWorkOrder(businessDto);
@@ -373,8 +374,9 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("reportRepairsStart")
-    @RequiresPermissions("allowUserType=client")
+    @RequiresPermissions(allowUserType = PermissionContants.USER_CLIENT)
     public IdmResDTO reportRepairsStart(@RequestBody StartProcessInstanceDTO startProcessInstanceDTO){
+        startProcessInstanceDTO.setWorkSource(WorkSourceEnums.CUSTOMER_BILL_LADING.getCode());
         return appWorkInfoService.reportRepairsStart(startProcessInstanceDTO);
     }
 
@@ -384,7 +386,7 @@ public class AppWorkOrderController {
      * @return
      */
     @PostMapping("queryReportRepairs")
-    @RequiresPermissions("allowUserType=client")
+    @RequiresPermissions(allowUserType = PermissionContants.USER_CLIENT)
     public IdmResDTO<IPage<RepairReportDto>> queryReportRepairs(@RequestBody @Valid RepairReportQuery query){
         return appWorkInfoService.queryReportRepairs(query);
     }

@@ -34,6 +34,11 @@ public class TbContractLogParam extends PageQuery implements Serializable {
     private Long id;
 
     /**
+     * 合同id
+     */
+    private Long contractId;
+
+    /**
      * 操作项
      */
     private String operation;
@@ -42,6 +47,16 @@ public class TbContractLogParam extends PageQuery implements Serializable {
      * 操作人
      */
     private String operator;
+
+    /**
+     * 相关id
+     */
+    private String extId;
+
+    /**
+     * 操作类型
+     */
+    private String operationType;
 
     /**
      * 操作时间

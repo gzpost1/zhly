@@ -1,20 +1,30 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
+import cn.cuiot.dmp.archive.application.constant.BuildingArchivesConstant;
+import cn.cuiot.dmp.archive.application.param.dto.HouseTreeQueryDto;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
+import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.HousesArchivesMapper;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
+import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
+import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.feign.ContractFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DoubleValidator;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +47,11 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
 
     @Autowired
     private BuildingAndConfigCommonUtilService buildingAndConfigCommonUtilService;
+
+    @Autowired
+    private BuildingArchivesService buildingArchivesService;
+    @Autowired
+    ContractFeignService contractFeignService;
 
     /**
      * 参数校验
@@ -188,10 +203,32 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
     @Override
     public List<HousesArchivesVo> queryHousesList(IdsReq ids) {
         LambdaQueryWrapper<HousesArchivesEntity> queryWrapper = new LambdaQueryWrapper<HousesArchivesEntity>();
-        queryWrapper.in(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(ids.getIds()),HousesArchivesEntity::getId,ids.getIds());
+        queryWrapper.in(com.baomidou.mybatisplus.core.toolkit.CollectionUtils.isNotEmpty(ids.getIds()), HousesArchivesEntity::getId, ids.getIds());
         List<HousesArchivesEntity> houseList = baseMapper.selectList(queryWrapper);
         List<HousesArchivesVo> housesArchivesVos = BeanUtil.copyToList(houseList, HousesArchivesVo.class);
         return housesArchivesVos;
+    }
+
+    @Override
+    public List<DepartmentTreeRspDTO> getDepartmentBuildingHouseTree(HouseTreeQueryDto houseTreeQueryDto) {
+        List<DepartmentTreeRspDTO> departmentTreeRspList = buildingArchivesService.getDepartmentBuildingTree(houseTreeQueryDto.getOrgId(), houseTreeQueryDto.getUserId(), houseTreeQueryDto.getKeyWords());
+        if (CollectionUtils.isEmpty(departmentTreeRspList)) {
+            return new ArrayList<>();
+        }
+        List<Long> buidingIdList = getBuidingIdList(departmentTreeRspList.get(0));
+        if (CollectionUtils.isNotEmpty(buidingIdList)) {
+            LambdaQueryWrapper<HousesArchivesEntity> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(HousesArchivesEntity::getLoupanId, buidingIdList);
+            if (houseTreeQueryDto.getIsSelectHouseArrears()) {
+                String lastSql = String.format("and id in (SELECT DISTINCT house_id FROM tb_charge_manager WHERE deleted = 0 AND company_id = %s AND receivble_status in (0,1) AND abrogate_status = 0)",
+                        houseTreeQueryDto.getOrgId());
+                queryWrapper.last(lastSql);
+            }
+            List<HousesArchivesEntity> housesArchivesEntityList = list(queryWrapper);
+            fillDepartmentBuildingHouseTree(departmentTreeRspList.get(0), housesArchivesEntityList);
+        }
+
+        return departmentTreeRspList;
     }
 
     private String getFiledForExport(Object value) {
@@ -224,21 +261,21 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         entity.setResourceTypeName(configIdNameMap.get(entity.getResourceType()));
         entity.setParkingAreaName(configIdNameMap.get(entity.getParkingArea()));
         entity.setOwnershipAttributeName(configIdNameMap.get(entity.getOwnershipAttribute()));
-        if (Objects.nonNull(entity.getRecommended())){
-            if (entity.getRecommended() == (byte)0){
+        if (Objects.nonNull(entity.getRecommended())) {
+            if (entity.getRecommended() == (byte) 0) {
                 entity.setResourceTypeName("否");
             } else {
                 entity.setRecommendedName("是");
             }
         }
-        if (Objects.nonNull(entity.getUtilizationRate())){
+        if (Objects.nonNull(entity.getUtilizationRate())) {
             DecimalFormat df = new DecimalFormat("0.00%");
             entity.setUtilizationRateName(df.format(entity.getUtilizationRate()));
         }
         if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i< entity.getBasicServices().size(); i++){
-                if (i == entity.getBasicServices().size()-1){
+            for (int i = 0; i < entity.getBasicServices().size(); i++) {
+                if (i == entity.getBasicServices().size() - 1) {
                     sb.append(configIdNameMap.get(entity.getBasicServices().get(i)));
                 } else {
                     sb.append(configIdNameMap.get(entity.getBasicServices().get(i))).append("，");
@@ -251,13 +288,13 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         return entity;
     }
 
-    private void addListCanNull(Set<Long> configIdList, Long configId){
-        if (Objects.nonNull(configId)){
+    private void addListCanNull(Set<Long> configIdList, Long configId) {
+        if (Objects.nonNull(configId)) {
             configIdList.add(configId);
         }
     }
 
-    private void getConfigIdFromEntity(HousesArchivesEntity entity, Set<Long> configIdList){
+    private void getConfigIdFromEntity(HousesArchivesEntity entity, Set<Long> configIdList) {
         addListCanNull(configIdList, entity.getHouseType());
         addListCanNull(configIdList, entity.getOrientation());
         addListCanNull(configIdList, entity.getPropertyType());
@@ -270,6 +307,95 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         if (CollectionUtils.isNotEmpty(entity.getBasicServices())) {
             configIdList.addAll(entity.getBasicServices());
         }
+    }
+
+    private List<Long> getBuidingIdList(DepartmentTreeRspDTO rootTreeNode) {
+        List<Long> treeIdList = new ArrayList<>();
+        if (BuildingArchivesConstant.BUILDING_ARCHIVES_TYPE.equals(rootTreeNode.getType())) {
+            treeIdList.add(rootTreeNode.getId());
+        }
+        if (CollectionUtils.isNotEmpty(rootTreeNode.getChildren())) {
+            for (DepartmentTreeRspDTO child : rootTreeNode.getChildren()) {
+                treeIdList.addAll(getBuidingIdList(child));
+            }
+        }
+        return treeIdList;
+    }
+
+    private void fillDepartmentBuildingHouseTree(DepartmentTreeRspDTO rootTreeNode, List<HousesArchivesEntity> housesArchivesEntityList) {
+        for (HousesArchivesEntity housesArchives : housesArchivesEntityList) {
+            if (rootTreeNode.getId().equals(housesArchives.getLoupanId())) {
+                DepartmentTreeRspDTO departmentTreeRspDTO = new DepartmentTreeRspDTO();
+                departmentTreeRspDTO.setId(housesArchives.getId());
+                departmentTreeRspDTO.setDepartmentName(housesArchives.getName());
+                departmentTreeRspDTO.setType(BuildingArchivesConstant.HOUSE_ARCHIVES_TYPE);
+                departmentTreeRspDTO.setParentId(rootTreeNode.getId());
+                departmentTreeRspDTO.setChildren(new ArrayList<>());
+                rootTreeNode.getChildren().add(departmentTreeRspDTO);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(rootTreeNode.getChildren())) {
+            for (DepartmentTreeRspDTO child : rootTreeNode.getChildren()) {
+                fillDepartmentBuildingHouseTree(child, housesArchivesEntityList);
+            }
+        }
+    }
+
+    /**
+     * 填充房屋关联的意向合同和租赁合同
+     *
+     * @param records
+     */
+    @Override
+    public void fullContractInfo(List<HousesArchivesEntity> records) {
+        List<Long> houseIds = records.stream().map(HousesArchivesEntity::getId).collect(Collectors.toList());
+        IdsReq houseIdsReq = new IdsReq();
+        houseIdsReq.setIds(houseIds);
+        IdmResDTO<ContractStatusVo> resDTO = contractFeignService.queryConctactStatusByHouseIds(houseIdsReq);
+        Map<Long, Integer> housePriceMap = contractFeignService.batchQueryHousePriceForMap(houseIdsReq).getData();
+        if (!Objects.equals(resDTO.getCode(), ResultCode.SUCCESS.getCode())) {
+            return;
+        }
+        ContractStatusVo contractStatusVo = resDTO.getData();
+        Map<Long, List<ContractStatus>> intentionMap = Optional.ofNullable(contractStatusVo.getIntentionMap()).orElse(Maps.newHashMap());
+        Map<Long, List<ContractStatus>> leaseMap = Optional.ofNullable(contractStatusVo.getLeaseMap()).orElse(Maps.newHashMap());
+        records.forEach(h -> {
+            Long houseId = h.getId();
+            List<ContractStatus> intentionStatuses = intentionMap.get(houseId);
+            List<ContractStatus> leaseStatuses = leaseMap.get(houseId);
+            if (CollectionUtils.isNotEmpty(intentionStatuses)) {
+                h.setIntentionStatuses(intentionStatuses);
+            }
+            if (CollectionUtils.isNotEmpty(leaseStatuses)) {
+                h.setLeaseStatuses(leaseStatuses);
+            }
+            if (!housePriceMap.isEmpty() && housePriceMap.containsKey(h.getId())) {
+                h.setLatestPrice(housePriceMap.get(h.getId()));
+            }
+        });
+    }
+
+    @Override
+    public void fillBuildingName(List<HousesArchivesEntity> records) {
+        if (CollectionUtils.isEmpty(records)) {
+            return;
+        }
+        // 查询楼盘名称
+        Set<Long> loupanIdSet = new HashSet<>();
+        records.forEach(o -> {
+            if (Objects.nonNull(o.getLoupanId())) {
+                loupanIdSet.add(o.getLoupanId());
+            }
+        });
+        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(loupanIdSet);
+        if (loupanIdNameMap.isEmpty()) {
+            return;
+        }
+        records.forEach(o -> {
+            if (Objects.nonNull(o.getLoupanId()) && loupanIdNameMap.containsKey(o.getLoupanId())) {
+                o.setLoupanIdName(loupanIdNameMap.get(o.getLoupanId()));
+            }
+        });
     }
 
 }

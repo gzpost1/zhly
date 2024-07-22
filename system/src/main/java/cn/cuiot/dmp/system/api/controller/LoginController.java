@@ -4,11 +4,15 @@ import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.Sm4;
@@ -28,6 +32,7 @@ import cn.cuiot.dmp.system.domain.entity.User;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.PhoneUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import java.time.LocalDate;
 import java.util.Objects;
 import javax.validation.Valid;
@@ -159,7 +164,20 @@ public class LoginController extends BaseController {
                 }
             }
         }*/
-        return loginService.loginIdentity(validateUser, request);
+        LoginResDTO loginResDTO = loginService.loginIdentity(validateUser, request);
+
+        //设置日志操作对象内容
+        if(StringUtils.isNotBlank(loginResDTO.getOrgId())){
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .companyId(Long.valueOf(loginResDTO.getOrgId()))
+                    .operationById(loginResDTO.getUserId())
+                    .operationByName(loginResDTO.getName())
+                    .userType(UserTypeEnum.USER.getValue())
+                    .build());
+        }
+
+
+        return loginResDTO;
     }
 
 

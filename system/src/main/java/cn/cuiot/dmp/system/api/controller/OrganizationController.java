@@ -30,6 +30,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.vo.ListOrganizationVO;
 import cn.hutool.core.util.PhoneUtil;
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.Objects;
 import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +78,9 @@ public class OrganizationController extends BaseController {
     @LogRecord(operationCode = "insertOrganization", operationName = "添加企业", serviceType = "organization",serviceTypeName = "企业管理")
     @PostMapping(value = "/insertOrganization", produces = MediaType.APPLICATION_JSON_VALUE)
     public void insertSonOrganization(@RequestBody @Valid InsertOrganizationDto dto) {
+        if (!getOrgId().equals(SUP_ORGID)) {
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+        }
         if (!PhoneUtil.isPhone(dto.getPhoneNumber())) {
             throw new BusinessException(ResultCode.PHONE_NUMBER_IS_NOT_VALID, "请输入正确的11位手机号");
         }
@@ -124,13 +128,8 @@ public class OrganizationController extends BaseController {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT);
         }
         ValidateUtil.validate(dto);
-        String orgId = getOrgId();
-        dto.setLoginOrgId(Long.parseLong(orgId));
-        // 组织为空则使用当前登陆用户的组织
-        if (StringUtils.isEmpty(dto.getDeptId())) {
-            String deptId = userService.getDeptId(getUserId(), orgId);
-            dto.setDeptId(deptId);
-        }
+        dto.setLoginOrgId(LoginInfoHolder.getCurrentOrgId());
+        dto.setLoginUserId(LoginInfoHolder.getCurrentUserId());
         return organizationService.commercialOrgList(dto);
     }
 
@@ -151,7 +150,10 @@ public class OrganizationController extends BaseController {
     public int deleteAccount(@RequestParam("accountId") String accountId) {
         OrganizationResDTO organizationResDto = organizationService.getOneById(accountId);
         if (null == organizationResDto) {
-            return Const.NUMBER_0;
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST,"企业不存在");
+        }
+        if (!getOrgId().equals(SUP_ORGID)) {
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
         }
         //设置日志操作对象内容
         LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
@@ -173,6 +175,9 @@ public class OrganizationController extends BaseController {
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
         String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+        if (!getOrgId().equals(SUP_ORGID)) {
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+        }
         organizationService.updateStatus(updateStatusParam, sessionUserId, sessionOrgId);
         return IdmResDTO.success();
     }
@@ -186,6 +191,11 @@ public class OrganizationController extends BaseController {
     public LoginResDTO simulateLogin(@RequestBody @Valid IdParam idParam) {
         String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
         String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
+
+        if (!getOrgId().equals(SUP_ORGID)) {
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+        }
+
         GetOrganizationVO organizationVO = organizationService
                 .findOne(idParam.getId().toString(), sessionUserId, sessionOrgId);
 
@@ -236,6 +246,18 @@ public class OrganizationController extends BaseController {
     @LogRecord(operationCode = "updateInitFlag", operationName = "初始化企业", serviceType = "organization", serviceTypeName = "企业管理")
     @PostMapping("/updateInitFlag")
     public int updateInitFlag(@RequestBody @Valid IdParam idParam) {
+        OrganizationResDTO organizationResDto = organizationService.getOneById(idParam.getId().toString());
+        if (Objects.isNull(organizationResDto)) {
+            throw new BusinessException(ResultCode.OBJECT_NOT_EXIST,"企业不存在");
+        }
+        if (!getOrgId().equals(SUP_ORGID)) {
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+        }
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("企业")
+                .targetDatas(Lists.newArrayList(new OptTargetData(organizationResDto.getOrgName(),organizationResDto.getId().toString())))
+                .build());
         return organizationService.updateInitFlag(idParam.getId());
     }
 

@@ -2,6 +2,11 @@ package cn.cuiot.dmp.content.controller.app;//	模板
 
 import cn.cuiot.dmp.base.application.annotation.ResolveExtData;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.param.query.NoticPageQuery;
 import cn.cuiot.dmp.content.param.vo.NoticeVo;
 import cn.cuiot.dmp.content.service.NoticeService;
@@ -12,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Collections;
 
 /**
  * app-公告
@@ -35,6 +41,12 @@ public class AppNoticeController {
      */
     @PostMapping("/getNoticeList")
     public IPage<NoticeVo> getAppNoticePage(@RequestBody @Valid NoticPageQuery pageQuery) {
+        if (ContentConstants.PublishSource.MANAGE.equals(pageQuery.getPublishSource())) {
+            pageQuery.setDepartments(Collections.singletonList(LoginInfoHolder.getCurrentDeptId()));
+        } else if (ContentConstants.PublishSource.APP.equals(pageQuery.getPublishSource())) {
+            pageQuery.setBuildings(Collections.singletonList(LoginInfoHolder.getCommunityId()));
+        }
+        pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         return noticeService.getAppNoticePage(pageQuery);
     }
 
@@ -64,5 +76,29 @@ public class AppNoticeController {
             return;
         }
         noticeService.getMyNotice(LoginInfoHolder.getCommunityId());
+    }
+
+    /**
+     * 消息里通过id查详情
+     *
+     * @param idParam
+     * @return
+     */
+    @PostMapping("getByIdMsg")
+    public IdmResDTO<NoticeVo> getByIdMsg(@RequestBody @Valid IdParam idParam) {
+        NoticeVo noticeVo = noticeService.queryForDetail(idParam.getId());
+        if (!EntityConstants.NORMAL.equals(noticeVo.getEffectiveStatus())) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
+        if (!EntityConstants.ENABLED.equals(noticeVo.getStatus())) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
+        if (!ContentConstants.AuditStatus.AUDIT_PASSED.equals(noticeVo.getAuditStatus())) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
+        if (!ContentConstants.PublishStatus.PUBLISHED.equals(noticeVo.getPublishStatus())) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
+        return IdmResDTO.success(noticeVo);
     }
 }

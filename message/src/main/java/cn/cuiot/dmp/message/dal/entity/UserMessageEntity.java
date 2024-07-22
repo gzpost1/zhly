@@ -81,6 +81,11 @@ public class UserMessageEntity {
      */
     private Date createTime;
 
+    /**
+     * 楼盘id(客户端必传)
+     */
+    private Long buildingId;
+
     public void init() {
         this.createTime = new Date();
         this.readStatus = StatusConstans.UNREAD;

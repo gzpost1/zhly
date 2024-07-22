@@ -47,6 +47,7 @@ public class UserMsgConsumer {
             List<UserMessageEntity> userMessageEntities = dealMsgByType(userMessage, userMessageAcceptDto.getSysMsgDto());
             userMessageService.saveBatch(userMessageEntities);
         }
+
     }
 
     /**
@@ -71,6 +72,7 @@ public class UserMsgConsumer {
 
     //TODO
     private List<UserMessageEntity> dealMsgByType(UserMessageEntity userMessage, SysMsgDto sysMsgDto) {
+
         List<UserMessageEntity> userMessageEntities = new ArrayList<>();
         sysMsgDto.getAcceptors().forEach(acceptor -> {
             UserMessageEntity userMessageEntity = BeanUtil.copyProperties(userMessage, UserMessageEntity.class);

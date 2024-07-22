@@ -26,7 +26,11 @@ public enum SystemOptionTypeEnum {
     CUSTOMER_INFO((byte) 7, "客户信息"),
     WORK_OPTION((byte) 8, "工单选项"),
     CLUE_OPTION((byte) 9, "线索选项"),
-    NOTICE_TYPE((byte) 10, "公告类型");
+    NOTICE_TYPE((byte) 10, "公告类型"),
+    CONTRACT_INTENTION((byte) 11, "意向合同"),
+    CONTRACT_LEASE((byte) 12, "租赁合同"),
+    CONTRACT_TEMPLATE((byte) 13, "合同模板"),
+    PRICE_MANAGE((byte) 14, "定价管理");
 
     private final Byte code;
     private final String message;

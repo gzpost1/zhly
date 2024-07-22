@@ -2,6 +2,7 @@ package cn.cuiot.dmp.system.application.service.impl;
 
 import cn.cuiot.dmp.base.infrastructure.dto.req.CommonOptionTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonOptionTypeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.common.bean.TreeNode;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
@@ -73,6 +74,23 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
             return new ArrayList<>();
         }
         return TreeUtil.searchNode(commonOptionTypeTreeNodeList, hitIds);
+    }
+
+    @Override
+    public List<CommonOptionTypeTreeNodeVO> queryCommonOptionTypeTree(CommonOptionTypeQueryDTO queryDTO) {
+        List<CommonOptionTypeTreeNodeVO> commonOptionTypeTreeNodeVOList = queryByCompany(queryDTO);
+        if (CollectionUtils.isEmpty(commonOptionTypeTreeNodeVOList)) {
+            return new ArrayList<>();
+        }
+        // 查询选项名称和选项值
+        CommonOptionPageQuery pageQuery = new CommonOptionPageQuery();
+        pageQuery.setCompanyId(queryDTO.getCompanyId());
+        pageQuery.setCategory(queryDTO.getCategory());
+        pageQuery.setTypeIdList(getTypeIdList(commonOptionTypeTreeNodeVOList.get(0)));
+        pageQuery.setStatus(queryDTO.getStatus());
+        List<CommonOption> commonOptionList = commonOptionRepository.queryCommonOptionListByType(pageQuery);
+        fillCommonOptionTypeTree(commonOptionTypeTreeNodeVOList.get(0), commonOptionList);
+        return commonOptionTypeTreeNodeVOList;
     }
 
     @Override
@@ -198,6 +216,50 @@ public class CommonOptionTypeServiceImpl implements CommonOptionTypeService {
                     commonOption.setTypeName(commonOptionTypeRspDTO.getTreeName());
                     break;
                 }
+            }
+        }
+    }
+
+    private List<Long> getTypeIdList(CommonOptionTypeTreeNodeVO commonOptionTypeTreeNodeVO) {
+        List<Long> treeIdList = new ArrayList<>();
+        treeIdList.add(Long.valueOf(commonOptionTypeTreeNodeVO.getId()));
+        commonOptionTypeTreeNodeVO.setType(CommonOptionConstant.COMMON_OPTION_TYPE);
+        if (CollectionUtils.isNotEmpty(commonOptionTypeTreeNodeVO.getChildren())) {
+            for (CommonOptionTypeTreeNodeVO child : commonOptionTypeTreeNodeVO.getChildren()) {
+                treeIdList.addAll(getTypeIdList(child));
+            }
+        }
+        return treeIdList;
+    }
+
+    private void fillCommonOptionTypeTree(CommonOptionTypeTreeNodeVO rootTreeNode, List<CommonOption> commonOptionList) {
+        for (CommonOption commonOption : commonOptionList) {
+            if (rootTreeNode.getId().equals(commonOption.getTypeId().toString())) {
+                CommonOptionTypeTreeNodeVO commonOptionTypeTreeNodeVO = new CommonOptionTypeTreeNodeVO();
+                commonOptionTypeTreeNodeVO.setId(commonOption.getId().toString());
+                commonOptionTypeTreeNodeVO.setParentId(rootTreeNode.getId());
+                commonOptionTypeTreeNodeVO.setType(CommonOptionConstant.COMMON_OPTION_NAME);
+                commonOptionTypeTreeNodeVO.setName(commonOption.getName());
+                if (CollectionUtils.isEmpty(commonOption.getCommonOptionSettings())) {
+                    commonOptionTypeTreeNodeVO.setChildren(new ArrayList<>());
+                } else {
+                    List<CommonOptionTypeTreeNodeVO> commonOptionValueChildList = new ArrayList<>();
+                    commonOption.getCommonOptionSettings().forEach(o -> {
+                        CommonOptionTypeTreeNodeVO commonOptionTypeValueTreeNodeVO = new CommonOptionTypeTreeNodeVO();
+                        commonOptionTypeValueTreeNodeVO.setId(o.getId().toString());
+                        commonOptionTypeValueTreeNodeVO.setParentId(commonOption.getId().toString());
+                        commonOptionTypeValueTreeNodeVO.setType(CommonOptionConstant.COMMON_OPTION_VALUE);
+                        commonOptionTypeValueTreeNodeVO.setName(o.getName());
+                        commonOptionValueChildList.add(commonOptionTypeValueTreeNodeVO);
+                    });
+                    commonOptionTypeTreeNodeVO.setChildren(commonOptionValueChildList);
+                }
+                rootTreeNode.getChildren().add(commonOptionTypeTreeNodeVO);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(rootTreeNode.getChildren())) {
+            for (CommonOptionTypeTreeNodeVO child : rootTreeNode.getChildren()) {
+                fillCommonOptionTypeTree(child, commonOptionList);
             }
         }
     }

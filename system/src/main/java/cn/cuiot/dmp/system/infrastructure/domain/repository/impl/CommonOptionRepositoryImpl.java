@@ -206,6 +206,7 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
         LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
                 .eq(Objects.nonNull(pageQuery.getCompanyId()), CommonOptionEntity::getCompanyId, pageQuery.getCompanyId())
                 .eq(Objects.nonNull(pageQuery.getTypeId()), CommonOptionEntity::getTypeId, pageQuery.getTypeId())
+                .in(CollectionUtils.isNotEmpty(pageQuery.getTypeIdList()), CommonOptionEntity::getTypeId, pageQuery.getTypeIdList())
                 .eq(Objects.nonNull(pageQuery.getCategory()), CommonOptionEntity::getTypeCategory, pageQuery.getCategory())
                 .like(StringUtils.isNotBlank(pageQuery.getName()), CommonOptionEntity::getName, pageQuery.getName())
                 .eq(Objects.nonNull(pageQuery.getStatus()), CommonOptionEntity::getStatus, pageQuery.getStatus());
@@ -215,6 +216,31 @@ public class CommonOptionRepositoryImpl implements CommonOptionRepository {
             return new PageResult<>();
         }
         return commonOptionEntity2CommonOption(commonOptionEntityPage);
+    }
+
+    @Override
+    public List<CommonOption> queryCommonOptionListByType(CommonOptionPageQuery pageQuery) {
+        LambdaQueryWrapper<CommonOptionEntity> queryWrapper = new LambdaQueryWrapper<CommonOptionEntity>()
+                .eq(Objects.nonNull(pageQuery.getCompanyId()), CommonOptionEntity::getCompanyId, pageQuery.getCompanyId())
+                .eq(Objects.nonNull(pageQuery.getTypeId()), CommonOptionEntity::getTypeId, pageQuery.getTypeId())
+                .in(CollectionUtils.isNotEmpty(pageQuery.getTypeIdList()), CommonOptionEntity::getTypeId, pageQuery.getTypeIdList())
+                .eq(Objects.nonNull(pageQuery.getCategory()), CommonOptionEntity::getTypeCategory, pageQuery.getCategory())
+                .like(StringUtils.isNotBlank(pageQuery.getName()), CommonOptionEntity::getName, pageQuery.getName())
+                .eq(Objects.nonNull(pageQuery.getStatus()), CommonOptionEntity::getStatus, pageQuery.getStatus());
+        List<CommonOptionEntity> commonOptionEntityList = commonOptionMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(commonOptionEntityList)) {
+            return new ArrayList<>();
+        }
+        return commonOptionEntityList.stream()
+                .map(o -> {
+                    CommonOption commonOption = new CommonOption();
+                    BeanUtils.copyProperties(o, commonOption);
+                    List<CommonOptionSetting> commonOptionSettings = commonOptionSettingRepository
+                            .batchQueryCommonOptionSettings(o.getId());
+                    commonOption.setCommonOptionSettings(commonOptionSettings);
+                    return commonOption;
+                })
+                .collect(Collectors.toList());
     }
 
     @Override

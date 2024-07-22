@@ -63,14 +63,14 @@ public class IdmResDTO<T> {
     }
 
     public static <T> IdmResDTO<T> success(T data) {
-        return new IdmResDTO<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), data);
+        return new IdmResDTO<T>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), data);
     }
     public static <T> IdmResDTO<T> success() {
         return success(null);
     }
 
-    public static <T> IdmResDTO<T> body(T data){
-        return success(data);
+    public <T> IdmResDTO<T> body(T data){
+        return new IdmResDTO<T>(this.code,this.message, data);
     }
 
     public static <T> IdmResDTO<T> error(String code, String message) {

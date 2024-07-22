@@ -33,11 +33,16 @@ public class SysLogService {
         if (StringUtils.isNotBlank(param.getOperationSource())) {
             query.addCriteria(Criteria.where("operationSource").is(param.getOperationSource()));
         }
+        if (Objects.nonNull(param.getOrgId())) {
+            query.addCriteria(Criteria.where("orgId").is(param.getOrgId().toString()));
+        }
         if (StringUtils.isNotBlank(param.getServiceTypeName())) {
             //模糊匹配
             Pattern pattern = Pattern
                     .compile("^.*" + param.getServiceTypeName() + ".*$", Pattern.CASE_INSENSITIVE);
-            query.addCriteria(Criteria.where("serviceTypeName").regex(pattern));
+            query.addCriteria(new Criteria().andOperator(Criteria.where("serviceTypeName").regex(pattern),Criteria.where("serviceTypeName").regex("[\u4e00-\u9fa5]")));
+        }else{
+            query.addCriteria(Criteria.where("serviceTypeName").regex("[\u4e00-\u9fa5]"));
         }
         //时间查询
         if (Objects.nonNull(param.getOptStartTime())||Objects.nonNull(param.getOptEndTime())) {

@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Objects;
+
 /**
  *  Feign内部请求拦截器
  * @author: wuyongchong
@@ -29,11 +31,13 @@ public class FeignInnerRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(FeignConstants.INNER_TOKEN_NAME,appProperties.getAccessToken());
         //设置用户token
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = attributes.getRequest();
-        String jwt = request.getHeader(AuthContants.TOKEN);
-        if(StringUtils.isBlank(jwt)){
-            jwt = request.getHeader(AuthContants.AUTHORIZATION);
+        if(Objects.nonNull(attributes)){
+            HttpServletRequest request = attributes.getRequest();
+            String jwt = request.getHeader(AuthContants.TOKEN);
+            if(StringUtils.isBlank(jwt)){
+                jwt = request.getHeader(AuthContants.AUTHORIZATION);
+            }
+            requestTemplate.header(AuthContants.AUTHORIZATION, jwt);
         }
-        requestTemplate.header(AuthContants.AUTHORIZATION, jwt);
     }
 }

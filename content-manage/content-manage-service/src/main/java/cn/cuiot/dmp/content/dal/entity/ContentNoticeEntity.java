@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.content.dal.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.ByteListHandler;
 import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -72,7 +73,7 @@ public class ContentNoticeEntity extends YjBaseEntity implements Serializable {
     /**
      * 消息通知
      */
-    @TableField(typeHandler = JsonTypeHandler.class)
+    @TableField(typeHandler = ByteListHandler.class)
     private List<Byte> inform;
 
     /**
@@ -99,4 +100,9 @@ public class ContentNoticeEntity extends YjBaseEntity implements Serializable {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 是否已通知
+     */
+    private Byte noticed;
 }

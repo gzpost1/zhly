@@ -57,6 +57,11 @@ public class CustomerQuery extends PageQuery {
      */
     private Long houseId;
 
+    /**
+     * 楼盘ID
+     */
+    private Long loupanId;
+
 
     /**
      * 企业ID-前端不用管

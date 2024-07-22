@@ -4,16 +4,23 @@ import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.FormConfigReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.FormConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
-import cn.cuiot.dmp.common.constant.PageResult;
-import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.constant.SystemFormConfigConstant;
+import cn.cuiot.dmp.common.bean.dto.SmsMsgDto;
+import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
+import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
+import cn.cuiot.dmp.common.constant.*;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.lease.config.MsgChannel;
+import cn.cuiot.dmp.lease.constants.ClueConstant;
 import cn.cuiot.dmp.lease.dto.clue.*;
 import cn.cuiot.dmp.lease.entity.ClueEntity;
 import cn.cuiot.dmp.lease.entity.ClueRecordEntity;
@@ -32,8 +39,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeTypeUtils;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -56,6 +66,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
     @Autowired
     private ArchiveFeignService archiveFeignService;
 
+    @Autowired
+    private MsgChannel msgChannel;
+
     /**
      * 查询详情
      */
@@ -68,6 +81,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         fillBuildingName(Lists.newArrayList(clueDTO));
         fillUserName(Lists.newArrayList(clueDTO));
         fillSystemOptionName(Lists.newArrayList(clueDTO));
+        fillCustomerName(Lists.newArrayList(clueDTO));
         return clueDTO;
     }
 
@@ -75,8 +89,10 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
      * 查询列表
      */
     public List<ClueDTO> queryForList(CluePageQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
         LambdaQueryWrapper<ClueEntity> queryWrapper = new LambdaQueryWrapper<ClueEntity>()
                 .like(StringUtils.isNotBlank(queryDTO.getName()), ClueEntity::getName, queryDTO.getName())
+                .eq(Objects.nonNull(companyId), ClueEntity::getCompanyId, companyId)
                 .eq(Objects.nonNull(queryDTO.getDepartmentId()), ClueEntity::getDepartmentId, queryDTO.getDepartmentId())
                 .eq(Objects.nonNull(queryDTO.getBuildingId()), ClueEntity::getBuildingId, queryDTO.getBuildingId())
                 .eq(Objects.nonNull(queryDTO.getSourceId()), ClueEntity::getSourceId, queryDTO.getSourceId())
@@ -85,6 +101,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .ge(Objects.nonNull(queryDTO.getBeginTime()), ClueEntity::getCreatedOn, queryDTO.getBeginTime())
                 .le(Objects.nonNull(queryDTO.getEndTime()), ClueEntity::getCreatedOn, queryDTO.getEndTime())
                 .eq(Objects.nonNull(queryDTO.getResultId()), ClueEntity::getResultId, queryDTO.getResultId())
+                .eq(Objects.nonNull(queryDTO.getFinishUserId()), ClueEntity::getFinishUserId, queryDTO.getFinishUserId())
                 .ge(Objects.nonNull(queryDTO.getFinishBeginTime()), ClueEntity::getFinishTime, queryDTO.getFinishBeginTime())
                 .le(Objects.nonNull(queryDTO.getFinishEndTime()), ClueEntity::getFinishTime, queryDTO.getFinishEndTime())
                 .eq(Objects.nonNull(queryDTO.getCurrentFollowerId()), ClueEntity::getCurrentFollowerId, queryDTO.getCurrentFollowerId())
@@ -114,8 +131,10 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
      * 查询分页列表
      */
     public PageResult<ClueDTO> queryForPage(CluePageQueryDTO queryDTO) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
         LambdaQueryWrapper<ClueEntity> queryWrapper = new LambdaQueryWrapper<ClueEntity>()
                 .like(StringUtils.isNotBlank(queryDTO.getName()), ClueEntity::getName, queryDTO.getName())
+                .eq(Objects.nonNull(companyId), ClueEntity::getCompanyId, companyId)
                 .eq(Objects.nonNull(queryDTO.getDepartmentId()), ClueEntity::getDepartmentId, queryDTO.getDepartmentId())
                 .eq(Objects.nonNull(queryDTO.getBuildingId()), ClueEntity::getBuildingId, queryDTO.getBuildingId())
                 .eq(Objects.nonNull(queryDTO.getSourceId()), ClueEntity::getSourceId, queryDTO.getSourceId())
@@ -124,6 +143,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .ge(Objects.nonNull(queryDTO.getBeginTime()), ClueEntity::getCreatedOn, queryDTO.getBeginTime())
                 .le(Objects.nonNull(queryDTO.getEndTime()), ClueEntity::getCreatedOn, queryDTO.getEndTime())
                 .eq(Objects.nonNull(queryDTO.getResultId()), ClueEntity::getResultId, queryDTO.getResultId())
+                .eq(Objects.nonNull(queryDTO.getFinishUserId()), ClueEntity::getFinishUserId, queryDTO.getFinishUserId())
                 .ge(Objects.nonNull(queryDTO.getFinishBeginTime()), ClueEntity::getFinishTime, queryDTO.getFinishBeginTime())
                 .le(Objects.nonNull(queryDTO.getFinishEndTime()), ClueEntity::getFinishTime, queryDTO.getFinishEndTime())
                 .eq(Objects.nonNull(queryDTO.getCurrentFollowerId()), ClueEntity::getCurrentFollowerId, queryDTO.getCurrentFollowerId())
@@ -176,10 +196,24 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean distributeClue(ClueDistributeDTO distributeDTO) {
+        String userName = LoginInfoHolder.getCurrentUsername();
         ClueEntity clueEntity = Optional.ofNullable(getById(distributeDTO.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST));
         clueEntity.setCurrentFollowerId(distributeDTO.getCurrentFollowerId());
         clueEntity.setStatus(ClueStatusEnum.FOLLOW_STATUS.getCode());
+        clueEntity.setDistributeTime(new Date());
+        // 发送分配线索通知
+        UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto()
+                .setMsgType((byte) (InformTypeConstant.SYS_MSG + InformTypeConstant.SMS));
+        SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(Lists.newArrayList(distributeDTO.getCurrentFollowerId()))
+                .setDataId(clueEntity.getId()).setDataType(MsgDataType.CLUE_DISTRIBUTE)
+                .setMessage(String.format(ClueConstant.CLUE_DISTRIBUTE_MSG, userName, clueEntity.getName()))
+                .setMessageTime(new Date()).setMsgType(MsgTypeConstant.CLUE)
+                .setUserType(UserTypeEnum.USER.getValue());
+        SmsMsgDto smsMsgDto = new SmsMsgDto();
+        userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
+        msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+                .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON).build());
         return updateById(clueEntity);
     }
 
@@ -247,6 +281,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         clueEntityList.forEach(o -> {
             o.setStatus(ClueStatusEnum.FOLLOW_STATUS.getCode());
             o.setCurrentFollowerId(batchUpdateDTO.getCurrentFollowerId());
+            o.setDistributeTime(new Date());
         });
         return updateBatchById(clueEntityList);
     }
@@ -266,6 +301,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         clueEntityList.forEach(o -> {
             o.setResultId(batchUpdateDTO.getResultId());
             o.setFinishTime(new Date());
+            o.setFinishUserId(batchUpdateDTO.getFinishUserId());
             o.setStatus(ClueStatusEnum.FINISH_STATUS.getCode());
             if (StringUtils.isNotBlank(batchUpdateDTO.getRemark())) {
                 o.setRemark(batchUpdateDTO.getRemark());
@@ -295,6 +331,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         fillBuildingName(clueDTOList);
         fillUserName(clueDTOList);
         fillSystemOptionName(clueDTOList);
+        fillCustomerName(clueDTOList);
         clueDTOPageResult.setList(clueDTOList);
         clueDTOPageResult.setCurrentPage((int) clueEntityIPage.getCurrent());
         clueDTOPageResult.setPageSize((int) clueEntityIPage.getSize());
@@ -320,6 +357,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         BuildingArchiveReq buildingArchiveReq = new BuildingArchiveReq();
         buildingArchiveReq.setIdList(new ArrayList<>(buildingIdList));
         List<BuildingArchive> buildingArchiveList = archiveFeignService.buildingArchiveQueryForList(buildingArchiveReq).getData();
+        if (CollectionUtils.isEmpty(buildingArchiveList)) {
+            return;
+        }
         Map<Long, List<BuildingArchive>> buildingMap = buildingArchiveList.stream()
                 .collect(Collectors.groupingBy(BuildingArchive::getId));
         clueDTOList.forEach(o -> {
@@ -355,8 +395,11 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         reqDto.setUserIdList(new ArrayList<>(userIdList));
         List<BaseUserDto> baseUserDtoList = systemApiFeignService.lookUpUserList(reqDto).getData();
         Map<Long, String> userMap = baseUserDtoList.stream().collect(Collectors.toMap(BaseUserDto::getId, BaseUserDto::getName));
+        if (userMap.isEmpty()) {
+            return;
+        }
         clueDTOList.forEach(o -> {
-            if (Objects.nonNull(o.getCreatedBy()) && userMap.containsKey(Long.valueOf(o.getCreatedBy()))) {
+            if (StringUtils.isNotBlank(o.getCreatedBy()) && userMap.containsKey(Long.valueOf(o.getCreatedBy()))) {
                 o.setCreatedName(userMap.get(Long.valueOf(o.getCreatedBy())));
             }
             if (Objects.nonNull(o.getCurrentFollowerId()) && userMap.containsKey(o.getCurrentFollowerId())) {
@@ -393,6 +436,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         customConfigDetailReqDTO.setCustomConfigDetailIdList(new ArrayList<>(configIdList));
         Map<Long, String> systemOptionMap = systemApiFeignService.batchQueryCustomConfigDetailsForMap(customConfigDetailReqDTO)
                 .getData();
+        if (systemOptionMap.isEmpty()) {
+            return;
+        }
         clueDTOList.forEach(o -> {
             if (Objects.nonNull(o.getSourceId()) && systemOptionMap.containsKey(o.getSourceId())) {
                 o.setSourceIdName(systemOptionMap.get(o.getSourceId()));
@@ -406,21 +452,86 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         });
     }
 
+    /**
+     * 使用客户id列表查询出，对应的客户名称
+     *
+     * @param clueDTOList 线索列表
+     */
+    private void fillCustomerName(List<ClueDTO> clueDTOList) {
+        if (CollectionUtils.isEmpty(clueDTOList)) {
+            return;
+        }
+        Set<Long> customerIdList = new HashSet<>();
+        clueDTOList.forEach(o -> {
+            if (Objects.nonNull(o.getCustomerUserId())) {
+                customerIdList.add(o.getCustomerUserId());
+            }
+        });
+        CustomerUseReqDto reqDto = new CustomerUseReqDto();
+        reqDto.setCustomerIdList(new ArrayList<>(customerIdList));
+        List<CustomerUserRspDto> customerUserRspDtoList = archiveFeignService.lookupCustomerUsers(reqDto).getData();
+        if (CollectionUtils.isEmpty(customerUserRspDtoList)) {
+            return;
+        }
+        // 分组取第一条数据
+        Map<Long, String> customerMap = customerUserRspDtoList.stream()
+                .collect(Collectors.groupingBy(
+                        CustomerUserRspDto::getCustomerId,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                list -> list.get(0).getCustomerName()
+                        )
+                ));
+        clueDTOList.forEach(o -> {
+            if (Objects.nonNull(o.getCustomerUserId()) && customerMap.containsKey(o.getCustomerUserId())) {
+                o.setCustomerUserName(customerMap.get(o.getCustomerUserId()));
+            }
+        });
+    }
+
     private void initQueryWrapperByFollowDay(LambdaQueryWrapper<ClueEntity> queryWrapper, Byte clueFollowDay) {
         LocalDate now = LocalDate.now();
         if (ClueFollowDayEnum.ZERO_THREE_DAY.getCode().equals(clueFollowDay)) {
-            queryWrapper.ge(ClueEntity::getCurrentFollowTime, now.minusDays(3));
+            queryWrapper.and(qwp -> {
+                qwp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(3));
+                qwp.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
+                        .ge(ClueEntity::getDistributeTime, now.minusDays(3)));
+                    }
+            );
         } else if (ClueFollowDayEnum.THREE_SEVEN_DAY.getCode().equals(clueFollowDay)) {
-            queryWrapper.ge(ClueEntity::getCurrentFollowTime, now.minusDays(7));
-            queryWrapper.le(ClueEntity::getCurrentFollowTime, now.minusDays(3));
+            queryWrapper.and(qwp -> {
+                        qwp.and(wp -> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(7))
+                                .le(ClueEntity::getCurrentFollowTime, now.minusDays(3)));
+                        qwp.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
+                                .ge(ClueEntity::getDistributeTime, now.minusDays(7))
+                                .le(ClueEntity::getDistributeTime, now.minusDays(3)));
+                    }
+            );
         } else if (ClueFollowDayEnum.SEVEN_FIFTEEN_DAY.getCode().equals(clueFollowDay)) {
-            queryWrapper.ge(ClueEntity::getCurrentFollowTime, now.minusDays(15));
-            queryWrapper.le(ClueEntity::getCurrentFollowTime, now.minusDays(7));
+            queryWrapper.and(qwp -> {
+                        qwp.and(wp -> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(15))
+                                .le(ClueEntity::getCurrentFollowTime, now.minusDays(7)));
+                        qwp.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
+                                .ge(ClueEntity::getDistributeTime, now.minusDays(15))
+                                .le(ClueEntity::getDistributeTime, now.minusDays(7)));
+                    }
+            );
         } else if (ClueFollowDayEnum.FIFTEEN_THIRTY_DAY.getCode().equals(clueFollowDay)) {
-            queryWrapper.ge(ClueEntity::getCurrentFollowTime, now.minusDays(30));
-            queryWrapper.le(ClueEntity::getCurrentFollowTime, now.minusDays(15));
+            queryWrapper.and(qwp -> {
+                        qwp.and(wp -> wp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(30))
+                                .le(ClueEntity::getCurrentFollowTime, now.minusDays(15)));
+                        qwp.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
+                                .ge(ClueEntity::getDistributeTime, now.minusDays(30))
+                                .le(ClueEntity::getDistributeTime, now.minusDays(15)));
+                    }
+            );
         } else if (ClueFollowDayEnum.THIRTY_MORE_DAY.getCode().equals(clueFollowDay)) {
-            queryWrapper.le(ClueEntity::getCurrentFollowTime, now.minusDays(30));
+            queryWrapper.and(qwp -> {
+                        qwp.le(ClueEntity::getCurrentFollowTime, now.minusDays(30));
+                        qwp.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
+                                .le(ClueEntity::getDistributeTime, now.minusDays(30)));
+                    }
+            );
         }
     }
 

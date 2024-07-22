@@ -34,7 +34,7 @@ public class CustomerVehicleDto implements Serializable {
     /**
      * 车主姓名
      */
-    @Length(max = 11, message = "车主姓名限30字")
+    @Length(max = 30, message = "车主姓名限30字")
     private String ownerName;
 
 
@@ -54,7 +54,7 @@ public class CustomerVehicleDto implements Serializable {
     /**
      * 证件号码
      */
-    @Length(max = 30, message = "证件号码限50字")
+    @Length(max = 50, message = "证件号码限50字")
     private String certificateCdoe;
 
 

@@ -39,11 +39,6 @@ public class PwdLoginDto implements Serializable {
     private String kid;
 
     /**
-     * 小程序openid
-     */
-    private String openid;
-
-    /**
      * 用户身份（1-员工 2-业主）
      */
     @NotNull(message = "用户身份参数不能为空")

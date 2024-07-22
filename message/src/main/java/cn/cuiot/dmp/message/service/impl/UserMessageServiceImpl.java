@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author hantingyao
@@ -44,16 +45,23 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
             Query query = new Query();
             query.addCriteria(Criteria.where("accepter").is(LoginInfoHolder.getCurrentUserId()));
             if (Objects.nonNull(pageQuery.getDataType())) {
-                query.addCriteria(new Criteria().andOperator(Criteria.where("dataType").is(pageQuery.getDataType())));
+                query.addCriteria(Criteria.where("dataType").is(pageQuery.getDataType()));
             }
-            if (Objects.nonNull(pageQuery.getMessageGtTime())) {
-                query.addCriteria(Criteria.where("messageTime").gte(pageQuery.getMessageGtTime()));
-            }
-            if (Objects.nonNull(pageQuery.getMessageLeTime())) {
-                query.addCriteria(Criteria.where("messageTime").lte(pageQuery.getMessageLeTime()));
+            if (Objects.nonNull(pageQuery.getMessageGtTime()) || Objects.nonNull(pageQuery.getMessageLeTime())) {
+                Criteria criteria = Criteria.where("messageTime");
+                if (Objects.nonNull(pageQuery.getMessageGtTime())) {
+                    criteria.gte(pageQuery.getMessageGtTime());
+                }
+                if (Objects.nonNull(pageQuery.getMessageLeTime())) {
+                    criteria.lte(pageQuery.getMessageLeTime());
+                }
+                query.addCriteria(criteria);
             }
             if (StrUtil.isNotEmpty(pageQuery.getMsgType())) {
-                query.addCriteria(new Criteria().andOperator(Criteria.where("msgType").is(pageQuery.getMsgType())));
+                query.addCriteria(Criteria.where("msgType").is(pageQuery.getMsgType()));
+            }
+            if (Objects.nonNull(pageQuery.getBuildingId())) {
+                query.addCriteria(Criteria.where("buildingId").is(pageQuery.getBuildingId()));
             }
             //计算总数
             long total = mongoTemplate.count(query, UserMessageEntity.class);
@@ -78,6 +86,7 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
             queryWrapper.eq(Objects.nonNull(pageQuery.getReadStatus()), UserMessageEntity::getReadStatus, pageQuery.getReadStatus());
             queryWrapper.eq(Objects.nonNull(pageQuery.getDataType()), UserMessageEntity::getDataType, pageQuery.getDataType());
             queryWrapper.eq(StrUtil.isNotEmpty(pageQuery.getMsgType()), UserMessageEntity::getMsgType, pageQuery.getMsgType());
+            queryWrapper.eq(Objects.nonNull(pageQuery.getBuildingId()),UserMessageEntity::getBuildingId,pageQuery.getBuildingId());
             queryWrapper.ge(Objects.nonNull(pageQuery.getMessageGtTime()), UserMessageEntity::getMessageTime, pageQuery.getMessageGtTime());
             queryWrapper.le(Objects.nonNull(pageQuery.getMessageLeTime()), UserMessageEntity::getMessageTime, pageQuery.getMessageLeTime());
             queryWrapper.orderByDesc(UserMessageEntity::getMessageTime);
@@ -132,4 +141,16 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
             this.baseMapper.deleteBatchIds(ids);
         }
     }
+
+    @Override
+    public List<Long> queryByDataId(Long dataId) {
+        LambdaQueryWrapper<UserMessageEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserMessageEntity::getDataId, dataId);
+        List<UserMessageEntity> userMessageEntities = this.baseMapper.selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(userMessageEntities)) {
+            return userMessageEntities.stream().map(UserMessageEntity::getAccepter).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
+    }
+
 }

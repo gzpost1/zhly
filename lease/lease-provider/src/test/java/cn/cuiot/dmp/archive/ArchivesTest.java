@@ -2,13 +2,15 @@ package cn.cuiot.dmp.archive;
 
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
+import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.lease.LeaseApplication;
-import cn.cuiot.dmp.lease.service.TbContractIntentionBindInfoService;
-import cn.cuiot.dmp.lease.vo.ContractBindInfo;
+import cn.cuiot.dmp.lease.service.TbContractBindInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
 import org.junit.Test;
@@ -19,6 +21,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_INTENTION_TYPE;
 
 
 /**
@@ -33,7 +37,9 @@ public class ArchivesTest {
     @Autowired
     ArchiveFeignService archiveFeignService;
     @Autowired
-    TbContractIntentionBindInfoService bindInfoService;
+    TbContractBindInfoService bindInfoService;
+    @Autowired
+    SystemApiFeignService systemApiFeignService;
 
 
     @Test
@@ -53,10 +59,20 @@ public class ArchivesTest {
         System.out.println(idmResDTO);
 
     }
+    @Test
+    public void test1(){
+        ArrayList<Long> param = Lists.newArrayList();
+        param.add(1809392171948245000L);
+        CustomConfigDetailReqDTO dto = new CustomConfigDetailReqDTO();
+        dto.setCustomConfigDetailIdList(param);
+        IdmResDTO<List<CustomConfigDetailRspDTO>> listIdmResDTO = systemApiFeignService.batchQueryCustomConfigDetails(dto);
+        CustomConfigDetailRspDTO customConfigDetailRspDTO = listIdmResDTO.getData().get(0);
+        System.out.println(customConfigDetailRspDTO.getName());
+    }
 
     @Test
     public void test2(){
-        List<HousesArchivesVo> contractBindInfo = bindInfoService.queryBindHouseInfoByContractId(1L);
+        List<HousesArchivesVo> contractBindInfo = bindInfoService.queryBindHouseInfoByContractId(1L, CONTRACT_INTENTION_TYPE);
         System.out.println(contractBindInfo);
     }
 

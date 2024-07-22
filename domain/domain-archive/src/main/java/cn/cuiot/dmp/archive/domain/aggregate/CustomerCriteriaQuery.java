@@ -64,6 +64,11 @@ public class CustomerCriteriaQuery extends PageQuery {
     private Long houseId;
 
     /**
+     * 楼盘ID
+     */
+    private Long loupanId;
+
+    /**
      * 企业ID
      */
     private Long companyId;

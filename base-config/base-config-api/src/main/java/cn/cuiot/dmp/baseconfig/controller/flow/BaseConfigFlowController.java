@@ -71,8 +71,9 @@ public class BaseConfigFlowController {
     @PostMapping("/queryForWorkOrderPage")
     public IdmResDTO<IPage<TbFlowPageDto>> queryForWorkOrderPage(@RequestBody TbFlowConfigQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
-
-        query.setOrgId(LoginInfoHolder.getCurrentDeptId());
+        if(Objects.isNull(query.getOrgId())){
+            query.setOrgId(LoginInfoHolder.getCurrentDeptId());
+        }
 
         IPage<TbFlowPageDto> tbFlowPageDtoIPage = tbFlowConfigService.queryForWorkOrderPage(query);
         if(Objects.nonNull(tbFlowPageDtoIPage) && CollectionUtils.isNotEmpty(tbFlowPageDtoIPage.getRecords())){

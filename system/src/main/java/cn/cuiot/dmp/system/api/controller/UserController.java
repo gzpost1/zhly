@@ -11,8 +11,12 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.annotation.ResolveExtData;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.RegexConst;
@@ -24,6 +28,7 @@ import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
@@ -67,6 +72,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -115,6 +121,7 @@ public class UserController extends BaseController {
     /**
      * 用户列表筛选-分页
      */
+    @ResolveExtData
     @GetMapping(value = "/user/listUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<UserDataResDTO> getPage(
             @RequestParam(value = "username", required = false) String username,
@@ -231,7 +238,7 @@ public class UserController extends BaseController {
      * 新增用户
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "insertUserD", operationName = "新增用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "insertUserD", operationName = "添加用户", serviceType = "user",serviceTypeName = "用户管理")
     @PostMapping(value = "/user/insertUserD", produces = MediaType.APPLICATION_JSON_VALUE)
     public void insertUser(@RequestBody @Valid InsertUserDTO dto) {
         String loginOrgId = LoginInfoHolder.getCurrentOrgId().toString();
@@ -249,6 +256,12 @@ public class UserController extends BaseController {
         userBo.setRemark(dto.getRemark());
 
         UserCsvDto userInfo = userService.insertUser(userBo);
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("用户")
+                .targetDatas(Lists.newArrayList(new OptTargetData(userInfo.getUsername(),userInfo.getId().toString())))
+                .build());
 
         // 文件流输出
         List<JSONObject> jsonList = new ArrayList<>();
@@ -278,7 +291,7 @@ public class UserController extends BaseController {
      * 修改用户
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateUser", operationName = "修改用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "updateUser", operationName = "修改用户",serviceType = "user",serviceTypeName = "用户管理")
     @PostMapping(value = "/user/updateUser", produces = MediaType.APPLICATION_JSON_VALUE)
     public IdmResDTO updateUser(@RequestBody @Valid UpdateUserDTO dto) {
 
@@ -294,6 +307,12 @@ public class UserController extends BaseController {
         userBo.setPostId(dto.getPostId());
         userBo.setRemark(dto.getRemark());
 
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("用户")
+                .targetDatas(Lists.newArrayList(new OptTargetData(userBo.getUsername(),userBo.getId().toString())))
+                .build());
+
         return userService.updateUser(userBo);
     }
 
@@ -302,7 +321,7 @@ public class UserController extends BaseController {
      * 批量移动用户
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "moveUsers", operationName = "移动用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "moveUsers", operationName = "移动用户", serviceType = "user",serviceTypeName = "用户管理")
     @PostMapping(value = "/user/moveUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public IdmResDTO moveUsers(@RequestBody @Valid MoveUserDTO dto) {
 
@@ -321,7 +340,7 @@ public class UserController extends BaseController {
      * 批量启停用
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "changeUserStatus", operationName = "批量启停用用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "changeUserStatus", operationName = "启停用用户", serviceType = "user",serviceTypeName = "用户管理")
     @PostMapping(value = "/user/changeUserStatus", produces = MediaType.APPLICATION_JSON_VALUE)
     public IdmResDTO changeUserStatus(@RequestBody @Valid ChangeUserStatusDTO dto) {
 
@@ -340,7 +359,7 @@ public class UserController extends BaseController {
      * 批量删除用户
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "deleteUsers", operationName = "删除用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "deleteUsers", operationName = "删除用户", serviceType = "user",serviceTypeName = "用户管理")
     @PostMapping(value = "/user/deleteUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> deleteUsers(@RequestBody @Valid DeleteUserDTO dto) {
         // 获取session中的userId
@@ -367,7 +386,7 @@ public class UserController extends BaseController {
      * 导出用户
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "exportUsers", operationName = "导出用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "exportUsers", operationName = "导出用户", serviceType = "user",serviceTypeName = "用户管理")
     @PostMapping(value = "/user/exportUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public void exportUsers(@RequestBody @Valid ExportUserCmd dto) throws IOException {
         UserBo userBo = new UserBo();
@@ -375,6 +394,17 @@ public class UserController extends BaseController {
         userBo.setLoginUserId(LoginInfoHolder.getCurrentUserId().toString());
         userBo.setDeptId(dto.getDeptId());
         List<UserExportVo> dataList = userService.exportUsers(userBo);
+
+        //设置日志操作对象内容
+        if(CollectionUtils.isNotEmpty(dataList)){
+            //设置日志操作对象内容
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .name("用户")
+                    .targetDatas(dataList.stream().map(item->{
+                        return new OptTargetData(item.getUsername(),item.getId());
+                    }).collect(Collectors.toList()))
+                    .build());
+        }
 
         List<Map<String, Object>> sheetsList = new ArrayList<>();
 
@@ -395,7 +425,7 @@ public class UserController extends BaseController {
      * 导入用户
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "importUsers", operationName = "导入用户", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "importUsers", operationName = "导入用户", serviceType = "user",serviceTypeName = "用户管理")
     @PostMapping(value = "/user/importUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public void importUsers(@RequestParam("file") MultipartFile file,
             @RequestParam(value = "deptId", required = true) String deptId) throws Exception {
@@ -443,6 +473,17 @@ public class UserController extends BaseController {
         userBo.setImportDtoList(importDtoList);
 
         List<UserImportDownloadVo> dataList = userService.importUsers(userBo);
+
+        //设置日志操作对象内容
+        if(CollectionUtils.isNotEmpty(dataList)){
+            //设置日志操作对象内容
+            LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                    .name("用户")
+                    .targetDatas(dataList.stream().map(item->{
+                        return new OptTargetData(item.getUsername(),item.getId().toString());
+                    }).collect(Collectors.toList()))
+                    .build());
+        }
 
         /*List<Map<String, Object>> sheetsList = new ArrayList<>();
 
@@ -498,21 +539,24 @@ public class UserController extends BaseController {
     /**
      * 查询登录用户信息
      */
+    @ResolveExtData
     @PostMapping(value = "/getLoginUserInfo", produces = "application/json;charset=UTF-8")
     public UserResDTO queryUserById() {
         // 获取session中的userId
-        String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
-        String sessionOrgId = LoginInfoHolder.getCurrentOrgId().toString();
-        // 判断是否具有查询权限
-        UserResDTO userResDTO = userService
-                .getUserMenuByUserIdAndOrgId(sessionUserId, sessionOrgId);
-        if (userResDTO == null) {
-            // 账号不存在
-            throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
+        Long sessionUserId = LoginInfoHolder.getCurrentUserId();
+        Long sessionOrgId = LoginInfoHolder.getCurrentOrgId();
+
+        UserResDTO userResDTO = userService.getUserById(sessionUserId.toString());
+
+        if (UserTypeEnum.USER.getValue().equals(userResDTO.getUserType())) {
+            userResDTO = userService
+                    .getUserMenuByUserIdAndOrgId(sessionUserId.toString(), sessionOrgId.toString());
+            if (userResDTO == null) {
+                // 账号不存在
+                throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
+            }
         }
-        //对加密的手机号码解密--2020/12/08
-        //增加手机号为空判断，在不为空的情况下才做解密处理 --2020/12/15
-        if (null != userResDTO.getPhoneNumber()) {
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(userResDTO.getPhoneNumber())) {
             userResDTO.setPhoneNumber(Sm4.decrypt(userResDTO.getPhoneNumber()));
         }
         //安全考虑去除密码返回
@@ -523,7 +567,7 @@ public class UserController extends BaseController {
     /**
      * 修改密码(登录人自行修改)
      */
-    @LogRecord(operationCode = "updatePassword", operationName = "修改密码", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "updatePassword", operationName = "修改密码", serviceType = "user",serviceTypeName = "用户管理")
     @PostMapping(value = "/user/updatePassword", produces = MediaType.APPLICATION_JSON_VALUE)
     public void updatePassword(@RequestBody UpdatePasswordDto dto) {
         // 获取密码
@@ -556,7 +600,7 @@ public class UserController extends BaseController {
     /**
      * 修改手机号(登录人自行修改)
      */
-    @LogRecord(operationCode = "updatePhoneNumber", operationName = "修改手机号", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "updatePhoneNumber", operationName = "修改手机号", serviceType = "user",serviceTypeName = "用户管理")
     @PostMapping(value = "/user/updatePhoneNumber", produces = MediaType.APPLICATION_JSON_VALUE)
     public void updatePhoneNumber(@RequestBody SmsCodeCheckReqDTO dto) {
         String phoneNumber = Optional.ofNullable(dto).map(d -> d.getPhoneNumber()).orElse(null);

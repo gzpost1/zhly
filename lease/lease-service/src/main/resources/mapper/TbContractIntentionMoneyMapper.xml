@@ -8,6 +8,10 @@
         <result column="bid" property="bid"/>
         <result column="amount" property="amount"/>
         <result column="remark" property="remark"/>
+        <result column="contract_id" property="contractId"/>
+        <result column="room_num" property="roomNum"/>
+        <result column="code" property="code"/>
+        <result column="house_name" property="houseName"/>
     </resultMap>
 
     <select id="list" resultMap="BaseResultMap"
@@ -26,13 +30,16 @@
         project,
         bid,
         amount,
-        remark
+        remark,contract_id
     </sql>
 
     <sql id="dynamic_where">
         <if test="params != null">
             <if test="params.id != null">
                 and id = #{params.id}
+            </if>
+            <if test="params.contractId != null">
+                and contract_id = #{params.contractId}
             </if>
             <if test="params.project != null and params.project.trim() != ''">
                 and project like CONCAT('%','${params.project}','%' )
@@ -56,7 +63,7 @@
                          from (
                                       select m.id
                                       from tb_contract_intention_money m
-                                                   left join tb_contract_intention_bind_info b on m.id = b.bind_id
+                                                   left join tb_contract_bind_info b on m.id = b.bind_id
                                       where b.type = 2) a)
     </delete>
 </mapper>

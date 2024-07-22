@@ -1,5 +1,8 @@
 package cn.cuiot.dmp.content.service.impl;//	模板
 
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity;
@@ -11,6 +14,7 @@ import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,13 +51,25 @@ public class ImgTextTypeServiceImpl extends ServiceImpl<ImgTextTypeMapper, ImgTe
     public Boolean create(ImgTextType imgTextType) {
         checkCreateOrUpdate(imgTextType);
         imgTextType.setCompanyId(LoginInfoHolder.getCurrentOrgId());
-        return save(imgTextType);
+        boolean save = save(imgTextType);
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("图文类型")
+                .targetDatas(Lists.newArrayList(new OptTargetData(imgTextType.getName(), imgTextType.getId().toString())))
+                .build());
+        return save;
     }
 
     @Override
     public Boolean update(ImgTextType imgTextType) {
         checkCreateOrUpdate(imgTextType);
-        return updateById(imgTextType);
+        boolean b = updateById(imgTextType);
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("图文类型")
+                .targetDatas(Lists.newArrayList(new OptTargetData(imgTextType.getName(), imgTextType.getId().toString())))
+                .build());
+        return b;
     }
 
     @Override
@@ -66,6 +82,12 @@ public class ImgTextTypeServiceImpl extends ServiceImpl<ImgTextTypeMapper, ImgTe
         if (CollUtil.isNotEmpty(contentImgTextEntities)) {
             throw new BusinessException(ResultCode.IMG_TEXT_TYPE_EXISTS_DATA);
         }
+        removeById(id);
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("图文类型")
+                .targetDatas(Lists.newArrayList(new OptTargetData(imgTextType.getName(), imgTextType.getId().toString())))
+                .build());
         return null;
     }
 

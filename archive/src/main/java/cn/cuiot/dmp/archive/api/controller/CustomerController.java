@@ -12,6 +12,7 @@ import cn.cuiot.dmp.archive.infrastructure.vo.CustomerExportVo;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerHouseExportVo;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerHouseVo;
 import cn.cuiot.dmp.archive.infrastructure.vo.CustomerVo;
+import cn.cuiot.dmp.archive.infrastructure.vo.HouseCustomerVo;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
@@ -111,6 +112,9 @@ public class CustomerController {
     public IdmResDTO create(@RequestBody @Valid CustomerDto dto) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
         dto.setCompanyId(currentOrgId);
+        if(CollectionUtils.isEmpty(dto.getAttachments())){
+            dto.setAttachments(Lists.newArrayList());
+        }
         customerService.createCustomer(dto);
         return IdmResDTO.success();
     }
@@ -127,6 +131,9 @@ public class CustomerController {
         }
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
         dto.setCompanyId(currentOrgId);
+        if(CollectionUtils.isEmpty(dto.getAttachments())){
+            dto.setAttachments(Lists.newArrayList());
+        }
         customerService.updateCustomer(dto);
         return IdmResDTO.success();
     }
@@ -282,5 +289,16 @@ public class CustomerController {
         ExcelUtils.downLoadExcel("客户信息", response,workbook);
     }
 
+
+    /**
+     * 房屋关联客户列表
+     */
+    @PostMapping("/queryHouseCustomerList")
+    public IdmResDTO<IPage<HouseCustomerVo>> queryHouseCustomerList(@RequestBody CustomerQuery query) {
+        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
+        query.setCompanyId(currentOrgId);
+        IPage<HouseCustomerVo> pageData = customerService.queryHouseCustomerList(query);
+        return IdmResDTO.success(pageData);
+    }
 
 }

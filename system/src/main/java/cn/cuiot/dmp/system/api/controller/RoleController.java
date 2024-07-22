@@ -5,6 +5,9 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -94,14 +97,22 @@ public class RoleController extends BaseController {
      * 新增角色
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "createRole", operationName = "新增角色", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "createRole", operationName = "添加角色", serviceType ="role",serviceTypeName = "角色管理")
     @PostMapping(value = "/createRole", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> createRole(@RequestBody @Valid CreateRoleDto dto) {
         String userId = getUserId();
         dto.setLoginUserId(userId);
         dto.setLoginOrgId(getOrgId());
         Map<String, Object> resultMap = new HashMap<>(1);
-        resultMap.put("id", this.roleService.createRole(dto));
+
+        Long rolePk = this.roleService.createRole(dto);
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("角色")
+                .targetDatas(Lists.newArrayList(new OptTargetData(dto.getRoleName(),rolePk.toString())))
+                .build());
+
+        resultMap.put("id",rolePk);
         return resultMap;
     }
 
@@ -110,7 +121,7 @@ public class RoleController extends BaseController {
      * 删除角色
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "deleteRole", operationName = "删除角色", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "deleteRole", operationName = "删除角色", serviceType ="role",serviceTypeName = "角色管理")
     @PostMapping(value = "deleteRole", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> deleteRoles(@RequestBody @Valid IdParam param) {
         Map<String, Object> resultMap = new HashMap<>(1);
@@ -145,7 +156,7 @@ public class RoleController extends BaseController {
      * 编辑角色
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateRole", operationName = "修改角色", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "updateRole", operationName = "编辑角色",serviceType ="role",serviceTypeName = "角色管理")
     @PostMapping(value = "/updateRole", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> updateRole(@RequestBody @Valid UpdateRoleDto dto) {
         if (null == dto || StringUtils.isBlank(String.valueOf(dto.getId())) || StringUtils
@@ -159,6 +170,13 @@ public class RoleController extends BaseController {
         roleBo.setMenuIds(dto.getMenuIds());
         roleBo.setSessionUserId(LoginInfoHolder.getCurrentUserId().toString());
         roleBo.setSessionOrgId(LoginInfoHolder.getCurrentOrgId().toString());
+
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("角色")
+                .targetDatas(Lists.newArrayList(new OptTargetData(roleBo.getRoleName(),roleBo.getId().toString())))
+                .build());
+
         Map<String, Object> resultMap = new HashMap<>(1);
         resultMap.put("id", this.roleService.updateRole(roleBo));
         return resultMap;
@@ -168,7 +186,7 @@ public class RoleController extends BaseController {
      * 启停用
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateRoleStatus", operationName = "启停用角色", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
+    @LogRecord(operationCode = "updateRoleStatus", operationName = "启停用角色", serviceType ="role",serviceTypeName = "角色管理")
     @PostMapping("/updateStatus")
     public IdmResDTO updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         Long sessionUserId = LoginInfoHolder.getCurrentUserId();

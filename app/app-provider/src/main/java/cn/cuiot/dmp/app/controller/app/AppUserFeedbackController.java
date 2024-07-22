@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.app.controller.app;
 
+import cn.cuiot.dmp.app.dto.AppUserDto;
 import cn.cuiot.dmp.app.dto.UserFeedbackDto;
 import cn.cuiot.dmp.app.dto.UserFeedbackQuery;
 import cn.cuiot.dmp.app.entity.UserFeedbackEntity;
+import cn.cuiot.dmp.app.service.AppUserService;
 import cn.cuiot.dmp.app.service.UserFeedbackService;
 import cn.cuiot.dmp.base.application.service.ApiArchiveService;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
@@ -45,6 +47,9 @@ public class AppUserFeedbackController {
 
     @Autowired
     private ApiSystemService apiSystemService;
+
+    @Autowired
+    private AppUserService appUserService;
 
     /**
      * 创建
@@ -95,6 +100,8 @@ public class AppUserFeedbackController {
         if (Objects.isNull(query.getBuildingId())) {
             throw new BusinessException(ResultCode.PARAM_CANNOT_NULL, "楼盘ID不能为空");
         }
+        Long currentUserId = LoginInfoHolder.getCurrentUserId();
+        query.setUserId(currentUserId);
         IPage<UserFeedbackEntity> pageData = userFeedbackService.queryForPage(query);
         return IdmResDTO.success(pageData);
     }
@@ -105,6 +112,12 @@ public class AppUserFeedbackController {
     @PostMapping("/queryForDetail")
     public IdmResDTO<UserFeedbackEntity> queryForDetail(@RequestBody @Valid IdParam idParam) {
         UserFeedbackEntity data = userFeedbackService.queryForDetail(idParam.getId());
+        if(Objects.nonNull(data)){
+            AppUserDto user = appUserService.getUserById(data.getUserId());
+            if(Objects.nonNull(user)){
+                data.setAvatar(user.getAvatar());
+            }
+        }
         return IdmResDTO.success(data);
     }
 

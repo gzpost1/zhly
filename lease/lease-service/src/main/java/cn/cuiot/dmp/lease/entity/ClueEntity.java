@@ -47,6 +47,12 @@ public class ClueEntity extends BaseEntity {
     private Long sourceId;
 
     /**
+     * 分配时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date distributeTime;
+
+    /**
      * 当前跟进记录ID
      */
     private Long currentFollowRecordId;

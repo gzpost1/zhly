@@ -30,4 +30,11 @@ public class CommonOptionConstant {
     public static final Byte ROOT_LEVEL_TYPE = (byte) 0;
     public static final Integer MAX_LEVEL_TYPE = 4;
 
+    /**
+     * 常用选项分类类别
+     */
+    public static final String COMMON_OPTION_TYPE = "type";
+    public static final String COMMON_OPTION_NAME = "name";
+    public static final String COMMON_OPTION_VALUE = "value";
+
 }

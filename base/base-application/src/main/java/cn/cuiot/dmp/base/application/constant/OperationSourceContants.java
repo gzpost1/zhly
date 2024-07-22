@@ -15,10 +15,10 @@ public class OperationSourceContants {
     /**
      * 2:小程序-管理端
      */
-    public final static String APP_MANAGE_END="1";
+    public final static String APP_MANAGE_END="2";
 
     /**
      * 3:小程序-客户端
      */
-    public final static String APP_CLIENT_END="1";
+    public final static String APP_CLIENT_END="3";
 }

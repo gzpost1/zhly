@@ -40,6 +40,7 @@ import cn.cuiot.dmp.system.application.service.UserService;
 import cn.cuiot.dmp.system.domain.entity.Organization;
 import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.domain.query.OrganizationCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.CustomConfigDetailRepository;
 import cn.cuiot.dmp.system.domain.repository.FormConfigTypeRepository;
 import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
@@ -162,6 +163,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private ContentApiFeignService contentApiFeignService;
+
+    @Autowired
+    private CustomConfigDetailRepository customConfigDetailRepository;
 
     /**
      * 根据用户类型返回
@@ -318,7 +322,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         //设置日志操作对象内容
         LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
                 .name("企业")
-                .targetDatas(Lists.newArrayList(new OptTargetData(organization.getCompanyName(), organization.getId().toString())))
+                .targetDatas(Lists.newArrayList(new OptTargetData(organization.getCompanyName(), organization.getId().getValue().toString())))
                 .build());
 
         //保存菜单权限
@@ -454,7 +458,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         //设置日志操作对象内容
         LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
                 .name("企业")
-                .targetDatas(Lists.newArrayList(new OptTargetData(oldOrganization.getOrgName(), oldOrganization.getId().toString())))
+                .targetDatas(Lists.newArrayList(new OptTargetData(oldOrganization.getOrgName(), oldOrganization.getId().getValue().toString())))
                 .build());
 
         //判断登录用户是否有权限修改
@@ -631,12 +635,24 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public GetOrganizationVO findOne(String pkOrgId, String sessionUserId, String sessionOrgId) {
 
-        //查看数据权限判断
-        String loginDeptId = userService.getDeptId(sessionUserId, sessionOrgId);
+        //获取当前登录用户的账号信息
+        Organization sessionOrg = organizationRepository
+                .find(new OrganizationId(sessionOrgId));
+
+        if (!OrgTypeEnum.PLATFORM.getValue()
+                .equals(sessionOrg.getOrgTypeId().getValue())) {
+            if(!pkOrgId.equals(sessionOrgId)){
+                throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            }
+        }
+
         String grantDeptId = userDao.getUserGrantDeptId(Long.parseLong(pkOrgId));
+
+        //查看数据权限判断
+        /*String loginDeptId = userService.getDeptId(sessionUserId, sessionOrgId);
         if (!departmentUtil.checkPrivilege(loginDeptId, grantDeptId)) {
             throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
-        }
+        }*/
 
         Organization organization = organizationRepository.find(new OrganizationId(pkOrgId));
 
@@ -659,7 +675,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         /**
          * 设置所属组织信息
          */
-        if (grantDeptId != null) {
+        if (Objects.nonNull(grantDeptId)) {
             DepartmentEntity departmentEntity = departmentDao
                     .selectByPrimary(Long.parseLong(grantDeptId));
             vo.setDeptId(Long.parseLong(grantDeptId));
@@ -678,18 +694,29 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public PageResult<ListOrganizationVO> commercialOrgList(ListOrganizationDto dto) {
-        // 获取子组织
-        if (StringUtils.isNotBlank(dto.getDeptId())) {
-            List deptIds = departmentService
-                    .getChildrenDepartmentIds(String.valueOf(dto.getLoginOrgId()),
-                            Long.valueOf(dto.getDeptId()));
-            dto.setDeptIds(deptIds);
-        }
-        // 根据手机号查询租户id
-        if (!StringUtils.isEmpty(dto.getPhoneNumber())) {
-            String orgId = organizationDao
-                    .getOrgIdByUserPhoneNumber(Sm4.encryption(dto.getPhoneNumber()));
-            dto.setOrgId(orgId);
+        //获取当前登录用户的企业信息
+        Organization sessionOrg = organizationRepository
+                .find(new OrganizationId(dto.getLoginOrgId()));
+        if(OrgTypeEnum.PLATFORM.getValue().equals(sessionOrg.getOrgTypeId().getValue())){
+            if (StringUtils.isBlank(dto.getDeptId())) {
+                String deptId = userService.getDeptId(dto.getLoginUserId().toString(), dto.getLoginOrgId().toString());
+                dto.setDeptId(deptId);
+            }
+            // 获取子组织
+            if (StringUtils.isNotBlank(dto.getDeptId())) {
+                List deptIds = departmentService
+                        .getChildrenDepartmentIds(String.valueOf(dto.getLoginOrgId()),
+                                Long.valueOf(dto.getDeptId()));
+                dto.setDeptIds(deptIds);
+            }
+            // 根据手机号查询企业id
+            if (!StringUtils.isEmpty(dto.getPhoneNumber())) {
+                String orgId = organizationDao
+                        .getOrgIdByUserPhoneNumber(Sm4.encryption(dto.getPhoneNumber()));
+                dto.setOrgId(orgId);
+            }
+        }else{
+            dto.setOrgId(dto.getLoginOrgId().toString());
         }
         PageMethod.startPage(dto.getPageNo(), dto.getPageSize());
         List<ListOrganizationVO> voList = organizationDao.getCommercialOrgList(dto);
@@ -868,8 +895,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         //设置日志操作对象内容
         LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                 .operationName(EntityConstants.ENABLED.equals(updateStatusParam.getStatus())?"启用企业":"禁用企业")
                 .name("企业")
-                .targetDatas(Lists.newArrayList(new OptTargetData(find.getCompanyName(), find.getId().toString())))
+                .targetDatas(Lists.newArrayList(new OptTargetData(find.getCompanyName(), find.getId().getValue().toString())))
                 .build());
 
         Organization organization = Organization.builder()
@@ -1037,6 +1065,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         formConfigTypeRepository.queryByCompany(companyId, EntityConstants.ENABLED);
         // 初始化审核配置
         auditConfigService.queryByCompany(companyId);
+        // 初始化合同相关的系统选项值
+        customConfigDetailRepository.initCustomConfigDetail(companyId);
         return organizationRepository.updateInitFlag(companyId, EntityConstants.ENABLED);
     }
 

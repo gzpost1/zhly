@@ -5,10 +5,16 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.dal.entity.ContentAudit;
+import cn.cuiot.dmp.content.dal.entity.ContentImgTextEntity;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextCreateDto;
 import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
@@ -18,13 +24,13 @@ import cn.cuiot.dmp.content.service.ContentAuditService;
 import cn.cuiot.dmp.content.service.ContentImgTextService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 图文管理
@@ -79,7 +85,7 @@ public class ContentImgTextController extends BaseController {
      * 保存
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "saveContentImgText", operationName = "保存图文", serviceType = "imgText",serviceTypeName = "图文管理")
+    @LogRecord(operationCode = "saveContentImgText", operationName = "保存图文", serviceType = "imgText", serviceTypeName = "图文管理")
     @PostMapping("/create")
     public int saveContentImgText(@RequestBody @Valid ContentImgTextCreateDto createDto) {
         createDto.setDepartments(Collections.singletonList(LoginInfoHolder.getCurrentDeptId()));
@@ -90,7 +96,7 @@ public class ContentImgTextController extends BaseController {
      * 更新
      */
     @RequiresPermissions
-    @LogRecord(operationCode = "updateContentImgText", operationName = "更新图文", serviceType = "imgText",serviceTypeName = "图文管理")
+    @LogRecord(operationCode = "updateContentImgText", operationName = "更新图文", serviceType = "imgText", serviceTypeName = "图文管理")
     @PostMapping("/update")
     public int updateContentImgText(@RequestBody @Valid ContentImgTextUpdateDto updateDto) {
         updateDto.setDepartments(Collections.singletonList(LoginInfoHolder.getCurrentDeptId()));
@@ -104,6 +110,15 @@ public class ContentImgTextController extends BaseController {
     @LogRecord(operationCode = "deleteContentImgText", operationName = "删除图文", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
     @PostMapping("/delete")
     public Boolean deleteContentImgText(@RequestBody @Valid IdParam idParam) {
+        ContentImgTextEntity imgTextEntity = contentImgTextService.getById(idParam.getId());
+        if (imgTextEntity == null) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("图文管理")
+                .targetDatas(Lists.newArrayList(new OptTargetData(imgTextEntity.getTitle(), imgTextEntity.getId().toString())))
+                .build());
         return contentImgTextService.removeById(idParam.getId());
     }
 
@@ -114,17 +129,18 @@ public class ContentImgTextController extends BaseController {
      * @return
      */
     @PostMapping("/updateStatus")
-    @LogRecord(operationCode = "updateStatusImgText", operationName = "停启用图文", serviceType = "imgText",serviceTypeName = "图文管理")
+    @LogRecord(operationCode = "updateStatusImgText", operationName = "停启用图文", serviceType = "imgText", serviceTypeName = "图文管理")
     public Boolean updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {
         return contentImgTextService.updateStatus(updateStatusParam);
     }
 
     /**
      * 获取审核状态数量
+     *
      * @return
      */
     @GetMapping("/getAuditStatusNum")
-    public List<AuditStatusNumVo> getAuditStatusNum(@RequestParam("typeId") Long typeId) {
+    public List<AuditStatusNumVo> getAuditStatusNum(@RequestParam(value = "typeId", required = false) Long typeId) {
         return contentImgTextService.getAuditStatusNum(typeId);
     }
 }

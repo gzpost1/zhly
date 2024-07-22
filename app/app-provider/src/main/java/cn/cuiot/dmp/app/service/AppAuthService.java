@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.app.service;
 
 import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
+import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_INVALID;
+import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_EXIST;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_ERROR;
 import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_OLD_INVALID;
 import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_LOCKED_ERROR;
@@ -27,11 +29,13 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonMenuDto;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.SecurityConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
+import cn.cuiot.dmp.common.utils.ValidateUtil;
 import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.AuthContants;
 import cn.cuiot.dmp.domain.types.Password;
@@ -128,7 +132,6 @@ public class AppAuthService {
         List<AppUserDto> appUserDtos = appUserService.selectUserByOpenid(openid);
         if (CollectionUtils.isNotEmpty(appUserDtos)) {
             for (AppUserDto userDto : appUserDtos) {
-
                 if (UserTypeEnum.USER.getValue().equals(userDto.getUserType())) {
                     if (!EntityConstants.DISABLED.equals(userDto.getStatus())) {
                         Long pkOrgId = appUserService.getOrgId(userDto.getId());
@@ -285,6 +288,7 @@ public class AppAuthService {
                 userEntity.setCreatedByType(OperateByTypeEnum.SYSTEM.getValue());
                 appUserService.createAppUser(userEntity);
                 userDto = appUserConverter.toAppUserDto(userEntity);
+                userDto.setPhoneNumber(phone);
             } else {
                 //更新登录时间
                 UserEntity updateEntity = new UserEntity();
@@ -378,12 +382,8 @@ public class AppAuthService {
         checkAndClearLoginFailedCount(userDto.getId());
 
         //更新登录时间
-        if(StringUtils.isNotBlank(dto.getOpenid())){
-            userDto.setOpenid(dto.getOpenid());
-        }
         UserEntity updateEntity = new UserEntity();
         updateEntity.setId(userDto.getId());
-        updateEntity.setOpenid(dto.getOpenid());
         updateEntity.setLastOnlineIp(dto.getIpAddr());
         updateEntity.setLastOnlineOn(LocalDateTime.now());
         appUserService.updateAppUser(updateEntity);
@@ -509,7 +509,7 @@ public class AppAuthService {
         SmsCodeCheckResDto res = appVerifyService
                 .checkPhoneSmsCode(dto.getPhoneNumber(), null, dto.getSmsCode(), true);
         if (!res.getCheckSucceed()) {
-            throw new BusinessException(SMS_TEXT_OLD_INVALID);
+            throw new BusinessException(SMS_TEXT_OLD_INVALID,"短信验证码错误");
         }
 
         String userAccount = dto.getPhoneNumber();
@@ -555,7 +555,6 @@ public class AppAuthService {
             //更新登录时间
             UserEntity updateEntity = new UserEntity();
             updateEntity.setId(userDto.getId());
-            updateEntity.setOpenid(dto.getOpenid());
             updateEntity.setLastOnlineIp(dto.getIpAddr());
             updateEntity.setLastOnlineOn(LocalDateTime.now());
             appUserService.updateAppUser(updateEntity);
@@ -572,7 +571,6 @@ public class AppAuthService {
                 userEntity.setPhoneNumber(new PhoneNumber(dto.getPhoneNumber()).getEncryptedValue());
                 userEntity.setStatus(UserStatusEnum.OPEN.getValue());
                 userEntity.setUserType(userType);
-                userEntity.setOpenid(dto.getOpenid());
                 userEntity.setDeletedFlag(EntityConstants.NOT_DELETED.intValue());
                 userEntity.setLastOnlineIp(dto.getIpAddr());
                 userEntity.setLastOnlineOn(LocalDateTime.now());
@@ -581,18 +579,15 @@ public class AppAuthService {
                 userEntity.setCreatedByType(OperateByTypeEnum.SYSTEM.getValue());
                 appUserService.createAppUser(userEntity);
                 userDto = appUserConverter.toAppUserDto(userEntity);
+                userDto.setPhoneNumber(dto.getPhoneNumber());
             } else {
                 //更新登录时间
                 UserEntity updateEntity = new UserEntity();
                 updateEntity.setId(userDto.getId());
-                updateEntity.setOpenid(dto.getOpenid());
                 updateEntity.setLastOnlineIp(dto.getIpAddr());
                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                 appUserService.updateAppUser(updateEntity);
             }
-        }
-        if(StringUtils.isNotBlank(dto.getOpenid())){
-            userDto.setOpenid(dto.getOpenid());
         }
         //生成与设置token
         genSetAppToken(userDto);
@@ -632,14 +627,23 @@ public class AppAuthService {
             throw new BusinessException(ResultCode.PHONE_NUMBER_IS_INVALID, "新手机号不能与旧手机号一致");
         }
         SmsCodeCheckResDto res = appVerifyService
-                .checkPhoneSmsCode(oldPhone, dto.getUserId(), dto.getPreSmsCode(), true);
-        if (!res.getCheckSucceed()) {
-            throw new BusinessException(SMS_TEXT_OLD_INVALID);
-        }
-        res = appVerifyService
                 .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), dto.getSmsCode(), true);
         if (!res.getCheckSucceed()) {
             throw new BusinessException(SMS_TEXT_ERROR);
+        }
+
+        AppUserDto existUser = appUserService
+                .getUserByPhoneAndUserType(dto.getPhoneNumber(), userDto.getUserType());
+        if(Objects.nonNull(existUser)){
+            if(!userDto.getId().equals(existUser.getId())){
+                throw new BusinessException(PHONE_NUMBER_EXIST);
+            }
+        }
+
+        res = appVerifyService
+                .checkPhoneSmsCode(oldPhone, dto.getUserId(), dto.getPreSmsCode(), true);
+        if (!res.getCheckSucceed()) {
+            throw new BusinessException(SMS_TEXT_OLD_INVALID);
         }
         appUserService.changePhone(dto.getUserId(), dto.getPhoneNumber());
     }
@@ -695,17 +699,14 @@ public class AppAuthService {
         if (StringUtils.isBlank(dto.getKid())) {
             throw new BusinessException(ResultCode.KID_IS_EMPTY, "密钥ID为空");
         }
+
         /**
          * 短信验证码参数校验
          */
         if (StringUtils.isBlank(dto.getSmsCode())) {
             throw new BusinessException(ResultCode.SMS_TEXT_IS_EMPTY, "请输入验证码");
         }
-        SmsCodeCheckResDto res = appVerifyService
-                .checkPhoneSmsCode(dto.getPhoneNumber(), null, dto.getSmsCode(), true);
-        if (!res.getCheckSucceed()) {
-            throw new BusinessException(SMS_TEXT_OLD_INVALID);
-        }
+
         /**
          * 获取AES密钥信息
          */
@@ -718,9 +719,21 @@ public class AppAuthService {
         // 密码解密
         dto.setPassword(aes.getDecodeValue(dto.getPassword()));
 
+        String password = dto.getPassword();
+        // 判断密码不符合规则
+        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
+                || ValidateUtil.checkBoardContinuousChar(password)) {
+            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
+        }
+
+        SmsCodeCheckResDto res = appVerifyService
+                .checkPhoneSmsCode(dto.getPhoneNumber(), null, dto.getSmsCode(), true);
+        if (!res.getCheckSucceed()) {
+            throw new BusinessException(SMS_TEXT_OLD_INVALID);
+        }
+
         String userAccount = dto.getPhoneNumber();
         Integer userType = dto.getUserType();
-        String password = dto.getPassword();
 
         AppUserDto userDto = appUserService.getUserByPhoneAndUserType(userAccount, userType);
         if (Objects.isNull(userDto)) {
@@ -761,11 +774,7 @@ public class AppAuthService {
         if (StringUtils.isBlank(dto.getSmsCode())) {
             throw new BusinessException(ResultCode.SMS_TEXT_IS_EMPTY, "请输入验证码");
         }
-        SmsCodeCheckResDto res = appVerifyService
-                .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), dto.getSmsCode(), true);
-        if (!res.getCheckSucceed()) {
-            throw new BusinessException(SMS_TEXT_OLD_INVALID);
-        }
+
         /**
          * 获取AES密钥信息
          */
@@ -779,6 +788,17 @@ public class AppAuthService {
         dto.setPassword(aes.getDecodeValue(dto.getPassword()));
 
         String password = dto.getPassword();
+        // 判断密码不符合规则
+        if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
+                || ValidateUtil.checkBoardContinuousChar(password)) {
+            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
+        }
+
+        SmsCodeCheckResDto res = appVerifyService
+                .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), dto.getSmsCode(), true);
+        if (!res.getCheckSucceed()) {
+            throw new BusinessException(SMS_TEXT_OLD_INVALID);
+        }
 
         AppUserDto userDto = appUserService.getUserById(dto.getUserId());
         if (Objects.isNull(userDto)) {
@@ -810,7 +830,7 @@ public class AppAuthService {
         AppUserDto userDto = null;
         //员工
         if (UserTypeEnum.USER.getValue().equals(userType)) {
-
+            //appUserService.getUserByOpenid(openid, userType)
             userDto = appUserService
                     .getUserByPhoneAndUserType(currentUser.getPhoneNumber(), userType);
             if (Objects.isNull(userDto)) {
@@ -840,7 +860,9 @@ public class AppAuthService {
             //更新登录时间
             UserEntity updateEntity = new UserEntity();
             updateEntity.setId(userDto.getId());
-            updateEntity.setOpenid(openid);
+            if(StringUtils.isBlank(userDto.getOpenid())) {
+                updateEntity.setOpenid(openid);
+            }
             updateEntity.setLastOnlineIp(ipAddr);
             updateEntity.setLastOnlineOn(LocalDateTime.now());
             appUserService.updateAppUser(updateEntity);
@@ -849,38 +871,21 @@ public class AppAuthService {
                     .getUserByPhoneAndUserType(currentUser.getPhoneNumber(), userType);
             //非员工
             if (Objects.isNull(userDto)) {
-                /*String password = randomPwUtils
-                        .getRandomPassword((int) (8 + Math.random() * (20 - 8 + 1)));
-                UserEntity userEntity = new UserEntity();
-                userEntity.setName("用户昵称");
-                userEntity.setUsername(userDto.getPhoneNumber() + userType);
-                userEntity.setPassword(new Password(password).getHashEncryptValue());
-                userEntity.setPhoneNumber(
-                        new PhoneNumber(userDto.getPhoneNumber()).getEncryptedValue());
-                userEntity.setStatus(UserStatusEnum.OPEN.getValue());
-                userEntity.setUserType(userType);
-                userEntity.setOpenid(openid);
-                userEntity.setDeletedFlag(EntityConstants.NOT_DELETED.intValue());
-                userEntity.setLastOnlineIp(ipAddr);
-                userEntity.setLastOnlineOn(LocalDateTime.now());
-                userEntity.setCreatedOn(LocalDateTime.now());
-                userEntity.setCreatedBy(OperateByTypeEnum.SYSTEM.name().toLowerCase());
-                userEntity.setCreatedByType(OperateByTypeEnum.SYSTEM.getValue());
-                appUserService.createAppUser(userEntity);
-                userDto = appUserConverter.toAppUserDto(userEntity);*/
                 throw new BusinessException(ResultCode.USER_ACCOUNT_NOT_EXIST, "用户不存在");
             } else {
                 //更新登录时间
                 UserEntity updateEntity = new UserEntity();
                 updateEntity.setId(userDto.getId());
-                updateEntity.setOpenid(openid);
+                if(StringUtils.isBlank(userDto.getOpenid())) {
+                    updateEntity.setOpenid(openid);
+                }
                 updateEntity.setLastOnlineIp(ipAddr);
                 updateEntity.setLastOnlineOn(LocalDateTime.now());
                 appUserService.updateAppUser(updateEntity);
             }
         }
-        if(StringUtils.isNotBlank(dto.getOpenid())){
-            userDto.setOpenid(dto.getOpenid());
+        if(StringUtils.isBlank(userDto.getOpenid())) {
+            userDto.setOpenid(openid);
         }
         //生成与设置token
         genSetAppToken(userDto);

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.TbContractLeaseEntity">
+        <id column="id" property="id"/>
+        <result column="contract_no" property="contractNo"/>
+        <result column="name" property="name"/>
+        <result column="begin_date" property="beginDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="cantract_date" property="cantractDate"/>
+        <result column="first_date" property="firstDate"/>
+        <result column="follow_up" property="followUp"/>
+        <result column="followUpName" property="followUpName"/>
+        <result column="purpose" property="purpose"/>
+        <result column="type" property="type"/>
+        <result column="property" property="property"/>
+        <result column="label" property="label"/>
+        <result column="remark" property="remark"/>
+        <result column="client" property="client"/>
+        <result column="form" property="form"/>
+        <result column="main_body" property="mainBody"/>
+        <result column="path" property="path"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_user" property="updateUser"/>
+<!--        <result column="createUserName" property="createUserName"/>-->
+<!--        <result column="updateUserName" property="updateUserName"/>-->
+        <result column="status" property="status"/>
+        <result column="deleted" property="deleted"/>
+        <result column="contract_status" property="contractStatus"/>
+        <result column="audit_status" property="auditStatus"/>
+        <result column="template_id" property="templateId"/>
+        <result column="relet_date" property="reletDate"/>
+        <result column="relet_remark" property="reletRemark"/>
+        <result column="relet_path" property="reletPath"/>
+        <result column="form_data" property="formData"/>
+        <result column="relet_contract_id" property="reletContractId"/>
+        <collection property="createUserName"  select="querySysUserName" column="create_user" jdbcType="VARCHAR" javaType="string"></collection>
+        <collection property="updateUserName"  select="querySysUserName" column="update_user"  jdbcType="VARCHAR" javaType="string"></collection>
+        <collection property="uselessInfo"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractCancelMapper.selectLeaseUseless"
+                    column="id">
+        </collection>
+        <collection property="leaseBackList" ofType="cn.cuiot.dmp.lease.entity.TbContractLeaseBackEntity"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractLeaseBackMapper.selectLeaseBack"
+                    column="id">
+        </collection>
+        <collection property="chargeList" ofType="cn.cuiot.dmp.lease.entity.TbContractChargeEntity"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractChargeMapper.selectCharge"
+                    column="id">
+        </collection>
+        <collection property="reletLeaseContract" ofType="cn.cuiot.dmp.lease.entity.TbContractLeaseEntity"
+                    select="cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper.selectReletLeaseContract"
+                    column="id">
+        </collection>
+    </resultMap>
+
+    <select id="querySysUserName" resultType="string">
+        select name from user where id =#{userId}
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_contract_lease ci
+        left join user u on ci.follow_up = u.id
+        where ci.id = #{id}
+    </select>
+
+    <select id="selectReletLeaseContract" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_contract_lease ci
+        left join user u on ci.follow_up = u.id
+        where ci.relet_contract_id = #{id}
+    </select>
+
+
+
+
+    <select id="list" resultMap="BaseResultMap" parameterType="cn.cuiot.dmp.lease.entity.TbContractLeaseEntity">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_contract_lease ci
+        left join user u on ci.follow_up = u.id
+        left join tb_contract_lease_back b on ci.id = b.contract_id
+        <where>
+            <include refid="dynamic_where"/>
+        </where>
+        order by ifnull(ci.update_time,ci.create_time) desc
+    </select>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ci.id,ci.form_data,ci.relet_contract_id, ci.contract_no, ci.name, ci.begin_date, ci.end_date, ci.cantract_date, ci.first_date, ci.follow_up, ci.purpose, ci.type, ci.property, ci.label, ci.remark, ci.client, ci.form, ci.main_body, ci.path, ci.create_time,  ifnull(ci.update_time,ci.create_time) update_time, ci.create_user,  ifnull(ci.update_user,ci.create_user) update_user, ci.status, ci.deleted, ci.contract_status, ci.audit_status,ci.template_id,ci.relet_date,ci.relet_remark,ci.relet_path,u.name followUpName
+    </sql>
+
+    <sql id="dynamic_where">
+        <if test="params!=null">
+            <if test=" params.id != null">
+                and ci.id = #{params.id}
+            </if>
+            <if test=" params.templateId != null">
+                and ci.template_id = #{params.templateId}
+            </if>
+            <if test="params.queryIds!=null and params.queryIds.size()>0">
+                and ci.id in
+                <foreach collection="params.queryIds" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="params.queryNotInIds!=null and params.queryNotInIds.size()>0">
+                and ci.id not in
+                <foreach collection="params.queryNotInIds" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test=" params.reletContractId != null">
+                and ci.relet_contract_id = #{params.reletContractId}
+            </if>
+            <if test=" params.contractNo != null and params.contractNo.trim() != ''">
+                and ci.contract_no like CONCAT('%',#{params.contractNo},'%' )
+            </if>
+            <if test=" params.name != null and params.name.trim() != ''">
+                and ci.name like CONCAT('%',#{params.name},'%' )
+            </if>
+            <if test=" params.beginDate != null">
+                <!--  and  begin_date between #{params.beginDate} and #{params.endDate}  -->
+                and ci.begin_date = #{params.beginDate}
+            </if>
+            <if test=" params.endDate != null">
+                <!--  and  end_date between #{params.beginDate} and #{params.endDate}  -->
+                and ci.end_date = #{params.endDate}
+            </if>
+            <if test=" params.cantractDate != null">
+                <!--  and  cantract_date between #{params.beginDate} and #{params.endDate}  -->
+                and ci.cantract_date = #{params.cantractDate}
+            </if>
+            <if test="params.cantractBeginDate != null">
+                and ci.cantract_date >= #{params.cantractBeginDate}
+            </if>
+            <if test="params.cantractEndDate != null">
+                and ci.cantract_date  <![CDATA[<=]]>  #{params.cantractEndDate}
+            </if>
+            <if test="params.leaseBackBeginDate != null">
+                and b.end_date >= #{params.leaseBackBeginDate}
+            </if>
+            <if test="params.leaseBackEndDate != null">
+                and b.end_date  <![CDATA[<=]]>  #{params.leaseBackEndDate}
+            </if>
+            <if test="params.beginDateBegin != null">
+                and ci.begin_date >= #{params.beginDateBegin}
+            </if>
+            <if test="params.beginDateEnd != null">
+                and ci.begin_date   <![CDATA[<=]]>  #{params.beginDateEnd}
+            </if>
+            <if test="params.endDateBegin != null">
+                and ci.end_date >= #{params.endDateBegin}
+            </if>
+            <if test="params.endDateEnd != null">
+                and ci.end_date   <![CDATA[<=]]>  #{params.endDateEnd}
+            </if>
+            <if test=" params.firstDate != null">
+                <!--  and  first_date between #{params.beginDate} and #{params.endDate}  -->
+                and ci.first_date = #{params.firstDate}
+            </if>
+            <if test=" params.followUp != null and params.followUp.trim() != ''">
+                and ci.follow_up like CONCAT('%',#{params.followUp},'%' )
+            </if>
+            <if test="params.followUpName != null and params.followUpName.trim() != ''">
+                and u.name like CONCAT('%',#{params.followUpName},'%' )
+            </if>
+            <if test=" params.purpose != null and params.purpose.trim() != ''">
+                and ci.purpose like CONCAT('%',#{params.purpose},'%' )
+            </if>
+            <if test=" params.type != null and params.type.trim() != ''">
+                and ci.type like CONCAT('%',#{params.type},'%' )
+            </if>
+            <if test=" params.property != null and params.property.trim() != ''">
+                and ci.property like CONCAT('%',#{params.property},'%' )
+            </if>
+            <if test=" params.label != null and params.label.trim() != ''">
+                and ci.label = #{params.label}
+            </if>
+            <if test=" params.remark != null and params.remark.trim() != ''">
+                and ci.remark = #{params.remark}
+            </if>
+            <if test=" params.client != null and params.client.trim() != ''">
+                and ci.client like CONCAT('%',#{params.client},'%' )
+            </if>
+            <if test=" params.form != null and params.form.trim() != ''">
+                and ci.form = #{params.form}
+            </if>
+            <if test=" params.mainBody != null">
+                and ci.main_body = #{params.mainBody}
+            </if>
+            <if test=" params.path != null and params.path.trim() != ''">
+                and ci.path = #{params.path}
+            </if>
+            <if test=" params.createTime != null">
+                <!--  and  create_time between #{params.beginDate} and #{params.endDate}  -->
+                and ci.create_time = #{params.createTime}
+            </if>
+            <if test=" params.updateTime != null">
+                <!--  and  update_time between #{params.beginDate} and #{params.endDate}  -->
+                and ci.update_time = #{params.updateTime}
+            </if>
+            <if test=" params.createUser != null">
+                and ci.create_user = #{params.createUser}
+            </if>
+            <if test=" params.updateUser != null">
+                and ci.update_user = #{params.updateUser}
+            </if>
+            <if test=" params.status != null">
+                and ci.status = #{params.status}
+            </if>
+            <if test=" params.contractStatus != null">
+                and ci.contract_status = #{params.contractStatus}
+            </if>
+            <if test=" params.auditStatus != null">
+                and ci.audit_status = #{params.auditStatus}
+            </if>
+            <if test=" params.usefullLease != null">
+                and ci.id not in (select ifnull(contract_lease_id,-1) from tb_contract_intention where deleted=0 and contract_lease_id is not null)
+            </if>
+            and ci.deleted=0
+        </if>
+    </sql>
+
+    <select id="statisticsContract" resultType="cn.cuiot.dmp.base.infrastructure.dto.BaseVO">
+        select count(*) value,contract_status name from tb_contract_lease where deleted=0 group by contract_status
+    </select>
+</mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceNotifierMapper">
+
+  <insert id="batchInsert" parameterType="collection">
+    INSERT INTO tb_gw_firefight_device_notifier(parent_id, name, mobile, priority)
+    VALUES
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.parentId},#{item.name},#{item.mobile},#{item.priority})
+    </foreach>
+  </insert>
+
+  <delete id="deleteByParentId">
+    DELETE FROM tb_gw_firefight_device_notifier WHERE parent_id = #{parentId}
+  </delete>
+</mapper>

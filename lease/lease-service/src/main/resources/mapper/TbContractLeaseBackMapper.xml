@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.TbContractLeaseBackMapper">
+
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.TbContractLeaseBackEntity">
+        <id column="id" property="id" />
+        <result column="contract_id" property="contractId" />
+        <result column="end_date" property="endDate" />
+        <result column="type" property="type" />
+        <result column="reason" property="reason" />
+        <result column="handover_date" property="handoverDate" />
+        <result column="remark" property="remark" />
+        <result column="path" property="path" />
+    </resultMap>
+
+<select id="list" resultMap="BaseResultMap" parameterType="cn.cuiot.dmp.lease.entity.TbContractLeaseBackEntity" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_contract_lease_back
+    <where>
+      <include refid="dynamic_where" />
+  </where>
+</select>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, contract_id, end_date, type, reason, handover_date, remark, path
+    </sql>
+
+<sql id="dynamic_where">
+    <if test="params!=null">
+    <if test=" params.id != null" >
+             and  id = #{params.id}
+    </if>
+    <if test=" params.contractId != null" >
+             and  contract_id = #{params.contractId}
+    </if>
+    <if test=" params.endDate != null" >
+            <!--  and  end_date between #{params.beginDate} and #{params.endDate}  -->
+             and  end_date = #{params.endDate}
+    </if>
+    <if test=" params.type != null and params.type.trim() != ''" >
+             and type like CONCAT('%','${params.type}','%' )
+    </if>
+    <if test=" params.reason != null and params.reason.trim() != ''" >
+             and reason like CONCAT('%','${params.reason}','%' )
+    </if>
+    <if test=" params.handoverDate != null" >
+            <!--  and  handover_date between #{params.beginDate} and #{params.endDate}  -->
+             and  handover_date = #{params.handoverDate}
+    </if>
+    <if test=" params.remark != null and params.remark.trim() != ''" >
+             and  remark = #{params.remark}
+    </if>
+    <if test=" params.path != null and params.path.trim() != ''" >
+             and path like CONCAT('%','${params.path}','%' )
+    </if>
+    </if>
+</sql>
+
+    <select id="selectLeaseBack" resultMap="BaseResultMap">
+        select *
+        from tb_contract_lease_back
+        where contract_id = #{id}
+    </select>
+
+</mapper>

@@ -15,6 +15,7 @@ public interface WorkFlowConstants {
     String EXPRESSION_CLASS="exUtils.";
     String DEFAULT_NULL_ASSIGNEE="100000000000";
     String DEFAULT_NULL_COPLITE="33000000000";
+    String DEFAULT_NULL_SUSPEND="1000000000001111";
     String DEFAULT_ADMIN_ASSIGNEE="381496";
     String AUTO_REFUSE_STR="autoRefuse";
     String FLOWABLE_NAME_SPACE_NAME="yunjintech";

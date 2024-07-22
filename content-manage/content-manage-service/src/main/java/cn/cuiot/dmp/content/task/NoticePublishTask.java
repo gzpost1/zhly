@@ -9,6 +9,7 @@ import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class NoticePublishTask {
      * @return
      */
     @XxlJob("publishNotice")
+    @Transactional
     public ReturnT<String> publishNotice(String param) {
         log.info("publishNotice start");
         List<ContentNoticeEntity> noticeEntityList = noticeService.queryPublishNotice();
@@ -39,7 +41,7 @@ public class NoticePublishTask {
             return ReturnT.SUCCESS;
         }
         noticeEntityList.forEach(noticeEntity -> {
-            noticeEntity.setPublishStatus(ContentConstants.PublishStatus.PUBLISHED);
+            noticeEntity.setNoticed(ContentConstants.Noticed.NOTICED);
             noticeService.updateById(noticeEntity);
             noticeService.sendNoticeMessage(noticeEntity);
         });

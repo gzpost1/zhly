@@ -82,19 +82,21 @@ public class ParkingArchivesController extends BaseController {
      */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<ParkingArchivesEntity>> queryForPage(@RequestBody @Valid ParkingArchivesQuery query) {
-        // 获取当前平台下的楼盘列表
-        DepartmentReqDto dto = new DepartmentReqDto();
-        dto.setDeptId(LoginInfoHolder.getCurrentOrgId());
-        dto.setSelfReturn(true);
-        List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
-        if (CollectionUtils.isEmpty(buildingArchives)) {
-            return IdmResDTO.success(new Page<>());
-        }
-        List<Long> buildingIdList = buildingArchives.stream()
-                .map(BuildingArchive::getId)
-                .collect(Collectors.toList());
         LambdaQueryWrapper<ParkingArchivesEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(CollectionUtils.isNotEmpty(buildingIdList), ParkingArchivesEntity::getLoupanId, buildingIdList);
+        if (Objects.isNull(query.getLoupanId())) {
+            // 获取当前平台下的楼盘列表
+            DepartmentReqDto dto = new DepartmentReqDto();
+            dto.setDeptId(LoginInfoHolder.getCurrentOrgId());
+            dto.setSelfReturn(true);
+            List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
+            if (CollectionUtils.isEmpty(buildingArchives)) {
+                return IdmResDTO.success(new Page<>());
+            }
+            List<Long> buildingIdList = buildingArchives.stream()
+                    .map(BuildingArchive::getId)
+                    .collect(Collectors.toList());
+            wrapper.in(CollectionUtils.isNotEmpty(buildingIdList), ParkingArchivesEntity::getLoupanId, buildingIdList);
+        }
         wrapper.eq(Objects.nonNull(query.getLoupanId()), ParkingArchivesEntity::getLoupanId, query.getLoupanId());
         wrapper.eq(StringUtils.isNotBlank(query.getCode()),ParkingArchivesEntity::getCode, query.getCode());
         wrapper.eq(Objects.nonNull(query.getStatus()), ParkingArchivesEntity::getStatus, query.getStatus());

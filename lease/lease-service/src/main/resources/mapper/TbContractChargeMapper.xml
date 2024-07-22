@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.TbContractChargeMapper">
+
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.TbContractChargeEntity">
+        <id column="id" property="id" />
+        <result column="contract_id" property="contractId" />
+        <result column="project" property="project" />
+        <result column="house" property="house" />
+        <result column="first_date" property="firstDate" />
+        <result column="amount" property="amount" />
+        <result column="payee" property="payee" />
+        <result column="payer" property="payer" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_user" property="updateUser" />
+    </resultMap>
+
+<select id="list" resultMap="BaseResultMap" parameterType="cn.cuiot.dmp.lease.entity.TbContractChargeEntity" >
+    select
+    <include refid="Base_Column_List" />
+    from tb_contract_charge
+    <where>
+      <include refid="dynamic_where" />
+  </where>
+</select>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, contract_id, project, house, first_date, amount, payee, payer, create_time, update_time, create_user, update_user
+    </sql>
+
+<sql id="dynamic_where">
+    <if test="params!=null">
+    <if test=" params.id != null" >
+             and  id = #{params.id}
+    </if>
+    <if test=" params.contractId != null and params.contractId.trim() != ''" >
+             and contract_id like CONCAT('%','${params.contractId}','%' )
+    </if>
+    <if test=" params.project != null and params.project.trim() != ''" >
+             and project like CONCAT('%','${params.project}','%' )
+    </if>
+    <if test=" params.house != null and params.house.trim() != ''" >
+             and house like CONCAT('%','${params.house}','%' )
+    </if>
+    <if test=" params.firstDate != null" >
+            <!--  and  first_date between #{params.beginDate} and #{params.endDate}  -->
+             and  first_date = #{params.firstDate}
+    </if>
+    <if test=" params.amount != null" >
+             and  amount = #{params.amount}
+    </if>
+    <if test=" params.payee != null and params.payee.trim() != ''" >
+             and payee like CONCAT('%','${params.payee}','%' )
+    </if>
+    <if test=" params.payer != null and params.payer.trim() != ''" >
+             and payer like CONCAT('%','${params.payer}','%' )
+    </if>
+    <if test=" params.createTime != null" >
+            <!--  and  create_time between #{params.beginDate} and #{params.endDate}  -->
+             and  create_time = #{params.createTime}
+    </if>
+    <if test=" params.updateTime != null" >
+            <!--  and  update_time between #{params.beginDate} and #{params.endDate}  -->
+             and  update_time = #{params.updateTime}
+    </if>
+    <if test=" params.createUser != null" >
+             and  create_user = #{params.createUser}
+    </if>
+    <if test=" params.updateUser != null" >
+             and  update_user = #{params.updateUser}
+    </if>
+    </if>
+</sql>
+
+    <select id="selectCharge" resultMap="BaseResultMap">
+        select *
+        from tb_contract_charge
+        where contract_id = #{id}
+    </select>
+
+</mapper>

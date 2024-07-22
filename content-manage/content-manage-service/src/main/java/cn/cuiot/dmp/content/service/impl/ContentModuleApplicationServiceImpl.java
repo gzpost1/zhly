@@ -1,7 +1,12 @@
 package cn.cuiot.dmp.content.service.impl;//	模板
 
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
+import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.content.conver.ModuleApplicationConvert;
 import cn.cuiot.dmp.content.dal.entity.ContentModuleApplication;
 import cn.cuiot.dmp.content.dal.mapper.ContentModuleApplicationMapper;
@@ -17,7 +22,9 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,22 +41,44 @@ public class ContentModuleApplicationServiceImpl extends ServiceImpl<ContentModu
         ContentModuleApplication moduleApplication = ModuleApplicationConvert.INSTANCE.convert(moduleBannerCreateDto);
         moduleApplication.setStatus(EntityConstants.DISABLED);
         moduleApplication.setCompanyId(LoginInfoHolder.getCurrentOrgId());
-        return save(moduleApplication);
+        boolean save = save(moduleApplication);
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("图文管理")
+                .targetDatas(Lists.newArrayList(new OptTargetData(moduleApplication.getName(), moduleApplication.getId().toString())))
+                .build());
+        return save;
     }
 
     @Override
     public Boolean update(ModuleApplicationUpdateDto updateDto) {
         ContentModuleApplication moduleApplication = ModuleApplicationConvert.INSTANCE.convert(updateDto);
         moduleApplication.setId(updateDto.getId());
-        return updateById(moduleApplication);
+        boolean b = updateById(moduleApplication);
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("图文管理")
+                .targetDatas(Lists.newArrayList(new OptTargetData(moduleApplication.getName(), moduleApplication.getId().toString())))
+                .build());
+        return b;
     }
 
     @Override
     public Boolean deleteById(Long id) {
+        ContentModuleApplication moduleApplication = getById(id);
+        if (moduleApplication == null) {
+            throw new BusinessException(ResultCode.DATA_NOT_EXIST);
+        }
         LambdaUpdateWrapper<ContentModuleApplication> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(ContentModuleApplication::getId, id);
         updateWrapper.eq(ContentModuleApplication::getCompanyId, LoginInfoHolder.getCurrentOrgId());
-        return remove(updateWrapper);
+        boolean remove = remove(updateWrapper);
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("图文管理")
+                .targetDatas(Lists.newArrayList(new OptTargetData(moduleApplication.getName(), moduleApplication.getId().toString())))
+                .build());
+        return remove;
     }
 
     @Override
@@ -59,6 +88,11 @@ public class ContentModuleApplicationServiceImpl extends ServiceImpl<ContentModu
             return false;
         }
         moduleApplication.setStatus(updateStatusParam.getStatus());
+        //设置日志操作对象内容
+        LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
+                .name("图文管理")
+                .targetDatas(Lists.newArrayList(new OptTargetData(moduleApplication.getName(), moduleApplication.getId().toString())))
+                .build());
         return updateById(moduleApplication);
     }
 

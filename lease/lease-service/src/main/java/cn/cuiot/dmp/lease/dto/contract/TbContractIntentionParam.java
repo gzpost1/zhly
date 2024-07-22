@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.lease.dto.contract;
 
 import cn.cuiot.dmp.common.bean.PageQuery;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 ;
 /**
@@ -32,15 +34,30 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
 
     private Long id;
 
+    private List<Long> queryIds;
+    /**
+     * 租赁合同id
+     */
+    private Long contractLeaseId;
+
     /**
      * 合同编号
      */
     private String contractNo;
 
     /**
+     * 意向标(房屋名称)
+     */
+    private String houseName;
+
+    /**
      * 合同名称
      */
     private String name;
+    /**
+     * 标签 ","分割
+     */
+    private String label;
 
     /**
      * 签订日期
@@ -63,11 +80,32 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private LocalDate endDate;
 
+    private LocalDate cantractBeginDate;
+
+    private LocalDate cantractEndDate;
+    /**
+     * 查询开始日期 开始日期
+     */
+    private LocalDate beginDateBegin;
+    /**
+     * 查询开始日期 结束日期
+     */
+    private LocalDate beginDateEnd;
+    /**
+     * 合同结束日期 开始日期
+     */
+    private LocalDate endDateBegin;
+    /**
+     * 合同结束日期 结束日期
+     */
+    private LocalDate endDateEnd;
+
     /**
      * 跟进人
 
      */
     private String followUp;
+    private String followUpName;
 
     /**
      * 签订客户
@@ -105,6 +143,22 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
      * 审核状态
      */
     private Integer auditStatus;
+
+
+    /**
+     * 续租日期
+     */
+    private LocalDate reletDate;
+    /**
+     * 续租说明
+     */
+    private LocalDate reletRemark;
+    /**
+     * 续租附件
+     */
+    private LocalDate reletPath;
+
+    private Integer templateId;
 
 
 }
