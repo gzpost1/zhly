@@ -67,4 +67,11 @@ public class SecuritydepositManagerQuery extends PageQuery {
      */
     private Byte selectReceived;
 
+
+
+    /**
+     * 实收编码
+     *
+     */
+    private String receivedId;
 }
