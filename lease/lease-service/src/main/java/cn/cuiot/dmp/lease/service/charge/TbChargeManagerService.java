@@ -105,7 +105,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
                         tbChargeManager.setOwnershipPeriodBegin(DateUtil.beginOfMonth(ownershipPeriodEnd));
                         tbChargeManager.setOwnershipPeriodEnd(ownershipPeriodEnd);
                     } else {
-                        tbChargeManager.setOwnershipPeriodBegin(DateUtil.offsetMonth(ownershipPeriodBegin, (int) l));
+                        tbChargeManager.setOwnershipPeriodBegin(DateTimeUtil.getStartTime(DateUtil.beginOfMonth(DateUtil.offsetMonth(ownershipPeriodBegin, (int) l))));
                         tbChargeManager.setOwnershipPeriodEnd(DateTimeUtil.getStartTime(DateUtil.endOfMonth(DateUtil.offsetMonth(ownershipPeriodBegin, (int) l))));
                     }
 
