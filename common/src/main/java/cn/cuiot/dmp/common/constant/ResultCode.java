@@ -232,6 +232,8 @@ public enum ResultCode {
 
     COMPLETE_RATIO_ERROR("1900001","未达到完成比列，不能提交"),
 
+    PLATFORM_NOT_CONFIG("1900002","该企业未配置对接参数")
+
     ;
 
 

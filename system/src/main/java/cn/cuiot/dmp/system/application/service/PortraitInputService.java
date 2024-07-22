@@ -42,6 +42,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
 
@@ -96,6 +97,9 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
 
         //获取大华配置
         PortraitInputInfoDto inputDto =  getBaseMapper().queryPlatfromInfo(LoginInfoHolder.getCurrentOrgId());
+        if(Objects.isNull(inputDto)){
+            return IdmResDTO.error(ResultCode.PLATFORM_NOT_CONFIG.getCode(),ResultCode.PLATFORM_NOT_CONFIG.getMessage());
+        }
         //创建识别主体
         String admitGuid = createSubject(createDto, inputDto);
         //注册人像
