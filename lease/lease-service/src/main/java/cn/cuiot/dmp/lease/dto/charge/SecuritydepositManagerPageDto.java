@@ -146,6 +146,13 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
      */
     private String remark;
 
+
+    /**
+     * 实收编码
+     *
+     */
+    private Long receivedId;
+
     public Integer getUnreturnedAmount() {
         if(Lists.newArrayList(SecurityDepositStatusEnum.UNPAID.getCode(),SecurityDepositStatusEnum.CANCELLED.getCode()).contains(status)){
             return 0;
