@@ -72,9 +72,9 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
 
         String jsonObject = stringRedisTemplate.opsForValue().get(SECRET_INFO_KEY + createDto.getKid());
         stringRedisTemplate.delete(SECRET_INFO_KEY + createDto.getKid());
-//        if (StringUtils.isEmpty(jsonObject)) {
-//            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR, "密钥ID已过期，请重新获取");
-//        }
+        if (StringUtils.isEmpty(jsonObject)) {
+            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR, "密钥ID已过期，请重新获取");
+        }
         Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
         // 密码解密
         if(StringUtils.isNotBlank(createDto.getPassword())){
@@ -134,6 +134,10 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         JSONObject paramJson = new JSONObject();
         paramJson.put("deviceNo", deviceNo);
         paramJson.put("admitGuids", admitGuid);
+
+        JSONObject subParamJson = new JSONObject();
+        subParamJson.put("idCardFacePermission",2);
+        paramJson.put("permission",subParamJson);
         ResponseEntity<AuthDaHuaResp> responseEntity =
                 restTemplate.exchange(PortraitInputConstant.AUTH_MANAGEMENT_URL, HttpMethod.POST,
                         new HttpEntity<>(paramJson,headers),
