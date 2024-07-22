@@ -292,7 +292,7 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         if(CollectionUtil.isEmpty(list)){
             return IdmResDTO.success();
         }
-        FootPlateCompanyDto map = BeanMapper.map(list, FootPlateCompanyDto.class);
+        FootPlateCompanyDto map = BeanMapper.map(list.get(0), FootPlateCompanyDto.class);
         return  IdmResDTO.success(map);
     }
 }
