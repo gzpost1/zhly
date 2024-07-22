@@ -5,6 +5,7 @@
     <!--@mbg.generated-->
     <!--@Table tb_securitydeposit_manager-->
     <id column="id" jdbcType="BIGINT" property="id" />
+    <id column="received_id" jdbcType="BIGINT" property="receivedId" />
     <result column="customer_user_id" jdbcType="BIGINT" property="customerUserId" />
     <result column="house_id" jdbcType="BIGINT" property="houseId" />
     <result column="loupan_id" jdbcType="BIGINT" property="loupanId" />
@@ -31,7 +32,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, customer_user_id, house_id, charge_item_id, charge_standard, receivable_amount, 
+    id, customer_user_id, house_id, charge_item_id, charge_standard, receivable_amount, received_id,
     ownership_period_begin, ownership_period_end, company_id, update_time, update_user, 
     create_time, create_user, deleted, due_date, `status`, receivable_amount_received, remark,
     returned_amount,transaction_mode,account_bank,account_number,received_date,loupan_id
@@ -61,6 +62,9 @@
       </if>
       <if test="query.receivableCode != null and query.receivableCode != ''">
           and id like concat('%', #{query.receivableCode}, '%')
+      </if>
+      <if test="query.receivedId != null and query.receivedId != ''">
+          and received_id like concat('%', #{query.receivedId}, '%')
       </if>
       <if test="query.ownershipPeriodBegin != null">
           and ownership_period_begin &gt;= #{query.ownershipPeriodBegin}

@@ -126,4 +126,10 @@ public class TbSecuritydepositManager extends YjBaseEntity {
      * 备注
      */
     private String remark;
+
+    /**
+     * 实收编码
+     *
+     */
+    private Long receivedId;
 }
