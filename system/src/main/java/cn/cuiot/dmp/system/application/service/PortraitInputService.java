@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
+import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -95,8 +96,11 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         //创建识别主体
         String admitGuid = createSubject(createDto, inputDto);
         //注册人像
-        faceRegister(inputDto,createDto,admitGuid);
+        AuthDaHuaResp authDaHuaResp = faceRegister(inputDto, createDto, admitGuid);
 
+        if(StringUtils.equals(PortraitInputConstant.RESULT_ERROR_DH,authDaHuaResp.getResult())){
+            return IdmResDTO.error(ErrorCode.COMMON_FAILURE.getCode(),authDaHuaResp.getMsg());
+        }
         PortraitInputEntity entity = BeanMapper.map(createDto, PortraitInputEntity.class);
 
         baseMapper.insert(entity);
@@ -105,7 +109,7 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         return IdmResDTO.success();
     }
 
-    public void faceRegister(PortraitInputInfoDto inputDto,PortraitInputCreateDto createDto,String admitGuid) throws NoSuchAlgorithmException {
+    public AuthDaHuaResp faceRegister(PortraitInputInfoDto inputDto,PortraitInputCreateDto createDto,String admitGuid) throws NoSuchAlgorithmException {
         String token = getToken(inputDto);
         HttpHeaders headers = new HttpHeaders();
         headers.set(PortraitInputConstant.CREATE_SUBJECT_TOKEN,token);
@@ -121,10 +125,8 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         AuthDaHuaResp body = responseEntity.getBody();
         if(StringUtils.equals(body.getResult(),PortraitInputConstant.RESULT_DH)){
             log.info("注册成功："+JsonUtil.writeValueAsString(body));
-        }else{
-            throw new RuntimeException("注册失败"+body.getMsg());
         }
-
+        return body;
     }
     /**
      * 识别主体创建

@@ -46,4 +46,9 @@ public class PortraitInputConstant {
      */
     public static final String RESULT_DH="1";
 
+    /**
+     * 大华返回失败
+     */
+    public static final String RESULT_ERROR_DH="0";
+
 }
