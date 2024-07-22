@@ -21,6 +21,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -46,23 +47,24 @@ public class GwFirefightDeviceService extends ServiceImpl<GwFirefightDeviceMappe
      * @Param dto 参数
      */
     public void save(GwFirefightDeviceDto dto) {
-        GwFirefightDeviceEntity deviceEntity = new GwFirefightDeviceEntity();
+        GwFirefightDeviceEntity deviceEntity = Optional.ofNullable(baseMapper.getDeviceByDeviceId(dto.getId()))
+                .orElseGet(GwFirefightDeviceEntity::new);
         BeanUtils.copyProperties(dto, deviceEntity);
-        deviceEntity.setDeviceId(dto.getId());
 
-        GwFirefightDeviceEntity dbDeviceEntity = baseMapper.getDeviceByDeviceId(dto.getId());
-        if (Objects.nonNull(dbDeviceEntity)) {
-            deviceEntity.setId(dbDeviceEntity.getId());
+        if (Objects.nonNull(deviceEntity.getId())) {
+            //保存设备信息
+            updateById(deviceEntity);
             //删除历史数据
             baseMapper.deleteByDeviceId(dto.getId());
+            //删除数据库数据
+            unitMapper.deleteByParentId(deviceEntity.getId());
+            //删除联系人
+            notifierMapper.deleteByParentId(deviceEntity.getId());
         }else {
             deviceEntity.setId(IdWorker.getId());
+            save(deviceEntity);
         }
-        //保存设备信息
-        save(deviceEntity);
 
-        //删除数据库数据
-        unitMapper.deleteByParentId(deviceEntity.getId());
         //保存单位信息
         GwFirefightDeviceUnitDto unitDto = dto.getUnitDto();
         if (Objects.nonNull(unitDto)) {
@@ -73,8 +75,6 @@ public class GwFirefightDeviceService extends ServiceImpl<GwFirefightDeviceMappe
             unitMapper.insert(unitEntity);
         }
 
-        //删除数据库数据
-        architecturalMapper.deleteByParentId(deviceEntity.getId());
         //保存建筑信息
         GwFirefightDeviceArchitecturalDto architecturalDto = dto.getArchitecturalDto();
         if (Objects.nonNull(architecturalDto)) {
@@ -85,8 +85,6 @@ public class GwFirefightDeviceService extends ServiceImpl<GwFirefightDeviceMappe
             architecturalMapper.insert(architecturalEntity);
         }
 
-        //删除数据库数据
-        notifierMapper.deleteByParentId(deviceEntity.getId());
         //保存联系人
         List<GwFirefightDeviceNotifierDto> notifierList = dto.getNotifierList();
         if (CollectionUtils.isNotEmpty(notifierList)) {

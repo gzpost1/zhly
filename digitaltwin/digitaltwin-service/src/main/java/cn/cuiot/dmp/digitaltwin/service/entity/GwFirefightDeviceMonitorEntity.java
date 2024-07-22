@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.digitaltwin.service.entity;
 
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -8,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 格物消防-设备监测
@@ -16,7 +19,7 @@ import java.util.Date;
  * @Date: 2024-06-14
  */
 @Data
-@TableName("tb_gw_firefight_device_monitor")
+@TableName(value = "tb_gw_firefight_device_monitor", autoResultMap = true)
 public class GwFirefightDeviceMonitorEntity {
     /**
      * id
@@ -47,7 +50,8 @@ public class GwFirefightDeviceMonitorEntity {
     /**
      * 设备检测数据，json字符串
      */
-    private String outputParams;
+    @TableField(typeHandler = JsonTypeHandler.class)
+    private List<Map<String, Object>> outputParams;
 
     /**
      * 区县编码
