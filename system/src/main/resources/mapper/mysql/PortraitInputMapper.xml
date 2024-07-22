@@ -4,7 +4,7 @@
 
 
     <select id="queryPlatfromInfo" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputInfoDto">
-        select app_key,app_secret,project_guid from tb_platfrom_info where platfrom_type= #{platformType}
+        select app_key,app_secret,project_guid from tb_platfrom_info where company_id= #{companyId}
     </select>
 
     <select id="queryPortraitInputInfo" resultType="cn.cuiot.dmp.system.infrastructure.entity.vo.PortraitInputVo">

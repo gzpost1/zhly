@@ -16,7 +16,7 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface PortraitInputMapper extends BaseMapper<PortraitInputEntity> {
 
-    PortraitInputInfoDto queryPlatfromInfo(String platformType);
+    PortraitInputInfoDto queryPlatfromInfo(@Param("companyId") Long companyId);
 
     Page<PortraitInputVo> queryPortraitInputInfo(Page<PortraitInputVo> portraitInputVoPage,@Param("query") PortraitInputVo para);
 }

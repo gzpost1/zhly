@@ -10,16 +10,16 @@ import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.constant.PortraitInputConstant;
+import cn.cuiot.dmp.system.infrastructure.entity.FootPlateInfoEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.PlatfromInfoEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.PortraitInputEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.PlatFromDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitDhCreateDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputCreateDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputInfoDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.*;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.PortraitInputVo;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.PortraitInputMapper;
 import cn.cuiot.dmp.system.infrastructure.utils.MD5Util;
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -63,6 +63,9 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    private FootPlateInfoService footPlateInfoService;
+
     /**
      * 保存录入信息
      * @param createDto
@@ -92,7 +95,7 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         }
 
         //获取大华配置
-        PortraitInputInfoDto inputDto =  getBaseMapper().queryPlatfromInfo(PortraitInputConstant.PLATFORM_TYPE_DH);
+        PortraitInputInfoDto inputDto =  getBaseMapper().queryPlatfromInfo(LoginInfoHolder.getCurrentOrgId());
         //创建识别主体
         String admitGuid = createSubject(createDto, inputDto);
         //注册人像
@@ -259,9 +262,9 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
      * @param para
      * @return
      */
-    public IdmResDTO<List<PlatFromDto>> queryPlatformInfo(PortraitInputVo para) {
-        List<PlatfromInfoEntity> entityList = platfromInfoService.list();
-        List<PlatFromDto> platFromDtos = BeanMapper.mapList(entityList, PlatFromDto.class);
+    public IdmResDTO<List<FootPlateDto>> queryPlatformInfo(PortraitInputVo para) {
+        List<FootPlateInfoEntity> entityList = footPlateInfoService.list();
+        List<FootPlateDto> platFromDtos = BeanMapper.mapList(entityList, FootPlateDto.class);
         return IdmResDTO.success(platFromDtos);
     }
 
@@ -272,7 +275,24 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
      */
     public IdmResDTO updatePortraitInputInfo(PlatFromDto dto) {
         PlatfromInfoEntity map = BeanMapper.map(dto, PlatfromInfoEntity.class);
-        platfromInfoService.updateById(map);
+        platfromInfoService.saveOrUpdate(map);
         return IdmResDTO.success();
+    }
+
+    /**
+     * 查询企业填写的平台信息
+     * @param queryDto
+     * @return
+     */
+    public IdmResDTO<FootPlateCompanyDto> queryFootPlateCompanyInfo(FootPlateCompanyDto queryDto) {
+
+        LambdaQueryWrapper<PlatfromInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(PlatfromInfoEntity::getPlatformId,queryDto.getPlatformId()).eq(PlatfromInfoEntity::getCompanyId,queryDto.getCompanyId());
+        List<PlatfromInfoEntity> list = platfromInfoService.list(lw);
+        if(CollectionUtil.isEmpty(list)){
+            return IdmResDTO.success();
+        }
+        FootPlateCompanyDto map = BeanMapper.map(list, FootPlateCompanyDto.class);
+        return  IdmResDTO.success(map);
     }
 }

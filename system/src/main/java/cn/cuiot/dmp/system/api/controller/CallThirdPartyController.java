@@ -4,18 +4,16 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.constant.PermissionContants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.system.application.service.PortraitInputService;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.FootPlateCompanyDto;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.FootPlateDto;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.PlatFromDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputCreateDto;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.PortraitInputVo;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -38,7 +36,7 @@ public class CallThirdPartyController {
      */
     @PostMapping(value = "/queryPortraitInputInfo", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequiresPermissions
-    public IdmResDTO<List<PlatFromDto>> queryPlatformInfo(@RequestBody PortraitInputVo para){
+    public IdmResDTO<List<FootPlateDto>> queryPlatformInfo(@RequestBody PortraitInputVo para){
         return portraitInputService.queryPlatformInfo(para);
     }
 
@@ -53,5 +51,14 @@ public class CallThirdPartyController {
         return portraitInputService.updatePortraitInputInfo(dto);
     }
 
-
-}
+    /**
+     * 查询企业填写的信息
+     * @param queryDto
+     * @return
+     */
+    @PostMapping(value = "/queryFootPlateCompanyInfo", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequiresPermissions
+    public IdmResDTO<FootPlateCompanyDto>  queryFootPlateCompanyInfo(@RequestBody FootPlateCompanyDto queryDto){
+        return portraitInputService.queryFootPlateCompanyInfo(queryDto);
+    }
+ }
