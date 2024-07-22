@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceMonitorMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceMonitorEntity">
+        <result property="id" column="id"/>
+        <result property="messageId" column="message_id"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="imei" column="imei"/>
+        <result property="reportTime" column="report_time"/>
+        <result property="outputParams" column="output_params"
+                typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+        <result property="areaCode" column="area_code"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+</mapper>

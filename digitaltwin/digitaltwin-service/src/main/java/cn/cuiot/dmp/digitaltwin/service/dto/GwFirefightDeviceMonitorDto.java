@@ -2,6 +2,9 @@ package cn.cuiot.dmp.digitaltwin.service.dto;
 
 import lombok.Data;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 格物消防-设备监测dto
  *
@@ -33,7 +36,7 @@ public class GwFirefightDeviceMonitorDto {
     /**
      * 设备检测数据，json字符串
      */
-    private String outputParams;
+    private List<Map<String, Object>> outputParams;
 
     /**
      * 区县编码
