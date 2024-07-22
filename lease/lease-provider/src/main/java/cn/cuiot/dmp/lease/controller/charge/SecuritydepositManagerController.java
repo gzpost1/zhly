@@ -23,6 +23,7 @@ import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeAbrogateService;
 import cn.cuiot.dmp.lease.service.charge.TbSecuritydepositManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -208,6 +209,7 @@ public class SecuritydepositManagerController {
         entity.setReceivableAmountReceived(entity.getReceivableAmount());
         entity.setReceivedDate(new Date());
         entity.setStatus(SecurityDepositStatusEnum.PAID_OFF.getCode());
+        entity.setReceivedId(IdWorker.getId());
         securitydepositManagerService.updateById(entity);
         return IdmResDTO.success();
     }
