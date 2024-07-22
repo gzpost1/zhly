@@ -134,6 +134,10 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         JSONObject paramJson = new JSONObject();
         paramJson.put("deviceNo", deviceNo);
         paramJson.put("admitGuids", admitGuid);
+
+        JSONObject subParamJson = new JSONObject();
+        subParamJson.put("idCardFacePermission",2);
+        paramJson.put("permission",subParamJson);
         ResponseEntity<AuthDaHuaResp> responseEntity =
                 restTemplate.exchange(PortraitInputConstant.AUTH_MANAGEMENT_URL, HttpMethod.POST,
                         new HttpEntity<>(paramJson,headers),
