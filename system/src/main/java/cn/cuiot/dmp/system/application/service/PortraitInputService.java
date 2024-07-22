@@ -72,9 +72,9 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
 
         String jsonObject = stringRedisTemplate.opsForValue().get(SECRET_INFO_KEY + createDto.getKid());
         stringRedisTemplate.delete(SECRET_INFO_KEY + createDto.getKid());
-        if (StringUtils.isEmpty(jsonObject)) {
-            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR, "密钥ID已过期，请重新获取");
-        }
+//        if (StringUtils.isEmpty(jsonObject)) {
+//            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR, "密钥ID已过期，请重新获取");
+//        }
         Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
         // 密码解密
         if(StringUtils.isNotBlank(createDto.getPassword())){
@@ -101,6 +101,15 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         if(StringUtils.equals(PortraitInputConstant.RESULT_ERROR_DH,authDaHuaResp.getResult())){
             return IdmResDTO.error(ErrorCode.COMMON_FAILURE.getCode(),authDaHuaResp.getMsg());
         }
+        //授权管理
+        for(String device : PortraitInputConstant.AUTH_DEVICE_NOS){
+            AuthDaHuaResp authResp = authManagement(inputDto, device, admitGuid);
+            if(StringUtils.equals(PortraitInputConstant.RESULT_ERROR_DH,authResp.getResult())){
+                return IdmResDTO.error(ErrorCode.COMMON_FAILURE.getCode(),authResp.getMsg());
+            }
+
+        }
+
         PortraitInputEntity entity = BeanMapper.map(createDto, PortraitInputEntity.class);
 
         baseMapper.insert(entity);
@@ -109,6 +118,41 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         return IdmResDTO.success();
     }
 
+    /**
+     * 授权管理
+     * @param inputDto
+     * @param deviceNo
+     * @param admitGuid
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public AuthDaHuaResp authManagement(PortraitInputInfoDto inputDto,String deviceNo,String admitGuid) throws NoSuchAlgorithmException {
+        String token = getToken(inputDto);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(PortraitInputConstant.CREATE_SUBJECT_TOKEN,token);
+        headers.set(PortraitInputConstant.CREATE_SUBJECT_GUID,inputDto.getProjectGuid());
+        JSONObject paramJson = new JSONObject();
+        paramJson.put("deviceNo", deviceNo);
+        paramJson.put("admitGuids", admitGuid);
+        ResponseEntity<AuthDaHuaResp> responseEntity =
+                restTemplate.exchange(PortraitInputConstant.AUTH_MANAGEMENT_URL, HttpMethod.POST,
+                        new HttpEntity<>(paramJson,headers),
+                        new ParameterizedTypeReference<AuthDaHuaResp>() {
+                        });
+        AuthDaHuaResp body = responseEntity.getBody();
+        if(!StringUtils.equals(body.getResult(),PortraitInputConstant.RESULT_DH)){
+            log.info("设备授权失败："+JsonUtil.writeValueAsString(body));
+        }
+        return body;
+    }
+    /**
+     * 注册
+     * @param inputDto
+     * @param createDto
+     * @param admitGuid
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
     public AuthDaHuaResp faceRegister(PortraitInputInfoDto inputDto,PortraitInputCreateDto createDto,String admitGuid) throws NoSuchAlgorithmException {
         String token = getToken(inputDto);
         HttpHeaders headers = new HttpHeaders();

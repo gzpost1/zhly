@@ -1,5 +1,9 @@
 package cn.cuiot.dmp.system.application.constant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author pengjian
  * @create 2024/7/18 18:42
@@ -25,6 +29,16 @@ public class PortraitInputConstant {
      * 注册
      */
     public static final String  CREATE_SUBJECT_REGISTER= "http://wo-api.uni-ubi.com/v2/face/register";
+
+    /**
+     * 授权设备
+     */
+    public static final List<String> AUTH_DEVICE_NOS = Arrays.asList("84E0F42E6D3D527B","84E0F42E628A527B","84E0F42E6D3B527B");
+
+    /**
+     * 授权管理
+     */
+    public static final String AUTH_MANAGEMENT_URL="http://wo-api.uni-ubi.com/v2/auth/device";
     public static final String APP_KEY_DH ="appKey";
     /**
      * 时间戳
