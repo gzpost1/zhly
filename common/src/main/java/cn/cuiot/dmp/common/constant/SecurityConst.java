@@ -24,9 +24,9 @@ public class SecurityConst {
     public static final int WX_REFRESH_SESSION_TIME =15 * 24 * 60 * 60;
 
     /**
-     * 短信验证码调用间隔时间，单位（分钟） 3分钟
+     * 短信验证码调用间隔时间，单位（分钟） 1分钟
      */
-    public static final int SMS_CODE_FORBIDDEN_TIME = 3;
+    public static final int SMS_CODE_FORBIDDEN_TIME = 1;
 
     /**
      * 短信验证码过期时间，单位（分钟） 3分钟
