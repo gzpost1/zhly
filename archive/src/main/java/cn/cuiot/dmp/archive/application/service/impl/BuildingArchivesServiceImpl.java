@@ -75,6 +75,20 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
 
     @Override
     public List<BuildingArchivesVO> queryForList(BuildingArchivesPageQuery pageQuery) {
+
+        if(CollectionUtils.isEmpty(pageQuery.getDepartmentIdList())){
+            if(Objects.nonNull(pageQuery.getDepartmentId())){
+                DepartmentReqDto paraDto = new DepartmentReqDto();
+                paraDto.setDeptId(pageQuery.getDepartmentId());
+                paraDto.setSelfReturn(true);
+                List<DepartmentDto> departmentDtoList = apiSystemService.lookUpDepartmentChildList(paraDto);
+                List<Long> departmentIdList = departmentDtoList.stream()
+                        .map(DepartmentDto::getId)
+                        .collect(Collectors.toList());
+                pageQuery.setDepartmentIdList(departmentIdList);
+            }
+        }
+
         List<BuildingArchives> buildingArchivesList = buildingArchivesRepository.queryForList(pageQuery);
         if (CollectionUtils.isEmpty(buildingArchivesList)) {
             return new ArrayList<>();
