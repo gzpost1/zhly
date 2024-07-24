@@ -70,9 +70,9 @@ public class WorkPlanInfoTask {
             //查询工单信息
             WorkPlanInfoEntity planEntity = Optional.ofNullable(workPlanInfoService.getById(entity.getPlanWorkId())).orElse(new WorkPlanInfoEntity());
             //停用
-            if(planEntity.getState().equals(OrgStatusEnum.DISABLE.getCode())){
+            if(Objects.equals(planEntity.getState(),OrgStatusEnum.DISABLE.getCode().intValue())){
                 entity.setState(WorkOrderResultEnums.GENERATION_FAILED.getCode());
-            }else if (planEntity.getState().equals(OrgStatusEnum.ENABLE.getCode())){
+            }else if (Objects.equals(OrgStatusEnum.ENABLE.getCode(),planEntity.getState().intValue())){
                 //启用
                 PlanContentEntity planContentEntity = planContentService.getById(entity.getPlanWorkId());
                 StartProcessInstanceDTO startProcessInstanceDTO = JSONObject.parseObject(planContentEntity.getContent(), new TypeReference<StartProcessInstanceDTO>() {
