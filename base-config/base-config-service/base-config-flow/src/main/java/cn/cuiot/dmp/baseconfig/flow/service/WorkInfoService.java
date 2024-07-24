@@ -241,7 +241,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         //保存工单信息
         List<Long> orgIds = orgIds(flowConfig.getId());
         //校验用户是否有发起该流程得权限
-        if(!orgIds.contains(LoginInfoHolder.getCurrentDeptId())){
+        if(Objects.nonNull(LoginInfoHolder.getCurrentDeptId()) && !orgIds.contains(LoginInfoHolder.getCurrentDeptId())){
             throw new RuntimeException(ErrorCode.NOT_OPERATION.getMessage());
         }
         //新建

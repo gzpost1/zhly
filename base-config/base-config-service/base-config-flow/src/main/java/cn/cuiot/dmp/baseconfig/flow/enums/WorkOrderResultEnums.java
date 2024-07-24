@@ -6,9 +6,9 @@ package cn.cuiot.dmp.baseconfig.flow.enums;
  */
 public enum WorkOrderResultEnums {
 
-    GENERATED((byte)0,"已生成"),
+    GENERATED((byte)0,"未生成"),
 
-    NOT_GENERATED((byte)1,"未生成"),
+    NOT_GENERATED((byte)1,"已生成"),
 
     GENERATION_FAILED((byte)2,"生成失败")
     ;

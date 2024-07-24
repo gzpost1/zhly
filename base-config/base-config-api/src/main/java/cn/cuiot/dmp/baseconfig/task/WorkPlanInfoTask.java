@@ -55,6 +55,7 @@ public class WorkPlanInfoTask {
 
     @XxlJob("createPlanWork")
     public ReturnT<String> createWork(String param){
+        log.error("工单计划开始执行");
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime endDate = startDate.minusMinutes(6);
         LambdaQueryWrapper<PlanWorkExecutionInfoEntity> lw = new LambdaQueryWrapper<>();
@@ -62,6 +63,7 @@ public class WorkPlanInfoTask {
                 .eq(PlanWorkExecutionInfoEntity::getState, WorkFlowConstants.RESULT_0);
 
         List<PlanWorkExecutionInfoEntity> executionList = planWorkExecutionInfoService.list(lw);
+        log.error("工单计划开始执行1"+executionList.size());
         if(CollectionUtil.isEmpty(executionList)){
             return ReturnT.SUCCESS;
         }
@@ -70,9 +72,11 @@ public class WorkPlanInfoTask {
             //查询工单信息
             WorkPlanInfoEntity planEntity = Optional.ofNullable(workPlanInfoService.getById(entity.getPlanWorkId())).orElse(new WorkPlanInfoEntity());
             //停用
-            if(Objects.equals(planEntity.getState(),OrgStatusEnum.DISABLE.getCode().intValue())){
+            log.error("工单计划开始执行2"+planEntity.getState());
+            if(Objects.equals(planEntity.getState().intValue(),OrgStatusEnum.DISABLE.getCode())){
                 entity.setState(WorkOrderResultEnums.GENERATION_FAILED.getCode());
             }else if (Objects.equals(OrgStatusEnum.ENABLE.getCode(),planEntity.getState().intValue())){
+                log.error("工单计划开始执行3"+planEntity.getState());
                 //启用
                 PlanContentEntity planContentEntity = planContentService.getById(entity.getPlanWorkId());
                 StartProcessInstanceDTO startProcessInstanceDTO = JSONObject.parseObject(planContentEntity.getContent(), new TypeReference<StartProcessInstanceDTO>() {
@@ -81,7 +85,7 @@ public class WorkPlanInfoTask {
                 IdmResDTO start = workInfoService.start(startProcessInstanceDTO);
                 Long data =Long.parseLong(String.valueOf(start.getData())) ;
                 entity.setProcInstId(data);
-                entity.setState( WorkOrderResultEnums.GENERATED.getCode());
+                entity.setState( WorkOrderResultEnums.NOT_GENERATED.getCode());
             }
             exList.add(entity);
         }
