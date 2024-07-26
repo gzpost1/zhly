@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.digitaltwin.service.entity;
 
+import cn.cuiot.dmp.digitaltwin.service.dto.GwFirefightDeviceArchitecturalDto;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
 /**
  * 格物消防-建筑对象
@@ -237,8 +239,11 @@ public class GwFirefightDeviceArchitecturalEntity {
      */
     private String roomName;
 
-    /**
-     * 创建时间
-     */
-    private String createTime;
+    public static GwFirefightDeviceArchitecturalEntity dtoToEntity(GwFirefightDeviceArchitecturalDto dto, Long parentId) {
+        GwFirefightDeviceArchitecturalEntity architecturalEntity = new GwFirefightDeviceArchitecturalEntity();
+        BeanUtils.copyProperties(dto, architecturalEntity);
+        architecturalEntity.setParentId(parentId);
+        architecturalEntity.setArchitecturalId(dto.getId());
+        return architecturalEntity;
+    }
 }

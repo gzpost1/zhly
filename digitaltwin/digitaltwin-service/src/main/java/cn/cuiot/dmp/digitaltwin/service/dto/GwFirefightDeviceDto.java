@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.digitaltwin.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -16,7 +17,8 @@ public class GwFirefightDeviceDto {
     /**
      * 设备 id
      */
-    private String id;
+    @JsonProperty("id")
+    private String deviceId;
 
     /**
      * 设备名称

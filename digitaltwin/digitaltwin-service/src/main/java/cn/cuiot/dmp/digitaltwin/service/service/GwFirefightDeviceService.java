@@ -19,8 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.BeanUtils;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -46,56 +48,59 @@ public class GwFirefightDeviceService extends ServiceImpl<GwFirefightDeviceMappe
      * @Param dto 参数
      */
     public void save(GwFirefightDeviceDto dto) {
-        GwFirefightDeviceEntity deviceEntity = new GwFirefightDeviceEntity();
+        // 初始化设备实体和父ID
+        GwFirefightDeviceEntity deviceEntity = Optional.ofNullable(dto.getDeviceId())
+                .map(deviceId -> baseMapper.getDeviceByDeviceId(deviceId))
+                .orElseGet(GwFirefightDeviceEntity::new);
+
+        // 复制属性值
         BeanUtils.copyProperties(dto, deviceEntity);
-        deviceEntity.setDeviceId(dto.getId());
 
-        GwFirefightDeviceEntity dbDeviceEntity = baseMapper.getDeviceByDeviceId(dto.getId());
-        if (Objects.nonNull(dbDeviceEntity)) {
-            deviceEntity.setId(dbDeviceEntity.getId());
-            //删除历史数据
-            baseMapper.deleteByDeviceId(dto.getId());
-        }else {
+        if (Objects.isNull(deviceEntity.getId())) {
+            // 新增设备
             deviceEntity.setId(IdWorker.getId());
+            save(deviceEntity);
+        } else {
+            // 更新设备
+            deviceEntity.setUpdateTime(new Date());
+            baseMapper.updateEntity(deviceEntity);
         }
-        //保存设备信息
-        save(deviceEntity);
 
-        //删除数据库数据
-        unitMapper.deleteByParentId(deviceEntity.getId());
+        // 操作设备关联信息
+        saveDeviceRelation(dto, deviceEntity.getId());
+    }
+
+    /**
+     * 保存设备关联信息
+     *
+     * @Param dto
+     * @Param parentId 设备id
+     */
+    private void saveDeviceRelation(GwFirefightDeviceDto dto, Long parentId) {
+        //删除数据库单位数据
+        unitMapper.deleteByParentId(parentId);
         //保存单位信息
         GwFirefightDeviceUnitDto unitDto = dto.getUnitDto();
         if (Objects.nonNull(unitDto)) {
-            GwFirefightDeviceUnitEntity unitEntity = new GwFirefightDeviceUnitEntity();
-            BeanUtils.copyProperties(unitDto, unitEntity);
-            unitEntity.setParentId(deviceEntity.getId());
-            unitEntity.setUnitId(unitDto.getId());
-            unitMapper.insert(unitEntity);
+            unitMapper.insert(GwFirefightDeviceUnitEntity.dtoToEntity(unitDto, parentId));
         }
 
-        //删除数据库数据
-        architecturalMapper.deleteByParentId(deviceEntity.getId());
+        //删除数据库建筑对象数据
+        architecturalMapper.deleteByParentId(parentId);
         //保存建筑信息
         GwFirefightDeviceArchitecturalDto architecturalDto = dto.getArchitecturalDto();
         if (Objects.nonNull(architecturalDto)) {
-            GwFirefightDeviceArchitecturalEntity architecturalEntity = new GwFirefightDeviceArchitecturalEntity();
-            BeanUtils.copyProperties(architecturalDto, architecturalEntity);
-            architecturalEntity.setParentId(deviceEntity.getId());
-            architecturalEntity.setArchitecturalId(architecturalDto.getId());
-            architecturalMapper.insert(architecturalEntity);
+            architecturalMapper.insert(GwFirefightDeviceArchitecturalEntity.dtoToEntity(architecturalDto, parentId));
         }
 
-        //删除数据库数据
-        notifierMapper.deleteByParentId(deviceEntity.getId());
+        //删除数据库联系人数据
+        notifierMapper.deleteByParentId(parentId);
         //保存联系人
         List<GwFirefightDeviceNotifierDto> notifierList = dto.getNotifierList();
         if (CollectionUtils.isNotEmpty(notifierList)) {
-            List<GwFirefightDeviceNotifierEntity> collect = notifierList.stream().map(item -> {
-                GwFirefightDeviceNotifierEntity notifierEntity = new GwFirefightDeviceNotifierEntity();
-                BeanUtils.copyProperties(item, notifierEntity);
-                notifierEntity.setParentId(deviceEntity.getId());
-                return notifierEntity;
-            }).collect(Collectors.toList());
+            List<GwFirefightDeviceNotifierEntity> collect = notifierList.stream()
+                    .map(item -> GwFirefightDeviceNotifierEntity.dtoToEntity(item, parentId))
+                    .collect(Collectors.toList());
             notifierMapper.batchInsert(collect);
         }
     }
@@ -120,8 +125,6 @@ public class GwFirefightDeviceService extends ServiceImpl<GwFirefightDeviceMappe
             log.error("格物消防设备状态更新失败，不存在该设备【{}】", dto.getDeviceId());
             return;
         }
-        GwFirefightDeviceEntity deviceEntity = list.get(0);
-        deviceEntity.setStatus(deviceEntity.getStatus());
-        updateById(deviceEntity);
+        baseMapper.updateStatus(list.get(0).getId(), dto.getStatus());
     }
 }

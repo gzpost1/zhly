@@ -1,9 +1,11 @@
 package cn.cuiot.dmp.digitaltwin.service.service;
 
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.digitaltwin.service.dto.GwFirefightRealTimeAlarmDto;
 import cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightRealTimeAlarmEntity;
 import cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightRealTimeAlarmMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,9 @@ public class GwFirefightRealTimeAlarmService extends ServiceImpl<GwFirefightReal
     public void save(GwFirefightRealTimeAlarmDto dto) {
         GwFirefightRealTimeAlarmEntity alarmEntity = new GwFirefightRealTimeAlarmEntity();
         BeanUtils.copyProperties(dto, alarmEntity);
+        if (StringUtils.isNotBlank(dto.getReportTime())) {
+            alarmEntity.setReportTime(DateTimeUtil.stringToDate(dto.getReportTime()));
+        }
         save(alarmEntity);
     }
 }

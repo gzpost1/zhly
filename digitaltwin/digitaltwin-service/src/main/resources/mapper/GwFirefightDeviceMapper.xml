@@ -1,12 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceMapper">
+    <select id="getDeviceByDeviceId" resultType="cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceEntity">
+        SELECT *
+        FROM tb_gw_firefight_device
+        WHERE device_id = #{deviceId}
+    </select>
 
-  <select id="getDeviceByDeviceId" resultType="cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceEntity">
-    SELECT * FROM tb_gw_firefight_device WHERE device_id = #{deviceId}
-  </select>
+    <update id="updateStatus">
+        UPDATE tb_gw_firefight_device
+        SET status = #{status}
+        WHERE id = #{id}
+    </update>
 
-  <delete id="deleteByDeviceId">
-    DELETE FROM tb_gw_firefight_device WHERE device_id = #{deviceId}
-  </delete>
+    <update id="updateEntity" parameterType="cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceEntity">
+        UPDATE `tb_gw_firefight_device`
+        SET `status` = #{status},
+            `device_id` = #{deviceId},
+            `device_name` = #{deviceName},
+            `org_id` = #{orgId},
+            `site_id` = #{siteId},
+            `site_name` = #{siteName},
+            `device_type` = #{deviceType},
+            `device_type_name` = #{deviceTypeName},
+            `imei` = #{imei},
+            `hardware_version` = #{hardwareVersion},
+            `software_version` = #{softwareVersion},
+            `longitude` = #{longitude},
+            `latitude` = #{latitude},
+            `address` = #{address},
+            `floor` = #{floor},
+            `description` = #{description},
+            `circuit_code` = #{circuitCode},
+            `part_code` = #{partCode},
+            `action` = #{action},
+            `update_time` = #{updateTime},
+            `update_user` = #{updateUser},
+            `create_time` = #{createTime},
+            `create_user` = #{createUser},
+            `deleted` = #{deleted}
+        WHERE
+            `id` = #{id}
+    </update>
 </mapper>
