@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.digitaltwin.service.entity;
 
 
+import cn.cuiot.dmp.digitaltwin.service.dto.GwFirefightDeviceUnitDto;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
 /**
  * 格物消防-单位信息
@@ -217,4 +219,12 @@ public class GwFirefightDeviceUnitEntity {
      * 创建时间
      */
     private String createTime;
+
+    public static GwFirefightDeviceUnitEntity dtoToEntity(GwFirefightDeviceUnitDto dto, Long parentId) {
+        GwFirefightDeviceUnitEntity unitEntity = new GwFirefightDeviceUnitEntity();
+        BeanUtils.copyProperties(dto, unitEntity);
+        unitEntity.setParentId(parentId);
+        unitEntity.setUnitId(dto.getId());
+        return unitEntity;
+    }
 }

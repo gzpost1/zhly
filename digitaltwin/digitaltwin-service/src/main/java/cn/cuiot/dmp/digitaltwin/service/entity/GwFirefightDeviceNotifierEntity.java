@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.digitaltwin.service.entity;
 
+import cn.cuiot.dmp.digitaltwin.service.dto.GwFirefightDeviceNotifierDto;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
 /**
  * 格物消防-设备信息（联系人）
@@ -31,4 +33,11 @@ public class GwFirefightDeviceNotifierEntity {
      * 优先级
      */
     private String priority;
+
+    public static GwFirefightDeviceNotifierEntity dtoToEntity(GwFirefightDeviceNotifierDto dto, Long parentId) {
+        GwFirefightDeviceNotifierEntity notifierEntity = new GwFirefightDeviceNotifierEntity();
+        BeanUtils.copyProperties(dto, notifierEntity);
+        notifierEntity.setParentId(parentId);
+        return notifierEntity;
+    }
 }

@@ -1,13 +1,10 @@
 package cn.cuiot.dmp.digitaltwin.service.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
+import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-
-import java.util.Date;
+import lombok.EqualsAndHashCode;
 
 /**
  * 格物消防-设备信息
@@ -15,9 +12,10 @@ import java.util.Date;
  * @Author: zc
  * @Date: 2024-06-14
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("tb_gw_firefight_device")
-public class GwFirefightDeviceEntity {
+public class GwFirefightDeviceEntity extends YjBaseEntity {
     /**
      * id
      */
@@ -115,29 +113,7 @@ public class GwFirefightDeviceEntity {
     private String partCode;
 
     /**
-     * 联系人列表
-     */
-    private String notifierList;
-
-    /**
-     * 单位信息
-     */
-    private String unitDto;
-
-    /**
-     * 建筑信息
-     */
-    private String architecturalDto;
-
-    /**
      * 操作类型(A:新增；M:修改；D：删除（为“D”时，只传 id 和 imei，其他字段不传）)
      */
     private String action;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createTime;
 }

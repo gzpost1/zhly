@@ -1,12 +1,12 @@
 package cn.cuiot.dmp.digitaltwin.service.entity;
 
+import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 import java.util.List;
@@ -18,9 +18,10 @@ import java.util.Map;
  * @Author: zc
  * @Date: 2024-06-14
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @TableName(value = "tb_gw_firefight_device_monitor", autoResultMap = true)
-public class GwFirefightDeviceMonitorEntity {
+public class GwFirefightDeviceMonitorEntity extends YjBaseEntity {
     /**
      * id
      */
@@ -57,11 +58,4 @@ public class GwFirefightDeviceMonitorEntity {
      * 区县编码
      */
     private String areaCode;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createTime;
 }
