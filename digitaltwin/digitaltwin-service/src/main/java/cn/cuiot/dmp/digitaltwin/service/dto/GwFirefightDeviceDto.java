@@ -103,7 +103,7 @@ public class GwFirefightDeviceDto {
     /**
      * 联系人列表
      */
-    private List<GwFirefightDeviceNotifierDto> notifierList;
+    private List<GwFirefightDeviceNotifierDto> notifiers;
 
     /**
      * 单位信息

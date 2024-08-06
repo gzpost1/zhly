@@ -96,7 +96,7 @@ public class GwFirefightDeviceService extends ServiceImpl<GwFirefightDeviceMappe
         //删除数据库联系人数据
         notifierMapper.deleteByParentId(parentId);
         //保存联系人
-        List<GwFirefightDeviceNotifierDto> notifierList = dto.getNotifierList();
+        List<GwFirefightDeviceNotifierDto> notifierList = dto.getNotifiers();
         if (CollectionUtils.isNotEmpty(notifierList)) {
             List<GwFirefightDeviceNotifierEntity> collect = notifierList.stream()
                     .map(item -> GwFirefightDeviceNotifierEntity.dtoToEntity(item, parentId))
