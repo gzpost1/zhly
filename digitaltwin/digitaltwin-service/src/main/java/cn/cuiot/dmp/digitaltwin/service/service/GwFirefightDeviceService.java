@@ -1,14 +1,16 @@
 package cn.cuiot.dmp.digitaltwin.service.service;
 
-import cn.cuiot.dmp.digitaltwin.service.dto.*;
 import cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceArchitecturalEntity;
 import cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceEntity;
 import cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceNotifierEntity;
 import cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceUnitEntity;
+import cn.cuiot.dmp.digitaltwin.service.entity.dto.*;
+import cn.cuiot.dmp.digitaltwin.service.enums.GwFirefightDeviceEnum;
 import cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceArchitecturalMapper;
 import cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceMapper;
 import cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceNotifierMapper;
 import cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceUnitMapper;
+import cn.cuiot.dmp.digitaltwin.service.entity.query.GwFirefightDeviceQuery;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -126,5 +128,20 @@ public class GwFirefightDeviceService extends ServiceImpl<GwFirefightDeviceMappe
             return;
         }
         baseMapper.updateStatus(list.get(0).getId(), dto.getStatus());
+    }
+
+    /**
+     * 查询最新设备的状态
+     * @Param
+     * @return String 设备状态
+     */
+    public String queryDeviceStatus(GwFirefightDeviceQuery query) {
+        if (StringUtils.isBlank(query.getDeviceId())) {
+            return GwFirefightDeviceEnum.OFF_LINE.getCode();
+        }
+        GwFirefightDeviceEntity device = getOne(new LambdaQueryWrapper<GwFirefightDeviceEntity>()
+                .eq(GwFirefightDeviceEntity::getDeviceId, query.getDeviceId())
+                .last(" LIMIT 1"));
+        return Objects.nonNull(device) ? device.getStatus() : GwFirefightDeviceEnum.OFF_LINE.getCode();
     }
 }

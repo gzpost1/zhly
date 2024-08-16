@@ -2,7 +2,7 @@ package cn.cuiot.dmp.digitaltwin.provider.consumer;
 
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.digitaltwin.provider.consumer.config.DigitaltwinMsgBaseChannel;
-import cn.cuiot.dmp.digitaltwin.service.dto.*;
+import cn.cuiot.dmp.digitaltwin.service.entity.dto.*;
 import cn.cuiot.dmp.digitaltwin.service.service.GwFirefightAlarmConfirmationService;
 import cn.cuiot.dmp.digitaltwin.service.service.GwFirefightDeviceMonitorService;
 import cn.cuiot.dmp.digitaltwin.service.service.GwFirefightDeviceService;

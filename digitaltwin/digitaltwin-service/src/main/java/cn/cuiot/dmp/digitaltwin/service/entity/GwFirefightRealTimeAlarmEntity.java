@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -53,6 +54,11 @@ public class GwFirefightRealTimeAlarmEntity extends YjBaseEntity {
      * 上报时间
      */
     private Date reportTime;
+
+    /**
+     * 上报日期
+     */
+    private LocalDate reportDate;
 
     /**
      * 火警/故障处 理状态

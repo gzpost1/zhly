@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.digitaltwin.service.entity;
 
-import cn.cuiot.dmp.digitaltwin.service.dto.GwFirefightDeviceArchitecturalDto;
+import cn.cuiot.dmp.digitaltwin.service.entity.dto.GwFirefightDeviceArchitecturalDto;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;

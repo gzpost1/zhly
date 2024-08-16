@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.digitaltwin.service.service;
 
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
-import cn.cuiot.dmp.digitaltwin.service.dto.GwFirefightDeviceMonitorDto;
+import cn.cuiot.dmp.digitaltwin.service.entity.dto.GwFirefightDeviceMonitorDto;
 import cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceMonitorEntity;
 import cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceMonitorMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -28,6 +28,7 @@ public class GwFirefightDeviceMonitorService extends ServiceImpl<GwFirefightDevi
         BeanUtils.copyProperties(dto, monitorEntity);
         if (StringUtils.isNotBlank(dto.getReportTime())) {
             monitorEntity.setReportTime(DateTimeUtil.stringToDate(dto.getReportTime()));
+            monitorEntity.setReportDate(DateTimeUtil.dateToLocalDate(monitorEntity.getReportTime()));
         }
         save(monitorEntity);
     }

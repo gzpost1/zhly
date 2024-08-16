@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightRealTimeAlarmMapper">
+
+    <select id="queryAlarm" resultType="cn.cuiot.dmp.digitaltwin.service.entity.vo.GwFirefightRealTimeAlarmVo">
+        SELECT
+            id,
+            type,
+            event_name eventName,
+            report_time reportTime
+        FROM
+            tb_gw_firefight_realtime_alarm
+        WHERE
+            deleted = 0
+            AND device_id = #{params.deviceId}
+            AND report_date BETWEEN #{params.beginDate} AND #{params.endDate}
+        ORDER BY
+            report_time DESC
+    </select>
+</mapper>
