@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.video.provider.controller;
 
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.video.base.auth.ThirdRequestNeedAuth;
 import cn.cuiot.dmp.video.service.entity.VideoPlayEntity;
 import cn.cuiot.dmp.video.service.entity.query.VideoScreenQuery;
 import cn.cuiot.dmp.video.service.entity.vo.VideoScreenVo;
@@ -38,6 +39,7 @@ public class VideoDigitaltwinController {
      * @Param query 参数
      */
     @PostMapping("/queryByDeviceId")
+    @ThirdRequestNeedAuth
     public IdmResDTO<VideoPlayEntity> queryByDeviceId(@RequestBody VideoScreenQuery query) {
         return IdmResDTO.success(videoPlayService.queryByDeviceId(query));
     }
@@ -49,6 +51,7 @@ public class VideoDigitaltwinController {
      * @Param query 参数
      */
     @PostMapping("/queryVideoAIList")
+    @ThirdRequestNeedAuth
     public IdmResDTO<List<VideoScreenVo>> queryVideoAIList(@RequestBody VideoScreenQuery query) {
         return IdmResDTO.success(videoAIAlarmService.queryVideoAIList(query));
     }

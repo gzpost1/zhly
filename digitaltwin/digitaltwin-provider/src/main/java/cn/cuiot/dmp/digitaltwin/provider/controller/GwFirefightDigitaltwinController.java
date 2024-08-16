@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.digitaltwin.provider.controller;
 
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.digitaltwin.base.auth.ThirdRequestNeedAuth;
 import cn.cuiot.dmp.digitaltwin.service.entity.query.GwFirefightDeviceQuery;
 import cn.cuiot.dmp.digitaltwin.service.service.GwFirefightAlarmConfirmationService;
 import cn.cuiot.dmp.digitaltwin.service.service.GwFirefightDeviceService;
@@ -41,6 +42,7 @@ public class GwFirefightDigitaltwinController {
      * @Param
      */
     @PostMapping("/queryDeviceStatus")
+    @ThirdRequestNeedAuth
     public IdmResDTO<String> queryDeviceStatus(@RequestBody GwFirefightDeviceQuery query) {
         return IdmResDTO.success(deviceService.queryDeviceStatus(query));
     }
@@ -52,6 +54,7 @@ public class GwFirefightDigitaltwinController {
      * @Param
      */
     @PostMapping("/queryAlarm")
+    @ThirdRequestNeedAuth
     public IdmResDTO<List<GwFirefightRealTimeAlarmVo>> queryAlarm(@RequestBody GwFirefightDeviceQuery query) {
         return IdmResDTO.success(realTimeAlarmService.queryAlarm(query));
     }
@@ -63,6 +66,7 @@ public class GwFirefightDigitaltwinController {
      * @Param
      */
     @PostMapping("/queryAlarmConfirmation")
+    @ThirdRequestNeedAuth
     public IdmResDTO<List<GwFirefightAlarmConfirmationVo>> queryAlarmConfirmation(@RequestBody GwFirefightDeviceQuery query) {
         return IdmResDTO.success(alarmConfirmationService.queryAlarmConfirmation(query));
     }
