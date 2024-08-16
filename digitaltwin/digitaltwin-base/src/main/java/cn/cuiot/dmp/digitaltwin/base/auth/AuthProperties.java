@@ -15,7 +15,12 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "user.auth")
 public class AuthProperties {
     /**
-     * 内部访问token
+     * 外部推送访问token
      */
     private String pushAccessToken;
+
+    /**
+     * 外部请求访问token
+     */
+    private String requestAccessToken;
 }
