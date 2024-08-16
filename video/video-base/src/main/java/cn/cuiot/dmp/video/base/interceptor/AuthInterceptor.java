@@ -58,6 +58,6 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (StringUtils.isBlank(accessToken)) {
             throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED, "accessToken不能为空");
         }
-        return Objects.equals(accessToken, authProperties.getPushAccessToken());
+        return Objects.equals(accessToken, authProperties.getRequestAccessToken());
     }
 }
