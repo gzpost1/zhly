@@ -46,7 +46,7 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
      */
     public IPage<VideoDeviceEntity> queryEnableDevicePage(Page<VideoDeviceEntity> page, Integer state) {
         LambdaQueryWrapper<VideoDeviceEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(VideoDeviceEntity::getStatus, EntityConstants.DISABLED);
+        wrapper.eq(VideoDeviceEntity::getStatus, EntityConstants.ENABLED);
         wrapper.eq(VideoDeviceEntity::getState, state);
 
         return page(page, wrapper);
