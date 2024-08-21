@@ -3,8 +3,8 @@
 <mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.PortraitInputMapper">
 
 
-    <select id="queryPlatfromInfo" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputInfoDto">
-        select app_key,app_secret,project_guid from tb_platfrom_info where company_id= #{companyId} and platform_id =1
+    <select id="queryPlatfromInfo" resultType="String">
+        select data from tb_platfrom_info where company_id= #{companyId} and platform_id = #{platformId}
     </select>
 
     <select id="queryPortraitInputInfo" resultType="cn.cuiot.dmp.system.infrastructure.entity.vo.PortraitInputVo">

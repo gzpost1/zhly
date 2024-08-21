@@ -35,24 +35,8 @@ public class PlatfromInfoEntity implements Serializable {
      */
     private Long companyId;
 
-
     /**
-     * AppKey
+     * 对接系统参数json数据
      */
-    private String appKey;
-
-
-    /**
-     * AppSecret
-     */
-    private String appSecret;
-
-
-    /**
-     * projectGuid
-     */
-    private String projectGuid;
-
-
-
+    private String data;
 }

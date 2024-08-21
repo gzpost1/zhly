@@ -25,17 +25,7 @@ public class PlatFromDto {
     private Long companyId;
 
     /**
-     * app_key
+     * 对接系统参数json数据
      */
-    private String appKey;
-
-    /**
-     * app_secret
-     */
-    private String appSecret;
-
-    /**
-     * project_guid
-     */
-    private String projectGuid;
+    private String data;
 }
