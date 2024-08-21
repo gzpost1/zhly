@@ -17,4 +17,6 @@ public class AuthDaHuaResp {
     private String msg;
 
     private Object data;
+
+    private Boolean success;
 }
