@@ -14,6 +14,12 @@
             deleted = 0
             AND device_id = #{params.deviceId}
             AND analysis_date BETWEEN #{params.beginDate} AND #{params.endDate}
+        <if test="params.methodIds != null and params.methodIds.size() > 0">
+            AND method_Id IN
+            <foreach collection="params.methodIds" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
         ORDER BY
             analysis_time DESC
     </select>

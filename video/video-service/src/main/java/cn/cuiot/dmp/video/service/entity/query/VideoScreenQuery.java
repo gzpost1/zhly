@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * 数字孪生-大屏 query
@@ -32,4 +33,9 @@ public class VideoScreenQuery {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
+
+    /**
+     * 算法id列表
+     */
+    private List<String> methodIds;
 }
