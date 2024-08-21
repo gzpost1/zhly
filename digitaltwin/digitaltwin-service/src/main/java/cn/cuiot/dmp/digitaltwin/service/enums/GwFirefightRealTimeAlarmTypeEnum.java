@@ -14,17 +14,22 @@ public enum GwFirefightRealTimeAlarmTypeEnum {
     /**
      * 火警
      */
-    ON_LINE("Alarm", "火警"),
+    ALARM("Alarm", "火警"),
+
+    /**
+     * 预警
+     */
+    PRE_ALARM("PreAlarm", "预警"),
 
     /**
      * 故障
      */
-    OFF_LINE("PreAlarm", "故障"),
+    Fault("Fault", "故障"),
 
     /**
      * 恢复
      */
-    NOT_ACTIVE("Resume", "恢复"),
+    RESUME("Resume", "恢复"),
     ;
 
     private String type;

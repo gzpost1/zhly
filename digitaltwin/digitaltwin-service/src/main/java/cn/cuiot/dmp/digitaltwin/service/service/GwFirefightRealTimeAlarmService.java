@@ -44,7 +44,7 @@ public class GwFirefightRealTimeAlarmService extends ServiceImpl<GwFirefightReal
         BeanUtils.copyProperties(dto, alarmEntity);
         if (StringUtils.isNotBlank(dto.getReportTime())) {
             alarmEntity.setReportTime(DateTimeUtil.stringToDate(dto.getReportTime()));
-            alarmEntity.setReportDate(DateTimeUtil.stringToLocalDate(dto.getReportTime()));
+            alarmEntity.setReportDate(DateTimeUtil.dateToLocalDate(alarmEntity.getReportTime()));
         }
         save(alarmEntity);
     }
