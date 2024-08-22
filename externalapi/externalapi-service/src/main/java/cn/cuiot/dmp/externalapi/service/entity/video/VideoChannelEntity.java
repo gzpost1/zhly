@@ -65,4 +65,9 @@ public class VideoChannelEntity extends YjBaseEntity {
      * 启停用状态（0：停用；1：启用），默认启用，第三方不推送设备信息时状态设置为停用
      */
     private Byte status;
+
+    /**
+     * 密钥信息（SM4加密）
+     */
+    private String secret;
 }

@@ -29,7 +29,7 @@ public class VideoAIStatisticsService extends ServiceImpl<VideoAIStatisticsMappe
      * @Param resp 参数
      * @Param methodId 算法id
      */
-    public void syncAIStatistics(List<VsuapAIStatisticsResp> resp, String methodId) {
+    public void syncAIStatistics(List<VsuapAIStatisticsResp> resp, String methodId, Long companyId) {
         List<Date> dates = resp.stream()
                 .map(e -> DateTimeUtil.stringToDate(e.getBillTime()))
                 .collect(Collectors.toList());
@@ -37,6 +37,7 @@ public class VideoAIStatisticsService extends ServiceImpl<VideoAIStatisticsMappe
         List<VideoAIStatisticsEntity> list = list(
                 new LambdaQueryWrapper<VideoAIStatisticsEntity>()
                         .eq(VideoAIStatisticsEntity::getMethodId, methodId)
+                        .eq(VideoAIStatisticsEntity::getCompanyId, companyId)
                         .in(VideoAIStatisticsEntity::getBillTime, dates));
         Map<Date, VideoAIStatisticsEntity> map = list.stream().collect(Collectors.toMap(VideoAIStatisticsEntity::getBillTime, e -> e));
 
@@ -47,6 +48,7 @@ public class VideoAIStatisticsService extends ServiceImpl<VideoAIStatisticsMappe
             aDefault.setMethodId(methodId);
             aDefault.setBillTime(billTime);
             aDefault.setBillDate(DateTimeUtil.dateToLocalDate(billTime));
+            aDefault.setCompanyId(companyId);
             return aDefault;
         }).collect(Collectors.toList());
 

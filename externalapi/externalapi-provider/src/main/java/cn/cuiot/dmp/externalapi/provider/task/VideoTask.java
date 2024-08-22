@@ -1,15 +1,22 @@
 package cn.cuiot.dmp.externalapi.provider.task;
 
+import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
+import cn.cuiot.dmp.common.bean.external.VsuapVideoBO;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoAIMethodEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoChannelEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoDeviceEntity;
+import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.service.video.*;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.req.vsuap.*;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.resp.vsuap.*;
+import cn.cuiot.dmp.externalapi.service.vendor.video.enums.VsuapMethodTypeEnum;
 import cn.cuiot.dmp.externalapi.service.vendor.video.vsuap.VsuapAIApiService;
 import cn.cuiot.dmp.externalapi.service.vendor.video.vsuap.VsuapDeviceApiService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -58,6 +65,12 @@ public class VideoTask {
     private VideoAIStatisticsService videoAIStatisticsService;
     @Autowired
     private VideoAIAlarmService videoAIAlarmService;
+    @Autowired
+    private SystemApiService systemApiService;
+
+    /*----------------------------------------------------------------------------------------------------------------*/
+    /*------------------------------------------------同步设备信息------------------------------------------------------*/
+    /*----------------------------------------------------------------------------------------------------------------*/
 
     /**
      * 同步设备信息
@@ -68,38 +81,67 @@ public class VideoTask {
 
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
+        long pages;
+        do {
+            PlatfromInfoReqDTO reqDTO = new PlatfromInfoReqDTO();
+            reqDTO.setPageNo(pageNo.getAndAdd(1));
+            reqDTO.setPageSize(pageSize);
+            reqDTO.setPlatformId(FootPlateInfoEnum.VSUAP_VIDEO.getId());
+            IPage<PlatfromInfoRespDTO> iPage = systemApiService.queryPlatfromInfoPage(reqDTO);
+            // 获取总页数
+            pages = iPage.getTotal();
+            // 记录
+            List<PlatfromInfoRespDTO> records;
+            if (CollectionUtils.isNotEmpty(records = iPage.getRecords())) {
+                // 同步设备信息
+                records.forEach(this::syncDevice);
+            }
+
+        } while (pageNo.get() <= pages);
+
+        log.info("结束同步设备信息......");
+        return ReturnT.SUCCESS;
+    }
+
+    private void syncDevice(PlatfromInfoRespDTO platfromInfoRespDTO) {
+        AtomicLong pageNo = new AtomicLong(1);
+        long pageSize = 200;
         long totalSize = 0;
         long currentSize = 0;
         // 标记是否已经停用数据
         boolean isDisabled = false;
         do {
             try {
+                // 密钥req
+                VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(platfromInfoRespDTO.getData());
+
                 VsuapDeviceListReq req = new VsuapDeviceListReq();
                 req.setIndex(pageNo.getAndAdd(1) + "");
                 req.setRows(pageSize + "");
-                VsuapBaseResp<List<VsuapDeviceListResp>> resp = vsuapDeviceApiService.requestDeviceList(req, null);
+                VsuapBaseResp<List<VsuapDeviceListResp>> resp = vsuapDeviceApiService.requestDeviceList(req, secretKeyReq);
                 totalSize = resp.getTotal();
                 currentSize += pageSize;
 
                 // 停用数据
                 if (!isDisabled) {
-                    videoDeviceService.disableDevice(null);
+                    videoDeviceService.disableDevice(null, platfromInfoRespDTO.getCompanyId());
                     isDisabled = true;
                 }
 
                 List<VsuapDeviceListResp> data = resp.getData();
                 if (CollectionUtils.isNotEmpty(data)) {
-                    videoDeviceService.syncDevices(data);
+                    videoDeviceService.syncDevices(data, platfromInfoRespDTO);
                 }
             } catch (Exception e) {
                 log.error("同步设备信息异常......");
                 e.printStackTrace();
             }
         } while (currentSize <= totalSize);
-
-        log.info("结束同步设备信息......");
-        return ReturnT.SUCCESS;
     }
+
+    /*----------------------------------------------------------------------------------------------------------------*/
+    /*------------------------------------------------同步通道信息------------------------------------------------------*/
+    /*----------------------------------------------------------------------------------------------------------------*/
 
     /**
      * 同步通道信息
@@ -117,7 +159,7 @@ public class VideoTask {
                     .queryEnableDevicePage(new Page<>(pageNo.getAndAdd(1), pageSize), 2);
             pages = iPage.getPages();
 
-            List<VideoDeviceEntity> records ;
+            List<VideoDeviceEntity> records;
             if (CollectionUtils.isNotEmpty(records = iPage.getRecords())) {
                 records.forEach(this::syncDeviceChannels);
             }
@@ -136,23 +178,26 @@ public class VideoTask {
         boolean isDisabled = false;
         do {
             try {
+                // 请求密钥
+                VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(Sm4.decrypt(device.getSecret()));
+
                 VsuapChannelReq req = new VsuapChannelReq();
                 req.setIndex(channelPageNo.getAndAdd(1) + "");
                 req.setRows(pageSize + "");
                 req.setDeviceId(device.getDeviceId());
-                VsuapBaseResp<List<VsuapChannelResp>> resp = vsuapDeviceApiService.requestChannel(req, null);
+                VsuapBaseResp<List<VsuapChannelResp>> resp = vsuapDeviceApiService.requestChannel(req, secretKeyReq);
                 totalSize = resp.getTotal();
                 currentSize += pageSize;
 
                 // 停用数据
                 if (!isDisabled) {
-                    videoChannelService.disableChannel(device.getDeviceId());
+                    videoChannelService.disableChannel(device.getDeviceId(), device.getCompanyId());
                     isDisabled = true;
                 }
 
                 List<VsuapChannelResp> data;
                 if (CollectionUtils.isNotEmpty(data = resp.getData())) {
-                    videoChannelService.syncChannel(data, device.getDeviceId());
+                    videoChannelService.syncChannel(data, device);
                 }
             } catch (Exception e) {
                 log.error("同步通道信息异常.......");
@@ -160,6 +205,10 @@ public class VideoTask {
             }
         } while (currentSize <= totalSize);
     }
+
+    /*----------------------------------------------------------------------------------------------------------------*/
+    /*------------------------------------------------同步播放信息------------------------------------------------------*/
+    /*----------------------------------------------------------------------------------------------------------------*/
 
     /**
      * 同步播放信息
@@ -181,10 +230,13 @@ public class VideoTask {
                 if (CollectionUtils.isNotEmpty(records = iPage.getRecords())) {
                     //根据通道遍历请求
                     records.forEach(item -> {
+                        // 请求密钥信息
+                        VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(Sm4.decrypt(item.getSecret()));
+
                         VsuapPlayOnReq req = new VsuapPlayOnReq();
                         req.setDeviceId(item.getDeviceId());
                         req.setChannelCodeId(item.getChannelCodeId());
-                        VsuapPlayOnFlvHlsResp resp = vsuapDeviceApiService.requestPlayOnFlvHls(req, null);
+                        VsuapPlayOnFlvHlsResp resp = vsuapDeviceApiService.requestPlayOnFlvHls(req, secretKeyReq);
 
                         if (Objects.nonNull(resp)) {
                             videoPlayService.syncPlay(resp);
@@ -201,6 +253,10 @@ public class VideoTask {
         return ReturnT.SUCCESS;
     }
 
+    /*----------------------------------------------------------------------------------------------------------------*/
+    /*------------------------------------------------同步AI算法信息----------------------------------------------------*/
+    /*----------------------------------------------------------------------------------------------------------------*/
+
     /**
      * 同步AI算法列表
      */
@@ -208,6 +264,31 @@ public class VideoTask {
     public ReturnT<String> syncVideoAIMethod(String param) {
         log.info("开始同步AI算法列表......");
 
+        AtomicLong pageNo = new AtomicLong(1);
+        long pageSize = 200;
+        long pages;
+        do {
+            PlatfromInfoReqDTO reqDTO = new PlatfromInfoReqDTO();
+            reqDTO.setPageNo(pageNo.getAndAdd(1));
+            reqDTO.setPageSize(pageSize);
+            reqDTO.setPlatformId(FootPlateInfoEnum.VSUAP_VIDEO.getId());
+            IPage<PlatfromInfoRespDTO> iPage = systemApiService.queryPlatfromInfoPage(reqDTO);
+            // 获取总页数
+            pages = iPage.getTotal();
+            // 记录
+            List<PlatfromInfoRespDTO> records;
+            if (CollectionUtils.isNotEmpty(records = iPage.getRecords())) {
+                // 同步设备信息
+                records.forEach(this::syncAIMethod);
+            }
+
+        } while (pageNo.get() <= pages);
+
+        log.info("结束同步AI算法列表......");
+        return ReturnT.SUCCESS;
+    }
+
+    private void syncAIMethod(PlatfromInfoRespDTO platfromInfoRespDTO) {
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
         long totalSize = 0;
@@ -238,10 +319,11 @@ public class VideoTask {
                 e.printStackTrace();
             }
         } while (currentSize <= totalSize);
-
-        log.info("结束同步AI算法列表......");
-        return ReturnT.SUCCESS;
     }
+
+    /*----------------------------------------------------------------------------------------------------------------*/
+    /*------------------------------------------------同步AI警告信息----------------------------------------------------*/
+    /*----------------------------------------------------------------------------------------------------------------*/
 
     /**
      * 同步AI警告列表
@@ -251,6 +333,30 @@ public class VideoTask {
         log.info("开始同步AI警告列表......");
         Pair<Long, Long> pair = dateTransformation(param);
 
+        AtomicLong pageNo = new AtomicLong(1);
+        long pageSize = 200;
+        long pages = 0;
+        do {
+            try {
+                IPage<VideoAIMethodEntity> page = videoAiMethodService
+                        .queryEnableAIMethodPage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapMethodTypeEnum.ALARM_CATEGORY.getCode());
+                pages = page.getPages();
+
+                List<VideoAIMethodEntity> records;
+                if (CollectionUtils.isNotEmpty(records = page.getRecords())) {
+                    records.forEach(e -> syncAIAlarm(e, pair));
+                }
+            } catch (Exception e) {
+                log.info("同步AI统计列表异常........");
+                e.printStackTrace();
+            }
+        } while (pageNo.get() <= pages);
+
+        log.info("结束同步AI警告列表......");
+        return ReturnT.SUCCESS;
+    }
+
+    private void syncAIAlarm(VideoAIMethodEntity aiMethod, Pair<Long, Long> pair) {
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
         long totalSize = 0;
@@ -276,10 +382,11 @@ public class VideoTask {
                 e.printStackTrace();
             }
         } while (currentSize <= totalSize);
-
-        log.info("结束同步AI警告列表......");
-        return ReturnT.SUCCESS;
     }
+
+    /*----------------------------------------------------------------------------------------------------------------*/
+    /*------------------------------------------------同步AI统计信息----------------------------------------------------*/
+    /*----------------------------------------------------------------------------------------------------------------*/
 
     /**
      * 同步AI统计列表
@@ -295,21 +402,24 @@ public class VideoTask {
         do {
             try {
                 IPage<VideoAIMethodEntity> page = videoAiMethodService
-                        .queryEnableAIMethodPage(new Page<>(pageNo.getAndAdd(1), pageSize), 1);
+                        .queryEnableAIMethodPage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapMethodTypeEnum.STATISTICAL_CATEGORY.getCode());
                 pages = page.getPages();
 
                 List<VideoAIMethodEntity> records;
                 if (CollectionUtils.isNotEmpty(records = page.getRecords())) {
-                    records.forEach(item ->{
+                    records.forEach(item -> {
+                        // 请求密钥信息
+                        VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(Sm4.decrypt(item.getSecret()));
+
                         VsuapAIStatisticsReq req = new VsuapAIStatisticsReq();
                         req.setMethodId(item.getMethodId());
                         req.setQueryType(1);
                         req.setStartTime(pair.getLeft() + "");
                         req.setEndTime(pair.getRight() + "");
-                        List<VsuapAIStatisticsResp> resp = vsuapAIApiService.requestAIStatistics(req, null);
+                        List<VsuapAIStatisticsResp> resp = vsuapAIApiService.requestAIStatistics(req, secretKeyReq);
 
                         if (CollectionUtils.isNotEmpty(resp)) {
-                            videoAIStatisticsService.syncAIStatistics(resp, item.getMethodId());
+                            videoAIStatisticsService.syncAIStatistics(resp, item.getMethodId(), item.getCompanyId());
                         }
                     });
                 }
@@ -321,6 +431,22 @@ public class VideoTask {
 
         log.info("结束同步AI统计列表........");
         return ReturnT.SUCCESS;
+    }
+
+    /**
+     * json转密钥
+     *
+     * @return VsuapVideoBO
+     * @Param json json数据
+     */
+    private VsuapSecretKeyReq jsonToSecretKeyReq(String json) {
+        VsuapVideoBO bo = FootPlateInfoEnum.getObjectFromJsonById(FootPlateInfoEnum.VSUAP_VIDEO.getId(), json);
+
+        VsuapSecretKeyReq secretKeyReq = new VsuapSecretKeyReq();
+        secretKeyReq.setAccessKey(bo.getAccessKeyId());
+        secretKeyReq.setSecretKey(bo.getAccessKeySecret());
+
+        return secretKeyReq;
     }
 
     /**

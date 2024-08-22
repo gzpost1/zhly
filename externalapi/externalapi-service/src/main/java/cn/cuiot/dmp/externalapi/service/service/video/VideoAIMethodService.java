@@ -43,6 +43,7 @@ public class VideoAIMethodService extends ServiceImpl<VideoAIMethodMapper, Video
     /**
      * 查询AI算法列表
      *
+     * @Param type 算法类型（1：统计类 2：告警类 ）
      * @return List<VideoAIMethodEntity> 列表
      */
     public IPage<VideoAIMethodEntity> queryEnableAIMethodPage(Page<VideoAIMethodEntity> page, Integer type) {

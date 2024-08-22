@@ -28,16 +28,4 @@ public class VideoProperties implements Serializable {
      */
     @Value("${vsuap.baseUrl}")
     private String vsuapBaseUrl;
-
-    /**
-     * 云智眼AK
-     */
-    @Value("${vsuap.accessKey}")
-    private String vsuapAccessKey;
-
-    /**
-     * 云智眼SK
-     */
-    @Value("${vsuap.secretKey}")
-    private String vsuapSecretKey;
 }

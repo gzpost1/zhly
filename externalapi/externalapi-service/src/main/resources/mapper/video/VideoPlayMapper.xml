@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.video.VideoPlayMapper">
+
+    <select id="queryForPage" parameterType="cn.cuiot.dmp.externalapi.service.entity.video.query.VideoPageQuery"
+            resultType="cn.cuiot.dmp.externalapi.service.entity.video.vo.VideoPageVo">
+        SELECT
+            b.device_id,
+            b.device_name,
+            b.state,
+            b.device_type,
+            a.flv
+        FROM
+            tb_video_play a
+                INNER JOIN tb_video_device b ON a.device_id = b.device_id
+        WHERE
+            a.deleted = 0
+            AND b.deleted = 0
+        <if test="params.deviceName != null and params.deviceName !=''">
+            AND b.device_name LIKE CONCAT('%', #{params.deviceName}, '%')
+        </if>
+        GROUP BY
+            a.device_id
+    </select>
+</mapper>

@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.provider.controller.video;
+package cn.cuiot.dmp.externalapi.provider.controller.app.video;
 
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.externalapi.base.auth.ThirdRequestNeedAuth;
