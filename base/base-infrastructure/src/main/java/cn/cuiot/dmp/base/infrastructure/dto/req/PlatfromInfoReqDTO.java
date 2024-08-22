@@ -1,8 +1,7 @@
 package cn.cuiot.dmp.base.infrastructure.dto.req;
 
 import cn.cuiot.dmp.common.bean.PageQuery;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 /**
  * 对接外部api dto
@@ -12,6 +11,9 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class PlatfromInfoReqDTO extends PageQuery {
 
     /**
