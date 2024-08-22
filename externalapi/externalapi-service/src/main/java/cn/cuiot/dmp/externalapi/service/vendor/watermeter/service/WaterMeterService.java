@@ -112,7 +112,10 @@ public class WaterMeterService {
                 .append(WaterMeterConstant.URL_LABEL).append(WaterMeterConstant.WATER_METER_HEADER_KEY_FIELD).append(WaterMeterConstant.URL_PARAMS_EQUAL_LABEL).append(configInfo.getKey());
         if(Objects.nonNull(paramsMap) && !paramsMap.isEmpty()){
             for(String key : paramsMap.keySet()){
-                stringBuilder.append(WaterMeterConstant.URL_PARAMS_SEPARATE_LABEL).append(key).append(WaterMeterConstant.URL_PARAMS_EQUAL_LABEL).append(paramsMap.get(key));
+                Object value = paramsMap.get(key);
+                if(Objects.nonNull(value)){
+                    stringBuilder.append(WaterMeterConstant.URL_PARAMS_SEPARATE_LABEL).append(key).append(WaterMeterConstant.URL_PARAMS_EQUAL_LABEL).append(value);
+                }
             }
         }
         return stringBuilder.toString();
