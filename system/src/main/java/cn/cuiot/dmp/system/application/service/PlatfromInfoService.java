@@ -4,7 +4,6 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.PlatfromInfoEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.PlatfromInfoMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PlatfromInfoService extends ServiceImpl<PlatfromInfoMapper, PlatfromInfoEntity>{
 
-    public IPage<PlatfromInfoRespDTO> queryForPage(PlatfromInfoReqDTO dto) {
+    public Page<PlatfromInfoRespDTO> queryForPage(PlatfromInfoReqDTO dto) {
         return baseMapper.queryForPage(new Page<>(dto.getPageNo(), dto.getPageSize()), dto);
     }
 }

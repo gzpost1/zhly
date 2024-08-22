@@ -16,5 +16,5 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface PlatfromInfoMapper extends BaseMapper<PlatfromInfoEntity> {
 
-    IPage<PlatfromInfoRespDTO> queryForPage(Page page, @Param("params") PlatfromInfoReqDTO dto);
+    Page<PlatfromInfoRespDTO> queryForPage(Page page, @Param("params") PlatfromInfoReqDTO dto);
 }

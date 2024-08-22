@@ -7,6 +7,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ public class SystemApiService {
      */
     public IPage<PlatfromInfoRespDTO> queryPlatfromInfoPage(PlatfromInfoReqDTO dto) {
         try {
-            IdmResDTO<IPage<PlatfromInfoRespDTO>> idmResDTO = systemApiFeignService.queryPlatfromInfoPage(dto);
+            IdmResDTO<Page<PlatfromInfoRespDTO>> idmResDTO = systemApiFeignService.queryPlatfromInfoPage(dto);
             if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
                     .equals(idmResDTO.getCode())) {
                 return idmResDTO.getData();

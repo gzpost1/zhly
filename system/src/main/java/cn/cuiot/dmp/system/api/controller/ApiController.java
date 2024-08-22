@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentTreeVO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CommonOptionSettingMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -309,7 +309,7 @@ public class ApiController {
      * @Param
      */
     @PostMapping("/queryPlatfromInfoPage")
-    public IdmResDTO<IPage<PlatfromInfoRespDTO>> queryPlatfromInfoPage(@RequestBody PlatfromInfoReqDTO dto) {
+    public IdmResDTO<Page<PlatfromInfoRespDTO>> queryPlatfromInfoPage(@RequestBody PlatfromInfoReqDTO dto) {
         return IdmResDTO.success(platfromInfoService.queryForPage(dto));
     }
 }
