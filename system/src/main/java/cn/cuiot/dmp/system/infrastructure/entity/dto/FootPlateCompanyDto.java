@@ -13,20 +13,11 @@ public class FootPlateCompanyDto {
      * id
      */
     private Long id;
-    /**
-     * appKey
-     */
-    private String appKey;
 
     /**
-     * appSecret
+     * json数据
      */
-    private String appSecret;
-
-    /**
-     * projectGuid
-     */
-    private String projectGuid;
+    private String data;
 
     /**
      * 平台id

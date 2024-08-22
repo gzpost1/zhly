@@ -2,10 +2,16 @@ package cn.cuiot.dmp.externalapi.service.service.video;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoPlayEntity;
+import cn.cuiot.dmp.externalapi.service.entity.video.query.VideoPageQuery;
 import cn.cuiot.dmp.externalapi.service.entity.video.query.VideoScreenQuery;
+import cn.cuiot.dmp.externalapi.service.entity.video.vo.VideoPageVo;
 import cn.cuiot.dmp.externalapi.service.mapper.video.VideoPlayMapper;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.resp.vsuap.VsuapPlayOnFlvHlsResp;
+import cn.cuiot.dmp.externalapi.service.vendor.video.enums.VsuapDeviceStateEnum;
+import cn.cuiot.dmp.externalapi.service.vendor.video.enums.VsuapDeviceTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 监控-播放信息 业务层
@@ -53,6 +60,25 @@ public class VideoPlayService extends ServiceImpl<VideoPlayMapper, VideoPlayEnti
         }
         return getOne(new LambdaQueryWrapper<VideoPlayEntity>()
                 .eq(VideoPlayEntity::getDeviceId, query.getDeviceId())
+                .eq(Objects.nonNull(query.getCompanyId()), VideoPlayEntity::getCompanyId, query.getCompanyId())
                 .last(" Limit 1 "));
+    }
+
+    /**
+     * 后台分页查询
+     *
+     * @return IPage
+     * @Param
+     */
+    public IPage<VideoPageVo> queryForPage(VideoPageQuery query) {
+        IPage<VideoPageVo> iPage = baseMapper.queryForPage(new Page<>(query.getPageNo(), query.getPageSize()), query);
+
+        if (Objects.nonNull(iPage) && CollectionUtils.isNotEmpty(iPage.getRecords())) {
+            iPage.getRecords().forEach(item ->{
+                item.setDeviceTypeName(VsuapDeviceTypeEnum.queryDescByCode(item.getDeviceType()));
+                item.setStateName(VsuapDeviceStateEnum.queryDescByCode(item.getState()));
+            });
+        }
+        return iPage;
     }
 }

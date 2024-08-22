@@ -2,6 +2,7 @@ package cn.cuiot.dmp.externalapi.service.service.video;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoChannelEntity;
+import cn.cuiot.dmp.externalapi.service.entity.video.VideoDeviceEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.video.VideoChannelMapper;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.resp.vsuap.VsuapChannelResp;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -30,11 +31,13 @@ public class VideoChannelService extends ServiceImpl<VideoChannelMapper, VideoCh
      * 停用设备通道（不填channelCodeId修改全部通道）
      *
      * @Param deviceId 第三方通道id
+     * @Param companyId 企业id
      */
-    public void disableChannel(String deviceId) {
+    public void disableChannel(String deviceId, Long companyId) {
         LambdaUpdateWrapper<VideoChannelEntity> wrapper = new LambdaUpdateWrapper<>();
         wrapper.set(VideoChannelEntity::getStatus, EntityConstants.DISABLED);
         wrapper.eq(StringUtils.isNotBlank(deviceId), VideoChannelEntity::getDeviceId, deviceId);
+        wrapper.eq(VideoChannelEntity::getCompanyId, companyId);
 
         update(wrapper);
     }
@@ -57,8 +60,9 @@ public class VideoChannelService extends ServiceImpl<VideoChannelMapper, VideoCh
      *
      * @Param data 参数
      * @Param deviceId 设备id
+     * @Param companyId 企业id
      */
-    public void syncChannel(List<VsuapChannelResp> data, String deviceId) {
+    public void syncChannel(List<VsuapChannelResp> data, VideoDeviceEntity device) {
         // 获取设备id列表
         List<String> channelIds = data.stream()
                 .map(VsuapChannelResp::getChannelCodeId)
@@ -67,7 +71,8 @@ public class VideoChannelService extends ServiceImpl<VideoChannelMapper, VideoCh
 
         // 根据设备列表查询数据
         List<VideoChannelEntity> dbList = list(new LambdaQueryWrapper<VideoChannelEntity>()
-                .eq(VideoChannelEntity::getDeviceId, deviceId)
+                .eq(VideoChannelEntity::getDeviceId, device.getDeviceId())
+                .eq(VideoChannelEntity::getCompanyId, device.getCompanyId())
                 .in(VideoChannelEntity::getChannelCodeId, channelIds));
         Map<String, VideoChannelEntity> dbMap = dbList.stream().collect(Collectors.toMap(VideoChannelEntity::getChannelCodeId, e -> e));
 
@@ -76,7 +81,9 @@ public class VideoChannelService extends ServiceImpl<VideoChannelMapper, VideoCh
             VideoChannelEntity aDefault = dbMap.getOrDefault(item.getChannelCodeId(), new VideoChannelEntity());
             BeanUtils.copyProperties(item, aDefault);
             aDefault.setStatus(EntityConstants.ENABLED);
-            aDefault.setDeviceId(deviceId);
+            aDefault.setDeviceId(device.getDeviceId());
+            aDefault.setCompanyId(device.getCompanyId());
+            aDefault.setSecret(device.getSecret());
             return aDefault;
         }).collect(Collectors.toList());
 
