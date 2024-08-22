@@ -17,7 +17,7 @@ public class PlatfromInfoReqDTO extends PageQuery {
     /**
      * 平台id
      */
-    private String platformId;
+    private Long platformId;
 
     /**
      * 公司id
