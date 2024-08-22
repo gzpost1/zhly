@@ -53,7 +53,7 @@ public class WaterMeterService {
     public WaterMeterPage<WaterMeterReportDataResp> queryReportData(WaterMeterReportDataQueryReq req) {
         ResponseEntity<WaterMeterPage<WaterMeterReportDataResp>> responseEntity =
                 restTemplate.exchange(buildUrl(WaterMeterConstant.QUERY_REPORT_DATA_LIST, BeanUtil.beanToMap(req)), HttpMethod.POST,
-                        new HttpEntity<>(),
+                        new HttpEntity<>(null, null),
                         new ParameterizedTypeReference<WaterMeterPage<WaterMeterReportDataResp>>() {
                         });
         WaterMeterPage<WaterMeterReportDataResp> body = responseEntity.getBody();
@@ -76,7 +76,7 @@ public class WaterMeterService {
     public WaterMeterCommandControlResp deviceCommandV2(WaterMeterCommandControlReq req) {
         ResponseEntity<WaterMeterCommandControlResp> responseEntity =
                 restTemplate.exchange(buildUrl(WaterMeterConstant.CREATE_SUBJECT_URL, BeanUtil.beanToMap(req)), HttpMethod.POST,
-                        new HttpEntity<>(),
+                        new HttpEntity<>(null, null),
                         new ParameterizedTypeReference<WaterMeterCommandControlResp>() {
                         });
         WaterMeterCommandControlResp body = responseEntity.getBody();
