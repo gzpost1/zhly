@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.system.infrastructure.persistence.mapper.PlatfromInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="PlatfromInfoRespDTOMap" type="cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO">
+        <id column="id" property="id" />
+        <result column="company_id" property="companyId" />
+        <result column="platform_id" property="platformId" />
+        <result column="data" property="data" />
+    </resultMap>
+
+    <select id="queryForPage" parameterType="cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO"
+            resultMap="PlatfromInfoRespDTOMap">
+        SELECT
+            b.*
+        FROM
+            organization a
+            LEFT JOIN tb_platfrom_info b ON a.id = b.company_id
+        WHERE
+            a.deleted_flag = 0
+        <if test="params.platformId != null and params.platformId !=''">
+            AND b.platform_id = #{params.platformId}
+        </if>
+        <if test="params.companyId != null">
+            AND b.company_id = #{params.companyId}
+        </if>
+    </select>
+
+</mapper>

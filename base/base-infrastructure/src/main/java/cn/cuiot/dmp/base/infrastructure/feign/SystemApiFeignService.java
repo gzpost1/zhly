@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.*;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.*;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -150,4 +151,10 @@ public interface SystemApiFeignService {
      */
     @PostMapping(value = "/api/batchQueryCommonOptionSetting", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<List<CommonOptionSettingRspDTO>> batchQueryCommonOptionSetting(@RequestBody @Valid CommonOptionSettingReqDTO dto);
+
+    /**
+     * 外部平台参数信息分页查询
+     */
+    @PostMapping(value = "/api/queryPlatfromInfoPage", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<IPage<PlatfromInfoRespDTO>> queryPlatfromInfoPage(@RequestBody @Valid PlatfromInfoReqDTO dto);
 }

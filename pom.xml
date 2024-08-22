@@ -18,7 +18,7 @@
         <module>message</module>
         <module>content-manage</module>
         <module>lease</module>
-        <module>video</module>
+        <module>externalapi</module>
     </modules>
 
     <parent>
