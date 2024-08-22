@@ -1,8 +1,12 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
+import cn.cuiot.dmp.common.bean.external.YFPortraitInputBO;
 import cn.cuiot.dmp.common.constant.ErrorCode;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.constant.PortraitInputConstant;
@@ -11,11 +15,9 @@ import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiDeviceQueryReq;
 import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiDeviceRespInfo;
 import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiPage;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputInfoDto;
-import cn.cuiot.dmp.system.infrastructure.utils.MD5Util;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -26,10 +28,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -101,11 +99,15 @@ public class UniUbiService {
      * @return
      */
     private HttpHeaders buildHttpHeader(){
-        List<PortraitInputInfoDto> configInfoList = portraitInputService.getBaseMapper().queryPlatfromInfoList(LoginInfoHolder.getCurrentOrgId());
-        if(CollectionUtils.isEmpty(configInfoList)){
-            throw new BusinessException(ErrorCode.BUSINESS_EXCEPTION.code(), "配置信息不存在");
+        //获取并使用门禁（宇泛）配置
+        String json = portraitInputService.getBaseMapper().queryPlatfromInfo(LoginInfoHolder.getCurrentOrgId(), FootPlateInfoEnum.YF_ENTRANCE_GUARD.getId());
+
+        if(StringUtils.isBlank(json)){
+            throw new BusinessException(ResultCode.PLATFORM_NOT_CONFIG);
         }
-        PortraitInputInfoDto configInfo = configInfoList.get(0);
+        //json转Object
+        YFPortraitInputBO bo = FootPlateInfoEnum.getObjectFromJsonById(FootPlateInfoEnum.YF_ENTRANCE_GUARD.getId(), json);
+        PortraitInputInfoDto configInfo = BeanMapper.copyBean(bo, PortraitInputInfoDto.class);
         String token;
         try {
             token = portraitInputService.getToken(configInfo);
@@ -119,14 +121,14 @@ public class UniUbiService {
     }
 
 
-    public static void main(String[] args) throws NoSuchAlgorithmException {
-        long timestamp = new Date().getTime();
-        System.out.println(timestamp);
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        md.update(("718F60A2B83148C7800908DE657CB174" + timestamp + "4403EA87E44F4BDA91540B7231889493").getBytes());
-        byte[] digest = md.digest();
-        String sign = MD5Util.toHexString(digest).toLowerCase();
-        System.out.println(sign);
-    }
+//    public static void main(String[] args) throws NoSuchAlgorithmException {
+//        long timestamp = new Date().getTime();
+//        System.out.println(timestamp);
+//        MessageDigest md = MessageDigest.getInstance("MD5");
+//        md.update(("718F60A2B83148C7800908DE657CB174" + timestamp + "4403EA87E44F4BDA91540B7231889493").getBytes());
+//        byte[] digest = md.digest();
+//        String sign = MD5Util.toHexString(digest).toLowerCase();
+//        System.out.println(sign);
+//    }
 
 }

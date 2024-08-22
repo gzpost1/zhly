@@ -7,10 +7,6 @@
         select data from tb_platfrom_info where company_id= #{companyId} and platform_id = #{platformId}
     </select>
 
-    <select id="queryPlatfromInfoList" resultType="cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputInfoDto">
-        select app_key,app_secret,project_guid from tb_platfrom_info where company_id= #{companyId} and platform_id =1
-    </select>
-
     <select id="queryPortraitInputInfo" resultType="cn.cuiot.dmp.system.infrastructure.entity.vo.PortraitInputVo">
         select  url,phone,card_no,id_card_no,password,tag,create_user,name,create_time from tb_portrait_input where create_user = #{query.createUser}  order by create_time desc
     </select>
