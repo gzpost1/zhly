@@ -1,20 +1,20 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
+import cn.cuiot.dmp.common.bean.external.YFPortraitInputBO;
 import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.constant.PortraitInputConstant;
-import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.FootPlateInfoEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.PlatfromInfoEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.PortraitInputEntity;
-import cn.cuiot.dmp.common.bean.external.YFPortraitInputBO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.*;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.PortraitInputVo;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.PortraitInputMapper;
@@ -42,7 +42,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
 
@@ -267,6 +266,16 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
                 (new Page<>(para.getPageNo()
                         ,para.getPageSize()),para);
         return IdmResDTO.success(page);
+    }
+
+    /**
+     * 分页查询
+     * @param para
+     * @return
+     */
+    public IPage<PortraitInputVo> queryPortraitInputPage(PortraitInputDTO para) {
+        para.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        return baseMapper.queryPortraitInputPage(new Page<>(para.getPageNo(),para.getPageSize()), para);
     }
 
     /**

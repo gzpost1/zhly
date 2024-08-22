@@ -10,4 +10,35 @@
     <select id="queryPortraitInputInfo" resultType="cn.cuiot.dmp.system.infrastructure.entity.vo.PortraitInputVo">
         select  url,phone,card_no,id_card_no,password,tag,create_user,name,create_time from tb_portrait_input where create_user = #{query.createUser}  order by create_time desc
     </select>
+
+    <!-- 查询人像信息分页 -->
+    <select id="queryPortraitInputPage" parameterType="cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputDTO"
+            resultType="cn.cuiot.dmp.system.infrastructure.entity.vo.PortraitInputVo">
+        SELECT
+        tpi.url,
+        tpi.phone,
+        tpi.card_no,
+        tpi.id_card_no,
+        tpi.password,
+        tpi.tag,
+        tpi.create_user,
+        tpi.name,
+        tpi.create_time,
+        u.name AS createUserName
+        FROM tb_portrait_input tpi LEFT JOIN `user` u ON tpi.create_user = u.id
+        <where>
+            <if test="params != null">
+                <if test=" params.companyId != null">
+                    AND tpi.create_user IN (SELECT pk_user_id FROM `user_org` WHERE pk_org_id = #{params.companyId})
+                </if>
+                <if test=" params.name != null and params.name.trim() != ''">
+                    AND tpi.name LIKE CONCAT('%',#{params.name},'%')
+                </if>
+                <if test=" params.createUserName != null and params.createUserName.trim() != ''">
+                    AND u.name LIKE CONCAT('%',#{params.createUserName},'%')
+                </if>
+            </if>
+        </where>
+        ORDER BY tpi.create_time DESC
+    </select>
 </mapper>

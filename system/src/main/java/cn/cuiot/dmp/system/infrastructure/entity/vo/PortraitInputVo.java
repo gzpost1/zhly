@@ -65,4 +65,9 @@ public class PortraitInputVo extends PageQuery {
      * 创建人
      */
     private Long createUser;
+
+    /**
+     * 创建人名称
+     */
+    private String createUserName;
 }
