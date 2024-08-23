@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.provider.controller.app.watermeter;
+package cn.cuiot.dmp.externalapi.provider.controller.watermeter;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.utils.PageUtils;
@@ -21,13 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
- * 小程序-物联网水表（山东科德）
+ * 管理后台-物联网水表（山东科德）
  *
  * @date 2024/8/21 16:01
  * @author gxp
  */
 @RestController
-@RequestMapping("/app/waterMeter")
+@RequestMapping("/waterMeter")
 public class WaterMeterController {
 
     @Autowired
