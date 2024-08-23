@@ -75,7 +75,7 @@ public class VideoPlayService extends ServiceImpl<VideoPlayMapper, VideoPlayEnti
      * @Param
      */
     public IPage<VideoPageVo> queryForPage(VideoPageQuery query) {
-        query.setCompanyId(LoginInfoHolder.getCommunityId());
+        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         IPage<VideoPageVo> iPage = baseMapper.queryForPage(new Page<>(query.getPageNo(), query.getPageSize()), query);
 
         if (Objects.nonNull(iPage) && CollectionUtils.isNotEmpty(iPage.getRecords())) {
