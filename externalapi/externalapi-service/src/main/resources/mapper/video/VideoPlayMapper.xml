@@ -25,10 +25,10 @@
             <if test="params.deviceName != null and params.deviceName !=''">
                 AND device_name LIKE CONCAT('%', #{params.deviceName}, '%')
             </if>
+            GROUP BY
+                device_id
             )a
         LEFT JOIN
             tb_video_play b ON a.device_id = b.device_id AND b.deleted = 0
-        GROUP BY
-            a.device_id
     </select>
 </mapper>
