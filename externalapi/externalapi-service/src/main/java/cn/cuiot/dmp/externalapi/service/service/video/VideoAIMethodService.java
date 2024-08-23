@@ -1,9 +1,11 @@
 package cn.cuiot.dmp.externalapi.service.service.video;
 
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoAIMethodEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.video.VideoAIMethodMapper;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.resp.vsuap.VsuapAIMethodListResp;
+import cn.cuiot.dmp.util.Sm4;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -32,10 +34,11 @@ public class VideoAIMethodService extends ServiceImpl<VideoAIMethodMapper, Video
      *
      * @Param deviceId 第三方设备id
      */
-    public void disableAIMethod(String mthodId) {
+    public void disableAIMethod(String methodId, Long companyId) {
         LambdaUpdateWrapper<VideoAIMethodEntity> wrapper = new LambdaUpdateWrapper<>();
         wrapper.set(VideoAIMethodEntity::getStatus, EntityConstants.DISABLED);
-        wrapper.eq(StringUtils.isNotBlank(mthodId), VideoAIMethodEntity::getMethodId, mthodId);
+        wrapper.eq(StringUtils.isNotBlank(methodId), VideoAIMethodEntity::getMethodId, methodId);
+        wrapper.eq(VideoAIMethodEntity::getCompanyId, companyId);
 
         update(wrapper);
     }
@@ -59,7 +62,7 @@ public class VideoAIMethodService extends ServiceImpl<VideoAIMethodMapper, Video
      *
      * @Param data 参数
      */
-    public void syncAIMethods(List<VsuapAIMethodListResp> data) {
+    public void syncAIMethods(List<VsuapAIMethodListResp> data, PlatfromInfoRespDTO platfromInfoRespDTO) {
         // 获取AI算法id列表
         List<String> methodIds = data.stream()
                 .map(VsuapAIMethodListResp::getMethodId)
@@ -67,6 +70,7 @@ public class VideoAIMethodService extends ServiceImpl<VideoAIMethodMapper, Video
 
         // 根据算法id列表查询数据
         List<VideoAIMethodEntity> dbList = list(new LambdaQueryWrapper<VideoAIMethodEntity>()
+                .eq(VideoAIMethodEntity::getCompanyId, platfromInfoRespDTO.getCompanyId())
                 .in(VideoAIMethodEntity::getMethodId, methodIds));
         Map<String, VideoAIMethodEntity> dbMap = dbList.stream().collect(Collectors.toMap(VideoAIMethodEntity::getMethodId, e -> e));
 
@@ -75,6 +79,8 @@ public class VideoAIMethodService extends ServiceImpl<VideoAIMethodMapper, Video
             VideoAIMethodEntity aDefault = dbMap.getOrDefault(item.getMethodId(), new VideoAIMethodEntity());
             BeanUtils.copyProperties(item, aDefault);
             aDefault.setStatus(EntityConstants.ENABLED);
+            aDefault.setSecret(Sm4.encryption(platfromInfoRespDTO.getData()));
+            aDefault.setCompanyId(platfromInfoRespDTO.getCompanyId());
             return aDefault;
         }).collect(Collectors.toList());
 

@@ -16,6 +16,8 @@ import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.service.video.*;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.req.vsuap.*;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.resp.vsuap.*;
+import cn.cuiot.dmp.externalapi.service.vendor.video.enums.VsuapChannelStateEnum;
+import cn.cuiot.dmp.externalapi.service.vendor.video.enums.VsuapDeviceStateEnum;
 import cn.cuiot.dmp.externalapi.service.vendor.video.enums.VsuapMethodTypeEnum;
 import cn.cuiot.dmp.externalapi.service.vendor.video.vsuap.VsuapAIApiService;
 import cn.cuiot.dmp.externalapi.service.vendor.video.vsuap.VsuapDeviceApiService;
@@ -96,8 +98,7 @@ public class VideoTask {
                 // 同步设备信息
                 records.forEach(this::syncDevice);
             }
-
-        } while (pageNo.get() <= pages);
+        } while (pageNo.get() < pages);
 
         log.info("结束同步设备信息......");
         return ReturnT.SUCCESS;
@@ -113,7 +114,7 @@ public class VideoTask {
         do {
             try {
                 // 密钥req
-                VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(platfromInfoRespDTO.getData());
+                VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(platfromInfoRespDTO.getData(), platfromInfoRespDTO.getCompanyId());
 
                 VsuapDeviceListReq req = new VsuapDeviceListReq();
                 req.setIndex(pageNo.getAndAdd(1) + "");
@@ -133,10 +134,10 @@ public class VideoTask {
                     videoDeviceService.syncDevices(data, platfromInfoRespDTO);
                 }
             } catch (Exception e) {
-                log.error("同步设备信息异常......");
+                log.error("企业【" + platfromInfoRespDTO.getCompanyId() + "】同步设备信息异常......");
                 e.printStackTrace();
             }
-        } while (currentSize <= totalSize);
+        } while (currentSize < totalSize);
     }
 
     /*----------------------------------------------------------------------------------------------------------------*/
@@ -156,14 +157,14 @@ public class VideoTask {
         do {
             //获取在线的设备列表
             IPage<VideoDeviceEntity> iPage = videoDeviceService
-                    .queryEnableDevicePage(new Page<>(pageNo.getAndAdd(1), pageSize), 2);
+                    .queryEnableDevicePage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapDeviceStateEnum.ON_LINE.getCode());
             pages = iPage.getPages();
 
             List<VideoDeviceEntity> records;
             if (CollectionUtils.isNotEmpty(records = iPage.getRecords())) {
                 records.forEach(this::syncDeviceChannels);
             }
-        } while (pageNo.get() <= pages);
+        } while (pageNo.get() < pages);
 
         log.info("结束同步通道信息......");
         return ReturnT.SUCCESS;
@@ -179,7 +180,7 @@ public class VideoTask {
         do {
             try {
                 // 请求密钥
-                VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(Sm4.decrypt(device.getSecret()));
+                VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(Sm4.decrypt(device.getSecret()), device.getCompanyId());
 
                 VsuapChannelReq req = new VsuapChannelReq();
                 req.setIndex(channelPageNo.getAndAdd(1) + "");
@@ -200,10 +201,10 @@ public class VideoTask {
                     videoChannelService.syncChannel(data, device);
                 }
             } catch (Exception e) {
-                log.error("同步通道信息异常.......");
+                log.error("企业【" + device.getCompanyId() + "】同步通道信息异常.......");
                 e.printStackTrace();
             }
-        } while (currentSize <= totalSize);
+        } while (currentSize < totalSize);
     }
 
     /*----------------------------------------------------------------------------------------------------------------*/
@@ -220,18 +221,18 @@ public class VideoTask {
         long pageSize = 200;
         long pages = 0;
         do {
-            try {
-                //通道查询分页数据
-                IPage<VideoChannelEntity> iPage = videoChannelService
-                        .queryEnableDevicePage(new Page<>(pageNo.getAndAdd(1), pageSize), 2);
-                pages = iPage.getPages();
+            //通道查询分页数据
+            IPage<VideoChannelEntity> iPage = videoChannelService
+                    .queryEnableChannelPage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapChannelStateEnum.ON_LINE.getCode());
+            pages = iPage.getPages();
 
-                List<VideoChannelEntity> records;
-                if (CollectionUtils.isNotEmpty(records = iPage.getRecords())) {
-                    //根据通道遍历请求
-                    records.forEach(item -> {
+            List<VideoChannelEntity> records;
+            if (CollectionUtils.isNotEmpty(records = iPage.getRecords())) {
+                //根据通道遍历请求
+                records.forEach(item -> {
+                    try {
                         // 请求密钥信息
-                        VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(Sm4.decrypt(item.getSecret()));
+                        VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(Sm4.decrypt(item.getSecret()), item.getCompanyId());
 
                         VsuapPlayOnReq req = new VsuapPlayOnReq();
                         req.setDeviceId(item.getDeviceId());
@@ -239,15 +240,16 @@ public class VideoTask {
                         VsuapPlayOnFlvHlsResp resp = vsuapDeviceApiService.requestPlayOnFlvHls(req, secretKeyReq);
 
                         if (Objects.nonNull(resp)) {
-                            videoPlayService.syncPlay(resp);
+                            videoPlayService.syncPlay(resp, item.getCompanyId());
                         }
-                    });
-                }
-            } catch (Exception e) {
-                log.error("同步播放信息异常.....");
-                e.printStackTrace();
+                    } catch (Exception e) {
+                        log.error("企业【" + item.getCompanyId() + "】同步播放信息异常.....");
+                        e.printStackTrace();
+                    }
+                });
             }
-        } while (pageNo.get() <= pages);
+
+        } while (pageNo.get() < pages);
 
         log.info("结束同步播放信息......");
         return ReturnT.SUCCESS;
@@ -282,7 +284,7 @@ public class VideoTask {
                 records.forEach(this::syncAIMethod);
             }
 
-        } while (pageNo.get() <= pages);
+        } while (pageNo.get() < pages);
 
         log.info("结束同步AI算法列表......");
         return ReturnT.SUCCESS;
@@ -297,28 +299,31 @@ public class VideoTask {
         boolean isDisabled = false;
         do {
             try {
+                // 请求密钥信息
+                VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(platfromInfoRespDTO.getData(), platfromInfoRespDTO.getCompanyId());
+
                 VsuapAIMethodListReq req = new VsuapAIMethodListReq();
                 req.setIndex(pageNo.getAndAdd(1) + "");
                 req.setRows(pageSize + "");
-                VsuapBaseResp<List<VsuapAIMethodListResp>> resp = vsuapAIApiService.requestAIMethodList(req, null);
+                VsuapBaseResp<List<VsuapAIMethodListResp>> resp = vsuapAIApiService.requestAIMethodList(req, secretKeyReq);
                 totalSize = resp.getTotal();
                 currentSize += pageSize;
 
                 // 停用设备
                 if (!isDisabled) {
-                    videoAiMethodService.disableAIMethod(null);
+                    videoAiMethodService.disableAIMethod(null, platfromInfoRespDTO.getCompanyId());
                     isDisabled = true;
                 }
 
                 List<VsuapAIMethodListResp> data;
                 if (CollectionUtils.isNotEmpty(data = resp.getData())) {
-                    videoAiMethodService.syncAIMethods(data);
+                    videoAiMethodService.syncAIMethods(data, platfromInfoRespDTO);
                 }
             } catch (Exception e) {
-                log.error("同步AI算法列表异常........");
+                log.error("企业【" + platfromInfoRespDTO.getCompanyId() + "】同步AI算法列表异常........");
                 e.printStackTrace();
             }
-        } while (currentSize <= totalSize);
+        } while (currentSize < totalSize);
     }
 
     /*----------------------------------------------------------------------------------------------------------------*/
@@ -350,7 +355,7 @@ public class VideoTask {
                 log.info("同步AI统计列表异常........");
                 e.printStackTrace();
             }
-        } while (pageNo.get() <= pages);
+        } while (pageNo.get() < pages);
 
         log.info("结束同步AI警告列表......");
         return ReturnT.SUCCESS;
@@ -363,25 +368,29 @@ public class VideoTask {
         long currentSize = 0;
         do {
             try {
+                //请求密钥信息
+                VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(Sm4.decrypt(aiMethod.getSecret()), aiMethod.getCompanyId());
+
                 VsuapAIAlarmListReq req = new VsuapAIAlarmListReq();
+                req.setMethodId(aiMethod.getMethodId());
                 req.setIndex(pageNo.getAndAdd(1) + "");
                 req.setRows(pageSize + "");
                 req.setStartTime(pair.getLeft() + "");
                 req.setEndTime(pair.getRight() + "");
-                VsuapBaseResp<List<VsuapAIAlarmListResp>> resp = vsuapAIApiService.requestAIAlarmLis(req, null);
+                VsuapBaseResp<List<VsuapAIAlarmListResp>> resp = vsuapAIApiService.requestAIAlarmLis(req, secretKeyReq);
 
                 totalSize = resp.getTotal();
                 currentSize += pageSize;
 
                 List<VsuapAIAlarmListResp> data;
                 if (CollectionUtils.isNotEmpty(data = resp.getData())) {
-                    videoAIAlarmService.syncAIAlarm(data);
+                    videoAIAlarmService.syncAIAlarm(data, aiMethod.getCompanyId());
                 }
             } catch (Exception e) {
-                log.error("同步监控AI警告列表异常.......");
+                log.error("企业【" + aiMethod.getCompanyId() + "】同步监控AI警告列表异常.......");
                 e.printStackTrace();
             }
-        } while (currentSize <= totalSize);
+        } while (currentSize < totalSize);
     }
 
     /*----------------------------------------------------------------------------------------------------------------*/
@@ -400,16 +409,16 @@ public class VideoTask {
         long pageSize = 200;
         long pages = 0;
         do {
-            try {
-                IPage<VideoAIMethodEntity> page = videoAiMethodService
-                        .queryEnableAIMethodPage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapMethodTypeEnum.STATISTICAL_CATEGORY.getCode());
-                pages = page.getPages();
+            IPage<VideoAIMethodEntity> page = videoAiMethodService
+                    .queryEnableAIMethodPage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapMethodTypeEnum.STATISTICAL_CATEGORY.getCode());
+            pages = page.getPages();
 
-                List<VideoAIMethodEntity> records;
-                if (CollectionUtils.isNotEmpty(records = page.getRecords())) {
-                    records.forEach(item -> {
+            List<VideoAIMethodEntity> records;
+            if (CollectionUtils.isNotEmpty(records = page.getRecords())) {
+                records.forEach(item -> {
+                    try {
                         // 请求密钥信息
-                        VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(Sm4.decrypt(item.getSecret()));
+                        VsuapSecretKeyReq secretKeyReq = jsonToSecretKeyReq(Sm4.decrypt(item.getSecret()), item.getCompanyId());
 
                         VsuapAIStatisticsReq req = new VsuapAIStatisticsReq();
                         req.setMethodId(item.getMethodId());
@@ -421,13 +430,13 @@ public class VideoTask {
                         if (CollectionUtils.isNotEmpty(resp)) {
                             videoAIStatisticsService.syncAIStatistics(resp, item.getMethodId(), item.getCompanyId());
                         }
-                    });
-                }
-            } catch (Exception e) {
-                log.info("同步AI统计列表异常........");
-                e.printStackTrace();
+                    } catch (Exception e) {
+                        log.info("企业【" + item.getCompanyId() + "】同步AI统计列表异常........");
+                        e.printStackTrace();
+                    }
+                });
             }
-        } while (pageNo.get() <= pages);
+        } while (pageNo.get() < pages);
 
         log.info("结束同步AI统计列表........");
         return ReturnT.SUCCESS;
@@ -439,12 +448,20 @@ public class VideoTask {
      * @return VsuapVideoBO
      * @Param json json数据
      */
-    private VsuapSecretKeyReq jsonToSecretKeyReq(String json) {
+    private VsuapSecretKeyReq jsonToSecretKeyReq(String json, Long companyId) {
         VsuapVideoBO bo = FootPlateInfoEnum.getObjectFromJsonById(FootPlateInfoEnum.VSUAP_VIDEO.getId(), json);
+
+        if (StringUtils.isBlank(bo.getAccessKeyId())) {
+            throw new BusinessException(ResultCode.ERROR, "企业【" + companyId + "】请求云智眼失败，AccessKey为空");
+        }
+        if (StringUtils.isBlank(bo.getAccessKeySecret())) {
+            throw new BusinessException(ResultCode.ERROR, "企业【" + companyId + "】请求云智眼失败，SecretKey为空");
+        }
 
         VsuapSecretKeyReq secretKeyReq = new VsuapSecretKeyReq();
         secretKeyReq.setAccessKey(bo.getAccessKeyId());
         secretKeyReq.setSecretKey(bo.getAccessKeySecret());
+        secretKeyReq.setCompanyId(companyId);
 
         return secretKeyReq;
     }

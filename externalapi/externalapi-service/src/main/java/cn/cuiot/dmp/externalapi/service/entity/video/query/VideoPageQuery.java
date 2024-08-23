@@ -18,4 +18,9 @@ public class VideoPageQuery extends PageQuery {
      * 设备名称
      */
     private String deviceName;
+
+    /**
+     * 企业ID（前端不用传）
+     */
+    private Long companyId;
 }

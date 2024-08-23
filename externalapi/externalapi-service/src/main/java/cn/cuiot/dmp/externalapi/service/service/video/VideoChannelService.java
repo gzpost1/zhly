@@ -47,7 +47,7 @@ public class VideoChannelService extends ServiceImpl<VideoChannelMapper, VideoCh
      *
      * @return List<VideoDeviceEntity> 列表
      */
-    public IPage<VideoChannelEntity> queryEnableDevicePage(Page<VideoChannelEntity> page, Integer state) {
+    public IPage<VideoChannelEntity> queryEnableChannelPage(Page<VideoChannelEntity> page, Integer state) {
         LambdaQueryWrapper<VideoChannelEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(VideoChannelEntity::getState, state);
         wrapper.eq(VideoChannelEntity::getStatus, EntityConstants.ENABLED);

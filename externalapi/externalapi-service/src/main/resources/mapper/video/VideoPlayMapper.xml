@@ -16,6 +16,7 @@
         WHERE
             a.deleted = 0
             AND b.deleted = 0
+            AND a.company_id = #{params.companyId}
         <if test="params.deviceName != null and params.deviceName !=''">
             AND b.device_name LIKE CONCAT('%', #{params.deviceName}, '%')
         </if>

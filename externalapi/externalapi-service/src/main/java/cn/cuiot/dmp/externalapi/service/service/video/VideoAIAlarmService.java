@@ -34,20 +34,23 @@ public class VideoAIAlarmService extends ServiceImpl<VideoAIAlarmMapper, VideoAI
      * 同步监控AI警告列表
      *
      * @Param data 参数
+     * @Param companyId 企业id
      */
-    public void syncAIAlarm(List<VsuapAIAlarmListResp> data) {
+    public void syncAIAlarm(List<VsuapAIAlarmListResp> data, Long companyId) {
         //流水号列表
         List<String> serialNumbers = data.stream()
                 .map(VsuapAIAlarmListResp::getSerialNumber)
                 .collect(Collectors.toList());
 
         List<VideoAIAlarmEntity> list = list(new LambdaQueryWrapper<VideoAIAlarmEntity>()
+                .eq(VideoAIAlarmEntity::getCompanyId, companyId)
                 .in(VideoAIAlarmEntity::getSerialNumber, serialNumbers));
         Map<String, VideoAIAlarmEntity> map = list.stream().collect(Collectors.toMap(VideoAIAlarmEntity::getSerialNumber, e -> e));
 
         List<VideoAIAlarmEntity> collect = data.stream().map(item -> {
             VideoAIAlarmEntity aDefault = map.getOrDefault(item.getSerialNumber(), new VideoAIAlarmEntity());
             BeanUtils.copyProperties(item, aDefault);
+            aDefault.setCompanyId(companyId);
             if (Objects.nonNull(aDefault.getAnalysisTime())) {
                 aDefault.setAnalysisDate(DateTimeUtil.dateToLocalDate(aDefault.getAnalysisTime()));
             }

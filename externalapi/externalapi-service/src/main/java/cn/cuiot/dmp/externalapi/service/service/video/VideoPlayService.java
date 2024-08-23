@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.service.video;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoPlayEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.query.VideoPageQuery;
 import cn.cuiot.dmp.externalapi.service.entity.video.query.VideoScreenQuery;
@@ -34,16 +35,19 @@ public class VideoPlayService extends ServiceImpl<VideoPlayMapper, VideoPlayEnti
      * 同步播放消息
      *
      * @Param resp 参数
+     * @Param companyId 企业id
      */
-    public void syncPlay(VsuapPlayOnFlvHlsResp resp) {
+    public void syncPlay(VsuapPlayOnFlvHlsResp resp, Long companyId) {
         List<VideoPlayEntity> list = list(new LambdaQueryWrapper<VideoPlayEntity>()
                 .eq(VideoPlayEntity::getChannelCodeId, resp.getChannelCodeId())
+                .eq(VideoPlayEntity::getCompanyId, companyId)
                 .eq(VideoPlayEntity::getDeviceId, resp.getDeviceId())
                 .eq(VideoPlayEntity::getStreamId, resp.getStreamId()));
 
         VideoPlayEntity videoPlayEntity = CollectionUtils.isNotEmpty(list) ? list.get(0) : new VideoPlayEntity();
         BeanUtils.copyProperties(resp, videoPlayEntity);
         videoPlayEntity.setStatus(EntityConstants.ENABLED);
+        videoPlayEntity.setCompanyId(companyId);
 
         saveOrUpdate(videoPlayEntity);
     }
@@ -71,6 +75,7 @@ public class VideoPlayService extends ServiceImpl<VideoPlayMapper, VideoPlayEnti
      * @Param
      */
     public IPage<VideoPageVo> queryForPage(VideoPageQuery query) {
+        query.setCompanyId(LoginInfoHolder.getCommunityId());
         IPage<VideoPageVo> iPage = baseMapper.queryForPage(new Page<>(query.getPageNo(), query.getPageSize()), query);
 
         if (Objects.nonNull(iPage) && CollectionUtils.isNotEmpty(iPage.getRecords())) {

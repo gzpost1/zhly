@@ -20,4 +20,9 @@ public class VsuapSecretKeyReq {
      * 云智眼SK
      */
     private String secretKey;
+
+    /**
+     * 企业id
+     */
+    private Long companyId;
 }
