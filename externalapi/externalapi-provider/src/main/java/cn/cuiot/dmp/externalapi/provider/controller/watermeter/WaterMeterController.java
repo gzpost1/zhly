@@ -3,7 +3,6 @@ package cn.cuiot.dmp.externalapi.provider.controller.watermeter;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.utils.PageUtils;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.externalapi.service.entity.watermeter.vo.WaterMeterOperateVO;
 import cn.cuiot.dmp.externalapi.service.entity.watermeter.vo.WaterMeterQueryVO;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean.WaterMeterCommandControlReq;
@@ -12,6 +11,7 @@ import cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean.WaterMeterReportD
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean.WaterMeterReportDataResp;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.service.WaterMeterService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -57,7 +57,12 @@ public class WaterMeterController {
     @PostMapping(value = "/operate")
     @RequiresPermissions
     public IdmResDTO open(@RequestBody @Valid WaterMeterOperateVO vo) {
-        return IdmResDTO.success(waterMeterService.deviceCommandV2(BeanMapper.copyBean(vo, WaterMeterCommandControlReq.class)).getStatus());
+        return IdmResDTO.success(waterMeterService.deviceCommandV2(
+                new WaterMeterCommandControlReq(
+                        Lists.newArrayList(
+                                new WaterMeterCommandControlReq.CommandControlInfo(vo)
+                        )))
+                .getSuccess());
     }
 
 }

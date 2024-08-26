@@ -16,7 +16,7 @@ public class WaterMeterConstant {
     /**
      * 下发阀控指令
      */
-    public static final String CREATE_SUBJECT_URL= "/static/kddz/kd_WatermeterCollectionrecord/valveControl";
+    public static final String CREATE_SUBJECT_URL= "/static/kddz/kd_WatermeterCollectionrecord/valveControls";
 
     /**
      * 上报数据 返回成功 状态码
@@ -26,7 +26,7 @@ public class WaterMeterConstant {
     /**
      * 下发阀控指令 返回成功 状态码
      */
-    public static final String WATER_METER_COMMAND_CONTROL_RESULT_CODE_SUCCESS = "200";
+    public static final String WATER_METER_COMMAND_CONTROL_RESULT_CODE_SUCCESS = "0";
 
     /**
      * 头部key字段

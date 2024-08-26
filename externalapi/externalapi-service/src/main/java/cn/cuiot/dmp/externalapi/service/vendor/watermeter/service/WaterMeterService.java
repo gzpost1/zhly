@@ -73,21 +73,22 @@ public class WaterMeterService {
      * @param req
      * @return
      */
-    public WaterMeterCommandControlResp deviceCommandV2(WaterMeterCommandControlReq req) {
+    public WaterMeterCommandControlResp.RespInfo deviceCommandV2(WaterMeterCommandControlReq req) {
         ResponseEntity<WaterMeterCommandControlResp> responseEntity =
-                restTemplate.exchange(buildUrl(WaterMeterConstant.CREATE_SUBJECT_URL, BeanUtil.beanToMap(req)), HttpMethod.POST,
-                        new HttpEntity<>(null, null),
+                restTemplate.exchange(buildUrl(WaterMeterConstant.CREATE_SUBJECT_URL, null), HttpMethod.POST,
+                        new HttpEntity<>(req, null),
                         new ParameterizedTypeReference<WaterMeterCommandControlResp>() {
                         });
         WaterMeterCommandControlResp body = responseEntity.getBody();
         if (Objects.isNull(body)) {
             throw new BusinessException(ErrorCode.BUSINESS_EXCEPTION.code(), "下发阀控指令返回为空");
         }
-        if (!body.success()) {
+        List<WaterMeterCommandControlResp.RespInfo> rows = body.getRows();
+        if (CollectionUtils.isEmpty(rows) || !rows.get(0).success()) {
             log.error("下发阀控指令：" + JsonUtil.writeValueAsString(body));
-            throw new BusinessException(ErrorCode.BUSINESS_EXCEPTION.code(), "下发阀控指令返回异常");
+            throw new BusinessException(ErrorCode.BUSINESS_EXCEPTION.code(), "物联网水表（山东科德）接口调用异常-" + rows.get(0).getMessage());
         }
-        return body;
+        return rows.get(0);
     }
 
     /**
