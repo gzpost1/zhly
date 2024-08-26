@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
-import cn.cuiot.dmp.common.bean.external.YFPortraitInputBO;
+import cn.cuiot.dmp.common.bean.external.YFEntranceGuardBO;
 import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
@@ -106,7 +106,7 @@ public class UniUbiService {
             throw new BusinessException(ResultCode.PLATFORM_NOT_CONFIG);
         }
         //json转Object
-        YFPortraitInputBO bo = FootPlateInfoEnum.getObjectFromJsonById(FootPlateInfoEnum.YF_ENTRANCE_GUARD.getId(), json);
+        YFEntranceGuardBO bo = FootPlateInfoEnum.getObjectFromJsonById(FootPlateInfoEnum.YF_ENTRANCE_GUARD.getId(), json);
         PortraitInputInfoDto configInfo = BeanMapper.copyBean(bo, PortraitInputInfoDto.class);
         String token;
         try {
