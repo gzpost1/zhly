@@ -14,7 +14,7 @@ public class YFPortraitInputBO {
     /**
      * AppKey
      */
-    private String appkey;
+    private String appKey;
 
     /**
      * AppSecret
