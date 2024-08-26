@@ -16,9 +16,9 @@
             resultType="cn.cuiot.dmp.system.infrastructure.entity.vo.PortraitInputVo">
         SELECT
         tpi.url,
-        tpi.phone,
+        CONCAT(LEFT(tpi.phone,3),'****',RIGHT(tpi.phone,4)) AS phone,
         tpi.card_no,
-        tpi.id_card_no,
+        CONCAT(LEFT(tpi.id_card_no,3),'***********',RIGHT(tpi.id_card_no,4)) AS idCardNo,
         tpi.password,
         tpi.tag,
         tpi.create_user,
