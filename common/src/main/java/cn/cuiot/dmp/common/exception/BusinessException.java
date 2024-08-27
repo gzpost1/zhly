@@ -31,7 +31,7 @@ public class BusinessException extends RuntimeException {
     }
 
     public BusinessException(ResultCode resultCode, String exceptionMessage) {
-        super(resultCode.getMessage());
+        super(StringUtils.isNotBlank(exceptionMessage) ? exceptionMessage : resultCode.getMessage());
         if(StringUtils.isNotBlank(exceptionMessage)){
             this.exceptionMessage = exceptionMessage;
         }
@@ -55,7 +55,7 @@ public class BusinessException extends RuntimeException {
     /**
      * 获取异常编码
      *
-     * @return
+     * @return String
      */
     public String getErrorCode() {
         return errorCode;
@@ -64,7 +64,7 @@ public class BusinessException extends RuntimeException {
     /**
      * 获取异常消息
      *
-     * @return
+     * @return String
      */
     public String getErrorMessage() {
 

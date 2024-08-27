@@ -18,4 +18,9 @@ public interface Constant {
      *
      */
     String OPERATION_FAILED_CODE = "400";
+
+    /**
+     * 门禁（宇泛）分页页面最大数
+     */
+    Integer UNI_UBI_PAGE_LENGTH_MAX = 100;
 }

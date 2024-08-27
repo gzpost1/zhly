@@ -9,6 +9,7 @@
         <result property="deviceId" column="device_id"/>
         <result property="imei" column="imei"/>
         <result property="reportTime" column="report_time"/>
+        <result property="reportDate" column="report_date"/>
         <result property="outputParams" column="output_params"
                 typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
         <result property="areaCode" column="area_code"/>

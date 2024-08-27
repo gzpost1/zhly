@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentTreeVO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CommonOptionSettingMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +84,9 @@ public class ApiController {
 
     @Autowired
     private UserHouseAuditService userHouseAuditService;
+
+    @Autowired
+    private PlatfromInfoService platfromInfoService;
 
     /**
      * 获取权限菜单
@@ -296,5 +300,16 @@ public class ApiController {
         AssertUtil.isFalse(CollectionUtils.isEmpty(dto.getIdList()),"常用选项设置ID列表不能为空");
         List<CommonOptionSettingEntity> entityList = commonOptionSettingMapper.selectBatchIds(dto.getIdList());
         return IdmResDTO.success(BeanMapper.mapList(entityList, CommonOptionSettingRspDTO.class));
+    }
+
+    /**
+     * 外部平台参数信息分页查询
+     *
+     * @return IdmResDTO<IPage>
+     * @Param
+     */
+    @PostMapping("/queryPlatfromInfoPage")
+    public IdmResDTO<Page<PlatfromInfoRespDTO>> queryPlatfromInfoPage(@RequestBody PlatfromInfoReqDTO dto) {
+        return IdmResDTO.success(platfromInfoService.queryForPage(dto));
     }
 }

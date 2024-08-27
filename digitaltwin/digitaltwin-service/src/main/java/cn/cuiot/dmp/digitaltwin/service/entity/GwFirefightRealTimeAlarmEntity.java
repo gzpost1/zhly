@@ -1,12 +1,12 @@
 package cn.cuiot.dmp.digitaltwin.service.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
+import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -15,9 +15,10 @@ import java.util.Date;
  * @Author: zc
  * @Date: 2024-06-14
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("tb_gw_firefight_realtime_alarm")
-public class GwFirefightRealTimeAlarmEntity {
+public class GwFirefightRealTimeAlarmEntity extends YjBaseEntity {
     /**
      * id
      */
@@ -55,6 +56,11 @@ public class GwFirefightRealTimeAlarmEntity {
     private Date reportTime;
 
     /**
+     * 上报日期
+     */
+    private LocalDate reportDate;
+
+    /**
      * 火警/故障处 理状态
      */
     private String alarmStatus;
@@ -63,11 +69,4 @@ public class GwFirefightRealTimeAlarmEntity {
      * 区县编码
      */
     private String areaCode;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createTime;
 }

@@ -1,9 +1,11 @@
 package cn.cuiot.dmp.system.application.service;
 
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
+import cn.cuiot.dmp.common.bean.external.YFPortraitInputBO;
 import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.JsonUtil;
@@ -23,10 +25,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.lettuce.core.ScriptOutputType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.record.DVALRecord;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -41,8 +42,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
 
@@ -96,10 +95,18 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         }
 
         //获取大华配置
-        PortraitInputInfoDto inputDto =  getBaseMapper().queryPlatfromInfo(LoginInfoHolder.getCurrentOrgId());
-        if(Objects.isNull(inputDto)){
+        Long id = FootPlateInfoEnum.YF_PORTRAIT_INPUT.getId();
+        String json = getBaseMapper().queryPlatfromInfo(LoginInfoHolder.getCurrentOrgId(), id);
+
+        if(StringUtils.isBlank(json)){
             return IdmResDTO.error(ResultCode.PLATFORM_NOT_CONFIG.getCode(),ResultCode.PLATFORM_NOT_CONFIG.getMessage());
         }
+
+        //json转Object
+        YFPortraitInputBO bo = FootPlateInfoEnum.getObjectFromJsonById(id, json);
+        PortraitInputInfoDto inputDto = new PortraitInputInfoDto();
+        BeanUtils.copyProperties(bo, inputDto);
+
         //创建识别主体
         String admitGuid = createSubject(createDto, inputDto);
         //注册人像
@@ -259,6 +266,16 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
                 (new Page<>(para.getPageNo()
                         ,para.getPageSize()),para);
         return IdmResDTO.success(page);
+    }
+
+    /**
+     * 分页查询
+     * @param para
+     * @return
+     */
+    public IPage<PortraitInputVo> queryPortraitInputPage(PortraitInputDTO para) {
+        para.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        return baseMapper.queryPortraitInputPage(new Page<>(para.getPageNo(),para.getPageSize()), para);
     }
 
     /**

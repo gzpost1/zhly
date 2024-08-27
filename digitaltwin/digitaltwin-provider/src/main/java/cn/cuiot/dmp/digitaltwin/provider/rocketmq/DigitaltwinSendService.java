@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.digitaltwin.provider.rocketmq;
 
-import cn.cuiot.dmp.digitaltwin.service.dto.*;
+import cn.cuiot.dmp.digitaltwin.service.entity.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;

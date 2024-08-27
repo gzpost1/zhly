@@ -1,14 +1,16 @@
 package cn.cuiot.dmp.digitaltwin.service.service;
 
-import cn.cuiot.dmp.digitaltwin.service.dto.*;
 import cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceArchitecturalEntity;
 import cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceEntity;
 import cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceNotifierEntity;
 import cn.cuiot.dmp.digitaltwin.service.entity.GwFirefightDeviceUnitEntity;
+import cn.cuiot.dmp.digitaltwin.service.entity.dto.*;
+import cn.cuiot.dmp.digitaltwin.service.enums.GwFirefightDeviceEnum;
 import cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceArchitecturalMapper;
 import cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceMapper;
 import cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceNotifierMapper;
 import cn.cuiot.dmp.digitaltwin.service.mapper.GwFirefightDeviceUnitMapper;
+import cn.cuiot.dmp.digitaltwin.service.entity.query.GwFirefightDeviceQuery;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.BeanUtils;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,53 +50,59 @@ public class GwFirefightDeviceService extends ServiceImpl<GwFirefightDeviceMappe
      * @Param dto 参数
      */
     public void save(GwFirefightDeviceDto dto) {
-        GwFirefightDeviceEntity deviceEntity = Optional.ofNullable(baseMapper.getDeviceByDeviceId(dto.getId()))
+        // 初始化设备实体和父ID
+        GwFirefightDeviceEntity deviceEntity = Optional.ofNullable(dto.getDeviceId())
+                .map(deviceId -> baseMapper.getDeviceByDeviceId(deviceId))
                 .orElseGet(GwFirefightDeviceEntity::new);
+
+        // 复制属性值
         BeanUtils.copyProperties(dto, deviceEntity);
 
-        if (Objects.nonNull(deviceEntity.getId())) {
-            //保存设备信息
-            updateById(deviceEntity);
-            //删除历史数据
-            baseMapper.deleteByDeviceId(dto.getId());
-            //删除数据库数据
-            unitMapper.deleteByParentId(deviceEntity.getId());
-            //删除联系人
-            notifierMapper.deleteByParentId(deviceEntity.getId());
-        }else {
+        if (Objects.isNull(deviceEntity.getId())) {
+            // 新增设备
             deviceEntity.setId(IdWorker.getId());
             save(deviceEntity);
+        } else {
+            // 更新设备
+            deviceEntity.setUpdateTime(new Date());
+            baseMapper.updateEntity(deviceEntity);
         }
 
+        // 操作设备关联信息
+        saveDeviceRelation(dto, deviceEntity.getId());
+    }
+
+    /**
+     * 保存设备关联信息
+     *
+     * @Param dto
+     * @Param parentId 设备id
+     */
+    private void saveDeviceRelation(GwFirefightDeviceDto dto, Long parentId) {
+        //删除数据库单位数据
+        unitMapper.deleteByParentId(parentId);
         //保存单位信息
         GwFirefightDeviceUnitDto unitDto = dto.getUnitDto();
         if (Objects.nonNull(unitDto)) {
-            GwFirefightDeviceUnitEntity unitEntity = new GwFirefightDeviceUnitEntity();
-            BeanUtils.copyProperties(unitDto, unitEntity);
-            unitEntity.setParentId(deviceEntity.getId());
-            unitEntity.setUnitId(unitDto.getId());
-            unitMapper.insert(unitEntity);
+            unitMapper.insert(GwFirefightDeviceUnitEntity.dtoToEntity(unitDto, parentId));
         }
 
+        //删除数据库建筑对象数据
+        architecturalMapper.deleteByParentId(parentId);
         //保存建筑信息
         GwFirefightDeviceArchitecturalDto architecturalDto = dto.getArchitecturalDto();
         if (Objects.nonNull(architecturalDto)) {
-            GwFirefightDeviceArchitecturalEntity architecturalEntity = new GwFirefightDeviceArchitecturalEntity();
-            BeanUtils.copyProperties(architecturalDto, architecturalEntity);
-            architecturalEntity.setParentId(deviceEntity.getId());
-            architecturalEntity.setArchitecturalId(architecturalDto.getId());
-            architecturalMapper.insert(architecturalEntity);
+            architecturalMapper.insert(GwFirefightDeviceArchitecturalEntity.dtoToEntity(architecturalDto, parentId));
         }
 
+        //删除数据库联系人数据
+        notifierMapper.deleteByParentId(parentId);
         //保存联系人
-        List<GwFirefightDeviceNotifierDto> notifierList = dto.getNotifierList();
+        List<GwFirefightDeviceNotifierDto> notifierList = dto.getNotifiers();
         if (CollectionUtils.isNotEmpty(notifierList)) {
-            List<GwFirefightDeviceNotifierEntity> collect = notifierList.stream().map(item -> {
-                GwFirefightDeviceNotifierEntity notifierEntity = new GwFirefightDeviceNotifierEntity();
-                BeanUtils.copyProperties(item, notifierEntity);
-                notifierEntity.setParentId(deviceEntity.getId());
-                return notifierEntity;
-            }).collect(Collectors.toList());
+            List<GwFirefightDeviceNotifierEntity> collect = notifierList.stream()
+                    .map(item -> GwFirefightDeviceNotifierEntity.dtoToEntity(item, parentId))
+                    .collect(Collectors.toList());
             notifierMapper.batchInsert(collect);
         }
     }
@@ -118,8 +127,21 @@ public class GwFirefightDeviceService extends ServiceImpl<GwFirefightDeviceMappe
             log.error("格物消防设备状态更新失败，不存在该设备【{}】", dto.getDeviceId());
             return;
         }
-        GwFirefightDeviceEntity deviceEntity = list.get(0);
-        deviceEntity.setStatus(deviceEntity.getStatus());
-        updateById(deviceEntity);
+        baseMapper.updateStatus(list.get(0).getId(), dto.getStatus());
+    }
+
+    /**
+     * 查询最新设备的状态
+     * @Param
+     * @return String 设备状态
+     */
+    public String queryDeviceStatus(GwFirefightDeviceQuery query) {
+        if (StringUtils.isBlank(query.getDeviceId())) {
+            return GwFirefightDeviceEnum.OFF_LINE.getCode();
+        }
+        GwFirefightDeviceEntity device = getOne(new LambdaQueryWrapper<GwFirefightDeviceEntity>()
+                .eq(GwFirefightDeviceEntity::getDeviceId, query.getDeviceId())
+                .last(" LIMIT 1"));
+        return Objects.nonNull(device) ? device.getStatus() : GwFirefightDeviceEnum.OFF_LINE.getCode();
     }
 }
