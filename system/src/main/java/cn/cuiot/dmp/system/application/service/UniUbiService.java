@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.application.service;
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
 import cn.cuiot.dmp.common.bean.external.YFEntranceGuardBO;
 import cn.cuiot.dmp.common.constant.ErrorCode;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -15,6 +16,7 @@ import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiDeviceQueryReq;
 import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiDeviceRespInfo;
 import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiPage;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputInfoDto;
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -70,6 +73,24 @@ public class UniUbiService {
         return JSONObject.parseObject(JSONObject.toJSONString(body.getData()), new TypeReference<UniUbiPage<UniUbiDeviceRespInfo>>(){});
     }
 
+    /**
+     * 同步设备信息
+     * @return
+     */
+    public IdmResDTO syncDeviceData(){
+        Integer index = 1;
+        Integer length = 30;
+        while (true){
+            UniUbiPage<UniUbiDeviceRespInfo> uniUbiDeviceRespInfoUniUbiPage = queryDevicePageV2(new UniUbiDeviceQueryReq(index, length));
+            List<UniUbiDeviceRespInfo> content = uniUbiDeviceRespInfoUniUbiPage.getContent();
+            if(CollectionUtil.isEmpty(content)){
+                break;
+            }
+
+        }
+
+        return IdmResDTO.success();
+    }
     /**
      * 设备操作指令下发（重启/重置）
      *
