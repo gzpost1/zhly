@@ -1,8 +1,8 @@
 package cn.cuiot.dmp.externalapi.provider.controller.video;
 
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.externalapi.service.entity.video.query.VideoPageQuery;
-import cn.cuiot.dmp.externalapi.service.entity.video.vo.VideoPageVo;
+import cn.cuiot.dmp.externalapi.service.query.video.VideoPageQuery;
+import cn.cuiot.dmp.externalapi.service.vo.video.VideoPageVo;
 import cn.cuiot.dmp.externalapi.service.service.video.VideoPlayService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;

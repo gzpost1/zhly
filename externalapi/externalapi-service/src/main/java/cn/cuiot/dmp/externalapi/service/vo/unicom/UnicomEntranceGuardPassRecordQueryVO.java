@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.service.entity.unicom.vo;
+package cn.cuiot.dmp.externalapi.service.vo.unicom;
 
 import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;

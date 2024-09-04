@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.service.entity.watermeter.vo;
+package cn.cuiot.dmp.externalapi.service.vo.watermeter;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

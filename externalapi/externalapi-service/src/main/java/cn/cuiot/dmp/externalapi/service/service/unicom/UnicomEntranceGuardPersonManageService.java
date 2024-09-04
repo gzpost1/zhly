@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.service.unicom;
 
 import cn.cuiot.dmp.externalapi.service.entity.unicom.UnicomEntranceGuardPersonManageEntity;
-import cn.cuiot.dmp.externalapi.service.entity.unicom.vo.UnicomEntranceGuardPersonManageQueryVO;
+import cn.cuiot.dmp.externalapi.service.vo.unicom.UnicomEntranceGuardPersonManageQueryVO;
 import cn.cuiot.dmp.externalapi.service.mapper.unicom.UnicomEntranceGuardPersonManageMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;

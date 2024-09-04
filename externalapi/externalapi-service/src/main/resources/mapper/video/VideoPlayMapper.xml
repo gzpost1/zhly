@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.video.VideoPlayMapper">
 
-    <select id="queryForPage" parameterType="cn.cuiot.dmp.externalapi.service.entity.video.query.VideoPageQuery"
-            resultType="cn.cuiot.dmp.externalapi.service.entity.video.vo.VideoPageVo">
+    <select id="queryForPage" parameterType="cn.cuiot.dmp.externalapi.service.query.video.VideoPageQuery"
+            resultType="cn.cuiot.dmp.externalapi.service.vo.video.VideoPageVo">
         SELECT
             a.device_id,
             a.device_name,

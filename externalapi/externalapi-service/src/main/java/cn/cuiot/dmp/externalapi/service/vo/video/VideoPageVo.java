@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.service.entity.video.vo;
+package cn.cuiot.dmp.externalapi.service.vo.video;
 
 import lombok.Data;
 

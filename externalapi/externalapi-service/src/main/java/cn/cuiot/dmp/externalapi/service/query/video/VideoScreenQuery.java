@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.service.entity.video.query;
+package cn.cuiot.dmp.externalapi.service.query.video;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;

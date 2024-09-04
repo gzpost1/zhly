@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.service.entity.watermeter.vo;
+package cn.cuiot.dmp.externalapi.service.vo.watermeter;
 
 import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.AllArgsConstructor;
