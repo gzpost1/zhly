@@ -20,7 +20,15 @@ public class VideoPageQuery extends PageQuery {
     private String deviceName;
 
     /**
-     * 企业ID（前端不用传）
+     * 楼盘id
      */
-    private Long companyId;
+    private Long buildingId;
+
+    /**
+     * 设备状态
+     * 1: 未注册
+     * 2: 在线
+     * 3: 离线
+     */
+    private Integer state;
 }

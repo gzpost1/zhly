@@ -12,6 +12,11 @@ import lombok.Data;
 public class VideoPageVo {
 
     /**
+     * id
+     */
+    private Long id;
+
+    /**
      * 设备id
      */
     private String deviceId;
@@ -45,4 +50,14 @@ public class VideoPageVo {
      * flv流地址
      */
     private String flv;
+
+    /**
+     * 楼盘id
+     */
+    private Long buildingId;
+
+    /**
+     * 楼盘名称
+     */
+    private String buildingName;
 }
