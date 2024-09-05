@@ -24,13 +24,11 @@ public class TbPersonGroupRelationService extends ServiceImpl<PersonGroupRelatio
      * 保存或更新
      */
     public void createOrUpdate(PersonGroupRelationEntity entity) {
-        AssertUtil.isFalse(Objects.isNull(entity.getCompanyId()), "companyId不能为空");
         AssertUtil.isFalse(Objects.isNull(entity.getBusinessType()), "businessType不能为空");
         AssertUtil.isFalse(Objects.isNull(entity.getDataId()), "dataId不能为空");
         AssertUtil.isFalse(Objects.isNull(entity.getPersonGroupId()), "personGroupId不能为空");
 
         List<PersonGroupRelationEntity> list = list(new LambdaQueryWrapper<PersonGroupRelationEntity>()
-                .eq(PersonGroupRelationEntity::getCompanyId, entity.getCompanyId())
                 .eq(PersonGroupRelationEntity::getBusinessType, entity.getBusinessType())
                 .eq(PersonGroupRelationEntity::getDataId, entity.getDataId()));
         if (CollectionUtils.isNotEmpty(list)) {
@@ -46,12 +44,10 @@ public class TbPersonGroupRelationService extends ServiceImpl<PersonGroupRelatio
      * 删除
      */
     public void delete(PersonGroupRelationEntity entity) {
-        AssertUtil.isFalse(Objects.isNull(entity.getCompanyId()), "companyId不能为空");
         AssertUtil.isFalse(Objects.isNull(entity.getBusinessType()), "businessType不能为空");
         AssertUtil.isFalse(Objects.isNull(entity.getDataId()), "dataId不能为空");
 
         List<PersonGroupRelationEntity> list = list(new LambdaQueryWrapper<PersonGroupRelationEntity>()
-                .eq(PersonGroupRelationEntity::getCompanyId, entity.getCompanyId())
                 .eq(PersonGroupRelationEntity::getBusinessType, entity.getBusinessType())
                 .eq(PersonGroupRelationEntity::getDataId, entity.getDataId()));
         if (CollectionUtils.isNotEmpty(list)) {

@@ -5,7 +5,6 @@
     <!--@mbg.generated-->
     <!--@Table tb_person_group_relation-->
     <id column="id" jdbcType="BIGINT" property="id" />
-    <result column="company_id" jdbcType="BIGINT" property="companyId" />
     <result column="business_type" jdbcType="TINYINT" property="businessType" />
     <result column="data_id" jdbcType="BIGINT" property="dataId" />
     <result column="person_group_id" jdbcType="BIGINT" property="personGroupId" />
@@ -17,7 +16,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, company_id, business_type, data_id, person_group_id, update_time, update_user, create_time,
+    id, business_type, data_id, person_group_id, update_time, update_user, create_time,
     create_user, deleted
   </sql>
 </mapper>

@@ -26,12 +26,6 @@ public class PersonGroupRelationEntity extends YjBaseEntity {
     private Long id;
 
     /**
-     * 企业ID
-     */
-    @TableField(value = "company_id")
-    private Long companyId;
-
-    /**
      * 业务类型（1:宇泛门禁；2:格物门禁）
      */
     @TableField(value = "business_type")
