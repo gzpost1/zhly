@@ -45,9 +45,26 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
     }
 
     /**
+     * 分页查询
+     *
+     * @return List
+     * @Param query 参数
+     */
+    public List<PersonGroupEntity> queryForList(PersonGroupPageQuery query) {
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+
+        LambdaQueryWrapper<PersonGroupEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(StringUtils.isNotBlank(query.getName()), PersonGroupEntity::getName, query.getName());
+        wrapper.eq(PersonGroupEntity::getCompanyId, companyId);
+        wrapper.orderByDesc(PersonGroupEntity::getCreateTime);
+
+        return list(wrapper);
+    }
+
+    /**
      * 根据id获取分组名称
-     * @param ids
-     * @return
+     * @param ids id列表
+     * @return list
      */
     public List<PersonGroupEntity> queryPersonGroupByIds(List<Long> ids){
        return getBaseMapper().selectBatchIds(ids);

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.gw.GwEntranceGuardPersonMapper">
+
+    <select id="isExistsIcCardNo" resultType="boolean">
+        SELECT EXISTS(
+           SELECT 1 FROM tb_gw_entrance_guard_person
+           WHERE ic_card_no = #{icCardNo}
+        <if test="id != null">
+            AND id != #{id}
+        </if>
+        ) AS exists_result;
+    </select>
+</mapper>
