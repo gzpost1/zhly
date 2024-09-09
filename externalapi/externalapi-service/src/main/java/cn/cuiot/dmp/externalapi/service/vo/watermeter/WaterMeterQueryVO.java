@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * 物联网水表（山东科德）上报数据 查询VO
  *
@@ -24,4 +26,18 @@ public class WaterMeterQueryVO extends PageQuery {
      */
     private String wsImei;
 
+    /**
+     * 楼盘id
+     */
+    private List<Long> communityIds;
+
+    /**
+     * 水表名称
+     */
+    private String waterName;
+
+    /**
+     * 阀门状态
+     */
+    private String valveStatus;
 }

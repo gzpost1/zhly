@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.system.application.service;
+package cn.cuiot.dmp.externalapi.service.service.park;
 
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
 import cn.cuiot.dmp.common.bean.external.YFEntranceGuardBO;
@@ -10,15 +10,10 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.cuiot.dmp.system.application.constant.PortraitInputConstant;
-import cn.cuiot.dmp.system.infrastructure.entity.AccessControlEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.PortraitInputEntity;
-import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiCommandReq;
-import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiDeviceQueryReq;
-import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiDeviceRespInfo;
-import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiPage;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputInfoDto;
-import cn.hutool.core.collection.CollectionUtil;
+import cn.cuiot.dmp.externalapi.service.constant.PortraitInputConstant;
+import cn.cuiot.dmp.externalapi.service.entity.park.AccessControlEntity;
+import cn.cuiot.dmp.externalapi.service.query.*;
+
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;

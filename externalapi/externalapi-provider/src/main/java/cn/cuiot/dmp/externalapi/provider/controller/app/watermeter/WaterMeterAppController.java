@@ -3,6 +3,8 @@ package cn.cuiot.dmp.externalapi.provider.controller.app.watermeter;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.utils.PageUtils;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.externalapi.service.entity.water.WaterManagementEntity;
+import cn.cuiot.dmp.externalapi.service.service.water.WaterManagementService;
 import cn.cuiot.dmp.externalapi.service.vo.watermeter.WaterMeterOperateVO;
 import cn.cuiot.dmp.externalapi.service.vo.watermeter.WaterMeterQueryVO;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean.WaterMeterCommandControlReq;
@@ -33,6 +35,9 @@ public class WaterMeterAppController {
     @Autowired
     private WaterMeterService waterMeterService;
 
+    @Autowired
+    private WaterManagementService waterManagementService;
+
 
     /**
      * 查询分页
@@ -40,12 +45,25 @@ public class WaterMeterAppController {
      * @param vo
      * @return
      */
-    @PostMapping(value = "/queryForPage")
+    @PostMapping(value = "/queryOldForPage")
     @RequiresPermissions
-    public IdmResDTO<IPage<WaterMeterReportDataResp>> queryForPage(@RequestBody WaterMeterQueryVO vo) {
+    public IdmResDTO<IPage<WaterMeterReportDataResp>> queryOldForPage(@RequestBody WaterMeterQueryVO vo) {
         WaterMeterPage<WaterMeterReportDataResp> waterMeterPage = waterMeterService.queryReportData(new WaterMeterReportDataQueryReq(vo));
         //分页
         return IdmResDTO.success(PageUtils.page(vo.getPageNo(), vo.getPageSize(), waterMeterPage.getData()));
+    }
+
+
+    /**
+     * 查询分页-新
+     *
+     * @param vo
+     * @return
+     */
+    @PostMapping(value = "/queryForPage")
+    @RequiresPermissions
+    public IdmResDTO<IPage<WaterManagementEntity>> queryForPage(@RequestBody WaterMeterQueryVO vo){
+        return waterManagementService.queryForPage(vo);
     }
 
     /**
@@ -57,7 +75,7 @@ public class WaterMeterAppController {
     @PostMapping(value = "/operate")
     @RequiresPermissions
     public IdmResDTO open(@RequestBody @Valid WaterMeterOperateVO vo) {
-        return IdmResDTO.success(waterMeterService.deviceCommandV2(
+        return IdmResDTO.success(waterManagementService.deviceCommandV2(
                 new WaterMeterCommandControlReq(
                         Lists.newArrayList(
                                 new WaterMeterCommandControlReq.CommandControlInfo(vo)

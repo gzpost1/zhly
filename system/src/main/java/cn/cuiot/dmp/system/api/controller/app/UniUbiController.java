@@ -36,7 +36,7 @@ public class UniUbiController {
      * @return
      */
     @PostMapping(value = "/queryForPage")
-    @RequiresPermissions
+//    @RequiresPermissions
     public IdmResDTO<IPage<UniUbiDeviceRespInfo>> queryForPage(@RequestBody UniUbiEntranceGuardQueryVO vo) {
         //参数转换
         UniUbiPage<UniUbiDeviceRespInfo> uniUbiPage = uniUbiService.queryDevicePageV2(new UniUbiDeviceQueryReq(vo));

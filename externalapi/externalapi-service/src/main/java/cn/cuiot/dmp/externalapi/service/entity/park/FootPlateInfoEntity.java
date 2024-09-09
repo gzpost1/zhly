@@ -1,10 +1,11 @@
-package cn.cuiot.dmp.system.infrastructure.entity;
+package cn.cuiot.dmp.externalapi.service.entity.park;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import java.io.Serializable;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
 
 /**
  * @author pengjian

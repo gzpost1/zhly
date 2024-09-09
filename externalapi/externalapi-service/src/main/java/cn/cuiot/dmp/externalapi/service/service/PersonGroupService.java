@@ -45,6 +45,14 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
     }
 
     /**
+     * 根据id获取分组名称
+     * @param ids
+     * @return
+     */
+    public List<PersonGroupEntity> queryPersonGroupByIds(List<Long> ids){
+       return getBaseMapper().selectBatchIds(ids);
+    }
+    /**
      * 详情
      *
      * @return PersonGroupEntity
