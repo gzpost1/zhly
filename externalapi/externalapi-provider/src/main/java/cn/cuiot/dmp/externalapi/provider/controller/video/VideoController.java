@@ -2,6 +2,7 @@ package cn.cuiot.dmp.externalapi.provider.controller.video;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.externalapi.provider.task.VideoTask;
 import cn.cuiot.dmp.externalapi.service.query.video.VideoBatchSetBuildingIdQuery;
@@ -46,15 +47,26 @@ public class VideoController {
 
     /**
      * 更新
-     *
-     * @return IPage
-     * @Param
      */
     @RequiresPermissions
     @LogRecord(operationCode = "updateVideoDevice", operationName = "修改监控设备", serviceType = "videoDevice", serviceTypeName = "监控设备管理")
     @PostMapping("/update")
     public IdmResDTO<?> update(@RequestBody @Valid VideoUpdateDTO dto) {
         videoDeviceService.update(dto);
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 删除
+     *
+     * @return IPage
+     * @Param
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "deleteVideoDevice", operationName = "删除监控设备", serviceType = "videoDevice", serviceTypeName = "监控设备管理")
+    @PostMapping("/delete")
+    public IdmResDTO<?> delete(@RequestBody @Valid IdsParam param) {
+        videoDeviceService.delete(param.getIds());
         return IdmResDTO.success();
     }
 

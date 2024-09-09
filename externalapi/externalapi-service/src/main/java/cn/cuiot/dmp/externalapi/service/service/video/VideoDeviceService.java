@@ -1,13 +1,16 @@
 package cn.cuiot.dmp.externalapi.service.service.video;
 
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoDeviceEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoPlayEntity;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
@@ -144,8 +147,8 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
             //查询楼盘信息
             List<Long> buildings = records.stream().map(VideoPageVo::getBuildingId).filter(Objects::nonNull).distinct()
                     .collect(Collectors.toList());
-            List<HousesArchivesVo> housesArchivesVos = queryBuildingInfo(buildings);
-            Map<Long, HousesArchivesVo> buildingMap = housesArchivesVos.stream().collect(Collectors.toMap(HousesArchivesVo::getId, e -> e));
+            List<BuildingArchive> buildingArchives = queryBuildingInfo(buildings);
+            Map<Long, BuildingArchive> buildingMap = buildingArchives.stream().collect(Collectors.toMap(BuildingArchive::getId, e -> e));
 
             //设置数据
             for (VideoPageVo item : records) {
@@ -182,6 +185,29 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
     }
 
     /**
+     * 删除设备
+     */
+    public void delete(List<Long> ids) {
+        //企业id
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+
+        List<VideoDeviceEntity> list = list(new LambdaQueryWrapper<VideoDeviceEntity>()
+                .eq(VideoDeviceEntity::getCompanyId, companyId));
+        if (CollectionUtils.isEmpty(list)) {
+            throw new BusinessException(ResultCode.ERROR, "数据不存在");
+        }
+
+        //判断设备id列表是否都属于该企业的设备
+        List<VideoDeviceEntity> collect = list.stream().filter(e -> !ids.contains(e.getId())).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(collect)) {
+            List<String> deviceNames = collect.stream().map(VideoDeviceEntity::getDeviceName).collect(Collectors.toList());
+            throw new BusinessException(ResultCode.ERROR, "监控【" + String.join(",", deviceNames) + "】不属于该企业");
+        }
+
+        removeByIds(ids);
+    }
+
+    /**
      * 监控设备批量设置楼盘
      *
      * @Param query 参数
@@ -204,9 +230,9 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
     /**
      * 查询楼盘信息
      */
-    private List<HousesArchivesVo> queryBuildingInfo(List<Long> buildingIds) {
-        IdsReq idsReq = new IdsReq();
-        idsReq.setIds(buildingIds);
-        return systemApiService.queryHousesList(idsReq);
+    private List<BuildingArchive> queryBuildingInfo(List<Long> buildingIds) {
+        BuildingArchiveReq req = new BuildingArchiveReq();
+        req.setIdList(buildingIds);
+        return systemApiService.buildingArchiveQueryForList(req);
     }
 }
