@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.gw.GwEntranceGuardMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardEntity">
+    <!--@mbg.generated-->
+    <!--@Table tb_gw_entrance_guard-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="dept_id" jdbcType="BIGINT" property="deptId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="building_id" jdbcType="BIGINT" property="buildingId" />
+    <result column="brand_id" jdbcType="BIGINT" property="brandId" />
+    <result column="model_id" jdbcType="BIGINT" property="modelId" />
+    <result column="sn" jdbcType="VARCHAR" property="sn" />
+    <result column="direction" jdbcType="INTEGER" property="direction" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="latitude" jdbcType="DECIMAL" property="latitude" />
+    <result column="longitude" jdbcType="DECIMAL" property="longitude" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="update_user" jdbcType="BIGINT" property="updateUser" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_user" jdbcType="BIGINT" property="createUser" />
+    <result column="deleted" jdbcType="TINYINT" property="deleted" />
+    <result column="equip_status" jdbcType="TINYINT" property="equipStatus" />
+    <result column="product_key" jdbcType="TINYINT" property="productKey" />
+    <result column="device_key" jdbcType="TINYINT" property="deviceKey" />
+    <result column="iot_id" jdbcType="TINYINT" property="iotId" />
+    <result column="device_secret" jdbcType="TINYINT" property="deviceSecret" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, company_id, dept_id, `name`, building_id, brand_id, model_id, sn, direction, address,
+    latitude, longitude, remark, status, equip_status, update_time, update_user, create_time, create_user,
+    deleted, product_key, device_key, iot_id, device_secret
+  </sql>
+</mapper>

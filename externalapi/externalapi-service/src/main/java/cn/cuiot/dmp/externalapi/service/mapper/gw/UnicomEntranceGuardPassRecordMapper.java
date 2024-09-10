@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.service.mapper.unicom;
+package cn.cuiot.dmp.externalapi.service.mapper.gw;
 
 import cn.cuiot.dmp.externalapi.service.entity.unicom.UnicomEntranceGuardPassRecordEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;

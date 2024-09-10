@@ -115,4 +115,10 @@ public class GwEntranceGuardPersonEntity extends YjBaseEntity {
      */
     @TableField(value = "deviceSecret")
     private String deviceSecret;
+
+    /**
+     * 授权 0-未授权；1-已授权
+     */
+    @TableField(value = "authorize")
+    private Byte authorize;
 }

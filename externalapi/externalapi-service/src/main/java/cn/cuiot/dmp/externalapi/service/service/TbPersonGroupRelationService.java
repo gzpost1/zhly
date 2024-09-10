@@ -21,6 +21,13 @@ import java.util.Objects;
 public class TbPersonGroupRelationService extends ServiceImpl<PersonGroupRelationMapper, PersonGroupRelationEntity> {
 
     /**
+     * 是否存在关联数据
+     */
+    public Boolean isExistRelation(Byte businessType, Long personGroupId) {
+        return baseMapper.isExistRelation(businessType, personGroupId);
+    }
+
+    /**
      * 保存或更新
      */
     public void createOrUpdate(PersonGroupRelationEntity entity) {

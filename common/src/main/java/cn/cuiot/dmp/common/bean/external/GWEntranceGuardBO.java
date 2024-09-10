@@ -12,7 +12,17 @@ import lombok.Data;
 public class GWEntranceGuardBO {
 
     /**
-     * productKey
+     * 应用appId
+     */
+    private String appId;
+
+    /**
+     * 应用appSecret
+     */
+    private String appSecret;
+
+    /**
+     * 产品productKey
      */
     private String productKey;
 }

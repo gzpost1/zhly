@@ -3,6 +3,7 @@ package cn.cuiot.dmp.externalapi.service.service;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.externalapi.service.constant.PersonGroupRelationConstant;
 import cn.cuiot.dmp.externalapi.service.query.PersonGroupCreateDTO;
 import cn.cuiot.dmp.externalapi.service.query.PersonGroupPageQuery;
 import cn.cuiot.dmp.externalapi.service.query.PersonGroupUpdateDTO;
@@ -11,6 +12,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import cn.cuiot.dmp.externalapi.service.mapper.PersonGroupMapper;
@@ -26,6 +28,9 @@ import java.util.List;
  */
 @Service
 public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGroupEntity> {
+
+    @Autowired
+    private TbPersonGroupRelationService personGroupRelationService;
 
     /**
      * 分页查询
@@ -154,6 +159,12 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
 
         if (CollectionUtils.isEmpty(entityList)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
+        }
+
+        //判断关联表是否已存在数据
+        Boolean aBoolean = personGroupRelationService.isExistRelation(PersonGroupRelationConstant.GW_ENTRANCE_GUARD, id);
+        if (aBoolean) {
+            throw new BusinessException(ResultCode.ERROR, "当前分组已关联人员，无法删除");
         }
 
         removeById(id);

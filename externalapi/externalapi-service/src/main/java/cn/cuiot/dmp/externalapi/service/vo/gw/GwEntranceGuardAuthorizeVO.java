@@ -3,23 +3,23 @@ package cn.cuiot.dmp.externalapi.service.vo.gw;
 import lombok.Data;
 
 /**
- * 人员管理分页
+ * 格物门禁-授权 VO
  *
  * @Author: zc
  * @Date: 2024-09-09
  */
 @Data
-public class GwEntranceGuardPersonVO {
+public class GwEntranceGuardAuthorizeVO {
 
     /**
-     * 人员名称
+     * 门禁id
      */
-    private String name;
+    private Long entranceGuardId;
 
     /**
-     * 分组id
+     * 门禁名称
      */
-    private Long personGroupId;
+    private String entranceGuardName;
 
     /**
      * 授权 0-未授权；1-已授权

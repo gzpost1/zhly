@@ -19,4 +19,12 @@
     id, business_type, data_id, person_group_id, update_time, update_user, create_time,
     create_user, deleted
   </sql>
+
+    <select id="isExistRelation" resultType="boolean">
+        SELECT EXISTS(
+        SELECT 1 FROM tb_person_group_relation
+        WHERE business_type = #{businessType}
+        AND person_group_id != #{personGroupId}
+        ) AS exists_result;
+    </select>
 </mapper>

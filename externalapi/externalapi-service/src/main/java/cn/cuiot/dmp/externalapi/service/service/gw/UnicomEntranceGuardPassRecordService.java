@@ -1,8 +1,8 @@
-package cn.cuiot.dmp.externalapi.service.service.unicom;
+package cn.cuiot.dmp.externalapi.service.service.gw;
 
 import cn.cuiot.dmp.externalapi.service.entity.unicom.UnicomEntranceGuardPassRecordEntity;
 import cn.cuiot.dmp.externalapi.service.vo.unicom.UnicomEntranceGuardPassRecordQueryVO;
-import cn.cuiot.dmp.externalapi.service.mapper.unicom.UnicomEntranceGuardPassRecordMapper;
+import cn.cuiot.dmp.externalapi.service.mapper.gw.UnicomEntranceGuardPassRecordMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

@@ -1,10 +1,12 @@
 package cn.cuiot.dmp.externalapi.service.feign;
 
+import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -14,7 +16,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
 
@@ -58,25 +62,22 @@ public class SystemApiService {
     }
 
     /**
-     * 查询楼盘信息
-     *
-     * @return IPage
-     * @Param dto 参数
+     * 查询楼房信息
      */
-    public List<HousesArchivesVo> queryHousesList(IdsReq ids) {
+    public List<BuildingArchive> buildingArchiveQueryForList(@RequestBody @Valid BuildingArchiveReq buildingArchiveReq){
         try {
-            IdmResDTO<List<HousesArchivesVo>> idmResDTO = archiveFeignService.queryHousesList(ids);
-            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
-                    .equals(idmResDTO.getCode())) {
-                return idmResDTO.getData();
+            IdmResDTO<List<BuildingArchive>> listIdmResDTO = archiveFeignService
+                    .buildingArchiveQueryForList(buildingArchiveReq);
+            if (Objects.nonNull(listIdmResDTO) && Objects.equals(ResultCode.SUCCESS.getCode(), listIdmResDTO.getCode())) {
+                return listIdmResDTO.getData();
             }
             String message = null;
-            if (Objects.nonNull(idmResDTO)) {
-                message = idmResDTO.getMessage();
+            if (Objects.nonNull(listIdmResDTO)) {
+                message = listIdmResDTO.getMessage();
             }
             throw new RuntimeException(message);
         } catch (Exception ex) {
-            log.info("ApiSystemService==queryHousesList==fail", ex);
+            log.info("ApiSystemServiceImpl==buildingArchiveQueryForList==fail", ex);
             throw new BusinessException(ResultCode.QUERY_FORM_CONFIG_ERROR);
         }
     }

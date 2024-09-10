@@ -9,8 +9,8 @@ import cn.cuiot.dmp.externalapi.service.entity.PersonGroupRelationEntity;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardPersonEntity;
 import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardPersonCreateDto;
 import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardPersonUpdateDto;
+import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardPersonPageQuery;
 import cn.cuiot.dmp.externalapi.service.service.TbPersonGroupRelationService;
-import cn.cuiot.dmp.externalapi.service.vo.unicom.UnicomEntranceGuardPersonManageQueryVO;
 import cn.cuiot.dmp.externalapi.service.mapper.gw.GwEntranceGuardPersonMapper;
 import cn.hutool.core.util.IdcardUtil;
 import cn.hutool.core.util.StrUtil;
@@ -41,6 +41,38 @@ public class GwEntranceGuardPersonService extends ServiceImpl<GwEntranceGuardPer
 
     @Autowired
     private TbPersonGroupRelationService tbPersonGroupRelationService;
+
+    /**
+     * 查询分页
+     */
+    public IPage<GwEntranceGuardPersonEntity> queryForPage(GwEntranceGuardPersonPageQuery query) {
+        //企业id
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+
+        LambdaQueryWrapper<GwEntranceGuardPersonEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(GwEntranceGuardPersonEntity::getCompanyId, companyId);
+        wrapper.like(StringUtils.isNotBlank(query.getName()), GwEntranceGuardPersonEntity::getName, query.getName());
+        wrapper.eq(Objects.nonNull(query.getPersonGroupId()), GwEntranceGuardPersonEntity::getPersonGroupId, query.getPersonGroupId());
+        wrapper.eq(Objects.nonNull(query.getAuthorize()), GwEntranceGuardPersonEntity::getAuthorize, query.getAuthorize());
+        wrapper.orderByDesc(GwEntranceGuardPersonEntity::getCreateTime);
+
+        return page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
+    }
+
+    /**
+     * 详情
+     */
+    public GwEntranceGuardPersonEntity queryForDetail(Long id) {
+        //企业id
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+
+        LambdaQueryWrapper<GwEntranceGuardPersonEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(GwEntranceGuardPersonEntity::getCompanyId, companyId);
+        wrapper.eq(GwEntranceGuardPersonEntity::getId, id);
+        List<GwEntranceGuardPersonEntity> list = list(wrapper);
+
+        return CollectionUtils.isNotEmpty(list) ? list.get(0) : null;
+    }
 
     /**
      * 创建
@@ -96,12 +128,25 @@ public class GwEntranceGuardPersonService extends ServiceImpl<GwEntranceGuardPer
     /**
      * 删除
      */
+    @Transactional(rollbackFor = Exception.class)
     public void delete(List<Long> ids) {
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
+        List<GwEntranceGuardPersonEntity> gwEntranceGuardPersonList = checkPerson(ids, companyId);
 
-        List<GwEntranceGuardPersonEntity> list = list(new LambdaQueryWrapper<GwEntranceGuardPersonEntity>()
-                .eq(GwEntranceGuardPersonEntity::getCompanyId, companyId));
+        removeByIds(ids);
+
+        //删除关联信息
+        gwEntranceGuardPersonList.forEach(this::deletePersonGroupRelation);
+    }
+
+    /**
+     * 人员校验
+     */
+    public List<GwEntranceGuardPersonEntity> checkPerson(List<Long> ids, Long companyId) {
+        List<GwEntranceGuardPersonEntity> list = list(
+                new LambdaQueryWrapper<GwEntranceGuardPersonEntity>()
+                        .eq(GwEntranceGuardPersonEntity::getCompanyId, companyId));
         if (org.apache.commons.collections.CollectionUtils.isEmpty(list)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
@@ -112,19 +157,34 @@ public class GwEntranceGuardPersonService extends ServiceImpl<GwEntranceGuardPer
             List<String> deviceNames = collect.stream().map(GwEntranceGuardPersonEntity::getName).collect(Collectors.toList());
             throw new BusinessException(ResultCode.ERROR, "人员【" + String.join(",", deviceNames) + "】不属于该企业");
         }
-
-        removeByIds(ids);
+        return list;
     }
 
     /**
      * 设置人员分组关联信息
      */
     private void setPersonGroupRelation(GwEntranceGuardPersonEntity personEntity) {
+        PersonGroupRelationEntity relation = buildEntity(personEntity);
+        tbPersonGroupRelationService.createOrUpdate(relation);
+    }
+
+    /**
+     * 删除人员分组关联信息
+     */
+    private void deletePersonGroupRelation(GwEntranceGuardPersonEntity personEntity) {
+        PersonGroupRelationEntity relation = buildEntity(personEntity);
+        tbPersonGroupRelationService.delete(relation);
+    }
+
+    /**
+     * 构建关联数据
+     */
+    private PersonGroupRelationEntity buildEntity(GwEntranceGuardPersonEntity personEntity) {
         PersonGroupRelationEntity relation = new PersonGroupRelationEntity();
         relation.setBusinessType(PersonGroupRelationConstant.GW_ENTRANCE_GUARD);
         relation.setDataId(personEntity.getId());
         relation.setPersonGroupId(personEntity.getPersonGroupId());
-        tbPersonGroupRelationService.createOrUpdate(relation);
+        return relation;
     }
 
     /**
@@ -164,30 +224,4 @@ public class GwEntranceGuardPersonService extends ServiceImpl<GwEntranceGuardPer
             }
         }
     }
-
-    /**
-     * 查询分页
-     *
-     * @param vo 参数
-     * @return page
-     */
-    @Transactional(readOnly = true)
-    public IPage<GwEntranceGuardPersonEntity> queryForPage(UnicomEntranceGuardPersonManageQueryVO vo) {
-        return baseMapper.selectPage(new Page<>(vo.getPageNo(), vo.getPageSize()), buildWrapper(vo));
-    }
-
-
-    /**
-     * 构建查询条件
-     *
-     * @param vo 参数
-     * @return wrapper
-     */
-    private LambdaQueryWrapper<GwEntranceGuardPersonEntity> buildWrapper(UnicomEntranceGuardPersonManageQueryVO vo) {
-        return new LambdaQueryWrapper<GwEntranceGuardPersonEntity>()
-                .like(StringUtils.isNotBlank(vo.getName()), GwEntranceGuardPersonEntity::getName, vo.getName())
-                .orderByDesc(GwEntranceGuardPersonEntity::getCreateTime);
-    }
-
-
 }
