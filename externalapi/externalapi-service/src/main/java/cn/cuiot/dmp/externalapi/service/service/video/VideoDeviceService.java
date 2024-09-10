@@ -10,7 +10,6 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoDeviceEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoPlayEntity;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
