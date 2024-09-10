@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.park.VehicleExitRecordsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.park.VehicleExitRecordsEntity">
+        <id column="park_id" property="parkId" />
+        <result column="node_id" property="nodeId" />
+        <result column="plate_no" property="plateNo" />
+        <result column="cap_flag" property="capFlag" />
+        <result column="img_name" property="imgName" />
+        <result column="cap_time" property="capTime" />
+        <result column="img_type" property="imgType" />
+        <result column="img_info" property="imgInfo" />
+        <result column="cap_place" property="capPlace" />
+        <result column="car_type" property="carType" />
+        <result column="car_color" property="carColor" />
+        <result column="pass_style" property="passStyle" />
+        <result column="pass_type" property="passType" />
+        <result column="traffic_id" property="trafficId" />
+        <result column="car_serial" property="carSerial" />
+        <result column="car_owner_name" property="carOwnerName" />
+        <result column="oper_name" property="operName" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        park_id, node_id, plate_no, cap_flag, img_name, cap_time, img_type, img_info, cap_place, car_type, car_color, pass_style, pass_type, traffic_id, car_serial, car_owner_name, oper_name
+    </sql>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into tb_vehicle_exit_records (park_id,node_id,plate_no,cap_flag,img_name,cap_time,img_type,img_info,cap_place,car_type,car_color
+        ,pass_style,pass_type,traffic_id,car_serial,car_owner_name,oper_name)
+        values
+            <foreach collection="carList" item="item" index="index" separator=",">
+            (#{item.parkId},#{item.nodeId},#{item.plateNo},#{item.capFlag},#{item.capTime},#{item.imgName},#{item.imgType},#{item.imgInfo}
+                ,#{item.capPlace},#{item.carType},#{item.carColor},#{item.passStyle},#{item.passType},#{item.trafficId},#{item.carSerial}
+                ,#{item.carOwnerName},#{item.operName})
+            </foreach>
+        ON DUPLICATE KEY UPDATE
+        cap_place = values(cap_place)
+    </insert>
+
+    <select id="queryForPage" resultType="cn.cuiot.dmp.externalapi.service.vendor.park.vo.VehicleExitVO">
+        select t1.park_id,t1.node_id,t1.plate_no,t1.cap_flag,t1.img_name,t1.cap_time ,t1.img_type,t1.img_info,t1.cap_place,t1.car_type,t1.car_color,t1.pass_style,t1.pass_type,t1.traffic_id,t1.car_serial,t1.car_owner_name,t1.oper_name,t2.park_name,t2.community_id,t3.node_name
+        from tb_vehicle_exit_records t1 left join  tb_park_info t2 on t1.park_id = t2.park_id left join tb_gate_management t3 on t2.park_id = t3.park_id
+        <where>
+            <if test="query.plateNo !=null and query.plateNo !=''">
+                    t1.plate_no like concat ('%',#{query.plateNo},'%')
+            </if>
+            <if test="query.capFlag !=null">
+                t1.cap_flag = #{query.capFlag}
+            </if>
+            <if test="query.capFlag !=null">
+                t1.cap_flag = #{query.capFlag}
+            </if>
+            <if test="query.parkId !=null">
+                t1.park_id = #{query.parkId}
+            </if>
+            <if test="query.endTime !=null">
+                and t1.cap_time <![CDATA[>=]]>  #{query.startTime} and t1.cap_time  <![CDATA[<=]]> #{query.endTime}
+            </if>
+            <if test="query.communityIds!=null and query.communityIds.size()>0">
+                and t2.community_id in
+                <foreach collection="query.communityIds" item="item" index="index" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+
+        </where>
+    </select>
+</mapper>

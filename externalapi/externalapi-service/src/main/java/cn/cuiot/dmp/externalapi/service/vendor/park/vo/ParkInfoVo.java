@@ -45,6 +45,11 @@ public class ParkInfoVo implements Serializable {
     private Long communityId;
 
     /**
+     * 企业名称
+     */
+    private Long companyId;
+
+    /**
     * 空闲车位数
     */
     private Integer freeSpaceNum;
@@ -56,4 +61,8 @@ public class ParkInfoVo implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date updateTime;
 
+    /**
+     * 更新人
+     */
+    private Long updateUser;
 }

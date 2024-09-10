@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 智能门禁
+ * app-智能门禁
  * @author pengjian
  * @create 2024/9/5 19:51
  */

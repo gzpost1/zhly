@@ -4,6 +4,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.entity.park.ParkInfoEntity;
 import cn.cuiot.dmp.externalapi.service.service.park.ParkInfoService;
 import cn.cuiot.dmp.externalapi.service.vendor.park.vo.ParkInfoVo;
@@ -20,7 +21,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import org.springframework.web.bind.annotation.RestController;
 /**
- * 车辆管理
+ * 管理后台-车辆管理
  * @author pengjian
  * @since 2024-09-03
  */
@@ -48,9 +49,8 @@ public class ParkInfoController {
      */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<ParkInfoEntity>> queryForPage(@RequestBody ParkInfoQuery query) {
-     QueryWrapper<ParkInfoEntity> queryWrapper = new QueryWrapper<>();
 
-     IPage<ParkInfoEntity> pageResult = parkInfoService.page(new Page<>(query.getPageNo(), query.getPageSize()),queryWrapper);
+     IPage<ParkInfoEntity> pageResult = parkInfoService.queryForPage(new Page<>(query.getPageNo(), query.getPageSize()),query);
      return IdmResDTO.success(pageResult);
     }
 
@@ -61,6 +61,7 @@ public class ParkInfoController {
     @PostMapping("/updateCommunity")
     public IdmResDTO updateCommunity(@RequestBody @Valid ParkInfoVo parkInfoVo){
         ParkInfoEntity map = BeanMapper.map(parkInfoVo, ParkInfoEntity.class);
+        map.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         parkInfoService.updateById(map);
         return IdmResDTO.success();
     }
@@ -72,7 +73,7 @@ public class ParkInfoController {
      */
     @PostMapping("/queryForDetail")
     public IdmResDTO<ParkInfoEntity> queryForDetail(@RequestBody @Valid IdParam idParam) {
-     return IdmResDTO.success(parkInfoService.getById(idParam.getId()));
+     return parkInfoService.queryForDetail(idParam.getId());
     }
 
     /**

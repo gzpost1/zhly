@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.entity.park;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
@@ -22,24 +23,17 @@ public class ParkInfoEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键id
-     */
-    @TableId("id")
-    private Long id;
 
+    /**
+     * 车场id
+     */
+    @TableId("park_id")
+    private Integer parkId;
 
     /**
      * 车场名称
      */
     private String parkName;
-
-
-    /**
-     * 车场id
-     */
-    private Integer parkId;
-
 
     /**
      * 总车位数
@@ -51,6 +45,12 @@ public class ParkInfoEntity implements Serializable {
      * 楼盘id
      */
     private Long communityId;
+
+    /**
+     * 楼盘名称
+     */
+    @TableField(exist = false)
+    private String communityName;
 
 
     /**
@@ -65,4 +65,18 @@ public class ParkInfoEntity implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date  updateTime;
 
+    /**
+     * 更新人
+     */
+    private Long updateUser;
+
+    /**
+     * 企业id
+     */
+    private Long companyId;
+
+    /**
+     * 已用车位
+     */
+    private Integer usedSpaceNum;
 }

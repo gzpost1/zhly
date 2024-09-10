@@ -34,7 +34,7 @@
 
 
     <select id="queryForPage" resultType="cn.cuiot.dmp.externalapi.service.query.AccessCommunityDto">
-        select device_no, name, state, on_line_state, community_id
+        select device_no, name, state, online_state, community_id
         from tb_access_control
         <where>
             <if test="query.name !=null and query.name !=''">
@@ -57,7 +57,7 @@
         </where>
 
         union all
-        select device_no, name, state, on_line_state, community_id
+        select device_no, name, state, online_state, community_id
         from tb_access_control where community_id is null
         order by update_time desc
 

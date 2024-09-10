@@ -6,6 +6,9 @@ import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
+
 /**
  *
  * @author pengjian
@@ -23,7 +26,7 @@ public class ParkInfoQuery extends PageQuery {
     /**
     * 车场id
     */
-    private Integer parkId;
+    private String parkId;
 
     /**
     * 总车位数
@@ -33,7 +36,7 @@ public class ParkInfoQuery extends PageQuery {
     /**
     * 楼盘id
     */
-    private Long communityId;
+    private List<Long> communityIds;
 
     /**
     * 空闲车位数
