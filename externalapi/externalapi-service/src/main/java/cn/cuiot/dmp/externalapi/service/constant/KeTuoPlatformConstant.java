@@ -33,6 +33,11 @@ public class KeTuoPlatformConstant {
     public static String CAR_IN_OUT_SERVICE_CODE= "getCarInoutInfo";
 
     /**
+     * 查询进出记录
+     */
+    public static String CAR_IN_OUT_SERVICE_CODE_URL= "api/wec/GetCarInoutInfo";
+
+    /**
      * 道闸控制
      */
     public static String GATE_CONTROL_CODE ="api/control/GateControl";
@@ -42,6 +47,10 @@ public class KeTuoPlatformConstant {
      */
     public static String PARK_NODE_STATUS ="api/wec/GetParkingNodeStatus";
 
+    /**
+     * 查询道闸状态服务编码
+     */
+    public static String PARK_NODE_STATUS_SERVICE_CODE = "getParkingNodeStatus";
     /**
      * 剩余车位查询
      */

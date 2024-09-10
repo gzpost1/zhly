@@ -59,7 +59,6 @@
         union all
         select device_no, name, state, online_state, community_id
         from tb_access_control where community_id is null
-        order by update_time desc
 
     </select>
 </mapper>

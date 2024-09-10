@@ -29,11 +29,11 @@
     </sql>
 
     <insert id="insertOrUpdateBatch" parameterType="java.util.List">
-        insert into tb_vehicle_exit_records (park_id,node_id,plate_no,cap_flag,img_name,cap_time,img_type,img_info,cap_place,car_type,car_color
+        insert into tb_vehicle_exit_records (id,park_id,node_id,plate_no,cap_flag,img_name,cap_time,img_type,img_info,cap_place,car_type,car_color
         ,pass_style,pass_type,traffic_id,car_serial,car_owner_name,oper_name)
         values
             <foreach collection="carList" item="item" index="index" separator=",">
-            (#{item.parkId},#{item.nodeId},#{item.plateNo},#{item.capFlag},#{item.capTime},#{item.imgName},#{item.imgType},#{item.imgInfo}
+            (#{item.id},#{item.parkId},#{item.nodeId},#{item.plateNo},#{item.capFlag},#{item.capTime},#{item.imgName},#{item.imgType},#{item.imgInfo}
                 ,#{item.capPlace},#{item.carType},#{item.carColor},#{item.passStyle},#{item.passType},#{item.trafficId},#{item.carSerial}
                 ,#{item.carOwnerName},#{item.operName})
             </foreach>

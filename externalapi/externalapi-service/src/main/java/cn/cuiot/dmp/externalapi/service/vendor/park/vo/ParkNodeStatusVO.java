@@ -11,20 +11,14 @@ import java.util.List;
 @Data
 public class ParkNodeStatusVO {
 
+    /**
+     * 通道id
+     */
+    private Integer nodeId;
 
-    private List<NodeLists> nodeList;
-
-    @Data
-    public static class NodeLists{
-        /**
-         * 通道id
-         */
-        private Integer nodeId;
-
-        /**
-         * 道闸状态：1是常抬，0是正常；-1：状态未知
-         */
-        private Integer status;
-    }
+    /**
+     * 道闸状态：1是常抬，0是正常；-1：状态未知
+     */
+    private Integer status;
 
 }

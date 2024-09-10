@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.externalapi.provider.task;
 
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.KtSignUtils;
 import cn.cuiot.dmp.externalapi.service.constant.KeTuoPlatformConstant;
 import cn.cuiot.dmp.externalapi.service.entity.park.VehicleExitRecordsEntity;
@@ -7,10 +8,12 @@ import cn.cuiot.dmp.externalapi.service.service.park.ParkInfoService;
 import cn.cuiot.dmp.externalapi.service.service.park.VehicleExitRecordsService;
 import cn.cuiot.dmp.externalapi.service.vendor.park.config.ParkProperties;
 import cn.cuiot.dmp.externalapi.service.vendor.park.vo.CarOutInfoVO;
+import cn.cuiot.dmp.externalapi.service.vendor.park.vo.ParkNodeStatusVO;
 import cn.cuiot.dmp.externalapi.service.vendor.park.vo.ParkResultVO;
 import cn.cuiot.dmp.externalapi.service.vendor.park.vo.ParkingNodeVO;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.xxl.job.core.biz.model.ReturnT;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -74,23 +78,33 @@ public class CarInOutInfoTask {
                 String key = KtSignUtils.paramsSign(jsonObject, parkProperties.getAppSercert());
                 jsonObject.put("key", key);
                 HttpHeaders headers = getHttpHeaders();
-                ResponseEntity<ParkResultVO<CarOutInfoVO>> responseEntity =
-                        restTemplate.exchange(parkProperties.getUrl()+ KeTuoPlatformConstant.GET_PARK_NODE, HttpMethod.POST,
+                //ParkResultVO<CarOutInfoVO>
+                ResponseEntity<JSONObject> responseEntity =
+                        restTemplate.exchange(parkProperties.getUrl()+ KeTuoPlatformConstant.CAR_IN_OUT_SERVICE_CODE_URL, HttpMethod.POST,
                                 new HttpEntity<>(jsonObject,headers),
-                                new ParameterizedTypeReference<ParkResultVO<CarOutInfoVO>>() {
+                                new ParameterizedTypeReference<JSONObject>() {
                                 });
 
-                ParkResultVO<CarOutInfoVO> body = responseEntity.getBody();
-                if(StringUtils.equals(body.getResCode(), KeTuoPlatformConstant.SUCCESS_CODE)){
-                    CarOutInfoVO data = body.getData();
-                    List<VehicleExitRecordsEntity> detailList = data.getDetailList();
-                    if(CollectionUtil.isEmpty(detailList)){
+                JSONObject statusBody = responseEntity.getBody();
+
+                if(!StringUtils.equals(statusBody.getString("resCode"), KeTuoPlatformConstant.SUCCESS_CODE)){
+                    throw new RuntimeException("拉取闸道状态失败："+statusBody.getString("resMsg")+":"+parkId);
+                }
+
+                List<VehicleExitRecordsEntity> nodeLists = JSONObject.parseObject(JSONObject.toJSONString(statusBody.getJSONObject("data").getJSONArray("detailList")), new TypeReference<List<VehicleExitRecordsEntity>>() {
+                });
+                    if(CollectionUtil.isEmpty(nodeLists)){
                         break;
                     }
-                    detailList.stream().forEach(item->item.setParkId(parkId));
+                nodeLists.stream().forEach(item->{
+                    item.setParkId(parkId);
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+                    String formattedDate = sdf.format(item.getCapTime());
+                    item.setId(parkId+item.getNodeId()+ formattedDate+item.getCapFlag());
+                });
 
-                    vehicleExitRecordsService.insertOrUpdateBatch(detailList);
-                }
+                    vehicleExitRecordsService.insertOrUpdateBatch(nodeLists);
+
 
                 pageIndex++;
             }

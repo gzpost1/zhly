@@ -6,12 +6,11 @@ import cn.cuiot.dmp.externalapi.service.entity.park.GateManagementEntity;
 import cn.cuiot.dmp.externalapi.service.service.park.GateManagementService;
 import cn.cuiot.dmp.externalapi.service.service.park.ParkInfoService;
 import cn.cuiot.dmp.externalapi.service.vendor.park.config.ParkProperties;
-import cn.cuiot.dmp.externalapi.service.vendor.park.vo.ParkNodeStatusVO;
-import cn.cuiot.dmp.externalapi.service.vendor.park.vo.ParkResultVO;
-import cn.cuiot.dmp.externalapi.service.vendor.park.vo.ParkingNodeVO;
-import cn.cuiot.dmp.externalapi.service.vendor.park.vo.ParkingPage;
+import cn.cuiot.dmp.externalapi.service.vendor.park.vo.*;
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
@@ -63,39 +62,50 @@ public class GateManagementTask {
                 String key = KtSignUtils.paramsSign(jsonObject, parkProperties.getAppSercert());
                 jsonObject.put("key", key);
 
-                //接口获取列的停车场信息
+                //接口获取列的停车场信息 ParkResultVO<ParkingNodeVO>
                 HttpHeaders headers = getHttpHeaders();
-                ResponseEntity<ParkResultVO<ParkingNodeVO>> responseEntity =
+                ResponseEntity<JSONObject> responseEntity =
                         restTemplate.exchange(parkProperties.getUrl()+ KeTuoPlatformConstant.GET_PARK_NODE, HttpMethod.POST,
                                 new HttpEntity<>(jsonObject,headers),
-                                new ParameterizedTypeReference<ParkResultVO<ParkingNodeVO>>() {
+                                new ParameterizedTypeReference<JSONObject>() {
                                 });
-                ParkResultVO<ParkingNodeVO> body = responseEntity.getBody();
-                if(!StringUtils.equals(body.getResCode(),KeTuoPlatformConstant.SUCCESS_CODE)){
-                    throw new RuntimeException("拉取闸道数据失败："+body.getResMsg());
-                }
-                List<ParkingNodeVO.NodeList> nodeList = Optional.ofNullable(body.getData().getNodeList()).orElse(new ArrayList<>());
-                for(ParkingNodeVO.NodeList nodes: nodeList){
-                    //查询道闸状态
-                    JSONObject statusObject = getJsonObject(KeTuoPlatformConstant.PARK_NODE_STATUS);
-                    statusObject.put("parkId",parkId);
-                    String statusKey = KtSignUtils.paramsSign(statusObject, parkProperties.getAppSercert());
-                    jsonObject.put("key", statusKey);
-                    jsonObject.put("nodeId", nodes.getId());
-                    //接口获取列的停车场信息
-                    ResponseEntity<ParkResultVO<ParkNodeStatusVO>> statusResponseEntity =
-                            restTemplate.exchange(parkProperties.getUrl()+ KeTuoPlatformConstant.GET_PARK_NODE, HttpMethod.POST,
-                                    new HttpEntity<>(jsonObject,headers),
-                                    new ParameterizedTypeReference<ParkResultVO<ParkNodeStatusVO>>() {
-                                    });
-                    ParkResultVO<ParkNodeStatusVO> statusVo = statusResponseEntity.getBody();
-                    if(StringUtils.equals(statusVo.getResCode(), KeTuoPlatformConstant.SUCCESS_CODE)){
-                        throw new RuntimeException("拉取闸道状态失败："+body.getResMsg()+":"+nodes.getId());
-                    }
-                    List<ParkNodeStatusVO.NodeLists> nodeLists = Optional.ofNullable(statusVo.getData().getNodeList()).orElse(new ArrayList<>());
 
-                    for(ParkNodeStatusVO.NodeLists statusNodes : nodeLists){
+                JSONObject body = responseEntity.getBody();
+                ParkResultVO vo = JSONObject.parseObject(JSONObject.toJSONString(responseEntity.getBody()), new TypeReference<ParkResultVO>(){});
+                if(!StringUtils.equals(vo.getResCode(),KeTuoPlatformConstant.SUCCESS_CODE)){
+                    throw new RuntimeException("拉取闸道数据失败："+vo.getResMsg());
+                }
+                List<NodeListVO> parkingList = JSONObject.parseObject(JSONObject.toJSONString(body.getJSONObject("data").getJSONArray("nodeList")), new TypeReference<List<NodeListVO>>() {
+                });
+
+                for(NodeListVO nodes: parkingList){
+                    //查询道闸状态
+                    JSONObject statusObject = getJsonObject(KeTuoPlatformConstant.PARK_NODE_STATUS_SERVICE_CODE);
+                    statusObject.put("parkId",parkId);
+                    statusObject.put("nodeId", nodes.getId());
+                    String statusKey = KtSignUtils.paramsSign(statusObject, parkProperties.getAppSercert());
+                    statusObject.put("key", statusKey);
+                    System.out.println(statusObject.toJSONString());
+                    //接口获取列的停车场信息
+                    ResponseEntity<JSONObject> statusResponseEntity =
+                            restTemplate.exchange(parkProperties.getUrl()+ KeTuoPlatformConstant.PARK_NODE_STATUS, HttpMethod.POST,
+                                    new HttpEntity<>(statusObject,headers),
+                                    new ParameterizedTypeReference<JSONObject>() {
+                                    });
+                    JSONObject statusBody = statusResponseEntity.getBody();
+
+                    if(!StringUtils.equals(statusBody.getString("resCode"), KeTuoPlatformConstant.SUCCESS_CODE)){
+                        throw new RuntimeException("拉取闸道状态失败："+statusBody.getString("resMsg")+":"+nodes.getId());
+                    }
+
+                    List<ParkNodeStatusVO> nodeLists = JSONObject.parseObject(JSONObject.toJSONString(statusBody.getJSONObject("data").getJSONArray("nodeList")), new TypeReference<List<ParkNodeStatusVO>>() {
+                    });
+                    if(CollectionUtil.isEmpty(nodeLists)){
+                        continue;
+                    }
+                    for(ParkNodeStatusVO statusNodes : nodeLists){
                         GateManagementEntity entity = new GateManagementEntity();
+                        entity.setId(String.valueOf(parkId+nodes.getId()));
                         entity.setNodeId(nodes.getId());
                         entity.setNodeName(nodes.getNodeName());
                         entity.setParkId(parkId);

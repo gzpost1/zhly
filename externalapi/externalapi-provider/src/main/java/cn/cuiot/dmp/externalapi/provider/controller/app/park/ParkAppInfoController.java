@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.externalapi.provider.controller.app.park;
 
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.externalapi.provider.task.CarInOutInfoTask;
+import cn.cuiot.dmp.externalapi.provider.task.GateManagementTask;
 import cn.cuiot.dmp.externalapi.service.entity.park.ParkInfoEntity;
 import cn.cuiot.dmp.externalapi.service.service.park.ParkInfoService;
 import cn.cuiot.dmp.externalapi.service.vendor.park.query.ParkInfoQuery;
@@ -24,7 +26,8 @@ public class ParkAppInfoController {
     @Autowired
     private ParkInfoService parkInfoService;
 
-
+    @Autowired
+    private CarInOutInfoTask gateManagementTask;
     /**
      * 分页查询
      * @param query
@@ -37,4 +40,9 @@ public class ParkAppInfoController {
      return IdmResDTO.success(pageResult);
     }
 
+    @PostMapping("/test")
+    public IdmResDTO test(){
+        gateManagementTask.GetCarInoutInfo("");
+        return IdmResDTO.success();
+    }
 }

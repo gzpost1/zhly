@@ -18,11 +18,12 @@ import lombok.EqualsAndHashCode;
 public class GateManagementEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    @TableId("id")
+    private String id;
     /**
      * 通道编号
      */
-    @TableId("node_id")
+
     private Integer nodeId;
 
 

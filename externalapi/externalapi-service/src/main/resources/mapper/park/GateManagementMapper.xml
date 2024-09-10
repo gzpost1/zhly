@@ -16,10 +16,10 @@
     </sql>
 
     <insert id="insertOrUpdateBatch" parameterType="java.util.List">
-        insert into tb_gate_management(node_id,node_name,use_type,status,park_id)
+        insert into tb_gate_management(id,node_id,node_name,use_type,status,park_id)
         values
             <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.nodeId},#{item.nodeName},#{item.useType},#{item.status},#{item.parkId})
+            (#{item.id},#{item.nodeId},#{item.nodeName},#{item.useType},#{item.status},#{item.parkId})
             </foreach>
         ON DUPLICATE KEY UPDATE
         node_name =values(node_name),
