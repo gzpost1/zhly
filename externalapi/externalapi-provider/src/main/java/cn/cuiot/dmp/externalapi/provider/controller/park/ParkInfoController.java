@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.externalapi.provider.controller.park;
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -37,6 +38,7 @@ public class ParkInfoController {
      * @return
      */
     @PostMapping("/syncParkInfo")
+    @RequiresPermissions
     public IdmResDTO syncParkInfo(){
         parkInfoService.syncParkInfo();
         return IdmResDTO.success();
@@ -48,6 +50,7 @@ public class ParkInfoController {
      * @return
      */
     @PostMapping("/queryForPage")
+    @RequiresPermissions
     public IdmResDTO<IPage<ParkInfoEntity>> queryForPage(@RequestBody ParkInfoQuery query) {
 
      IPage<ParkInfoEntity> pageResult = parkInfoService.queryForPage(new Page<>(query.getPageNo(), query.getPageSize()),query);
@@ -59,6 +62,7 @@ public class ParkInfoController {
      * @return
      */
     @PostMapping("/updateCommunity")
+    @RequiresPermissions
     public IdmResDTO updateCommunity(@RequestBody @Valid ParkInfoVo parkInfoVo){
         ParkInfoEntity map = BeanMapper.map(parkInfoVo, ParkInfoEntity.class);
         map.setCompanyId(LoginInfoHolder.getCurrentOrgId());
@@ -72,6 +76,7 @@ public class ParkInfoController {
      * @return
      */
     @PostMapping("/queryForDetail")
+    @RequiresPermissions
     public IdmResDTO<ParkInfoEntity> queryForDetail(@RequestBody @Valid IdParam idParam) {
      return parkInfoService.queryForDetail(idParam.getId());
     }
@@ -82,6 +87,7 @@ public class ParkInfoController {
      * @return
      */
     @PostMapping("/delete")
+    @RequiresPermissions
     public IdmResDTO delete(@RequestBody @Valid DeleteParam deleteParam) {
         parkInfoService.removeById(deleteParam.getId());
         return IdmResDTO.success();

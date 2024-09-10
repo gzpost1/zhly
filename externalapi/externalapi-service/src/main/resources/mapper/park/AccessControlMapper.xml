@@ -50,6 +50,7 @@
                 and online_state = #{query.onlineState}
             </if>
             <if test="query.communityIds !=null and query.communityIds.size() >0">
+                and community_id in
                 <foreach collection="query.communityIds" item="item" open="("  separator="," close=")">
                     #{item}
                 </foreach>

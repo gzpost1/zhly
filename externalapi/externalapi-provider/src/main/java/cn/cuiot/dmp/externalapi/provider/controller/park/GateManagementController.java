@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.externalapi.provider.controller.park;
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -42,6 +43,7 @@ public class GateManagementController {
      */
 
     @PostMapping("/queryForPage")
+    @RequiresPermissions
     public IdmResDTO<IPage<GageManagePageVO>> queryForPage(@RequestBody GateManagementQuery query) {
 
      IPage<GageManagePageVO> pageResult = gateManagementService.queryForPage(new Page<>(query.getPageNo(), query.getPageSize()),query);
@@ -54,6 +56,7 @@ public class GateManagementController {
      * @return
      */
     @PostMapping("/gateControl")
+    @RequiresPermissions
     public IdmResDTO gateControl(@RequestBody @Valid GateControlVO vo){
         return gateManagementService.gateControl(vo);
     }

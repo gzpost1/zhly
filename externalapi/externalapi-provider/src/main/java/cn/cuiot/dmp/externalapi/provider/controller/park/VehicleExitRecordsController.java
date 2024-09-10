@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.externalapi.provider.controller.park;
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.externalapi.service.service.park.VehicleExitRecordsService;
 import cn.cuiot.dmp.externalapi.service.vendor.park.query.VehicleExitRecordsQuery;
@@ -26,7 +27,7 @@ public class VehicleExitRecordsController {
 
 
     @PostMapping("/queryForPage")
-
+    @RequiresPermissions
     public IdmResDTO<IPage<VehicleExitVO>> queryForPage(@RequestBody VehicleExitRecordsQuery query) {
      return  vehicleExitRecordsService.queryForPage(query);
     }

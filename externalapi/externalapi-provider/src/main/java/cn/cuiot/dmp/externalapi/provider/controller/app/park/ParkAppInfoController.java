@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.externalapi.provider.controller.app.park;
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.externalapi.provider.task.CarInOutInfoTask;
 import cn.cuiot.dmp.externalapi.provider.task.GateManagementTask;
@@ -34,6 +35,7 @@ public class ParkAppInfoController {
      * @return
      */
     @PostMapping("/queryForPage")
+    @RequiresPermissions
     public IdmResDTO<IPage<ParkInfoEntity>> queryForPage(@RequestBody ParkInfoQuery query) {
 
      IPage<ParkInfoEntity> pageResult = parkInfoService.queryForPage(new Page<>(query.getPageNo(), query.getPageSize()),query);

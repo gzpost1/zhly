@@ -1,4 +1,5 @@
 package cn.cuiot.dmp.externalapi.provider.controller.app.park;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.externalapi.service.query.AccessCommunityDto;
 import cn.cuiot.dmp.externalapi.service.query.DeviceListDto;
@@ -31,6 +32,7 @@ public class AccessAppControlController {
      * @return
      */
     @PostMapping("/queryForPage")
+    @RequiresPermissions
     public IdmResDTO<IPage<AccessCommunityDto>> queryForPage(@RequestBody QueryAccessCommunity queryAccessCommunity){
         return accessControlService.queryForPage(queryAccessCommunity);
     }
