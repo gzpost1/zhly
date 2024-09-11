@@ -7,6 +7,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.externalapi.service.entity.water.WaterManagementEntity;
 import cn.cuiot.dmp.externalapi.service.service.water.WaterManagementService;
 import cn.cuiot.dmp.externalapi.service.vo.watermeter.UpdateWaterManagementVO;
+import cn.cuiot.dmp.externalapi.service.vo.watermeter.WaterBatchMeterOperateVO;
 import cn.cuiot.dmp.externalapi.service.vo.watermeter.WaterMeterOperateVO;
 import cn.cuiot.dmp.externalapi.service.vo.watermeter.WaterMeterQueryVO;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean.WaterMeterCommandControlReq;
@@ -14,6 +15,7 @@ import cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean.WaterMeterPage;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean.WaterMeterReportDataQueryReq;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean.WaterMeterReportDataResp;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.service.WaterMeterService;
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 管理后台-物联网水表（山东科德）
@@ -108,18 +111,27 @@ public class WaterMeterController {
     /**
      * 阀控操作
      *
-     * @param vo
+     * @param param
      * @return
      */
     @PostMapping(value = "/operate")
     @RequiresPermissions
-    public IdmResDTO open(@RequestBody @Valid WaterMeterOperateVO vo) {
-        return IdmResDTO.success(waterManagementService.deviceCommandV2(
-                new WaterMeterCommandControlReq(
-                        Lists.newArrayList(
-                                new WaterMeterCommandControlReq.CommandControlInfo(vo)
-                        )))
-                .getSuccess());
+    public IdmResDTO open(@RequestBody @Valid WaterBatchMeterOperateVO param) {
+        List<String> imei = param.getImei();
+        if(CollectionUtil.isNotEmpty(imei)){
+            imei.stream().forEach(item->{
+                WaterMeterOperateVO vo = new WaterMeterOperateVO();
+                vo.setImei(item);
+                vo.setValveControlType(param.getValveControlType());
+                waterManagementService.deviceCommandV2(
+                        new WaterMeterCommandControlReq(
+                                Lists.newArrayList(
+                                        new WaterMeterCommandControlReq.CommandControlInfo(vo)
+                                )));
+            });
+        }
+
+        return IdmResDTO.success();
     }
 
 }
