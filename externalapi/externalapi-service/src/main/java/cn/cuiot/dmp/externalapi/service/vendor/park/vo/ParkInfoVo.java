@@ -21,8 +21,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 public class ParkInfoVo implements Serializable {
 
-    @NotNull(message = "id不能为空")
-    private Long id;
+
     /**
     * 车场名称
     */

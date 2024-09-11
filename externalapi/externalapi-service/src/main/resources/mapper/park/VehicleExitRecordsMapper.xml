@@ -46,23 +46,23 @@
         from tb_vehicle_exit_records t1 left join  tb_park_info t2 on t1.park_id = t2.park_id left join tb_gate_management t3 on t2.park_id = t3.park_id
         <where>
             <if test="query.plateNo !=null and query.plateNo !=''">
-                    t1.plate_no like concat ('%',#{query.plateNo},'%')
+                 and    t1.plate_no like concat ('%',#{query.plateNo},'%')
             </if>
             <if test="query.capFlag !=null">
-                t1.cap_flag = #{query.capFlag}
+               and  t1.cap_flag = #{query.capFlag}
             </if>
             <if test="query.capFlag !=null">
-                t1.cap_flag = #{query.capFlag}
+               and  t1.cap_flag = #{query.capFlag}
             </if>
             <if test="query.parkId !=null">
-                t1.park_id = #{query.parkId}
+              and   t1.park_id = #{query.parkId}
             </if>
             <if test="query.endTime !=null">
                 and t1.cap_time <![CDATA[>=]]>  #{query.startTime} and t1.cap_time  <![CDATA[<=]]> #{query.endTime}
             </if>
             <if test="query.communityIds!=null and query.communityIds.size()>0">
                 and t2.community_id in
-                <foreach collection="query.communityIds" item="item" index="index" separator=",">
+                <foreach collection="query.communityIds" item="item" index="index" separator="," open="(" close=")">
                     #{item}
                 </foreach>
             </if>

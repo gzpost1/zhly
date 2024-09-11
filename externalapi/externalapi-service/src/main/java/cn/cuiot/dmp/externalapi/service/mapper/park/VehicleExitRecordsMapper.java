@@ -20,5 +20,5 @@ public interface VehicleExitRecordsMapper extends BaseMapper<VehicleExitRecordsE
 
     void insertOrUpdateBatch(@Param("carList") List<VehicleExitRecordsEntity> carList);
 
-    IPage<VehicleExitVO> queryForPage(Page<VehicleExitVO> objectPage, VehicleExitRecordsQuery query);
+    IPage<VehicleExitVO> queryForPage(Page<VehicleExitVO> objectPage, @Param("query") VehicleExitRecordsQuery query);
 }
