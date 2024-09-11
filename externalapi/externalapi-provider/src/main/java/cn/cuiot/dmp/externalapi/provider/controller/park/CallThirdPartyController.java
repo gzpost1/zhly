@@ -39,7 +39,7 @@ public class CallThirdPartyController {
      * @throws NoSuchAlgorithmException
      */
     @PostMapping(value = "/createPortrait", produces = MediaType.APPLICATION_JSON_VALUE)
-//    @RequiresPermissions
+    @RequiresPermissions
     public IdmResDTO createPortrait(@RequestBody PortraitInputCreateDto createDto) throws NoSuchAlgorithmException {
         return portraitInputService.createPortrait(createDto);
     }
