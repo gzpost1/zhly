@@ -25,7 +25,6 @@ public class WaterBatchMeterOperateVO implements Serializable {
     /**
      * 设备的imei号
      */
-    @NotBlank(message = "设备的imei号不能为空")
     private List<String> imei;
 
     /**
