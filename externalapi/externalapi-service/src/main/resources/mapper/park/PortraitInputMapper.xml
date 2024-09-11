@@ -4,11 +4,11 @@
 
 
     <select id="queryPlatfromInfo" resultType="String">
-        select data from tb_platfrom_info where company_id= #{companyId} and platform_id = #{platformId}
+        select  data from tb_platfrom_info where company_id= #{companyId} and platform_id = #{platformId}
     </select>
 
     <select id="queryPortraitInputInfo" resultType="cn.cuiot.dmp.externalapi.service.vo.park.PortraitInputVo">
-        select  url,phone,card_no,id_card_no,password,tag,create_user,name,create_time from tb_portrait_input where create_user = #{query.createUser}  order by create_time desc
+        select id, url,phone,card_no,id_card_no,password,tag,create_user,name,create_time from tb_portrait_input where create_user = #{query.createUser}  order by create_time desc
     </select>
 
     <!-- 查询人像信息分页 -->

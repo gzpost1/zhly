@@ -4,10 +4,7 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.externalapi.service.entity.park.PortraitInputEntity;
-import cn.cuiot.dmp.externalapi.service.query.FootPlateCompanyDto;
-import cn.cuiot.dmp.externalapi.service.query.FootPlateDto;
-import cn.cuiot.dmp.externalapi.service.query.PlatFromDto;
-import cn.cuiot.dmp.externalapi.service.query.PortraitInputDTO;
+import cn.cuiot.dmp.externalapi.service.query.*;
 import cn.cuiot.dmp.externalapi.service.service.park.PortraitInputService;
 import cn.cuiot.dmp.externalapi.service.vo.park.PortraitInputVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -19,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -34,6 +32,53 @@ public class CallThirdPartyController {
     private PortraitInputService portraitInputService;
 
 
+    /**
+     * 创建人像信息
+     * @param createDto
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    @PostMapping(value = "/createPortrait", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequiresPermissions
+    public IdmResDTO createPortrait(@RequestBody PortraitInputCreateDto createDto) throws NoSuchAlgorithmException {
+        return portraitInputService.createPortrait(createDto);
+    }
+
+    /**
+     * 更新人像信息
+     * @param createDto
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    @PostMapping(value = "/updatePortrait", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequiresPermissions
+    public IdmResDTO updatePortrait(@RequestBody PortraitInputCreateDto createDto) throws NoSuchAlgorithmException{
+        return portraitInputService.updatePortrait(createDto);
+    }
+
+    /**
+     * 删除人像
+     * @param idParam
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    @PostMapping(value = "/deletePortrait", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequiresPermissions
+    public IdmResDTO deletePortrait(@RequestBody @Valid IdParam idParam) throws NoSuchAlgorithmException {
+        return portraitInputService.deletePortrait(idParam);
+    }
+
+    /**
+     * 批量删除人像
+     * @param
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    @PostMapping(value = "/deleteBatchPortrait", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequiresPermissions
+    public IdmResDTO deleteBatchPortrait(@RequestBody @Valid BatchPortraitDto batchPortraitDto){
+        return portraitInputService.deleteBatchPortrait(batchPortraitDto);
+    }
     /**
      * 查询平台信息
      * @param para

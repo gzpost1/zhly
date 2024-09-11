@@ -69,7 +69,7 @@ public class AccessControlController {
      * @return
      */
     @PostMapping("/queryForPage")
-//    @RequiresPermissions
+    @RequiresPermissions
     public IdmResDTO<IPage<AccessCommunityDto>> queryForPage(@RequestBody QueryAccessCommunity queryAccessCommunity){
         return accessControlService.queryForPage(queryAccessCommunity);
     }

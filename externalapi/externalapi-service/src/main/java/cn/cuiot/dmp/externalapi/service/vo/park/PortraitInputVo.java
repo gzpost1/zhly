@@ -15,6 +15,11 @@ import java.util.Date;
 public class PortraitInputVo extends PageQuery {
 
     /**
+     * id
+     */
+    private Long id;
+
+    /**
      * 名字
      */
     private String name;

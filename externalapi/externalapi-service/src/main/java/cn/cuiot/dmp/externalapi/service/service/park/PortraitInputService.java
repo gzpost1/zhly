@@ -363,6 +363,28 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
 
     /**
      * 删除人像信息
+     * @param batchPortraitDto
+     * @return
+     */
+    public IdmResDTO deleteBatchPortrait(BatchPortraitDto batchPortraitDto) {
+        List<Long> ids = batchPortraitDto.getIds();
+        if(CollectionUtil.isEmpty(ids)){
+            return IdmResDTO.success();
+        }
+        ids.stream().forEach(item->{
+            IdParam idParam = new IdParam();
+            idParam.setId(item);
+            try {
+                deletePortrait(idParam);
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
+
+        });
+        return IdmResDTO.success();
+    }
+    /**
+     * 删除人像信息
      * @param idParam
      * @return
      */
