@@ -54,7 +54,11 @@
                         #{item}
                     </foreach>
                 </if>
-                or community_id is null
+                <if test="(query.wsImei ==null or query.wsImei ==''  )and (query.waterName ==null or query.waterName =='' )
+                and (query.valveStatus==null or query.valveStatus =='')">
+                    or community_id is null
+                </if>
+
             </where>
             order by  update_time desc
     </select>

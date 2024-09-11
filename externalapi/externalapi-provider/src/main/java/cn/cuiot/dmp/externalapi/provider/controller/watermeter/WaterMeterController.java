@@ -63,7 +63,7 @@ public class WaterMeterController {
      * @return
      */
     @PostMapping(value = "/queryForPage")
-    @RequiresPermissions
+//    @RequiresPermissions
     public IdmResDTO<IPage<WaterManagementEntity>> queryForPage(@RequestBody WaterMeterQueryVO vo){
         return waterManagementService.queryForPage(vo);
     }

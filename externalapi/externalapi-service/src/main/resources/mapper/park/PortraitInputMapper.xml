@@ -38,10 +38,10 @@
                 <if test="params.personGroupId != null">
                     AND tpi.person_group_id  = #{params.personGroupId}
                 </if>
-                <if test="params.authorize != null and params.authorize ='0'">
+                <if test="params.authorize != null and params.authorize ==0">
                     AND tpi.portrait_access is null
                 </if>
-                <if test="params.authorize != null and params.authorize ='1'">
+                <if test="params.authorize != null and params.authorize ==1">
                     AND tpi.portrait_access is not null
                 </if>
                 <if test=" params.createUserName != null and params.createUserName.trim() != ''">
