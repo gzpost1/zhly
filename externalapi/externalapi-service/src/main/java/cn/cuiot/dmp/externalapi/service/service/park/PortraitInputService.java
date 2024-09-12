@@ -13,14 +13,17 @@ import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.externalapi.service.constant.PersonGroupRelationConstant;
 import cn.cuiot.dmp.externalapi.service.constant.PortraitInputConstant;
 import cn.cuiot.dmp.externalapi.service.entity.PersonGroupEntity;
+import cn.cuiot.dmp.externalapi.service.entity.PersonGroupRelationEntity;
 import cn.cuiot.dmp.externalapi.service.entity.park.FootPlateInfoEntity;
 import cn.cuiot.dmp.externalapi.service.entity.park.PlatfromInfoEntity;
 import cn.cuiot.dmp.externalapi.service.entity.park.PortraitInputEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.park.PortraitInputMapper;
 import cn.cuiot.dmp.externalapi.service.query.*;
 import cn.cuiot.dmp.externalapi.service.service.PersonGroupService;
+import cn.cuiot.dmp.externalapi.service.service.TbPersonGroupRelationService;
 import cn.cuiot.dmp.externalapi.service.vo.park.PortraitInputVo;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -69,6 +72,8 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
 
     @Autowired
     private FootPlateInfoService footPlateInfoService;
+    @Autowired
+    private TbPersonGroupRelationService personGroupRelationService;
     @Autowired
     private PersonGroupService personGroupService;
 
@@ -138,7 +143,12 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         entity.setAdmitGuid(admitGuid);
         baseMapper.insert(entity);
 
-
+        //保存分组关系
+        PersonGroupRelationEntity relationEntity = new PersonGroupRelationEntity();
+        relationEntity.setDataId(entity.getId());
+        relationEntity.setBusinessType(PersonGroupRelationConstant.YF_ENTRANCE_GUARD);
+        relationEntity.setPersonGroupId(entity.getPersonGroupId());
+        personGroupRelationService.createOrUpdate(relationEntity);
         return IdmResDTO.success();
     }
 
@@ -150,24 +160,24 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
     public IdmResDTO updatePortrait(PortraitInputCreateDto createDto) throws NoSuchAlgorithmException {
         String jsonObject = stringRedisTemplate.opsForValue().get(SECRET_INFO_KEY + createDto.getKid());
         stringRedisTemplate.delete(SECRET_INFO_KEY + createDto.getKid());
-        if (StringUtils.isEmpty(jsonObject)) {
-            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR, "密钥ID已过期，请重新获取");
-        }
-        Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
-        // 密码解密
-        if(StringUtils.isNotBlank(createDto.getPassword())){
-            createDto.setPassword(aes.getDecodeValue(createDto.getPassword()));
-        }
-
-        if(StringUtils.isNotBlank(createDto.getCardNo())){
-            createDto.setCardNo(aes.getDecodeValue(createDto.getCardNo()));
-        }
-        if(StringUtils.isNotBlank(createDto.getPhone())){
-            createDto.setPhone(aes.getDecodeValue(createDto.getPhone()));
-        }
-        if(StringUtils.isNotBlank(createDto.getIdCardNo())){
-            createDto.setIdCardNo(aes.getDecodeValue(createDto.getIdCardNo()));
-        }
+//        if (StringUtils.isEmpty(jsonObject)) {
+//            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR, "密钥ID已过期，请重新获取");
+//        }
+//        Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
+//        // 密码解密
+//        if(StringUtils.isNotBlank(createDto.getPassword())){
+//            createDto.setPassword(aes.getDecodeValue(createDto.getPassword()));
+//        }
+//
+//        if(StringUtils.isNotBlank(createDto.getCardNo())){
+//            createDto.setCardNo(aes.getDecodeValue(createDto.getCardNo()));
+//        }
+//        if(StringUtils.isNotBlank(createDto.getPhone())){
+//            createDto.setPhone(aes.getDecodeValue(createDto.getPhone()));
+//        }
+//        if(StringUtils.isNotBlank(createDto.getIdCardNo())){
+//            createDto.setIdCardNo(aes.getDecodeValue(createDto.getIdCardNo()));
+//        }
         //获取大华配置
         Long id = FootPlateInfoEnum.YF_PORTRAIT_INPUT.getId();
 
@@ -201,7 +211,12 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         PortraitInputEntity entity = BeanMapper.map(createDto, PortraitInputEntity.class);
 
         baseMapper.updateById(entity);
-
+        //更新分组信息
+        PersonGroupRelationEntity relationEntity = new PersonGroupRelationEntity();
+        relationEntity.setDataId(entity.getId());
+        relationEntity.setBusinessType(PersonGroupRelationConstant.YF_ENTRANCE_GUARD);
+        relationEntity.setPersonGroupId(entity.getPersonGroupId());
+        personGroupRelationService.createOrUpdate(relationEntity);
         return IdmResDTO.success();
 
     }
@@ -222,8 +237,6 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         paramJson.put("deviceNo", accessDto.getDeviceNo());
         paramJson.put("admitGuids", admitGuid);
 
-//        JSONObject subParamJson = new JSONObject();
-//        subParamJson.put("idCardFacePermission",2);
         paramJson.put("permission",accessDto.getAccessOptions());
         ResponseEntity<AuthDaHuaResp> responseEntity =
                 restTemplate.exchange(PortraitInputConstant.AUTH_MANAGEMENT_URL, HttpMethod.POST,
@@ -345,7 +358,7 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         paramJson.put("cardNo", paramDto.getCardNo());
         paramJson.put("idCardNo", paramDto.getIdCardNo());
         paramJson.put("password", paramDto.getPassword());
-
+        paramJson.put("admitGuid", paramDto.getAdmitGuid());
         ResponseEntity<JSONObject> responseEntity =
                 restTemplate.exchange(PortraitInputConstant.UPDATE_SUBJECT_URL, HttpMethod.POST,
                         new HttpEntity<>(paramJson,headers),
@@ -407,11 +420,14 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         PortraitInputInfoDto inputDto = new PortraitInputInfoDto();
         BeanUtils.copyProperties(bo, inputDto);
         //删除识别主体
-        deleteSubject(entity.getAdmitGuid(),inputDto);
+        deleteSubject(entity.getAdmitGuid(),entity.getName(),inputDto);
         //删除人像信息
         deleteFaceRegister(inputDto,entity.getAdmitGuid());
         //删除分组关系
-        personGroupService.delete(entity.getPersonGroupId());
+        PersonGroupRelationEntity relationEntity = new PersonGroupRelationEntity();
+        relationEntity.setDataId(entity.getId());
+        relationEntity.setBusinessType(PersonGroupRelationConstant.YF_ENTRANCE_GUARD);
+        personGroupRelationService.delete(relationEntity);
 
         getBaseMapper().deleteById(entity.getId());
         return IdmResDTO.success();
@@ -423,14 +439,14 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
      * @param inputDto
      * @throws NoSuchAlgorithmException
      */
-    public void  deleteSubject(String adminGuid,PortraitInputInfoDto inputDto) throws NoSuchAlgorithmException {
+    public void  deleteSubject(String adminGuid,String name ,PortraitInputInfoDto inputDto) throws NoSuchAlgorithmException {
         String token = getToken(inputDto);
         HttpHeaders headers = new HttpHeaders();
         headers.set(PortraitInputConstant.CREATE_SUBJECT_TOKEN,token);
         headers.set(PortraitInputConstant.CREATE_SUBJECT_GUID,inputDto.getProjectGuid());
         JSONObject paramJson = new JSONObject();
-        paramJson.put("admitGuids", adminGuid);
-
+        paramJson.put("admitGuid", adminGuid);
+        paramJson.put("name", name);
 
         ResponseEntity<JSONObject> responseEntity =
                 restTemplate.exchange(PortraitInputConstant.UPDATE_SUBJECT_URL, HttpMethod.POST,
