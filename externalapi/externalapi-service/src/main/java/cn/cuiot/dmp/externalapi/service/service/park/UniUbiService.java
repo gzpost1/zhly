@@ -77,7 +77,6 @@ public class UniUbiService {
      * 同步设备信息
      * @return
      */
-    @Async
     public IdmResDTO syncDeviceData(){
             UniUbiPage<UniUbiDeviceRespInfo> uniUbiDeviceRespInfoUniUbiPage = queryDevicePageV2(new UniUbiDeviceQueryReq());
             List<UniUbiDeviceRespInfo> content = uniUbiDeviceRespInfoUniUbiPage.getContent();
