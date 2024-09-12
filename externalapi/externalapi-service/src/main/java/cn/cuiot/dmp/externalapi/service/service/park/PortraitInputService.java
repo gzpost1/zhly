@@ -160,24 +160,24 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
     public IdmResDTO updatePortrait(PortraitInputCreateDto createDto) throws NoSuchAlgorithmException {
         String jsonObject = stringRedisTemplate.opsForValue().get(SECRET_INFO_KEY + createDto.getKid());
         stringRedisTemplate.delete(SECRET_INFO_KEY + createDto.getKid());
-//        if (StringUtils.isEmpty(jsonObject)) {
-//            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR, "密钥ID已过期，请重新获取");
-//        }
-//        Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
-//        // 密码解密
-//        if(StringUtils.isNotBlank(createDto.getPassword())){
-//            createDto.setPassword(aes.getDecodeValue(createDto.getPassword()));
-//        }
-//
-//        if(StringUtils.isNotBlank(createDto.getCardNo())){
-//            createDto.setCardNo(aes.getDecodeValue(createDto.getCardNo()));
-//        }
-//        if(StringUtils.isNotBlank(createDto.getPhone())){
-//            createDto.setPhone(aes.getDecodeValue(createDto.getPhone()));
-//        }
-//        if(StringUtils.isNotBlank(createDto.getIdCardNo())){
-//            createDto.setIdCardNo(aes.getDecodeValue(createDto.getIdCardNo()));
-//        }
+        if (StringUtils.isEmpty(jsonObject)) {
+            throw new BusinessException(ResultCode.KID_EXPIRED_ERROR, "密钥ID已过期，请重新获取");
+        }
+        Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
+        // 密码解密
+        if(StringUtils.isNotBlank(createDto.getPassword())){
+            createDto.setPassword(aes.getDecodeValue(createDto.getPassword()));
+        }
+
+        if(StringUtils.isNotBlank(createDto.getCardNo())){
+            createDto.setCardNo(aes.getDecodeValue(createDto.getCardNo()));
+        }
+        if(StringUtils.isNotBlank(createDto.getPhone())){
+            createDto.setPhone(aes.getDecodeValue(createDto.getPhone()));
+        }
+        if(StringUtils.isNotBlank(createDto.getIdCardNo())){
+            createDto.setIdCardNo(aes.getDecodeValue(createDto.getIdCardNo()));
+        }
         //获取大华配置
         Long id = FootPlateInfoEnum.YF_PORTRAIT_INPUT.getId();
 
