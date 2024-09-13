@@ -25,4 +25,8 @@ public class AppProperties {
      */
     private Boolean enableGatewayAccessTokenRequest;
 
+    /**
+     * 用户接口每分钟限制访问次数
+     */
+    private Integer userApiAccessLimit=5;
 }

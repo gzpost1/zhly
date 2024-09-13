@@ -9,6 +9,7 @@ import cn.cuiot.dmp.gateway.config.AppProperties;
 import cn.cuiot.dmp.gateway.config.IgnoreAuthProperties;
 import cn.cuiot.dmp.gateway.service.SignatureService;
 import cn.cuiot.dmp.gateway.utils.SecrtUtil;
+import com.alibaba.nacos.common.utils.MD5Utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -28,6 +29,11 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.redisson.api.RLock;
+import org.redisson.api.RRateLimiter;
+import org.redisson.api.RateIntervalUnit;
+import org.redisson.api.RateType;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -78,6 +84,14 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
      * 内部token头部名称
      */
     public final static String INNER_TOKEN_NAME = "access-token";
+
+    /**
+     * 用户接口限制次数缓存Key前缀
+     */
+    public static final String USER_API_LIMIT_KEY_PREFIX = "userApiLimitKey:";
+
+    @Autowired
+    private RedissonClient redissonClient;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -155,7 +169,9 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
             throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
         } else {
             //解析与校验token
-            checkToken(jwt);
+            String userId = checkToken(jwt);
+            //检测访问流量限制
+            checkFlowLimit(currentUrl,userId,appProperties.getUserApiAccessLimit());
         }
         return chain.filter(exchange);
     }
@@ -195,7 +211,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
     /**
      * 解析与校验token
      */
-    private void checkToken(String jwt) {
+    private String checkToken(String jwt) {
         try {
 
             Claims claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt).getBody();
@@ -247,6 +263,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
                 redisTemplate.expire(CacheConst.LOGIN_USERS_JWT_WX + jwt, Const.WX_SESSION_TIME,
                         TimeUnit.SECONDS);
             }
+            return userId;
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
             if (ex instanceof ExpiredJwtException) {
@@ -272,4 +289,20 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         return false;
     }
 
+    /**
+     * 检测访问流量限制
+     */
+    private void checkFlowLimit(String url,String userId,Integer userApiAccessLimit){
+        String key = USER_API_LIMIT_KEY_PREFIX+userId+":"+ MD5Utils.md5Hex(url,"UTF-8");
+        //获取RRateLimiter对象
+        RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
+        //设置每分钟限制次数
+        rateLimiter.trySetRate(RateType.OVERALL, userApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+        //尝试获取许可
+        boolean isPermitted = rateLimiter.tryAcquire();
+        if (!isPermitted) {
+            //超出访问限制
+            throw new BusinessException(ResultCode.SERVER_BUSY,"超出访问限制，请稍后重试");
+        }
+    }
 }
