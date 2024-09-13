@@ -251,6 +251,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
      * @param param
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryBindContract")
     public PageResult queryBindContract(@RequestBody @Valid LeaseBindParam param) {
         TbContractLeaseRelateParam queryParam = new TbContractLeaseRelateParam();
@@ -266,6 +267,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
      *
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/statisticsContract")
     public List<BaseVO> statisticsContract() {
         return service.statisticsContract();
@@ -276,6 +278,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
      * @param params
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/pageNoSigned")
     public PageResult<TbContractLeaseEntity> pageNoSigned(
             @RequestBody TbContractLeaseParam params) {

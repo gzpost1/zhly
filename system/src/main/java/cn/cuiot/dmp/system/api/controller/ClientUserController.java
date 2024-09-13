@@ -98,6 +98,7 @@ public class ClientUserController{
     /**
      * 分页查询
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<ClientUserVo>> queryForPage(@RequestBody ClientUserQuery query) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();

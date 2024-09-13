@@ -51,6 +51,7 @@ public class ChargeCollectionManageController {
     /**
      * 管理列表-分页查询
      */
+    @RequiresPermissions
     @PostMapping("queryForPage")
     public IdmResDTO<IPage<ChargeCollectionManageVo>> queryForPage(@RequestBody ChargeCollectionManageQuery query) {
         //获取前一天23:59:59
@@ -67,6 +68,7 @@ public class ChargeCollectionManageController {
     /**
      * 客户应收统计
      */
+    @RequiresPermissions
     @PostMapping("/customerStatistics")
     public IdmResDTO<ChargeManagerCustomerStatisticsVo> customerStatistics(@RequestBody TbChargeManagerQuery query) {
         AssertUtil.isFalse(Objects.isNull(query.getCustomerUserId()), "客户id不能为空");
@@ -76,6 +78,7 @@ public class ChargeCollectionManageController {
     /**
      * 催款记录
      */
+    @RequiresPermissions
     @PostMapping("record")
     public IdmResDTO<IPage<ChargeCollectionRecordVo>> record(@RequestBody @Valid ChargeCollectionManageRecordQuery query) {
         AssertUtil.isFalse(Objects.isNull(query.getCustomerUserId()), "客户id不能为空");

@@ -77,6 +77,7 @@ public class TbFlowTaskInfoController {
      * @param query
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<FlowTaskInfoPageDto>> queryForPage(@RequestBody TbFlowTaskInfoQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());

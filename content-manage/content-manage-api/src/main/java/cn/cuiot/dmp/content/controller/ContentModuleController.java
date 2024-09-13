@@ -33,6 +33,7 @@ public class ContentModuleController extends BaseController {
      * @param systemModule
      * @return
      */
+    @RequiresPermissions
     @GetMapping("/queryForList")
     public List<ContentModule> queryForList(@RequestParam String systemModule) {
         return contentModuleService.queryForList(getOrgId(), systemModule);

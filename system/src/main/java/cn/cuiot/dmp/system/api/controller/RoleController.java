@@ -51,6 +51,7 @@ public class RoleController extends BaseController {
     /**
      * 角色列表分页查询
      */
+    @RequiresPermissions
     @GetMapping(value = "/listRoles", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<RoleDTO> getRoleListByPage(
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
@@ -81,6 +82,7 @@ public class RoleController extends BaseController {
     /**
      * 角色全量列表查询(不含超管)
      */
+    @RequiresPermissions
     @GetMapping(value = "/listRolesAll", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<RoleDTO> getRoleListByPage( @RequestParam(value = "status", required = false) Byte status,@RequestParam(value = "roleName", required = false) String roleName) {
         Map<String, Object> paramsMap = new HashMap<String, Object>(6) {{
@@ -135,6 +137,7 @@ public class RoleController extends BaseController {
     /**
      * 查询当前角色详情
      */
+    @RequiresPermissions
     @GetMapping(value = "/getRoleOne", produces = MediaType.APPLICATION_JSON_VALUE)
     public RoleDTO getRoleOne(@RequestParam(value = "id", required = true) String roleId) {
         String orgId = getOrgId();
@@ -146,6 +149,7 @@ public class RoleController extends BaseController {
     /**
      * 查询账号下的角色
      */
+    @RequiresPermissions
     @GetMapping(value = "getRoleListByOrgId", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<RoleDTO> getRoleListByOrgId() {
         return this.roleService.getRoleListByOrgId(getOrgId(), getUserId());

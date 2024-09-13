@@ -56,6 +56,7 @@ public class ChargePlainController {
      * @param query
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<ChargePlainPageDto>> queryForPage(@RequestBody ChargePlainQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
