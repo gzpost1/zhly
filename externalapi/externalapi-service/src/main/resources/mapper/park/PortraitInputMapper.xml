@@ -48,6 +48,7 @@
                 <if test=" params.createUserName != null and params.createUserName.trim() != ''">
                     AND u.name LIKE CONCAT('%',#{params.createUserName},'%')
                 </if>
+                  and  deleted =0
             </if>
         </where>
         ORDER BY tpi.create_time DESC
