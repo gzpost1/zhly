@@ -11,19 +11,24 @@ import org.springframework.stereotype.Component;
  * @date: 2024/5/10 15:43
  */
 @Component
-@ConfigurationProperties(prefix = "app")
+@ConfigurationProperties(prefix = "access.limit")
 @Data
 @RefreshScope
-public class AppProperties {
+public class GatewayAccessLimitProperties {
 
     /**
-     * 内部访问token
+     * 用户接口每分钟限制访问次数
      */
-    private String accessToken;
+    private Integer userApiAccessLimit=5;
 
     /**
-     * 是否开启内部token访问
+     * 特殊接口限制访问次数
      */
-    private Boolean enableGatewayAccessTokenRequest;
+    private Integer specialApiAccessLimit=20;
+
+    /**
+     * 特殊接口限制访问的url
+     */
+    private List<String> specialApiAccessLimitUrls;
 
 }

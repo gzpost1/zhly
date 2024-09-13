@@ -37,6 +37,7 @@ public class ChargeNoticeController {
     /**
      * 分页
      */
+    @RequiresPermissions
     @PostMapping("queryForPage")
     public IdmResDTO<IPage<ChargeNoticePageVo>> queryForPage(@RequestBody ChargeNoticePageQuery dto) {
         dto.setCompanyId(LoginInfoHolder.getCurrentOrgId());
@@ -46,6 +47,7 @@ public class ChargeNoticeController {
     /**
      * 查询详情
      */
+    @RequiresPermissions
     @PostMapping("queryForDetail")
     public IdmResDTO<ChargeNoticeVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
         ChargeNoticeVo vo = chargeNoticeService.queryForDetail(idParam.getId());

@@ -45,6 +45,7 @@ public class HouseKeeperController {
     /**
      * 分页查询
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<HouseKeeperEntity>> queryForPage(@RequestBody HouseKeeperQuery query) {
         Long currentDeptId = LoginInfoHolder.getCurrentDeptId();
@@ -61,6 +62,7 @@ public class HouseKeeperController {
     /**
      * 获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<HouseKeeperEntity> queryForDetail(@RequestBody @Valid IdParam idParam) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();

@@ -36,6 +36,7 @@ public class ContractTemplateController {
     /**
      * 根据id获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public ContractTemplateDTO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return contractTemplateService.queryForDetail(idParam.getId());
@@ -44,6 +45,7 @@ public class ContractTemplateController {
     /**
      * 查询列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForList")
     public List<ContractTemplateDTO> queryForList(@RequestBody @Valid ContractTemplatePageQueryDTO queryDTO) {
         return contractTemplateService.queryForList(queryDTO);
@@ -52,6 +54,7 @@ public class ContractTemplateController {
     /**
      * 查询分页列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public PageResult<ContractTemplateDTO> queryForPage(@RequestBody @Valid ContractTemplatePageQueryDTO queryDTO) {
         return contractTemplateService.queryForPage(queryDTO);

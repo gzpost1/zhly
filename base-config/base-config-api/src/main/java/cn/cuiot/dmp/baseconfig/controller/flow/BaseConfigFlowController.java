@@ -68,6 +68,7 @@ public class BaseConfigFlowController {
      * @param query
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForWorkOrderPage")
     public IdmResDTO<IPage<TbFlowPageDto>> queryForWorkOrderPage(@RequestBody TbFlowConfigQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
@@ -110,6 +111,7 @@ public class BaseConfigFlowController {
      * @param query
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<TbFlowPageDto>> queryForPage(@RequestBody TbFlowConfigQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());

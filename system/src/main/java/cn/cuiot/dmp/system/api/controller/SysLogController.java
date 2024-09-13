@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.service.SysLogService;
@@ -30,6 +31,7 @@ public class SysLogController {
     /**
      * 分页查询
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<OperateLogEntity>> queryForPage(@RequestBody SysLogQuery query) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();

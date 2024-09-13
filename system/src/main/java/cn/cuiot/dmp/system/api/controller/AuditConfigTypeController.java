@@ -40,6 +40,7 @@ public class AuditConfigTypeController {
     /**
      * 根据企业id查询审核配置列表
      */
+    @RequiresPermissions
     @PostMapping("/queryByCompany")
     public List<AuditConfigTypeDTO> queryByCompany(@RequestBody @Valid AuditConfigTypeQueryDTO queryDTO) {
         Long companyId = LoginInfoHolder.getCurrentOrgId();
@@ -47,8 +48,10 @@ public class AuditConfigTypeController {
     }
 
     /**
-     * 根据条件查询审核配置列表
+     * 根据条
+     * 件查询审核配置列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForList")
     public List<AuditConfigTypeRspDTO> queryForList(@RequestBody @Valid AuditConfigTypeReqDTO queryDTO) {
         Long companyId = LoginInfoHolder.getCurrentOrgId();
