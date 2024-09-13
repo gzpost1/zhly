@@ -52,6 +52,11 @@ public class VideoPageVo {
     private String flv;
 
     /**
+     * hls流地址
+     */
+    private String hls;
+
+    /**
      * 楼盘id
      */
     private Long buildingId;

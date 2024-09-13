@@ -40,6 +40,7 @@ public class VideoController {
      * @return IPage
      * @Param
      */
+    @RequiresPermissions
     @RequestMapping("/queryForPage")
     public IdmResDTO<IPage<VideoPageVo>> queryForPage(@RequestBody VideoPageQuery query) {
         return IdmResDTO.success(videoDeviceService.queryForPage(query));
@@ -84,6 +85,7 @@ public class VideoController {
     /**
      * 同步监控数据
      */
+    @RequiresPermissions
     @PostMapping("/syncVideoPlay")
     public IdmResDTO<?> syncVideoPlay() {
         videoTask.syncVideoPlay(null);

@@ -1,10 +1,8 @@
 package cn.cuiot.dmp.externalapi.service.service.video;
 
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
-import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
-import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -130,7 +128,7 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         //分页查询设备信息
         IPage<VideoPageVo> iPage = page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper).convert(item -> {
             VideoPageVo vo = new VideoPageVo();
-            BeanUtils.copyProperties(vo, item);
+            BeanUtils.copyProperties(item, vo);
             return vo;
         });
 
@@ -154,6 +152,7 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
                 item.setDeviceTypeName(VsuapDeviceTypeEnum.queryDescByCode(item.getDeviceType()));
                 item.setStateName(VsuapDeviceStateEnum.queryDescByCode(item.getState()));
                 item.setFlv(playMap.containsKey(item.getDeviceId()) ? playMap.get(item.getDeviceId()).getFlv() : null);
+                item.setHls(playMap.containsKey(item.getDeviceId()) ? playMap.get(item.getDeviceId()).getHls() : null);
                 item.setBuildingName(buildingMap.containsKey(item.getBuildingId()) ? buildingMap.get(item.getBuildingId()).getName() : null);
             }
         }
@@ -191,7 +190,8 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
         List<VideoDeviceEntity> list = list(new LambdaQueryWrapper<VideoDeviceEntity>()
-                .eq(VideoDeviceEntity::getCompanyId, companyId));
+                .eq(VideoDeviceEntity::getCompanyId, companyId)
+                .in(VideoDeviceEntity::getId, ids));
         if (CollectionUtils.isEmpty(list)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
