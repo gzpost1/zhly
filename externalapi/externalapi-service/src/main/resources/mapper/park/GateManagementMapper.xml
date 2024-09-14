@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.park.GateManagementMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.park.GateManagementEntity">
+        <id column="node_id" property="nodeId" />
+        <result column="node_name" property="nodeName" />
+        <result column="use_type" property="useType" />
+        <result column="status" property="status" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        node_id, node_name, use_type, status, company_id, community_id, update_time, update_user
+    </sql>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into tb_gate_management(id,node_id,node_name,use_type,status,park_id)
+        values
+            <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id},#{item.nodeId},#{item.nodeName},#{item.useType},#{item.status},#{item.parkId})
+            </foreach>
+        ON DUPLICATE KEY UPDATE
+        node_name =values(node_name),
+        use_type =values(use_type),
+        status =values(status)
+    </insert>
+
+    <select id="queryForPage" resultType="cn.cuiot.dmp.externalapi.service.vendor.park.vo.GageManagePageVO">
+        select t2.park_id,t2.park_name,t2.community_id,t1.node_id,t1.node_name,t1.`status`,t1.use_type from tb_gate_management t1
+            LEFT JOIN tb_park_info t2 on t1.park_id = t2.park_id
+        <where>
+            <if test="query.parkId !=null">
+                and t1.park_id = #{query.parkId}
+            </if>
+            <if test="query.nodeName !=null and query.nodeName !=''">
+                and t1.node_name like concat ('%',#{query.nodeName},'%')
+            </if>
+            <if test="query.status !=null ">
+                and t1.status = #{query.status}
+            </if>
+            <if test="query.communityIds !=null and query.communityIds.size()>0">
+                and t2.community_id in
+                <foreach collection="query.communityIds" item="item" open="(" separator="," close=")">
+                        #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

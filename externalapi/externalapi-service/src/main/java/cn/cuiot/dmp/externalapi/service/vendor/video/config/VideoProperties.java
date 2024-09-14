@@ -21,7 +21,7 @@ import java.io.Serializable;
 @RefreshScope
 public class VideoProperties implements Serializable {
 
-    public static final String PREFIX = "video";
+    public static final String PREFIX = "externalapi";
 
     /**
      * 云智眼baseUrl

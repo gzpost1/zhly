@@ -1,9 +1,6 @@
 package cn.cuiot.dmp.common.enums;
 
-import cn.cuiot.dmp.common.bean.external.SDKDWaterMeterBO;
-import cn.cuiot.dmp.common.bean.external.VsuapVideoBO;
-import cn.cuiot.dmp.common.bean.external.YFEntranceGuardBO;
-import cn.cuiot.dmp.common.bean.external.YFPortraitInputBO;
+import cn.cuiot.dmp.common.bean.external.*;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 
 import java.util.Objects;
@@ -36,6 +33,15 @@ public enum FootPlateInfoEnum {
      */
     YF_ENTRANCE_GUARD(4L, YFEntranceGuardBO.class),
 
+    /**
+     * 门禁（格物）
+     */
+    GW_ENTRANCE_GUARD(5L, GWEntranceGuardBO.class),
+
+    /**
+     * 停车场（科拓）
+     */
+    KP_DEPOT(6L, KPDepotBO.class),
     ;
 
     private Long id;

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.water.WaterManagementMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.water.WaterManagementEntity">
+        <id column="ws_imei" property="wsImei" />
+        <result column="ws_imsi" property="wsImsi" />
+        <result column="ws_csq" property="wsCsq" />
+        <result column="ws_batteryvoltage" property="wsBatteryvoltage" />
+        <result column="ws_cumulativeamount" property="wsCumulativeamount" />
+        <result column="valve_status" property="valveStatus" />
+        <result column="create_date" property="createDate" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ws_imei, ws_imsi, ws_csq, ws_batteryvoltage, ws_cumulativeamount, valve_status, create_date, update_time,
+            update_user,company_id,community_id,water_name
+    </sql>
+
+
+    <select id="insertOrUpdateBatch" parameterType="java.util.List">
+        insert into tb_water_management (ws_imei,ws_imsi,ws_csq,ws_batteryvoltage,ws_cumulativeamount,valve_status,create_date,update_time,update_user)
+        values
+            <foreach collection="waterList" item="item" index="index" separator=",">
+                (#{item.wsImei},#{item.wsImsi},#{item.wsCsq},#{item.wsBatteryvoltage},#{item.wsCumulativeamount},#{item.valveStatus},#{item.createDate}
+                ,#{item.updateTime},#{item.updateUser})
+            </foreach>
+            on DUPLICATE KEY UPDATE
+            ws_imsi=values(ws_imsi),ws_csq =values(ws_csq),ws_batteryvoltage=values(ws_batteryvoltage),ws_cumulativeamount =values(ws_cumulativeamount)
+            ,valve_status = values(valve_status),create_date=values(create_date),update_time=values(update_time),update_user=values(update_user)
+    </select>
+
+    <select id="queryForPage" resultType="cn.cuiot.dmp.externalapi.service.entity.water.WaterManagementEntity">
+        select
+            <include refid="Base_Column_List"/>
+            from tb_water_management
+            <where>
+                <if test="query.wsImei !=null and query.wsImei !=''">
+                    and ws_imei like concat('%',#{query.wsImei},'%')
+                </if>
+                <if test="query.waterName !=null and query.waterName !=''">
+                    and water_name like concat('%',#{query.waterName},'%')
+                </if>
+                <if test="query.valveStatus !=null and query.valveStatus !=''">
+                    and valve_status = #{query.valveStatus }
+                </if>
+                <if test="query.communityIds !=null and query.communityIds.size()>0">
+                    and community_id in
+                    <foreach collection="query.communityIds" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="(query.wsImei ==null or query.wsImei ==''  )and (query.waterName ==null or query.waterName =='' )
+                and (query.valveStatus==null or query.valveStatus =='')">
+                    or community_id is null
+                </if>
+
+            </where>
+            order by  update_time desc
+    </select>
+</mapper>
