@@ -94,12 +94,18 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
     /**
      * 用户接口每分钟限制访问次数
      */
-    private Integer userApiAccessLimit=5;
+    private Integer userApiAccessLimit=50;
+
+    /**
+     * 操作类接口限制访问次数
+     */
+    private Integer operateApiAccessLimit=5;
 
     /**
      * 特殊接口限制访问次数
      */
-    private Integer specialApiAccessLimit=200;
+    private Integer specialApiAccessLimit=500;
+
 
     @Autowired
     private RedissonClient redissonClient;
@@ -307,31 +313,34 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
      * 检测访问流量限制
      */
     private void checkFlowLimit(String url,String userId){
-
         String key = USER_API_LIMIT_KEY_PREFIX+userId+":"+ MD5Utils.md5Hex(url,"UTF-8");
         //获取RRateLimiter对象
         RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
 
-        if (shouldSpecialLimitUrl(url)) {
+        if (shouldOperateLimitUrl(url)) {
             //特殊URL接口
-            if(rateLimiter.isExists()){
-                if(!specialApiAccessLimit.equals(gatewayAccessLimitProperties.getSpecialApiAccessLimit())){
-                    rateLimiter.delete();
-                }
+            rateLimiter.trySetRate(RateType.OVERALL, operateApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            if(!operateApiAccessLimit.equals(gatewayAccessLimitProperties.getOperateApiAccessLimit())){
+                operateApiAccessLimit = gatewayAccessLimitProperties.getOperateApiAccessLimit();
+                rateLimiter.setRate(RateType.OVERALL, operateApiAccessLimit, 1, RateIntervalUnit.MINUTES);
             }
-            specialApiAccessLimit = gatewayAccessLimitProperties.getSpecialApiAccessLimit();
-            //设置每分钟限制次数
+
+        } else if (shouldSpecialLimitUrl(url)) {
+            //特殊URL接口
             rateLimiter.trySetRate(RateType.OVERALL, specialApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            if(!specialApiAccessLimit.equals(gatewayAccessLimitProperties.getSpecialApiAccessLimit())){
+                specialApiAccessLimit = gatewayAccessLimitProperties.getSpecialApiAccessLimit();
+                rateLimiter.setRate(RateType.OVERALL, specialApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }
+
         }else{
             //普通接口URL
-            if(rateLimiter.isExists()){
-                if(!userApiAccessLimit.equals(gatewayAccessLimitProperties.getUserApiAccessLimit())){
-                    rateLimiter.delete();
-                }
-            }
-            userApiAccessLimit = gatewayAccessLimitProperties.getUserApiAccessLimit();
-            //设置每分钟限制次数
             rateLimiter.trySetRate(RateType.OVERALL, userApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            if(!userApiAccessLimit.equals(gatewayAccessLimitProperties.getUserApiAccessLimit())){
+                //设置每分钟限制次数
+                userApiAccessLimit = gatewayAccessLimitProperties.getUserApiAccessLimit();
+                rateLimiter.setRate(RateType.OVERALL, userApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }
         }
 
         //尝试获取许可
@@ -342,6 +351,30 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         }
     }
 
+    /**
+     * 匹配操作类URL
+     * @param currentUrl
+     * @return
+     */
+    private boolean shouldOperateLimitUrl(String currentUrl) {
+        List<String> operateApiAccessLimitUrls = gatewayAccessLimitProperties.getOperateApiAccessLimitUrls();
+        if(CollectionUtils.isEmpty(operateApiAccessLimitUrls)){
+            return false;
+        }
+        PathMatcher pathMatcher = new AntPathMatcher();
+        for (String url : operateApiAccessLimitUrls) {
+            if (pathMatcher.match(url, currentUrl)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 匹配特殊类URL
+     * @param currentUrl
+     * @return
+     */
     private boolean shouldSpecialLimitUrl(String currentUrl) {
         List<String> specialApiAccessLimitUrls = gatewayAccessLimitProperties.getSpecialApiAccessLimitUrls();
         if(CollectionUtils.isEmpty(specialApiAccessLimitUrls)){
