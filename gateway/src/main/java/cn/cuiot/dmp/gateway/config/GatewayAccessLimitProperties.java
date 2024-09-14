@@ -24,7 +24,7 @@ public class GatewayAccessLimitProperties {
     /**
      * 特殊接口限制访问次数
      */
-    private Integer specialApiAccessLimit=20;
+    private Integer specialApiAccessLimit=200;
 
     /**
      * 特殊接口限制访问的url
