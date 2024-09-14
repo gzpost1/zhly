@@ -25,4 +25,19 @@ public class GWEntranceGuardBO {
      * 产品productKey
      */
     private String productKey;
+
+    /**
+     * 产品deviceKey（如果需要dmp的转发数据就必传）
+     */
+    private String deviceKey;
+
+    /**
+     * 请求id
+     */
+    private String requestId;
+
+    /**
+     * 企业id（只负责业务传参）
+     */
+    private Long companyId;
 }

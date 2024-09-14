@@ -24,19 +24,19 @@ public class InvokeDeviceServiceReq {
      * 比如，"arguments":"{ \"param \":1}"。
      * 入参数为空时，请填入 arguments ={}。
      */
-    private String arguments;
+    private String arguments = "{}";
 
     /**
      * 【可选】
      * 产品的productKey。创建产品时，雁飞·格物DMP平台为该产品颁发的全局唯一标识。
      */
-    private String productKey;
+    private String productKey = "";
 
     /**
      * 【可选】
      * 设备的deviceKey，由用户在添加设备时指定但需要满足该账户下唯一。
      */
-    private String deviceKey;
+    private String deviceKey = "";
 
     /**
      * 【可选】
@@ -53,5 +53,5 @@ public class InvokeDeviceServiceReq {
      * false:非优先命令，排队下发
      * 同步调用为优先命令
      */
-    private Boolean priorityCommand;
+    private String priorityCommand = "true";
 }

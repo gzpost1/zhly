@@ -19,5 +19,5 @@ public class InvokeDeviceServiceResp {
     /**
      * 如果是同步调用服务，返回的调用结果。如果是异步调用服务，不返回此参数。
      */
-    private String result;
+    private Object result;
 }

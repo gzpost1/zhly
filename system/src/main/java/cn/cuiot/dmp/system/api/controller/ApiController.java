@@ -312,4 +312,15 @@ public class ApiController {
     public IdmResDTO<Page<PlatfromInfoRespDTO>> queryPlatfromInfoPage(@RequestBody PlatfromInfoReqDTO dto) {
         return IdmResDTO.success(platfromInfoService.queryForPage(dto));
     }
+
+    /**
+     * 外部平台参数信息列表查询
+     *
+     * @return IdmResDTO<List>
+     * @Param
+     */
+    @PostMapping("/queryPlatfromInfoList")
+    public IdmResDTO<List<PlatfromInfoRespDTO>> queryPlatfromInfoList(@RequestBody PlatfromInfoReqDTO dto) {
+        return IdmResDTO.success(platfromInfoService.queryForList(dto));
+    }
 }

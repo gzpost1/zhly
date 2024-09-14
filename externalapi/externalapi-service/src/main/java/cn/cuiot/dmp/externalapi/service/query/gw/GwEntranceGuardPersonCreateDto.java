@@ -41,7 +41,7 @@ public class GwEntranceGuardPersonCreateDto {
     /**
      * 分组id
      */
-    @NotBlank(message = "请选择人员分组")
+    @NotNull(message = "请选择人员分组")
     private Long personGroupId;
 
     /**
@@ -84,4 +84,9 @@ public class GwEntranceGuardPersonCreateDto {
      * 备注
      */
     private String deviceSecret;
+
+    /**
+     * 临时密钥id
+     */
+    private String kid;
 }

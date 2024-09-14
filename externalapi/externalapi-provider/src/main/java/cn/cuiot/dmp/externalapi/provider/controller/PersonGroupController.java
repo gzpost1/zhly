@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 后台-人员分组
@@ -34,6 +35,16 @@ public class PersonGroupController {
     /**
      * 分页查询
      */
+    @RequiresPermissions
+    @PostMapping("/queryForList")
+    public IdmResDTO<List<PersonGroupEntity>> queryForList(@RequestBody PersonGroupPageQuery query) {
+        return IdmResDTO.success(personGroupService.queryForList(query));
+    }
+
+    /**
+     * 分页查询
+     */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<PersonGroupEntity>> queryForPage(@RequestBody PersonGroupPageQuery query) {
         return IdmResDTO.success(personGroupService.queryForPage(query));
@@ -42,6 +53,7 @@ public class PersonGroupController {
     /**
      * 详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<PersonGroupEntity> queryForDetail(@RequestBody @Valid IdParam param) {
         return IdmResDTO.success(personGroupService.queryForDetail(param.getId()));

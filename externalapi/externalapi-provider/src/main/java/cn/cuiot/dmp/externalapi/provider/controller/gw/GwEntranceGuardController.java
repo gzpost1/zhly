@@ -6,17 +6,17 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParams;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardEntity;
-import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardCreateDto;
-import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardPageQuery;
-import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardUpdateDto;
+import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardParamEntity;
+import cn.cuiot.dmp.externalapi.service.query.gw.*;
+import cn.cuiot.dmp.externalapi.service.service.gw.GwEntranceGuardAccessRecordService;
+import cn.cuiot.dmp.externalapi.service.service.gw.GwEntranceGuardOperationRecordService;
+import cn.cuiot.dmp.externalapi.service.service.gw.GwEntranceGuardParamService;
 import cn.cuiot.dmp.externalapi.service.service.gw.GwEntranceGuardService;
-import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.BaseDmpResp;
-import cn.cuiot.dmp.externalapi.service.vendor.gw.dmp.DmpDeviceRemoteService;
+import cn.cuiot.dmp.externalapi.service.vo.gw.GwEntranceGuardAccessRecordVO;
+import cn.cuiot.dmp.externalapi.service.vo.gw.GwEntranceGuardOperationPageVO;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwEntranceGuardPageVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.List;
 
 /**
  * 后台-格物门禁
@@ -39,11 +38,16 @@ public class GwEntranceGuardController {
     @Autowired
     private GwEntranceGuardService gwEntranceGuardService;
     @Autowired
-    private DmpDeviceRemoteService dmpDeviceRemoteService;
+    private GwEntranceGuardOperationRecordService operationRecordService;
+    @Autowired
+    private GwEntranceGuardAccessRecordService gwEntranceGuardAccessRecordService;
+    @Autowired
+    private GwEntranceGuardParamService gwEntranceGuardParamService;
 
     /**
      * 分页查询
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<GwEntranceGuardPageVo>> queryForPage(@RequestBody GwEntranceGuardPageQuery query) {
         return IdmResDTO.success(gwEntranceGuardService.queryForPage(query));
@@ -52,9 +56,19 @@ public class GwEntranceGuardController {
     /**
      * 详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<GwEntranceGuardEntity> queryForDetail(@RequestBody IdParam param) {
         return IdmResDTO.success(gwEntranceGuardService.queryForDetail(param.getId()));
+    }
+
+    /**
+     * 查询参数
+     */
+    @RequiresPermissions
+    @PostMapping("/queryForParam")
+    public IdmResDTO<GwEntranceGuardParamEntity> queryForParam(@RequestBody IdParam param) {
+        return IdmResDTO.success(gwEntranceGuardParamService.queryForParam(param.getId()));
     }
 
     /**
@@ -101,16 +115,54 @@ public class GwEntranceGuardController {
         return IdmResDTO.success();
     }
 
-    @RequestMapping("/getPushData")
-    public void getPushData(@RequestBody Result result) {
-        System.out.println("=============================================");
-        System.out.println(result);
+    /**
+     * 开门
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "openTheDoor", operationName = "门禁开门", serviceType = "gwEntranceGuard", serviceTypeName = "格物门禁管理")
+    @PostMapping("/openTheDoor")
+    public IdmResDTO<?> openTheDoor(@RequestBody @Valid GwEntranceGuardOperationDto param) {
+        gwEntranceGuardService.openTheDoor(param);
+        return IdmResDTO.success();
     }
 
-    @Data
-    public static class Result{
-        private String devicePropKey;
-        private Object dataProcessing;
-        private List<Object> dataForwarding;
+    /**
+     * 重启
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "restart", operationName = "门禁重启", serviceType = "gwEntranceGuard", serviceTypeName = "格物门禁管理")
+    @PostMapping("/restart")
+    public IdmResDTO<?> restart(@RequestBody @Valid GwEntranceGuardOperationDto param) {
+        gwEntranceGuardService.restart(param);
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 修改参数
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "updateParam", operationName = "门禁参数修改", serviceType = "gwEntranceGuard", serviceTypeName = "格物门禁管理")
+    @PostMapping("/updateParam")
+    public IdmResDTO<?> updateParam(@RequestBody @Valid GwEntranceGuardParamDto dto) {
+        gwEntranceGuardParamService.updateParam(dto);
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 操作分页查询
+     */
+    @RequiresPermissions
+    @PostMapping("/queryOperationForPage")
+    public IdmResDTO<IPage<GwEntranceGuardOperationPageVO>> queryForPage(@RequestBody @Valid GwEntranceGuardOperationQuery query) {
+        return IdmResDTO.success(operationRecordService.queryForPage(query));
+    }
+
+    /**
+     * 通行分页
+     */
+    @RequiresPermissions
+    @PostMapping("/queryAccessForPage")
+    public IdmResDTO<IPage<GwEntranceGuardAccessRecordVO>> queryForPage(@RequestBody GwEntranceGuardAccessRecordQuery query) {
+        return IdmResDTO.success(gwEntranceGuardAccessRecordService.queryForPage(query));
     }
 }

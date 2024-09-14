@@ -11,4 +11,22 @@
         </if>
         ) AS exists_result;
     </select>
+
+    <select id="queryForDetail" resultType="cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardPersonEntity">
+        SELECT * FROM tb_gw_entrance_guard_person WHERE deleted = 0 AND id = #{id} AND company_id = #{companyId}
+    </select>
+
+    <select id="queryForListByIds" resultType="cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardPersonEntity">
+        SELECT
+        *
+        FROM
+        tb_gw_entrance_guard_person
+        WHERE
+        deleted = 0
+        AND company_id = #{companyId}
+        AND id IN
+        <foreach collection="ids" index="index" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

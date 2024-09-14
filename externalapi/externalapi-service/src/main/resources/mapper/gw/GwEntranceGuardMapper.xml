@@ -35,4 +35,21 @@
     latitude, longitude, remark, status, equip_status, update_time, update_user, create_time, create_user,
     deleted, product_key, device_key, iot_id, device_secret
   </sql>
+
+    <select id="queryForDetail" resultMap="BaseResultMap">
+        SELECT * FROM tb_gw_entrance_guard WHERE deleted = 0 AND company_id = #{companyId} AND id = #{id}
+    </select>
+
+    <select id="queryForListByIds" resultMap="BaseResultMap">
+        SELECT 
+        *
+        FROM
+        tb_gw_entrance_guard
+        WHERE 
+        deleted = 0 AND company_id = #{companyId} 
+        AND id IN 
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

@@ -1,13 +1,13 @@
 package cn.cuiot.dmp.externalapi.service.feign;
 
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
-import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
-import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -62,6 +62,30 @@ public class SystemApiService {
     }
 
     /**
+     * 分页查询外部平台参数信息
+     *
+     * @return IPage
+     * @Param dto 参数
+     */
+    public List<PlatfromInfoRespDTO> queryPlatfromInfoList(PlatfromInfoReqDTO dto) {
+        try {
+            IdmResDTO<List<PlatfromInfoRespDTO>> idmResDTO = systemApiFeignService.queryPlatfromInfoList(dto);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==queryPlatfromInfoList==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_FORM_CONFIG_ERROR);
+        }
+    }
+
+    /**
      * 查询楼房信息
      */
     public List<BuildingArchive> buildingArchiveQueryForList(@RequestBody @Valid BuildingArchiveReq buildingArchiveReq){
@@ -79,6 +103,28 @@ public class SystemApiService {
         } catch (Exception ex) {
             log.info("ApiSystemServiceImpl==buildingArchiveQueryForList==fail", ex);
             throw new BusinessException(ResultCode.QUERY_FORM_CONFIG_ERROR);
+        }
+    }
+
+    /**
+     * 查询用户
+     */
+    public List<BaseUserDto> lookUpUserList(BaseUserReqDto query) {
+        try {
+            IdmResDTO<List<BaseUserDto>> idmResDTO = systemApiFeignService
+                    .lookUpUserList(query);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==lookUpUserList==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_DEPT_ERROR);
         }
     }
 }

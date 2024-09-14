@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.externalapi.service.vendor.gw.dmp;
 
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.BaseDmpReq;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.BaseDmpResp;
@@ -11,6 +13,8 @@ import cn.cuiot.dmp.externalapi.service.vendor.gw.enums.DmpEntranceGuardResCode;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.utils.Sm3Utils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -34,6 +38,13 @@ public class DmpApiService {
     private RestTemplate restTemplate;
     @Autowired
     private DmpProperties dmpProperties;
+    @Autowired
+    private RedisUtil redisUtil;
+
+    /**
+     * 格物设备调用缓存key
+     */
+    private static final String CACHE_KEY = "gw:";
 
     /**
      * 格物请求
@@ -57,12 +68,16 @@ public class DmpApiService {
             throw new BusinessException(ResultCode.ERROR, "请求格物门禁异常");
         }
 
-        BaseDmpReq<T> baseDmpReq = new BaseDmpReq<T>();
+        BaseDmpReq<T> baseDmpReq = new BaseDmpReq<>();
         baseDmpReq.setData(data);
         baseDmpReq.setApp_id(appId);
         baseDmpReq.setTrans_id(map.get("trans_id").toString());
         baseDmpReq.setTimestamp(map.get("timestamp").toString());
         baseDmpReq.setToken(map.get("token").toString());
+        //设置requestId
+        if (StringUtils.isNotBlank(bo.getRequestId())) {
+            baseDmpReq.setRequestId(bo.getRequestId());
+        }
 
         //接口地址
         String url = dmpProperties.getBaseurl() + gateway;
@@ -91,6 +106,36 @@ public class DmpApiService {
             }
             throw new BusinessException(ResultCode.ERROR, "请求格物失败");
         }
+        setCacheKey(baseDmpResp, bo);
         return baseDmpResp;
+    }
+
+    private void setCacheKey(BaseDmpResp<?> resp, GWEntranceGuardBO bo) {
+        if (StringUtils.isBlank(bo.getDeviceKey())) {
+            return;
+        }
+        String requestId;
+        if (StringUtils.isNotBlank(requestId = resp.getRequestId()) && Objects.nonNull(resp.getData())) {
+            String[] split = requestId.split("-");
+            //业务类型
+            String businessType = split[0];
+            //模型key
+            String modelKey = split[1];
+            //数据id
+            String dataId = split[2];
+
+            Map<String, Object> map = JsonUtil.readValue(JsonUtil.writeValueAsString(resp.getData()), new TypeReference<Map<String, Object>>() {
+            });
+            if (MapUtils.isNotEmpty(map)) {
+                String mapKey = "messageId";
+                if (map.containsKey(mapKey)) {
+                    String messageId = String.valueOf(map.get(mapKey));
+
+                    //设置缓存（gw:entranceGuard:productKey_deviceKey:模型key:messageId:dataId）
+                    String cacheKey = CACHE_KEY + businessType + ":" + bo.getProductKey() + "_" + bo.getDeviceKey() + ":" + modelKey + ":" + messageId;
+                    redisUtil.set(cacheKey, dataId, Const.ONE_DAY_SECOND);
+                }
+            }
+        }
     }
 }

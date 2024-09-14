@@ -6,26 +6,34 @@ import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParams;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.externalapi.service.constant.GwBusinessTypeConstant;
+import cn.cuiot.dmp.externalapi.service.constant.GwEntranceGuardOperationStatusType;
+import cn.cuiot.dmp.externalapi.service.constant.GwEntranceGuardOperationType;
+import cn.cuiot.dmp.externalapi.service.constant.GwEntranceGuardServiceKeyConstant;
+import cn.cuiot.dmp.externalapi.service.entity.gw.GwDeviceRelationEntity;
+import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardOperationRecordEntity;
+import cn.cuiot.dmp.externalapi.service.enums.GwEntranceGuardEquipStatusEnums;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardCreateDto;
+import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardOperationDto;
 import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardPageQuery;
 import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardUpdateDto;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.DmpDeviceCreateReq;
+import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.InvokeDeviceServiceReq;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDeviceResp;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.dmp.DmpDeviceRemoteService;
+import cn.cuiot.dmp.externalapi.service.vo.gw.GwEntranceGuardAppPageVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwEntranceGuardPageVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
@@ -40,6 +48,8 @@ import cn.cuiot.dmp.externalapi.service.mapper.gw.GwEntranceGuardMapper;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,14 +68,34 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
     private DmpDeviceRemoteService dmpDeviceRemoteService;
     @Autowired
     private ApiSystemService apiSystemService;
+    @Autowired
+    private GwEntranceGuardConfigService gwEntranceGuardConfigService;
+    @Autowired
+    private GwEntranceGuardOperationRecordService operationRecordService;
+    @Autowired
+    private GwDeviceRelationService gwDeviceRelationService;
 
     /**
-     * 根据企业id获取门禁数据
+     * 分页
      */
-    public List<GwEntranceGuardEntity> queryListByCompanyId(Long companyId) {
-        return list(new LambdaQueryWrapper<GwEntranceGuardEntity>()
-                .eq(GwEntranceGuardEntity::getCompanyId, companyId)
-                .orderByDesc(GwEntranceGuardEntity::getCreateTime));
+    public IPage<GwEntranceGuardAppPageVo> queryAppForPage(GwEntranceGuardPageQuery query) {
+        //企业id
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+
+        LambdaQueryWrapper<GwEntranceGuardEntity> wrapper = buildWrapper(query, companyId);
+
+        IPage<GwEntranceGuardAppPageVo> page = page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper).convert(item -> {
+            GwEntranceGuardAppPageVo vo = new GwEntranceGuardAppPageVo();
+            BeanUtils.copyProperties(item, vo);
+            return vo;
+        });
+
+        //构建数据
+        if (Objects.nonNull(page) && CollectionUtils.isNotEmpty(page.getRecords())) {
+            buildPageVo(page.getRecords());
+        }
+
+        return page;
     }
 
     /**
@@ -75,16 +105,7 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        LambdaQueryWrapper<GwEntranceGuardEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(GwEntranceGuardEntity::getCompanyId, companyId);
-        wrapper.like(StringUtils.isNotBlank(query.getName()), GwEntranceGuardEntity::getName, query.getName());
-        wrapper.eq(Objects.nonNull(query.getBuildingId()), GwEntranceGuardEntity::getBuildingId, query.getBuildingId());
-        wrapper.eq(StringUtils.isNotBlank(query.getSn()), GwEntranceGuardEntity::getSn, query.getSn());
-        wrapper.eq(Objects.nonNull(query.getBrandId()), GwEntranceGuardEntity::getBrandId, query.getBrandId());
-        wrapper.eq(Objects.nonNull(query.getModelId()), GwEntranceGuardEntity::getModelId, query.getModelId());
-        wrapper.eq(Objects.nonNull(query.getStatus()), GwEntranceGuardEntity::getStatus, query.getStatus());
-        wrapper.eq(StringUtils.isNotBlank(query.getEquipStatus()), GwEntranceGuardEntity::getEquipStatus, query.getEquipStatus());
-        wrapper.orderByDesc(GwEntranceGuardEntity::getCreateTime);
+        LambdaQueryWrapper<GwEntranceGuardEntity> wrapper = buildWrapper(query, companyId);
 
         IPage<GwEntranceGuardPageVo> page = page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper).convert(item -> {
             GwEntranceGuardPageVo vo = new GwEntranceGuardPageVo();
@@ -100,17 +121,36 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
         return page;
     }
 
+    private LambdaQueryWrapper<GwEntranceGuardEntity> buildWrapper(GwEntranceGuardPageQuery query, Long companyId) {
+        LambdaQueryWrapper<GwEntranceGuardEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(GwEntranceGuardEntity::getCompanyId, companyId);
+        wrapper.like(StringUtils.isNotBlank(query.getName()), GwEntranceGuardEntity::getName, query.getName());
+        wrapper.eq(Objects.nonNull(query.getBuildingId()), GwEntranceGuardEntity::getBuildingId, query.getBuildingId());
+        wrapper.eq(StringUtils.isNotBlank(query.getSn()), GwEntranceGuardEntity::getSn, query.getSn());
+        wrapper.eq(Objects.nonNull(query.getBrandId()), GwEntranceGuardEntity::getBrandId, query.getBrandId());
+        wrapper.eq(Objects.nonNull(query.getModelId()), GwEntranceGuardEntity::getModelId, query.getModelId());
+        wrapper.eq(Objects.nonNull(query.getStatus()), GwEntranceGuardEntity::getStatus, query.getStatus());
+        wrapper.eq(StringUtils.isNotBlank(query.getEquipStatus()), GwEntranceGuardEntity::getEquipStatus, query.getEquipStatus());
+        wrapper.orderByDesc(GwEntranceGuardEntity::getCreateTime);
+        return wrapper;
+    }
+
+    /**
+     * 根据企业id获取门禁数据
+     */
+    public List<GwEntranceGuardEntity> queryListByCompanyId(Long companyId) {
+        return list(new LambdaQueryWrapper<GwEntranceGuardEntity>()
+                .eq(GwEntranceGuardEntity::getCompanyId, companyId)
+                .orderByDesc(GwEntranceGuardEntity::getCreateTime));
+    }
+
     /**
      * 详情
      */
     public GwEntranceGuardEntity queryForDetail(Long id) {
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
-
-        List<GwEntranceGuardEntity> list = list(new LambdaQueryWrapper<GwEntranceGuardEntity>()
-                .eq(GwEntranceGuardEntity::getCompanyId, companyId)
-                .eq(GwEntranceGuardEntity::getId, id));
-        return CollectionUtils.isNotEmpty(list) ? list.get(0) : null;
+        return baseMapper.queryForDetail(companyId, id);
     }
 
     /**
@@ -123,23 +163,36 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
         Long deptId = LoginInfoHolder.getCurrentDeptId();
 
         //校验对接参数是否已填,获取productKey
-        GWEntranceGuardBO bo = getProductKey(companyId);
+        GWEntranceGuardBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId);
+
+        long id = IdWorker.getId();
 
         //调用接口创建设备数据
         DmpDeviceCreateReq deviceReq = new DmpDeviceCreateReq();
         deviceReq.setProductKey(bo.getProductKey());
+        deviceReq.setDeviceKey(id + "");
         deviceReq.setImei(dto.getSn());
         deviceReq.setDeviceName(dto.getName());
         deviceReq.setDescription(deviceReq.getDescription());
         DmpDeviceResp device = dmpDeviceRemoteService.createDevice(deviceReq, bo);
 
-        //保存数据
         if (Objects.nonNull(device)) {
+            //保存设备关联信息
+            GwDeviceRelationEntity relation = new GwDeviceRelationEntity();
+            relation.setDataId(id);
+            relation.setDeviceKey(device.getDeviceKey());
+            relation.setProductKey(device.getProductKey());
+            relation.setBusinessType(GwBusinessTypeConstant.ENTRANCE_GUARD);
+            gwDeviceRelationService.create(relation);
+
+            //保存门禁数据
             GwEntranceGuardEntity entity = new GwEntranceGuardEntity();
             BeanUtils.copyProperties(dto, entity);
+            entity.setId(id);
             entity.setCompanyId(companyId);
             entity.setDeptId(deptId);
             entity.setStatus(EntityConstants.ENABLED);
+            entity.setEquipStatus(GwEntranceGuardEquipStatusEnums.NOT_ACTIVE.getCode());
             //构建外部设备信息
             entity.buildExternalDeviceInfo(entity, device);
 
@@ -154,16 +207,11 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        List<GwEntranceGuardEntity> list = list(new LambdaQueryWrapper<GwEntranceGuardEntity>()
-                .eq(GwEntranceGuardEntity::getId, dto.getId())
-                .eq(GwEntranceGuardEntity::getCompanyId, companyId));
-        if (CollectionUtils.isEmpty(list)) {
-            throw new BusinessException(ResultCode.ERROR, "数据不存在");
-        }
+        GwEntranceGuardEntity entranceGuard = Optional.ofNullable(baseMapper.queryForDetail(companyId, dto.getId()))
+                .orElseThrow(() -> new BusinessException(ResultCode.ERROR, "数据不存在"));
 
-        GwEntranceGuardEntity entity = list.get(0);
-        entity.setName(dto.getName());
-        updateById(entity);
+        entranceGuard.setName(dto.getName());
+        updateById(entranceGuard);
     }
 
     /**
@@ -173,23 +221,85 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
         ///企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        List<GwEntranceGuardEntity> list = list(new LambdaQueryWrapper<GwEntranceGuardEntity>()
-                .eq(GwEntranceGuardEntity::getCompanyId, companyId));
-        if (CollectionUtils.isEmpty(list)) {
+        List<GwEntranceGuardEntity> guardEntityList = baseMapper.queryForListByIds(companyId, param.getIds());
+        if (CollectionUtils.isEmpty(guardEntityList)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
 
         List<Long> ids = param.getIds();
-        //判断设备id列表是否都属于该企业的设备
-        List<GwEntranceGuardEntity> collect = list.stream().filter(e -> !ids.contains(e.getId())).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(collect)) {
-            List<String> deviceNames = collect.stream().map(GwEntranceGuardEntity::getName).collect(Collectors.toList());
-            throw new BusinessException(ResultCode.ERROR, "设备【" + String.join(",", deviceNames) + "】不属于该企业");
+        if (ids.size() != guardEntityList.size()) {
+            //判断设备id列表是否都属于该企业的设备
+            List<GwEntranceGuardEntity> collect = guardEntityList.stream().filter(e -> !ids.contains(e.getId())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(collect)) {
+                List<String> deviceNames = collect.stream().map(GwEntranceGuardEntity::getName).collect(Collectors.toList());
+                throw new BusinessException(ResultCode.ERROR, "设备【" + String.join(",", deviceNames) + "】不属于该企业");
+            }
         }
 
         update(new LambdaUpdateWrapper<GwEntranceGuardEntity>()
                 .in(GwEntranceGuardEntity::getId, ids)
                 .set(GwEntranceGuardEntity::getStatus, param.getStatus()));
+    }
+
+    /**
+     * 开门操作
+     */
+    public void openTheDoor(GwEntranceGuardOperationDto dto) {
+        openOrRestartHandle(dto, GwEntranceGuardOperationType.OPEN_THE_DOOR, GwEntranceGuardServiceKeyConstant.OPEN_THE_DOOR);
+    }
+
+    /**
+     * 重启操作
+     */
+    public void restart(GwEntranceGuardOperationDto dto) {
+        openOrRestartHandle(dto, GwEntranceGuardOperationType.RESTART, GwEntranceGuardServiceKeyConstant.RESTART);
+    }
+
+    /**
+     * 操作处理
+     */
+    private void openOrRestartHandle(GwEntranceGuardOperationDto dto, Byte recordType, String operationKey) {
+        //企业id
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+
+        //校验对接参数是否已填,获取productKey
+        GWEntranceGuardBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId);
+
+        GwEntranceGuardEntity entranceGuard = Optional.ofNullable(baseMapper.queryForDetail(companyId, dto.getId()))
+                .orElseThrow(() -> new BusinessException(ResultCode.ERROR, "数据不存在"));
+
+        long id = IdWorker.getId();
+        //创建记录
+        GwEntranceGuardOperationRecordEntity record = new GwEntranceGuardOperationRecordEntity();
+        record.setId(id);
+        record.setType(recordType);
+        record.setCompanyId(companyId);
+        record.setExecutionStatus(GwEntranceGuardOperationStatusType.IN_PROGRESS);
+        record.setEntranceGuardId(entranceGuard.getId());
+        record.setDeviceSecret(dto.getDescription());
+        operationRecordService.save(record);
+
+        //请求dmp平台执行重启操作
+        try {
+            //requestId(业务类型-模型key-数据id-系统事件)
+            bo.setRequestId(GwBusinessTypeConstant.ENTRANCE_GUARD + "-" + operationKey + "-" + id + "-" + System.currentTimeMillis());
+            bo.setDeviceKey(entranceGuard.getDeviceKey());
+
+            InvokeDeviceServiceReq req = new InvokeDeviceServiceReq();
+            req.setIotId(entranceGuard.getIotId());
+            req.setKey(operationKey);
+            dmpDeviceRemoteService.invokeDeviceService(req, bo);
+        } catch (Exception e) {
+
+            GwEntranceGuardOperationRecordEntity entity1 = operationRecordService.getById(id);
+            entity1.setExecutionStatus(GwEntranceGuardOperationStatusType.FAIL);
+            entity1.setFailMsg(e.getMessage());
+            operationRecordService.updateById(entity1);
+
+            log.error("执行格物门禁操作异常......");
+            e.printStackTrace();
+            throw new BusinessException(ResultCode.ERROR, "操作失败【" + e.getMessage() + "】");
+        }
     }
 
     /**
@@ -199,14 +309,13 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        List<GwEntranceGuardEntity> list = list(new LambdaQueryWrapper<GwEntranceGuardEntity>()
-                .eq(GwEntranceGuardEntity::getCompanyId, companyId));
-        if (CollectionUtils.isEmpty(list)) {
+        List<GwEntranceGuardEntity> entranceGuardList = baseMapper.queryForListByIds(companyId, ids);
+        if (CollectionUtils.isEmpty(entranceGuardList)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
 
         //判断设备id列表是否都属于该企业的设备
-        List<GwEntranceGuardEntity> collect = list.stream().filter(e -> !ids.contains(e.getId())).collect(Collectors.toList());
+        List<GwEntranceGuardEntity> collect = entranceGuardList.stream().filter(e -> !ids.contains(e.getId())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(collect)) {
             List<String> deviceNames = collect.stream().map(GwEntranceGuardEntity::getName).collect(Collectors.toList());
             throw new BusinessException(ResultCode.ERROR, "设备【" + String.join(",", deviceNames) + "】不属于该企业");
@@ -215,78 +324,62 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
         removeByIds(ids);
     }
 
-    /**
-     * 获取对接配置
-     *
-     * @return productKey
-     * @Param companyId 企业id
-     */
-    private GWEntranceGuardBO getProductKey(Long companyId) {
-        // 构建请求DTO
-        PlatfromInfoReqDTO dto = new PlatfromInfoReqDTO();
-        dto.setCompanyId(companyId);
-        dto.setPlatformId(FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId());
+    private void buildPageVo(List<?> list) {
 
-        // 查询平台信息
-        IPage<PlatfromInfoRespDTO> iPage = systemApiService.queryPlatfromInfoPage(dto);
-        if (Objects.isNull(iPage) || Objects.isNull(iPage.getRecords()) || CollectionUtils.isEmpty(iPage.getRecords())) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数配置为空，请先配置后再创建数据");
-        }
+        Object firstElement = list.get(0);
 
-        // 获取第一条记录
-        PlatfromInfoRespDTO respDTO = iPage.getRecords().get(0);
-
-        // 检查返回的数据是否为空
-        if (StringUtils.isBlank(respDTO.getData())) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数配置为空，请先配置后再创建数据");
+        if (firstElement instanceof GwEntranceGuardPageVo) {
+            buildPageVoForSpecificType((List<GwEntranceGuardPageVo>) list,
+                    GwEntranceGuardPageVo::getBuildingId, GwEntranceGuardPageVo::getDeptId,
+                    GwEntranceGuardPageVo::getBrandId, GwEntranceGuardPageVo::getModelId,
+                    GwEntranceGuardPageVo::setBuildingName, GwEntranceGuardPageVo::setDeptPathName,
+                    GwEntranceGuardPageVo::setBrandName, GwEntranceGuardPageVo::setModelName);
+        } else if (firstElement instanceof GwEntranceGuardAppPageVo) {
+            buildPageVoForSpecificType((List<GwEntranceGuardAppPageVo>) list,
+                    GwEntranceGuardAppPageVo::getBuildingId, null, null, null,
+                    GwEntranceGuardAppPageVo::setBuildingName, null, null, null);
+        } else {
+            throw new IllegalArgumentException("Unsupported VO type: " + firstElement.getClass());
         }
-
-        // 从JSON数据中解析出GWEntranceGuardBO对象
-        GWEntranceGuardBO gwEntranceGuardBO = FootPlateInfoEnum.getObjectFromJsonById(FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId(), respDTO.getData());
-        if (Objects.isNull(gwEntranceGuardBO)) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数配置为空，请先配置后再创建数据");
-        }
-
-        if (StringUtils.isBlank(gwEntranceGuardBO.getAppId())) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数【appId】配置为空，请先配置后再创建数据");
-        }
-        if (StringUtils.isBlank(gwEntranceGuardBO.getAppSecret())) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数【appSecret】配置为空，请先配置后再创建数据");
-        }
-        if (StringUtils.isBlank(gwEntranceGuardBO.getProductKey())) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数【productKey】配置为空，请先配置后再创建数据");
-        }
-
-        return gwEntranceGuardBO;
     }
 
-    /**
-     * 构建后台分页信息
-     */
-    private void buildPageVo(List<GwEntranceGuardPageVo> list) {
+    private <V> void buildPageVoForSpecificType(List<V> list,
+                                                Function<V, Long> buildingIdGetter,
+                                                Function<V, Long> deptIdGetter,
+                                                Function<V, Long> brandIdGetter,
+                                                Function<V, Long> modelIdGetter,
+                                                BiConsumer<V, String> buildingNameSetter,
+                                                BiConsumer<V, String> deptPathNameSetter,
+                                                BiConsumer<V, String> brandNameSetter,
+                                                BiConsumer<V, String> modelNameSetter) {
         // 获取各类信息的 Map
-        Map<Long, String> buildingArchiveMap = getDataMap(list, GwEntranceGuardPageVo::getBuildingId, this::queryBuildingInfo, BuildingArchive::getId, BuildingArchive::getName);
-        Map<Long, String> deptMap = getDataMap(list, GwEntranceGuardPageVo::getDeptId, this::queryDeptList, DepartmentDto::getId, DepartmentDto::getPathName);
-        Map<Long, String> brandMap = getCustomConfigDetailsMap(list, GwEntranceGuardPageVo::getBrandId);
-        Map<Long, String> modelMap = getCustomConfigDetailsMap(list, GwEntranceGuardPageVo::getModelId);
+        Map<Long, String> buildingArchiveMap = getDataMap(list, buildingIdGetter, this::queryBuildingInfo, BuildingArchive::getId, BuildingArchive::getName);
+        Map<Long, String> deptMap = deptIdGetter != null ? getDataMap(list, deptIdGetter, this::queryDeptList, DepartmentDto::getId, DepartmentDto::getPathName) : null;
+        Map<Long, String> brandMap = brandIdGetter != null ? getCustomConfigDetailsMap(list, brandIdGetter) : null;
+        Map<Long, String> modelMap = modelIdGetter != null ? getCustomConfigDetailsMap(list, modelIdGetter) : null;
 
         // 设置 Vo 对象的值
-        for (GwEntranceGuardPageVo vo : list) {
-            vo.setBuildingName(buildingArchiveMap.getOrDefault(vo.getBuildingId(), null));
-            vo.setDeptPathName(deptMap.getOrDefault(vo.getDeptId(), null));
-            vo.setBrandName(brandMap.getOrDefault(vo.getBrandId(), null));
-            vo.setModelName(modelMap.getOrDefault(vo.getModelId(), null));
+        for (V vo : list) {
+            if (buildingNameSetter != null) {
+                buildingNameSetter.accept(vo, buildingArchiveMap.getOrDefault(buildingIdGetter.apply(vo), null));
+            }
+            if (deptPathNameSetter != null && deptMap != null) {
+                deptPathNameSetter.accept(vo, deptMap.getOrDefault(deptIdGetter.apply(vo), null));
+            }
+            if (brandNameSetter != null && brandMap != null) {
+                brandNameSetter.accept(vo, brandMap.getOrDefault(brandIdGetter.apply(vo), null));
+            }
+            if (modelNameSetter != null && modelMap != null) {
+                modelNameSetter.accept(vo, modelMap.getOrDefault(modelIdGetter.apply(vo), null));
+            }
         }
     }
 
-    /**
-     * 通用方法：根据 VO 属性获取数据 Map
-     */
-    private <T> Map<Long, String> getDataMap(List<GwEntranceGuardPageVo> list,
-                                             Function<GwEntranceGuardPageVo, Long> idGetter,
-                                             Function<List<Long>, List<T>> queryFunction,
-                                             Function<T, Long> keyMapper,
-                                             Function<T, String> valueMapper) {
+    private <T, V> Map<Long, String> getDataMap(List<V> list,
+                                                Function<V, Long> idGetter,
+                                                Function<List<Long>, List<T>> queryFunction,
+                                                Function<T, Long> keyMapper,
+                                                Function<T, String> valueMapper) {
         List<Long> ids = list.stream().map(idGetter).filter(Objects::nonNull).distinct().collect(Collectors.toList());
         if (CollectionUtils.isEmpty(ids)) {
             return Maps.newHashMap();
@@ -297,8 +390,7 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
     /**
      * 获取自定义配置详情的 Map
      */
-    private Map<Long, String> getCustomConfigDetailsMap(List<GwEntranceGuardPageVo> list,
-                                                        Function<GwEntranceGuardPageVo, Long> idGetter) {
+    private <V> Map<Long, String> getCustomConfigDetailsMap(List<V> list, Function<V, Long> idGetter) {
         List<Long> ids = list.stream().map(idGetter).filter(Objects::nonNull).distinct().collect(Collectors.toList());
         if (CollectionUtils.isEmpty(ids)) {
             return Maps.newHashMap();

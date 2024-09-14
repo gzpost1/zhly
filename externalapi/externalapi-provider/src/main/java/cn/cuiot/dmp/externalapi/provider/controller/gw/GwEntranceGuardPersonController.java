@@ -18,6 +18,7 @@ import cn.cuiot.dmp.externalapi.service.service.gw.GwEntranceGuardAuthorizeServi
 import cn.cuiot.dmp.externalapi.service.service.gw.GwEntranceGuardPersonService;
 import cn.cuiot.dmp.externalapi.service.service.gw.GwEntranceGuardService;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwEntranceGuardAuthorizeVO;
+import cn.cuiot.dmp.externalapi.service.vo.gw.GwEntranceGuardPersonPageVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
@@ -55,8 +56,9 @@ public class GwEntranceGuardPersonController {
      * @param query 参数
      * @return page
      */
+    @RequiresPermissions
     @PostMapping(value = "/queryForPage")
-    public IdmResDTO<IPage<GwEntranceGuardPersonEntity>> queryForPage(@RequestBody GwEntranceGuardPersonPageQuery query) {
+    public IdmResDTO<IPage<GwEntranceGuardPersonPageVO>> queryForPage(@RequestBody GwEntranceGuardPersonPageQuery query) {
         return IdmResDTO.success(gwEntranceGuardPersonService.queryForPage(query));
     }
 
@@ -66,6 +68,7 @@ public class GwEntranceGuardPersonController {
      * @param param 参数
      * @return page
      */
+    @RequiresPermissions
     @PostMapping(value = "/queryForDetail")
     public IdmResDTO<GwEntranceGuardPersonEntity> queryForDetail(@RequestBody IdParam param) {
         return IdmResDTO.success(gwEntranceGuardPersonService.queryForDetail(param.getId()));
@@ -107,6 +110,7 @@ public class GwEntranceGuardPersonController {
     /**
      * 查询授权信息
      */
+    @RequiresPermissions
     @PostMapping("/queryAuthorize")
     public IdmResDTO<List<GwEntranceGuardAuthorizeVO>> queryAuthorize(@RequestBody @Valid IdParam param) {
         List<GwEntranceGuardAuthorizeVO> collect = Lists.newArrayList();

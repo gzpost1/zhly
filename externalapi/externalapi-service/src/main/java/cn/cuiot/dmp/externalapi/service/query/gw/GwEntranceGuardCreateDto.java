@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.query.gw;
 
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -43,6 +44,7 @@ public class GwEntranceGuardCreateDto {
      * 门禁SN
      */
     @NotBlank(message = "门禁SN不能为空")
+    @Length(min = 15, max = 15, message ="门禁SN长度必须是15位")
     private String sn;
 
     /**

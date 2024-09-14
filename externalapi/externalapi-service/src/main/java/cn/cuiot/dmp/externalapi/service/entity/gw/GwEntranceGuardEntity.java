@@ -109,31 +109,31 @@ public class GwEntranceGuardEntity extends YjBaseEntity {
     /**
      * 设备状态 (0: 在线，1: 离线，2: 未激活）接口返回
      */
-    @TableField(value = "equipStatus")
+    @TableField(value = "equip_status")
     private String equipStatus;
 
     /**
      * 设备productKey（接口返回）
      */
-    @TableField(value = "productKey")
+    @TableField(value = "product_key")
     private String productKey;
 
     /**
      * 设备deviceKey（接口返回）
      */
-    @TableField(value = "deviceKey")
+    @TableField(value = "device_key")
     private String deviceKey;
 
     /**
      * 设备平台唯一标识码（接口返回）
      */
-    @TableField(value = "iotId")
+    @TableField(value = "iot_id")
     private String iotId;
 
     /**
      * 设备密钥，设备鉴权登录时使用（接口返回）
      */
-    @TableField(value = "deviceSecret")
+    @TableField(value = "device_secret")
     private String deviceSecret;
 
     private static final long serialVersionUID = 1L;
@@ -143,7 +143,6 @@ public class GwEntranceGuardEntity extends YjBaseEntity {
      */
     public void buildExternalDeviceInfo(GwEntranceGuardEntity entity, DmpDeviceResp device) {
         //第三方设备信息
-        entity.setEquipStatus(device.getStatus());
         entity.setProductKey(device.getProductKey());
         entity.setDeviceKey(device.getDeviceKey());
         entity.setIotId(device.getIotId());

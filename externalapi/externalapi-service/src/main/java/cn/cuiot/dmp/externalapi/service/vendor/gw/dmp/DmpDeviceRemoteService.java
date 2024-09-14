@@ -95,10 +95,11 @@ public class DmpDeviceRemoteService {
     /**
      * 查询单个设备状态
      */
-    public BaseDmpResp<DmpDeviceResp> getStatus(DmpDeviceReq req, GWEntranceGuardBO bo) {
+    public DmpDeviceResp getStatus(DmpDeviceReq req, GWEntranceGuardBO bo) {
         String gateway = "api/getStatus/V1/1Main/vV1.1";
-        return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceResp>>() {
+        BaseDmpResp<DmpDeviceResp> resp = dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceResp>>() {
         });
+        return resp.getData();
     }
 
     /**
@@ -132,10 +133,11 @@ public class DmpDeviceRemoteService {
     /**
      * 查询设备属性最新值
      */
-    public BaseDmpResp<DmpDevicePropertyListResp> getPropertyLatestValues(DmpDeviceReq req, GWEntranceGuardBO bo) {
+    public DmpDevicePropertyListResp getPropertyLatestValues(DmpDeviceReq req, GWEntranceGuardBO bo) {
         String gateway = "api/getPropertyLatestValues/V1/1Main/vV1.1";
-        return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDevicePropertyListResp>>() {
+        BaseDmpResp<DmpDevicePropertyListResp> resp = dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDevicePropertyListResp>>() {
         });
+        return resp.getData();
     }
 
     /**
