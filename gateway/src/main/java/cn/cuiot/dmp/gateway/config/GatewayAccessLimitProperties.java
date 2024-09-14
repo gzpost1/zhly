@@ -17,14 +17,24 @@ import org.springframework.stereotype.Component;
 public class GatewayAccessLimitProperties {
 
     /**
-     * 用户接口每分钟限制访问次数
+     * 默认用户接口每分钟限制访问次数
      */
-    private Integer userApiAccessLimit=5;
+    private Integer userApiAccessLimit=50;
+
+    /**
+     * 操作类接口限制访问次数
+     */
+    private Integer operateApiAccessLimit=5;
+
+    /**
+     * 操作类接口限制访问的url
+     */
+    private List<String> operateApiAccessLimitUrls;
 
     /**
      * 特殊接口限制访问次数
      */
-    private Integer specialApiAccessLimit=200;
+    private Integer specialApiAccessLimit=500;
 
     /**
      * 特殊接口限制访问的url
