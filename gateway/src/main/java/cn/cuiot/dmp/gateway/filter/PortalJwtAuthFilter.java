@@ -91,6 +91,16 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
      */
     public static final String USER_API_LIMIT_KEY_PREFIX = "userApiLimitKey:";
 
+    /**
+     * 用户接口每分钟限制访问次数
+     */
+    private Integer userApiAccessLimit=5;
+
+    /**
+     * 特殊接口限制访问次数
+     */
+    private Integer specialApiAccessLimit=200;
+
     @Autowired
     private RedissonClient redissonClient;
 
@@ -303,11 +313,25 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
 
         if (shouldSpecialLimitUrl(url)) {
+            //特殊URL接口
+            if(rateLimiter.isExists()){
+                if(!specialApiAccessLimit.equals(gatewayAccessLimitProperties.getSpecialApiAccessLimit())){
+                    rateLimiter.delete();
+                }
+            }
+            specialApiAccessLimit = gatewayAccessLimitProperties.getSpecialApiAccessLimit();
             //设置每分钟限制次数
-            rateLimiter.trySetRate(RateType.OVERALL, gatewayAccessLimitProperties.getSpecialApiAccessLimit(), 1, RateIntervalUnit.MINUTES);
+            rateLimiter.trySetRate(RateType.OVERALL, specialApiAccessLimit, 1, RateIntervalUnit.MINUTES);
         }else{
+            //普通接口URL
+            if(rateLimiter.isExists()){
+                if(!userApiAccessLimit.equals(gatewayAccessLimitProperties.getUserApiAccessLimit())){
+                    rateLimiter.delete();
+                }
+            }
+            userApiAccessLimit = gatewayAccessLimitProperties.getUserApiAccessLimit();
             //设置每分钟限制次数
-            rateLimiter.trySetRate(RateType.OVERALL, gatewayAccessLimitProperties.getUserApiAccessLimit(), 1, RateIntervalUnit.MINUTES);
+            rateLimiter.trySetRate(RateType.OVERALL, userApiAccessLimit, 1, RateIntervalUnit.MINUTES);
         }
 
         //尝试获取许可
