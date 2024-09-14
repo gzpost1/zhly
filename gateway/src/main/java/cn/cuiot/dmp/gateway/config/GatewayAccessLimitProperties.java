@@ -19,7 +19,7 @@ public class GatewayAccessLimitProperties {
     /**
      * 默认用户接口每分钟限制访问次数
      */
-    private Integer userApiAccessLimit=50;
+    private Integer userApiAccessLimit=500;
 
     /**
      * 操作类接口限制访问次数
@@ -34,7 +34,7 @@ public class GatewayAccessLimitProperties {
     /**
      * 特殊接口限制访问次数
      */
-    private Integer specialApiAccessLimit=500;
+    private Integer specialApiAccessLimit=2000;
 
     /**
      * 特殊接口限制访问的url
