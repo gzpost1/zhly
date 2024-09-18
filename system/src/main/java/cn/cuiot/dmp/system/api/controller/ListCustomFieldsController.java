@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.system.application.param.dto.ListCustomFieldsDto;
 import cn.cuiot.dmp.system.application.param.dto.ListCustomFieldsQueryDto;
@@ -29,6 +30,7 @@ public class ListCustomFieldsController {
     /**
      * 更新
      */
+    @RequiresPermissions
     @PostMapping("saveOrUpdate")
     public IdmResDTO<?> saveOrUpdate(@RequestBody @Valid ListCustomFieldsDto dto) {
         listCustomFieldsService.saveOrUpdate(dto);
@@ -38,6 +40,7 @@ public class ListCustomFieldsController {
     /**
      * 根据标识查询数据
      */
+    @RequiresPermissions
     @PostMapping("queryByIdentification")
     public IdmResDTO<ListCustomFieldsVO> queryByIdentification(@RequestBody @Valid ListCustomFieldsQueryDto dto) {
         return IdmResDTO.success(listCustomFieldsService.queryByIdentification(dto));
