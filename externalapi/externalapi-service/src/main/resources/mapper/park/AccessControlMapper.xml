@@ -55,11 +55,11 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="(query.name ==null or query.name =='') and (query.deviceNo ==null or query.deviceNo =='')
-and (query.state ==null or query.state =='') and (query.onlineState ==null or query.onlineState =='')">
-                or  community_id is null
-            </if>
         </where>
-
+        <if test="(query.name ==null or query.name =='') and (query.deviceNo ==null or query.deviceNo =='')
+and (query.state ==null or query.state =='') and (query.onlineState ==null or query.onlineState =='') and query.communityIdType==0">
+          union all  select device_no, name, state, online_state, community_id
+            from tb_access_control  where   community_id is null
+        </if>
     </select>
 </mapper>

@@ -40,4 +40,9 @@ public class WaterMeterQueryVO extends PageQuery {
      * 阀门状态
      */
     private String valveStatus;
+
+    /**
+     * 楼盘信息为空
+     */
+    private String communityIdType;
 }

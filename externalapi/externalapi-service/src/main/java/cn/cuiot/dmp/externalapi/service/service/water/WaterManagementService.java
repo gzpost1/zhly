@@ -126,6 +126,7 @@ public class WaterManagementService extends ServiceImpl<WaterManagementMapper, W
      */
     public IdmResDTO<IPage<WaterManagementEntity>> queryForPage(WaterMeterQueryVO vo) {
         if(CollectionUtils.isEmpty(vo.getCommunityIds())){
+            vo.setCommunityIdType(PortraitInputConstant.COMMUNITY_TYPE);
             //获取当前账号自己的组织及其下属组织的楼盘id
             DepartmentReqDto dto = new DepartmentReqDto();
             dto.setDeptId(LoginInfoHolder.getCurrentDeptId());

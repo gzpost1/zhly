@@ -96,4 +96,8 @@ public class PortraitInputConstant {
      */
     public static final Integer MAX_BATCH_SIZE = 100;
 
+    /**
+     * 楼盘为空
+     */
+    public static final String COMMUNITY_TYPE ="0";
 }

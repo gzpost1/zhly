@@ -10,6 +10,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.externalapi.service.constant.PortraitInputConstant;
 import cn.cuiot.dmp.externalapi.service.entity.park.AccessControlEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.park.AccessControlMapper;
 import cn.cuiot.dmp.externalapi.service.query.AccessCommunityDto;
@@ -89,6 +90,7 @@ public class AccessControlService extends ServiceImpl<AccessControlMapper, Acces
 
         //判断查询的楼盘信息是否为空，如果为空则查询组织下的楼盘信息
         if(CollectionUtil.isEmpty(queryAccessCommunity.getCommunityIds())){
+            queryAccessCommunity.setCommunityIdType(PortraitInputConstant.COMMUNITY_TYPE);
             DepartmentReqDto dto = new DepartmentReqDto();
             dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
             dto.setSelfReturn(true);

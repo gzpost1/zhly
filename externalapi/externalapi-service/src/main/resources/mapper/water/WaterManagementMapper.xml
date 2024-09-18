@@ -54,12 +54,14 @@
                         #{item}
                     </foreach>
                 </if>
-                <if test="(query.wsImei ==null or query.wsImei ==''  )and (query.waterName ==null or query.waterName =='' )
-                and (query.valveStatus==null or query.valveStatus =='')">
-                    or community_id is null
-                </if>
-
             </where>
+
+        <if test="(query.wsImei ==null or query.wsImei ==''  )and (query.waterName ==null or query.waterName =='' )
+                and (query.valveStatus==null or query.valveStatus =='') and query.communityIdType==0">
+           union all  select
+            <include refid="Base_Column_List"/>
+            from tb_water_management where  community_id is null
+        </if>
             order by  update_time desc
     </select>
 </mapper>
