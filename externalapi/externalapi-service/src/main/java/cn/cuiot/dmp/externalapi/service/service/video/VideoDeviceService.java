@@ -140,7 +140,7 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         wrapper.eq(VideoDeviceEntity::getCompanyId, companyId);
         wrapper.eq(Objects.nonNull(query.getState()), VideoDeviceEntity::getState, query.getState());
         wrapper.like(StringUtils.isNotBlank(query.getDeviceName()), VideoDeviceEntity::getDeviceName, query.getDeviceName());
-        wrapper.in(VideoDeviceEntity::getBuildingId, buildingIds);
+        wrapper.in(CollectionUtils.isNotEmpty(buildingIds), VideoDeviceEntity::getBuildingId, buildingIds);
         wrapper.orderByDesc(VideoDeviceEntity::getCreateTime);
         //分页查询设备信息
         IPage<VideoPageVo> iPage = page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper).convert(item -> {
