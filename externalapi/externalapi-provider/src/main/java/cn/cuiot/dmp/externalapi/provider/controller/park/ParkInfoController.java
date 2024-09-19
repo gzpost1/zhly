@@ -65,7 +65,7 @@ public class ParkInfoController {
     @RequiresPermissions
     public IdmResDTO updateCommunity(@RequestBody @Valid ParkInfoVo parkInfoVo){
         ParkInfoEntity map = BeanMapper.map(parkInfoVo, ParkInfoEntity.class);
-        map.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        map.setId(String.valueOf(parkInfoVo.getParkId())+LoginInfoHolder.getCurrentOrgId());
         parkInfoService.updateById(map);
         return IdmResDTO.success();
     }
@@ -89,7 +89,7 @@ public class ParkInfoController {
     @PostMapping("/delete")
     @RequiresPermissions
     public IdmResDTO delete(@RequestBody @Valid DeleteParam deleteParam) {
-        parkInfoService.removeById(deleteParam.getId());
+        parkInfoService.removeById(String.valueOf(deleteParam.getId())+LoginInfoHolder.getCurrentOrgId());
         return IdmResDTO.success();
     }
 }

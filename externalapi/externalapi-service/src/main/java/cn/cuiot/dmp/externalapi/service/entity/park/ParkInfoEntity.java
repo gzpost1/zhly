@@ -23,11 +23,15 @@ public class ParkInfoEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 主键id
+     */
+    @TableId("id")
+    private String id;
 
     /**
      * 车场id
      */
-    @TableId("park_id")
     private Integer parkId;
 
     /**

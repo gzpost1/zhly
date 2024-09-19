@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.externalapi.service.service.video;
 
+import cn.cuiot.dmp.base.application.service.ApiArchiveService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
@@ -24,15 +26,14 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -48,6 +49,8 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
     private VideoPlayService videoPlayService;
     @Autowired
     private SystemApiService systemApiService;
+    @Autowired
+    private ApiArchiveService apiArchiveService;
 
     /**
      * 停用设备（不填deviceId修改全部设备）
@@ -69,8 +72,9 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
      *
      * @return List<VideoDeviceEntity> 列表
      */
-    public IPage<VideoDeviceEntity> queryEnableDevicePage(Page<VideoDeviceEntity> page, Integer state) {
+    public IPage<VideoDeviceEntity> queryEnableDevicePage(Page<VideoDeviceEntity> page, Integer state, Long companyId) {
         LambdaQueryWrapper<VideoDeviceEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Objects.nonNull(companyId), VideoDeviceEntity::getCompanyId, companyId);
         wrapper.eq(VideoDeviceEntity::getStatus, EntityConstants.ENABLED);
         wrapper.eq(VideoDeviceEntity::getState, state);
 
@@ -119,11 +123,24 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
+        List<Long> buildingIds = Lists.newArrayList();
+        if(Objects.nonNull(query.getBuildingId())){
+            //获取当前账号自己的组织及其下属组织的楼盘id
+            DepartmentReqDto dto = new DepartmentReqDto();
+            dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
+            dto.setSelfReturn(true);
+            List<BuildingArchive> archives = apiArchiveService.lookupBuildingArchiveByDepartmentList(dto);
+            if (CollectionUtils.isNotEmpty(archives)) {
+                List<Long> collect = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
+                buildingIds.addAll(collect);
+            }
+        }
+
         LambdaQueryWrapper<VideoDeviceEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(VideoDeviceEntity::getCompanyId, companyId);
-        wrapper.eq(Objects.nonNull(query.getBuildingId()), VideoDeviceEntity::getBuildingId, query.getBuildingId());
         wrapper.eq(Objects.nonNull(query.getState()), VideoDeviceEntity::getState, query.getState());
         wrapper.like(StringUtils.isNotBlank(query.getDeviceName()), VideoDeviceEntity::getDeviceName, query.getDeviceName());
+        wrapper.in(VideoDeviceEntity::getBuildingId, buildingIds);
         wrapper.orderByDesc(VideoDeviceEntity::getCreateTime);
         //分页查询设备信息
         IPage<VideoPageVo> iPage = page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper).convert(item -> {

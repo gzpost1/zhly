@@ -125,4 +125,9 @@ public class VehicleExitRecordsQuery extends PageQuery {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date endTime;
+
+    /**
+     * 企业id
+     */
+    private Long companyId;
 }

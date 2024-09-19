@@ -85,6 +85,8 @@ public class UniUbiService {
             mapList.stream().forEach(item->{
                 item.setUpdateUser(LoginInfoHolder.getCurrentUserId());
                 item.setUpdateTime(new Date());
+                item.setId(item.getDeviceNo()+LoginInfoHolder.getCurrentOrgId());
+                item.setCompanyId(LoginInfoHolder.getCurrentOrgId());
             });
             accessControlService.insertOrUpdateBatch(mapList);
 

@@ -23,10 +23,10 @@
 
 
     <select id="insertOrUpdateBatch" parameterType="java.util.List">
-        insert into tb_water_management (ws_imei,ws_imsi,ws_csq,ws_batteryvoltage,ws_cumulativeamount,valve_status,create_date,update_time,update_user)
+        insert into tb_water_management (id,company_id,ws_imei,ws_imsi,ws_csq,ws_batteryvoltage,ws_cumulativeamount,valve_status,create_date,update_time,update_user)
         values
             <foreach collection="waterList" item="item" index="index" separator=",">
-                (#{item.wsImei},#{item.wsImsi},#{item.wsCsq},#{item.wsBatteryvoltage},#{item.wsCumulativeamount},#{item.valveStatus},#{item.createDate}
+                (#{item.id},#{item.companyId},#{item.wsImei},#{item.wsImsi},#{item.wsCsq},#{item.wsBatteryvoltage},#{item.wsCumulativeamount},#{item.valveStatus},#{item.createDate}
                 ,#{item.updateTime},#{item.updateUser})
             </foreach>
             on DUPLICATE KEY UPDATE
@@ -54,12 +54,14 @@
                         #{item}
                     </foreach>
                 </if>
-                <if test="(query.wsImei ==null or query.wsImei ==''  )and (query.waterName ==null or query.waterName =='' )
-                and (query.valveStatus==null or query.valveStatus =='')">
-                    or community_id is null
-                </if>
-
+                    and company_id = #{query.companyId}
             </where>
-            order by  update_time desc
+
+        <if test="(query.wsImei ==null or query.wsImei ==''  )and (query.waterName ==null or query.waterName =='' )
+                and (query.valveStatus==null or query.valveStatus =='') and query.communityIdType==0">
+           union all  select
+            <include refid="Base_Column_List"/>
+            from tb_water_management where  company_id = #{query.companyId} and  community_id is null
+        </if>
     </select>
 </mapper>

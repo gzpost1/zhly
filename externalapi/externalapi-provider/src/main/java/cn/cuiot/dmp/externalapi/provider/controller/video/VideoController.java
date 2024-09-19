@@ -4,6 +4,7 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.provider.task.VideoTask;
 import cn.cuiot.dmp.externalapi.service.query.video.VideoBatchSetBuildingIdQuery;
 import cn.cuiot.dmp.externalapi.service.query.video.VideoPageQuery;
@@ -88,7 +89,16 @@ public class VideoController {
     @RequiresPermissions
     @PostMapping("/syncVideoPlay")
     public IdmResDTO<?> syncVideoPlay() {
-        videoTask.syncVideoPlay(null);
+        //企业id
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+
+        //同步设备
+        videoTask.syncVideoDevice(companyId + "");
+        //同步渠道
+        videoTask.syncVideoChannel(companyId + "");
+        //同步播放信息
+        videoTask.syncVideoPlay(companyId + "");
+
         return IdmResDTO.success();
     }
 }

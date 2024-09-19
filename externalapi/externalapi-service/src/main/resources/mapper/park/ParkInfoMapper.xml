@@ -18,10 +18,10 @@
 
 
     <insert id="insertOrUpdateBatch" parameterType="java.util.List">
-        insert into tb_park_info (park_id,park_name,total_space_num,community_id,free_space_num,used_space_num,update_time,update_user,company_id)
+        insert into tb_park_info (id,park_id,company_id,park_name,total_space_num,community_id,free_space_num,used_space_num,update_time,update_user,company_id)
         values
             <foreach collection="parkList" item="item" separator="," index="index">
-                (#{item.parkId},#{item.parkName},#{item.totalSpaceNum},#{item.communityId},#{item.freeSpaceNum},#{item.usedSpaceNum},#{item.updateTime},#{item.updateUser},#{item.companyId})
+                (#{item.id},#{item.parkId},#{item.companyId},#{item.parkName},#{item.totalSpaceNum},#{item.communityId},#{item.freeSpaceNum},#{item.usedSpaceNum},#{item.updateTime},#{item.updateUser},#{item.companyId})
             </foreach>
                 ON DUPLICATE KEY UPDATE
                 park_name =values(park_name),

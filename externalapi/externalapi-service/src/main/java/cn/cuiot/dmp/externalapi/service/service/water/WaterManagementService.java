@@ -94,7 +94,7 @@ public class WaterManagementService extends ServiceImpl<WaterManagementMapper, W
      * 同步水表数据
      * @return
      */
-    @Async
+
     public IdmResDTO syncWaterMeter() {
         WaterMeterPage<WaterMeterReportDataResp> resp = queryReportData(new WaterMeterReportDataQueryReq());
         List<WaterMeterReportDataResp> data = resp.getData();
@@ -106,6 +106,8 @@ public class WaterManagementService extends ServiceImpl<WaterManagementMapper, W
         waterManagementEntities.stream().forEach(item->{
             item.setUpdateUser(LoginInfoHolder.getCurrentUserId());
             item.setUpdateTime(new Date());
+            item.setId(item.getWsImei()+LoginInfoHolder.getCurrentOrgId());
+            item.setCompanyId(LoginInfoHolder.getCurrentOrgId());
             paramList.add(item);
             if(paramList.size()==PortraitInputConstant.MAX_BATCH_SIZE){
                 getBaseMapper().insertOrUpdateBatch(paramList);
@@ -126,6 +128,7 @@ public class WaterManagementService extends ServiceImpl<WaterManagementMapper, W
      */
     public IdmResDTO<IPage<WaterManagementEntity>> queryForPage(WaterMeterQueryVO vo) {
         if(CollectionUtils.isEmpty(vo.getCommunityIds())){
+            vo.setCommunityIdType(PortraitInputConstant.COMMUNITY_TYPE);
             //获取当前账号自己的组织及其下属组织的楼盘id
             DepartmentReqDto dto = new DepartmentReqDto();
             dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
@@ -135,6 +138,7 @@ public class WaterManagementService extends ServiceImpl<WaterManagementMapper, W
             List<Long> ids = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
             vo.setCommunityIds(ids);
         }
+        vo.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         IPage<WaterManagementEntity> pages = getBaseMapper().queryForPage(new Page<>(vo.getPageNo(),vo.getPageSize()),vo);
         List<WaterManagementEntity> records = pages.getRecords();
         if(CollectionUtils.isEmpty(records)){
@@ -236,7 +240,7 @@ public class WaterManagementService extends ServiceImpl<WaterManagementMapper, W
      * @return
      */
     public IdmResDTO<WaterManagementEntity> queryWaterManagement(IdParam idParam) {
-        WaterManagementEntity entity = getBaseMapper().selectById(idParam.getId());
+        WaterManagementEntity entity = getBaseMapper().selectById(String.valueOf(idParam.getId())+LoginInfoHolder.getCurrentOrgId());
         //获取楼盘名称
         Map<Long, String> propertyMap = Optional.ofNullable(getPropertyMap(Arrays.asList(entity.getCommunityId()))).orElse(new HashMap<>());
         entity.setCommunityName(propertyMap.get(entity.getCommunityId()));
@@ -249,10 +253,11 @@ public class WaterManagementService extends ServiceImpl<WaterManagementMapper, W
      * @return
      */
     public IdmResDTO updateWaterManagement(UpdateWaterManagementVO vo) {
+        List<String> collect = vo.getWsImeis().stream().map(item -> item + LoginInfoHolder.getCurrentOrgId()).collect(Collectors.toList());
         LambdaUpdateWrapper<WaterManagementEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(WaterManagementEntity::getWaterName,vo.getWaterName())
                 .set(WaterManagementEntity::getCommunityId,vo.getCommunityId())
-                .in(WaterManagementEntity::getWsImei,vo.getWsImeis());
+                .in(WaterManagementEntity::getId,collect);
         getBaseMapper().update(null,updateWrapper);
 
         return IdmResDTO.success();
@@ -264,7 +269,8 @@ public class WaterManagementService extends ServiceImpl<WaterManagementMapper, W
      * @return
      */
     public IdmResDTO deleteWaterManagement(UpdateWaterManagementVO vo) {
-        getBaseMapper().deleteBatchIds(vo.getWsImeis());
+        List<String> collect = vo.getWsImeis().stream().map(item -> item + LoginInfoHolder.getCurrentOrgId()).collect(Collectors.toList());
+        getBaseMapper().deleteBatchIds(collect);
         return IdmResDTO.success();
     }
 

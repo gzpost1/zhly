@@ -37,5 +37,13 @@ public class QueryAccessCommunity extends PageQuery {
      */
     private List<Long> communityIds;
 
+    /**
+     * 楼盘查询信息
+     */
+    private String communityIdType;
 
+    /**
+     * 企业id
+     */
+    private Long companyId;
 }

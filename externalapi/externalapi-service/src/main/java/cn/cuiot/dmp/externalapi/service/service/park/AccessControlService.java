@@ -10,6 +10,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.externalapi.service.constant.PortraitInputConstant;
 import cn.cuiot.dmp.externalapi.service.entity.park.AccessControlEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.park.AccessControlMapper;
 import cn.cuiot.dmp.externalapi.service.query.AccessCommunityDto;
@@ -61,8 +62,7 @@ public class AccessControlService extends ServiceImpl<AccessControlMapper, Acces
             deviceNos.stream().forEach(item->{
                 LambdaUpdateWrapper<AccessControlEntity> updateWrapper = new LambdaUpdateWrapper<>();
                 updateWrapper.set(AccessControlEntity::getCommunityId,communityVO.getCommunityId())
-                        .set(AccessControlEntity::getCompanyId,LoginInfoHolder.getCurrentOrgId())
-                        .eq(AccessControlEntity::getDeviceNo,item);
+                        .eq(AccessControlEntity::getId,item+LoginInfoHolder.getCurrentOrgId());
                 accessControlMapper.update(null,updateWrapper);
             });
         }
@@ -76,7 +76,8 @@ public class AccessControlService extends ServiceImpl<AccessControlMapper, Acces
      */
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO deleteAccessCommunity(UpdateAccessCommunityVO communityVO) {
-        accessControlMapper.deleteBatchIds(communityVO.getDeviceNos());
+        List<String> collect = communityVO.getDeviceNos().stream().map(item -> item + LoginInfoHolder.getCurrentOrgId()).collect(Collectors.toList());
+        accessControlMapper.deleteBatchIds(collect);
         return IdmResDTO.success();
     }
 
@@ -89,15 +90,17 @@ public class AccessControlService extends ServiceImpl<AccessControlMapper, Acces
 
         //判断查询的楼盘信息是否为空，如果为空则查询组织下的楼盘信息
         if(CollectionUtil.isEmpty(queryAccessCommunity.getCommunityIds())){
+            queryAccessCommunity.setCommunityIdType(PortraitInputConstant.COMMUNITY_TYPE);
             DepartmentReqDto dto = new DepartmentReqDto();
             dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
             dto.setSelfReturn(true);
             List<BuildingArchive> archives = Optional.ofNullable(apiArchiveService.lookupBuildingArchiveByDepartmentList(dto))
                     .orElse(new ArrayList<>());
             List<Long> ids = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
+
             queryAccessCommunity.setCommunityIds(ids);
         }
-
+        queryAccessCommunity.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         IPage<AccessCommunityDto> pages =accessControlMapper.queryForPage(new Page<>(queryAccessCommunity.getPageNo(),
                 queryAccessCommunity.getPageSize()),queryAccessCommunity);
         List<AccessCommunityDto> records = pages.getRecords();

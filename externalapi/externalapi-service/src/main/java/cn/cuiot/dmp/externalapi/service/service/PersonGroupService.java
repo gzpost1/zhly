@@ -162,7 +162,7 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
         }
 
         //判断关联表是否已存在数据
-        Boolean aBoolean = personGroupRelationService.isExistRelation(PersonGroupRelationConstant.GW_ENTRANCE_GUARD, id);
+        Boolean aBoolean = personGroupRelationService.isExistRelation(null, id);
         if (aBoolean) {
             throw new BusinessException(ResultCode.ERROR, "当前分组已关联人员，无法删除");
         }

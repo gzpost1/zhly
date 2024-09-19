@@ -21,9 +21,13 @@ public class AccessControlEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 主键
+     */
+    @TableId("id")
+    private String id ;
+    /**
      * 设备序列号
      */
-    @TableId("device_no")
     private String deviceNo;
 
 
