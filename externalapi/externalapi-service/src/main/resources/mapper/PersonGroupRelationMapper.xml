@@ -23,8 +23,12 @@
     <select id="isExistRelation" resultType="boolean">
         SELECT EXISTS(
         SELECT 1 FROM tb_person_group_relation
-        WHERE business_type = #{businessType}
-        AND person_group_id = #{personGroupId}
+        <where>
+            person_group_id = #{personGroupId}
+            <if test="businessType != null">
+                AND business_type = #{businessType}
+            </if>
+        </where>
         ) AS exists_result;
     </select>
 </mapper>

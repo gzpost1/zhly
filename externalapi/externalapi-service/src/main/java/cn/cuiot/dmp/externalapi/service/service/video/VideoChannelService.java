@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -47,8 +48,9 @@ public class VideoChannelService extends ServiceImpl<VideoChannelMapper, VideoCh
      *
      * @return List<VideoDeviceEntity> 列表
      */
-    public IPage<VideoChannelEntity> queryEnableChannelPage(Page<VideoChannelEntity> page, Integer state) {
+    public IPage<VideoChannelEntity> queryEnableChannelPage(Page<VideoChannelEntity> page, Integer state, Long companyId) {
         LambdaQueryWrapper<VideoChannelEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Objects.nonNull(companyId), VideoChannelEntity::getCompanyId, companyId);
         wrapper.eq(VideoChannelEntity::getState, state);
         wrapper.eq(VideoChannelEntity::getStatus, EntityConstants.ENABLED);
 
