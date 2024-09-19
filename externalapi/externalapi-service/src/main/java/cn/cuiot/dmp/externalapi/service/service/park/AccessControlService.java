@@ -62,8 +62,7 @@ public class AccessControlService extends ServiceImpl<AccessControlMapper, Acces
             deviceNos.stream().forEach(item->{
                 LambdaUpdateWrapper<AccessControlEntity> updateWrapper = new LambdaUpdateWrapper<>();
                 updateWrapper.set(AccessControlEntity::getCommunityId,communityVO.getCommunityId())
-                        .set(AccessControlEntity::getCompanyId,LoginInfoHolder.getCurrentOrgId())
-                        .eq(AccessControlEntity::getDeviceNo,item);
+                        .eq(AccessControlEntity::getId,item+LoginInfoHolder.getCurrentOrgId());
                 accessControlMapper.update(null,updateWrapper);
             });
         }
@@ -77,7 +76,8 @@ public class AccessControlService extends ServiceImpl<AccessControlMapper, Acces
      */
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO deleteAccessCommunity(UpdateAccessCommunityVO communityVO) {
-        accessControlMapper.deleteBatchIds(communityVO.getDeviceNos());
+        List<String> collect = communityVO.getDeviceNos().stream().map(item -> item + LoginInfoHolder.getCurrentOrgId()).collect(Collectors.toList());
+        accessControlMapper.deleteBatchIds(collect);
         return IdmResDTO.success();
     }
 
@@ -97,9 +97,10 @@ public class AccessControlService extends ServiceImpl<AccessControlMapper, Acces
             List<BuildingArchive> archives = Optional.ofNullable(apiArchiveService.lookupBuildingArchiveByDepartmentList(dto))
                     .orElse(new ArrayList<>());
             List<Long> ids = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
+
             queryAccessCommunity.setCommunityIds(ids);
         }
-
+        queryAccessCommunity.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         IPage<AccessCommunityDto> pages =accessControlMapper.queryForPage(new Page<>(queryAccessCommunity.getPageNo(),
                 queryAccessCommunity.getPageSize()),queryAccessCommunity);
         List<AccessCommunityDto> records = pages.getRecords();

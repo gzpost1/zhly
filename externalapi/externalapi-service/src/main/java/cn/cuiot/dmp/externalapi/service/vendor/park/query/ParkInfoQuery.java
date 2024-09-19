@@ -43,6 +43,9 @@ public class ParkInfoQuery extends PageQuery {
     */
     private Integer freeSpaceNum;
 
-
+    /**
+     * 企业id
+     */
+    private Long companyId;
 
 }

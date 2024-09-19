@@ -45,4 +45,9 @@ public class WaterMeterQueryVO extends PageQuery {
      * 楼盘信息为空
      */
     private String communityIdType;
+
+    /**
+     * 企业id
+     */
+    private Long companyId;
 }

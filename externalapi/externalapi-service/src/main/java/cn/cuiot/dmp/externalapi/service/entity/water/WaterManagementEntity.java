@@ -25,9 +25,14 @@ public class WaterManagementEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 主键id
+     */
+    @TableId("id")
+    private String id;
+    /**
      * 水表imei
      */
-    @TableId("ws_imei")
+
     private String wsImei;
 
 

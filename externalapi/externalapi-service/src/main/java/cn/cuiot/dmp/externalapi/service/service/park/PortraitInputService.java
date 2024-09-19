@@ -141,6 +141,7 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
 
         PortraitInputEntity entity = BeanMapper.map(createDto, PortraitInputEntity.class);
         entity.setAdmitGuid(admitGuid);
+        entity.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         baseMapper.insert(entity);
 
         //保存分组关系

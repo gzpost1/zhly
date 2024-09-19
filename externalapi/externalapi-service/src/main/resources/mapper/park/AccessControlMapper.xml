@@ -19,10 +19,10 @@
     </sql>
 
     <insert id="insertOrUpdateBatch" parameterType="java.util.List">
-        insert into tb_access_control (device_no,name,state,online_state,community_id,update_user,update_time)
+        insert into tb_access_control (id,device_no,company_id,name,state,online_state,community_id,update_user,update_time)
         values
             <foreach collection="accessList" item="item" index="index" separator=",">
-            (#{item.deviceNo},#{item.name},#{item.state},#{item.onlineState},#{item.communityId},#{item.updateUser},#{item.updateTime})
+            (#{item.id},#{item.deviceNo},#{item.companyId},#{item.name},#{item.state},#{item.onlineState},#{item.communityId},#{item.updateUser},#{item.updateTime})
             </foreach>
         ON DUPLICATE KEY UPDATE
             name = values(name),
@@ -55,11 +55,12 @@
                     #{item}
                 </foreach>
             </if>
+                and company_id = #{query.companyId}
         </where>
         <if test="(query.name ==null or query.name =='') and (query.deviceNo ==null or query.deviceNo =='')
 and (query.state ==null or query.state =='') and (query.onlineState ==null or query.onlineState =='') and query.communityIdType==0">
           union all  select device_no, name, state, online_state, community_id
-            from tb_access_control  where   community_id is null
+            from tb_access_control  where  company_id = #{query.companyId} and   community_id is null
         </if>
     </select>
 </mapper>

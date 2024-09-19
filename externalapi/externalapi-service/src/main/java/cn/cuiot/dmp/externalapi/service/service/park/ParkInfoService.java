@@ -134,12 +134,14 @@ public class ParkInfoService extends ServiceImpl<ParkInfoMapper, ParkInfoEntity>
                 });
                 ParkInfoEntity entity = new ParkInfoEntity();
                 entity.setParkId(lot.getParkId());
+                entity.setId(String.valueOf(lot.getParkId())+LoginInfoHolder.getCurrentOrgId());
                 entity.setParkName(lot.getParkName());
                 entity.setTotalSpaceNum(free.getTotalNum());
                 entity.setFreeSpaceNum(free.getFreeSpaceNum());
                 entity.setUsedSpaceNum(free.getTotalNum()-free.getFreeSpaceNum());
                 entity.setUpdateUser(LoginInfoHolder.getCurrentUserId());
                 entity.setUpdateTime(new Date());
+                entity.setCompanyId(LoginInfoHolder.getCurrentOrgId());
                 lists.add(entity);
             }
             if(CollectionUtil.isNotEmpty(lists)){
@@ -179,9 +181,11 @@ public class ParkInfoService extends ServiceImpl<ParkInfoMapper, ParkInfoEntity>
             List<Long> ids = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
             query.setCommunityIds(ids);
         }
+        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         LambdaQueryWrapper<ParkInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(StringUtils.isNotBlank(query.getParkName()),ParkInfoEntity::getParkName,query.getParkName());
         queryWrapper.like(StringUtils.isNotBlank(query.getParkId()),ParkInfoEntity::getParkId,query.getParkId())
+                .eq(ParkInfoEntity::getCompanyId,query.getCompanyId())
                 .in(ParkInfoEntity::getCommunityId,query.getCommunityIds()).or().isNull(ParkInfoEntity::getCommunityId);
 
         Page<ParkInfoEntity> parkInfoEntityPage = getBaseMapper().selectPage(page, queryWrapper);
@@ -216,7 +220,7 @@ public class ParkInfoService extends ServiceImpl<ParkInfoMapper, ParkInfoEntity>
      */
     public IdmResDTO<ParkInfoEntity> queryForDetail(Long id) {
 
-        ParkInfoEntity entity = getBaseMapper().selectById(id);
+        ParkInfoEntity entity = getBaseMapper().selectById(String.valueOf(id)+LoginInfoHolder.getCurrentOrgId());
         //楼盘id不为空，获取楼盘信息
         if(Objects.nonNull(entity.getCommunityId())){
             Map<Long, String> propertyMap = Optional.ofNullable(getPropertyMap(Arrays.asList(entity.getCommunityId()))).orElse(new HashMap<>());

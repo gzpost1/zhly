@@ -62,6 +62,7 @@ public class VehicleExitRecordsService extends ServiceImpl<VehicleExitRecordsMap
             List<Long> ids = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
             query.setCommunityIds(ids);
         }
+        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         IPage<VehicleExitVO> voiPage = getBaseMapper().queryForPage(new Page<>(query.getPageNo(), query.getPageSize()),query);
         List<VehicleExitVO> records = voiPage.getRecords();
 

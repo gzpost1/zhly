@@ -46,6 +46,7 @@
                         #{item}
                 </foreach>
             </if>
+            and t2.company_id = #{query.companyId}
         </where>
     </select>
 </mapper>

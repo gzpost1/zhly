@@ -91,7 +91,7 @@ public class GateManagementService extends ServiceImpl<GateManagementMapper, Gat
         //更新本地数据状态
         LambdaUpdateWrapper<GateManagementEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(GateManagementEntity::getStatus,data.getStatus())
-                .eq(GateManagementEntity::getParkId,vo.getNodeId()).eq(GateManagementEntity::getNodeId,data.getNodeId());
+                .eq(GateManagementEntity::getParkId,vo.getParkId()).eq(GateManagementEntity::getNodeId,data.getNodeId());
         getBaseMapper().update(null,updateWrapper);
         return IdmResDTO.success();
     }
@@ -139,6 +139,7 @@ public class GateManagementService extends ServiceImpl<GateManagementMapper, Gat
             List<Long> ids = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
             query.setCommunityIds(ids);
         }
+        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         IPage<GageManagePageVO> pages = getBaseMapper().queryForPage(page,query);
         List<GageManagePageVO> records = pages.getRecords();
         if(CollectionUtil.isEmpty(records)){
