@@ -94,7 +94,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
     /**
      * 用户接口每分钟限制访问次数
      */
-    private Integer userApiAccessLimit=50;
+    private Integer userApiAccessLimit=500;
 
     /**
      * 操作类接口限制访问次数
@@ -104,7 +104,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
     /**
      * 特殊接口限制访问次数
      */
-    private Integer specialApiAccessLimit=500;
+    private Integer specialApiAccessLimit=2000;
 
 
     @Autowired
@@ -317,34 +317,39 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         //获取RRateLimiter对象
         RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
 
-        if (shouldOperateLimitUrl(url)) {
+        if (shouldSpecialLimitUrl(url)) {
+            log.info("SpecialL url:{},key:{},specialApiAccessLimit:{}",url,key,specialApiAccessLimit);
             //特殊URL接口
-            rateLimiter.trySetRate(RateType.OVERALL, operateApiAccessLimit, 1, RateIntervalUnit.MINUTES);
-            if(!operateApiAccessLimit.equals(gatewayAccessLimitProperties.getOperateApiAccessLimit())){
-                operateApiAccessLimit = gatewayAccessLimitProperties.getOperateApiAccessLimit();
-                rateLimiter.setRate(RateType.OVERALL, operateApiAccessLimit, 1, RateIntervalUnit.MINUTES);
-            }
-
-        } else if (shouldSpecialLimitUrl(url)) {
-            //特殊URL接口
-            rateLimiter.trySetRate(RateType.OVERALL, specialApiAccessLimit, 1, RateIntervalUnit.MINUTES);
             if(!specialApiAccessLimit.equals(gatewayAccessLimitProperties.getSpecialApiAccessLimit())){
                 specialApiAccessLimit = gatewayAccessLimitProperties.getSpecialApiAccessLimit();
                 rateLimiter.setRate(RateType.OVERALL, specialApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }else {
+                rateLimiter.trySetRate(RateType.OVERALL, specialApiAccessLimit, 1, RateIntervalUnit.MINUTES);
             }
 
-        }else{
-            //普通接口URL
-            rateLimiter.trySetRate(RateType.OVERALL, userApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+        }else if (shouldOperateLimitUrl(url)) {
+            log.info("Operate url:{},key:{},operateApiAccessLimit:{}",url,key,operateApiAccessLimit);
+            //特殊URL接口
+            if(!operateApiAccessLimit.equals(gatewayAccessLimitProperties.getOperateApiAccessLimit())){
+                operateApiAccessLimit = gatewayAccessLimitProperties.getOperateApiAccessLimit();
+                rateLimiter.setRate(RateType.OVERALL, operateApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }else{
+                rateLimiter.trySetRate(RateType.OVERALL, operateApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }
+
+        } else{
+            log.info("default url:{},key:{},userApiAccessLimit:{}",url,key,userApiAccessLimit);
+            //普通类接口URL
             if(!userApiAccessLimit.equals(gatewayAccessLimitProperties.getUserApiAccessLimit())){
                 //设置每分钟限制次数
                 userApiAccessLimit = gatewayAccessLimitProperties.getUserApiAccessLimit();
                 rateLimiter.setRate(RateType.OVERALL, userApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }else{
+                rateLimiter.trySetRate(RateType.OVERALL, userApiAccessLimit, 1, RateIntervalUnit.MINUTES);
             }
         }
-
         //尝试获取许可
-        boolean isPermitted = rateLimiter.tryAcquire();
+        boolean isPermitted = rateLimiter.tryAcquire(1);
         if (!isPermitted) {
             //超出访问限制
             throw new BusinessException(ResultCode.SERVER_BUSY,"超出访问限制，请稍后重试");
