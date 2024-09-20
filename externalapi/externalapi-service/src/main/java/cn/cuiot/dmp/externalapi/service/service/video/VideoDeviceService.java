@@ -98,7 +98,9 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         List<VideoDeviceEntity> collect = data.stream().map(item -> {
             VideoDeviceEntity aDefault = dbMap.getOrDefault(item.getDeviceId(), new VideoDeviceEntity());
             BeanUtils.copyProperties(item, aDefault);
-            aDefault.setDeviceName(aDefault.getDeviceName());
+            if (StringUtils.isBlank(aDefault.getDeviceName())) {
+                aDefault.setDeviceName(item.getDeviceName());
+            }
             aDefault.setStatus(EntityConstants.ENABLED);
             aDefault.setCompanyId(platfromInfoRespDTO.getCompanyId());
             aDefault.setSecret(Sm4.encryption(platfromInfoRespDTO.getData()));

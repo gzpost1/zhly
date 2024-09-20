@@ -93,4 +93,8 @@ public class PortraitInputEntity extends YjBaseEntity {
      * 企业信息
      */
     private Long companyId;
+    /**
+     * 人像标识
+     */
+    private String faceGuid;
 }

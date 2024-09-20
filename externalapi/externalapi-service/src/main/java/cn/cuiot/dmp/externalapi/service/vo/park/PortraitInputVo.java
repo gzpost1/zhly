@@ -85,4 +85,20 @@ public class PortraitInputVo extends PageQuery {
      * 人员分组名称
      */
     private String personGroupName;
+
+    /**
+     * 更新时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date updateTime;
+
+    /**
+     * 创建人
+     */
+    private Long updateUser;
+    /**
+     * 更新人
+     */
+    private String updateName;
 }
