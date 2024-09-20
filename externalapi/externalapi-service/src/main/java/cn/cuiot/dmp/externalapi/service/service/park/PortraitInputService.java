@@ -1,7 +1,10 @@
 package cn.cuiot.dmp.externalapi.service.service.park;
 
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.utils.MD5Util;
 import cn.cuiot.dmp.common.bean.external.YFPortraitInputBO;
 import cn.cuiot.dmp.common.constant.ErrorCode;
@@ -77,6 +80,9 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
     @Autowired
     private PersonGroupService personGroupService;
 
+    @Autowired
+    private SystemApiFeignService systemApiFeignService;
+
     /**
      * 保存录入信息
      * @param createDto
@@ -125,10 +131,10 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         String admitGuid = createSubject(createDto, inputDto);
         //注册人像
         AuthDaHuaResp authDaHuaResp = faceRegister(inputDto, createDto, admitGuid);
-
         if(StringUtils.equals(PortraitInputConstant.RESULT_ERROR_DH,authDaHuaResp.getResult())){
             return IdmResDTO.error(ErrorCode.COMMON_FAILURE.getCode(),authDaHuaResp.getMsg());
         }
+        String faceGuid = JSONObject.parseObject(JsonUtil.writeValueAsString(authDaHuaResp.getData())).getString("faceGuid");
         //授权管理
         List<PortraitAccessDto> portraitAccess = createDto.getPortraitAccess();
         for(PortraitAccessDto accessDto : portraitAccess){
@@ -142,6 +148,7 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         PortraitInputEntity entity = BeanMapper.map(createDto, PortraitInputEntity.class);
         entity.setAdmitGuid(admitGuid);
         entity.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        entity.setFaceGuid(faceGuid);
         baseMapper.insert(entity);
 
         //保存分组关系
@@ -195,22 +202,27 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
 
         //更新识别主体
          updateSubject(createDto, inputDto);
+        PortraitInputEntity paramEntity = baseMapper.selectById(createDto.getId());
+        //删除人像信息
+        deleteFaceRegister(inputDto,paramEntity.getFaceGuid(),paramEntity.getAdmitGuid());
         //注册人像
         AuthDaHuaResp authDaHuaResp = faceRegister(inputDto, createDto, createDto.getAdmitGuid());
 
         if(StringUtils.equals(PortraitInputConstant.RESULT_ERROR_DH,authDaHuaResp.getResult())){
             return IdmResDTO.error(ErrorCode.COMMON_FAILURE.getCode(),authDaHuaResp.getMsg());
         }
+        String faceGuid = JSONObject.parseObject(JsonUtil.writeValueAsString(authDaHuaResp.getData())).getString("faceGuid");
+
         //授权管理
         List<PortraitAccessDto> portraitAccess = createDto.getPortraitAccess();
         for(PortraitAccessDto accessDto : portraitAccess){
-            AuthDaHuaResp authResp = authManagement(inputDto, accessDto, createDto.getAdmitGuid());
+            AuthDaHuaResp authResp = authUpdateManagement(inputDto, accessDto, createDto.getAdmitGuid());
             if(StringUtils.equals(PortraitInputConstant.RESULT_ERROR_DH,authResp.getResult())){
                 return IdmResDTO.error(ErrorCode.COMMON_FAILURE.getCode(),authResp.getMsg());
             }
         }
         PortraitInputEntity entity = BeanMapper.map(createDto, PortraitInputEntity.class);
-
+        entity.setFaceGuid(faceGuid);
         baseMapper.updateById(entity);
         //更新分组信息
         PersonGroupRelationEntity relationEntity = new PersonGroupRelationEntity();
@@ -220,6 +232,36 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         personGroupRelationService.createOrUpdate(relationEntity);
         return IdmResDTO.success();
 
+    }
+
+    /**
+     * 授权管理
+     * @param inputDto
+     * @param accessDto
+     * @param admitGuid
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public AuthDaHuaResp authUpdateManagement(PortraitInputInfoDto inputDto,PortraitAccessDto accessDto,String admitGuid) throws NoSuchAlgorithmException {
+        String token = getToken(inputDto);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(PortraitInputConstant.CREATE_SUBJECT_TOKEN,token);
+        headers.set(PortraitInputConstant.CREATE_SUBJECT_GUID,inputDto.getProjectGuid());
+        JSONObject paramJson = new JSONObject();
+        paramJson.put("deviceNo", accessDto.getDeviceNo());
+        paramJson.put("admitGuids", admitGuid);
+
+        paramJson.put("permission",accessDto.getAccessOptions());
+        ResponseEntity<AuthDaHuaResp> responseEntity =
+                restTemplate.exchange(PortraitInputConstant.AUTH_UPDATE_MANAGEMENT_URL, HttpMethod.POST,
+                        new HttpEntity<>(paramJson,headers),
+                        new ParameterizedTypeReference<AuthDaHuaResp>() {
+                        });
+        AuthDaHuaResp body = responseEntity.getBody();
+        if(!StringUtils.equals(body.getResult(),PortraitInputConstant.RESULT_DH)){
+            log.info("设备授权失败："+JsonUtil.writeValueAsString(body));
+        }
+        return body;
     }
     /**
      * 授权管理
@@ -286,13 +328,14 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public AuthDaHuaResp deleteFaceRegister(PortraitInputInfoDto inputDto,String admitGuid) throws NoSuchAlgorithmException {
+    public AuthDaHuaResp deleteFaceRegister(PortraitInputInfoDto inputDto,String faceGuid ,String admitGuid) throws NoSuchAlgorithmException {
         String token = getToken(inputDto);
         HttpHeaders headers = new HttpHeaders();
         headers.set(PortraitInputConstant.CREATE_SUBJECT_TOKEN,token);
         headers.set(PortraitInputConstant.CREATE_SUBJECT_GUID,inputDto.getProjectGuid());
         JSONObject paramJson = new JSONObject();
         paramJson.put("admitGuid", admitGuid);
+        paramJson.put("faceGuid", faceGuid);
         ResponseEntity<AuthDaHuaResp> responseEntity =
                 restTemplate.exchange(PortraitInputConstant.DELETE_SUBJECT_REGISTER, HttpMethod.POST,
                         new HttpEntity<>(paramJson,headers),
@@ -423,7 +466,7 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         //删除识别主体
         deleteSubject(entity.getAdmitGuid(),entity.getName(),inputDto);
         //删除人像信息
-        deleteFaceRegister(inputDto,entity.getAdmitGuid());
+//        deleteFaceRegister(inputDto,entity.getAdmitGuid());
         //删除分组关系
         PersonGroupRelationEntity relationEntity = new PersonGroupRelationEntity();
         relationEntity.setDataId(entity.getId());
@@ -446,11 +489,11 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         headers.set(PortraitInputConstant.CREATE_SUBJECT_TOKEN,token);
         headers.set(PortraitInputConstant.CREATE_SUBJECT_GUID,inputDto.getProjectGuid());
         JSONObject paramJson = new JSONObject();
-        paramJson.put("admitGuid", adminGuid);
+        paramJson.put("admitGuids", adminGuid);
         paramJson.put("name", name);
 
         ResponseEntity<JSONObject> responseEntity =
-                restTemplate.exchange(PortraitInputConstant.UPDATE_SUBJECT_URL, HttpMethod.POST,
+                restTemplate.exchange(PortraitInputConstant.DELETE_SUBJECT_URL, HttpMethod.POST,
                         new HttpEntity<>(paramJson,headers),
                         new ParameterizedTypeReference<JSONObject>() {
                         });
@@ -525,6 +568,10 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         if(CollectionUtil.isEmpty(personGroupIds)){
             return pages;
         }
+
+        //查询创建人信息
+        List<Long> userIds = vos.stream().filter(item -> Objects.nonNull(item.getUpdateUser())).map(PortraitInputVo::getUpdateUser).collect(Collectors.toList());
+        Map<Long,String> userMap= getUserMap(userIds);
         List<PersonGroupEntity> personGroupEntities = Optional.ofNullable(personGroupService.queryPersonGroupByIds(personGroupIds))
                 .orElse(new ArrayList<>());
         Map<Long, String> personGroupMap = Optional.ofNullable(personGroupEntities.stream()
@@ -532,10 +579,19 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
 
         vos.stream().forEach(item->{
             item.setPersonGroupName(personGroupMap.get(item.getPersonGroupId()));
+            item.setUpdateName(userMap.get(item.getUpdateUser()));
         });
         return pages;
     }
 
+
+    public Map<Long,String> getUserMap(List<Long> userIds){
+        BaseUserReqDto userReqDto = new BaseUserReqDto();
+        userReqDto.setUserIdList(userIds);
+        IdmResDTO<List<BaseUserDto>> listIdmResDTO = systemApiFeignService.lookUpUserList(userReqDto);
+        List<BaseUserDto> data = Optional.ofNullable(listIdmResDTO.getData()).orElseThrow(()->new RuntimeException("用户信息不存在"));
+        return data.stream().collect(Collectors.toMap(BaseUserDto::getId,BaseUserDto::getName ));
+    }
     /**
      * 查询平台信息
      * @param para

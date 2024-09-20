@@ -65,6 +65,11 @@ public class PortraitInputConstant {
      * 授权管理
      */
     public static final String AUTH_MANAGEMENT_URL="http://wo-api.uni-ubi.com/v2/auth/device";
+
+    /**
+     * 授权管理更新
+     */
+    public static final String AUTH_UPDATE_MANAGEMENT_URL="http://wo-api.uni-ubi.com/v2/auth/device/update";
     public static final String APP_KEY_DH ="appKey";
     /**
      * 时间戳

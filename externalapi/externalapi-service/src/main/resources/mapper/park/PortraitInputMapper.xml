@@ -26,6 +26,8 @@
         tpi.name,
         tpi.create_time,
         tpi.person_group_id,
+        tpi.update_time,
+        tpi.update_user,
         u.name AS createUserName
         FROM tb_portrait_input tpi LEFT JOIN `user` u ON tpi.create_user = u.id
         <where>
