@@ -839,6 +839,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @return
      */
     public IdmResDTO<IPage<WorkInfoDto>> queryWorkOrderInfo(WorkInfoDto dto) {
+        dto.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         //根据组织id获取本组织与子组织信息
        if(CollectionUtils.isEmpty(dto.getOrgIds())){
            List<DepartmentDto> departs = getDeptIds(dto.getOrg());
@@ -885,6 +886,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             List<Long> deptIds = departs.stream().map(DepartmentDto::getId).collect(Collectors.toList());
             dto.setOrgIds(deptIds);
         }
+        dto.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         IPage<WorkInfoDto> workInfoEntityPage = getBaseMapper().queryCustomerWorkOrderInfo(new Page<WorkInfoDto>(dto.getCurrentPage(),dto.getPageSize()),dto);
         List<WorkInfoDto> records = workInfoEntityPage.getRecords();
         if(CollectionUtils.isNotEmpty(records)){
@@ -1137,7 +1139,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO<HandleDataVO> instanceInfo(HandleDataDTO HandleDataDTO) {
         String processInstanceId = HandleDataDTO.getProcessInstanceId();
         //校验权限信息
-//        checkWorkOrder(processInstanceId);
+        checkWorkOrder(processInstanceId);
 
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
                 .includeProcessVariables().singleResult();

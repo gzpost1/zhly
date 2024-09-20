@@ -71,6 +71,7 @@ public class ChargeManagerController {
      * @param idParam
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForHouseDetail")
     public IdmResDTO<ChargeHouseDetailDto> queryForHouseDetail(@RequestBody @Valid IdParam idParam) {
         ChargeHouseDetailDto chargeHouseDetailDto = tbChargeManagerService.queryForHouseDetail(idParam.getId());
@@ -96,6 +97,7 @@ public class ChargeManagerController {
      * @param
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryHouseCustmerPage")
     public IdmResDTO<IPage<CustomerUserInfo>> queryHouseCustmerPage(@RequestBody @Valid HouseCustomerQuery query) {
         return IdmResDTO.success().body(tbChargeManagerService.queryHouseCustmerPage(query));
@@ -107,6 +109,7 @@ public class ChargeManagerController {
      * @param query
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<ChargeManagerPageDto>> queryForPage(@RequestBody TbChargeManagerQuery query) {
         if(!query.getSelectPlan()){
@@ -169,6 +172,7 @@ public class ChargeManagerController {
      * @param idParam
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<ChargeManagerDetailDto> queryForDetail(@RequestBody @Valid IdParam idParam) {
         ChargeManagerDetailDto chargeManagerDetailDto = tbChargeManagerService.queryForDetail(idParam.getId());
@@ -215,6 +219,7 @@ public class ChargeManagerController {
      * @param queryDto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForHangupPage")
     public IdmResDTO<IPage<TbChargeHangup>> queryForHangupPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeHangup> tbChargeHangupIPage = tbChargeManagerService.queryForHangupPage(queryDto);
@@ -243,6 +248,7 @@ public class ChargeManagerController {
      * @param queryDto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForAbrogatePage")
     public IdmResDTO<IPage<TbChargeAbrogate>> queryForAbrogatePage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         queryDto.setDataType(ChargeAbrogateTypeEnum.CHARGE.getCode());
@@ -274,6 +280,7 @@ public class ChargeManagerController {
      * @param queryDto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForReceivedPage")
     public IdmResDTO<IPage<TbChargeReceived>> queryForReceivedPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeReceived> tbChargeHangupIPage = tbChargeManagerService.queryForReceivedPage(queryDto);

@@ -39,6 +39,7 @@ public class FormConfigTypeController {
     /**
      * 根据id获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public FormConfigTypeVO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return formConfigTypeService.queryForDetail(idParam.getId());
@@ -47,6 +48,7 @@ public class FormConfigTypeController {
     /**
      * 根据条件获取表单配置类型列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForList")
     public List<FormConfigTypeVO> queryForList(@RequestBody @Valid FormConfigTypeQueryDTO queryDTO) {
         return formConfigTypeService.queryForList(queryDTO);
@@ -55,6 +57,7 @@ public class FormConfigTypeController {
     /**
      * 编辑时查询类型列表（排除当前节点）
      */
+    @RequiresPermissions
     @PostMapping("/queryExcludeChild")
     public List<FormConfigTypeTreeNodeVO> queryExcludeChild(@RequestBody @Valid FormConfigTypeQueryDTO queryDTO) {
         return formConfigTypeService.queryExcludeChild(queryDTO);
@@ -63,6 +66,7 @@ public class FormConfigTypeController {
     /**
      * 根据条件查询企业的表单配置详情
      */
+    @RequiresPermissions
     @PostMapping("/queryByCompany")
     public List<FormConfigTypeTreeNodeVO> queryByCompany(@RequestBody @Valid FormConfigTypeQueryDTO queryDTO) {
         Long companyId = LoginInfoHolder.getCurrentOrgId();

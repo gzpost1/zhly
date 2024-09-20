@@ -42,6 +42,7 @@ public class SysPostController {
     /**
      * 分页列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<SysPostEntity>> queryForPage(@RequestBody SysPostQuery query) {
         query.setSessionOrgId(LoginInfoHolder.getCurrentOrgId());
@@ -52,6 +53,7 @@ public class SysPostController {
     /**
      * 列表查询
      */
+    @RequiresPermissions
     @PostMapping("/queryForList")
     public IdmResDTO<List<SysPostEntity>> queryForList(@RequestBody SysPostQuery query) {
         query.setSessionOrgId(LoginInfoHolder.getCurrentOrgId());
@@ -62,6 +64,7 @@ public class SysPostController {
     /**
      * 获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<SysPostEntity> queryForDetail(@RequestBody @Valid IdParam param) {
         SysPostEntity data = sysPostService.queryForDetail(param);
