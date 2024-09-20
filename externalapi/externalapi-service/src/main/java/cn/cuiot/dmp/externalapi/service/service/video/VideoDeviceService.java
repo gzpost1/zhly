@@ -88,15 +88,10 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
      */
     public void syncDevices(List<VsuapDeviceListResp> data, PlatfromInfoRespDTO platfromInfoRespDTO) {
         // 获取设备id列表
-        List<String> deviceIds = data.stream()
-                .map(VsuapDeviceListResp::getDeviceId)
-                .filter(StringUtils::isNotBlank)
-                .collect(Collectors.toList());
+        List<String> deviceIds = data.stream().map(VsuapDeviceListResp::getDeviceId).filter(StringUtils::isNotBlank).collect(Collectors.toList());
 
         // 根据设备列表查询数据
-        List<VideoDeviceEntity> dbList = list(new LambdaQueryWrapper<VideoDeviceEntity>()
-                .eq(VideoDeviceEntity::getCompanyId, platfromInfoRespDTO.getCompanyId())
-                .in(VideoDeviceEntity::getDeviceId, deviceIds));
+        List<VideoDeviceEntity> dbList = list(new LambdaQueryWrapper<VideoDeviceEntity>().eq(VideoDeviceEntity::getCompanyId, platfromInfoRespDTO.getCompanyId()).in(VideoDeviceEntity::getDeviceId, deviceIds));
         Map<String, VideoDeviceEntity> dbMap = dbList.stream().collect(Collectors.toMap(VideoDeviceEntity::getDeviceId, e -> e));
 
         // 构建VideoDeviceEntity
@@ -124,7 +119,7 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
         List<Long> buildingIds = Lists.newArrayList();
-        if(Objects.nonNull(query.getBuildingId())){
+        if (Objects.isNull(query.getBuildingId())) {
             //获取当前账号自己的组织及其下属组织的楼盘id
             DepartmentReqDto dto = new DepartmentReqDto();
             dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
@@ -134,18 +129,22 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
                 List<Long> collect = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
                 buildingIds.addAll(collect);
             }
+        }else {
+            buildingIds.add(query.getBuildingId());
         }
 
+        //构建查询条件
         LambdaQueryWrapper<VideoDeviceEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(VideoDeviceEntity::getCompanyId, companyId);
         wrapper.eq(Objects.nonNull(query.getState()), VideoDeviceEntity::getState, query.getState());
         wrapper.like(StringUtils.isNotBlank(query.getDeviceName()), VideoDeviceEntity::getDeviceName, query.getDeviceName());
-        if (CollectionUtils.isNotEmpty(buildingIds)) {
-            wrapper.in(VideoDeviceEntity::getBuildingId, buildingIds);
-        }else {
-            wrapper.isNull(VideoDeviceEntity::getBuildingId);
-        }
+        //查询所属组织下的楼盘以及未设置楼盘的数据
+        wrapper.and(qwp -> qwp.in(CollectionUtils.isNotEmpty(buildingIds), VideoDeviceEntity::getBuildingId, buildingIds)
+                .or()
+                .isNull(VideoDeviceEntity::getBuildingId));
+        //排序
         wrapper.orderByDesc(VideoDeviceEntity::getCreateTime);
+
         //分页查询设备信息
         IPage<VideoPageVo> iPage = page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper).convert(item -> {
             VideoPageVo vo = new VideoPageVo();
@@ -157,14 +156,12 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         if (Objects.nonNull(iPage) && CollectionUtils.isNotEmpty(records = iPage.getRecords())) {
 
             //查询流数据
-            List<String> deviceIds = records.stream().map(VideoPageVo::getDeviceId).filter(Objects::nonNull).distinct()
-                    .collect(Collectors.toList());
+            List<String> deviceIds = records.stream().map(VideoPageVo::getDeviceId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
             List<VideoPlayEntity> playEntityList = videoPlayService.queryFlvByDeviceIds(deviceIds, companyId);
             Map<String, VideoPlayEntity> playMap = playEntityList.stream().collect(Collectors.toMap(VideoPlayEntity::getDeviceId, e -> e, (key1, key2) -> key1));
 
             //查询楼盘信息
-            List<Long> buildings = records.stream().map(VideoPageVo::getBuildingId).filter(Objects::nonNull).distinct()
-                    .collect(Collectors.toList());
+            List<Long> buildings = records.stream().map(VideoPageVo::getBuildingId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
             List<BuildingArchive> buildingArchives = queryBuildingInfo(buildings);
             Map<Long, BuildingArchive> buildingMap = buildingArchives.stream().collect(Collectors.toMap(BuildingArchive::getId, e -> e));
 
@@ -189,9 +186,7 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        List<VideoDeviceEntity> deviceEntities = list(new LambdaQueryWrapper<VideoDeviceEntity>()
-                .eq(VideoDeviceEntity::getId, dto.getId())
-                .eq(VideoDeviceEntity::getCompanyId, companyId));
+        List<VideoDeviceEntity> deviceEntities = list(new LambdaQueryWrapper<VideoDeviceEntity>().eq(VideoDeviceEntity::getId, dto.getId()).eq(VideoDeviceEntity::getCompanyId, companyId));
         if (CollectionUtils.isEmpty(deviceEntities)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
@@ -210,9 +205,7 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        List<VideoDeviceEntity> list = list(new LambdaQueryWrapper<VideoDeviceEntity>()
-                .eq(VideoDeviceEntity::getCompanyId, companyId)
-                .in(VideoDeviceEntity::getId, ids));
+        List<VideoDeviceEntity> list = list(new LambdaQueryWrapper<VideoDeviceEntity>().eq(VideoDeviceEntity::getCompanyId, companyId).in(VideoDeviceEntity::getId, ids));
         if (CollectionUtils.isEmpty(list)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
@@ -236,9 +229,7 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        List<VideoDeviceEntity> deviceEntities = list(new LambdaQueryWrapper<VideoDeviceEntity>()
-                .eq(VideoDeviceEntity::getCompanyId, companyId)
-                .in(VideoDeviceEntity::getId, query.getId()));
+        List<VideoDeviceEntity> deviceEntities = list(new LambdaQueryWrapper<VideoDeviceEntity>().eq(VideoDeviceEntity::getCompanyId, companyId).in(VideoDeviceEntity::getId, query.getId()));
         if (CollectionUtils.isEmpty(deviceEntities)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
