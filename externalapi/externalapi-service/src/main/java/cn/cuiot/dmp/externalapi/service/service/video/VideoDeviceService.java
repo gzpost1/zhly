@@ -97,10 +97,16 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         // 构建VideoDeviceEntity
         List<VideoDeviceEntity> collect = data.stream().map(item -> {
             VideoDeviceEntity aDefault = dbMap.getOrDefault(item.getDeviceId(), new VideoDeviceEntity());
+            //获取设备名称
+            String deviceName = aDefault.getDeviceName();
+
             BeanUtils.copyProperties(item, aDefault);
-            if (StringUtils.isBlank(aDefault.getDeviceName())) {
-                aDefault.setDeviceName(item.getDeviceName());
+
+            //如果数据库存就不修改设备名称
+            if (StringUtils.isNotBlank(deviceName)) {
+                aDefault.setDeviceName(deviceName);
             }
+
             aDefault.setStatus(EntityConstants.ENABLED);
             aDefault.setCompanyId(platfromInfoRespDTO.getCompanyId());
             aDefault.setSecret(Sm4.encryption(platfromInfoRespDTO.getData()));
