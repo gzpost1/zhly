@@ -532,6 +532,7 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         if(StringUtils.equals(resp.getResult(), PortraitInputConstant.RESULT_DH)){
             return (String) resp.getData();
         }else{
+            log.info("获取token异常"+JsonUtil.writeValueAsString(resp));
             throw new RuntimeException("获取token异常");
         }
 
