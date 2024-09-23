@@ -157,4 +157,10 @@ public interface SystemApiFeignService {
      */
     @PostMapping(value = "/api/queryPlatfromInfoPage", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<Page<PlatfromInfoRespDTO>> queryPlatfromInfoPage(@RequestBody @Valid PlatfromInfoReqDTO dto);
+
+    /**
+     * 外部平台参数信息列表查询
+     */
+    @PostMapping(value = "/api/queryPlatfromInfoList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<PlatfromInfoRespDTO>> queryPlatfromInfoList(@RequestBody @Valid PlatfromInfoReqDTO dto);
 }

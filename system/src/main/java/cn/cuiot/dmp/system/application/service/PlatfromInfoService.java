@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  *
  * @author pengjian
@@ -18,5 +20,9 @@ public class PlatfromInfoService extends ServiceImpl<PlatfromInfoMapper, Platfro
 
     public Page<PlatfromInfoRespDTO> queryForPage(PlatfromInfoReqDTO dto) {
         return baseMapper.queryForPage(new Page<>(dto.getPageNo(), dto.getPageSize()), dto);
+    }
+
+    public List<PlatfromInfoRespDTO> queryForList(PlatfromInfoReqDTO dto) {
+        return baseMapper.queryForList(dto);
     }
 }

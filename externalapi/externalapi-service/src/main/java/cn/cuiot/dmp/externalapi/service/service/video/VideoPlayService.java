@@ -1,19 +1,13 @@
 package cn.cuiot.dmp.externalapi.service.service.video;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
-import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoPlayEntity;
-import cn.cuiot.dmp.externalapi.service.entity.video.query.VideoPageQuery;
-import cn.cuiot.dmp.externalapi.service.entity.video.query.VideoScreenQuery;
-import cn.cuiot.dmp.externalapi.service.entity.video.vo.VideoPageVo;
+import cn.cuiot.dmp.externalapi.service.query.video.VideoScreenQuery;
 import cn.cuiot.dmp.externalapi.service.mapper.video.VideoPlayMapper;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.resp.vsuap.VsuapPlayOnFlvHlsResp;
-import cn.cuiot.dmp.externalapi.service.vendor.video.enums.VsuapDeviceStateEnum;
-import cn.cuiot.dmp.externalapi.service.vendor.video.enums.VsuapDeviceTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -69,21 +63,17 @@ public class VideoPlayService extends ServiceImpl<VideoPlayMapper, VideoPlayEnti
     }
 
     /**
-     * 后台分页查询
+     * 根据设备id查询flv
      *
-     * @return IPage
-     * @Param
+     * @Param deviceIds 设备id列表
+     * @Param companyId 企业id
      */
-    public IPage<VideoPageVo> queryForPage(VideoPageQuery query) {
-        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
-        IPage<VideoPageVo> iPage = baseMapper.queryForPage(new Page<>(query.getPageNo(), query.getPageSize()), query);
-
-        if (Objects.nonNull(iPage) && CollectionUtils.isNotEmpty(iPage.getRecords())) {
-            iPage.getRecords().forEach(item ->{
-                item.setDeviceTypeName(VsuapDeviceTypeEnum.queryDescByCode(item.getDeviceType()));
-                item.setStateName(VsuapDeviceStateEnum.queryDescByCode(item.getState()));
-            });
+    public List<VideoPlayEntity> queryFlvByDeviceIds(List<String> deviceIds, Long companyId) {
+        if (CollectionUtils.isEmpty(deviceIds)) {
+            return Lists.newArrayList();
         }
-        return iPage;
+        return list(new LambdaQueryWrapper<VideoPlayEntity>()
+                .eq(VideoPlayEntity::getCompanyId, companyId)
+                .in(VideoPlayEntity::getDeviceId, deviceIds));
     }
 }

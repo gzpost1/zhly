@@ -85,10 +85,14 @@ public class VideoTask {
         long pageSize = 200;
         long pages;
         do {
+
             PlatfromInfoReqDTO reqDTO = new PlatfromInfoReqDTO();
             reqDTO.setPageNo(pageNo.getAndAdd(1));
             reqDTO.setPageSize(pageSize);
             reqDTO.setPlatformId(FootPlateInfoEnum.VSUAP_VIDEO.getId());
+            if (StringUtils.isBlank(param)) {
+                reqDTO.setCompanyId(Long.parseLong(param));
+            }
             IPage<PlatfromInfoRespDTO> iPage = systemApiService.queryPlatfromInfoPage(reqDTO);
             // 获取总页数
             pages = iPage.getTotal();
@@ -150,14 +154,17 @@ public class VideoTask {
     @XxlJob("syncVideoChannel")
     public ReturnT<String> syncVideoChannel(String param) {
         log.info("开始同步通道信息......");
-
+        Long companyId = null;
+        if (StringUtils.isBlank(param)) {
+            companyId = Long.parseLong(param);
+        }
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
         long pages;
         do {
             //获取在线的设备列表
             IPage<VideoDeviceEntity> iPage = videoDeviceService
-                    .queryEnableDevicePage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapDeviceStateEnum.ON_LINE.getCode());
+                    .queryEnableDevicePage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapDeviceStateEnum.ON_LINE.getCode(), companyId);
             pages = iPage.getPages();
 
             List<VideoDeviceEntity> records;
@@ -217,13 +224,18 @@ public class VideoTask {
     @XxlJob("syncVideoPlay")
     public ReturnT<String> syncVideoPlay(String param) {
         log.info("开始同步播放信息......");
+        Long companyId = null;
+        if (StringUtils.isBlank(param)) {
+            companyId = Long.parseLong(param);
+        }
+
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
         long pages = 0;
         do {
             //通道查询分页数据
             IPage<VideoChannelEntity> iPage = videoChannelService
-                    .queryEnableChannelPage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapChannelStateEnum.ON_LINE.getCode());
+                    .queryEnableChannelPage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapChannelStateEnum.ON_LINE.getCode(), companyId);
             pages = iPage.getPages();
 
             List<VideoChannelEntity> records;
