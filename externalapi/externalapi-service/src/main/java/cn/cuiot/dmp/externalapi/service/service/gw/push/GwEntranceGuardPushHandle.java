@@ -19,6 +19,7 @@ import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.InvokeDeviceServiceRe
 import cn.cuiot.dmp.externalapi.service.vendor.gw.dmp.DmpDeviceRemoteService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import java.util.Optional;
  * @Author: zc
  * @Date: 2024-09-12
  */
+@Slf4j
 @Component
 public class GwEntranceGuardPushHandle implements GwBusinessStrategy {
 
@@ -65,10 +67,10 @@ public class GwEntranceGuardPushHandle implements GwBusinessStrategy {
         //业务id
         switch (code) {
             case GwEntranceGuardServiceKeyConstant.OPEN_THE_DOOR:
-                openTheDoor(dataId, head.getResMsg());
+                openTheDoor(dataId, head.getResCode());
                 break;
             case GwEntranceGuardServiceKeyConstant.RESTART:
-                restart(dataId, head.getResMsg());
+                restart(dataId, head.getResCode());
                 break;
             case GwEntranceGuardServiceKeyConstant.UPDATE_PARAM:
                 updateParam(dataId);
