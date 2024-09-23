@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.externalapi.service.query.gw.push.base;
 
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardPersonEntity;
+import com.google.common.base.Objects;
 import lombok.Data;
 
 /**
@@ -13,85 +15,92 @@ import lombok.Data;
 @Data
 public class AuthorizePushParams {
 
-    /**
-     * 设备sn
-     */
-    private String sn;
+    private AuthorizeBody body;
 
-    /**
-     * 权限状态
-     */
-    private String state;
+    @Data
+    public static class AuthorizeBody{
+        /**
+         * 设备sn
+         */
+        private String sn;
 
-    /**
-     * 人脸token
-     */
-    private String faceToken;
+        /**
+         * 权限状态
+         */
+        private String state;
 
-    /**
-     * 人员id
-     */
-    private String personId;
+        /**
+         * 人脸token
+         */
+        private String faceToken;
 
-    /**
-     * 姓名
-     */
-    private String name;
+        /**
+         * 人员id
+         */
+        private String personId;
 
-    /**
-     * IC卡号
-     */
-    private String icCard;
+        /**
+         * 姓名
+         */
+        private String name;
 
-    /**
-     * 身份证号码
-     */
-    private String idCard;
+        /**
+         * IC卡号
+         */
+        private String icCard;
 
-    /**
-     * 手机号
-     */
-    private String mobile;
+        /**
+         * 身份证号码
+         */
+        private String idCard;
 
-    /**
-     * 密码
-     */
-    private String password;
+        /**
+         * 手机号
+         */
+        private String mobile;
 
-    /**
-     * 性别 (0: 男, 1: 女)
-     */
-    private Integer sex;
+        /**
+         * 密码
+         */
+        private String password;
 
-    /**
-     * 图片方式 (0: 类型A, 1: 类型B)
-     */
-    private Integer imageType;
+        /**
+         * 性别 (0: 男, 1: 女)
+         */
+        private Integer sex;
 
-    /**
-     * 图片
-     */
-    private String image;
+        /**
+         * 图片方式 (0: 类型A, 1: 类型B)
+         */
+        private Integer imageType;
 
-    /**
-     * 是否长期有效 (0: 否, 1: 是)
-     */
-    private Integer isLongtime;
+        /**
+         * 图片
+         */
+        private String image;
 
-    /**
-     * 权限开始时间
-     */
-    private String startTime;
+        /**
+         * 是否长期有效 (0: 否, 1: 是)
+         */
+        private Integer isLongtime;
 
-    /**
-     * 权限结束时间
-     */
-    private String endTime;
+        /**
+         * 权限开始时间
+         */
+        private String startTime;
 
-    /**
-     * 计划ID集合
-     */
-    private String scheduleIdString;
+        /**
+         * 权限结束时间
+         */
+        private String endTime;
+
+        /**
+         * 计划ID集合
+         */
+        private String scheduleIdString;
+    }
+
+
 
     /**
      * 构造权授
@@ -100,22 +109,26 @@ public class AuthorizePushParams {
      * @Param entity 参数
      * @Param sn 设备sn
      */
-    public AuthorizePushParams buildAuthorizeAddPushParams(GwEntranceGuardPersonEntity entity, String sn) {
+    public static AuthorizePushParams buildAuthorizeAddPushParams(GwEntranceGuardPersonEntity entity, String sn) {
         AuthorizePushParams params = new AuthorizePushParams();
-        params.setSn(sn);
-        params.setState("ADD");
-        params.setPersonId(entity.getId() + "");
-        params.setName(entity.getName());
-        params.setIcCard(entity.getIcCardNo());
-        params.setIdCard(entity.getIdCardNo());
-        params.setMobile(entity.getPhone());
-        params.setPassword(entity.getPassword());
-        params.setSex(entity.getSex() - 1);
-        params.setImageType(1);
-        params.setImage(entity.getImage());
-        params.setIsLongtime(Math.abs(entity.getPrescriptionType().intValue() - 1));
-        params.setStartTime(DateTimeUtil.dateToString(entity.getPrescriptionBeginDate()));
-        params.setEndTime(DateTimeUtil.dateToString(entity.getPrescriptionEndDate()));
+        AuthorizePushParams.AuthorizeBody body = new AuthorizePushParams.AuthorizeBody();
+        body.setSn(sn);
+        body.setState("ADD");
+        body.setPersonId(entity.getId() + "");
+        body.setName(entity.getName());
+        body.setIcCard(entity.getIcCardNo());
+        body.setIdCard(entity.getIdCardNo());
+        body.setMobile(entity.getPhone());
+        body.setPassword(entity.getPassword());
+        body.setSex(entity.getSex() - 1);
+        body.setImageType(1);
+        body.setImage(entity.getImage());
+        body.setIsLongtime(Math.abs(entity.getPrescriptionType().intValue() - 1));
+        if (Objects.equal(body.getIsLongtime(), EntityConstants.NO.intValue())) {
+            body.setStartTime(DateTimeUtil.dateToString(entity.getPrescriptionBeginDate()));
+            body.setEndTime(DateTimeUtil.dateToString(entity.getPrescriptionEndDate()));
+        }
+        params.setBody(body);
         return params;
     }
 
@@ -125,10 +138,12 @@ public class AuthorizePushParams {
      * @return AuthorizePushParams
      * @Param personId 人员nid
      */
-    public AuthorizePushParams buildAuthorizeDeletePushParams(Long personId) {
+    public static AuthorizePushParams buildAuthorizeDeletePushParams(Long personId) {
         AuthorizePushParams params = new AuthorizePushParams();
-        params.setState("DELETE");
-        params.setPersonId(personId + "");
+        AuthorizePushParams.AuthorizeBody body = new AuthorizePushParams.AuthorizeBody();
+        body.setState("DELETE");
+        body.setPersonId(personId + "");
+        params.setBody(body);
         return params;
     }
 }
