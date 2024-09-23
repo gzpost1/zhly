@@ -24,11 +24,12 @@
     <option name="hostIds">
       <list>
         <option value="2" />
+        <option value="3" />
       </list>
     </option>
     <option name="hostTagId" value="0" />
-    <option name="location" value="/home/app/community-lease" />
-    <option name="pathOrUrl" value="E:\company project\community-server-parent\zhihuilouyuan\lease\lease-provider\target\lease-provider-1.0-SNAPSHOT.jar" />
+    <option name="location" value="/home/app/community-baseconfig" />
+    <option name="pathOrUrl" value="D:\community-server-parent\base-config\base-config-api\target\base-config-api-1.0-SNAPSHOT.jar" />
     <option name="tagId" value="0" />
     <option name="terminalCommand" />
     <option name="type" value="HOST" />

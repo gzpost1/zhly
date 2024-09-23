@@ -747,7 +747,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public HistoricTaskInstance getHisTaskInfo(HandleDataDTO handleDataDTO){
         String taskId = handleDataDTO.getTaskId();
         HistoricTaskInstance task = null;
+        log.info("taskId"+taskId);
         if(StringUtils.isEmpty(taskId)){
+            log.info("taskId1"+taskId);
             //通过流程实例id找最新的taskId
             List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
                     .processInstanceId(handleDataDTO.getProcessInstanceId()).orderByTaskId().desc().list();
@@ -756,6 +758,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             }
             handleDataDTO.setTaskId(task.getId());
         }else {
+            log.info("taskId2"+taskId);
             task = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
             handleDataDTO.setProcessInstanceId(task.getProcessInstanceId());
         }
@@ -1592,7 +1595,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
         //保存操作信息
         HandleDataDTO dto = new HandleDataDTO();
-        dto.setTaskId(String.valueOf(approvalDto.getTaskId()));
+        dto.setTaskId(String.valueOf(task.getId()));
         dto.setComments(approvalDto.getComments());
         dto.setReason(approvalDto.getReason());
         WorkBusinessTypeInfoEntity businessTypeInfo = getWorkBusinessTypeInfo(dto);
@@ -1609,7 +1612,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             workBusinessTypeInfoService.updateById(update);
         }
         //完成审批任务
-        taskService.complete(String.valueOf(approvalDto.getTaskId()));
+        taskService.complete(String.valueOf(task.getId()));
         return IdmResDTO.success();
     }
 
