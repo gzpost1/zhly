@@ -9,8 +9,6 @@ import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.web.bind.annotation.RequestBody;
-
 /**
  * ApiSystemService
  *
@@ -99,4 +97,8 @@ public interface ApiSystemService {
      */
     Map<Long, List<Long>> lookUpUserIdsByBuildingIds(UserHouseAuditBuildingReqDTO reqDTO);
 
+    /**
+     * 根据企业id查询企业名称列表
+     */
+    List<OrganizationRespDTO> queryOrganizationList(List<Long> companyIds);
 }

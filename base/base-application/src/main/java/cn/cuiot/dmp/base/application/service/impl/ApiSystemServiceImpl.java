@@ -14,7 +14,9 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -368,6 +370,27 @@ public class ApiSystemServiceImpl implements ApiSystemService {
             throw new RuntimeException(message);
         } catch (Exception ex) {
             log.info("ApiSystemServiceImpl==lookUpUserIdsByBuildingIds==fail", ex);
+            throw new BusinessException(ResultCode.QUERY_USER_HOUSE_AUDIT_ERROR);
+        }
+    }
+
+    @Override
+    public List<OrganizationRespDTO> queryOrganizationList(List<Long> companyIds) {
+        try {
+            List<OrganizationId> idList = companyIds.stream().map(OrganizationId::new).collect(Collectors.toList());
+            IdmResDTO<List<OrganizationRespDTO>> idmResDTO = systemApiFeignService
+                    .queryOrganizationList(idList);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return idmResDTO.getData();
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiSystemServiceImpl==queryOrganizationList==fail", ex);
             throw new BusinessException(ResultCode.QUERY_USER_HOUSE_AUDIT_ERROR);
         }
     }

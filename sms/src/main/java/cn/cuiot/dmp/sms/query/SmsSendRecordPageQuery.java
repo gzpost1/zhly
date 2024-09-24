@@ -31,7 +31,7 @@ public class SmsSendRecordPageQuery extends PageQuery {
     private LocalDate beginDate;
 
     /**
-     * 发送开始时间
+     * 发送结束时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")

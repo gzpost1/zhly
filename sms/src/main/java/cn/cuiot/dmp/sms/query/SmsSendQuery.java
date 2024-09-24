@@ -2,6 +2,8 @@ package cn.cuiot.dmp.sms.query;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 短信发送query
  *
@@ -24,10 +26,9 @@ public class SmsSendQuery {
     private String mobile;
 
     /**
-     * (必填)
-     * 短信内容，请保持在500字以内。注意：使用短信模板进行提交时，请填写模板拼接后的完整内容。
+     * 发送参数
      */
-    private String content;
+    private List<String> params;
 
     /**
      * (必填)

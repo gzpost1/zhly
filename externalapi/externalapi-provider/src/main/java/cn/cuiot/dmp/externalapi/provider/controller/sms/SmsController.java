@@ -21,6 +21,7 @@ import cn.cuiot.dmp.sms.vendor.SmsApiFeignService;
 import cn.cuiot.dmp.sms.vendor.resp.SmsBaseResp;
 import cn.cuiot.dmp.sms.vo.SmsPushDataVO;
 import cn.cuiot.dmp.sms.vo.SmsSendRecordVO;
+import cn.cuiot.dmp.sms.vo.SmsStatisticsVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -172,15 +173,25 @@ public class SmsController {
     }
 
     /**
-     * 短信统计
+     * 短信统计已使用数
      *
      * @Param param 数据id
      */
     @RequiresPermissions
-    @PostMapping("/statistics")
-    public IdmResDTO<?> statistics() {
-//        return IdmResDTO.success(sendRecordService.statistics());
-        return IdmResDTO.success();
+    @PostMapping("/statisticsUsed")
+    public IdmResDTO<Long> statisticsUsed(@RequestBody SmsStatisticsQuery query) {
+        return IdmResDTO.success(sendRecordService.statisticsUsed(query));
+    }
+
+    /**
+     * 短信统计分页
+     *
+     * @Param param 数据id
+     */
+    @RequiresPermissions
+    @PostMapping("/statisticsPage")
+    public IdmResDTO<IPage<SmsStatisticsVO>> statisticsPage(@RequestBody SmsStatisticsQuery query) {
+        return IdmResDTO.success(sendRecordService.statisticsPage(query));
     }
 
     /**
