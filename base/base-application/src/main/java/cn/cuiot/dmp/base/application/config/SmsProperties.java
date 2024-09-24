@@ -21,14 +21,4 @@ public class SmsProperties {
      * 请求地址
      */
     private String url;
-
-    /**
-     * API密钥账号
-     */
-    private String secretName;
-
-    /**
-     * API密钥
-     */
-    private String secretKey;
 }

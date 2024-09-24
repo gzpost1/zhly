@@ -2,6 +2,7 @@ package cn.cuiot.dmp.sms.service;
 
 import cn.cuiot.dmp.base.application.service.impl.ApiSystemServiceImpl;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.OrganizationReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.OrganizationRespDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.OrgTypeEnum;
@@ -134,7 +135,9 @@ public class SmsSendRecordService {
                     .distinct().collect(Collectors.toList());
 
             if (CollectionUtils.isNotEmpty(companyIds)) {
-                List<OrganizationRespDTO> dtoList = apiSystemService.queryOrganizationList(companyIds);
+                OrganizationReqDTO reqDTO = new OrganizationReqDTO();
+                reqDTO.setIdList(companyIds);
+                List<OrganizationRespDTO> dtoList = apiSystemService.queryOrganizationList(reqDTO);
 
                 if (CollectionUtils.isNotEmpty(dtoList)) {
                     Map<Long, String> map = dtoList.stream().collect(Collectors.toMap(OrganizationRespDTO::getId, OrganizationRespDTO::getCompanyName));

@@ -14,6 +14,7 @@ import cn.cuiot.dmp.sms.vendor.resp.SmsSignStateResp;
 import cn.cuiot.dmp.sms.vendor.resp.SmsTemplateStateResp;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -47,7 +48,7 @@ public class SmsTask {
      * 同步短信状态
      */
     @XxlJob("syncSmsTemplateState")
-    public void syncSmsTemplateState(String param) {
+    public ReturnT<String> syncSmsTemplateState(String param) {
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
         long pages;
@@ -93,13 +94,15 @@ public class SmsTask {
                 }
             }
         } while (pageNo.get() < pages);
+
+        return ReturnT.SUCCESS;
     }
 
     /**
      * 同步短信状态
      */
     @XxlJob("syncSmsSignState")
-    public void syncSmsSignState(String param) {
+    public ReturnT<String> syncSmsSignState(String param) {
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
         long pages;
@@ -145,5 +148,7 @@ public class SmsTask {
                 }
             }
         } while (pageNo.get() < pages);
+
+        return ReturnT.SUCCESS;
     }
 }

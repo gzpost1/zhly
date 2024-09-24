@@ -7,6 +7,7 @@ import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.sms.contant.SmsRedisKeyConstant;
 import cn.cuiot.dmp.sms.entity.SmsSignEntity;
+import cn.cuiot.dmp.sms.mapper.SmsSignMapper;
 import cn.cuiot.dmp.sms.query.SmsSendSignSetQuery;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.commons.collections.CollectionUtils;
@@ -32,7 +33,7 @@ public class SmsSignRelationService extends ServiceImpl<SmsSignRelationMapper, S
     @Autowired
     private RedisUtil redisUtil;
     @Autowired
-    private SmsSignService signService;
+    private SmsSignMapper smsSignMapper;
 
     /**
      * 根据id查询汇总
@@ -61,7 +62,7 @@ public class SmsSignRelationService extends ServiceImpl<SmsSignRelationMapper, S
         saveOrUpdate(signRelation);
 
         // 修改模版内容redis缓存
-        SmsSignEntity sign = signService.getById(query.getSignId());
+        SmsSignEntity sign = smsSignMapper.selectById(query.getSignId());
         if (Objects.nonNull(sign)) {
             redisUtil.set(SmsRedisKeyConstant.SIGN_COMPANY + companyId, JsonUtil.writeValueAsString(sign));
         }

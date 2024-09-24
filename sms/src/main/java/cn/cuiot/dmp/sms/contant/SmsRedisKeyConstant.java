@@ -9,6 +9,11 @@ package cn.cuiot.dmp.sms.contant;
 public class SmsRedisKeyConstant {
 
     /**
+     * 密钥配置信息
+     */
+    public static final String CONFIG = "SMS:CONFIG";
+
+    /**
      * 拼接模版id
      */
     public static final String TEMPLATE = "SMS:TEMPLATE:";

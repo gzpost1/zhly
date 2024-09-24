@@ -375,11 +375,10 @@ public class ApiSystemServiceImpl implements ApiSystemService {
     }
 
     @Override
-    public List<OrganizationRespDTO> queryOrganizationList(List<Long> companyIds) {
+    public List<OrganizationRespDTO> queryOrganizationList(OrganizationReqDTO dto) {
         try {
-            List<OrganizationId> idList = companyIds.stream().map(OrganizationId::new).collect(Collectors.toList());
             IdmResDTO<List<OrganizationRespDTO>> idmResDTO = systemApiFeignService
-                    .queryOrganizationList(idList);
+                    .queryOrganizationList(dto);
             if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
                     .equals(idmResDTO.getCode())) {
                 return idmResDTO.getData();

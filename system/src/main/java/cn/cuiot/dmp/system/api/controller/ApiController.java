@@ -328,17 +328,22 @@ public class ApiController {
      * @Param
      */
     @PostMapping("/queryOrganizationNameList")
-    public IdmResDTO<List<OrganizationRespDTO>> queryOrganizationNameList(@RequestBody List<OrganizationId> idList) {
+    public IdmResDTO<List<OrganizationRespDTO>> queryOrganizationNameList(@RequestBody OrganizationReqDTO dto) {
         List<OrganizationRespDTO> result = Lists.newArrayList();
 
-        OrganizationCommonQuery commonQuery = OrganizationCommonQuery.builder().idList(idList).build();
-        List<Organization> organizations = organizationRepository.commonQuery(commonQuery);
+        OrganizationCommonQuery.OrganizationCommonQueryBuilder builder = OrganizationCommonQuery.builder();
+        if (CollectionUtils.isNotEmpty(dto.getIdList())) {
+            builder.idList(dto.getIdList().stream().map(OrganizationId::new).collect(Collectors.toList()));
+        }
+        builder.companyName(dto.getCompanyName());
+
+        List<Organization> organizations = organizationRepository.commonQuery(builder.build());
         if (CollectionUtils.isNotEmpty(organizations)) {
             result = organizations.stream().map(item -> {
-                OrganizationRespDTO dto = new OrganizationRespDTO();
-                dto.setId(item.getId().getValue());
-                dto.setCompanyName(item.getCompanyName());
-                return dto;
+                OrganizationRespDTO respDTO = new OrganizationRespDTO();
+                respDTO.setId(item.getId().getValue());
+                respDTO.setCompanyName(item.getCompanyName());
+                return respDTO;
             }).collect(Collectors.toList());
         }
         return IdmResDTO.success(result);

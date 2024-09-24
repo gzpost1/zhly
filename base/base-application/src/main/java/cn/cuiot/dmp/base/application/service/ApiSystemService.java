@@ -100,5 +100,5 @@ public interface ApiSystemService {
     /**
      * 根据企业id查询企业名称列表
      */
-    List<OrganizationRespDTO> queryOrganizationList(List<Long> companyIds);
+    List<OrganizationRespDTO> queryOrganizationList(OrganizationReqDTO dto);
 }

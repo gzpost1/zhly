@@ -163,5 +163,5 @@ public interface SystemApiFeignService {
      * 根据企业id查询企业名称列表
      */
     @PostMapping(value = "/api/queryOrganizationNameList", produces = MediaType.APPLICATION_JSON_VALUE)
-    IdmResDTO<List<OrganizationRespDTO>> queryOrganizationList(@RequestBody List<OrganizationId> idList);
+    IdmResDTO<List<OrganizationRespDTO>> queryOrganizationList(@RequestBody OrganizationReqDTO dto);
 }
