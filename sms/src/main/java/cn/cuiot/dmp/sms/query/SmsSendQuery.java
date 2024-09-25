@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.sms.query;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
  * @Date: 2024-09-23
  */
 @Data
+@Accessors(chain = true)
 public class SmsSendQuery {
 
     /**

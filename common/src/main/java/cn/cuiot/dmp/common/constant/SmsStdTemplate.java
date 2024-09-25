@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.sms.contant;
+package cn.cuiot.dmp.common.constant;
 
 /**
  * 定义标准模版ID，不可修改
@@ -174,4 +174,9 @@ public class SmsStdTemplate {
      * 模板内容：尊敬的客户您好，您在XXX年XXX月XXX日-XXX年XXX月XXX日，XXX（收费项目）账期已出，请在指定时间，及时缴费，如已缴费请忽略此信息。
      */
     public static final Integer CLIENT_CHARGE_BILL = 205001;
+
+    /**
+     * 尊敬的客户您好，您目前已有XX条费用，总计欠缴XX元，还请您及时缴费，如已完成缴费还请忽略此通知！
+     */
+    public static final Integer CLIENT_PAST_DUE_NOTICE = 205001;
 }

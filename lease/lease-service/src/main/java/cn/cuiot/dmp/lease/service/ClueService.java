@@ -211,6 +211,8 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .setMessageTime(new Date()).setMsgType(MsgTypeConstant.CLUE)
                 .setUserType(UserTypeEnum.USER.getValue());
         SmsMsgDto smsMsgDto = new SmsMsgDto();
+        smsMsgDto.setUserIds(Lists.newArrayList(distributeDTO.getCurrentFollowerId())).setParams(Collections.singletonList(clueEntity.getName()))
+                .setTemplateId(SmsStdTemplate.MANAGE_CLUE);
         userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
         msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
                 .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON).build());

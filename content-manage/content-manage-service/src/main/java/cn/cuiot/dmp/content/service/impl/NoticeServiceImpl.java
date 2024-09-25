@@ -219,7 +219,6 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     }
 
     @Override
-    //TODO 缺少短信通知
     public void sendNoticeMessage(ContentNoticeEntity noticeEntity) {
         log.info("sendNoticeMessage-params:{}", JsonUtil.writeValueAsString(noticeEntity));
         if (ContentConstants.PublishSource.MANAGE.equals(noticeEntity.getPublishSource())) {
@@ -255,6 +254,7 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
             SysMsgDto sysMsgDto = new SysMsgDto().setAcceptors(longs).setDataId(noticeEntity.getId()).setDataType(MsgDataType.NOTICE).setMessage("你收到一条公告通知，公告名称:" + noticeEntity.getTitle() + ",点击查看详情")
                     .setDataJson(noticeEntity).setMessageTime(new Date()).setMsgType(MsgTypeConstant.NOTICE).setBuildingId(building);
             SmsMsgDto smsMsgDto = new SmsMsgDto();
+            smsMsgDto.setUserIds(longs).setTemplateId(SmsStdTemplate.MANAGE_NOTICE).setParams(Collections.singletonList(noticeEntity.getTitle()));
             userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
             log.info("notice-sendMsg-userMessageAcceptDto:{}", JsonUtil.writeValueAsString(userMessageAcceptDto));
             msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
@@ -268,11 +268,12 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                     .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                     .build());
         } else if (noticeEntity.getInform().contains(ContentConstants.MsgInform.SMS)) {
-//                    UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(MsgTypeConstant.SMS).setSmsMsgDto(new SmsMsgDto()
-//                            .setTelNumbers());
-//                    msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
-//                            .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
-//                            .build());
+            SmsMsgDto smsMsgDto = new SmsMsgDto();
+            smsMsgDto.setUserIds(longs).setTemplateId(SmsStdTemplate.MANAGE_NOTICE).setParams(Collections.singletonList(noticeEntity.getTitle()));
+            UserMessageAcceptDto userMessageAcceptDto = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SMS);
+            log.info("notice-sendMsg-userMessageAcceptDto:{}", JsonUtil.writeValueAsString(smsMsgDto));
+            msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)
+                    .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON).build());
             log.info("notice-sendMsg-userMessageAcceptDto:{}", "");
         }
     }

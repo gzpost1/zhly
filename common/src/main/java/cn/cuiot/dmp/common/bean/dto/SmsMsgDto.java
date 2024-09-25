@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.common.bean.dto;//	模板
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
@@ -12,6 +13,7 @@ import java.util.List;
  * @data 2024/6/14 10:32
  */
 @Data
+@Accessors(chain = true)
 public class SmsMsgDto {
 
     /**
@@ -27,6 +29,10 @@ public class SmsMsgDto {
     /**
      * 模板id
      */
-    String templateId;
+    Integer templateId;
 
+    /**
+     * 用户ids
+     */
+    List<Long> userIds;
 }

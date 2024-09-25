@@ -11,6 +11,7 @@ import cn.cuiot.dmp.common.bean.dto.UserBusinessMessageAcceptDto;
 import cn.cuiot.dmp.common.constant.InformTypeConstant;
 import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.MsgTypeConstant;
+import cn.cuiot.dmp.common.constant.SmsStdTemplate;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
@@ -168,7 +169,7 @@ public class ChargeCollectionManageService {
                         chargeMsgChannel.userBusinessMessageOutput().send(MessageBuilder.withPayload(msgDto)
                                 .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                                 .build());
-                    }else {
+                    } else {
                         log.info("==============催款管理发送系统信息失败，用户id为空==============");
                     }
                 }
@@ -215,7 +216,8 @@ public class ChargeCollectionManageService {
                     SmsBusinessMsgDto msgDto = new SmsBusinessMsgDto();
                     msgDto.setParams(Arrays.asList(item.getTotal(), item.getAmount()));
                     msgDto.setTelNumbers(phoneNumber);
-                    msgDto.setTemplateId(ChargeMsgTemplateEnum.CUSTOMER_NOTICE_TEMPLATE.getDesc());
+                    msgDto.setCompanyId(Long.parseLong(dtoMap.get(item.getCustomerUserId()).getOrgId()));
+                    msgDto.setTemplateId(SmsStdTemplate.CLIENT_PAST_DUE_NOTICE);
                     return msgDto;
                 }
             }
@@ -232,6 +234,7 @@ public class ChargeCollectionManageService {
 
     /**
      * 保存催款记录
+     *
      * @Param customerUserIds 客户ids
      * @Param companyId 公司id
      * @Param channel 消息发送类型（1：系统消息；2：短信）
@@ -268,7 +271,7 @@ public class ChargeCollectionManageService {
         List<CustomerUserRspDto> userList = apiArchiveService.lookupCustomerUsers(dto);
         if (CollectionUtils.isNotEmpty(userList)) {
             Map<Long, CustomerUserRspDto> map = userList.stream().collect(Collectors.toMap(CustomerUserRspDto::getCustomerId, e -> e));
-            records.forEach(item ->{
+            records.forEach(item -> {
                 if (map.containsKey(item.getCustomerUserId())) {
                     CustomerUserRspDto user = map.get(item.getCustomerUserId());
                     item.setUserId(user.getUserId());

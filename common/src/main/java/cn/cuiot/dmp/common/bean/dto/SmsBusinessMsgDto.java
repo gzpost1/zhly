@@ -26,5 +26,10 @@ public class SmsBusinessMsgDto {
     /**
      * 模板id
      */
-    String templateId;
+    Integer templateId;
+
+    /**
+     * 企业ID
+     */
+    private Long companyId;
 }

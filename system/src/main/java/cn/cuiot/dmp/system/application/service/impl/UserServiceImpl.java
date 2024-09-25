@@ -1,13 +1,5 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
-import static cn.cuiot.dmp.common.constant.ResultCode.INNER_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_ALREADY_EXIST;
-import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_EXIST;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_EXPIRED_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.UNAUTHORIZED_ACCESS;
-
-import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
@@ -16,28 +8,17 @@ import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
 import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
 import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
-import cn.cuiot.dmp.common.constant.CacheConst;
-import cn.cuiot.dmp.common.constant.EntityConstants;
-import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.common.constant.PageResult;
-import cn.cuiot.dmp.common.constant.RegexConst;
-import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.constant.*;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
-import cn.cuiot.dmp.domain.types.Address;
-import cn.cuiot.dmp.domain.types.Email;
-import cn.cuiot.dmp.domain.types.EncryptedValue;
-import cn.cuiot.dmp.domain.types.IP;
-import cn.cuiot.dmp.domain.types.Password;
-import cn.cuiot.dmp.domain.types.PhoneNumber;
+import cn.cuiot.dmp.domain.types.*;
 import cn.cuiot.dmp.domain.types.enums.OperateByTypeEnum;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
 import cn.cuiot.dmp.system.application.enums.RoleTypeEnum;
-import cn.cuiot.dmp.system.application.param.assembler.Organization2EntityAssembler;
 import cn.cuiot.dmp.system.application.param.assembler.UserAssembler;
 import cn.cuiot.dmp.system.application.param.command.UpdateUserCommand;
 import cn.cuiot.dmp.system.application.param.dto.UserDTO;
@@ -52,28 +33,14 @@ import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
 import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
-import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.ImportUserDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.RoleDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.*;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.UserExportVo;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.UserImportDownloadVo;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.DepartmentDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.MenuDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrgMenuDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.OrganizationDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.RoleDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.SpaceDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
-import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDataDao;
+import cn.cuiot.dmp.system.infrastructure.persistence.dao.*;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.SysPostEntity;
 import cn.cuiot.dmp.system.infrastructure.utils.RandomPwUtils;
 import cn.hutool.core.util.DesensitizedUtil;
@@ -85,13 +52,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -101,6 +61,12 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static cn.cuiot.dmp.common.constant.ResultCode.*;
 
 /**
  * @author wqd
@@ -121,15 +87,9 @@ public class UserServiceImpl extends BaseController implements UserService {
     @Autowired
     private UserDataDao userDataDao;
     @Autowired
-    private OrganizationDao organizationDao;
-    @Autowired
     private OrganizationRepository organizationRepository;
     @Autowired
-    private Organization2EntityAssembler organization2EntityAssembler;
-    @Autowired
     private RoleDao roleDao;
-    @Autowired
-    private MenuDao menuDao;
     @Autowired
     private DepartmentDao departmentDao;
     @Autowired
@@ -192,7 +152,7 @@ public class UserServiceImpl extends BaseController implements UserService {
      */
     @Override
     public PageResult<UserDataResDTO> getPage(Map<String, Object> params, String sessionOrgId,
-            int pageNo, int pageSize) {
+                                              int pageNo, int pageSize) {
         PageInfo<UserDataResDTO> resultPageInfo;
         try {
             Organization organization = organizationRepository
@@ -400,7 +360,7 @@ public class UserServiceImpl extends BaseController implements UserService {
                     userEntity.getId().getValue(),
                     Long.parseLong(userBo.getOrgId()), Long.parseLong(userBo.getRoleId()));
 
-            UserCsvDto userCsvDto = new UserCsvDto(userEntity.getId().getValue(),userEntity.getUsername(),phoneNumber, password);
+            UserCsvDto userCsvDto = new UserCsvDto(userEntity.getId().getValue(), userEntity.getUsername(), phoneNumber, password);
 
             return userCsvDto;
         } catch (Exception e) {
@@ -527,7 +487,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         String deptId = userBo.getDeptId();
 
         //设置日志操作对象内容
-        setOptTargetInfo(ids,null);
+        setOptTargetInfo(ids, null);
 
         /**
          * 判断所选组织部门是否可选
@@ -601,7 +561,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         Byte status = userBo.getStatus();
 
         //设置日志操作对象内容
-        setOptTargetInfo(ids, EntityConstants.ENABLED.equals(status)?"启用用户":"停用用户");
+        setOptTargetInfo(ids, EntityConstants.ENABLED.equals(status) ? "启用用户" : "停用用户");
 
         /**
          * 判断所选组织部门是否可选
@@ -658,17 +618,18 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     /**
      * 设置操作对象
+     *
      * @param ids
      */
-    private void setOptTargetInfo(List<Long> ids,String operationName){
+    private void setOptTargetInfo(List<Long> ids, String operationName) {
         List<UserDataEntity> listByIds = userDataDao.selectListByIds(ids);
-        if(CollectionUtils.isNotEmpty(listByIds)){
+        if (CollectionUtils.isNotEmpty(listByIds)) {
             //设置日志操作对象内容
             LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
                     .operationName(operationName)
                     .name("用户")
-                    .targetDatas(listByIds.stream().map(item->{
-                        return new OptTargetData(item.getUsername(),item.getId().toString());
+                    .targetDatas(listByIds.stream().map(item -> {
+                        return new OptTargetData(item.getUsername(), item.getId().toString());
                     }).collect(Collectors.toList()))
                     .build());
         }
@@ -685,7 +646,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         String loginUserId = userBo.getLoginUserId();
 
         //设置日志操作对象内容
-        setOptTargetInfo(ids,null);
+        setOptTargetInfo(ids, null);
 
         // 查询该账户的账户所有者
         Long orgOwner = userDao.findOrgOwner(sessionOrgId);
@@ -967,6 +928,7 @@ public class UserServiceImpl extends BaseController implements UserService {
 
     /**
      * 获取用户与权限信息
+     *
      * @param userId
      * @param orgId
      * @return
@@ -981,10 +943,10 @@ public class UserServiceImpl extends BaseController implements UserService {
         userResDTO.setMenu(menuList);
 
         userResDTO.setPermission_ids(Lists.newArrayList());
-        if(CollectionUtils.isNotEmpty(menuList)){
+        if (CollectionUtils.isNotEmpty(menuList)) {
             userResDTO.setPermission_ids(menuList.stream()
-                    .filter(ite-> org.apache.commons.lang3.StringUtils.isNotBlank(ite.getPermissionCode()))
-                    .map(ite->ite.getPermissionCode())
+                    .filter(ite -> org.apache.commons.lang3.StringUtils.isNotBlank(ite.getPermissionCode()))
+                    .map(ite -> ite.getPermissionCode())
                     .collect(Collectors.toList()));
         }
         return userResDTO;
@@ -1081,7 +1043,7 @@ public class UserServiceImpl extends BaseController implements UserService {
      * 获取user的deptId
      *
      * @param pkUserId String
-     * @param pkOrgId String
+     * @param pkOrgId  String
      * @return String
      */
     @Override
@@ -1186,7 +1148,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         if (!userRepository.save(userDataEntity)) {
             throw new BusinessException(ResultCode.UPDATE_PASSWORD_FAIL);
         }
-        UserCsvDto userCsvDto = new UserCsvDto(userId,userDataEntity.getUsername(),userDataEntity.getDecryptedPhoneNumber(), password);
+        UserCsvDto userCsvDto = new UserCsvDto(userId, userDataEntity.getUsername(), userDataEntity.getDecryptedPhoneNumber(), password);
         return userCsvDto;
     }
 
@@ -1209,7 +1171,7 @@ public class UserServiceImpl extends BaseController implements UserService {
         User user = User.builder().build();
         user.setId(new UserId(updatedUser.getId()));
 
-        if(org.apache.commons.lang3.StringUtils.isNotBlank(updatedUser.getOpenid())){
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(updatedUser.getOpenid())) {
             user.setOpenid(updatedUser.getOpenid());
         }
 
@@ -1239,8 +1201,8 @@ public class UserServiceImpl extends BaseController implements UserService {
         if (CollectionUtils.isNotEmpty(entities)) {
             List<BaseUserDto> dtoList = userAssembler
                     .dataEntityListToBaseUserDtoList(entities);
-            for(BaseUserDto dto:dtoList){
-                if(org.apache.commons.lang3.StringUtils.isNotBlank(dto.getPhoneNumber())){
+            for (BaseUserDto dto : dtoList) {
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(dto.getPhoneNumber())) {
                     dto.setPhoneNumber(Sm4.decrypt(dto.getPhoneNumber()));
                 }
             }
@@ -1260,13 +1222,18 @@ public class UserServiceImpl extends BaseController implements UserService {
         if (CollectionUtils.isNotEmpty(entities)) {
             List<BaseUserDto> dtoList = userAssembler
                     .dataEntityListToBaseUserDtoList(entities);
-            for(BaseUserDto dto:dtoList){
-                if(org.apache.commons.lang3.StringUtils.isNotBlank(dto.getPhoneNumber())){
+            for (BaseUserDto dto : dtoList) {
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(dto.getPhoneNumber())) {
                     dto.setPhoneNumber(Sm4.decrypt(dto.getPhoneNumber()));
                 }
             }
             return dtoList.get(0);
         }
         return null;
+    }
+
+    @Override
+    public Long getUserOrg(Long id) {
+        return userDao.getOrgId(id);
     }
 }
