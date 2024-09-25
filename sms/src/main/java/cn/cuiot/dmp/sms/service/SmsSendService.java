@@ -24,6 +24,10 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static java.util.regex.Pattern.*;
 
 /**
  * 短信发送 业务层
@@ -81,7 +85,7 @@ public class SmsSendService {
         }
 
         // 构造短信内容
-        String content = replacePlaceholders(redisTemplate.getContent(), query.getParams());
+        String content = fillTemplate(redisTemplate.getContent(), query.getParams());
 
         // 获取部门编码路径
         DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(null, null, query.getCompanyId());
@@ -133,16 +137,33 @@ public class SmsSendService {
     }
 
     /**
-     * 模板占位符填空
-     *
-     * @return 短信内容
-     * @Param template 模板
-     * @Param params 参数
+     * 填充短信模板
+     * @param template 短信模板
+     * @param params 参数列表
+     * @return 填充后的短信
      */
-    public static String replacePlaceholders(String template, List<String> params) {
-        for (int i = 0; i < params.size(); i++) {
-            template = template.replace("{" + (i + 1) + "}", params.get(i));
+    public static String fillTemplate(String template, List<String> params) {
+        // 定义正则表达式匹配占位符 {sX}
+        Pattern pattern = compile("\\{s(\\d+)}");
+        Matcher matcher = pattern.matcher(template);
+
+        StringBuffer result = new StringBuffer();
+
+        while (matcher.find()) {
+            // 获取占位符的编号 X
+            int index = Integer.parseInt(matcher.group(1)) - 1;
+
+            // 获取相应编号的参数，超出范围则返回空字符串
+            String replacement = (index < params.size()) ? params.get(index) : "";
+
+            // 将占位符替换为对应参数
+            matcher.appendReplacement(result, replacement);
         }
-        return template;
+
+        // 将剩余部分追加到结果中
+        matcher.appendTail(result);
+
+        return result.toString();
     }
+
 }
