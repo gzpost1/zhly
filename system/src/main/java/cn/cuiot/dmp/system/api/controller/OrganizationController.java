@@ -108,6 +108,7 @@ public class OrganizationController extends BaseController {
     /**
      * 企业与账号详情
      */
+    @RequiresPermissions
     @GetMapping(value = "/getOrganizationInfo", produces = MediaType.APPLICATION_JSON_VALUE)
     public GetOrganizationVO getOrganizationInfo(@RequestParam("id") String id) {
         if (StringUtils.isBlank(id)) {
@@ -122,6 +123,7 @@ public class OrganizationController extends BaseController {
     /**
      * 企业账户列表
      */
+    @RequiresPermissions
     @GetMapping(value = "/listOrganization", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<ListOrganizationVO> listOrganization(ListOrganizationDto dto) {
         if (dto.getPageSize() > 100) {
@@ -216,6 +218,7 @@ public class OrganizationController extends BaseController {
     /**
      * 查询企业变更记录
      */
+    @RequiresPermissions
     @PostMapping("/organizationChangeList")
     public List<OrganizationChangeDto> organizationChangeList(@RequestBody @Valid IdParam idParam) {
         String sessionUserId = LoginInfoHolder.getCurrentUserId().toString();
@@ -229,6 +232,7 @@ public class OrganizationController extends BaseController {
     /**
      * 获得变更详情内容
      */
+    @RequiresPermissions
     @PostMapping("/queryOrganizationChangeDetail")
     public OrganizationChangeDto queryOrganizationChangeDetail(
             @RequestBody @Valid IdParam idParam) {

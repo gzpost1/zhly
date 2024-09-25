@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.system.api.controller;
 
+import static cn.cuiot.dmp.base.application.constant.PermissionContants.USER_ALL;
+
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;

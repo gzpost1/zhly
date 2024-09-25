@@ -48,6 +48,7 @@ public class WorkPlanInfoController {
      * @param dto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("queryWordPlanInfo")
     public IdmResDTO<IPage<WorkPlanInfoEntity>> queryWordPlanInfo(@RequestBody QueryWorkPlanInfoDto dto){
         return workPlanInfoService.queryWordPlanInfo(dto);
@@ -91,6 +92,7 @@ public class WorkPlanInfoController {
      * @param dto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("queryExecutionInfo")
     public IdmResDTO<IPage<PlanWorkExecutionInfoEntity>> queryExecutionInfo(@RequestBody QueryPlanExecutionDto dto){
         return workPlanInfoService.queryExecutionInfo(dto);

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.PersonGroupMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.PersonGroupEntity">
+    <!--@mbg.generated-->
+    <!--@Table tb_person_group-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="update_user" jdbcType="BIGINT" property="updateUser" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_user" jdbcType="BIGINT" property="createUser" />
+    <result column="deleted" jdbcType="BOOLEAN" property="deleted" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, company_id, `name`, update_time, update_user, create_time, create_user, deleted
+  </sql>
+</mapper>

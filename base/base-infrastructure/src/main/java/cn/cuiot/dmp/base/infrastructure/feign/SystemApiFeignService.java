@@ -160,6 +160,12 @@ public interface SystemApiFeignService {
     IdmResDTO<Page<PlatfromInfoRespDTO>> queryPlatfromInfoPage(@RequestBody @Valid PlatfromInfoReqDTO dto);
 
     /**
+     * 外部平台参数信息列表查询
+     */
+    @PostMapping(value = "/api/queryPlatfromInfoList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<PlatfromInfoRespDTO>> queryPlatfromInfoList(@RequestBody @Valid PlatfromInfoReqDTO dto);
+
+    /**
      * 根据企业id查询企业名称列表
      */
     @PostMapping(value = "/api/queryOrganizationNameList", produces = MediaType.APPLICATION_JSON_VALUE)

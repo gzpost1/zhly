@@ -90,4 +90,8 @@ public class UniUbiDeviceQueryReq implements Serializable {
         this.name = vo.getName();
     }
 
+    public UniUbiDeviceQueryReq(Integer index , Integer length){
+        this.index = index;
+        this.length = length;
+    }
 }

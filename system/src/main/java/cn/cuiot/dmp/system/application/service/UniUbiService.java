@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.application.service;
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
 import cn.cuiot.dmp.common.bean.external.YFEntranceGuardBO;
 import cn.cuiot.dmp.common.constant.ErrorCode;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -10,11 +11,14 @@ import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.constant.PortraitInputConstant;
+import cn.cuiot.dmp.system.infrastructure.entity.AccessControlEntity;
+import cn.cuiot.dmp.system.infrastructure.entity.PortraitInputEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiCommandReq;
 import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiDeviceQueryReq;
 import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiDeviceRespInfo;
 import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiPage;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.PortraitInputInfoDto;
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +29,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 门禁（宇泛）服务
@@ -45,6 +50,9 @@ public class UniUbiService {
 
     @Autowired
     private PortraitInputService portraitInputService;
+
+    @Autowired
+    private AccessControlService accessControlService;
 
 
     /**
@@ -70,6 +78,25 @@ public class UniUbiService {
         return JSONObject.parseObject(JSONObject.toJSONString(body.getData()), new TypeReference<UniUbiPage<UniUbiDeviceRespInfo>>(){});
     }
 
+    /**
+     * 同步设备信息
+     * @return
+     */
+    @Async
+    public IdmResDTO syncDeviceData(){
+            UniUbiPage<UniUbiDeviceRespInfo> uniUbiDeviceRespInfoUniUbiPage = queryDevicePageV2(new UniUbiDeviceQueryReq());
+            List<UniUbiDeviceRespInfo> content = uniUbiDeviceRespInfoUniUbiPage.getContent();
+            List<AccessControlEntity> mapList = Optional.ofNullable(BeanMapper.mapList(content, AccessControlEntity.class))
+                    .orElse(new ArrayList<>());
+            mapList.stream().forEach(item->{
+                item.setUpdateUser(LoginInfoHolder.getCurrentUserId());
+                item.setUpdateTime(new Date());
+            });
+            accessControlService.insertOrUpdateBatch(mapList);
+
+
+        return IdmResDTO.success();
+    }
     /**
      * 设备操作指令下发（重启/重置）
      *
@@ -99,7 +126,7 @@ public class UniUbiService {
      * @return
      */
     private HttpHeaders buildHttpHeader(){
-        //获取并使用门禁（宇泛）配置
+        //获取并使用门禁（宇泛）配置 LoginInfoHolder.getCurrentOrgId()
         String json = portraitInputService.getBaseMapper().queryPlatfromInfo(LoginInfoHolder.getCurrentOrgId(), FootPlateInfoEnum.YF_ENTRANCE_GUARD.getId());
 
         if(StringUtils.isBlank(json)){

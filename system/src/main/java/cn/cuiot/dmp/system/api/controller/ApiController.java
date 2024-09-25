@@ -322,6 +322,17 @@ public class ApiController {
     }
 
     /**
+     * 外部平台参数信息列表查询
+     *
+     * @return IdmResDTO<List>
+     * @Param
+     */
+    @PostMapping("/queryPlatfromInfoList")
+    public IdmResDTO<List<PlatfromInfoRespDTO>> queryPlatfromInfoList(@RequestBody PlatfromInfoReqDTO dto) {
+        return IdmResDTO.success(platfromInfoService.queryForList(dto));
+    }
+
+    /**
      * 查询企业信息列表
      *
      * @return IdmResDTO<IPage>

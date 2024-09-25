@@ -32,6 +32,7 @@ public class ClueRecordController {
     /**
      * 根据id获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public ClueRecordDTO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return clueRecordService.queryForDetail(idParam.getId());
@@ -40,6 +41,7 @@ public class ClueRecordController {
     /**
      * 查询列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForList")
     public List<ClueRecordDTO> queryForList(@RequestBody @Valid ClueRecordPageQueryDTO queryDTO) {
         return clueRecordService.queryForList(queryDTO);
@@ -48,6 +50,7 @@ public class ClueRecordController {
     /**
      * 查询分页列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public PageResult<ClueRecordDTO> queryForPage(@RequestBody @Valid ClueRecordPageQueryDTO queryDTO) {
         return clueRecordService.queryForPage(queryDTO);

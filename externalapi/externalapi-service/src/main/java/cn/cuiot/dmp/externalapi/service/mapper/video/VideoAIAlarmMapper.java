@@ -2,8 +2,8 @@ package cn.cuiot.dmp.externalapi.service.mapper.video;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoAIAlarmEntity;
-import cn.cuiot.dmp.externalapi.service.entity.video.query.VideoScreenQuery;
-import cn.cuiot.dmp.externalapi.service.entity.video.vo.VideoScreenVo;
+import cn.cuiot.dmp.externalapi.service.query.video.VideoScreenQuery;
+import cn.cuiot.dmp.externalapi.service.vo.video.VideoScreenVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

@@ -121,6 +121,7 @@ public class UserController extends BaseController {
     /**
      * 用户列表筛选-分页
      */
+    @RequiresPermissions
     @ResolveExtData
     @GetMapping(value = "/user/listUsers", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageResult<UserDataResDTO> getPage(
@@ -222,6 +223,7 @@ public class UserController extends BaseController {
     /**
      * 查询用户详情
      */
+    @RequiresPermissions
     @GetMapping(value = "/user/getUser", produces = MediaType.APPLICATION_JSON_VALUE)
     public UserDataResDTO getDetail(@RequestParam(value = "id") String id) {
         // 获取session中的orgId

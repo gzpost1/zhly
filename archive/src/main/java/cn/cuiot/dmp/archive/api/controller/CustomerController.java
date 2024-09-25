@@ -84,6 +84,7 @@ public class CustomerController {
     /**
      * 分页查询
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<CustomerVo>> queryForPage(@RequestBody CustomerQuery query) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
@@ -96,6 +97,7 @@ public class CustomerController {
     /**
      * 获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<CustomerVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
@@ -293,6 +295,7 @@ public class CustomerController {
     /**
      * 房屋关联客户列表
      */
+    @RequiresPermissions
     @PostMapping("/queryHouseCustomerList")
     public IdmResDTO<IPage<HouseCustomerVo>> queryHouseCustomerList(@RequestBody CustomerQuery query) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();

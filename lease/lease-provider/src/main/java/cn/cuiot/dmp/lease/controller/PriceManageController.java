@@ -33,6 +33,7 @@ public class PriceManageController {
     /**
      * 根据id获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public PriceManageDTO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return priceManageService.queryForDetail(idParam.getId());
@@ -41,6 +42,7 @@ public class PriceManageController {
     /**
      * 查询列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForList")
     public List<PriceManageDTO> queryForList(@RequestBody @Valid PriceManagePageQueryDTO queryDTO) {
         return priceManageService.queryForList(queryDTO);
@@ -49,6 +51,7 @@ public class PriceManageController {
     /**
      * 查询分页列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public PageResult<PriceManageDTO> queryForPage(@RequestBody @Valid PriceManagePageQueryDTO queryDTO) {
         return priceManageService.queryForPage(queryDTO);
@@ -127,6 +130,7 @@ public class PriceManageController {
     /**
      * 通过定价管理id查询定价管理记录
      */
+    @RequiresPermissions
     @PostMapping("/queryRecordByPriceId")
     public PageResult<PriceManageRecordEntity> queryRecordByPriceId(@RequestBody @Valid PriceManageRecordPageQueryDTO pageQueryDTO) {
         return priceManageService.queryRecordByPriceId(pageQueryDTO);
@@ -135,6 +139,7 @@ public class PriceManageController {
     /**
      * 通过定价管理状态查询统计数量
      */
+    @RequiresPermissions
     @PostMapping("/queryCountByStatus")
     public List<PriceManageCountDTO> queryCountByStatus() {
         return priceManageService.queryCountByStatus();

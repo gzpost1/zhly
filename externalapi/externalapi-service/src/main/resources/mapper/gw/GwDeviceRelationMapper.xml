@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.gw.GwDeviceRelationMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.gw.GwDeviceRelationEntity">
+    <!--@mbg.generated-->
+    <!--@Table tb_gw_device_relation-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="product_key" jdbcType="VARCHAR" property="productKey" />
+    <result column="device_key" jdbcType="VARCHAR" property="deviceKey" />
+    <result column="business_type" jdbcType="VARCHAR" property="businessType" />
+    <result column="data_id" jdbcType="VARCHAR" property="dataId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, product_key, device_key, business_type, data_id
+  </sql>
+
+    <select id="getGwDeviceRelation" parameterType="cn.cuiot.dmp.externalapi.service.entity.gw.GwDeviceRelationEntity" resultMap="BaseResultMap">
+        SELECT * FROM tb_gw_device_relation WHERE product_key = #{params.productKey} AND device_key = #{params.deviceKey}
+    </select>
+</mapper>

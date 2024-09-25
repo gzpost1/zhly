@@ -6,9 +6,11 @@ import cn.cuiot.dmp.common.enums.UserLongTimeLoginEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.gateway.config.AppProperties;
+import cn.cuiot.dmp.gateway.config.GatewayAccessLimitProperties;
 import cn.cuiot.dmp.gateway.config.IgnoreAuthProperties;
 import cn.cuiot.dmp.gateway.service.SignatureService;
 import cn.cuiot.dmp.gateway.utils.SecrtUtil;
+import com.alibaba.nacos.common.utils.MD5Utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -28,6 +30,11 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.redisson.api.RLock;
+import org.redisson.api.RRateLimiter;
+import org.redisson.api.RateIntervalUnit;
+import org.redisson.api.RateType;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -79,6 +86,30 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
      */
     public final static String INNER_TOKEN_NAME = "access-token";
 
+    /**
+     * 用户接口限制次数缓存Key前缀
+     */
+    public static final String USER_API_LIMIT_KEY_PREFIX = "userApiLimitKey:";
+
+    /**
+     * 用户接口每分钟限制访问次数
+     */
+    private Integer userApiAccessLimit=500;
+
+    /**
+     * 操作类接口限制访问次数
+     */
+    private Integer operateApiAccessLimit=5;
+
+    /**
+     * 特殊接口限制访问次数
+     */
+    private Integer specialApiAccessLimit=2000;
+
+
+    @Autowired
+    private RedissonClient redissonClient;
+
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -90,6 +121,9 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
 
     @Autowired
     private IgnoreAuthProperties ignoreAuthProperties;
+
+    @Autowired
+    private GatewayAccessLimitProperties gatewayAccessLimitProperties;
 
     private final AntPathMatcher urlMatcher = new AntPathMatcher();
 
@@ -155,7 +189,9 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
             throw new BusinessException(ResultCode.TOKEN_VERIFICATION_FAILED);
         } else {
             //解析与校验token
-            checkToken(jwt);
+            String userId = checkToken(jwt);
+            //检测访问流量限制
+            checkFlowLimit(currentUrl,userId);
         }
         return chain.filter(exchange);
     }
@@ -195,7 +231,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
     /**
      * 解析与校验token
      */
-    private void checkToken(String jwt) {
+    private String checkToken(String jwt) {
         try {
 
             Claims claims = Jwts.parser().setSigningKey(Const.SECRET).parseClaimsJws(jwt).getBody();
@@ -247,6 +283,7 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
                 redisTemplate.expire(CacheConst.LOGIN_USERS_JWT_WX + jwt, Const.WX_SESSION_TIME,
                         TimeUnit.SECONDS);
             }
+            return userId;
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
             if (ex instanceof ExpiredJwtException) {
@@ -266,6 +303,91 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         PathMatcher pathMatcher = new AntPathMatcher();
         for (String ignoreAuthPath : ignoreAuthProperties.getUrls()) {
             if (pathMatcher.match(ignoreAuthPath, currentUrl)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 检测访问流量限制
+     */
+    private void checkFlowLimit(String url,String userId){
+        String key = USER_API_LIMIT_KEY_PREFIX+userId+":"+ MD5Utils.md5Hex(url,"UTF-8");
+        //获取RRateLimiter对象
+        RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
+
+        if (shouldSpecialLimitUrl(url)) {
+            log.info("SpecialL url:{},key:{},specialApiAccessLimit:{}",url,key,specialApiAccessLimit);
+            //特殊URL接口
+            if(!specialApiAccessLimit.equals(gatewayAccessLimitProperties.getSpecialApiAccessLimit())){
+                specialApiAccessLimit = gatewayAccessLimitProperties.getSpecialApiAccessLimit();
+                rateLimiter.setRate(RateType.OVERALL, specialApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }else {
+                rateLimiter.trySetRate(RateType.OVERALL, specialApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }
+
+        }else if (shouldOperateLimitUrl(url)) {
+            log.info("Operate url:{},key:{},operateApiAccessLimit:{}",url,key,operateApiAccessLimit);
+            //特殊URL接口
+            if(!operateApiAccessLimit.equals(gatewayAccessLimitProperties.getOperateApiAccessLimit())){
+                operateApiAccessLimit = gatewayAccessLimitProperties.getOperateApiAccessLimit();
+                rateLimiter.setRate(RateType.OVERALL, operateApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }else{
+                rateLimiter.trySetRate(RateType.OVERALL, operateApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }
+
+        } else{
+            log.info("default url:{},key:{},userApiAccessLimit:{}",url,key,userApiAccessLimit);
+            //普通类接口URL
+            if(!userApiAccessLimit.equals(gatewayAccessLimitProperties.getUserApiAccessLimit())){
+                //设置每分钟限制次数
+                userApiAccessLimit = gatewayAccessLimitProperties.getUserApiAccessLimit();
+                rateLimiter.setRate(RateType.OVERALL, userApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }else{
+                rateLimiter.trySetRate(RateType.OVERALL, userApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+            }
+        }
+        //尝试获取许可
+        boolean isPermitted = rateLimiter.tryAcquire(1);
+        if (!isPermitted) {
+            //超出访问限制
+            throw new BusinessException(ResultCode.SERVER_BUSY,"超出访问限制，请稍后重试");
+        }
+    }
+
+    /**
+     * 匹配操作类URL
+     * @param currentUrl
+     * @return
+     */
+    private boolean shouldOperateLimitUrl(String currentUrl) {
+        List<String> operateApiAccessLimitUrls = gatewayAccessLimitProperties.getOperateApiAccessLimitUrls();
+        if(CollectionUtils.isEmpty(operateApiAccessLimitUrls)){
+            return false;
+        }
+        PathMatcher pathMatcher = new AntPathMatcher();
+        for (String url : operateApiAccessLimitUrls) {
+            if (pathMatcher.match(url, currentUrl)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 匹配特殊类URL
+     * @param currentUrl
+     * @return
+     */
+    private boolean shouldSpecialLimitUrl(String currentUrl) {
+        List<String> specialApiAccessLimitUrls = gatewayAccessLimitProperties.getSpecialApiAccessLimitUrls();
+        if(CollectionUtils.isEmpty(specialApiAccessLimitUrls)){
+            return false;
+        }
+        PathMatcher pathMatcher = new AntPathMatcher();
+        for (String url : specialApiAccessLimitUrls) {
+            if (pathMatcher.match(url, currentUrl)) {
                 return true;
             }
         }

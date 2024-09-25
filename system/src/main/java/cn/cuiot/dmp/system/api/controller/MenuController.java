@@ -49,6 +49,7 @@ public class MenuController extends BaseController {
     /**
      * 获取菜单目录
      */
+    @RequiresPermissions
     @PostMapping(value = "/getAllMenu", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MenuTreeNode> getMenu(@RequestParam(value = "type",required = false) String type) {
         String orgId = getOrgId();
@@ -59,6 +60,7 @@ public class MenuController extends BaseController {
     /**
      * 根据orgTypeId查询菜单节点
      */
+    @RequiresPermissions
     @PostMapping(value = "/getMenuByOrgTypeId", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MenuByOrgTypeIdResDto> getMenuByOrgTypeId(
             @RequestParam("orgTypeId") String orgTypeId) {
@@ -72,6 +74,7 @@ public class MenuController extends BaseController {
     /**
      * 获取菜单列表
      */
+    @RequiresPermissions
     @PostMapping(value = "/queryForList", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MenuTreeNode> queryForList(@RequestBody MenuQuery query) {
         List<MenuTreeNode> treeList = menuService.queryForList(query);
@@ -81,6 +84,7 @@ public class MenuController extends BaseController {
     /**
      * 查询详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<MenuEntity> queryForDetail(@RequestBody @Valid IdParam idParam) {
         MenuEntity menuEntity = menuService.queryForDetail(idParam.getId());

@@ -54,6 +54,7 @@ public class UserFeedbackController {
     /**
      * 分页查询
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<UserFeedbackEntity>> queryForPage(@RequestBody UserFeedbackQuery query) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
@@ -76,6 +77,7 @@ public class UserFeedbackController {
     /**
      * 获得详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<UserFeedbackEntity> queryForDetail(@RequestBody @Valid IdParam idParam) {
         UserFeedbackEntity data = userFeedbackService.queryForDetail(idParam.getId());

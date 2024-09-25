@@ -4,14 +4,20 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.common.bean.external.SDKDWaterMeterBO;
 import cn.cuiot.dmp.common.constant.ErrorCode;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.externalapi.service.entity.water.WaterManagementEntity;
+import cn.cuiot.dmp.externalapi.service.enums.WaterMeterEnums;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean.*;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.constant.WaterMeterConstant;
+import cn.hutool.core.collection.CollectionUtil;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.houbb.heaven.util.lang.BeanUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -20,9 +26,11 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -67,6 +75,28 @@ public class WaterMeterService {
         return body;
     }
 
+
+    /**
+     * 同步水表数据
+     * @return
+     */
+    @Async
+    public IdmResDTO syncWaterMeter() {
+
+        WaterMeterPage<WaterMeterReportDataResp> resp = queryReportData(new WaterMeterReportDataQueryReq());
+        List<WaterMeterReportDataResp> data = resp.getData();
+        if(CollectionUtils.isEmpty(data)){
+            return IdmResDTO.success();
+        }
+        List<WaterManagementEntity> waterManagementEntities = BeanMapper.mapList(data, WaterManagementEntity.class);
+        waterManagementEntities.stream().forEach(item->{
+            item.setUpdateUser(LoginInfoHolder.getCurrentUserId());
+            item.setUpdateTime(new Date());
+        });
+
+        return null;
+    }
+
     /**
      * 下发阀控指令
      *
@@ -74,6 +104,7 @@ public class WaterMeterService {
      * @return
      */
     public WaterMeterCommandControlResp.RespInfo deviceCommandV2(WaterMeterCommandControlReq req) {
+
         ResponseEntity<WaterMeterCommandControlResp> responseEntity =
                 restTemplate.exchange(buildUrl(WaterMeterConstant.CREATE_SUBJECT_URL, null), HttpMethod.POST,
                         new HttpEntity<>(req, null),
@@ -88,6 +119,16 @@ public class WaterMeterService {
             log.error("下发阀控指令：" + JsonUtil.writeValueAsString(body));
             throw new BusinessException(ErrorCode.BUSINESS_EXCEPTION.code(), "物联网水表（山东科德）接口调用异常-" + rows.get(0).getMessage());
         }
+        List<WaterMeterCommandControlReq.CommandControlInfo> commands = req.getRows();
+        if(CollectionUtil.isNotEmpty(commands)){
+            commands.stream().forEach(item->{
+                String nameByCode = WaterMeterEnums.getNameByCode(item.getValve_controll());
+                LambdaUpdateWrapper<WaterManagementEntity> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.set(WaterManagementEntity::getValveStatus,nameByCode).eq(WaterManagementEntity::getWsImei,item.getSteal_no());
+
+            });
+        }
+        //更新本地状态
         return rows.get(0);
     }
 
@@ -121,5 +162,6 @@ public class WaterMeterService {
         }
         return stringBuilder.toString();
     }
+
 
 }

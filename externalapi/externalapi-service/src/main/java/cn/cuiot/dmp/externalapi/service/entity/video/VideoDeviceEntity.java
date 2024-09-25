@@ -98,4 +98,9 @@ public class VideoDeviceEntity extends YjBaseEntity {
      * 密钥信息（SM4加密）
      */
     private String secret;
+
+    /**
+     * 楼盘id
+     */
+    private Long buildingId;
 }
