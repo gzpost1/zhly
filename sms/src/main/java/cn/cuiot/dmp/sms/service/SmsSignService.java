@@ -128,7 +128,7 @@ public class SmsSignService extends ServiceImpl<SmsSignMapper, SmsSignEntity> {
         wrapper.eq(SmsSignEntity::getId, param.getId());
         List<SmsSignEntity> list = list(wrapper);
 
-        if (CollectionUtils.isNotEmpty(list)) {
+        if (CollectionUtils.isEmpty(list)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
 
