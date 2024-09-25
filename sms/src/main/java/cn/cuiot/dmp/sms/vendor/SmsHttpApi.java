@@ -11,6 +11,7 @@ import cn.cuiot.dmp.sms.vendor.resp.SmsBaseResp;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -58,14 +59,17 @@ public class SmsHttpApi {
         Map<String, Object> paramMap = Maps.newHashMap();
         if (Objects.nonNull(data)) {
             strBody = new String((byte[]) data, StandardCharsets.UTF_8);
-            paramMap = JsonUtil.readValue(strBody, new TypeReference<Map<String, Object>>() {
+            Map<String, Object> map = JsonUtil.readValue(strBody, new TypeReference<Map<String, Object>>() {
             });
+            if (MapUtils.isNotEmpty(map)) {
+                paramMap = map;
+            }
         }
         paramMap.put("SecretName", smsConfigEntity.getSecretName());
         paramMap.put("SecretKey", smsConfigEntity.getSecretKey());
         paramMap.put("TimeStamp", System.currentTimeMillis());
 
-        HttpEntity httpEntity = new HttpEntity<>(paramMap, headers);
+        HttpEntity<?> httpEntity = new HttpEntity<>(paramMap, headers);
 
         String url = smsProperties.getUrl() + gateway;
         log.info("request requestData{},url:{}", strBody, url);
@@ -83,15 +87,15 @@ public class SmsHttpApi {
         }
 
         if (Objects.isNull(resp)) {
-            throw new BusinessException(ResultCode.ERROR, "短信请求第三方异常，返回内容为空");
+            throw new BusinessException(ResultCode.ERROR, "短信请求第三方失败，返回内容为空");
         }
 
         if (!resp.isSuccess()) {
             if (Objects.nonNull(resp.getCode())) {
                 SmsHttpRespCode itemByCode = SmsHttpRespCode.getItemByCode(resp.getCode());
-                throw new BusinessException(itemByCode.getCode() + "", itemByCode.getMsg());
+                throw new BusinessException(itemByCode.getErrorCode(), resp.getMsg());
             }
-            throw new BusinessException(ResultCode.ERROR, "短信请求第三方异常");
+            throw new BusinessException(ResultCode.ERROR, "短信请求第三方失败");
         }
         return resp;
     }
