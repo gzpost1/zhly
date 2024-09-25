@@ -31,6 +31,6 @@ public class SmsReceiver {
     @StreamListener(SmsMsgBaseChannel.SMS_PUSH_DATA_INPUT)
     public void receiveDeviceInput(@Payload SmsPushDataQuery query) {
         log.info("短信【第三方推送】入库操作" + JsonUtil.writeValueAsString(query));
-        sendRecordService.pushData(query);
+        sendRecordService.sendRecord(query);
     }
 }

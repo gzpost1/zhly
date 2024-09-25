@@ -31,7 +31,7 @@ public class SmsPushController {
      * @return SmsPushDataVO
      * @Param query 参数
      */
-    @PostMapping("/pushData")
+    @PostMapping("/sendRecord")
     public SmsPushDataVO pushData(@RequestBody SmsPushDataQuery query) {
         log.info("接收第三方推送的发送短信记录.............." + JsonUtil.writeValueAsString(query));
         try {

@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.sms.query;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
@@ -14,30 +15,36 @@ public class SmsPushDataQuery {
     /**
      * 任务Id，与发送短信时返回的任务Id相对应。
      */
-    private String TaskId;
+    @JsonProperty("TaskId")
+    private String taskId;
 
     /**
      * 自定义id
      */
-    private String CustomId;
+    @JsonProperty("CustomId")
+    private String customId;
 
     /**
      * 手机号
      */
-    private String Phone;
+    @JsonProperty("Phone")
+    private String phone;
 
     /**
      * 报告状态（1 成功，2 失败，其他）
      */
-    private Integer ReportStatus;
+    @JsonProperty("reportStatus")
+    private Integer reportStatus;
 
     /**
      * 报告描述
      */
-    private String ReportDescription;
+    @JsonProperty("ReportDescription")
+    private String reportDescription;
 
     /**
      * 报告时间
      */
-    private String ReportTime;
+    @JsonProperty("ReportTime")
+    private String reportTime;
 }

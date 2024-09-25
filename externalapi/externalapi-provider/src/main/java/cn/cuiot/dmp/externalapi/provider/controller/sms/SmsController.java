@@ -202,6 +202,18 @@ public class SmsController {
     }
 
     /**
+     * 基础功能-短信管理-签名下拉选择
+     *
+     * @return List
+     * @Param query 参数
+     */
+    @RequiresPermissions
+    @PostMapping("/signSelectionList")
+    public IdmResDTO<List<SmsSignEntity>> selectionList(@RequestBody SmsSignListQuery query) {
+        return IdmResDTO.success(signService.signSelectionList(query));
+    }
+
+    /**
      * 基础功能-短信管理-发送签名设置
      *
      * @Param param 数据id

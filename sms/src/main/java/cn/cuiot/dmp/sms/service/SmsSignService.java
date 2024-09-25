@@ -12,6 +12,7 @@ import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.sms.contant.SmsRedisKeyConstant;
 import cn.cuiot.dmp.sms.enums.SmsThirdStatusEnum;
 import cn.cuiot.dmp.sms.query.SmsSignCreateDto;
+import cn.cuiot.dmp.sms.query.SmsSignListQuery;
 import cn.cuiot.dmp.sms.vendor.SmsApiFeignService;
 import cn.cuiot.dmp.sms.vendor.req.SmsBindSignReq;
 import cn.cuiot.dmp.sms.vendor.resp.SmsBaseResp;
@@ -60,6 +61,28 @@ public class SmsSignService extends ServiceImpl<SmsSignMapper, SmsSignEntity> {
         wrapper.eq(SmsSignEntity::getCompanyId, companyId);
         wrapper.orderByDesc(SmsSignEntity::getCreateTime);
         return page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
+    }
+
+    /**
+     * 下拉选择列表
+     *
+     * @return List
+     * @Param query 参数
+     */
+    public List<SmsSignEntity> signSelectionList(SmsSignListQuery query) {
+        LambdaQueryWrapper<SmsSignEntity> wrapper = new LambdaQueryWrapper<>();
+        if (Objects.nonNull(query.getType())) {
+            if (Objects.equals(EntityConstants.NO, query.getType())) {
+                wrapper.eq(SmsSignEntity::getOrgTypeId, OrgTypeEnum.PLATFORM.getValue());
+            } else {
+                wrapper.eq(SmsSignEntity::getCompanyId, getCompanyId());
+            }
+        }
+        wrapper.eq(SmsSignEntity::getStatus, EntityConstants.ENABLED);
+        wrapper.eq(SmsSignEntity::getThirdStatus, SmsThirdStatusEnum.SUCCESS_AUDIT.getCode());
+        wrapper.orderByDesc(SmsSignEntity::getCreateTime);
+
+        return list(wrapper);
     }
 
     /**
@@ -177,7 +200,7 @@ public class SmsSignService extends ServiceImpl<SmsSignMapper, SmsSignEntity> {
                 Objects.equals(sign.getStatus(), EntityConstants.ENABLED)) {
             redisUtil.set(SmsRedisKeyConstant.SIGN_PLATFORM, JsonUtil.writeValueAsString(sign));
             return sign;
-        }else {
+        } else {
             String platformJsonStr = redisUtil.get(SmsRedisKeyConstant.SIGN_PLATFORM);
             if (StringUtils.isNotBlank(platformJsonStr)) {
                 return JsonUtil.readValue(platformJsonStr, SmsSignEntity.class);

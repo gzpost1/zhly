@@ -58,7 +58,7 @@ public class SmsHttpApi {
         String strBody = null;
         Map<String, Object> paramMap = Maps.newHashMap();
         if (Objects.nonNull(data)) {
-            strBody = new String((byte[]) data, StandardCharsets.UTF_8);
+            strBody = JsonUtil.writeValueAsString(data);
             Map<String, Object> map = JsonUtil.readValue(strBody, new TypeReference<Map<String, Object>>() {
             });
             if (MapUtils.isNotEmpty(map)) {

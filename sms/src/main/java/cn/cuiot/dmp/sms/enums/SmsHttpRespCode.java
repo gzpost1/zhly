@@ -5,7 +5,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import java.util.Objects;
 
 /**
- * 云智眼-响应编码枚举
+ * 短信-响应编码枚举
  *
  * @Author: zc
  * @Date: 2024-02-27
