@@ -81,10 +81,6 @@ public class SmsController {
     @PostMapping("/getBalance")
     public IdmResDTO<Integer> getBalance() {
         SmsBaseResp<Integer> resp = smsApiFeignService.getBalance();
-        if (Objects.isNull(resp) || !Objects.equals(resp.getCode(), EntityConstants.NO.intValue())) {
-            log.error("resp：" + JsonUtil.writeValueAsString(resp));
-            throw new BusinessException(ResultCode.ERROR, "请求第三方短信余额异常");
-        }
         return IdmResDTO.success(resp.getData());
     }
 

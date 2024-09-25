@@ -93,23 +93,23 @@ public class SmsSendService {
             req.setTemplateId(redisTemplate.getThirdTemplate() + "");
             req.setSignName(redisSign.getSign());
             SmsBaseResp<String> resp = smsApiFeignService.send(req);
-            if (Objects.isNull(resp) || Objects.equals(resp.getCode(), EntityConstants.NO.intValue())) {
-                SmsSendRecordEntity record = new SmsSendRecordEntity();
-                record.setId(IdWorker.getId());
-                record.setCompanyId(query.getCompanyId());
-                record.setTaskId(resp.getData());
-                record.setPhone(query.getMobile());
-                record.setSmsType(redisTemplate.getSmsType());
-                record.setThirdTemplate(redisTemplate.getThirdTemplate());
-                record.setSign(redisSign.getSign());
-                record.setContent(content);
-                record.setCreateTime(new Date());
-                record.setContentCharging(contentChargingCompute(record.getContent()));
-                if (Objects.nonNull(departmentDto)) {
-                    record.setDeptPath(departmentDto.getPath());
-                }
-                sendRecordService.create(record);
+
+            SmsSendRecordEntity record = new SmsSendRecordEntity();
+            record.setId(IdWorker.getId());
+            record.setCompanyId(query.getCompanyId());
+            record.setTaskId(resp.getData());
+            record.setPhone(query.getMobile());
+            record.setSmsType(redisTemplate.getSmsType());
+            record.setThirdTemplate(redisTemplate.getThirdTemplate());
+            record.setSign(redisSign.getSign());
+            record.setContent(content);
+            record.setCreateTime(new Date());
+            record.setContentCharging(contentChargingCompute(record.getContent()));
+            if (Objects.nonNull(departmentDto)) {
+                record.setDeptPath(departmentDto.getPath());
             }
+            sendRecordService.create(record);
+
         } catch (Exception e) {
             log.info("发送选项异常.........");
             e.printStackTrace();

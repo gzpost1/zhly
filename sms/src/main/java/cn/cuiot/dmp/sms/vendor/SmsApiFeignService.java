@@ -1,67 +1,91 @@
 package cn.cuiot.dmp.sms.vendor;
 
-import cn.cuiot.dmp.sms.vendor.interceptor.SmsRemoteInterceptor;
 import cn.cuiot.dmp.sms.vendor.req.*;
 import cn.cuiot.dmp.sms.vendor.resp.SmsBaseResp;
 import cn.cuiot.dmp.sms.vendor.resp.SmsReportResp;
 import cn.cuiot.dmp.sms.vendor.resp.SmsSignStateResp;
 import cn.cuiot.dmp.sms.vendor.resp.SmsTemplateStateResp;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
 /**
- * 短信
+ * 短信-相关API
  *
  * @Author: zc
- * @Date: 2024-09-23
+ * @Date: 2024-09-25
  */
-@Component
-@FeignClient(value = "sms", url = "${sms.url}", configuration = SmsRemoteInterceptor.class)
-public interface SmsApiFeignService {
+@Service
+public class SmsApiFeignService {
+
+    @Autowired
+    private SmsHttpApi smsHttpApi;
 
     /**
      * 发送短信
      */
-    @PostMapping(value = "/Send")
-    SmsBaseResp<String> send(@RequestBody SmsSendReq req);
+    public SmsBaseResp<String> send(SmsSendReq req) {
+        String gateway = "/Send";
+        return smsHttpApi.request(gateway, HttpMethod.POST, req, new TypeReference<SmsBaseResp<String>>() {
+        });
+    }
 
     /**
      * 获取报告
      */
-    @PostMapping(value = "/GetReport")
-    SmsBaseResp<List<SmsReportResp>> getReport(@RequestBody SmsSendReq req);
+    public SmsBaseResp<List<SmsReportResp>> getReport(SmsSendReq req) {
+        String gateway = "/GetReport";
+        return smsHttpApi.request(gateway, HttpMethod.POST, req, new TypeReference<SmsBaseResp<List<SmsReportResp>>>() {
+        });
+    }
 
     /**
      * 查询余额
      */
-    @PostMapping(value = "/GetBalance")
-    SmsBaseResp<Integer> getBalance();
+    public SmsBaseResp<Integer> getBalance() {
+        String gateway = "/GetBalance";
+        return smsHttpApi.request(gateway, HttpMethod.POST, null, new TypeReference<SmsBaseResp<Integer>>() {
+        });
+    }
 
     /**
      * 申请模板
      */
-    @PostMapping(value = "/BindTemplate")
-    SmsBaseResp<Integer> bindTemplate(@RequestBody SmsBindTemplateReq req);
+    public SmsBaseResp<Integer> bindTemplate(SmsBindTemplateReq req) {
+        String gateway = "/BindTemplate";
+        return smsHttpApi.request(gateway, HttpMethod.POST, req, new TypeReference<SmsBaseResp<Integer>>() {
+        });
+    }
 
     /**
      * 查询模板状态
      */
     @PostMapping(value = "/SmsTemplateState")
-    SmsBaseResp<List<SmsTemplateStateResp>> smsTemplateState(@RequestBody SmsTemplateStateReq req);
+    public SmsBaseResp<List<SmsTemplateStateResp>> smsTemplateState(SmsTemplateStateReq req) {
+        String gateway = "/SmsTemplateState";
+        return smsHttpApi.request(gateway, HttpMethod.POST, req, new TypeReference<SmsBaseResp<List<SmsTemplateStateResp>>>() {
+        });
+    }
 
     /**
      * 申请签名
      */
-    @PostMapping(value = "/BindSign")
-    SmsBaseResp<Integer> bindSign(@RequestBody SmsBindSignReq req);
+    public SmsBaseResp<Integer> bindSign(SmsBindSignReq req) {
+        String gateway = "/BindSign";
+        return smsHttpApi.request(gateway, HttpMethod.POST, req, new TypeReference<SmsBaseResp<Integer>>() {
+        });
+    }
 
     /**
      * 查询签名状态
      */
-    @PostMapping(value = "/GetSignState")
-    SmsBaseResp<List<SmsSignStateResp>> getSignState(@RequestBody SmsSignStateReq req);
+    public SmsBaseResp<List<SmsSignStateResp>> getSignState(SmsSignStateReq req) {
+        String gateway = "/GetSignState";
+        return smsHttpApi.request(gateway, HttpMethod.POST, req, new TypeReference<SmsBaseResp<List<SmsSignStateResp>>>() {
+        });
+    }
 }

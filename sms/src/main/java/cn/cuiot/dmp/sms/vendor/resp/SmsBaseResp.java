@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.sms.vendor.resp;
 
+import cn.cuiot.dmp.sms.enums.SmsHttpRespCode;
 import lombok.Data;
 
 /**
@@ -26,4 +27,8 @@ public class SmsBaseResp<T> {
      * 数据
      */
     private T data;
+
+    public Boolean isSuccess() {
+        return SmsHttpRespCode.SUCCESS.getCode().equals(code);
+    }
 }

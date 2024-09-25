@@ -1,6 +1,5 @@
 package cn.cuiot.dmp.externalapi.provider.task;
 
-import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.sms.entity.SmsSignEntity;
 import cn.cuiot.dmp.sms.entity.SmsTemplateEntity;
 import cn.cuiot.dmp.sms.enums.SmsThirdStatusEnum;
@@ -63,30 +62,29 @@ public class SmsTask {
                 //第三方模板id列表
                 List<Integer> templateIds = records.stream().map(SmsTemplateEntity::getThirdTemplate).filter(Objects::nonNull).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(templateIds)) {
-                    // 请求第三方模板状态
-                    SmsTemplateStateReq req = new SmsTemplateStateReq();
-                    req.setTemplateIds(templateIds);
-                    SmsBaseResp<List<SmsTemplateStateResp>> resp = smsApiFeignService.smsTemplateState(req);
                     try {
-                        // resp返回成功执行下一步操作
-                        if (Objects.nonNull(resp) && Objects.equals(resp.getCode(), EntityConstants.NO.intValue())) {
-                            List<SmsTemplateStateResp> data = resp.getData();
-                            Map<Integer, SmsTemplateStateResp> respMap = data.stream().collect(Collectors.toMap(SmsTemplateStateResp::getId, e -> e));
-                            //设置审核状态、备注
-                            List<SmsTemplateEntity> collect = records.stream().map(item -> {
-                                if (Objects.nonNull(item.getThirdTemplate()) && respMap.containsKey(item.getThirdTemplate())) {
-                                    SmsTemplateStateResp respItem = respMap.get(item.getThirdTemplate());
-                                    item.setThirdStatus(respItem.getCheckType());
-                                    item.setRemark(respItem.getCheckRemark());
-                                    return item;
-                                }
-                                return null;
-                            }).filter(Objects::nonNull).collect(Collectors.toList());
-                            // 更新状态
-                            if (CollectionUtils.isNotEmpty(collect)) {
-                                smsTemplateService.updateBatchById(collect);
+                        // 请求第三方模板状态
+                        SmsTemplateStateReq req = new SmsTemplateStateReq();
+                        req.setTemplateIds(templateIds);
+                        SmsBaseResp<List<SmsTemplateStateResp>> resp = smsApiFeignService.smsTemplateState(req);
+
+                        List<SmsTemplateStateResp> data = resp.getData();
+                        Map<Integer, SmsTemplateStateResp> respMap = data.stream().collect(Collectors.toMap(SmsTemplateStateResp::getId, e -> e));
+                        //设置审核状态、备注
+                        List<SmsTemplateEntity> collect = records.stream().map(item -> {
+                            if (Objects.nonNull(item.getThirdTemplate()) && respMap.containsKey(item.getThirdTemplate())) {
+                                SmsTemplateStateResp respItem = respMap.get(item.getThirdTemplate());
+                                item.setThirdStatus(respItem.getCheckType());
+                                item.setRemark(respItem.getCheckRemark());
+                                return item;
                             }
+                            return null;
+                        }).filter(Objects::nonNull).collect(Collectors.toList());
+                        // 更新状态
+                        if (CollectionUtils.isNotEmpty(collect)) {
+                            smsTemplateService.updateBatchById(collect);
                         }
+
                     } catch (Exception e) {
                         log.error("同步短信模板异常........");
                         e.printStackTrace();
@@ -117,30 +115,29 @@ public class SmsTask {
                 // 第三方签名id列表
                 List<Integer> templateIds = records.stream().map(SmsSignEntity::getThirdCode).filter(Objects::nonNull).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(templateIds)) {
-                    // 请求第三方签名状态
-                    SmsSignStateReq req = new SmsSignStateReq();
-                    req.setSignIds(templateIds);
-                    SmsBaseResp<List<SmsSignStateResp>> resp = smsApiFeignService.getSignState(req);
                     try {
-                        // resp返回成功执行下一步操作
-                        if (Objects.nonNull(resp) && Objects.equals(resp.getCode(), EntityConstants.NO.intValue())) {
-                            List<SmsSignStateResp> data = resp.getData();
-                            Map<Integer, SmsSignStateResp> respMap = data.stream().collect(Collectors.toMap(SmsSignStateResp::getId, e -> e));
-                            //设置审核状态、备注
-                            List<SmsSignEntity> collect = records.stream().map(item -> {
-                                if (Objects.nonNull(item.getThirdCode()) && respMap.containsKey(item.getThirdCode())) {
-                                    SmsSignStateResp respItem = respMap.get(item.getThirdCode());
-                                    item.setThirdStatus(respItem.getCheckType());
-                                    item.setRemark(respItem.getCheckRemark());
-                                    return item;
-                                }
-                                return null;
-                            }).filter(Objects::nonNull).collect(Collectors.toList());
-                            // 更新状态
-                            if (CollectionUtils.isNotEmpty(collect)) {
-                                smsSignService.updateBatchById(collect);
+                        // 请求第三方签名状态
+                        SmsSignStateReq req = new SmsSignStateReq();
+                        req.setSignIds(templateIds);
+                        SmsBaseResp<List<SmsSignStateResp>> resp = smsApiFeignService.getSignState(req);
+
+                        List<SmsSignStateResp> data = resp.getData();
+                        Map<Integer, SmsSignStateResp> respMap = data.stream().collect(Collectors.toMap(SmsSignStateResp::getId, e -> e));
+                        //设置审核状态、备注
+                        List<SmsSignEntity> collect = records.stream().map(item -> {
+                            if (Objects.nonNull(item.getThirdCode()) && respMap.containsKey(item.getThirdCode())) {
+                                SmsSignStateResp respItem = respMap.get(item.getThirdCode());
+                                item.setThirdStatus(respItem.getCheckType());
+                                item.setRemark(respItem.getCheckRemark());
+                                return item;
                             }
+                            return null;
+                        }).filter(Objects::nonNull).collect(Collectors.toList());
+                        // 更新状态
+                        if (CollectionUtils.isNotEmpty(collect)) {
+                            smsSignService.updateBatchById(collect);
                         }
+
                     } catch (Exception e) {
                         log.error("同步短信签名异常........");
                         e.printStackTrace();

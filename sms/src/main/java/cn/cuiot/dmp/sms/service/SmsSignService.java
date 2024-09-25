@@ -78,10 +78,6 @@ public class SmsSignService extends ServiceImpl<SmsSignMapper, SmsSignEntity> {
         SmsBindSignReq req = new SmsBindSignReq();
         req.setSignName(dto.getSign());
         SmsBaseResp<Integer> resp = smsApiFeignService.bindSign(req);
-        if (Objects.isNull(resp) || !Objects.equals(resp.getCode(), EntityConstants.NO.intValue())) {
-            log.error("resp：" + JsonUtil.writeValueAsString(resp));
-            throw new BusinessException(ResultCode.ERROR, "企业【" + companyId + "】请求第三方创建签名异常");
-        }
 
         SmsSignEntity sign = new SmsSignEntity();
         BeanUtils.copyProperties(dto, sign);
