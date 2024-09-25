@@ -1,12 +1,11 @@
-package cn.cuiot.dmp.system.api.controller.app;
+package cn.cuiot.dmp.externalapi.provider.controller.app.park;
 
-import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.system.application.service.UniUbiService;
-import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiDeviceQueryReq;
-import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiDeviceRespInfo;
-import cn.cuiot.dmp.system.infrastructure.entity.bean.UniUbiPage;
-import cn.cuiot.dmp.system.infrastructure.entity.vo.UniUbiEntranceGuardQueryVO;
+import cn.cuiot.dmp.externalapi.service.query.UniUbiDeviceQueryReq;
+import cn.cuiot.dmp.externalapi.service.query.UniUbiDeviceRespInfo;
+import cn.cuiot.dmp.externalapi.service.query.UniUbiEntranceGuardQueryVO;
+import cn.cuiot.dmp.externalapi.service.query.UniUbiPage;
+import cn.cuiot.dmp.externalapi.service.service.park.UniUbiService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;

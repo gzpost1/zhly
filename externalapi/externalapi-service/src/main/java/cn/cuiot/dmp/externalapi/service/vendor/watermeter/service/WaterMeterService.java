@@ -14,6 +14,7 @@ import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.entity.water.WaterManagementEntity;
 import cn.cuiot.dmp.externalapi.service.enums.WaterMeterEnums;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
+import cn.cuiot.dmp.externalapi.service.service.park.PlatfromInfoService;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean.*;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.constant.WaterMeterConstant;
 import cn.hutool.core.collection.CollectionUtil;
@@ -50,6 +51,8 @@ public class WaterMeterService {
 
     @Autowired
     private SystemApiService systemApiService;
+    @Autowired
+    private PlatfromInfoService platfromInfoService;
 
 
     /**
@@ -140,8 +143,8 @@ public class WaterMeterService {
      */
     private String buildUrl(String method, Map<String, Object> paramsMap) {
         //获取并使用山东科德-物联网水表配置
-        List<PlatfromInfoRespDTO> configInfoList = systemApiService
-                .queryPlatfromInfoPage(new PlatfromInfoReqDTO(FootPlateInfoEnum.SDKD_WATER_METER.getId(), LoginInfoHolder.getCurrentOrgId()))
+        List<PlatfromInfoRespDTO> configInfoList = platfromInfoService
+                .queryForPage(new PlatfromInfoReqDTO(FootPlateInfoEnum.SDKD_WATER_METER.getId(), LoginInfoHolder.getCurrentOrgId()))
                 .getRecords();
         if (CollectionUtils.isEmpty(configInfoList)) {
             throw new BusinessException(ResultCode.PLATFORM_NOT_CONFIG);
