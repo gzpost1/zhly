@@ -66,7 +66,7 @@ public class SmsTask {
                         // 请求第三方模板状态
                         SmsTemplateStateReq req = new SmsTemplateStateReq();
                         req.setTemplateIds(templateIds);
-                        SmsBaseResp<List<SmsTemplateStateResp>> resp = smsApiFeignService.smsTemplateState(req);
+                        SmsBaseResp<List<SmsTemplateStateResp>> resp = smsApiFeignService.getTemplateState(req);
 
                         List<SmsTemplateStateResp> data = resp.getData();
                         Map<Integer, SmsTemplateStateResp> respMap = data.stream().collect(Collectors.toMap(SmsTemplateStateResp::getId, e -> e));
