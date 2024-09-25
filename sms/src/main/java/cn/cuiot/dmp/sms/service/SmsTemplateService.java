@@ -1,7 +1,6 @@
 package cn.cuiot.dmp.sms.service;
 
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
-import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -92,10 +91,7 @@ public class SmsTemplateService extends ServiceImpl<SmsTemplateMapper, SmsTempla
         SmsBindTemplateReq req = new SmsBindTemplateReq();
         req.setTemplateContent(dto.getContent());
         SmsBaseResp<Integer> resp = smsApiFeignService.bindTemplate(req);
-        if (Objects.isNull(resp) || !Objects.equals(resp.getCode(), EntityConstants.NO.intValue())) {
-            log.error("resp：" + JsonUtil.writeValueAsString(resp));
-            throw new BusinessException(ResultCode.ERROR, "请求第三方创建模板异常");
-        }
+
         // 保存数据库
         SmsTemplateEntity template = new SmsTemplateEntity();
         BeanUtils.copyProperties(dto, template);

@@ -1,19 +1,25 @@
 package cn.cuiot.dmp.sms.service;
 
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.OrgTypeEnum;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.JsonUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.sms.contant.SmsRedisKeyConstant;
 import cn.cuiot.dmp.sms.entity.SmsConfigEntity;
 import cn.cuiot.dmp.sms.mapper.SmsConfigMapper;
 import cn.cuiot.dmp.sms.query.SmsConfigDto;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,12 +35,36 @@ public class SmsConfigService extends ServiceImpl<SmsConfigMapper, SmsConfigEnti
     private RedisUtil redisUtil;
 
     /**
+     * 查询配置
+     *
+     * @return SmsConfigEntity
+     */
+    public SmsConfigEntity queryConfig() {
+        //获取当前账户类型
+        Long orgTypeId = getOrgTypeId();
+        if (!Objects.equals(orgTypeId, OrgTypeEnum.PLATFORM.getValue())) {
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+        }
+
+        List<SmsConfigEntity> list = list(new LambdaQueryWrapper<SmsConfigEntity>()
+                .orderByDesc(SmsConfigEntity::getCreateTime));
+        return CollectionUtils.isNotEmpty(list) ? list.get(0) : new SmsConfigEntity();
+    }
+
+    /**
      * 保存配置
      *
      * @Param dto 参数
      */
     @Transactional(rollbackFor = Exception.class)
     public void saveConfig(SmsConfigDto dto) {
+
+        //获取当前账户类型
+        Long orgTypeId = getOrgTypeId();
+        if (!Objects.equals(orgTypeId, OrgTypeEnum.PLATFORM.getValue())) {
+            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+        }
+
         remove(new LambdaQueryWrapper<>());
 
         SmsConfigEntity config = new SmsConfigEntity();
@@ -60,5 +90,16 @@ public class SmsConfigService extends ServiceImpl<SmsConfigMapper, SmsConfigEnti
             return smsConfig;
         }
         return null;
+    }
+
+    /**
+     * 获取账户类型
+     */
+    private Long getOrgTypeId() {
+        Integer currentOrgTypeId = LoginInfoHolder.getCurrentOrgTypeId();
+        if (Objects.isNull(currentOrgTypeId)) {
+            throw new BusinessException(ResultCode.ERROR, "所属企业不存在");
+        }
+        return (long) currentOrgTypeId;
     }
 }

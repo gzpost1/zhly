@@ -8,11 +8,8 @@ import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.OrganizationReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.OrganizationRespDTO;
 import cn.cuiot.dmp.common.bean.PageQuery;
-import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.utils.JsonUtil;
+import cn.cuiot.dmp.sms.entity.SmsConfigEntity;
 import cn.cuiot.dmp.sms.entity.SmsSignEntity;
 import cn.cuiot.dmp.sms.entity.SmsTemplateEntity;
 import cn.cuiot.dmp.sms.query.*;
@@ -31,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 短信管理
@@ -60,6 +56,17 @@ public class SmsController {
     private SmsConfigService smsConfigService;
 
     /**
+     * 基础功能-短信管理-短信配置查询
+     *
+     * @Param 参数
+     */
+    @RequiresPermissions
+    @PostMapping("/queryConfig")
+    public IdmResDTO<SmsConfigEntity> queryConfig() {
+        return IdmResDTO.success(smsConfigService.queryConfig());
+    }
+
+    /**
      * 基础功能-短信管理-短信配置
      *
      * @Param 参数
@@ -81,10 +88,6 @@ public class SmsController {
     @PostMapping("/getBalance")
     public IdmResDTO<Integer> getBalance() {
         SmsBaseResp<Integer> resp = smsApiFeignService.getBalance();
-        if (Objects.isNull(resp) || !Objects.equals(resp.getCode(), EntityConstants.NO.intValue())) {
-            log.error("resp：" + JsonUtil.writeValueAsString(resp));
-            throw new BusinessException(ResultCode.ERROR, "请求第三方短信余额异常");
-        }
         return IdmResDTO.success(resp.getData());
     }
 
@@ -199,6 +202,18 @@ public class SmsController {
     }
 
     /**
+     * 基础功能-短信管理-签名下拉选择
+     *
+     * @return List
+     * @Param query 参数
+     */
+    @RequiresPermissions
+    @PostMapping("/signSelectionList")
+    public IdmResDTO<List<SmsSignEntity>> selectionList(@RequestBody SmsSignListQuery query) {
+        return IdmResDTO.success(signService.signSelectionList(query));
+    }
+
+    /**
      * 基础功能-短信管理-发送签名设置
      *
      * @Param param 数据id
@@ -209,6 +224,18 @@ public class SmsController {
     public IdmResDTO<?> sendSignSet(@RequestBody @Valid SmsSendSignSetQuery query) {
         signRelationService.sendSignSet(query);
         return IdmResDTO.success();
+    }
+
+    /**
+     * 基础功能-短信管理-是否已关联签名
+     *
+     * @Param param 数据id
+     */
+    @RequiresPermissions
+    @PostMapping("/isRelationSign")
+    public IdmResDTO<Boolean> isRelationSign(@RequestBody @Valid IdParam param) {
+        Long aLong = signRelationService.countBySignId(param.getId());
+        return IdmResDTO.success(aLong > 0);
     }
 
     /**

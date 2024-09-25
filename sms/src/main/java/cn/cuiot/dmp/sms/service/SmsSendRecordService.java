@@ -9,7 +9,6 @@ import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
-import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.sms.entity.SmsSendRecordEntity;
 import cn.cuiot.dmp.sms.query.SmsPushDataQuery;
@@ -19,7 +18,6 @@ import cn.cuiot.dmp.sms.vo.SmsSendRecordVO;
 import cn.cuiot.dmp.sms.vo.SmsStatisticsVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +41,6 @@ import java.util.stream.Collectors;
  * @Author: zc
  * @Date: 2024-09-23
  */
-@Slf4j
 @Service
 public class SmsSendRecordService {
 
@@ -60,13 +57,11 @@ public class SmsSendRecordService {
     }
 
     /**
-     * 推送数据
+     * 第三方推送数据
      *
-     * @Param entity 参数
+     * @Param pushDataQuery 参数
      */
-    public void pushData(SmsPushDataQuery pushDataQuery) {
-        log.info("获取第三方推送的短信发送记录.............{}", JsonUtil.writeValueAsString(pushDataQuery));
-
+    public void sendRecord(SmsPushDataQuery pushDataQuery) {
         if (StringUtils.isNotBlank(pushDataQuery.getTaskId())) {
             // 构建匹配操作
             Query query = new Query();

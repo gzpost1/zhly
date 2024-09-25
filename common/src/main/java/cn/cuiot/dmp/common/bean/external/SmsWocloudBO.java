@@ -9,7 +9,7 @@ import lombok.Data;
  * @Date: 2024-09-19
  */
 @Data
-public class SmsBO {
+public class SmsWocloudBO {
 
     /**
      * 启停用状态（0：停用；1：启用）
