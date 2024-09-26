@@ -44,10 +44,12 @@ public class SmsTask {
     private SmsApiFeignService smsApiFeignService;
 
     /**
-     * 同步短信状态
+     * 同步短信模板状态
      */
     @XxlJob("syncSmsTemplateState")
     public ReturnT<String> syncSmsTemplateState(String param) {
+        log.info("开始同步短信模板状态..................");
+
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
         long pages;
@@ -93,14 +95,18 @@ public class SmsTask {
             }
         } while (pageNo.get() < pages);
 
+        log.info("结束同步短信模板状态..................");
+
         return ReturnT.SUCCESS;
     }
 
     /**
-     * 同步短信状态
+     * 同步短信签名状态
      */
     @XxlJob("syncSmsSignState")
     public ReturnT<String> syncSmsSignState(String param) {
+        log.info("开始同步短信模板状态..................");
+
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
         long pages;
@@ -145,6 +151,8 @@ public class SmsTask {
                 }
             }
         } while (pageNo.get() < pages);
+
+        log.info("结束同步短信模板状态..................");
 
         return ReturnT.SUCCESS;
     }

@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.provider.controller.watermeter;
+package cn.cuiot.dmp.externalapi.provider.controller.admin.watermeter;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.utils.PageUtils;

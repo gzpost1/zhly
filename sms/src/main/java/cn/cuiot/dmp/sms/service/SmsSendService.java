@@ -2,14 +2,19 @@ package cn.cuiot.dmp.sms.service;
 
 import cn.cuiot.dmp.base.application.service.impl.ApiSystemServiceImpl;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
+import cn.cuiot.dmp.common.bean.external.SmsWocloudBO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.sms.entity.SmsSendRecordEntity;
 import cn.cuiot.dmp.sms.entity.SmsSignEntity;
 import cn.cuiot.dmp.sms.entity.SmsTemplateEntity;
 import cn.cuiot.dmp.sms.enums.SmsThirdStatusEnum;
+import cn.cuiot.dmp.sms.feign.ApiExternalapiService;
 import cn.cuiot.dmp.sms.query.SmsSendQuery;
 import cn.cuiot.dmp.sms.vendor.SmsApiFeignService;
 import cn.cuiot.dmp.sms.vendor.req.SmsSendReq;
@@ -48,6 +53,8 @@ public class SmsSendService {
     @Autowired
     private ApiSystemServiceImpl apiSystemService;
     @Autowired
+    private ApiExternalapiService apiExternalapiService;
+    @Autowired
     private SmsSignService signService;
 
     /**
@@ -71,6 +78,9 @@ public class SmsSendService {
             throw new BusinessException(ResultCode.ERROR, "短信发送失败，短信参数不能为空");
         }
 
+        // 校验企业是是否启用发送短信
+        checkPlatformStatus(query.getCompanyId());
+
         // 获取短信模板
         SmsTemplateEntity redisTemplate = smsTemplateService.getRedisTemplate(query.getStdTemplate());
         if (Objects.isNull(redisTemplate) || !Objects.equals(redisTemplate.getThirdStatus(), SmsThirdStatusEnum.SUCCESS_AUDIT.getCode())) {
@@ -79,8 +89,7 @@ public class SmsSendService {
 
         // 获取短信签名
         SmsSignEntity redisSign = signService.getRedisSign(query.getCompanyId());
-        if (Objects.isNull(redisSign) || !Objects.equals(redisSign.getThirdStatus(), SmsThirdStatusEnum.SUCCESS_AUDIT.getCode()) ||
-                Objects.equals(redisSign.getStatus(), EntityConstants.DISABLED)) {
+        if (Objects.isNull(redisSign) || !Objects.equals(redisSign.getThirdStatus(), SmsThirdStatusEnum.SUCCESS_AUDIT.getCode()) || Objects.equals(redisSign.getStatus(), EntityConstants.DISABLED)) {
             throw new BusinessException(ResultCode.ERROR, "短信发送失败，签名不存在");
         }
 
@@ -138,8 +147,9 @@ public class SmsSendService {
 
     /**
      * 填充短信模板
+     *
      * @param template 短信模板
-     * @param params 参数列表
+     * @param params   参数列表
      * @return 填充后的短信
      */
     public static String fillTemplate(String template, List<String> params) {
@@ -166,4 +176,28 @@ public class SmsSendService {
         return result.toString();
     }
 
+    /**
+     * 校验企业对接配置的短信启停用状态
+     *
+     * @Param companyId 企业id
+     */
+    private void checkPlatformStatus(Long companyId) {
+        PlatfromInfoReqDTO dto = new PlatfromInfoReqDTO();
+        dto.setCompanyId(companyId);
+        PlatfromInfoRespDTO smsRedis = apiExternalapiService.queryPlatfromSmsRedis(dto);
+
+        if (Objects.isNull(smsRedis) || StringUtils.isBlank(smsRedis.getData())) {
+            throw new BusinessException(ResultCode.ERROR, "获取平台对接系统选项异常");
+        }
+
+        SmsWocloudBO bo = FootPlateInfoEnum.getObjectFromJsonById(FootPlateInfoEnum.SMS_WOCLOUD.getId(), smsRedis.getData());
+
+        if (Objects.isNull(bo.getStatus())) {
+            throw new BusinessException(ResultCode.ERROR, "企业【" + companyId + "】请求短信失败，status为空");
+        }
+
+        if (Objects.equals(bo.getStatus(), EntityConstants.DISABLED)) {
+            throw new BusinessException(ResultCode.ERROR, "企业【" + companyId + "】请求短信失败，未启用发送短信配置");
+        }
+    }
 }

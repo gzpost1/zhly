@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.provider.controller.sms;
+package cn.cuiot.dmp.externalapi.provider.controller.admin.sms;
 
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.externalapi.provider.rocketmq.SmsSendMqService;

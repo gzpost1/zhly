@@ -42,10 +42,11 @@ public enum FootPlateInfoEnum {
      * 停车场（科拓）
      */
     KP_DEPOT(6L, KPDepotBO.class),
+
     /**
      * 短信（wocloud）
      */
-    SMS_WOCLOUD(5L, SmsWocloudBO.class),
+    SMS_WOCLOUD(7L, SmsWocloudBO.class),
 
     ;
 

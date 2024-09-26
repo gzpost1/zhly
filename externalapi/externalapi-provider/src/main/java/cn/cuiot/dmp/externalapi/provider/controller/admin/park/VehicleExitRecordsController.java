@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.provider.controller.park;
+package cn.cuiot.dmp.externalapi.provider.controller.admin.park;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
