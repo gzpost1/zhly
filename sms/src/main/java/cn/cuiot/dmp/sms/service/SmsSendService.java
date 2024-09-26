@@ -79,8 +79,8 @@ public class SmsSendService {
         }
 
         // 平台企业id
-        Long companyId = 1L;
-        if (!Objects.equals(query.getCompanyId(), companyId)) {
+        Long platformCompanyId = 1L;
+        if (!Objects.equals(query.getCompanyId(), platformCompanyId)) {
             // 校验企业是是否启用发送短信
             checkPlatformStatus(query.getCompanyId());
         }
@@ -92,7 +92,7 @@ public class SmsSendService {
         }
 
         // 获取短信签名
-        SmsSignEntity redisSign = signService.getRedisSign(query.getCompanyId());
+        SmsSignEntity redisSign = signService.getRedisSign(query.getCompanyId(), platformCompanyId);
         if (Objects.isNull(redisSign) || !Objects.equals(redisSign.getThirdStatus(), SmsThirdStatusEnum.SUCCESS_AUDIT.getCode()) || Objects.equals(redisSign.getStatus(), EntityConstants.DISABLED)) {
             throw new BusinessException(ResultCode.ERROR, "短信发送失败，签名不存在");
         }

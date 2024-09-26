@@ -11,6 +11,7 @@ import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.sms.contant.SmsRedisKeyConstant;
 import cn.cuiot.dmp.sms.enums.SmsThirdStatusEnum;
+import cn.cuiot.dmp.sms.mapper.SmsSignRelationMapper;
 import cn.cuiot.dmp.sms.query.SmsSignCreateDto;
 import cn.cuiot.dmp.sms.query.SmsSignListQuery;
 import cn.cuiot.dmp.sms.vendor.SmsApiFeignService;
@@ -43,7 +44,7 @@ public class SmsSignService extends ServiceImpl<SmsSignMapper, SmsSignEntity> {
     @Autowired
     private SmsApiFeignService smsApiFeignService;
     @Autowired
-    private SmsSignRelationService signRelationService;
+    private SmsSignRelationMapper smsSignRelationMapper;
     @Autowired
     private RedisUtil redisUtil;
 
@@ -169,7 +170,7 @@ public class SmsSignService extends ServiceImpl<SmsSignMapper, SmsSignEntity> {
             throw new BusinessException(ResultCode.ERROR, "当前企业不存在该数据");
         }
 
-        Long aLong = signRelationService.countBySignId(id);
+        Long aLong = smsSignRelationMapper.countBySignId(id);
         //如果账户类型是企业并且已有关联，则不可删除
         if (!Objects.equals(orgTypeId, OrgTypeEnum.PLATFORM.getValue())) {
             if (aLong > 0) {
@@ -188,31 +189,44 @@ public class SmsSignService extends ServiceImpl<SmsSignMapper, SmsSignEntity> {
      * @return SmsSignEntity
      * @Param companyId 企业id
      */
-    public SmsSignEntity getRedisSign(Long companyId) {
-        // 根据企业id查询缓存数据
-        String companyIdJsonStr = redisUtil.get(SmsRedisKeyConstant.SIGN_COMPANY + companyId);
-        if (StringUtils.isNotBlank(companyIdJsonStr)) {
-            return JsonUtil.readValue(companyIdJsonStr, SmsSignEntity.class);
+    public SmsSignEntity getRedisSign(Long companyId, Long platformCompanyId) {
+        // 尝试从缓存中获取公司签名
+        String jsonStr = redisUtil.get(SmsRedisKeyConstant.SIGN_COMPANY + companyId);
+        SmsSignEntity sign = StringUtils.isNotBlank(jsonStr) ? JsonUtil.readValue(jsonStr, SmsSignEntity.class) : null;
+
+        // 如果缓存存在，或者公司ID是平台ID，直接返回
+        if (Objects.nonNull(sign) || Objects.equals(companyId, platformCompanyId)) {
+            return Objects.nonNull(sign) ? sign : getPlatformSign();
         }
-        SmsSignEntity sign = baseMapper.getByCompanyId(companyId);
-        // 查询存在并且审核通过并且启用的,如果没有则获取默认签名
-        if (Objects.nonNull(sign) && Objects.equals(sign.getThirdStatus(), SmsThirdStatusEnum.SUCCESS_AUDIT.getCode()) &&
-                Objects.equals(sign.getStatus(), EntityConstants.ENABLED)) {
+
+        // 查询数据库中公司签名并验证有效性
+        sign = smsSignRelationMapper.querySmsSignByCompanyId(companyId);
+        if (Objects.nonNull(sign) && SmsThirdStatusEnum.SUCCESS_AUDIT.getCode().equals(sign.getThirdStatus()) &&
+                EntityConstants.ENABLED.equals(sign.getStatus())) {
             redisUtil.set(SmsRedisKeyConstant.SIGN_PLATFORM, JsonUtil.writeValueAsString(sign));
-            return sign;
         } else {
-            String platformJsonStr = redisUtil.get(SmsRedisKeyConstant.SIGN_PLATFORM);
-            if (StringUtils.isNotBlank(platformJsonStr)) {
-                return JsonUtil.readValue(platformJsonStr, SmsSignEntity.class);
-            }
+            sign = getPlatformSign();
+        }
+
+        return sign;
+    }
+
+    private SmsSignEntity getPlatformSign() {
+        // 尝试从缓存中获取平台签名
+        String jsonStr = redisUtil.get(SmsRedisKeyConstant.SIGN_PLATFORM);
+        SmsSignEntity sign = StringUtils.isNotBlank(jsonStr) ? JsonUtil.readValue(jsonStr, SmsSignEntity.class) : null;
+
+        // 如果缓存不存在，查询数据库并缓存
+        if (Objects.isNull(sign)) {
             sign = baseMapper.queryPlatformFirst();
             if (Objects.nonNull(sign)) {
                 redisUtil.set(SmsRedisKeyConstant.SIGN_PLATFORM, JsonUtil.writeValueAsString(sign));
-                return sign;
             }
         }
-        return null;
+
+        return sign;
     }
+
 
     /**
      * 删除缓存

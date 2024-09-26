@@ -19,4 +19,23 @@
     id, company_id, sign_id, `type`, create_time, create_user, update_time, update_user, 
     deleted
   </sql>
+
+    <select id="querySmsSignByCompanyId" resultType="cn.cuiot.dmp.sms.entity.SmsSignEntity">
+        SELECT
+            b.*
+        FROM
+            tb_sms_sign_relation a
+            INNER JOIN tb_sms_sign b ON a.company_id = b.company_id
+        WHERE
+            a.deleted = 0
+          AND b.deleted = 0
+          AND b.third_status = 1
+          AND b.status = 1
+          AND a.company_id = #{companyId}
+        LIMIT 1
+    </select>
+
+    <select id="countBySignId" resultType="long">
+        SELECT COUNT(1) FROM tb_sms_sign_relation WHERE sign_id = #{signId}
+    </select>
 </mapper>

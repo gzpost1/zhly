@@ -36,17 +36,6 @@ public class SmsSignRelationService extends ServiceImpl<SmsSignRelationMapper, S
     private SmsSignMapper smsSignMapper;
 
     /**
-     * 根据id查询汇总
-     *
-     * @return Long
-     * @Param companyId 企业id
-     */
-    public Long countBySignId(Long signId) {
-        return count(new LambdaQueryWrapper<SmsSignRelationEntity>()
-                .eq(SmsSignRelationEntity::getSignId, signId));
-    }
-
-    /**
      * 发送签名设置
      *
      * @Param query 参数
