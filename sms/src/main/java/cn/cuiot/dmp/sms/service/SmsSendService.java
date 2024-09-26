@@ -78,8 +78,12 @@ public class SmsSendService {
             throw new BusinessException(ResultCode.ERROR, "短信发送失败，短信参数不能为空");
         }
 
-        // 校验企业是是否启用发送短信
-        checkPlatformStatus(query.getCompanyId());
+        // 平台企业id
+        Long companyId = 1L;
+        if (!Objects.equals(query.getCompanyId(), companyId)) {
+            // 校验企业是是否启用发送短信
+            checkPlatformStatus(query.getCompanyId());
+        }
 
         // 获取短信模板
         SmsTemplateEntity redisTemplate = smsTemplateService.getRedisTemplate(query.getStdTemplate());
