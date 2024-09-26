@@ -234,7 +234,7 @@ public class SmsController {
     @RequiresPermissions
     @PostMapping("/isRelationSign")
     public IdmResDTO<Boolean> isRelationSign(@RequestBody @Valid IdParam param) {
-        Long aLong = signRelationService.countBySignId(param.getId());
+        Long aLong = signRelationService.getBaseMapper().countBySignId(param.getId());
         return IdmResDTO.success(aLong > 0);
     }
 
