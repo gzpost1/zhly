@@ -8,7 +8,6 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
-import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.sms.entity.SmsSendRecordEntity;
 import cn.cuiot.dmp.sms.query.SmsPushDataQuery;
@@ -71,9 +70,7 @@ public class SmsSendRecordService {
             Update update = new Update();
             update.set(SmsSendRecordEntity.REPORT_STATUS, pushDataQuery.getReportStatus());
             update.set(SmsSendRecordEntity.REPORT_DESCRIPTION, pushDataQuery.getReportDescription());
-            if (StringUtils.isNotBlank(pushDataQuery.getReportTime())) {
-                update.set(SmsSendRecordEntity.REPORT_TIME, DateTimeUtil.stringToDate(pushDataQuery.getReportTime()));
-            }
+            update.set(SmsSendRecordEntity.REPORT_TIME, pushDataQuery.getReportTime());
             mongoTemplate.updateFirst(query, update, SmsSendRecordEntity.class);
         }
     }

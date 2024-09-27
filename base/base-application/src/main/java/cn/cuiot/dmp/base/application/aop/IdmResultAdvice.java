@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.base.application.aop;
 
+import cn.cuiot.dmp.common.constant.ExternalapiResBaseDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.base.application.utils.FileExportUtils;
@@ -53,6 +54,8 @@ public class IdmResultAdvice implements ResponseBodyAdvice {
 
         // 防止二次封装
         if (o instanceof IdmResDTO) {
+            return o;
+        } else if (o instanceof ExternalapiResBaseDTO) {
             return o;
         } else {
             return new IdmResDTO<>(ResultCode.SUCCESS, o);

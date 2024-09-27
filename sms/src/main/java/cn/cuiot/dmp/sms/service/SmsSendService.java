@@ -66,16 +66,20 @@ public class SmsSendService {
         log.info("短信发送接收参数..............{}", JsonUtil.writeValueAsString(query));
 
         if (Objects.isNull(query.getCompanyId())) {
-            throw new BusinessException(ResultCode.ERROR, "短信发送失败，所属企业不能为空");
+            log.error("短信发送失败，所属企业不能为空");
+            throw new BusinessException(ResultCode.ERROR);
         }
         if (Objects.isNull(query.getStdTemplate())) {
-            throw new BusinessException(ResultCode.ERROR, "短信发送失败，标准短信模板不能为空");
+            log.error("短信发送失败，标准短信模板不能为空");
+            throw new BusinessException(ResultCode.ERROR);
         }
         if (StringUtils.isBlank(query.getMobile())) {
-            throw new BusinessException(ResultCode.ERROR, "短信发送失败，手机号不能为空");
+            log.error("短信发送失败，手机号不能为空");
+            throw new BusinessException(ResultCode.ERROR);
         }
         if (CollectionUtils.isEmpty(query.getParams())) {
-            throw new BusinessException(ResultCode.ERROR, "短信发送失败，短信参数不能为空");
+            log.error("短信发送失败，短信参数不能为空");
+            throw new BusinessException(ResultCode.ERROR);
         }
 
         // 平台企业id
@@ -88,13 +92,15 @@ public class SmsSendService {
         // 获取短信模板
         SmsTemplateEntity redisTemplate = smsTemplateService.getRedisTemplate(query.getStdTemplate());
         if (Objects.isNull(redisTemplate) || !Objects.equals(redisTemplate.getThirdStatus(), SmsThirdStatusEnum.SUCCESS_AUDIT.getCode())) {
-            throw new BusinessException(ResultCode.ERROR, "短信发送失败，模板不存在");
+            log.error("短信发送失败，模板不存在");
+            throw new BusinessException(ResultCode.ERROR);
         }
 
         // 获取短信签名
         SmsSignEntity redisSign = signService.getRedisSign(query.getCompanyId(), platformCompanyId);
         if (Objects.isNull(redisSign) || !Objects.equals(redisSign.getThirdStatus(), SmsThirdStatusEnum.SUCCESS_AUDIT.getCode()) || Objects.equals(redisSign.getStatus(), EntityConstants.DISABLED)) {
-            throw new BusinessException(ResultCode.ERROR, "短信发送失败，签名不存在");
+            log.error("短信发送失败，签名不存在");
+            throw new BusinessException(ResultCode.ERROR);
         }
 
         // 构造短信内容
@@ -163,17 +169,14 @@ public class SmsSendService {
 
         StringBuffer result = new StringBuffer();
 
+        int paramIndex = 0;
         while (matcher.find()) {
-            // 获取占位符的编号 X
-            int index = Integer.parseInt(matcher.group(1)) - 1;
+            String replacement = (paramIndex < params.size()) ? params.get(paramIndex) : "";
+            paramIndex++;
 
-            // 获取相应编号的参数，超出范围则返回空字符串
-            String replacement = (index < params.size()) ? params.get(index) : "";
-
-            // 将占位符替换为对应参数
+            // 将占位符替换为找到的参数或空字符串
             matcher.appendReplacement(result, replacement);
         }
-
         // 将剩余部分追加到结果中
         matcher.appendTail(result);
 
@@ -191,17 +194,20 @@ public class SmsSendService {
         PlatfromInfoRespDTO smsRedis = apiExternalapiService.queryPlatfromSmsRedis(dto);
 
         if (Objects.isNull(smsRedis) || StringUtils.isBlank(smsRedis.getData())) {
-            throw new BusinessException(ResultCode.ERROR, "获取平台对接系统选项异常");
+            log.error("企业【 " + companyId + "】发送短信失败，未在【对接配置】配置短信启用");
+            throw new BusinessException(ResultCode.ERROR);
         }
 
         SmsWocloudBO bo = FootPlateInfoEnum.getObjectFromJsonById(FootPlateInfoEnum.SMS_WOCLOUD.getId(), smsRedis.getData());
 
         if (Objects.isNull(bo.getStatus())) {
-            throw new BusinessException(ResultCode.ERROR, "企业【" + companyId + "】请求短信失败，status为空");
+            log.error("企业【" + companyId + "】请求短信失败，未在【对接配置】配置短信启用");
+            throw new BusinessException(ResultCode.ERROR);
         }
 
         if (Objects.equals(bo.getStatus(), EntityConstants.DISABLED)) {
-            throw new BusinessException(ResultCode.ERROR, "企业【" + companyId + "】请求短信失败，未启用发送短信配置");
+            log.error("企业【" + companyId + "】请求短信失败，短信配置为停用");
+            throw new BusinessException(ResultCode.ERROR);
         }
     }
 }

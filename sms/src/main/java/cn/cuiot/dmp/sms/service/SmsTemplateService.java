@@ -95,7 +95,6 @@ public class SmsTemplateService extends ServiceImpl<SmsTemplateMapper, SmsTempla
         // 保存数据库
         SmsTemplateEntity template = new SmsTemplateEntity();
         BeanUtils.copyProperties(dto, template);
-        template.setStdTemplate(resp.getData());
         template.setThirdStatus(SmsThirdStatusEnum.UNAUDITED.getCode());
         template.setThirdTemplate(resp.getData());
         save(template);

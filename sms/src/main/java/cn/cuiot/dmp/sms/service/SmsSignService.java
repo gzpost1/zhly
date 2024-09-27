@@ -196,22 +196,22 @@ public class SmsSignService extends ServiceImpl<SmsSignMapper, SmsSignEntity> {
 
         // 如果缓存存在，或者公司ID是平台ID，直接返回
         if (Objects.nonNull(sign) || Objects.equals(companyId, platformCompanyId)) {
-            return Objects.nonNull(sign) ? sign : getPlatformSign();
+            return Objects.nonNull(sign) ? sign : getPlatformSign(companyId);
         }
 
         // 查询数据库中公司签名并验证有效性
         sign = smsSignRelationMapper.querySmsSignByCompanyId(companyId);
         if (Objects.nonNull(sign) && SmsThirdStatusEnum.SUCCESS_AUDIT.getCode().equals(sign.getThirdStatus()) &&
                 EntityConstants.ENABLED.equals(sign.getStatus())) {
-            redisUtil.set(SmsRedisKeyConstant.SIGN_PLATFORM, JsonUtil.writeValueAsString(sign));
+            redisUtil.set(SmsRedisKeyConstant.SIGN_PLATFORM + companyId, JsonUtil.writeValueAsString(sign));
         } else {
-            sign = getPlatformSign();
+            sign = getPlatformSign(companyId);
         }
 
         return sign;
     }
 
-    private SmsSignEntity getPlatformSign() {
+    private SmsSignEntity getPlatformSign(Long companyId) {
         // 尝试从缓存中获取平台签名
         String jsonStr = redisUtil.get(SmsRedisKeyConstant.SIGN_PLATFORM);
         SmsSignEntity sign = StringUtils.isNotBlank(jsonStr) ? JsonUtil.readValue(jsonStr, SmsSignEntity.class) : null;
@@ -220,7 +220,7 @@ public class SmsSignService extends ServiceImpl<SmsSignMapper, SmsSignEntity> {
         if (Objects.isNull(sign)) {
             sign = baseMapper.queryPlatformFirst();
             if (Objects.nonNull(sign)) {
-                redisUtil.set(SmsRedisKeyConstant.SIGN_PLATFORM, JsonUtil.writeValueAsString(sign));
+                redisUtil.set(SmsRedisKeyConstant.SIGN_PLATFORM + companyId, JsonUtil.writeValueAsString(sign));
             }
         }
 
