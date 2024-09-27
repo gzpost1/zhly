@@ -34,4 +34,10 @@ public class AppProperties {
      * 小程序appSecret
      */
     private String appSecret;
+
+    /**
+     * 高德Key
+     */
+    private String amapKey;
+
 }
