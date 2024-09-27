@@ -25,4 +25,7 @@ public class SmsStatisticsVO {
      * 使用条数
      */
     private Integer number;
+
+    public static final String COMPANY_ID = "companyId";
+    public static final String NUMBER = "number";
 }

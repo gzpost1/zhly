@@ -246,7 +246,7 @@ public class SmsController {
      */
     @RequiresPermissions
     @PostMapping("/sendRecord")
-    public IdmResDTO<IPage<SmsSendRecordVO>> sendRecord(SmsSendRecordPageQuery pageQuery) {
+    public IdmResDTO<IPage<SmsSendRecordVO>> sendRecord(@RequestBody SmsSendRecordPageQuery pageQuery) {
         return IdmResDTO.success(sendRecordService.sendRecord(pageQuery));
     }
 
