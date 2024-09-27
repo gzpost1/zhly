@@ -105,13 +105,13 @@ public class SmsSendRecordEntity extends YjBaseEntity {
     @TableField(value = "report_time")
     private Date reportTime;
 
-    public static final String COMPANY_ID = "company_id";
+    public static final String COMPANY_ID = "companyId";
     public static final String PHONE = "phone";
     public static final String CREATE_TIME = "createTime";
-    public static final String REPORT_STATUS = "report_status";
-    public static final String SMS_TYPE = "sms_type";
-    public static final String TASK_ID = "task_id";
-    public static final String REPORT_DESCRIPTION = "report_description";
-    public static final String REPORT_TIME = "report_time";
-    public static final String DEPT_PATH = "dept_path";
+    public static final String REPORT_STATUS = "reportStatus";
+    public static final String SMS_TYPE = "smsType";
+    public static final String TASK_ID = "taskId";
+    public static final String REPORT_DESCRIPTION = "reportDescription";
+    public static final String REPORT_TIME = "reportTime";
+    public static final String DEPT_PATH = "deptPath";
 }

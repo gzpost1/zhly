@@ -37,7 +37,7 @@ public class SmsPushDataQuery {
     /**
      * 报告状态（1 成功，2 失败，其他）
      */
-    @JsonProperty("reportStatus")
+    @JsonProperty("ReportStatus")
     private Integer reportStatus;
 
     /**

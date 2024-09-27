@@ -8,6 +8,8 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 
+import java.util.List;
+
 /**
  * mq发送
  *
@@ -24,7 +26,7 @@ public class SmsSendMqService {
      *
      * @param dto 参数
      */
-    public void sendSmsPushData(SmsPushDataQuery dto) {
+    public void sendSmsPushData(List<SmsPushDataQuery> dto) {
         msgChannel.smsPushDataOutput().send(messageBuilderObject(dto));
     }
 
