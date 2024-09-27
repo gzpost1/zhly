@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * 第三方推送数据
  *
@@ -32,7 +34,7 @@ public class SmsPushController {
      * @Param query 参数
      */
     @PostMapping("/sendRecord")
-    public SmsPushDataVO pushData(@RequestBody SmsPushDataQuery query) {
+    public SmsPushDataVO pushData(@RequestBody List<SmsPushDataQuery> query) {
         log.info("接收第三方推送的发送短信记录.............." + JsonUtil.writeValueAsString(query));
         try {
             smsSendMqService.sendSmsPushData(query);

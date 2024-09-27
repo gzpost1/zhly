@@ -26,5 +26,5 @@ public class SmsRedisKeyConstant {
     /**
      * 拼接签名id（企业）
      */
-    public static final String SIGN_COMPANY = "SMS:SIGN:COMPANY";
+    public static final String SIGN_COMPANY = "SMS:SIGN:COMPANY:";
 }

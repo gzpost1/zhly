@@ -60,18 +60,22 @@ public class SmsSendRecordService {
      *
      * @Param pushDataQuery 参数
      */
-    public void sendRecord(SmsPushDataQuery pushDataQuery) {
-        if (StringUtils.isNotBlank(pushDataQuery.getTaskId())) {
-            // 构建匹配操作
-            Query query = new Query();
-            query.addCriteria(Criteria.where(SmsSendRecordEntity.TASK_ID).regex(pushDataQuery.getTaskId()));
+    public void pushSendRecord(List<SmsPushDataQuery> queryList) {
+        if (CollectionUtils.isNotEmpty(queryList)) {
+            queryList.forEach(item ->{
+                if (StringUtils.isNotBlank(item.getTaskId())) {
+                    // 构建匹配操作
+                    Query query = new Query();
+                    query.addCriteria(Criteria.where(SmsSendRecordEntity.TASK_ID).is(item.getTaskId()));
 
-            // 构建更新操作
-            Update update = new Update();
-            update.set(SmsSendRecordEntity.REPORT_STATUS, pushDataQuery.getReportStatus());
-            update.set(SmsSendRecordEntity.REPORT_DESCRIPTION, pushDataQuery.getReportDescription());
-            update.set(SmsSendRecordEntity.REPORT_TIME, pushDataQuery.getReportTime());
-            mongoTemplate.updateFirst(query, update, SmsSendRecordEntity.class);
+                    // 构建更新操作
+                    Update update = new Update();
+                    update.set(SmsSendRecordEntity.REPORT_STATUS, item.getReportStatus());
+                    update.set(SmsSendRecordEntity.REPORT_DESCRIPTION, item.getReportDescription());
+                    update.set(SmsSendRecordEntity.REPORT_TIME, item.getReportTime());
+                    mongoTemplate.updateFirst(query, update, SmsSendRecordEntity.class);
+                }
+            });
         }
     }
 
