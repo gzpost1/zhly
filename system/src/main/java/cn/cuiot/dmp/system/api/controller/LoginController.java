@@ -126,7 +126,7 @@ public class LoginController extends BaseController {
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY, "请输入验证码");
         }
         //图形验证码校验
-        if (!verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid())) {
+        if (!verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid(),true)) {
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_ERROR, "验证码错误");
         }
 
@@ -155,7 +155,7 @@ public class LoginController extends BaseController {
                 if (loginReqDTO == null || StringUtils.isEmpty(loginReqDTO.getSmsCode())) {
                     throw new BusinessException(ResultCode.SMS_TEXT_IS_EMPTY);
                 }
-                boolean smsCodeVerified = verifyUnit.checkSmsCodeBeforeLogin(CacheConst.SMS_CODE_TEXT_REDIS_KEY + validateUser.getId(), validateUser.getPhoneNumber().decrypt() + loginReqDTO.getSmsCode());
+                boolean smsCodeVerified = verifyUnit.checkSmsCodeBeforeLogin(CacheConst.SMS_CODE_TEXT_REDIS_KEY + validateUser.getId().getValue(), validateUser.getPhoneNumber().decrypt() + loginReqDTO.getSmsCode());
                 // 验证失败
                 if (!smsCodeVerified) {
                     throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR);
@@ -173,7 +173,6 @@ public class LoginController extends BaseController {
                     .userType(UserTypeEnum.USER.getValue())
                     .build());
         }
-
 
         return loginResDTO;
     }
@@ -215,7 +214,7 @@ public class LoginController extends BaseController {
         boolean kaptchaVerified = false;
         // 图形验证码校验
         if (TRUE_WORD.equals(smsWord)) {
-            kaptchaVerified = verifyUnit.checkKaptchaText(smsReqDTO.getKaptchaText(), smsReqDTO.getSid());
+            kaptchaVerified = verifyUnit.checkKaptchaText(smsReqDTO.getKaptchaText(), smsReqDTO.getSid(),false);
         }
         if (kaptchaVerified) {
             // 加密后的用户名或邮箱或者手机号
