@@ -199,10 +199,15 @@ public class AppVerifyService {
      * @return
      */
     public boolean sendSmsCode(String smsCode, String phoneNumber, Long companyId) {
-        SmsSendQuery query = new SmsSendQuery();
-        query.setCompanyId(companyId).setMobile(phoneNumber).setParams(Collections.singletonList(smsCode)).setStdTemplate(SmsStdTemplate.MANAGE_LOGIN_OR_UPDATE_PASSWORD);
-        log.info("发送短信验证码：{}", JsonUtil.writeValueAsString(query));
-        smsSendService.sendMsg(query);
+        try {
+            SmsSendQuery query = new SmsSendQuery();
+            query.setCompanyId(companyId).setMobile(phoneNumber).setParams(Collections.singletonList(smsCode)).setStdTemplate(SmsStdTemplate.MANAGE_LOGIN_OR_UPDATE_PASSWORD);
+            log.info("发送短信验证码：{}", JsonUtil.writeValueAsString(query));
+            smsSendService.sendMsg(query);
+        }catch (Exception ex){
+            log.error("发送短信验证码失败",ex);
+            return false;
+        }
         return true;
     }
 

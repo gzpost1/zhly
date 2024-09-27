@@ -284,7 +284,8 @@ public class AppAuthController {
             if (EntityConstants.DISABLED.equals(userDto.getStatus())) {
                 throw new BusinessException(USER_ACCOUNT_LOCKED_ERROR);
             }
-            res = appVerifyService.sendPhoneSmsCode(dto.getPhoneNumber(), null, Long.parseLong(userDto.getOrgId()));
+            Long orgId = appUserService.getOrgId(userDto.getId());
+            res = appVerifyService.sendPhoneSmsCode(dto.getPhoneNumber(), null, orgId);
         } else {
             res = appVerifyService.sendPhoneSmsCode(dto.getPhoneNumber(), null, PLATFORM_COMPANY_ID);
         }
