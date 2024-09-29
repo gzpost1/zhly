@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.baseconfig.flow.service;
 
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
 import cn.cuiot.dmp.base.application.service.ApiArchiveService;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
@@ -23,6 +25,8 @@ import cn.cuiot.dmp.baseconfig.flow.dto.app.ProcessResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.UserSubmitDataDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.export.ExportWorkOrderDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.export.MyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.*;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
@@ -39,8 +43,10 @@ import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
+import cn.cuiot.dmp.domain.types.LoginInfo;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
@@ -139,6 +145,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     @Autowired
     private ApiArchiveService apiArchiveService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO) {
@@ -1568,10 +1576,57 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
             });
         }
-
         return IdmResDTO.success(pages);
     }
 
+    /**
+     * 导出
+     * @param dto
+     * @throws Exception
+     */
+
+    public void export(QueryMyApprovalDto dto) throws Exception {
+        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,ExportWorkOrderDto>builder().query(dto).title("待审数据").fileName("待审批列表").SheetName("待审批列表")
+                .dataList(exportMyNotApproval(dto)).build(),ExportWorkOrderDto.class);
+    }
+
+
+
+    /**
+     * 导出待审批数据
+     * @param dto
+     * @return
+     */
+    public  List<ExportWorkOrderDto>  exportMyNotApproval(QueryMyApprovalDto dto) {
+        dto.setAssignee(LoginInfoHolder.getCurrentUserId());
+        List<MyApprovalResultDto> records = baseMapper.queryMyNotApproval(dto);
+
+        List<ExportWorkOrderDto> exportWorkOrderDtos = Optional.ofNullable(BeanMapper.mapList(records, ExportWorkOrderDto.class)).orElse(new ArrayList<>());
+        if(exportWorkOrderDtos.size()> WorkOrderConstants.pageSize){
+           throw new RuntimeException("一次最多导出1万条,请选择时间段分多次导出!");
+        }
+
+        if(CollectionUtils.isNotEmpty(records)){
+            //根据业务类型获取数据
+            List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
+            Map<Long, String> busiMap = getBusiMap(busiTypes);
+            //userIds
+            List<Long> usreIds = records.stream().map(MyApprovalResultDto::getUserId).collect(Collectors.toList());
+            Map<Long, String> userMap = getUserMap(usreIds);
+            records.stream().forEach(item->{
+                //根据业务类型id获取业务类型数据
+                item.setBusinessTypeName(busiMap.get(item.getBusinessType()));
+                //获取所属组织
+                item.setOrgPath(getOrgPath(item.getOrgIds()));
+                // 发起人
+                item.setUserName(userMap.get(item.getUserId()));
+            });
+        }
+        List<ExportWorkOrderDto> exportWorkOrderDtoList = BeanMapper.mapList(records, ExportWorkOrderDto.class);
+
+       return exportWorkOrderDtoList;
+
+    }
     /**
      * 查询已审批列表
      * @param dto
@@ -1602,6 +1657,38 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         }
         return IdmResDTO.success(page);
     }
+
+    public void exportMyApproval(QueryMyApprovalDto dto) throws Exception {
+        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,MyApprovalDto>builder().query(dto).title("已审批数据").fileName("已审批数据")
+                .dataList(queryExportMyApproval(dto)).clazz(dto.getClazz()).build(),MyApprovalDto.class);
+    }
+    public List<MyApprovalDto> queryExportMyApproval(QueryMyApprovalDto dto) {
+        dto.setAssignee(LoginInfoHolder.getCurrentUserId());
+        List<MyApprovalResultDto> records=baseMapper.
+                queryMyApproval(dto);
+        if(CollectionUtils.isNotEmpty(records)){
+
+            //根据业务类型获取数据
+            List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
+            Map<Long, String> busiMap = getBusiMap(busiTypes);
+            //userIds
+            List<Long> usreIds = records.stream().map(MyApprovalResultDto::getUserId).collect(Collectors.toList());
+            Map<Long, String> userMap = getUserMap(usreIds);
+            records.stream().forEach(item->{
+                //根据业务类型id获取业务类型数据
+                item.setBusinessTypeName(busiMap.get(item.getBusinessType()));
+                //获取所属组织
+                item.setOrgPath(getOrgPath(item.getOrgIds()));
+                // 发起人
+                item.setUserName(userMap.get(item.getUserId()));
+                //
+                item.setStatusName(WorkOrderStatusEnums.getWorkOrderStatus(item.getState()));
+            });
+        }
+        dto.setClazz(MyApprovalDto.class);
+        return BeanMapper.mapList(records, MyApprovalDto.class);
+    }
+
 
     /**
      * 获取抄送列表
@@ -2022,4 +2109,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(entity);
 
     }
+
+
 }

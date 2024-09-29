@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.controller.workorder;
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.QueryCommitProcessDto;
@@ -35,19 +36,42 @@ public class ApprovalController {
      * @return
      */
     @PostMapping("queryMyNotApproval")
+    @RequiresPermissions
     public IdmResDTO<IPage<MyApprovalResultDto>> queryMyNotApproval(@RequestBody QueryMyApprovalDto dto){
         return workInfoService.queryMyNotApproval(dto);
     }
 
-
+    /**
+     * 导出待审批数据
+     * @param dto
+     * @return
+     */
+    @PostMapping("exportMyNotApproval")
+    public IdmResDTO exportMyNotApproval(@RequestBody QueryMyApprovalDto dto) throws Exception {
+         workInfoService.export(dto);
+        return IdmResDTO.success();
+    }
     /**
      * 已审批列表
      * @param dto
      * @return
      */
     @PostMapping("queryMyApproval")
+    @RequiresPermissions
     public IdmResDTO<IPage<MyApprovalResultDto>> queryMyApproval(@RequestBody QueryMyApprovalDto dto){
         return workInfoService.queryMyApproval(dto);
+    }
+
+    /**
+     * 导出已审批数据
+     * @param dto
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("exportMyApproval")
+    public IdmResDTO exportMyApproval(@RequestBody QueryMyApprovalDto dto) throws Exception {
+        workInfoService.exportMyApproval(dto);
+        return IdmResDTO.success();
     }
 
     /**
@@ -56,6 +80,7 @@ public class ApprovalController {
      * @return
      */
     @PostMapping("queryMakeApproval")
+    @RequiresPermissions
     public  IdmResDTO<IPage<MyApprovalResultDto>> queryMakeApproval(@RequestBody QueryMyApprovalDto dto){
         return workInfoService.queryMakeApproval(dto);
     }
@@ -66,6 +91,7 @@ public class ApprovalController {
      * @return
      */
     @PostMapping("queryMySubmitWorkInfo")
+    @RequiresPermissions
     public IdmResDTO<IPage<WorkInfoEntity>> queryMySubmitWorkInfo(@RequestBody QueryMyApprovalDto dto){
         return workInfoService.queryMySubmitWorkInfo(dto);
     }
@@ -76,6 +102,7 @@ public class ApprovalController {
      * @return
      */
     @PostMapping("queryCommitProcess")
+    @RequiresPermissions
     public IdmResDTO<CommitProcessEntity> queryCommitProcess(@RequestBody @Valid QueryCommitProcessDto dto){
         return workInfoService.queryCommitProcess(dto);
     }

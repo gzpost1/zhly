@@ -82,4 +82,9 @@ public class QueryMyApprovalDto extends PageQuery {
      */
     private Byte status;
 
+    /**
+     * 类类型
+     */
+    private Class<?> clazz;
+
 }
