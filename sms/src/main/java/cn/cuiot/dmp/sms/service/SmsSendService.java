@@ -1,9 +1,11 @@
 package cn.cuiot.dmp.sms.service;
 
 import cn.cuiot.dmp.base.application.service.impl.ApiSystemServiceImpl;
+import cn.cuiot.dmp.base.infrastructure.constants.SendMsgRedisKeyConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.bean.external.SmsWocloudBO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -56,6 +58,13 @@ public class SmsSendService {
     private ApiExternalapiService apiExternalapiService;
     @Autowired
     private SmsSignService signService;
+    @Autowired
+    private RedisUtil redisUtil;
+
+    /**
+     * 过期时间，单位（秒） 60分钟
+     */
+    public static final int EXPIRED_TIME = 60 * 60;
 
     /**
      * 发送短信
@@ -106,8 +115,8 @@ public class SmsSendService {
         // 构造短信内容
         String content = fillTemplate(redisTemplate.getContent(), query.getParams());
 
-        // 获取部门编码路径
-        DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(null, null, query.getCompanyId());
+        // 根据企业id获取组织信息
+        DepartmentDto departmentDto = getDepartment(query.getCompanyId());
 
         try {
             SmsSendReq req = new SmsSendReq();
@@ -189,16 +198,14 @@ public class SmsSendService {
      * @Param companyId 企业id
      */
     private void checkPlatformStatus(Long companyId) {
-        PlatfromInfoReqDTO dto = new PlatfromInfoReqDTO();
-        dto.setCompanyId(companyId);
-        PlatfromInfoRespDTO smsRedis = apiExternalapiService.queryPlatfromSmsRedis(dto);
+        PlatfromInfoRespDTO platfromInfoRespDTO = queryPlatfromInfo(companyId);
 
-        if (Objects.isNull(smsRedis) || StringUtils.isBlank(smsRedis.getData())) {
+        if (Objects.isNull(platfromInfoRespDTO) || StringUtils.isBlank(platfromInfoRespDTO.getData())) {
             log.error("企业【 " + companyId + "】发送短信失败，未在【对接配置】配置短信启用");
             throw new BusinessException(ResultCode.ERROR);
         }
 
-        SmsWocloudBO bo = FootPlateInfoEnum.getObjectFromJsonById(FootPlateInfoEnum.SMS_WOCLOUD.getId(), smsRedis.getData());
+        SmsWocloudBO bo = FootPlateInfoEnum.getObjectFromJsonById(FootPlateInfoEnum.SMS_WOCLOUD.getId(), platfromInfoRespDTO.getData());
 
         if (Objects.isNull(bo.getStatus())) {
             log.error("企业【" + companyId + "】请求短信失败，未在【对接配置】配置短信启用");
@@ -209,5 +216,48 @@ public class SmsSendService {
             log.error("企业【" + companyId + "】请求短信失败，短信配置为停用");
             throw new BusinessException(ResultCode.ERROR);
         }
+    }
+
+    /**
+     * 根据企业id获取组织信息
+     *
+     * @return DepartmentDto
+     * @Param companyId 企业id
+     */
+    private DepartmentDto getDepartment(Long companyId) {
+        String jsonStr = redisUtil.get(SendMsgRedisKeyConstants.SMS_DEPARTMENT + companyId);
+        if (StringUtils.isNotBlank(jsonStr)) {
+            return JsonUtil.readValue(jsonStr, DepartmentDto.class);
+        }
+        // 获取部门编码路径
+        DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(null, null, companyId);
+        if (Objects.nonNull(departmentDto)) {
+            redisUtil.set(SendMsgRedisKeyConstants.SMS_DEPARTMENT + companyId, JsonUtil.writeValueAsString(departmentDto), EXPIRED_TIME);
+            return departmentDto;
+        }
+        return null;
+    }
+
+    /**
+     * 根据企业查询对接外部系统
+     *
+     * @return PlatfromInfoRespDTO
+     * @Param companyId 企业id
+     */
+    private PlatfromInfoRespDTO queryPlatfromInfo(Long companyId) {
+        String jsonStr = redisUtil.get(SendMsgRedisKeyConstants.SMS_PLATFROM_INFO + companyId);
+        if (StringUtils.isNotBlank(jsonStr)) {
+            return JsonUtil.readValue(jsonStr, PlatfromInfoRespDTO.class);
+        }
+        // 获取对接平台信息
+        PlatfromInfoReqDTO dto = new PlatfromInfoReqDTO();
+        dto.setCompanyId(companyId);
+        List<PlatfromInfoRespDTO> list = apiExternalapiService.queryForList(dto);
+        if (CollectionUtils.isNotEmpty(list)) {
+            PlatfromInfoRespDTO respDTO = list.get(0);
+            redisUtil.set(SendMsgRedisKeyConstants.SMS_PLATFROM_INFO + companyId, JsonUtil.writeValueAsString(respDTO), EXPIRED_TIME);
+            return respDTO;
+        }
+        return null;
     }
 }

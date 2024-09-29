@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.service.park;
 
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
-import cn.cuiot.dmp.base.infrastructure.constants.PlatfromInfoRedisKeyConstants;
+import cn.cuiot.dmp.base.infrastructure.constants.SendMsgRedisKeyConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
@@ -618,7 +618,7 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         platfromInfoService.saveOrUpdate(map);
 
         if (Objects.equals(dto.getPlatformId(), FootPlateInfoEnum.SMS_WOCLOUD.getId() + "")) {
-            redisUtil.del(PlatfromInfoRedisKeyConstants.PLATFROM_INFO_SMS + dto.getCompanyId());
+            redisUtil.del(SendMsgRedisKeyConstants.SMS_PLATFROM_INFO + dto.getCompanyId());
         }
         return IdmResDTO.success();
     }

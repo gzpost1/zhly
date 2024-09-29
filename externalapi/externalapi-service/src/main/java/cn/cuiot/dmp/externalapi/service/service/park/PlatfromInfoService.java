@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.service.park;
 
-import cn.cuiot.dmp.base.infrastructure.constants.PlatfromInfoRedisKeyConstants;
+import cn.cuiot.dmp.base.infrastructure.constants.SendMsgRedisKeyConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
@@ -56,7 +56,7 @@ public class PlatfromInfoService extends ServiceImpl<PlatfromInfoMapper, Platfro
             throw new BusinessException(ResultCode.ERROR, "企业id不能为空");
         }
 
-        String jsonStr = redisUtil.get(PlatfromInfoRedisKeyConstants.PLATFROM_INFO_SMS + dto.getCompanyId());
+        String jsonStr = redisUtil.get(SendMsgRedisKeyConstants.SMS_PLATFROM_INFO + dto.getCompanyId());
         if (StringUtils.isNotBlank(jsonStr)) {
             return JsonUtil.readValue(jsonStr, PlatfromInfoRespDTO.class);
         }
@@ -71,7 +71,7 @@ public class PlatfromInfoService extends ServiceImpl<PlatfromInfoMapper, Platfro
             BeanUtils.copyProperties(platfromInfoEntity, respDTO);
 
             // 设置缓存数据
-            redisUtil.set(PlatfromInfoRedisKeyConstants.PLATFROM_INFO_SMS + dto.getCompanyId(), JsonUtil.writeValueAsString(respDTO), EXPIRED_TIME);
+            redisUtil.set(SendMsgRedisKeyConstants.SMS_PLATFROM_INFO + dto.getCompanyId(), JsonUtil.writeValueAsString(respDTO), EXPIRED_TIME);
 
             return respDTO;
         }

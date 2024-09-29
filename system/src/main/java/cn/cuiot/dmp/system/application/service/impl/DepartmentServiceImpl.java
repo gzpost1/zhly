@@ -6,6 +6,7 @@ import static cn.cuiot.dmp.common.constant.CacheConst.DEPT_NAME_KEY_PREFIX;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgBindingNameConstants;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgTagConstants;
+import cn.cuiot.dmp.base.infrastructure.constants.SendMsgRedisKeyConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
@@ -308,6 +309,9 @@ public class DepartmentServiceImpl implements DepartmentService {
                         .info("修改组织部门")
                         .build());
 
+        // 删除发送短信用到的组织缓存
+        redisUtil.del(SendMsgRedisKeyConstants.SMS_DEPARTMENT + byPrimary.getPkOrgId());
+
         return result.get(0);
     }
 
@@ -572,6 +576,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         orgRedisUtil.doubleDeleteForDbOperation(() -> departmentDao.deleteByPrimaryKey(id), orgId);
 
+        // 删除发送短信用到的组织缓存
+        redisUtil.del(SendMsgRedisKeyConstants.SMS_DEPARTMENT + departmentEntity.getPkOrgId());
 
         //发送MQ消息
         streamMessageSender.sendGenericMessage(
@@ -615,6 +621,9 @@ public class DepartmentServiceImpl implements DepartmentService {
     public void batchDeleteDepartment(List<Long> ids, String orgId) {
         departmentDao.batchDelete(ids, orgId);
         departmentDao.batchDeleteProperty(ids);
+
+        // 删除发送短信用到的组织缓存
+        redisUtil.del(SendMsgRedisKeyConstants.SMS_DEPARTMENT + orgId);
     }
 
     private List<Long> getChildList(List<DepartmentEntity> siteList, Long deptId) {
