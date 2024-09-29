@@ -91,22 +91,6 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
      */
     public static final String USER_API_LIMIT_KEY_PREFIX = "userApiLimitKey:";
 
-    /**
-     * 用户接口每分钟限制访问次数
-     */
-    private Integer userApiAccessLimit=500;
-
-    /**
-     * 操作类接口限制访问次数
-     */
-    private Integer operateApiAccessLimit=5;
-
-    /**
-     * 特殊接口限制访问次数
-     */
-    private Integer specialApiAccessLimit=2000;
-
-
     @Autowired
     private RedissonClient redissonClient;
 
@@ -318,32 +302,50 @@ public class PortalJwtAuthFilter implements GlobalFilter, Ordered {
         RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
 
         if (shouldSpecialLimitUrl(url)) {
-            log.info("SpecialL url:{},key:{},specialApiAccessLimit:{}",url,key,specialApiAccessLimit);
+            log.info("SpecialL url:{},key:{}",url,key);
+            Integer specialApiAccessLimit=0;
+            String urlRedisLimit = redisTemplate.opsForValue().get(USER_API_LIMIT_KEY_PREFIX + key);
+            if(org.apache.commons.lang3.StringUtils.isNotBlank(urlRedisLimit)){
+                specialApiAccessLimit = Integer.valueOf(urlRedisLimit);
+            }
             //特殊URL接口
             if(!specialApiAccessLimit.equals(gatewayAccessLimitProperties.getSpecialApiAccessLimit())){
                 specialApiAccessLimit = gatewayAccessLimitProperties.getSpecialApiAccessLimit();
                 rateLimiter.setRate(RateType.OVERALL, specialApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+                redisTemplate.opsForValue().set(USER_API_LIMIT_KEY_PREFIX + key,specialApiAccessLimit.toString());
             }else {
                 rateLimiter.trySetRate(RateType.OVERALL, specialApiAccessLimit, 1, RateIntervalUnit.MINUTES);
             }
 
         }else if (shouldOperateLimitUrl(url)) {
-            log.info("Operate url:{},key:{},operateApiAccessLimit:{}",url,key,operateApiAccessLimit);
+            log.info("Operate url:{},key:{}}",url,key);
+            //操作类接口限制访问次数
+            Integer operateApiAccessLimit=0;
+            String urlRedisLimit = redisTemplate.opsForValue().get(USER_API_LIMIT_KEY_PREFIX + key);
+            if(org.apache.commons.lang3.StringUtils.isNotBlank(urlRedisLimit)){
+                operateApiAccessLimit = Integer.valueOf(urlRedisLimit);
+            }
             //特殊URL接口
             if(!operateApiAccessLimit.equals(gatewayAccessLimitProperties.getOperateApiAccessLimit())){
                 operateApiAccessLimit = gatewayAccessLimitProperties.getOperateApiAccessLimit();
                 rateLimiter.setRate(RateType.OVERALL, operateApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+                redisTemplate.opsForValue().set(USER_API_LIMIT_KEY_PREFIX + key,operateApiAccessLimit.toString());
             }else{
                 rateLimiter.trySetRate(RateType.OVERALL, operateApiAccessLimit, 1, RateIntervalUnit.MINUTES);
             }
-
         } else{
-            log.info("default url:{},key:{},userApiAccessLimit:{}",url,key,userApiAccessLimit);
+            log.info("default url:{},key:{}",url,key);
+            Integer userApiAccessLimit=0;
+            String urlRedisLimit = redisTemplate.opsForValue().get(USER_API_LIMIT_KEY_PREFIX + key);
+            if(org.apache.commons.lang3.StringUtils.isNotBlank(urlRedisLimit)){
+                userApiAccessLimit = Integer.valueOf(urlRedisLimit);
+            }
             //普通类接口URL
             if(!userApiAccessLimit.equals(gatewayAccessLimitProperties.getUserApiAccessLimit())){
                 //设置每分钟限制次数
                 userApiAccessLimit = gatewayAccessLimitProperties.getUserApiAccessLimit();
                 rateLimiter.setRate(RateType.OVERALL, userApiAccessLimit, 1, RateIntervalUnit.MINUTES);
+                redisTemplate.opsForValue().set(USER_API_LIMIT_KEY_PREFIX + key,userApiAccessLimit.toString());
             }else{
                 rateLimiter.trySetRate(RateType.OVERALL, userApiAccessLimit, 1, RateIntervalUnit.MINUTES);
             }
