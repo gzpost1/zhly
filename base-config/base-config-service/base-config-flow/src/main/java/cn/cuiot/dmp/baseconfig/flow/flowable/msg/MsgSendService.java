@@ -1,7 +1,5 @@
 package cn.cuiot.dmp.baseconfig.flow.flowable.msg;
 
-import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.baseconfig.flow.config.MsgChannel;
 import cn.cuiot.dmp.baseconfig.flow.entity.TbFlowConfig;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
@@ -12,15 +10,15 @@ import cn.cuiot.dmp.common.bean.dto.SmsMsgDto;
 import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
 import cn.cuiot.dmp.common.constant.BaseConfigMessage;
-import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.InformTypeConstant;
+import cn.cuiot.dmp.common.constant.MsgDataType;
+import cn.cuiot.dmp.common.constant.MsgTypeConstant;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.Process;
 import org.flowable.engine.RepositoryService;
@@ -30,10 +28,9 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
-import cn.cuiot.dmp.common.constant.MsgTypeConstant;
+
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants.*;
 
@@ -69,42 +66,34 @@ public class MsgSendService {
             }
 
             //消息通知类型 1web 2短信
-            if(StringUtils.isNotBlank(flowCOnfig.getNotifySetting()) && StringUtils.contains(flowCOnfig.getNotifySetting(),"1")){
+            if (StringUtils.isNotBlank(flowCOnfig.getNotifySetting()) && StringUtils.contains(flowCOnfig.getNotifySetting(), "1")) {
                 //发送系统消息
                 UserMessageAcceptDto SYS_MSG = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SYS_MSG).setSysMsgDto(
                         new SysMsgDto().setMsgType(MsgTypeConstant.WORK_INFO).setAcceptors(msg.getUsers()).setDataId(msg.getDataId()).setDataType(msg.getDataType())
-                                .setMessage(BaseConfigMessage.getMessageByType(msg.getDataType(),(msg.getMessage())))
+                                .setMessage(BaseConfigMessage.getMessageByType(msg.getDataType(), (msg.getMessage())))
                                 .setDataJson(msg.getDataJson()).setMessageTime(new Date()));
                 msgChannel.userMessageOutput().send(MessageBuilder.withPayload(SYS_MSG)
                         .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                         .build());
             }
-            if(StringUtils.isNotBlank(flowCOnfig.getNotifySetting()) && StringUtils.contains(flowCOnfig.getNotifySetting(),"2")){
+            if (StringUtils.isNotBlank(flowCOnfig.getNotifySetting()) && StringUtils.contains(flowCOnfig.getNotifySetting(), "2")) {
                 //发送短信
-                BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
-                baseUserReqDto.setUserIdList(msg.getUsers());
-                List<BaseUserDto> baseUserDtos = systemToFlowService.lookUpUserList(baseUserReqDto);
-
-                if (CollectionUtils.isNotEmpty(baseUserDtos)) {
-                    List<String> phones = baseUserDtos.stream().map(BaseUserDto::getPhoneNumber).collect(Collectors.toList());
-                    SmsMsgDto smsMsgDto = new SmsMsgDto();
-                    smsMsgDto.setTelNumbers(phones);
-                    smsMsgDto.setParams(Lists.newArrayList(msg.getMessage()));
-                    smsMsgDto.setTemplateId(msg.getTemplateId());
-                    UserMessageAcceptDto SMS_MSG = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SMS).setSmsMsgDto(smsMsgDto);
-                    msgChannel.userMessageOutput().send(MessageBuilder.withPayload(SMS_MSG)
-                            .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
-                            .build());
-                } else {
-                    log.error("发送短信失败用户信息为空，{}", msg);
-                }
-
+                SmsMsgDto smsMsgDto = new SmsMsgDto();
+                smsMsgDto.setUserIds(msg.getUsers());
+                smsMsgDto.setParams(Lists.newArrayList(msg.getMessage()));
+                smsMsgDto.setTemplateId(BaseConfigMessage.getSmsTemplateIdByType(msg.getDataType()));
+                UserMessageAcceptDto SMS_MSG = new UserMessageAcceptDto().setMsgType(InformTypeConstant.SMS).setSmsMsgDto(smsMsgDto);
+                msgChannel.userMessageOutput().send(MessageBuilder.withPayload(SMS_MSG)
+                        .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
+                        .build());
+            } else {
+                log.error("发送短信失败用户信息为空，{}", msg);
             }
+
         } catch (Exception e) {
             log.error("流程实例结束监听器发送消息失败", e);
         }
     }
-
 
 
     /**
@@ -130,7 +119,7 @@ public class MsgSendService {
         flowMsgDto.setMessage(noticeEntity.getWorkName());
         flowMsgDto.setUsers(Lists.newArrayList(noticeEntity.getActualUserId(), noticeEntity.getCreateUser()));
         flowMsgDto.setDataJson(JsonUtil.writeValueAsString(noticeEntity));
-        this.sendMsg(flowMsgDto,noticeEntity.getProcessDefinitionId());
+        this.sendMsg(flowMsgDto, noticeEntity.getProcessDefinitionId());
     }
 
 
@@ -168,7 +157,7 @@ public class MsgSendService {
             flowMsgDto.setMessage(noticeEntity.getWorkName());
             flowMsgDto.setUsers(Lists.newArrayList(Long.valueOf(userId)));
             flowMsgDto.setDataJson(JsonUtil.writeValueAsString(noticeEntity));
-            this.sendMsg(flowMsgDto,processDefinitionId);
+            this.sendMsg(flowMsgDto, processDefinitionId);
         } else {
             log.error("未找到对应的消息类型,processInstanceId:{},nodeType:{},flag:{}", processInstanceId, nodeType, flag);
         }
@@ -224,7 +213,7 @@ public class MsgSendService {
         flowMsgDto.setMessage(noticeEntity.getWorkName());
         flowMsgDto.setUsers(ccUserIds);
         flowMsgDto.setDataJson(JsonUtil.writeValueAsString(noticeEntity));
-        this.sendMsg(flowMsgDto,processDefinitionId);
+        this.sendMsg(flowMsgDto, processDefinitionId);
     }
 
     public TbFlowConfig getFlowCOnfig(String processDefinitionId) {

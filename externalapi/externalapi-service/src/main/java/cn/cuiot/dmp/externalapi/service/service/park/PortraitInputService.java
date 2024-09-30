@@ -1,11 +1,13 @@
 package cn.cuiot.dmp.externalapi.service.service.park;
 
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
+import cn.cuiot.dmp.base.infrastructure.constants.SendMsgRedisKeyConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.utils.MD5Util;
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.bean.external.YFPortraitInputBO;
 import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -82,6 +84,8 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
 
     @Autowired
     private SystemApiFeignService systemApiFeignService;
+    @Autowired
+    private RedisUtil redisUtil;
 
     /**
      * 保存录入信息
@@ -612,6 +616,10 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
     public IdmResDTO updatePortraitInputInfo(PlatFromDto dto) {
         PlatfromInfoEntity map = BeanMapper.map(dto, PlatfromInfoEntity.class);
         platfromInfoService.saveOrUpdate(map);
+
+        if (Objects.equals(dto.getPlatformId(), FootPlateInfoEnum.SMS_WOCLOUD.getId() + "")) {
+            redisUtil.del(SendMsgRedisKeyConstants.SMS_PLATFROM_INFO + dto.getCompanyId());
+        }
         return IdmResDTO.success();
     }
 

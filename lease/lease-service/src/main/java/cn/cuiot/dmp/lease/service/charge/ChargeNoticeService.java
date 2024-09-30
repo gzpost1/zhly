@@ -360,7 +360,8 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
                     String date = dateFormat(item.getOwnershipPeriodBegin()) + "-" + dateFormat(item.getOwnershipPeriodEnd());
                     msgDto.setParams(Arrays.asList(date, item.getChargeItemName()));
                     msgDto.setTelNumbers(phoneNumber);
-                    msgDto.setTemplateId(ChargeMsgTemplateEnum.CUSTOMER_NOTICE_TEMPLATE.getTemplateId());
+                    msgDto.setCompanyId(Long.parseLong(dtoMap.get(item.getCustomerUserId()).getOrgId()));
+                    msgDto.setTemplateId(SmsStdTemplate.CLIENT_CHARGE_BILL);
                     return msgDto;
                 }
             }

@@ -112,7 +112,7 @@ public class VerifyController extends BaseController {
         boolean kaptchaVerified = true;
         // 图形验证码校验
         if (FALSE.equals(debug)) {
-            kaptchaVerified = verifyUnit.checkKaptchaText(smsCodeGenReqDTO.getKaptchaText(), smsCodeGenReqDTO.getSid());
+            kaptchaVerified = verifyUnit.checkKaptchaText(smsCodeGenReqDTO.getKaptchaText(), smsCodeGenReqDTO.getSid(),false);
         }
         if (kaptchaVerified) {
             return verifyService.sendSmsCodeUpdatePhone(phoneNumber, userId);
@@ -142,7 +142,7 @@ public class VerifyController extends BaseController {
         boolean kaptchaVerified = true;
         // 图形验证码校验
         if (FALSE.equals(debug)) {
-            kaptchaVerified = verifyUnit.checkKaptchaText(smsCodeGenReqDTO.getKaptchaText(), smsCodeGenReqDTO.getSid());
+            kaptchaVerified = verifyUnit.checkKaptchaText(smsCodeGenReqDTO.getKaptchaText(), smsCodeGenReqDTO.getSid(),false);
         }
         if (kaptchaVerified) {
 

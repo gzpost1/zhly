@@ -6,7 +6,7 @@ import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
+import cn.cuiot.dmp.externalapi.service.service.park.PlatfromInfoService;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -28,7 +28,7 @@ import java.util.Objects;
 public class GwEntranceGuardConfigService {
 
     @Autowired
-    private SystemApiService systemApiService;
+    private PlatfromInfoService platfromInfoService;
 
     /**
      * 获取对接配置
@@ -43,7 +43,7 @@ public class GwEntranceGuardConfigService {
         dto.setPlatformId(FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId());
 
         // 查询平台信息
-        List<PlatfromInfoRespDTO> list = systemApiService.queryPlatfromInfoList(dto);
+        List<PlatfromInfoRespDTO> list = platfromInfoService.queryForList(dto);
         if (CollectionUtils.isEmpty(list)) {
             throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数配置为空，请先配置后再创建数据");
         }
@@ -61,7 +61,7 @@ public class GwEntranceGuardConfigService {
         dto.setPlatformId(FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId());
 
         // 查询平台信息
-        List<PlatfromInfoRespDTO> list = systemApiService.queryPlatfromInfoList(dto);
+        List<PlatfromInfoRespDTO> list = platfromInfoService.queryForList(dto);
         if (CollectionUtils.isEmpty(list)) {
             throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数配置为空，请先配置后再创建数据");
         }

@@ -3,6 +3,8 @@ package cn.cuiot.dmp.app.dto.user;
 import java.io.Serializable;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * 获取手机短信验证码参数
  * @author: wuyongchong
@@ -30,4 +32,10 @@ public class SmsCodeReqDto implements Serializable {
      * 用户ID-前端不用填
      */
     private Long userId;
+
+    /**
+     * 用户身份（1-员工 2-业主）
+     */
+    @NotNull(message = "用户身份参数不能为空")
+    private Integer userType;
 }

@@ -1,11 +1,5 @@
 package cn.cuiot.dmp.app.service;
 
-import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
-import static cn.cuiot.dmp.common.constant.ResultCode.KAPTCHA_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.KAPTCHA_EXPIRED_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_EXPIRED_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_FREQUENTLY_REQ_ERROR;
-
 import cn.cuiot.dmp.app.dto.user.KaptchaResDTO;
 import cn.cuiot.dmp.app.dto.user.SecretKeyResDTO;
 import cn.cuiot.dmp.app.dto.user.SmsCodeCheckResDto;
@@ -14,23 +8,32 @@ import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.SecurityConst;
 import cn.cuiot.dmp.common.constant.SendMessageConst;
+import cn.cuiot.dmp.common.constant.SmsStdTemplate;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.Aes;
+import cn.cuiot.dmp.sms.query.SmsSendQuery;
+import cn.cuiot.dmp.sms.service.SmsSendService;
 import com.alibaba.fastjson.JSONObject;
 import com.google.code.kaptcha.Producer;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Base64;
-import java.util.concurrent.TimeUnit;
-import javax.imageio.ImageIO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+
+import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
+import static cn.cuiot.dmp.common.constant.ResultCode.*;
 
 /**
  * @author: wuyongchong
@@ -57,6 +60,8 @@ public class AppVerifyService {
      */
     @Autowired
     private Producer defaultKaptcha;
+    @Autowired
+    private SmsSendService smsSendService;
 
     /**
      * 生成图形验证码
@@ -107,7 +112,7 @@ public class AppVerifyService {
      * 验证图形验证码
      *
      * @param actualText 用户输入到验证码
-     * @param uuid 身份识别id
+     * @param uuid       身份识别id
      */
     public boolean checkKaptchaText(String actualText, String uuid) {
         // 获取redis中的图形验证码文本
@@ -131,7 +136,7 @@ public class AppVerifyService {
     /**
      * 发送短信验证码
      */
-    public SmsCodeResDto sendPhoneSmsCode(String phoneNumber, Long userId) {
+    public SmsCodeResDto sendPhoneSmsCode(String phoneNumber, Long userId,Long companyId) {
         // 查看redis中是否已经存在短信验证码文本
         String expectedText = stringRedisTemplate.opsForValue()
                 .get(CacheConst.SMS_ALREADY_SEND_REDIS_KEY_P + phoneNumber);
@@ -141,11 +146,10 @@ public class AppVerifyService {
             throw new BusinessException(SMS_CODE_FREQUENTLY_REQ_ERROR);
         }
         // 生成短信验证码
-        //String smsCode = RandomStringUtils.random(SendMessageConst.SMS_CODE_LENGTH, false, true);
-        String smsCode = "123456";
-        log.warn("sendPhoneSmsCode===smsCode:{}",smsCode);
+        String smsCode = RandomStringUtils.random(SendMessageConst.SMS_CODE_LENGTH, false, true);
+        log.warn("sendPhoneSmsCode===smsCode:{}", smsCode);
         // 发送短信
-        boolean sendSucceed = sendSmsCode(smsCode, phoneNumber);
+        boolean sendSucceed = sendSmsCode(smsCode, phoneNumber,companyId);
         // 发送成功
         if (sendSucceed) {
             // 存入redis并设置过期时间
@@ -167,7 +171,7 @@ public class AppVerifyService {
     /**
      * 校验短信验证码
      */
-    public SmsCodeCheckResDto checkPhoneSmsCode(String phoneNumber, Long userId, String smsCode,Boolean needDeleteCache) {
+    public SmsCodeCheckResDto checkPhoneSmsCode(String phoneNumber, Long userId, String smsCode, Boolean needDeleteCache) {
         // 获取redis中的短信验证码文本
         String expectedText = stringRedisTemplate.opsForValue()
                 .get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
@@ -176,7 +180,7 @@ public class AppVerifyService {
             // 短信验证码过期
             throw new BusinessException(SMS_CODE_EXPIRED_ERROR);
         }
-        if(Boolean.TRUE.equals(needDeleteCache)){
+        if (Boolean.TRUE.equals(needDeleteCache)) {
             stringRedisTemplate.delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
         }
         // 判断用户输入的验证码是否正确
@@ -194,9 +198,16 @@ public class AppVerifyService {
      * @param phoneNumber 手机号
      * @return
      */
-    public boolean sendSmsCode(String smsCode, String phoneNumber) {
-        //String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber
-
+    public boolean sendSmsCode(String smsCode, String phoneNumber, Long companyId) {
+        try {
+            SmsSendQuery query = new SmsSendQuery();
+            query.setCompanyId(companyId).setMobile(phoneNumber).setParams(Collections.singletonList(smsCode)).setStdTemplate(SmsStdTemplate.MANAGE_LOGIN_OR_UPDATE_PASSWORD);
+            log.info("发送短信验证码：{}", JsonUtil.writeValueAsString(query));
+            smsSendService.sendMsg(query);
+        }catch (Exception ex){
+            log.error("发送短信验证码失败",ex);
+            return false;
+        }
         return true;
     }
 

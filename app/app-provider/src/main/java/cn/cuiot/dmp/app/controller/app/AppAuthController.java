@@ -1,22 +1,9 @@
 package cn.cuiot.dmp.app.controller.app;
 
 import cn.cuiot.dmp.app.dto.AppUserDto;
-import cn.cuiot.dmp.app.dto.user.ChangePhoneDto;
-import cn.cuiot.dmp.app.dto.user.Code2SessionDto;
-import cn.cuiot.dmp.app.dto.user.KaptchaResDTO;
-import cn.cuiot.dmp.app.dto.user.MiniLoginDto;
-import cn.cuiot.dmp.app.dto.user.PhoneLoginDto;
-import cn.cuiot.dmp.app.dto.user.PwdChangeDto;
-import cn.cuiot.dmp.app.dto.user.PwdLoginDto;
-import cn.cuiot.dmp.app.dto.user.PwdResetDto;
-import cn.cuiot.dmp.app.dto.user.SampleUserInfoDto;
-import cn.cuiot.dmp.app.dto.user.SecretKeyResDTO;
-import cn.cuiot.dmp.app.dto.user.SmsCodeCheckReqDto;
-import cn.cuiot.dmp.app.dto.user.SmsCodeCheckResDto;
-import cn.cuiot.dmp.app.dto.user.SmsCodeReqDto;
-import cn.cuiot.dmp.app.dto.user.SmsCodeResDto;
-import cn.cuiot.dmp.app.dto.user.SwitchUserTypeDto;
+import cn.cuiot.dmp.app.dto.user.*;
 import cn.cuiot.dmp.app.service.AppAuthService;
+import cn.cuiot.dmp.app.service.AppUserService;
 import cn.cuiot.dmp.app.service.AppVerifyService;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.ResolveExtData;
@@ -26,6 +13,7 @@ import cn.cuiot.dmp.base.application.service.WeChatMiniAppService;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
 import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.LogLevelEnum;
@@ -36,24 +24,27 @@ import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import com.google.common.collect.Maps;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jpedal.parser.shape.D;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_LOCKED_ERROR;
+import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_NOT_EXIST;
 
 /**
  * 【APP】认证与用户接口
@@ -80,6 +71,10 @@ public class AppAuthController {
 
     @Autowired
     private LogSendService sendService;
+    @Autowired
+    private AppUserService appUserService;
+
+    public final static Long PLATFORM_COMPANY_ID = 1L;
 
     /**
      * 获取微信openId
@@ -92,11 +87,11 @@ public class AppAuthController {
         String ipAddr = IpUtil.getIpAddr(request);
         List<AppUserDto> userList = appAuthService.openidLogin(openid, ipAddr);
 
-        if(CollectionUtils.isNotEmpty(userList)){
+        if (CollectionUtils.isNotEmpty(userList)) {
             Optional<AppUserDto> firstOptional = userList.stream()
                     .filter(item -> UserTypeEnum.USER.getValue().equals(item.getUserType()))
                     .findFirst();
-            if(firstOptional.isPresent()){
+            if (firstOptional.isPresent()) {
                 AppUserDto appUserDto = firstOptional.get();
 
                 OperateLogDto operateLogDto = new OperateLogDto();
@@ -128,7 +123,7 @@ public class AppAuthController {
     /**
      * 小程序授权登录
      */
-    @LogRecord(operationCode = "miniLogin", operationName = "登录系统", serviceType = "login",serviceTypeName = "登录")
+    @LogRecord(operationCode = "miniLogin", operationName = "登录系统", serviceType = "login", serviceTypeName = "登录")
     @PostMapping("miniLogin")
     public IdmResDTO miniLogin(@RequestBody @Valid MiniLoginDto dto) {
         //根据微信获取的code置换手机号
@@ -143,7 +138,7 @@ public class AppAuthController {
         AppUserDto userDto = appAuthService.miniLogin(phone, userType, openid, ipAddr);
 
         //设置日志操作对象内容
-        if(StringUtils.isNotBlank(userDto.getOrgId())){
+        if (StringUtils.isNotBlank(userDto.getOrgId())) {
             LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
                     .companyId(Long.valueOf(userDto.getOrgId()))
                     .operationById(userDto.getId().toString())
@@ -176,7 +171,7 @@ public class AppAuthController {
     /**
      * 密码登录
      */
-    @LogRecord(operationCode = "pwdLogin", operationName = "登录系统", serviceType = "login",serviceTypeName = "登录")
+    @LogRecord(operationCode = "pwdLogin", operationName = "登录系统", serviceType = "login", serviceTypeName = "登录")
     @PostMapping("pwdLogin")
     public IdmResDTO pwdLogin(@RequestBody @Valid PwdLoginDto dto) {
         String ipAddr = IpUtil.getIpAddr(request);
@@ -184,7 +179,7 @@ public class AppAuthController {
         AppUserDto userDto = appAuthService.pwdLogin(dto);
 
         //设置日志操作对象内容
-        if(StringUtils.isNotBlank(userDto.getOrgId())){
+        if (StringUtils.isNotBlank(userDto.getOrgId())) {
             LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
                     .companyId(Long.valueOf(userDto.getOrgId()))
                     .operationById(userDto.getId().toString())
@@ -199,7 +194,7 @@ public class AppAuthController {
     /**
      * 手机号登录
      */
-    @LogRecord(operationCode = "phoneLogin", operationName = "登录系统", serviceType = "login",serviceTypeName = "登录")
+    @LogRecord(operationCode = "phoneLogin", operationName = "登录系统", serviceType = "login", serviceTypeName = "登录")
     @PostMapping("phoneLogin")
     public IdmResDTO phoneLogin(@RequestBody @Valid PhoneLoginDto dto) {
         String ipAddr = IpUtil.getIpAddr(request);
@@ -207,7 +202,7 @@ public class AppAuthController {
         AppUserDto userDto = appAuthService.phoneLogin(dto);
 
         //设置日志操作对象内容
-        if(StringUtils.isNotBlank(userDto.getOrgId())){
+        if (StringUtils.isNotBlank(userDto.getOrgId())) {
             LogContextHolder.setOptTargetInfo(OptTargetInfo.builder()
                     .companyId(Long.valueOf(userDto.getOrgId()))
                     .operationById(userDto.getId().toString())
@@ -266,7 +261,6 @@ public class AppAuthController {
      */
     @PostMapping("sendPhoneSmsCode")
     public IdmResDTO<SmsCodeResDto> sendPhoneSmsCode(@RequestBody @Valid SmsCodeReqDto dto) {
-        dto.setUserId(LoginInfoHolder.getCurrentUserId());
         // 验证码ID参数校验
         if (StringUtils.isBlank(dto.getSid())) {
             throw new BusinessException(ResultCode.ACCESS_ERROR, "图形验证码ID参数为空");
@@ -279,8 +273,22 @@ public class AppAuthController {
         if (!appVerifyService.checkKaptchaText(dto.getKaptchaText(), dto.getSid())) {
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_ERROR, "图形验证码错误");
         }
-        SmsCodeResDto res = appVerifyService
-                .sendPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId());
+        SmsCodeResDto res = new SmsCodeResDto();
+        if (UserTypeEnum.USER.getValue().equals(dto.getUserType())) {
+            AppUserDto userDto = appUserService.getUserByPhoneAndUserType(dto.getPhoneNumber(), dto.getUserType());
+            // 账号不存在
+            if (Objects.isNull(userDto)) {
+                throw new BusinessException(USER_ACCOUNT_NOT_EXIST);
+            }
+            // 账号被停用
+            if (EntityConstants.DISABLED.equals(userDto.getStatus())) {
+                throw new BusinessException(USER_ACCOUNT_LOCKED_ERROR);
+            }
+            Long orgId = appUserService.getOrgId(userDto.getId());
+            res = appVerifyService.sendPhoneSmsCode(dto.getPhoneNumber(), null, orgId);
+        } else {
+            res = appVerifyService.sendPhoneSmsCode(dto.getPhoneNumber(), null, PLATFORM_COMPANY_ID);
+        }
         return IdmResDTO.success(res);
     }
 
@@ -328,7 +336,7 @@ public class AppAuthController {
      * 用户登出
      */
     @ResolveExtData
-    @LogRecord(operationCode = "logOut", operationName = "退出系统", serviceType = "logOut",serviceTypeName = "退出")
+    @LogRecord(operationCode = "logOut", operationName = "退出系统", serviceType = "logOut", serviceTypeName = "退出")
     @PostMapping("logOut")
     public IdmResDTO logOut() {
         appAuthService.logOut(request);

@@ -1,13 +1,8 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
-import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
-import static cn.cuiot.dmp.common.constant.ResultCode.KAPTCHA_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.KAPTCHA_EXPIRED_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_EXIST;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_EXPIRED_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_FREQUENTLY_REQ_ERROR;
-
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.constant.CacheConst;
+import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.SecurityConst;
 import cn.cuiot.dmp.common.constant.SendMessageConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -18,34 +13,39 @@ import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.application.param.dto.auth.SmsCodeCheckResDto;
 import cn.cuiot.dmp.system.application.param.dto.auth.SmsCodeResDto;
 import cn.cuiot.dmp.system.application.service.VerifyService;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
+import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
 import cn.cuiot.dmp.system.infrastructure.entity.SensitivityEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.KaptchaResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SecretKeyResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.SensitiveDao;
-import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
+import cn.cuiot.dmp.system.infrastructure.persistence.dao.UserDao;
 import cn.cuiot.dmp.system.infrastructure.utils.SensitiveWordEngineUtils;
 import cn.cuiot.dmp.system.infrastructure.utils.SensitiveWordInitUtils;
 import cn.cuiot.dmp.system.infrastructure.utils.VerifyUnit;
-import cn.cuiot.dmp.system.domain.entity.User;
-import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
-import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import com.alibaba.fastjson.JSONObject;
 import com.google.code.kaptcha.Producer;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import javax.imageio.ImageIO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
+import static cn.cuiot.dmp.common.constant.ResultCode.*;
 
 
 /**
@@ -87,6 +87,9 @@ public class VerifyServiceImpl implements VerifyService {
      */
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private UserDao userDao;
 
     /**
      * 自动注入stringRedisTemplate
@@ -157,8 +160,12 @@ public class VerifyServiceImpl implements VerifyService {
         }
         // 生成短信验证码
         String smsCode = RandomStringUtils.random(6, false, true);
+        Long orgId = userDao.getOrgId(Long.parseLong(userId));
+        if (Objects.isNull(orgId)) {
+            throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
+        }
         // 发送短信
-        boolean sendSucceed = verifyUnit.sendSmsCode(String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber);
+        boolean sendSucceed = verifyUnit.sendSmsCode(smsCode, phoneNumber, orgId);
 
         // 发送成功
         if (sendSucceed) {
@@ -190,14 +197,18 @@ public class VerifyServiceImpl implements VerifyService {
         //首次判断手机号是否为空
         User user = userRepository.find(new UserId(userId));
         PhoneNumber oldPhoneNumber = user.getPhoneNumber();
-        if (oldPhoneNumber == null && userPhoneNumberDomainService.judgePhoneNumberAlreadyExists(new PhoneNumber(phoneNumber))){
+        if (oldPhoneNumber == null && userPhoneNumberDomainService.judgePhoneNumberAlreadyExists(new PhoneNumber(phoneNumber))) {
             // 判断手机号是否存在
             throw new BusinessException(PHONE_NUMBER_EXIST);
         }
         // 生成短信验证码
         String smsCode = RandomStringUtils.random(6, false, true);
+        Long orgId = userDao.getOrgId(Long.parseLong(userId));
+        if (Objects.isNull(orgId)) {
+            throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
+        }
         // 发送短信
-        boolean sendSucceed = verifyUnit.sendSmsCode(String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber);
+        boolean sendSucceed = verifyUnit.sendSmsCode(String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber, orgId);
         // 发送成功
         if (sendSucceed) {
             // 存入redis并设置过期时间
@@ -225,7 +236,7 @@ public class VerifyServiceImpl implements VerifyService {
      * 验证图形验证码
      *
      * @param actualText 用户输入到验证码
-     * @param uuid 身份识别id
+     * @param uuid       身份识别id
      */
     @Override
     public boolean checkKaptchaText(String actualText, String uuid) {
@@ -261,11 +272,14 @@ public class VerifyServiceImpl implements VerifyService {
             throw new BusinessException(SMS_CODE_FREQUENTLY_REQ_ERROR);
         }
         // 生成短信验证码
-        //String smsCode = RandomStringUtils.random(SendMessageConst.SMS_CODE_LENGTH, false, true);
-        String smsCode = "123456";
-        log.warn("sendPhoneSmsCode===smsCode:{}",smsCode);
+        String smsCode = RandomStringUtils.random(SendMessageConst.SMS_CODE_LENGTH, false, true);
+        log.warn("sendPhoneSmsCode===smsCode:{}", smsCode);
+        Long orgId = userDao.getOrgId(userId);
+        if (Objects.isNull(orgId)) {
+            throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
+        }
         // 发送短信
-        boolean sendSucceed = verifyUnit.sendSmsCode(String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber);
+        boolean sendSucceed = verifyUnit.sendSmsCode(String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber, orgId);
         // 发送成功
         if (sendSucceed) {
             // 存入redis并设置过期时间
@@ -283,11 +297,12 @@ public class VerifyServiceImpl implements VerifyService {
         }
         return new SmsCodeResDto(sendSucceed, "发送失败");
     }
+
     /**
      * 校验短信验证码
      */
     @Override
-    public SmsCodeCheckResDto checkPhoneSmsCode(String phoneNumber, Long userId, String smsCode,Boolean needDeleteCache) {
+    public SmsCodeCheckResDto checkPhoneSmsCode(String phoneNumber, Long userId, String smsCode, Boolean needDeleteCache) {
         // 获取redis中的短信验证码文本
         String expectedText = stringRedisTemplate.opsForValue()
                 .get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
@@ -296,7 +311,7 @@ public class VerifyServiceImpl implements VerifyService {
             // 短信验证码过期
             throw new BusinessException(SMS_CODE_EXPIRED_ERROR);
         }
-        if(Boolean.TRUE.equals(needDeleteCache)){
+        if (Boolean.TRUE.equals(needDeleteCache)) {
             stringRedisTemplate.delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
         }
         // 判断用户输入的验证码是否正确

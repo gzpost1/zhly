@@ -12,7 +12,7 @@ import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoAIMethodEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoChannelEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoDeviceEntity;
-import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
+import cn.cuiot.dmp.externalapi.service.service.park.PlatfromInfoService;
 import cn.cuiot.dmp.externalapi.service.service.video.*;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.req.vsuap.*;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.resp.vsuap.*;
@@ -68,7 +68,7 @@ public class VideoTask {
     @Autowired
     private VideoAIAlarmService videoAIAlarmService;
     @Autowired
-    private SystemApiService systemApiService;
+    private PlatfromInfoService platfromInfoService;
 
     /*----------------------------------------------------------------------------------------------------------------*/
     /*------------------------------------------------同步设备信息------------------------------------------------------*/
@@ -93,7 +93,7 @@ public class VideoTask {
             if (StringUtils.isBlank(param)) {
                 reqDTO.setCompanyId(Long.parseLong(param));
             }
-            IPage<PlatfromInfoRespDTO> iPage = systemApiService.queryPlatfromInfoPage(reqDTO);
+            IPage<PlatfromInfoRespDTO> iPage = platfromInfoService.queryForPage(reqDTO);
             // 获取总页数
             pages = iPage.getTotal();
             // 记录
@@ -286,7 +286,7 @@ public class VideoTask {
             reqDTO.setPageNo(pageNo.getAndAdd(1));
             reqDTO.setPageSize(pageSize);
             reqDTO.setPlatformId(FootPlateInfoEnum.VSUAP_VIDEO.getId());
-            IPage<PlatfromInfoRespDTO> iPage = systemApiService.queryPlatfromInfoPage(reqDTO);
+            IPage<PlatfromInfoRespDTO> iPage = platfromInfoService.queryForPage(reqDTO);
             // 获取总页数
             pages = iPage.getTotal();
             // 记录

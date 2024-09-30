@@ -153,4 +153,5 @@ public interface UserService {
      */
     BaseUserDto lookUpUserInfo(BaseUserReqDto query);
 
+    Long getUserOrg(Long id);
 }

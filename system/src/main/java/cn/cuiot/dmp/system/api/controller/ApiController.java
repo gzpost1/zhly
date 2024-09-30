@@ -12,11 +12,15 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import cn.cuiot.dmp.system.application.param.assembler.DepartmentConverter;
 import cn.cuiot.dmp.system.application.param.assembler.MenuConverter;
 import cn.cuiot.dmp.system.application.param.dto.FormConfigDTO;
 import cn.cuiot.dmp.system.application.param.vo.FormConfigVO;
 import cn.cuiot.dmp.system.application.service.*;
+import cn.cuiot.dmp.system.domain.entity.Organization;
+import cn.cuiot.dmp.system.domain.query.OrganizationCommonQuery;
+import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.infrastructure.entity.CommonOptionSettingEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.DepartmentEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.MenuEntity;
@@ -30,9 +34,11 @@ import java.util.stream.Collectors;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.DepartmentTreeVO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CommonOptionSettingMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Id;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,7 +92,7 @@ public class ApiController {
     private UserHouseAuditService userHouseAuditService;
 
     @Autowired
-    private PlatfromInfoService platfromInfoService;
+    private OrganizationRepository organizationRepository;
 
     /**
      * 获取权限菜单
@@ -303,24 +309,30 @@ public class ApiController {
     }
 
     /**
-     * 外部平台参数信息分页查询
+     * 查询企业信息列表
      *
      * @return IdmResDTO<IPage>
      * @Param
      */
-    @PostMapping("/queryPlatfromInfoPage")
-    public IdmResDTO<Page<PlatfromInfoRespDTO>> queryPlatfromInfoPage(@RequestBody PlatfromInfoReqDTO dto) {
-        return IdmResDTO.success(platfromInfoService.queryForPage(dto));
-    }
+    @PostMapping("/queryOrganizationNameList")
+    public IdmResDTO<List<OrganizationRespDTO>> queryOrganizationNameList(@RequestBody OrganizationReqDTO dto) {
+        List<OrganizationRespDTO> result = Lists.newArrayList();
 
-    /**
-     * 外部平台参数信息列表查询
-     *
-     * @return IdmResDTO<List>
-     * @Param
-     */
-    @PostMapping("/queryPlatfromInfoList")
-    public IdmResDTO<List<PlatfromInfoRespDTO>> queryPlatfromInfoList(@RequestBody PlatfromInfoReqDTO dto) {
-        return IdmResDTO.success(platfromInfoService.queryForList(dto));
+        OrganizationCommonQuery.OrganizationCommonQueryBuilder builder = OrganizationCommonQuery.builder();
+        if (CollectionUtils.isNotEmpty(dto.getIdList())) {
+            builder.idList(dto.getIdList().stream().map(OrganizationId::new).collect(Collectors.toList()));
+        }
+        builder.companyName(dto.getCompanyName());
+
+        List<Organization> organizations = organizationRepository.commonQuery(builder.build());
+        if (CollectionUtils.isNotEmpty(organizations)) {
+            result = organizations.stream().map(item -> {
+                OrganizationRespDTO respDTO = new OrganizationRespDTO();
+                respDTO.setId(item.getId().getValue());
+                respDTO.setCompanyName(item.getCompanyName());
+                return respDTO;
+            }).collect(Collectors.toList());
+        }
+        return IdmResDTO.success(result);
     }
 }

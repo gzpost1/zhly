@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 
 /**
  *
@@ -16,4 +18,6 @@ import org.apache.ibatis.annotations.Param;
 public interface PlatfromInfoMapper extends BaseMapper<PlatfromInfoEntity> {
 
     Page<PlatfromInfoRespDTO> queryForPage(Page page, @Param("params") PlatfromInfoReqDTO dto);
+
+    List<PlatfromInfoRespDTO> queryForList(@Param("params") PlatfromInfoReqDTO dto);
 }

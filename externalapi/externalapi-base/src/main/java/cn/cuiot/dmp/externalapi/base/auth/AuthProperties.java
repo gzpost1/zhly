@@ -18,4 +18,9 @@ public class AuthProperties {
      * 外部请求访问token
      */
     private String requestAccessToken;
+
+    /**
+     * 外部推送访问token
+     */
+    private String pushAccessToken;
 }

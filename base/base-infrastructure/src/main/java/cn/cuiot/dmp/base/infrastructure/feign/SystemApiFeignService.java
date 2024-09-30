@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.*;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.*;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 
+import cn.cuiot.dmp.domain.types.id.OrganizationId;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -153,14 +154,8 @@ public interface SystemApiFeignService {
     IdmResDTO<List<CommonOptionSettingRspDTO>> batchQueryCommonOptionSetting(@RequestBody @Valid CommonOptionSettingReqDTO dto);
 
     /**
-     * 外部平台参数信息分页查询
+     * 根据企业id查询企业名称列表
      */
-    @PostMapping(value = "/api/queryPlatfromInfoPage", produces = MediaType.APPLICATION_JSON_VALUE)
-    IdmResDTO<Page<PlatfromInfoRespDTO>> queryPlatfromInfoPage(@RequestBody @Valid PlatfromInfoReqDTO dto);
-
-    /**
-     * 外部平台参数信息列表查询
-     */
-    @PostMapping(value = "/api/queryPlatfromInfoList", produces = MediaType.APPLICATION_JSON_VALUE)
-    IdmResDTO<List<PlatfromInfoRespDTO>> queryPlatfromInfoList(@RequestBody @Valid PlatfromInfoReqDTO dto);
+    @PostMapping(value = "/api/queryOrganizationNameList", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<List<OrganizationRespDTO>> queryOrganizationList(@RequestBody OrganizationReqDTO dto);
 }

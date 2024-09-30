@@ -1,15 +1,20 @@
 package cn.cuiot.dmp.message.consumer;//	模板
 
-import cn.cuiot.dmp.common.bean.dto.SysMsgDto;
-import cn.cuiot.dmp.common.bean.dto.UserBusinessMessageAcceptDto;
-import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
+import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
+import cn.cuiot.dmp.common.bean.dto.*;
 import cn.cuiot.dmp.common.constant.InformTypeConstant;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.message.config.MqMsgChannel;
 import cn.cuiot.dmp.message.conver.UserMessageConvert;
 import cn.cuiot.dmp.message.dal.entity.UserMessageEntity;
 import cn.cuiot.dmp.message.service.UserMessageService;
+import cn.cuiot.dmp.sms.query.SmsSendQuery;
+import cn.cuiot.dmp.sms.service.SmsSendService;
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +39,10 @@ public class UserMsgConsumer {
 
     @Autowired
     private UserMessageService userMessageService;
+    @Autowired
+    private SystemApiFeignService systemApiFeignService;
+    @Autowired
+    private SmsSendService smsSendService;
 
     @StreamListener(MqMsgChannel.USERMESSAGEINPUT)
     public void userMessageConsumer(@Payload UserMessageAcceptDto userMessageAcceptDto) {
@@ -47,7 +56,24 @@ public class UserMsgConsumer {
             List<UserMessageEntity> userMessageEntities = dealMsgByType(userMessage, userMessageAcceptDto.getSysMsgDto());
             userMessageService.saveBatch(userMessageEntities);
         }
-
+        //短信
+        if ((userMessageAcceptDto.getMsgType() & InformTypeConstant.SMS) == InformTypeConstant.SMS) {
+            if (userMessageAcceptDto.getSmsMsgDto() == null) {
+                return;
+            }
+            SmsMsgDto smsMsgDto = userMessageAcceptDto.getSmsMsgDto();
+            BaseUserReqDto query = new BaseUserReqDto();
+            query.setUserIdList(smsMsgDto.getUserIds());
+            List<BaseUserDto> userDtoList = systemApiFeignService.lookUpUserList(query).getData();
+            if (CollUtil.isNotEmpty(userDtoList)) {
+                List<String> collect = userDtoList.stream().map(BaseUserDto::getPhoneNumber).filter(StrUtil::isEmpty).distinct().collect(Collectors.toList());
+                String mobile = String.join(",", collect);
+                SmsSendQuery smsSendQuery = new SmsSendQuery();
+                smsSendQuery.setMobile(mobile).setCompanyId(Long.parseLong(userDtoList.get(0).getOrgId())).setParams(smsMsgDto.getParams()).setStdTemplate(smsMsgDto.getTemplateId());
+                log.info("发送短信：{}", JsonUtil.writeValueAsString(smsSendQuery));
+                smsSendService.sendMsg(smsSendQuery);
+            }
+        }
     }
 
     /**
@@ -67,6 +93,20 @@ public class UserMsgConsumer {
                 return userMessage;
             }).collect(Collectors.toList());
             userMessageService.saveBatch(userMessageEntities);
+        }
+        //短信
+        if ((dto.getMsgType() & InformTypeConstant.SMS) == InformTypeConstant.SMS) {
+            if (CollUtil.isEmpty(dto.getSmsMsgDto())) {
+                return;
+            }
+            List<SmsBusinessMsgDto> smsMsgDto = dto.getSmsMsgDto();
+            smsMsgDto.forEach(item ->{
+                SmsSendQuery smsSendQuery = new SmsSendQuery();
+                smsSendQuery.setMobile(item.getTelNumbers()).setCompanyId(item.getCompanyId()).setParams(item.getParams()).setStdTemplate(item.getTemplateId());
+                log.info("发送短信：{}", JsonUtil.writeValueAsString(smsSendQuery));
+                smsSendService.sendMsg(smsSendQuery);
+            });
+
         }
     }
 

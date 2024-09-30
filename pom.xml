@@ -19,6 +19,7 @@
         <module>content-manage</module>
         <module>lease</module>
         <module>externalapi</module>
+        <module>sms</module>
     </modules>
 
     <parent>

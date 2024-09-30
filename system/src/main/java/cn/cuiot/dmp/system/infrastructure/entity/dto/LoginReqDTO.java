@@ -45,7 +45,7 @@ public class LoginReqDTO {
     /**
      * 短信验证码
      */
-    //private String smsCode;
+    private String smsCode;
 
     /**
      * 小程序openid

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.sms.mapper.SmsSignRelationMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.sms.entity.SmsSignRelationEntity">
+    <!--@mbg.generated-->
+    <!--@Table tb_sms_sign_relation-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="sign_id" jdbcType="BIGINT" property="signId" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_user" jdbcType="BIGINT" property="createUser" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="update_user" jdbcType="BIGINT" property="updateUser" />
+    <result column="deleted" jdbcType="TINYINT" property="deleted" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, company_id, sign_id, `type`, create_time, create_user, update_time, update_user, 
+    deleted
+  </sql>
+
+    <select id="querySmsSignByCompanyId" resultType="cn.cuiot.dmp.sms.entity.SmsSignEntity">
+        SELECT
+            b.*
+        FROM
+            tb_sms_sign_relation a
+            INNER JOIN tb_sms_sign b ON a.company_id = b.company_id
+        WHERE
+            a.deleted = 0
+          AND b.deleted = 0
+          AND b.third_status = 1
+          AND b.status = 1
+          AND a.company_id = #{companyId}
+        LIMIT 1
+    </select>
+
+    <select id="countBySignId" resultType="long">
+        SELECT COUNT(1) FROM tb_sms_sign_relation WHERE sign_id = #{signId}
+    </select>
+</mapper>

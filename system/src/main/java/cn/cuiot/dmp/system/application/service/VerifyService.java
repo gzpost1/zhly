@@ -57,6 +57,7 @@ public interface VerifyService {
 
     /**
      * 验证图形验证码
+     *
      * @param kaptchaText
      * @param sid
      * @return
@@ -65,6 +66,7 @@ public interface VerifyService {
 
     /**
      * 发送短信验证码
+     *
      * @param phoneNumber
      * @param userId
      * @return
@@ -74,5 +76,5 @@ public interface VerifyService {
     /**
      * 校验短信验证码
      */
-    SmsCodeCheckResDto checkPhoneSmsCode(String phoneNumber, Long userId, String smsCode,Boolean needDeleteCache);
+    SmsCodeCheckResDto checkPhoneSmsCode(String phoneNumber, Long userId, String smsCode, Boolean needDeleteCache);
 }

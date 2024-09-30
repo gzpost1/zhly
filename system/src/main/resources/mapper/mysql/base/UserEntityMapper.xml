@@ -166,4 +166,5 @@
             #{userId}
         </foreach>
     </delete>
+
 </mapper>

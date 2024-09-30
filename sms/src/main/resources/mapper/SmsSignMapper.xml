@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.sms.mapper.SmsSignMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.sms.entity.SmsSignEntity">
+    <!--@mbg.generated-->
+    <!--@Table tb_sms_sign-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="org_type_id" jdbcType="BIGINT" property="orgTypeId" />
+    <result column="sign" jdbcType="VARCHAR" property="sign" />
+    <result column="third_code" jdbcType="INTEGER" property="thirdCode" />
+    <result column="third_status" jdbcType="INTEGER" property="thirdStatus" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_user" jdbcType="BIGINT" property="createUser" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="update_user" jdbcType="BIGINT" property="updateUser" />
+    <result column="deleted" jdbcType="TINYINT" property="deleted" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, company_id, org_type_id, sign, third_code, third_status, remark, create_time, create_user,
+    update_time, update_user, deleted, status
+  </sql>
+
+    <select id="getByCompanyId" resultMap="BaseResultMap">
+        SELECT * FROM tb_sms_sign WHERE deleted = 0 AND company_id = #{companyId} LIMIT 1
+    </select>
+
+    <select id="queryPlatformFirst" resultMap="BaseResultMap">
+        SELECT * FROM tb_sms_sign
+        WHERE deleted = 0 AND org_type_id = 5 AND third_status = 1 AND `status` = 1
+        LIMIT 1
+    </select>
+</mapper>

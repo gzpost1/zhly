@@ -214,9 +214,9 @@ public class UserRepositoryImpl extends
         if (CollectionUtils.isEmpty(userEntities)) {
             return null;
         }
-        if(!new Password().verifyPassword(userEntities.get(0).getPassword(), password) ) {
-            return null;
-        }
+//        if(!new Password().verifyPassword(userEntities.get(0).getPassword(), password) ) {
+//            return null;
+//        }
         return UserConverter.INSTANCE.toDomainList(userEntities).get(0);
     }
 

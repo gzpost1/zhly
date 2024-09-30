@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.sms.mapper.SmsTemplateMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.sms.entity.SmsTemplateEntity">
+    <!--@mbg.generated-->
+    <!--@Table tb_sms_template-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="std_template" jdbcType="INTEGER" property="stdTemplate" />
+    <result column="third_template" jdbcType="VARCHAR" property="thirdTemplate" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="sms_type" jdbcType="VARCHAR" property="smsType" />
+    <result column="third_status" jdbcType="INTEGER" property="thirdStatus" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_user" jdbcType="BIGINT" property="createUser" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="update_user" jdbcType="BIGINT" property="updateUser" />
+    <result column="deleted" jdbcType="TINYINT" property="deleted" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, std_template, third_template, content, sms_type, third_status, remark, create_time, 
+    create_user, update_time, update_user, deleted
+  </sql>
+
+    <select id="queryByStdTemplate" resultMap="BaseResultMap">
+        SELECT * FROM tb_sms_template WHERE deleted = 0 AND std_template = #{stdTemplate} LIMIT 1
+    </select>
+</mapper>
