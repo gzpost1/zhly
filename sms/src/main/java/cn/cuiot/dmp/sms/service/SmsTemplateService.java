@@ -73,13 +73,21 @@ public class SmsTemplateService extends ServiceImpl<SmsTemplateMapper, SmsTempla
      * @Param dto 参数
      */
     public void create(SmsTemplateCreateDto dto) {
-        //获取当前账户类型
+        // 获取当前账户类型
         Long orgTypeId = getOrgTypeId();
         if (!Objects.equals(orgTypeId, OrgTypeEnum.PLATFORM.getValue())) {
             throw new BusinessException(ResultCode.ERROR, "该页面权限仅对平台开开放");
         }
 
-        //最多添加模板数
+        // 校验当前标准模板id是否已存在已审核或者待审核记录
+        long count1 = count(new LambdaQueryWrapper<SmsTemplateEntity>()
+                .eq(SmsTemplateEntity::getStdTemplate, dto.getStdTemplate())
+                .in(SmsTemplateEntity::getThirdStatus, SmsThirdStatusEnum.SUCCESS_AUDIT.getCode(), SmsThirdStatusEnum.UNAUDITED.getCode()));
+        if (count1 > 0) {
+            throw new BusinessException(ResultCode.ERROR, "内部模板已存在");
+        }
+
+        // 最多添加模板数
         int maxCount = 500;
 
         long count = count();
@@ -87,7 +95,7 @@ public class SmsTemplateService extends ServiceImpl<SmsTemplateMapper, SmsTempla
             throw new BusinessException(ResultCode.ERROR, "最多可添加500个短信模板");
         }
 
-        //请求创建模板
+        // 请求创建模板
         SmsBindTemplateReq req = new SmsBindTemplateReq();
         req.setTemplateContent(dto.getContent());
         SmsBaseResp<Integer> resp = smsApiFeignService.bindTemplate(req);
