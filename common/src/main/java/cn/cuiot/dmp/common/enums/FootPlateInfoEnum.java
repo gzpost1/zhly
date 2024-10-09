@@ -48,6 +48,11 @@ public enum FootPlateInfoEnum {
      */
     SMS_WOCLOUD(7L, SmsWocloudBO.class),
 
+    /**
+     * 海康门禁
+     */
+    HIK_ENTRANCE_GUARD(8L, HIKEntranceGuardBO.class),
+
     ;
 
     private Long id;
