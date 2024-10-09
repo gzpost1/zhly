@@ -8,6 +8,7 @@ import cn.cuiot.dmp.externalapi.service.service.park.PlatfromInfoService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,7 +35,7 @@ public class ApiController {
      * @Param 企业id
      */
     @PostMapping("/queryForPage")
-    public IdmResDTO<Page<PlatfromInfoRespDTO>> queryForPage(PlatfromInfoReqDTO dto) {
+    public IdmResDTO<Page<PlatfromInfoRespDTO>> queryForPage(@RequestBody PlatfromInfoReqDTO dto) {
         return IdmResDTO.success(platfromInfoService.queryForPage(dto));
     }
 
@@ -45,7 +46,7 @@ public class ApiController {
      * @Param 企业id
      */
     @PostMapping("/queryForList")
-    public IdmResDTO<List<PlatfromInfoRespDTO>> queryForList(PlatfromInfoReqDTO dto) {
+    public IdmResDTO<List<PlatfromInfoRespDTO>> queryForList(@RequestBody PlatfromInfoReqDTO dto) {
         return IdmResDTO.success(platfromInfoService.queryForList(dto));
     }
 }
