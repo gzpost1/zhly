@@ -27,6 +27,9 @@ public class ExcelExportService {
 
     @Resource
     protected HttpServletResponse response;
+
+    public static final Integer MAX_EXPORT_DATA = 10000;
+
     /**
      * 导出
      */

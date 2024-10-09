@@ -1,5 +1,7 @@
-package cn.cuiot.dmp.content.service.impl;//	模板
+package cn.cuiot.dmp.content.service.impl;
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.*;
@@ -29,9 +31,11 @@ import cn.cuiot.dmp.content.param.dto.NoticeUpdateDto;
 import cn.cuiot.dmp.content.param.query.NoticPageQuery;
 import cn.cuiot.dmp.content.param.req.PublishReqVo;
 import cn.cuiot.dmp.content.param.vo.NoticeVo;
+import cn.cuiot.dmp.content.param.vo.export.NoticeExportVo;
 import cn.cuiot.dmp.content.service.ContentDataRelevanceService;
 import cn.cuiot.dmp.content.service.NoticeService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -70,6 +74,8 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     private MsgChannel msgChannel;
     @Autowired
     private MessageFeignService messageFeignService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     @Override
     public NoticeVo queryForDetail(Long id) {
@@ -313,6 +319,29 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                         .build());
             });
         }
+    }
+
+    @Override
+    public void export(NoticPageQuery pageQuery) throws Exception {
+        IPage<NoticeVo> pageResult = this.queryForPage(pageQuery);
+
+        if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+            throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+        }
+        IPage<NoticeExportVo> exportDataList = pageResult.convert(o -> {
+            NoticeExportVo exportVo = new NoticeExportVo();
+            BeanUtil.copyProperties(o, exportVo);
+            return exportVo;
+        });
+        ExcelReportDto<NoticPageQuery, NoticeExportVo> excelReportDto = null;
+        if (ContentConstants.PublishStatus.UNPUBLISHED.equals(pageQuery.getPublishStatus())) {
+            excelReportDto = ExcelReportDto.<NoticPageQuery, NoticeExportVo>builder().title("未发布公告列表").fileName("未发布公告导出").SheetName("未发布公告列表").dataList(exportDataList.getRecords()).build();
+        } else if (ContentConstants.PublishStatus.PUBLISHED.equals(pageQuery.getPublishStatus())) {
+            excelReportDto = ExcelReportDto.<NoticPageQuery, NoticeExportVo>builder().title("已发布公告列表").fileName("已发布公告导出").SheetName("已发布公告列表").dataList(exportDataList.getRecords()).build();
+        } else {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "传入的发布状态不对");
+        }
+        excelExportService.excelExport(excelReportDto, NoticeExportVo.class);
     }
 
     @Override

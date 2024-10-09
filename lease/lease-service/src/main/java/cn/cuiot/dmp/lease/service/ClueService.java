@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.lease.service;
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
@@ -27,6 +29,10 @@ import cn.cuiot.dmp.lease.entity.ClueRecordEntity;
 import cn.cuiot.dmp.lease.enums.ClueFollowDayEnum;
 import cn.cuiot.dmp.lease.enums.ClueStatusEnum;
 import cn.cuiot.dmp.lease.mapper.ClueMapper;
+import cn.cuiot.dmp.lease.vo.export.ClueExportVo;
+import cn.cuiot.dmp.lease.vo.export.ClueFinishExportVo;
+import cn.cuiot.dmp.lease.vo.export.ClueFollowUpExportVo;
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -68,6 +74,8 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
 
     @Autowired
     private MsgChannel msgChannel;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 查询详情
@@ -493,9 +501,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         LocalDate now = LocalDate.now();
         if (ClueFollowDayEnum.ZERO_THREE_DAY.getCode().equals(clueFollowDay)) {
             queryWrapper.and(qwp -> {
-                qwp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(3));
-                qwp.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
-                        .ge(ClueEntity::getDistributeTime, now.minusDays(3)));
+                        qwp.ge(ClueEntity::getCurrentFollowTime, now.minusDays(3));
+                        qwp.or(wp -> wp.isNull(ClueEntity::getCurrentFollowTime)
+                                .ge(ClueEntity::getDistributeTime, now.minusDays(3)));
                     }
             );
         } else if (ClueFollowDayEnum.THREE_SEVEN_DAY.getCode().equals(clueFollowDay)) {
@@ -535,4 +543,42 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
         }
     }
 
+    public void export(CluePageQueryDTO pageQuery) throws Exception {
+        PageResult<ClueDTO> pageResult = this.queryForPage(pageQuery);
+        if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+            throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+        }
+        if (ClueStatusEnum.DISTRIBUTE_STATUS.getCode().equals(pageQuery.getStatus())) {
+            List<ClueExportVo> exportDataList = new ArrayList<>();
+            pageResult.getList().forEach(o -> {
+                ClueExportVo exportVo = new ClueExportVo();
+                BeanUtil.copyProperties(o, exportVo);
+                exportDataList.add(exportVo);
+            });
+            excelExportService.excelExport(ExcelReportDto.<CluePageQueryDTO, ClueExportVo>builder().title("待分配列表").fileName("待分配线索导出").SheetName("待分配列表")
+                    .dataList(exportDataList).build(), ClueExportVo.class);
+        } else if (ClueStatusEnum.FOLLOW_STATUS.getCode().equals(pageQuery.getStatus())) {
+            List<ClueFollowUpExportVo> exportDataList = new ArrayList<>();
+            pageResult.getList().forEach(o -> {
+                ClueFollowUpExportVo exportVo = new ClueFollowUpExportVo();
+                BeanUtil.copyProperties(o, exportVo);
+                exportDataList.add(exportVo);
+            });
+            excelExportService.excelExport(ExcelReportDto.<CluePageQueryDTO, ClueFollowUpExportVo>builder().title("跟进中列表").fileName("跟进中线索导出").SheetName("跟进中列表")
+                    .dataList(exportDataList).build(), ClueExportVo.class);
+        } else if (ClueStatusEnum.FINISH_STATUS.getCode().equals(pageQuery.getStatus())) {
+            List<ClueFinishExportVo> exportDataList = new ArrayList<>();
+            pageResult.getList().forEach(o -> {
+                ClueFinishExportVo exportVo = new ClueFinishExportVo();
+                BeanUtil.copyProperties(o, exportVo);
+                exportDataList.add(exportVo);
+            });
+            excelExportService.excelExport(ExcelReportDto.<CluePageQueryDTO, ClueFinishExportVo>builder().title("已完成列表").fileName("已完成线索导出").SheetName("已完成列表")
+                    .dataList(exportDataList).build(), ClueExportVo.class);
+        } else {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "传入的状态不对");
+        }
+
+
+    }
 }

@@ -16,6 +16,7 @@ import cn.cuiot.dmp.lease.entity.TbContractCancelEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.service.*;
+import cn.cuiot.dmp.system.domain.aggregate.CodeArchivesPageQuery;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
@@ -279,5 +280,17 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
     private void checkUpdate(Long id) {
         TbContractIntentionEntity queryInfo = getContract(id);
         AssertUtil.isFalse(!Objects.equals(queryInfo.getContractStatus(), ContractEnum.STATUS_DARFT.getCode()), "只有草稿状态的合同才能编辑");
+    }
+
+    /**
+     * 导出
+     * @param pageQuery
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody @Valid TbContractIntentionParam pageQuery) throws Exception {
+        service.export(pageQuery);
+        return IdmResDTO.success();
     }
 }

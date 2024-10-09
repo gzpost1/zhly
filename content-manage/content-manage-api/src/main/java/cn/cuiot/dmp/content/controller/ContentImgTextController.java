@@ -147,4 +147,17 @@ public class ContentImgTextController extends BaseController {
     public List<AuditStatusNumVo> getAuditStatusNum(@RequestParam(value = "typeId", required = false) Long typeId) {
         return contentImgTextService.getAuditStatusNum(typeId);
     }
+
+    /**
+     * 导出
+     * @param pageQuery
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody @Valid ContentImgTextPageQuery pageQuery) throws Exception {
+        contentImgTextService.export(pageQuery);
+        return IdmResDTO.success();
+    }
+
 }

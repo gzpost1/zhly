@@ -8,6 +8,7 @@ import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
@@ -310,4 +311,15 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         return contractLeaseReletEntity;
     }
 
+    /**
+     * 导出
+     * @param pageQuery
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody @Valid TbContractIntentionParam pageQuery) throws Exception {
+        service.export(pageQuery);
+        return IdmResDTO.success();
+    }
 }

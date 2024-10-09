@@ -1,10 +1,15 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.system.application.param.dto.CodeArchivesCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.CodeArchivesUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.CodeArchivesVO;
+import cn.cuiot.dmp.system.application.param.vo.export.CodeArchiveExportVo;
 import cn.cuiot.dmp.system.application.service.CodeArchivesService;
 import cn.cuiot.dmp.system.domain.aggregate.CodeArchives;
 import cn.cuiot.dmp.system.domain.aggregate.CodeArchivesPageQuery;
@@ -15,6 +20,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +34,8 @@ public class CodeArchivesServiceImpl implements CodeArchivesService {
 
     @Autowired
     private CodeArchivesRepository codeArchivesRepository;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     @Override
     public PageResult<CodeArchivesVO> queryForPage(CodeArchivesPageQuery pageQuery) {
@@ -88,5 +96,21 @@ public class CodeArchivesServiceImpl implements CodeArchivesService {
         CodeArchives codeArchives = new CodeArchives();
         BeanUtils.copyProperties(updateDTO, codeArchives);
         return codeArchivesRepository.associateCodeArchives(codeArchives);
+    }
+
+    @Override
+    public void export(CodeArchivesPageQuery pageQuery) throws Exception {
+        PageResult<CodeArchives> codeArchivesPageResult = codeArchivesRepository.queryForPage(pageQuery);
+        if (codeArchivesPageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+            throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+        }
+        List<CodeArchiveExportVo> exportDataList = new ArrayList<>();
+        codeArchivesPageResult.getList().forEach(o -> {
+            CodeArchiveExportVo codeArchiveExportVo = new CodeArchiveExportVo();
+            BeanUtils.copyProperties(o, codeArchiveExportVo);
+            exportDataList.add(codeArchiveExportVo);
+        });
+        excelExportService.excelExport(ExcelReportDto.<CodeArchivesPageQuery, CodeArchiveExportVo>builder().title("二维码档案").fileName("二维码档案导出").SheetName("二维码档案")
+                .dataList(exportDataList).build(), CodeArchiveExportVo.class);
     }
 }

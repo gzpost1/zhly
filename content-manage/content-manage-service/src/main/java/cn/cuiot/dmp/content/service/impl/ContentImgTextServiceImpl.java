@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.content.service.impl;//	模板
 
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
@@ -12,7 +14,9 @@ import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
 import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
 import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.conver.ImgTextConvert;
@@ -26,9 +30,11 @@ import cn.cuiot.dmp.content.param.dto.ContentImgTextUpdateDto;
 import cn.cuiot.dmp.content.param.query.ContentImgTextPageQuery;
 import cn.cuiot.dmp.content.param.vo.AuditStatusNumVo;
 import cn.cuiot.dmp.content.param.vo.ImgTextVo;
+import cn.cuiot.dmp.content.param.vo.export.ImgTextExportVo;
 import cn.cuiot.dmp.content.service.ContentDataRelevanceService;
 import cn.cuiot.dmp.content.service.ContentImgTextService;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -58,6 +64,8 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
     private SystemConverService systemConverService;
     @Autowired
     private ArchiveConverService archiveConverService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
 
     @Override
@@ -168,6 +176,21 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
         pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         pageQuery.setTypeId(typeId);
         return this.baseMapper.getAuditStatusNum(pageQuery, ContentConstants.DataType.IMG_TEXT);
+    }
+
+    @Override
+    public void export(ContentImgTextPageQuery pageQuery) throws Exception {
+        IPage<ImgTextVo> pageResult = this.queryForPage(pageQuery);
+        if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+            throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+        }
+        IPage<ImgTextExportVo> exportDataList = pageResult.convert(o -> {
+            ImgTextExportVo exportVo = new ImgTextExportVo();
+            BeanUtil.copyProperties(o, exportVo);
+            return exportVo;
+        });
+        excelExportService.excelExport(ExcelReportDto.<ContentImgTextPageQuery, ImgTextExportVo>builder().title("图文列表").fileName("图文导出").SheetName("图文列表")
+                .dataList(exportDataList.getRecords()).build(), ImgTextExportVo.class);
     }
 
     @Override

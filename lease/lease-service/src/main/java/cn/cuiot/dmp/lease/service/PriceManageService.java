@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.lease.service;
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
@@ -13,7 +15,6 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
-import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.constants.PriceManageConstant;
 import cn.cuiot.dmp.lease.dto.price.*;
@@ -22,6 +23,8 @@ import cn.cuiot.dmp.lease.entity.PriceManageEntity;
 import cn.cuiot.dmp.lease.entity.PriceManageRecordEntity;
 import cn.cuiot.dmp.lease.enums.PriceManageStatusEnum;
 import cn.cuiot.dmp.lease.mapper.PriceManageMapper;
+import cn.cuiot.dmp.lease.vo.export.PriceManageExportVo;
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -55,6 +58,8 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
 
     @Autowired
     private PriceManageRecordService priceManageRecordService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 查询详情
@@ -404,4 +409,18 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
         });
     }
 
+    public void export(PriceManagePageQueryDTO pageQuery) throws Exception {
+        PageResult<PriceManageDTO> pageResult = this.queryForPage(pageQuery);
+        if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+            throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+        }
+        List<PriceManageExportVo> exportDataList = new ArrayList();
+        pageResult.getList().forEach(o -> {
+            PriceManageExportVo exportVo = new PriceManageExportVo();
+            BeanUtil.copyProperties(o, exportVo);
+            exportDataList.add(exportVo);
+        });
+        excelExportService.excelExport(ExcelReportDto.<PriceManagePageQueryDTO, PriceManageExportVo>builder().title("工单列表").fileName("工单导出").SheetName("工单列表")
+                .dataList(exportDataList).build(), PriceManageExportVo.class);
+    }
 }

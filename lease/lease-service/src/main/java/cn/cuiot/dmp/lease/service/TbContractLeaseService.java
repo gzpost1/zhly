@@ -1,15 +1,21 @@
 package cn.cuiot.dmp.lease.service;
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
+import cn.cuiot.dmp.lease.dto.contract.TbContractIntentionParam;
 import cn.cuiot.dmp.lease.dto.contract.TbContractLeaseParam;
 import cn.cuiot.dmp.lease.entity.BaseContractEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
+import cn.cuiot.dmp.lease.vo.export.ContractIntentionExportVo;
+import cn.cuiot.dmp.lease.vo.export.ContractLeaseExportVo;
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -19,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,6 +43,8 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
     TbContractBindInfoService bindInfoService;
     @Autowired
     BaseContractService baseContractService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     @Override
     public boolean save(Object o) {
@@ -118,5 +127,17 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
 
     public List<BaseVO> statisticsContract() {
         return baseMapper.statisticsContract();
+    }
+
+    public void export(TbContractIntentionParam pageQuery) throws Exception {
+        PageResult<TbContractLeaseEntity> pageResult = this.page(pageQuery);
+        List<ContractLeaseExportVo> exportDataList = new ArrayList<>();
+        pageResult.getList().forEach(o -> {
+            ContractLeaseExportVo exportVo = new ContractLeaseExportVo();
+            BeanUtil.copyProperties(o, exportVo);
+            exportDataList.add(exportVo);
+        });
+        excelExportService.excelExport(ExcelReportDto.<TbContractIntentionParam, ContractLeaseExportVo>builder().title("租赁合同列表").fileName("租赁合同导出").SheetName("租赁合同列表")
+                .dataList(exportDataList).build(), ContractIntentionExportVo.class);
     }
 }

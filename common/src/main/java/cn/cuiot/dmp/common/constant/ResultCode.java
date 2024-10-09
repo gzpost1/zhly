@@ -233,7 +233,9 @@ public enum ResultCode {
     COMPLETE_RATIO_ERROR("1900001","未达到完成比列，不能提交"),
 
 
-    PLATFORM_NOT_CONFIG("1900002","该企业未配置对接参数")
+    PLATFORM_NOT_CONFIG("1900002","该企业未配置对接参数"),
+
+    EXPORT_DATA_OVER_LIMIT("2000001","一次最多可导出1万条数据，请选择时间段分多次导出！"),
 
     ;
 
