@@ -108,7 +108,7 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
                 createDto.setReceivableAmountRate(tbChargePlain.getReceivableAmountRate());
                 createDto.setReceivableAmount(tbChargePlain.getReceivableAmount());
                 createDto.setChargeItemId(tbChargePlain.getChargeItemId());
-                createDto.setChargeStandard(EntityConstants.NO);
+                createDto.setChargeStandard(tbChargePlain.getChargeStandard());
                 createDto.setCompanyId(tbChargePlain.getCompanyId());
                 createDto.setChargeType(ChargeTypeEnum.AUTO_GENERATE.getCode());
                 if (Objects.equals(tbChargePlain.getCronType(), ChargePlainCronType.DAILY.getCode())) {

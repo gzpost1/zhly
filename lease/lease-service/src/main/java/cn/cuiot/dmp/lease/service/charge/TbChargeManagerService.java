@@ -187,6 +187,9 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         BeanUtils.copyProperties(amountDetail, chargeHouseDetailDto);
 
         chargeHouseDetailDto.setDepositRefundable(securitydepositManagerService.getHouseReundableAmount(chargeHouseDetailDto.getHouseId()));
+
+        //todo 统计当前房屋的预缴余额，预缴余额=充值总金额-扣缴总金额
+        chargeHouseDetailDto.setAdvanceBalance(0);
         return chargeHouseDetailDto;
     }
 
@@ -232,6 +235,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
             tbChargeReceived.setCustomerUserId(dto.getCustomerUserId());
             tbChargeReceived.setCreateTime(new Date());
             tbChargeReceived.setCreateUser(LoginInfoHolder.getCurrentUserId());
+            tbChargeReceived.setPaymentMode(EntityConstants.YES);
 
             //违约金相关
             tbChargeReceived.setLiquidatedDamagesNeed(e.getLiquidatedDamagesNeed());

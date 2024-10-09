@@ -7,7 +7,7 @@
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="receivable_amount_rate" jdbcType="DECIMAL" property="receivableAmountRate" />
     <result column="charge_item_id" jdbcType="BIGINT" property="chargeItemId" />
-    <result column="charge_standard" jdbcType="TINYINT" property="chargeStandard" />
+    <result column="charge_standard" jdbcType="BIGINT" property="chargeStandard" />
     <result column="receivable_amount" jdbcType="INTEGER" property="receivableAmount" />
     <result column="company_id" jdbcType="BIGINT" property="companyId" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
@@ -21,7 +21,7 @@
     <result column="cron_appoint_date" jdbcType="INTEGER" property="cronAppointDate" />
     <result column="cron_time" jdbcType="TIME" property="cronTime" />
     <result column="status" jdbcType="TINYINT" property="status" />
-    <result column="receivable_obj" jdbcType="BIGINT" property="receivable_obj" />
+    <result column="receivable_obj" jdbcType="BIGINT" property="receivableObj" />
     <result column="due_date_num" jdbcType="INTEGER" property="dueDateNum" />
   </resultMap>
   <sql id="Base_Column_List">

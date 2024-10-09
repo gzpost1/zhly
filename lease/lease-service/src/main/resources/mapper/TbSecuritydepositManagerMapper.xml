@@ -10,7 +10,7 @@
     <result column="house_id" jdbcType="BIGINT" property="houseId" />
     <result column="loupan_id" jdbcType="BIGINT" property="loupanId" />
     <result column="charge_item_id" jdbcType="BIGINT" property="chargeItemId" />
-    <result column="charge_standard" jdbcType="TINYINT" property="chargeStandard" />
+    <result column="charge_standard" jdbcType="BIGINT" property="chargeStandard" />
     <result column="receivable_amount" jdbcType="INTEGER" property="receivableAmount" />
     <result column="ownership_period_begin" jdbcType="DATE" property="ownershipPeriodBegin" />
     <result column="ownership_period_end" jdbcType="DATE" property="ownershipPeriodEnd" />
@@ -29,13 +29,15 @@
       <result column="account_number" jdbcType="VARCHAR" property="accountNumber" />
       <result column="received_date" jdbcType="TIMESTAMP" property="receivedDate" />
       <result column="remark" jdbcType="VARCHAR" property="remark" />
+      <result column="payment_mode" jdbcType="TINYINT" property="paymentMode" />
+      <result column="transaction_no" jdbcType="VARCHAR" property="transactionNo" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, customer_user_id, house_id, charge_item_id, charge_standard, receivable_amount, received_id,
     ownership_period_begin, ownership_period_end, company_id, update_time, update_user, 
     create_time, create_user, deleted, due_date, `status`, receivable_amount_received, remark,
-    returned_amount,transaction_mode,account_bank,account_number,received_date,loupan_id
+    returned_amount,transaction_mode,account_bank,account_number,received_date,loupan_id,payment_mode,transaction_no
   </sql>
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.lease.dto.charge.SecuritydepositManagerPageDto">
@@ -89,6 +91,6 @@
   </update>
 
   <select id="getHouseReundableAmount" resultType="java.lang.Integer">
-      select sum(receivable_amount_received - returned_amount) from tb_securitydeposit_manager where house_id = #{houseId} and deleted = 0 and receivable_amount_received > 0
+      select sum(receivable_amount_received - returned_amount) from tb_securitydeposit_manager where house_id = #{houseId} and deleted = 0 and status != 4 and receivable_amount_received > 0
     </select>
 </mapper>

@@ -44,7 +44,7 @@ public class TbSecuritydepositManager extends YjBaseEntity {
      * 收费标准 0自定义金额
      */
     @TableField(value = "charge_standard")
-    private Byte chargeStandard;
+    private Long chargeStandard;
 
     /**
      * 应收金额/本金
@@ -132,4 +132,14 @@ public class TbSecuritydepositManager extends YjBaseEntity {
      *
      */
     private Long receivedId;
+
+    /**
+     * 收款方式 0平台 1人工
+     */
+    private Byte paymentMode;
+
+    /**
+     * 交易单号
+     */
+    private String transactionNo;
 }

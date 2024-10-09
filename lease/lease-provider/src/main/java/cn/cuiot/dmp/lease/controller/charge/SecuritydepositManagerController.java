@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.enums.CustomerIdentityTypeEnum;
@@ -210,6 +211,8 @@ public class SecuritydepositManagerController {
         entity.setReceivedDate(new Date());
         entity.setStatus(SecurityDepositStatusEnum.PAID_OFF.getCode());
         entity.setReceivedId(IdWorker.getId());
+        entity.setPaymentMode(EntityConstants.YES);
+
         securitydepositManagerService.updateById(entity);
         return IdmResDTO.success();
     }

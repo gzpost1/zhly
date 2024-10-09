@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,7 @@ public class ChargeInfoFillService {
         boolean isChargeItemFlag = ChargeItemNameSet.class.isAssignableFrom(clazz);
         boolean transactionModeFlag = TransactionModeNameSet.class.isAssignableFrom(clazz);
         boolean refundModeNameFlag = RefundModeNameSet.class.isAssignableFrom(clazz);
+        boolean chargeStandardFlag =  ChargeStandardNameSet.class.isAssignableFrom(clazz);
 
         for (T record : records) {
             if(isChargeItemFlag){
@@ -43,13 +45,18 @@ public class ChargeInfoFillService {
             if(refundModeNameFlag){
                 carteIds.add(((RefundModeNameSet)record).getRefundMode());
             }
+            if(chargeStandardFlag){
+                carteIds.add(((ChargeStandardNameSet)record).getChargeStandard());
+            }
         }
 
         if(CollectionUtils.isNotEmpty(carteIds)){
             //收费项目名称
             CommonOptionSettingReqDTO commonOptionSettingReqDTO = new CommonOptionSettingReqDTO();
             commonOptionSettingReqDTO.setIdList(carteIds);
-            List<CommonOptionSettingRspDTO> commonOptionSettingRspDTOS = systemToFlowService.batchQueryCommonOptionSetting(commonOptionSettingReqDTO);
+            List<CommonOptionSettingRspDTO> commonOptionSettingRspDTOS = Optional.ofNullable(systemToFlowService.batchQueryCommonOptionSetting(commonOptionSettingReqDTO)).orElse(new ArrayList<>());
+            commonOptionSettingRspDTOS.add(new CommonOptionSettingRspDTO(0L,"微信支付",(byte)1));
+            commonOptionSettingRspDTOS.add(new CommonOptionSettingRspDTO(1L,"预缴代扣",(byte)2));
 
             if(CollectionUtils.isNotEmpty(commonOptionSettingRspDTOS)){
                 Map<Long, CommonOptionSettingRspDTO> changeItemMap = commonOptionSettingRspDTOS.stream().collect(Collectors.toMap(CommonOptionSettingRspDTO::getId, Function.identity()));
@@ -64,6 +71,8 @@ public class ChargeInfoFillService {
 
                     if(transactionModeFlag){
                         Long chargeItemId = ((TransactionModeNameSet) record).getTransactionMode();
+                        changeItemMap.put(0L,new CommonOptionSettingRspDTO(0L,"微信支付",(byte)1));
+                        changeItemMap.put(1L,new CommonOptionSettingRspDTO(1L,"预缴代扣",(byte)2));
                         if (changeItemMap.containsKey(chargeItemId)) {
                             ((TransactionModeNameSet) record).setTransactionModeName(changeItemMap.get(chargeItemId).getName());
                         }
@@ -73,6 +82,14 @@ public class ChargeInfoFillService {
                         Long refundMode = ((RefundModeNameSet) record).getRefundMode();
                         if (changeItemMap.containsKey(refundMode)) {
                             ((RefundModeNameSet) record).setRefundModeName(changeItemMap.get(refundMode).getName());
+                        }
+                    }
+
+                    if(chargeStandardFlag){
+                        changeItemMap.put(0L,new CommonOptionSettingRspDTO(0L,"自定义金额",(byte)1));
+                        Long chargeStandard = ((ChargeStandardNameSet) record).getChargeStandard();
+                        if (changeItemMap.containsKey(chargeStandard)) {
+                            ((ChargeStandardNameSet) record).setChargeStandardName(changeItemMap.get(chargeStandard).getName());
                         }
                     }
                 }

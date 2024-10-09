@@ -43,7 +43,7 @@ public class TbChargeManager extends YjBaseEntity {
      * 收费标准 0自定义金额
      */
     @TableField(value = "charge_standard")
-    private Byte chargeStandard;
+    private Long chargeStandard;
 
     /**
      * 应收金额/本金
@@ -151,4 +151,14 @@ public class TbChargeManager extends YjBaseEntity {
      * 所属楼盘id
      */
     private Long loupanId;
+
+    /**
+     * 页面保存使用违约金应收
+     */
+    private Integer pageLiquidatedDamagesNeed;
+
+    /**
+     * 页面保存使用违约金税率
+     */
+    private BigDecimal pageLiquidatedDamagesRate;
 }

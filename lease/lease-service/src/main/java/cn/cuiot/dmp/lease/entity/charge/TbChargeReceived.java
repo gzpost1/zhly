@@ -89,7 +89,7 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
     private Byte onlyPrincipal;
 
     /**
-     * 交易方式
+     * 交易方式 0微信支付 1预缴代扣
      */
     @TableField(value = "transaction_mode")
     private Long transactionMode;
@@ -183,4 +183,14 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
      */
     @TableField(exist = false)
     private String customerUserPhone;
+
+    /**
+     * 收款方式 0平台 1人工
+     */
+    private Byte paymentMode;
+
+    /**
+     * 交易单号
+     */
+    private String transactionNo;
 }

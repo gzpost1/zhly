@@ -16,7 +16,7 @@ import java.util.Objects;
  * @Created by libo
  */
 @Data
-public class SecuritydepositManagerPageDto implements ChargeItemNameSet,TransactionModeNameSet{
+public class SecuritydepositManagerPageDto implements ChargeItemNameSet,TransactionModeNameSet,ChargeStandardNameSet{
     /**
      *  应收编码/实收编码
      */
@@ -60,7 +60,12 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
     /**
      * 收费标准 0自定义金额
      */
-    private Byte chargeStandard;
+    private Long chargeStandard;
+
+    /**
+     * 收费标准 0自定义金额
+     */
+    private String chargeStandardName;
 
     /**
      * 应收金额/本金
@@ -153,6 +158,15 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
      */
     private Long receivedId;
 
+    /**
+     * 收款方式 0平台 1人工
+     */
+    private Byte paymentMode;
+
+    /**
+     * 交易单号
+     */
+    private String transactionNo;
     public Integer getUnreturnedAmount() {
         if(Lists.newArrayList(SecurityDepositStatusEnum.UNPAID.getCode(),SecurityDepositStatusEnum.CANCELLED.getCode()).contains(status)){
             return 0;

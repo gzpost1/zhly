@@ -27,13 +27,15 @@
     <result column="ownership_period_begin" jdbcType="DATE" property="ownershipPeriodBegin" />
     <result column="ownership_period_end" jdbcType="DATE" property="ownershipPeriodEnd" />
     <result column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="payment_mode" jdbcType="TINYINT" property="paymentMode" />
+    <result column="transaction_no" jdbcType="VARCHAR" property="transactionNo" />
 
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, charge_id, receivable_amount_received, liquidated_damages_need, liquidated_damages_received, 
     liquidated_damages_tax, liquidated_damages_not_tax, create_time, create_user, total_received, 
-    only_principal, transaction_mode, account_bank, account_number, remark, customer_user_id, 
+    only_principal, transaction_mode, account_bank, account_number, remark, customer_user_id, payment_mode,transaction_no,
     total_owe,liquidated_damages_rate,house_id,charge_item_id,ownership_period_begin,ownership_period_end,company_id
   </sql>
 
@@ -62,6 +64,8 @@
     house_id,
     charge_item_id,
     ownership_period_begin,
+    payment_mode,
+    transaction_no,
     ownership_period_end
     )VALUES
     <foreach collection="list" item="element" index="index" separator=",">
@@ -88,6 +92,8 @@
       #{element.houseId,jdbcType=BIGINT},
       #{element.chargeItemId,jdbcType=BIGINT},
       #{element.ownershipPeriodBegin,jdbcType=DATE},
+      #{element.paymentMode,jdbcType=TINYINT},
+      #{element.transactionNo,jdbcType=VARCHAR},
       #{element.ownershipPeriodEnd,jdbcType=DATE}
       )
     </foreach>

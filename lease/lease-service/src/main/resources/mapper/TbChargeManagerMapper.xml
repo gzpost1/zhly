@@ -9,7 +9,7 @@
         <result column="house_id" jdbcType="BIGINT" property="houseId"/>
         <result column="loupan_id" jdbcType="BIGINT" property="loupanId"/>
         <result column="charge_item_id" jdbcType="BIGINT" property="chargeItemId"/>
-        <result column="charge_standard" jdbcType="TINYINT" property="chargeStandard"/>
+        <result column="charge_standard" jdbcType="BIGINT" property="chargeStandard"/>
         <result column="receivable_amount" jdbcType="INTEGER" property="receivableAmount"/>
         <result column="charge_type" jdbcType="TINYINT" property="chargeType"/>
         <result column="ownership_period_begin" jdbcType="DATE" property="ownershipPeriodBegin"/>
@@ -32,6 +32,8 @@
         <result column="liquidated_damages_received" jdbcType="INTEGER" property="liquidatedDamagesReceived"/>
         <result column="liquidated_damages_tax" jdbcType="INTEGER" property="liquidatedDamagesTax"/>
         <result column="liquidated_damages_not_tax" jdbcType="INTEGER" property="liquidatedDamagesNotTax"/>
+        <result column="page_liquidated_damages_need" jdbcType="INTEGER" property="pageLiquidatedDamagesNeed"/>
+        <result column="page_liquidated_damages_rate" jdbcType="DECIMAL" property="pageLiquidatedDamagesRate"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--@mbg.generated-->
@@ -62,6 +64,8 @@
         liquidated_damages_received,
         liquidated_damages_tax,
         loupan_id,
+        page_liquidated_damages_need,
+        page_liquidated_damages_rate,
         liquidated_damages_not_tax
     </sql>
 
@@ -121,7 +125,7 @@
     <select id="queryForHouseDetail" resultType="cn.cuiot.dmp.lease.dto.charge.ChargeHouseDetailDto">
         select house_id,
                sum(receivable_amount_received) + sum(liquidated_damages_received) as paid_amount,
-               sum(receivable_amount) - sum(receivable_amount_received)           as total_arrears
+               sum(if(hang_up_status = 0 AND abrogate_status = 0,receivable_amount,0)) - sum(if(hang_up_status = 0 AND abrogate_status = 0,receivable_amount_received,0))           as total_arrears
 
         from tb_charge_manager
         where deleted = 0
@@ -260,7 +264,7 @@
             #{element.customerUserId,jdbcType=BIGINT},
             #{element.houseId,jdbcType=BIGINT},
             #{element.chargeItemId,jdbcType=BIGINT},
-            #{element.chargeStandard,jdbcType=TINYINT},
+            #{element.chargeStandard,jdbcType=BIGINT},
             #{element.receivableAmount,jdbcType=INTEGER},
             #{element.chargeType,jdbcType=TINYINT},
             #{element.ownershipPeriodBegin,jdbcType=DATE},

@@ -37,7 +37,7 @@ public class ChargeManagerInsertVo {
      * 收费标准 0自定义金额
      */
     @NotNull(message = "收费标准不能为空")
-    private Byte chargeStandard;
+    private Long chargeStandard;
 
     /**
      * 应收金额/本金
