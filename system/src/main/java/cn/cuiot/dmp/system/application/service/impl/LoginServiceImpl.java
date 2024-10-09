@@ -1,18 +1,10 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
-import static cn.cuiot.dmp.common.constant.ResultCode.INNER_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_LOCKED_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_OR_PASSWORD_ERROR;
-
 import cn.cuiot.dmp.base.application.enums.DeletedFlagEnum;
 import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
 import cn.cuiot.dmp.base.application.utils.IpUtil;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
-import cn.cuiot.dmp.common.constant.CacheConst;
-import cn.cuiot.dmp.common.constant.EntityConstants;
-import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.constant.SecurityConst;
-import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.constant.*;
 import cn.cuiot.dmp.common.enums.UserLongTimeLoginEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.log.dto.OperateLogDto;
@@ -22,39 +14,38 @@ import cn.cuiot.dmp.domain.types.AuthContants;
 import cn.cuiot.dmp.domain.types.Email;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.domain.types.PhoneNumber;
+import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
+import cn.cuiot.dmp.system.api.controller.LoginController;
 import cn.cuiot.dmp.system.application.param.command.UpdateUserCommand;
 import cn.cuiot.dmp.system.application.service.LoginService;
 import cn.cuiot.dmp.system.application.service.OperateLogService;
 import cn.cuiot.dmp.system.application.service.OrganizationService;
 import cn.cuiot.dmp.system.application.service.UserService;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.cuiot.dmp.system.domain.types.enums.UserStatusEnum;
-import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginReqDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.LoginResDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.OrganizationResDTO;
-import cn.cuiot.dmp.system.domain.entity.User;
-import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.PhoneUtil;
 import com.alibaba.fastjson.JSONObject;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import static cn.cuiot.dmp.common.constant.ResultCode.*;
 
 
 /**
@@ -102,7 +93,7 @@ public class LoginServiceImpl implements LoginService {
         User userEntity = userRepository
                 .queryByUserNameOrPhoneNumberOrEmail(userAccount, phoneNumber, email, UserTypeEnum.USER.getValue());
         // 账号不存在
-        if (userEntity == null||Objects.isNull(userEntity.getStatus())) {
+        if (userEntity == null || Objects.isNull(userEntity.getStatus())) {
             //记录登录失败次数
             recordLoginFailedCount(userAccount);
         }
@@ -115,7 +106,7 @@ public class LoginServiceImpl implements LoginService {
         String loginFailedUsersRedisKey =
                 CacheConst.LOGIN_FAILED_USERS_REDIS_KEY + userEntity.getId();
         // 登录失败
-        if (!userEntity.getPassword().verifyPassword(loginReqDTO.getPassword())) {
+        if (LoginController.PASSWORD_LOGIN.equals(loginReqDTO.getLoginType()) && !userEntity.getPassword().verifyPassword(loginReqDTO.getPassword())) {
             //记录登录失败次数
             recordLoginFailedCountWhenUserExist(loginFailedUsersRedisKey);
             throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
@@ -299,7 +290,7 @@ public class LoginServiceImpl implements LoginService {
             loginResDTO.setPostId(validateUser.getPostId());
             loginResDTO.setAvatar(validateUser.getAvatar());
             loginResDTO.setUserType(validateUser.getUserType().getValue());
-            loginResDTO.setDeptId(StringUtils.isNotBlank(pkDeptId)?Long.valueOf(pkDeptId):null);
+            loginResDTO.setDeptId(StringUtils.isNotBlank(pkDeptId) ? Long.valueOf(pkDeptId) : null);
             loginResDTO.setOpenid(validateUser.getOpenid());
 
             return loginResDTO;
@@ -320,14 +311,14 @@ public class LoginServiceImpl implements LoginService {
                 || DeletedFlagEnum.DELETED.getCode().equals(validateUser.getDeletedFlag())) {
             throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR);
         }
-        if(!EntityConstants.NORMAL.equals(organization.getOrgStatus())){
-            throw new BusinessException(ResultCode.ORG_IS_ENABLED,"企业不在有效期内");
+        if (!EntityConstants.NORMAL.equals(organization.getOrgStatus())) {
+            throw new BusinessException(ResultCode.ORG_IS_ENABLED, "企业不在有效期内");
         }
     }
 
     @Override
     public void logoutIdentity(HttpServletRequest request, String orgId, String userId,
-            String userName) {
+                               String userName) {
         boolean isSuccess = false;
         // 填充日志数据
         OperateLogDto platformOperateLogDTO = new OperateLogDto();
@@ -359,11 +350,11 @@ public class LoginServiceImpl implements LoginService {
     /**
      * 发送日志记录到kafka
      *
-     * @param isSuccess 操作成功标识
+     * @param isSuccess             操作成功标识
      * @param platformOperateLogDTO 日志记录
      */
     public void saveLog2Db(boolean isSuccess, OperateLogDto platformOperateLogDTO,
-            HttpServletRequest request) {
+                           HttpServletRequest request) {
         platformOperateLogDTO.setRequestTime(
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         platformOperateLogDTO.setRequestIp(IpUtil.getIpAddr(request));
@@ -404,7 +395,7 @@ public class LoginServiceImpl implements LoginService {
             phoneNumber = new PhoneNumber(username);
         }
         User validateUser = userRepository
-                .queryByUserNameOrPhoneNumberOrEmail(username, phoneNumber, null,UserTypeEnum.USER.getValue());
+                .queryByUserNameOrPhoneNumberOrEmail(username, phoneNumber, null, UserTypeEnum.USER.getValue());
         // 获取用户自增id
         Long pkUserId = Optional.ofNullable(validateUser).map(u -> u.getId().getValue())
                 .orElse(null);

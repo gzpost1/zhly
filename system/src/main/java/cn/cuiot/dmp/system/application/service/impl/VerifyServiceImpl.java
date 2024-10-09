@@ -208,7 +208,7 @@ public class VerifyServiceImpl implements VerifyService {
             throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
         }
         // 发送短信
-        boolean sendSucceed = verifyUnit.sendSmsCode(String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber, orgId);
+        boolean sendSucceed = verifyUnit.sendSmsCode(smsCode, phoneNumber, orgId);
         // 发送成功
         if (sendSucceed) {
             // 存入redis并设置过期时间
@@ -279,7 +279,7 @@ public class VerifyServiceImpl implements VerifyService {
             throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
         }
         // 发送短信
-        boolean sendSucceed = verifyUnit.sendSmsCode(String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber, orgId);
+        boolean sendSucceed = verifyUnit.sendSmsCode(smsCode, phoneNumber, orgId);
         // 发送成功
         if (sendSucceed) {
             // 存入redis并设置过期时间

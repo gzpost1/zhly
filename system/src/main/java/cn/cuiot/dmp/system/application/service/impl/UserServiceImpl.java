@@ -1153,13 +1153,13 @@ public class UserServiceImpl extends BaseController implements UserService {
     }
 
     @Override
-    public UserDTO getOneUser(String account, String safeAccount, String password) {
+    public UserDTO getOneUser(String account, String safeAccount) {
         PhoneNumber phoneNumber = null;
         EncryptedValue encryptedValue = new EncryptedValue(safeAccount);
         if (PhoneUtil.isPhone(encryptedValue.decrypt())) {
             phoneNumber = new PhoneNumber(encryptedValue);
         }
-        User user = userRepository.queryUserForLogin(account, phoneNumber, password);
+        User user = userRepository.queryUserForLogin(account, phoneNumber);
         return userAssembler.toDTO(user);
     }
 

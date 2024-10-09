@@ -1,8 +1,5 @@
 package cn.cuiot.dmp.system.infrastructure.utils;
 
-import static cn.cuiot.dmp.common.constant.ResultCode.KAPTCHA_EXPIRED_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_EXPIRED_ERROR;
-
 import cn.cuiot.dmp.common.constant.CacheConst;
 import cn.cuiot.dmp.common.constant.SmsStdTemplate;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -16,6 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.Collections;
+
+import static cn.cuiot.dmp.common.constant.ResultCode.*;
 
 
 /**
@@ -107,11 +106,16 @@ public class VerifyUnit {
      * @param phoneNumber 手机号
      * @return
      */
-    public boolean sendSmsCode(String message, String phoneNumber,Long companyId) {
+    public boolean sendSmsCode(String message, String phoneNumber, Long companyId) {
         SmsSendQuery query = new SmsSendQuery();
         query.setCompanyId(companyId).setMobile(phoneNumber).setParams(Collections.singletonList(message)).setStdTemplate(SmsStdTemplate.MANAGE_LOGIN_OR_UPDATE_PASSWORD);
         log.info("发送短信验证码：{}", JsonUtil.writeValueAsString(query));
-        smsSendService.sendMsg(query);
+        try {
+            smsSendService.sendMsg(query);
+        } catch (Exception ex) {
+            log.info("发送短信验证码失败:", ex);
+            throw new BusinessException(SMS_NOT_ENABLED);
+        }
         return true;
     }
 

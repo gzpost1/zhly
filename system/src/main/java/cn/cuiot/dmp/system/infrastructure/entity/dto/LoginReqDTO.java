@@ -51,4 +51,9 @@ public class LoginReqDTO {
      * 小程序openid
      */
     private String openid;
+
+    /**
+     * 登录类型 1-密码登录,2-验证码登录
+     */
+    private Byte loginType;
 }
