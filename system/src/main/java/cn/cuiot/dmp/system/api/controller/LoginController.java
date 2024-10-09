@@ -211,11 +211,13 @@ public class LoginController extends BaseController {
             // 图形验证码sid为空
             throw new BusinessException(ResultCode.ACCESS_ERROR);
         }
-        boolean kaptchaVerified = false;
-        // 图形验证码校验
-        if (TRUE_WORD.equals(smsWord)) {
-            kaptchaVerified = verifyUnit.checkKaptchaText(smsReqDTO.getKaptchaText(), smsReqDTO.getSid(),false);
+        if (!TRUE_WORD.equals(smsWord)) {
+            throw new BusinessException(ResultCode.ERROR, "未开启短信验证码功能");
         }
+
+        // 图形验证码校验
+        boolean kaptchaVerified = verifyUnit.checkKaptchaText(smsReqDTO.getKaptchaText(), smsReqDTO.getSid(),false);;
+
         if (kaptchaVerified) {
             // 加密后的用户名或邮箱或者手机号
             String safeAccount = Sm4.encryption(smsReqDTO.getUserAccount());
@@ -253,7 +255,7 @@ public class LoginController extends BaseController {
                 return simpleStringResDTO;
             }
         } else {
-            throw new BusinessException(USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR);
+            throw new BusinessException(ResultCode.KAPTCHA_TEXT_ERROR);
         }
     }
 }
