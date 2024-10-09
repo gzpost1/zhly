@@ -2,8 +2,6 @@ package cn.cuiot.dmp.sms.query;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-
 /**
  * 短信统计企业相关信息query
  *
@@ -13,6 +11,5 @@ import javax.validation.constraints.NotBlank;
 @Data
 public class SmsStatisticsCompanyQuery {
 
-    @NotBlank(message = "企业名称不能为空")
     private String companyName;
 }

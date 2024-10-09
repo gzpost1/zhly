@@ -207,7 +207,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
         }
 
         if (organizationCommonQuery.getCompanyName() != null) {
-            queryWrapper.eq(COLUMN_NAME_COMPANY_NAME, organizationCommonQuery.getCompanyName());
+            queryWrapper.like(COLUMN_NAME_COMPANY_NAME, organizationCommonQuery.getCompanyName());
         }
 
         if (organizationCommonQuery.getOrgTypeId() != null) {

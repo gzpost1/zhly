@@ -189,12 +189,14 @@ public class SmsSendRecordService {
         }
         // 条件-时间查询
         if (Objects.nonNull(statisticsQuery.getBeginDate()) || Objects.nonNull(statisticsQuery.getEndDate())) {
+            Criteria timeCriteria = Criteria.where(SmsSendRecordEntity.CREATE_TIME);
             if (Objects.nonNull(statisticsQuery.getBeginDate())) {
-                criteria.and(SmsSendRecordEntity.CREATE_TIME).gte(statisticsQuery.getBeginDate());
+                timeCriteria.gte(statisticsQuery.getBeginDate());
             }
             if (Objects.nonNull(statisticsQuery.getEndDate())) {
-                criteria.and(SmsSendRecordEntity.CREATE_TIME).lte(statisticsQuery.getEndDate());
+                timeCriteria.lte(statisticsQuery.getEndDate());
             }
+            criteria.andOperator(timeCriteria);
         }
         return criteria;
     }
