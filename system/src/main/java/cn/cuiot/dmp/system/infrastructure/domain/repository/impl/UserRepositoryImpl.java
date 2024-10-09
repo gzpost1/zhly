@@ -195,7 +195,7 @@ public class UserRepositoryImpl extends
     }
 
     @Override
-    public User queryUserForLogin(String userName, PhoneNumber phoneNumber, @NonNull String password) {
+    public User queryUserForLogin(String userName, PhoneNumber phoneNumber) {
         if (StringUtils.isBlank(userName) && phoneNumber == null) {
             return null;
         }
@@ -214,9 +214,6 @@ public class UserRepositoryImpl extends
         if (CollectionUtils.isEmpty(userEntities)) {
             return null;
         }
-//        if(!new Password().verifyPassword(userEntities.get(0).getPassword(), password) ) {
-//            return null;
-//        }
         return UserConverter.INSTANCE.toDomainList(userEntities).get(0);
     }
 

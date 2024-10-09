@@ -64,7 +64,7 @@ public interface UserRepository extends Repository<User, UserId> {
     /**
      * 查询用户（登录使用）
      */
-    User queryUserForLogin(String userName, PhoneNumber phoneNumber, @NonNull String password);
+    User queryUserForLogin(String userName, PhoneNumber phoneNumber);
 
     /**
      * 查询用户（门禁人员）

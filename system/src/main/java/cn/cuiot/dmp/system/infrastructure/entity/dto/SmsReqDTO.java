@@ -37,7 +37,6 @@ public class SmsReqDTO {
     /**
      * 密码
      */
-    @NotEmpty(message = "密码不可为空")
     private String password;
 
 

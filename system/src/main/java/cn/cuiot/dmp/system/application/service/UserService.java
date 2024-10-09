@@ -8,13 +8,7 @@ import cn.cuiot.dmp.system.application.param.command.UpdateUserCommand;
 import cn.cuiot.dmp.system.application.param.dto.UserDTO;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.GetDepartmentTreeLazyResDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.GetUserDepartmentTreeLazyReqDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.LabelTypeDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.SimpleStringResDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserCsvDto;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserDataResDTO;
-import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
+import cn.cuiot.dmp.system.infrastructure.entity.dto.*;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.UserExportVo;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.UserImportDownloadVo;
 import java.util.List;
@@ -136,7 +130,7 @@ public interface UserService {
     /**
      * 根据条件查询用户（登录）
      */
-    UserDTO getOneUser(String account, String safeAccount, String password);
+    UserDTO getOneUser(String account, String safeAccount);
 
     /**
      * 更新用户表
