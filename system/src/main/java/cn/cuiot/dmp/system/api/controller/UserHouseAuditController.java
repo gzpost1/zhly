@@ -35,6 +35,7 @@ public class UserHouseAuditController {
     /**
      * 根据id获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public UserHouseAuditDTO queryForDetail(@RequestBody @Valid IdParam idParam) {
         return userHouseAuditService.queryForDetail(idParam.getId());
@@ -43,6 +44,7 @@ public class UserHouseAuditController {
     /**
      * 查询列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForList")
     public List<UserHouseAuditDTO> queryForList(
             @RequestBody @Valid UserHouseAuditPageQueryDTO queryDTO) {
@@ -53,6 +55,7 @@ public class UserHouseAuditController {
     /**
      * 查询分页列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IPage<UserHouseAuditDTO> queryForPage(
             @RequestBody @Valid UserHouseAuditPageQueryDTO queryDTO) {

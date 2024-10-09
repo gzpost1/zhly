@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.controller.charge;
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -48,6 +49,7 @@ public class SecuritydepositReceivedController {
      * @param query
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<SecuritydepositManagerPageDto>> queryForPage(@RequestBody SecuritydepositManagerQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());

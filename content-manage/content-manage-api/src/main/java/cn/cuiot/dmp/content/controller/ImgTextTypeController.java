@@ -64,6 +64,7 @@ public class ImgTextTypeController extends BaseController {
      *
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForList")
     public List<ImgTextType> queryForList() {
         String orgId = getOrgId();

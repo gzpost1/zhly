@@ -49,6 +49,7 @@ public class NoticeController extends BaseController {
     /**
      * 根据id获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<NoticeVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
         NoticeVo noticeVo = noticeService.queryForDetail(idParam.getId());
@@ -62,6 +63,7 @@ public class NoticeController extends BaseController {
     /**
      * 列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForList")
     public List<NoticeVo> queryForList(@RequestBody @Valid NoticPageQuery pageQuery) {
         String orgId = getOrgId();
@@ -72,6 +74,7 @@ public class NoticeController extends BaseController {
     /**
      * 分页列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IPage<NoticeVo> queryForPage(@RequestBody @Valid NoticPageQuery pageQuery) {
         String orgId = getOrgId();

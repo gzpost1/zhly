@@ -154,12 +154,6 @@ public interface SystemApiFeignService {
     IdmResDTO<List<CommonOptionSettingRspDTO>> batchQueryCommonOptionSetting(@RequestBody @Valid CommonOptionSettingReqDTO dto);
 
     /**
-     * 外部平台参数信息分页查询
-     */
-    @PostMapping(value = "/api/queryPlatfromInfoPage", produces = MediaType.APPLICATION_JSON_VALUE)
-    IdmResDTO<Page<PlatfromInfoRespDTO>> queryPlatfromInfoPage(@RequestBody @Valid PlatfromInfoReqDTO dto);
-
-    /**
      * 根据企业id查询企业名称列表
      */
     @PostMapping(value = "/api/queryOrganizationNameList", produces = MediaType.APPLICATION_JSON_VALUE)

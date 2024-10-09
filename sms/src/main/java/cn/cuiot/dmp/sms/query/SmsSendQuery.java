@@ -23,7 +23,7 @@ public class SmsSendQuery {
 
     /**
      * (必填)
-     * 手机号码，多个号码请用英文逗号隔开，例：18300000000,1830000000
+     * 手机号码
      */
     private String mobile;
 

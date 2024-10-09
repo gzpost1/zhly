@@ -54,6 +54,7 @@ public class WorkOrderController extends BaseController {
      * @param dto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("queryWorkOrderInfo")
     public IdmResDTO<IPage<WorkInfoDto>> queryWorkOrderInfo(@RequestBody WorkInfoDto dto){
         return workInfoService.queryWorkOrderInfo(dto );
@@ -64,6 +65,7 @@ public class WorkOrderController extends BaseController {
      * @param dto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("queryCustomerWorkOrderInfo")
     public IdmResDTO<IPage<WorkInfoDto>> queryCustomerWorkOrderInfo(@RequestBody WorkInfoDto dto){
         return workInfoService.queryCustomerWorkOrderInfo(dto );
@@ -83,6 +85,7 @@ public class WorkOrderController extends BaseController {
      * @param dto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("queryBasicWorkOrderDetailInfo")
     public IdmResDTO<WorkInfoDto> queryBasicWorkOrderDetailInfo(@RequestBody WorkProcInstDto dto){
         return workInfoService.queryBasicWorkOrderDetailInfo(dto);
@@ -93,6 +96,7 @@ public class WorkOrderController extends BaseController {
      * @param HandleDataDTO
      * @return
      */
+    @RequiresPermissions
     @PostMapping("instanceInfo")
     public IdmResDTO<HandleDataVO>  instanceInfo(@RequestBody HandleDataDTO HandleDataDTO){
 
@@ -104,6 +108,7 @@ public class WorkOrderController extends BaseController {
      * @param HandleDataDTO
      * @return
      */
+    @RequiresPermissions
     @PostMapping("queryDataForm")
     public IdmResDTO queryDataForm(@RequestBody HandleDataDTO HandleDataDTO){
         return workInfoService.queryDataForm(HandleDataDTO);
@@ -114,6 +119,7 @@ public class WorkOrderController extends BaseController {
      * @param req
      * @return
      */
+    @RequiresPermissions
     @PostMapping("queryCustomerWorkOrder")
     public IdmResDTO<IPage<CustomerWorkOrderDto>> queryCustomerWorkOrder(@RequestBody QueryCustomerWorkOrderDto req){
         return workInfoService.queryCustomerWorkOrder(req);
@@ -138,6 +144,7 @@ public class WorkOrderController extends BaseController {
      * @param dto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("queryCommitProcessInfo")
     public List<CommitProcessEntity> queryCommitProcessInfo(@RequestBody @Valid QueryCommitProcessDto dto){
         return workInfoService.queryCommitProcessInfo(dto);
@@ -149,6 +156,7 @@ public class WorkOrderController extends BaseController {
      * @param dto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("queryUserSubmitData")
     public IdmResDTO<ProcessResultDto> queryUserSubmitData(@RequestBody @Valid UserSubmitDataDto dto){
         return workInfoService.queryUserSubmitData(dto);

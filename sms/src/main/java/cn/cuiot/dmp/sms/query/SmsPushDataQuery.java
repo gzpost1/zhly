@@ -1,7 +1,11 @@
 package cn.cuiot.dmp.sms.query;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
  * 第三方推送数据
@@ -33,7 +37,7 @@ public class SmsPushDataQuery {
     /**
      * 报告状态（1 成功，2 失败，其他）
      */
-    @JsonProperty("reportStatus")
+    @JsonProperty("ReportStatus")
     private Integer reportStatus;
 
     /**
@@ -46,5 +50,7 @@ public class SmsPushDataQuery {
      * 报告时间
      */
     @JsonProperty("ReportTime")
-    private String reportTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "GMT+8")
+    private Date reportTime;
 }

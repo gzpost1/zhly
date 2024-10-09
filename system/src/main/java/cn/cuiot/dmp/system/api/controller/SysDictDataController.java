@@ -43,6 +43,7 @@ public class SysDictDataController {
     /**
      * 字典项列表
      */
+    @RequiresPermissions
     @PostMapping("/list")
     public IdmResDTO<IPage<SysDictData>> list(
             @RequestBody @Valid SysDictDataQuery sysDictDataQuery) {
@@ -53,6 +54,7 @@ public class SysDictDataController {
     /**
      * 查看详情
      */
+    @RequiresPermissions
     @PostMapping("/detail")
     public IdmResDTO<SysDictData> detail(@RequestBody @Valid IdParam param) {
         SysDictData obj = Optional.ofNullable(sysDictDataService.getById(param.getId()))

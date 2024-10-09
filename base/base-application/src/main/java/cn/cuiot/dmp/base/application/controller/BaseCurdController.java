@@ -39,6 +39,7 @@ public abstract class BaseCurdController<S extends BaseService<T>, T, P extends 
      * @param params
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public PageResult<T> queryForPage(
             @RequestBody P params) {
@@ -51,6 +52,7 @@ public abstract class BaseCurdController<S extends BaseService<T>, T, P extends 
      * @param idParam
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public T queryForDetail(
             @RequestBody @Valid IdParam idParam) {

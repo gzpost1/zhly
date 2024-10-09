@@ -34,9 +34,19 @@ public enum FootPlateInfoEnum {
     YF_ENTRANCE_GUARD(4L, YFEntranceGuardBO.class),
 
     /**
+     * 门禁（格物）
+     */
+    GW_ENTRANCE_GUARD(5L, GWEntranceGuardBO.class),
+
+    /**
+     * 停车场（科拓）
+     */
+    KP_DEPOT(6L, KPDepotBO.class),
+
+    /**
      * 短信（wocloud）
      */
-    SMS_WOCLOUD(5L, SmsWocloudBO.class),
+    SMS_WOCLOUD(7L, SmsWocloudBO.class),
 
     ;
 

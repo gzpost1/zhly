@@ -35,6 +35,7 @@ public class ChargeCollectionPlanController {
     /**
      * 分页
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<ChargeCollectionPlanPageVo>> queryForPage(@RequestBody ChargeCollectionPlanPageQuery dto) {
         dto.setCompanyId(LoginInfoHolder.getCurrentOrgId());
@@ -44,6 +45,7 @@ public class ChargeCollectionPlanController {
     /**
      * 查询详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<ChargeCollectionPlanVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
         return IdmResDTO.success(chargeCollectionPlanService.queryForDetail(idParam.getId()));

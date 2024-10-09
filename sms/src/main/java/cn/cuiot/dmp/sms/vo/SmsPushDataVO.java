@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.sms.vo;
 
+import cn.cuiot.dmp.common.constant.ExternalapiResBaseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
@@ -10,10 +12,11 @@ import lombok.NoArgsConstructor;
  * @Author: zc
  * @Date: 2024-09-23
  */
+@EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class SmsPushDataVO {
+public class SmsPushDataVO extends ExternalapiResBaseDTO {
 
     /**
      * 错误代码：0 成功，其他

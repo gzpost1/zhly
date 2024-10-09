@@ -46,6 +46,7 @@ public class SysDictTypeController {
     /**
      * 字典类型列表
      */
+    @RequiresPermissions
     @PostMapping("/list")
     public IdmResDTO<IPage<SysDictType>> list(@RequestBody SysDictTypeQuery sysDictTypeQuery) {
         IPage<SysDictType> pageList = sysDictTypeService.pageList(sysDictTypeQuery);
@@ -55,6 +56,7 @@ public class SysDictTypeController {
     /**
      * 查看详情
      */
+    @RequiresPermissions
     @PostMapping("/detail")
     public IdmResDTO<SysDictType> detail(@RequestBody @Valid IdParam param) {
         SysDictType obj = Optional.ofNullable(sysDictTypeService.getById(param.getId()))

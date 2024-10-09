@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean;
 
-import cn.cuiot.dmp.externalapi.service.entity.watermeter.vo.WaterMeterOperateVO;
+import cn.cuiot.dmp.externalapi.service.vo.watermeter.WaterMeterOperateVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

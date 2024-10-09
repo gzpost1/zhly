@@ -43,7 +43,7 @@ public class SmsConfigService extends ServiceImpl<SmsConfigMapper, SmsConfigEnti
         //获取当前账户类型
         Long orgTypeId = getOrgTypeId();
         if (!Objects.equals(orgTypeId, OrgTypeEnum.PLATFORM.getValue())) {
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            throw new BusinessException(ResultCode.ERROR, "该页面权限仅对平台开开放");
         }
 
         List<SmsConfigEntity> list = list(new LambdaQueryWrapper<SmsConfigEntity>()
@@ -62,7 +62,7 @@ public class SmsConfigService extends ServiceImpl<SmsConfigMapper, SmsConfigEnti
         //获取当前账户类型
         Long orgTypeId = getOrgTypeId();
         if (!Objects.equals(orgTypeId, OrgTypeEnum.PLATFORM.getValue())) {
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            throw new BusinessException(ResultCode.ERROR, "该页面权限仅对平台开开放");
         }
 
         remove(new LambdaQueryWrapper<>());

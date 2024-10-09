@@ -66,6 +66,7 @@ public class ReceivableGenerationController {
      * @param query
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<ChargeManagerPageDto>> queryForPage(@RequestBody TbChargeManagerQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
@@ -120,6 +121,7 @@ public class ReceivableGenerationController {
      * @param idParam
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<ChargeManagerDetailDto> queryForDetail(@RequestBody @Valid IdParam idParam) {
         ChargeManagerDetailDto chargeManagerDetailDto = tbChargeManagerService.queryForDetail(idParam.getId());
@@ -166,6 +168,7 @@ public class ReceivableGenerationController {
      * @param queryDto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForHangupPage")
     public IdmResDTO<IPage<TbChargeHangup>> queryForHangupPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeHangup> tbChargeHangupIPage = tbChargeManagerService.queryForHangupPage(queryDto);
@@ -194,6 +197,7 @@ public class ReceivableGenerationController {
      * @param queryDto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForAbrogatePage")
     public IdmResDTO<IPage<TbChargeAbrogate>> queryForAbrogatePage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         queryDto.setDataType( ChargeAbrogateTypeEnum.CHARGE.getCode());
@@ -224,6 +228,7 @@ public class ReceivableGenerationController {
      * @param queryDto
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryForReceivedPage")
     public IdmResDTO<IPage<TbChargeReceived>> queryForReceivedPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeReceived> tbChargeHangupIPage = tbChargeManagerService.queryForReceivedPage(queryDto);

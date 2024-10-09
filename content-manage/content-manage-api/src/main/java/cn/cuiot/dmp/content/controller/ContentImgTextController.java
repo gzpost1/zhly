@@ -51,6 +51,7 @@ public class ContentImgTextController extends BaseController {
     /**
      * 根据id获取详情
      */
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<ImgTextVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
         ImgTextVo imgTextVo = contentImgTextService.queryForDetail(idParam.getId());
@@ -64,6 +65,7 @@ public class ContentImgTextController extends BaseController {
     /**
      * 列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForList")
     public List<ImgTextVo> queryForList(@RequestBody @Valid ContentImgTextPageQuery pageQuery) {
         String orgId = getOrgId();
@@ -74,6 +76,7 @@ public class ContentImgTextController extends BaseController {
     /**
      * 分页列表
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IPage<ImgTextVo> queryForPage(@RequestBody @Valid ContentImgTextPageQuery pageQuery) {
         String orgId = getOrgId();
@@ -128,6 +131,7 @@ public class ContentImgTextController extends BaseController {
      * @param updateStatusParam
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/updateStatus")
     @LogRecord(operationCode = "updateStatusImgText", operationName = "停启用图文", serviceType = "imgText", serviceTypeName = "图文管理")
     public Boolean updateStatus(@RequestBody @Valid UpdateStatusParam updateStatusParam) {

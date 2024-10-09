@@ -263,6 +263,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
      *
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/statisticsContract")
     public List<BaseVO> statisticsContract() {
         return service.statisticsContract();

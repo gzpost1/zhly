@@ -30,7 +30,7 @@
 
     <select id="queryPlatformFirst" resultMap="BaseResultMap">
         SELECT * FROM tb_sms_sign
-        WHERE deleted = 0 AND org_type_id = 5 AND third_status = 2 AND `status` = 1
+        WHERE deleted = 0 AND org_type_id = 5 AND third_status = 1 AND `status` = 1
         LIMIT 1
     </select>
 </mapper>

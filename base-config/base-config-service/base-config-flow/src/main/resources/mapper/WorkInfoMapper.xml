@@ -36,6 +36,9 @@
             <if test="query.id !=null">
                 and t1.proc_inst_id like concat('%',#{query.id},'%')
             </if>
+            <if test="query.companyId !=null">
+                and t1.company_id = #{query.companyId}
+            </if>
             <if test="query.businessType !=null">
                 and t1.business_type = #{query.businessType}
             </if>

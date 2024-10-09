@@ -12,7 +12,7 @@ import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoAIMethodEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoChannelEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoDeviceEntity;
-import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
+import cn.cuiot.dmp.externalapi.service.service.park.PlatfromInfoService;
 import cn.cuiot.dmp.externalapi.service.service.video.*;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.req.vsuap.*;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.resp.vsuap.*;
@@ -68,7 +68,7 @@ public class VideoTask {
     @Autowired
     private VideoAIAlarmService videoAIAlarmService;
     @Autowired
-    private SystemApiService systemApiService;
+    private PlatfromInfoService platfromInfoService;
 
     /*----------------------------------------------------------------------------------------------------------------*/
     /*------------------------------------------------同步设备信息------------------------------------------------------*/
@@ -85,11 +85,15 @@ public class VideoTask {
         long pageSize = 200;
         long pages;
         do {
+
             PlatfromInfoReqDTO reqDTO = new PlatfromInfoReqDTO();
             reqDTO.setPageNo(pageNo.getAndAdd(1));
             reqDTO.setPageSize(pageSize);
             reqDTO.setPlatformId(FootPlateInfoEnum.VSUAP_VIDEO.getId());
-            IPage<PlatfromInfoRespDTO> iPage = systemApiService.queryPlatfromInfoPage(reqDTO);
+            if (StringUtils.isBlank(param)) {
+                reqDTO.setCompanyId(Long.parseLong(param));
+            }
+            IPage<PlatfromInfoRespDTO> iPage = platfromInfoService.queryForPage(reqDTO);
             // 获取总页数
             pages = iPage.getTotal();
             // 记录
@@ -150,14 +154,17 @@ public class VideoTask {
     @XxlJob("syncVideoChannel")
     public ReturnT<String> syncVideoChannel(String param) {
         log.info("开始同步通道信息......");
-
+        Long companyId = null;
+        if (StringUtils.isBlank(param)) {
+            companyId = Long.parseLong(param);
+        }
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
         long pages;
         do {
             //获取在线的设备列表
             IPage<VideoDeviceEntity> iPage = videoDeviceService
-                    .queryEnableDevicePage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapDeviceStateEnum.ON_LINE.getCode());
+                    .queryEnableDevicePage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapDeviceStateEnum.ON_LINE.getCode(), companyId);
             pages = iPage.getPages();
 
             List<VideoDeviceEntity> records;
@@ -217,13 +224,18 @@ public class VideoTask {
     @XxlJob("syncVideoPlay")
     public ReturnT<String> syncVideoPlay(String param) {
         log.info("开始同步播放信息......");
+        Long companyId = null;
+        if (StringUtils.isBlank(param)) {
+            companyId = Long.parseLong(param);
+        }
+
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
         long pages = 0;
         do {
             //通道查询分页数据
             IPage<VideoChannelEntity> iPage = videoChannelService
-                    .queryEnableChannelPage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapChannelStateEnum.ON_LINE.getCode());
+                    .queryEnableChannelPage(new Page<>(pageNo.getAndAdd(1), pageSize), VsuapChannelStateEnum.ON_LINE.getCode(), companyId);
             pages = iPage.getPages();
 
             List<VideoChannelEntity> records;
@@ -274,7 +286,7 @@ public class VideoTask {
             reqDTO.setPageNo(pageNo.getAndAdd(1));
             reqDTO.setPageSize(pageSize);
             reqDTO.setPlatformId(FootPlateInfoEnum.VSUAP_VIDEO.getId());
-            IPage<PlatfromInfoRespDTO> iPage = systemApiService.queryPlatfromInfoPage(reqDTO);
+            IPage<PlatfromInfoRespDTO> iPage = platfromInfoService.queryForPage(reqDTO);
             // 获取总页数
             pages = iPage.getTotal();
             // 记录

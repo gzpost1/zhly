@@ -16,6 +16,9 @@ import java.util.Collections;
 
 import static cn.cuiot.dmp.common.constant.ResultCode.*;
 
+import static cn.cuiot.dmp.common.constant.ResultCode.KAPTCHA_EXPIRED_ERROR;
+import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_EXPIRED_ERROR;
+
 
 /**
  * @author jiangze
@@ -42,7 +45,7 @@ public class VerifyUnit {
      * @param uuid       身份识别id
      * @return
      */
-    public boolean checkKaptchaText(String actualText, String uuid) {
+    public boolean checkKaptchaText(String actualText, String uuid, Boolean deleteKaptcha) {
         // 获取redis中的图形验证码文本
         String expectedText = stringRedisTemplate.opsForValue().get(CacheConst.KAPTCHA_TEXT_REDIS_KEY + uuid);
         // 判断是否过期
@@ -56,7 +59,9 @@ public class VerifyUnit {
             // 图形验证码错误
             return false;
         }
-        stringRedisTemplate.delete(CacheConst.KAPTCHA_TEXT_REDIS_KEY + uuid);
+        if (deleteKaptcha) {
+            stringRedisTemplate.delete(CacheConst.KAPTCHA_TEXT_REDIS_KEY + uuid);
+        }
         return true;
     }
 

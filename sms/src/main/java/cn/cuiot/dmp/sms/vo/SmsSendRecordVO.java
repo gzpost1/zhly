@@ -52,4 +52,9 @@ public class SmsSendRecordVO {
      * 报告时间
      */
     private Date reportTime;
+
+    /**
+     * 手机号
+     */
+    private String phone;
 }

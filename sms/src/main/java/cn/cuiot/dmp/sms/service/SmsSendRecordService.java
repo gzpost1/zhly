@@ -8,7 +8,6 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.OrgTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
-import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.sms.entity.SmsSendRecordEntity;
 import cn.cuiot.dmp.sms.query.SmsPushDataQuery;
@@ -33,6 +32,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -61,20 +61,22 @@ public class SmsSendRecordService {
      *
      * @Param pushDataQuery 参数
      */
-    public void sendRecord(SmsPushDataQuery pushDataQuery) {
-        if (StringUtils.isNotBlank(pushDataQuery.getTaskId())) {
-            // 构建匹配操作
-            Query query = new Query();
-            query.addCriteria(Criteria.where(SmsSendRecordEntity.TASK_ID).regex(pushDataQuery.getTaskId()));
+    public void pushSendRecord(List<SmsPushDataQuery> queryList) {
+        if (CollectionUtils.isNotEmpty(queryList)) {
+            queryList.forEach(item ->{
+                if (StringUtils.isNotBlank(item.getTaskId())) {
+                    // 构建匹配操作
+                    Query query = new Query();
+                    query.addCriteria(Criteria.where(SmsSendRecordEntity.TASK_ID).is(item.getTaskId()));
 
-            // 构建更新操作
-            Update update = new Update();
-            update.set(SmsSendRecordEntity.REPORT_STATUS, pushDataQuery.getReportStatus());
-            update.set(SmsSendRecordEntity.REPORT_DESCRIPTION, pushDataQuery.getReportDescription());
-            if (StringUtils.isNotBlank(pushDataQuery.getReportTime())) {
-                update.set(SmsSendRecordEntity.REPORT_TIME, DateTimeUtil.stringToDate(pushDataQuery.getReportTime()));
-            }
-            mongoTemplate.updateFirst(query, update, SmsSendRecordEntity.class);
+                    // 构建更新操作
+                    Update update = new Update();
+                    update.set(SmsSendRecordEntity.REPORT_STATUS, item.getReportStatus());
+                    update.set(SmsSendRecordEntity.REPORT_DESCRIPTION, item.getReportDescription());
+                    update.set(SmsSendRecordEntity.REPORT_TIME, item.getReportTime());
+                    mongoTemplate.updateFirst(query, update, SmsSendRecordEntity.class);
+                }
+            });
         }
     }
 
@@ -97,59 +99,74 @@ public class SmsSendRecordService {
      * @Param query 参数
      */
     public IPage<SmsStatisticsVO> statisticsPage(SmsStatisticsQuery statisticsQuery) {
-        //获取当前账户类型
+        // 获取当前账户类型
         Long orgTypeId = getOrgTypeId();
         if (!Objects.equals(orgTypeId, OrgTypeEnum.PLATFORM.getValue())) {
             return new Page<>();
         }
 
-        //构建查询条件
+        // 构建查询条件
         Criteria criteria = buildCriteria(statisticsQuery);
 
-        // 聚合操作
+        // 统计总记录数的聚合操作
+        Aggregation aggregationTotal = Aggregation.newAggregation(
+                Aggregation.match(criteria),
+                Aggregation.group(SmsSendRecordEntity.COMPANY_ID),
+                Aggregation.group().count().as("total")
+        );
+
+        // 执行聚合查询获取总记录数
+        AggregationResults<Map> totalRecords = mongoTemplate.aggregate(aggregationTotal, SmsSendRecordEntity.class, Map.class);
+        long totalCount = totalRecords.getMappedResults().isEmpty() ? 0 : Long.parseLong(totalRecords.getMappedResults().get(0).get("total") + "");
+
+        // 分页查询的聚合操作
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(criteria),
-                Aggregation.group(SmsSendRecordEntity.COMPANY_ID).count().as("count"),
-                Aggregation.sort(Sort.by(Sort.Direction.DESC, "count")),
-                Aggregation.skip(statisticsQuery.getPageNo()),
+                Aggregation.group(SmsStatisticsVO.COMPANY_ID).count().as(SmsStatisticsVO.NUMBER),
+                Aggregation.project(SmsStatisticsVO.NUMBER).and("_id").as(SmsStatisticsVO.COMPANY_ID),
+                Aggregation.sort(Sort.Direction.DESC, SmsStatisticsVO.NUMBER),
+                Aggregation.skip((statisticsQuery.getPageNo() - 1) * statisticsQuery.getPageSize()),
                 Aggregation.limit(statisticsQuery.getPageSize())
         );
 
-        // 执行聚合查询
+        // 执行分页查询
         AggregationResults<SmsStatisticsVO> results = mongoTemplate.aggregate(aggregation, SmsSendRecordEntity.class, SmsStatisticsVO.class);
-
-        // 总记录数
-        long totalRecords = mongoTemplate.count(new Query(criteria), SmsSendRecordEntity.class);
-        // 记录
         List<SmsStatisticsVO> mappedResults = results.getMappedResults();
 
-        //设置企业名称
+        // 设置企业名称
         if (CollectionUtils.isNotEmpty(mappedResults)) {
-            List<Long> companyIds = mappedResults.stream().map(SmsStatisticsVO::getCompanyId)
+            List<Long> companyIds = mappedResults.stream()
+                    .map(SmsStatisticsVO::getCompanyId)
                     .filter(Objects::nonNull)
-                    .distinct().collect(Collectors.toList());
+                    .distinct()
+                    .collect(Collectors.toList());
 
             if (CollectionUtils.isNotEmpty(companyIds)) {
+                // 查询企业信息
                 OrganizationReqDTO reqDTO = new OrganizationReqDTO();
                 reqDTO.setIdList(companyIds);
                 List<OrganizationRespDTO> dtoList = apiSystemService.queryOrganizationList(reqDTO);
 
                 if (CollectionUtils.isNotEmpty(dtoList)) {
-                    Map<Long, String> map = dtoList.stream().collect(Collectors.toMap(OrganizationRespDTO::getId, OrganizationRespDTO::getCompanyName));
-                    mappedResults.forEach(item ->{
-                        item.setCompanyName(map.getOrDefault(item.getCompanyId(), null));
-                    });
+                    Map<Long, String> companyMap = dtoList.stream()
+                            .collect(Collectors.toMap(OrganizationRespDTO::getId, OrganizationRespDTO::getCompanyName));
+
+                    // 为结果设置企业名称
+                    mappedResults.forEach(item ->
+                            item.setCompanyName(companyMap.getOrDefault(item.getCompanyId(), null))
+                    );
                 }
             }
         }
 
-        // 创建 IPage 对象
+        // 创建并返回 IPage 对象
         IPage<SmsStatisticsVO> iPage = new Page<>(statisticsQuery.getPageNo(), statisticsQuery.getPageSize());
         iPage.setRecords(mappedResults);
-        iPage.setTotal(totalRecords);
+        iPage.setTotal(totalCount);
 
         return iPage;
     }
+
 
     /**
      * 构建查询条件
@@ -168,16 +185,18 @@ public class SmsSendRecordService {
         // 条件-部门id
         if (Objects.nonNull(statisticsQuery.getDeptId())) {
             DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(statisticsQuery.getDeptId(), null, null);
-            criteria.and(SmsSendRecordEntity.COMPANY_ID).regex(departmentDto.getPath() + ".*");
+            criteria.and(SmsSendRecordEntity.DEPT_PATH).regex(Pattern.compile(departmentDto.getPath() + ".*$", Pattern.CASE_INSENSITIVE));
         }
         // 条件-时间查询
         if (Objects.nonNull(statisticsQuery.getBeginDate()) || Objects.nonNull(statisticsQuery.getEndDate())) {
+            Criteria timeCriteria = Criteria.where(SmsSendRecordEntity.CREATE_TIME);
             if (Objects.nonNull(statisticsQuery.getBeginDate())) {
-                criteria.and(SmsSendRecordEntity.CREATE_TIME).gte(statisticsQuery.getBeginDate());
+                timeCriteria.gte(statisticsQuery.getBeginDate());
             }
             if (Objects.nonNull(statisticsQuery.getEndDate())) {
-                criteria.and(SmsSendRecordEntity.CREATE_TIME).lte(statisticsQuery.getEndDate());
+                timeCriteria.lte(statisticsQuery.getEndDate());
             }
+            criteria.andOperator(timeCriteria);
         }
         return criteria;
     }

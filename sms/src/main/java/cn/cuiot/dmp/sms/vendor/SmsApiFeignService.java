@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
@@ -64,9 +63,8 @@ public class SmsApiFeignService {
     /**
      * 查询模板状态
      */
-    @PostMapping(value = "/SmsTemplateState")
-    public SmsBaseResp<List<SmsTemplateStateResp>> smsTemplateState(SmsTemplateStateReq req) {
-        String gateway = "/SmsTemplateState";
+    public SmsBaseResp<List<SmsTemplateStateResp>> getTemplateState(SmsTemplateStateReq req) {
+        String gateway = "/GetTemplateState";
         return smsHttpApi.request(gateway, HttpMethod.POST, req, new TypeReference<SmsBaseResp<List<SmsTemplateStateResp>>>() {
         });
     }

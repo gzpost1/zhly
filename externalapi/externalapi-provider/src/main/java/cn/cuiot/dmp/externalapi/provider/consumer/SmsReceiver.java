@@ -5,10 +5,18 @@ import cn.cuiot.dmp.externalapi.provider.consumer.config.SmsMsgBaseChannel;
 import cn.cuiot.dmp.sms.query.SmsPushDataQuery;
 import cn.cuiot.dmp.sms.service.SmsSendRecordService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.StreamListener;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 短信 mq消防
@@ -26,11 +34,22 @@ public class SmsReceiver {
     /**
      * 数据推送
      *
-     * @param query 参数
+     * @param message 参数
      */
     @StreamListener(SmsMsgBaseChannel.SMS_PUSH_DATA_INPUT)
-    public void receiveDeviceInput(@Payload SmsPushDataQuery query) {
-        log.info("短信【第三方推送】入库操作" + JsonUtil.writeValueAsString(query));
-        sendRecordService.sendRecord(query);
+    public void receiveDeviceInput(@Payload Message<List<LinkedHashMap<String, Object>>> message) {
+        log.info("短信【第三方推送】入库操作..........." + JsonUtil.writeValueAsString(message.getPayload()));
+
+        List<SmsPushDataQuery> collect = message.getPayload().stream().map(item -> {
+            if (MapUtils.isNotEmpty(item)) {
+                // 将 LinkedHashMap 转换为 SmsPushDataQuery
+                return JsonUtil.readValue(JsonUtil.writeValueAsString(item), SmsPushDataQuery.class);
+            }
+            return null;
+        }).filter(Objects::nonNull).collect(Collectors.toList());
+
+        if (CollectionUtils.isNotEmpty(collect)) {
+            sendRecordService.pushSendRecord(collect);
+        }
     }
 }
