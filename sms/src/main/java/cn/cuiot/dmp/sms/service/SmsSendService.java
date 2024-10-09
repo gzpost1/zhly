@@ -252,6 +252,7 @@ public class SmsSendService {
         // 获取对接平台信息
         PlatfromInfoReqDTO dto = new PlatfromInfoReqDTO();
         dto.setCompanyId(companyId);
+        dto.setPlatformId(FootPlateInfoEnum.SMS_WOCLOUD.getId());
         List<PlatfromInfoRespDTO> list = apiExternalapiService.queryForList(dto);
         if (CollectionUtils.isNotEmpty(list)) {
             PlatfromInfoRespDTO respDTO = list.get(0);

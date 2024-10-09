@@ -59,7 +59,7 @@ public class SmsTemplateService extends ServiceImpl<SmsTemplateMapper, SmsTempla
 
         LambdaQueryWrapper<SmsTemplateEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Objects.nonNull(query.getStdTemplate()), SmsTemplateEntity::getStdTemplate, query.getStdTemplate());
-        wrapper.eq(Objects.nonNull(query.getThirdTemplate()), SmsTemplateEntity::getThirdTemplate, query.getThirdTemplate());
+        wrapper.eq(StringUtils.isNotBlank(query.getThirdTemplate()), SmsTemplateEntity::getThirdTemplate, query.getThirdTemplate());
         wrapper.eq(Objects.nonNull(query.getThirdStatus()), SmsTemplateEntity::getThirdStatus, query.getThirdStatus());
         wrapper.eq(Objects.nonNull(query.getSmsType()), SmsTemplateEntity::getSmsType, query.getSmsType());
         wrapper.orderByDesc(SmsTemplateEntity::getCreateTime);

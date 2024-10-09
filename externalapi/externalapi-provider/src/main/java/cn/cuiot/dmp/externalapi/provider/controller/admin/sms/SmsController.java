@@ -19,7 +19,9 @@ import cn.cuiot.dmp.sms.vendor.resp.SmsBaseResp;
 import cn.cuiot.dmp.sms.vo.SmsSendRecordVO;
 import cn.cuiot.dmp.sms.vo.SmsStatisticsVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -259,8 +261,13 @@ public class SmsController {
     @RequiresPermissions
     @PostMapping("/queryCompanyIdByName")
     public IdmResDTO<List<OrganizationRespDTO>> queryCompanyIdByName(@RequestBody @Valid SmsStatisticsCompanyQuery query) {
-        OrganizationReqDTO reqDTO = new OrganizationReqDTO();
-        reqDTO.setCompanyName(query.getCompanyName());
-        return IdmResDTO.success(apiSystemService.queryOrganizationList(reqDTO));
+        List<OrganizationRespDTO> list = Lists.newArrayList();
+
+        if (StringUtils.isNotBlank(query.getCompanyName())) {
+            OrganizationReqDTO reqDTO = new OrganizationReqDTO();
+            reqDTO.setCompanyName(query.getCompanyName());
+            list = apiSystemService.queryOrganizationList(reqDTO);
+        }
+        return IdmResDTO.success(list);
     }
 }
