@@ -16,6 +16,7 @@ import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractIntentionMapper;
 import cn.cuiot.dmp.lease.vo.export.ContractIntentionExportVo;
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,6 +144,9 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
 
     public void export(TbContractIntentionParam pageQuery) throws Exception {
         PageResult<TbContractIntentionEntity> pageResult = this.page(pageQuery);
+        if (CollUtil.isEmpty(pageResult.getRecords())) {
+            return;
+        }
         if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
             throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
         }

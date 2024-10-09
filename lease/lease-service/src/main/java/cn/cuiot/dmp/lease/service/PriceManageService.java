@@ -25,6 +25,7 @@ import cn.cuiot.dmp.lease.enums.PriceManageStatusEnum;
 import cn.cuiot.dmp.lease.mapper.PriceManageMapper;
 import cn.cuiot.dmp.lease.vo.export.PriceManageExportVo;
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -411,6 +412,9 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
 
     public void export(PriceManagePageQueryDTO pageQuery) throws Exception {
         PageResult<PriceManageDTO> pageResult = this.queryForPage(pageQuery);
+        if (CollUtil.isEmpty(pageResult.getRecords())) {
+            return;
+        }
         if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
             throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
         }

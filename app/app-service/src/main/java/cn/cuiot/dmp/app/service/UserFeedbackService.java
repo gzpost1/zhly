@@ -11,6 +11,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -93,6 +94,9 @@ public class UserFeedbackService extends ServiceImpl<UserFeedbackMapper, UserFee
 
     public void export(UserFeedbackQuery pageQuery) throws Exception {
         IPage<UserFeedbackEntity> pageResult = userFeedbackMapper.queryForPage(new Page<UserFeedbackEntity>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery);
+        if (CollUtil.isEmpty(pageResult.getRecords())) {
+            return;
+        }
         if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
             throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
         }

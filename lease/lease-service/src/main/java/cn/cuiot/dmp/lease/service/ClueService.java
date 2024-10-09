@@ -33,6 +33,7 @@ import cn.cuiot.dmp.lease.vo.export.ClueExportVo;
 import cn.cuiot.dmp.lease.vo.export.ClueFinishExportVo;
 import cn.cuiot.dmp.lease.vo.export.ClueFollowUpExportVo;
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -545,6 +546,9 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
 
     public void export(CluePageQueryDTO pageQuery) throws Exception {
         PageResult<ClueDTO> pageResult = this.queryForPage(pageQuery);
+        if (CollUtil.isEmpty(pageResult.getRecords())) {
+            return;
+        }
         if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
             throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
         }

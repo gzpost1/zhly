@@ -2,11 +2,8 @@ package cn.cuiot.dmp.lease.vo.export;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.NotNull;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -69,7 +66,7 @@ public class ContractIntentionExportVo {
      */
     private Integer auditStatus;
 
-    @Excel(name = "跟新时间",width = 15,orderNum = "10",exportFormat = "yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "跟新时间", width = 15, orderNum = "10", exportFormat = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 
     @Excel(name = "审核状态", width = 20, isWrap = true, orderNum = "3")
@@ -77,16 +74,20 @@ public class ContractIntentionExportVo {
 
     public String getAuditStatusName() {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return Objects.requireNonNull(ContractEnum.getEnumByCode(auditStatus)).getDesc() + "\n" + df.format(updateTime);
+        String s = Objects.requireNonNull(ContractEnum.getEnumByCode(auditStatus)).getDesc() + "\n";
+        if (updateTime != null) {
+            s = s + df.format(updateTime);
+        }
+        return s;
     }
 
-    @Excel(name = "跟进人",width = 10,orderNum = "4")
+    @Excel(name = "跟进人", width = 10, orderNum = "4")
     private String followUpName;
 
     /**
      * 签订日期
      */
-    @Excel(name = "签订日期",width = 10,orderNum = "5",exportFormat = "yyyy-MM-dd")
+    @Excel(name = "签订日期", width = 10, orderNum = "5", exportFormat = "yyyy-MM-dd")
     private LocalDate cantractDate;
 
     /**
@@ -99,21 +100,21 @@ public class ContractIntentionExportVo {
      */
     private LocalDate endDate;
 
-    @Excel(name = "合同周期",width = 15,orderNum = "6")
+    @Excel(name = "合同周期", width = 15, orderNum = "6")
     private String contractCycle;
 
     public String getContractCycle() {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-        return df.format(beginDate)+"至"+df.format(endDate);
+        return df.format(beginDate) + "至" + df.format(endDate);
     }
 
-    @Excel(name = "创建人",width = 10,orderNum = "7")
+    @Excel(name = "创建人", width = 10, orderNum = "7")
     private String createUserName;
 
-    @Excel(name = "创建时间",width = 15,orderNum = "8",exportFormat = "yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "创建时间", width = 15, orderNum = "8", exportFormat = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
-    @Excel(name = "更新人",width = 10,orderNum = "9")
+    @Excel(name = "更新人", width = 10, orderNum = "9")
     private String updateUserName;
 
 }

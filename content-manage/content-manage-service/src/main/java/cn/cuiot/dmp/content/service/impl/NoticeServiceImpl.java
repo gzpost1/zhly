@@ -324,7 +324,9 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     @Override
     public void export(NoticPageQuery pageQuery) throws Exception {
         IPage<NoticeVo> pageResult = this.queryForPage(pageQuery);
-
+        if (CollUtil.isEmpty(pageResult.getRecords())) {
+            return;
+        }
         if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
             throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
         }

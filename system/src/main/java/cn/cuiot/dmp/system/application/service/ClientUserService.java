@@ -10,6 +10,7 @@ import cn.cuiot.dmp.system.application.param.vo.export.CodeArchiveExportVo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ClientUserQuery;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.ClientUserVo;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.ClientUserMapper;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +52,9 @@ public class ClientUserService {
 
     public void export(ClientUserQuery pageQuery) throws Exception {
         IPage<ClientUserVo> pageResult = clientUserMapper.queryForList(new Page<ClientUserVo>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery);
+        if (CollUtil.isEmpty(pageResult.getRecords())) {
+            return;
+        }
         if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
             throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
         }

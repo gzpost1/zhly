@@ -7,6 +7,7 @@ import lombok.Data;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * @author hantingyao
@@ -38,7 +39,7 @@ public class ContractLeaseExportVo {
     private String contractInfo;
 
     public String getContractInfo() {
-        String desc = ContractEnum.getEnumByCode(contractStatus).getDesc();
+        String desc = Objects.requireNonNull(ContractEnum.getEnumByCode(contractStatus)).getDesc();
         return "名称:" + name + "\n编码:" + contractNo + "\n状态:" + desc;
     }
 

@@ -181,6 +181,9 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
     @Override
     public void export(ContentImgTextPageQuery pageQuery) throws Exception {
         IPage<ImgTextVo> pageResult = this.queryForPage(pageQuery);
+        if (CollUtil.isEmpty(pageResult.getRecords())) {
+            return;
+        }
         if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
             throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
         }

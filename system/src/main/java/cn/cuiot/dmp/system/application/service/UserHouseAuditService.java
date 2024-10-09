@@ -20,6 +20,7 @@ import cn.cuiot.dmp.system.application.param.vo.export.UserHouseAuditExportVo;
 import cn.cuiot.dmp.system.infrastructure.entity.UserHouseAuditEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserHouseAuditMapper;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -331,6 +332,9 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
 
     public void export(UserHouseAuditPageQueryDTO pageQuery) throws Exception {
         IPage<UserHouseAuditDTO> pageResult = this.queryForPage(pageQuery);
+        if (CollUtil.isEmpty(pageResult.getRecords())) {
+            return;
+        }
         if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
             throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
         }
