@@ -202,7 +202,9 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
             pageResult.getRecords().forEach(o -> {
                 ImgTextExportVo exportVo = new ImgTextExportVo();
                 BeanUtil.copyProperties(o, exportVo);
-                exportVo.setTypeName(imgTextTypeMap.get(o.getTypeId()).getName());
+                if (imgTextTypeMap.containsKey(o.getTypeId())) {
+                    exportVo.setTypeName(imgTextTypeMap.get(o.getTypeId()).getName());
+                }
                 exportDataList.add(exportVo);
             });
 

@@ -546,9 +546,6 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
 
     public void export(CluePageQueryDTO pageQuery) throws Exception {
         PageResult<ClueDTO> pageResult = this.queryForPage(pageQuery);
-        if (CollUtil.isEmpty(pageResult.getRecords())) {
-            return;
-        }
         if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
             throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
         }

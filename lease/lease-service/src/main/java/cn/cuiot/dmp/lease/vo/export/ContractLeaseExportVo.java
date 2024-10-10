@@ -4,6 +4,7 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import lombok.Data;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -58,8 +59,7 @@ public class ContractLeaseExportVo {
     private String contractCycle;
 
     public String getContractCycle() {
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return df.format(beginDate) + "至" + df.format(endDate);
+        return beginDate.toString() + "至" + endDate.toString();
     }
 
     /**

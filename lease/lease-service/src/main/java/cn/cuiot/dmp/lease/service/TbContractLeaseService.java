@@ -11,7 +11,6 @@ import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.dto.contract.TbContractLeaseParam;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
-import cn.cuiot.dmp.lease.vo.export.ContractIntentionExportVo;
 import cn.cuiot.dmp.lease.vo.export.ContractLeaseExportVo;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
@@ -132,7 +131,12 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         pageQuery.setPageSize(2000L);
         do {
             pageQuery.setPageNo(pageNo++);
-            pageResult = this.page(pageQuery);
+            String houseName = pageQuery.getHouseName();
+            if (StringUtils.isNotEmpty(houseName)) {
+                List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
+                pageQuery.setQueryIds(queryIds);
+            }
+            pageResult = super.page(pageQuery);
             pageResult.getList().forEach(o -> {
                 ContractLeaseExportVo exportVo = new ContractLeaseExportVo();
                 BeanUtil.copyProperties(o, exportVo);
@@ -140,6 +144,6 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
             });
         } while (CollUtil.isNotEmpty(pageResult.getRecords()));
         excelExportService.excelExport(ExcelReportDto.<TbContractLeaseParam, ContractLeaseExportVo>builder().title("租赁合同列表").fileName("租赁合同导出").SheetName("租赁合同列表")
-                .dataList(exportDataList).build(), ContractIntentionExportVo.class);
+                .dataList(exportDataList).build(), ContractLeaseExportVo.class);
     }
 }
