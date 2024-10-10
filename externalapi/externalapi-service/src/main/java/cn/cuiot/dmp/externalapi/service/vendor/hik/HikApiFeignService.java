@@ -231,6 +231,20 @@ public class HikApiFeignService {
     }
 
     /**
+     * 查询权限配置
+     *
+     * @return HikAcpsAuthConfigSearchResp
+     * @Param req 参数
+     */
+    public HikAcpsAuthConfigSearchResp acpsAuthConfigAdd(HikAcpsAuthConfigSearchReq req, HIKEntranceGuardBO bo) {
+        String gateway = "/api/acps/v1/auth_config/search";
+        HikBaseResp<HikAcpsAuthConfigSearchResp> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
+                new TypeReference<HikBaseResp<HikAcpsAuthConfigSearchResp>>() {
+                });
+        return resp.getData();
+    }
+
+    /**
      * 添加权限配置
      *
      * @return HikAcpsAuthConfigAddResp
