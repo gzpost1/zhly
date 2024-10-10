@@ -43,8 +43,14 @@ public class CodeArchiveExportVo implements Serializable {
     /**
      * 停启用状态（0停用，1启用）生成数量
      */
-    @Excel(name = "停启用状态", orderNum = "5", width = 5, replace = {"启用_1", "停用_0"})
     private Byte status;
+
+    @Excel(name = "停启用状态", orderNum = "5", width = 5, replace = {"启用_1", "停用_0"})
+    private String statusName;
+
+    public String getStatusBame() {
+        return status.toString();
+    }
 
     /**
      * 创建时间
