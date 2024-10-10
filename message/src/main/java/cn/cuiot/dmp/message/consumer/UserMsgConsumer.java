@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,7 @@ public class UserMsgConsumer {
     private SmsSendService smsSendService;
 
     @StreamListener(MqMsgChannel.USERMESSAGEINPUT)
+    @Transactional(rollbackFor = Exception.class)
     public void userMessageConsumer(@Payload UserMessageAcceptDto userMessageAcceptDto) {
         log.info("userMessageInput:{}", JsonUtil.writeValueAsString(userMessageAcceptDto));
         if ((userMessageAcceptDto.getMsgType() & InformTypeConstant.SYS_MSG) == InformTypeConstant.SYS_MSG) {
@@ -64,9 +66,11 @@ public class UserMsgConsumer {
             SmsMsgDto smsMsgDto = userMessageAcceptDto.getSmsMsgDto();
             BaseUserReqDto query = new BaseUserReqDto();
             query.setUserIdList(smsMsgDto.getUserIds());
+            log.info("lookUpUserList-params:{}",JsonUtil.writeValueAsString(query));
             List<BaseUserDto> userDtoList = systemApiFeignService.lookUpUserList(query).getData();
+            log.info("lookUpUserList-result:{}",JsonUtil.writeValueAsString(userDtoList));
             if (CollUtil.isNotEmpty(userDtoList)) {
-                List<String> collect = userDtoList.stream().map(BaseUserDto::getPhoneNumber).filter(StrUtil::isEmpty).distinct().collect(Collectors.toList());
+                List<String> collect = userDtoList.stream().map(BaseUserDto::getPhoneNumber).filter(StrUtil::isNotEmpty).distinct().collect(Collectors.toList());
                 String mobile = String.join(",", collect);
                 SmsSendQuery smsSendQuery = new SmsSendQuery();
                 smsSendQuery.setMobile(mobile).setCompanyId(Long.parseLong(userDtoList.get(0).getOrgId())).setParams(smsMsgDto.getParams()).setStdTemplate(smsMsgDto.getTemplateId());
