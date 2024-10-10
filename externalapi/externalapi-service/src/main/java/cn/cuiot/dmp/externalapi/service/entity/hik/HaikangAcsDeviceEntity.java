@@ -77,6 +77,11 @@ public class HaikangAcsDeviceEntity implements Serializable {
      */
     private String deviceCode;
 
+    /**
+     * 设备型号
+     */
+    private String deviceModel;
+
 
     /**
      * 厂商
@@ -199,9 +204,9 @@ public class HaikangAcsDeviceEntity implements Serializable {
 
 
     /**
-     * 设备状态（1-在线，0-离线，-1-未检测）
+     * 设备状态（0离线，1在线）
      */
-    private Byte online;
+    private Byte status;
 
 
     /**
@@ -213,7 +218,7 @@ public class HaikangAcsDeviceEntity implements Serializable {
 
 
     /**
-     * 设备型号
+     * 设备系列
      */
     private String deviceType;
 
@@ -233,6 +238,10 @@ public class HaikangAcsDeviceEntity implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
+    /**
+     * 是否删除, 0:否, 1:是
+     */
+    private Byte deleted;
 
     /**
      * 数据落地时间

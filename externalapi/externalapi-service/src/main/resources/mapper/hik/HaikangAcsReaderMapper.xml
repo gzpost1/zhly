@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.hik.HaikangAcsReaderMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsReaderEntity">
+        <id column="id" property="id" />
+        <result column="org_id" property="orgId" />
+        <result column="resource_type" property="resourceType" />
+        <result column="index_code" property="indexCode" />
+        <result column="name" property="name" />
+        <result column="region_index_code" property="regionIndexCode" />
+        <result column="region_path" property="regionPath" />
+        <result column="ip" property="ip" />
+        <result column="port" property="port" />
+        <result column="device_code" property="deviceCode" />
+        <result column="device_key" property="deviceKey" />
+        <result column="device_model" property="deviceModel" />
+        <result column="device_type" property="deviceType" />
+        <result column="data_version" property="dataVersion" />
+        <result column="net_zone_id" property="netZoneId" />
+        <result column="deploy_id" property="deployId" />
+        <result column="communication_mode" property="communicationMode" />
+        <result column="parent_index_code" property="parentIndexCode" />
+        <result column="channel_index_code" property="channelIndexCode" />
+        <result column="sort" property="sort" />
+        <result column="capability" property="capability" />
+        <result column="com_id" property="comId" />
+        <result column="door_no" property="doorNo" />
+        <result column="acs_reader_card_capacity" property="acsReaderCardCapacity" />
+        <result column="acs_reader_finger_capacity" property="acsReaderFingerCapacity" />
+        <result column="acs_reader_face_capacity" property="acsReaderFaceCapacity" />
+        <result column="region_path_name" property="regionPathName" />
+        <result column="region_name" property="regionName" />
+        <result column="status" property="status" />
+        <result column="collect_time" property="collectTime" />
+        <result column="description" property="description" />
+        <result column="update_time" property="updateTime" />
+        <result column="create_time" property="createTime" />
+        <result column="deleted" property="deleted" />
+        <result column="data_time" property="dataTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, org_id, resource_type, index_code, name, region_index_code, region_path, ip, port, device_code, device_key, device_model, device_type, data_version, net_zone_id, deploy_id, communication_mode, parent_index_code, channel_index_code, sort, capability, com_id, door_no, acs_reader_card_capacity, acs_reader_finger_capacity, acs_reader_face_capacity, region_path_name, region_name, status, collect_time, description, update_time, create_time, deleted, data_time
+    </sql>
+
+
+
+
+</mapper>

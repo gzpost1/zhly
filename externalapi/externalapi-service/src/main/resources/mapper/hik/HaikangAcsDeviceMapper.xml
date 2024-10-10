@@ -13,6 +13,7 @@
         <result column="dev_type_code" property="devTypeCode" />
         <result column="dev_type_desc" property="devTypeDesc" />
         <result column="device_code" property="deviceCode" />
+        <result column="device_model" property="deviceModel" />
         <result column="manufacturer" property="manufacturer" />
         <result column="region_index_code" property="regionIndexCode" />
         <result column="region_path" property="regionPath" />
@@ -33,17 +34,18 @@
         <result column="capability" property="capability" />
         <result column="dev_serial_num" property="devSerialNum" />
         <result column="data_version" property="dataVersion" />
-        <result column="online" property="online" />
+        <result column="status" property="status" />
         <result column="collect_time" property="collectTime" />
         <result column="device_type" property="deviceType" />
         <result column="update_time" property="updateTime" />
         <result column="create_time" property="createTime" />
+        <result column="deleted" property="deleted" />
         <result column="data_time" property="dataTime" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, org_id, index_code, parent_index_code, resource_type, name, dev_type_code, dev_type_desc, device_code, manufacturer, region_index_code, region_path, treaty_type, card_capacity, finger_capacity, vein_capacity, face_capacity, door_capacity, deploy_id, net_zone_id, description, acs_reader_verify_mode_ability, region_name, region_path_name, ip, port, capability, dev_serial_num, data_version, online, collect_time, device_type, update_time, create_time, data_time
+        id, org_id, index_code, parent_index_code, resource_type, name, dev_type_code, dev_type_desc, device_code, device_model, manufacturer, region_index_code, region_path, treaty_type, card_capacity, finger_capacity, vein_capacity, face_capacity, door_capacity, deploy_id, net_zone_id, description, acs_reader_verify_mode_ability, region_name, region_path_name, ip, port, capability, dev_serial_num, data_version, status, collect_time, device_type, update_time, create_time, deleted, data_time
     </sql>
 
     <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDeviceVo">

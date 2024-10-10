@@ -176,6 +176,10 @@ public class HaikangAcsDoorEntity implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
+    /**
+     * 是否删除, 0:否, 1:是
+     */
+    private Byte deleted;
 
     /**
      * 数据落地时间

@@ -130,6 +130,11 @@ public class HaikangAcsReaderEntity implements Serializable {
      */
     private String parentIndexCode;
 
+    /**
+     * 门禁点编码
+     */
+    private String channelIndexCode;
+
 
     /**
      * 显示顺序
@@ -184,17 +189,16 @@ public class HaikangAcsReaderEntity implements Serializable {
      */
     private String regionName;
 
+    /**
+     * 描述
+     */
+    private String description;
+
 
     /**
-     * 状态小于0则代表资源已被删除
+     * 设备状态（1-在线，0-离线）
      */
     private Byte status;
-
-
-    /**
-     * 设备状态（0离线，1在线）
-     */
-    private Byte online;
 
 
     /**
@@ -203,13 +207,6 @@ public class HaikangAcsReaderEntity implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date collectTime;
-
-
-    /**
-     * 描述
-     */
-    private String description;
-
 
     /**
      * 更新时间
@@ -226,6 +223,10 @@ public class HaikangAcsReaderEntity implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
+    /**
+     * 是否删除, 0:否, 1:是
+     */
+    private Byte deleted;
 
     /**
      * 数据落地时间
