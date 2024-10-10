@@ -236,7 +236,7 @@ public class HikApiFeignService {
      * @return HikAcpsAuthConfigSearchResp
      * @Param req 参数
      */
-    public HikAcpsAuthConfigSearchResp acpsAuthConfigAdd(HikAcpsAuthConfigSearchReq req, HIKEntranceGuardBO bo) {
+    public HikAcpsAuthConfigSearchResp acpsAuthConfigSearch(HikAcpsAuthConfigSearchReq req, HIKEntranceGuardBO bo) {
         String gateway = "/api/acps/v1/auth_config/search";
         HikBaseResp<HikAcpsAuthConfigSearchResp> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
                 new TypeReference<HikBaseResp<HikAcpsAuthConfigSearchResp>>() {
