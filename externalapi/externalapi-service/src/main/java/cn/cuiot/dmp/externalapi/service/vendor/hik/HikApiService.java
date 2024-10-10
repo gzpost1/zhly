@@ -119,10 +119,7 @@ public class HikApiService {
      */
     private void check(HIKEntranceGuardBO bo) {
         if (Objects.isNull(bo)) {
-            throw new BusinessException(ResultCode.ERROR, "请求海康异常.....");
-        }
-        if (Objects.isNull(bo.getCompanyId())) {
-            throw new BusinessException(ResultCode.ERROR, "请求海康异常，企业信息为空");
+            throw new BusinessException(ResultCode.ERROR, "请求海康异常，对接配置信息为空.....");
         }
         if (!Objects.equals(bo.getStatus(), EntityConstants.ENABLED)) {
             throw new BusinessException(ResultCode.ERROR, "请求海康异常，企业【" + bo.getCompanyId() + "】未启用配置");
