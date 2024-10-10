@@ -349,11 +349,11 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         } while (CollUtil.isNotEmpty(pageResult.getRecords()));
         ExcelReportDto<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo> excelReportDto = null;
         if (UserHouseAuditStatusConstants.WAIT.equals(pageQuery.getAuditStatus())) {
-            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("待审核C端用户").fileName("待审核C端用户导出").SheetName("待审核C端用户").dataList(exportDataList.getRecords()).build();
+            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("待审核C端用户").fileName("待审核C端用户导出").SheetName("待审核C端用户").dataList(exportDataList).build();
         } else if (UserHouseAuditStatusConstants.PASS.equals(pageQuery.getAuditStatus())) {
-            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("审核通过C端用户").fileName("审核通过C端用户导出").SheetName("审核通过C端用户").dataList(exportDataList.getRecords()).build();
+            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("审核通过C端用户").fileName("审核通过C端用户导出").SheetName("审核通过C端用户").dataList(exportDataList).build();
         } else if (UserHouseAuditStatusConstants.REJECT.equals(pageQuery.getAuditStatus())) {
-            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("审核驳回C端用户").fileName("审核驳回C端用户导出").SheetName("审核驳回C端用户").dataList(exportDataList.getRecords()).build();
+            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("审核驳回C端用户").fileName("审核驳回C端用户导出").SheetName("审核驳回C端用户").dataList(exportDataList).build();
         } else {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "传入的审核状态不对");
         }
