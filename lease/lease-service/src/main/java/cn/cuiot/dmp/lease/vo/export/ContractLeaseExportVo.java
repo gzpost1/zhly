@@ -7,6 +7,7 @@ import lombok.Data;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
@@ -57,7 +58,7 @@ public class ContractLeaseExportVo {
     private String contractCycle;
 
     public String getContractCycle() {
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return df.format(beginDate) + "至" + df.format(endDate);
     }
 
@@ -67,7 +68,7 @@ public class ContractLeaseExportVo {
      */
     private Integer auditStatus;
 
-    @Excel(name = "审核状态", orderNum = "3", replace = {"1_审核中", "2_审核通过", "3_未通过"})
+    @Excel(name = "审核状态", orderNum = "3", replace = {"审核中_1", "审核通过_2", "未通过_3"})
     private String auditStatusName;
 
     public String getAuditStatusName() {

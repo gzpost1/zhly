@@ -58,7 +58,7 @@ public class UserFeedbackExportVo implements Serializable {
     /**
      * 状态(0:待回复,1:已回复)
      */
-    @Excel(name = "回复状态", orderNum = "7", replace = {"0_待回复", "1_已回复"})
+    @Excel(name = "回复状态", orderNum = "7", replace = {"待回复_0", "已回复_1"})
     private Byte status;
 
     /**

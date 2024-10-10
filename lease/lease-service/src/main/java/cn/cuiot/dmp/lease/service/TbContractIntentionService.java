@@ -142,20 +142,28 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         return leaseIds;
     }
 
-    public void export(TbContractIntentionParam pageQuery) throws Exception {
-        PageResult<TbContractIntentionEntity> pageResult = this.page(pageQuery);
-        if (CollUtil.isEmpty(pageResult.getRecords())) {
-            return;
-        }
-        if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
-            throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-        }
+    public void export(TbContractIntentionParam param) throws Exception {
         List<ContractIntentionExportVo> exportDataList = new ArrayList<>();
-        pageResult.getList().forEach(o -> {
-            ContractIntentionExportVo exportVo = new ContractIntentionExportVo();
-            BeanUtil.copyProperties(o, exportVo);
-            exportDataList.add(exportVo);
-        });
+        PageResult<TbContractIntentionEntity> pageResult = new PageResult<>();
+        Long pageNo = 1L;
+        param.setPageSize(2000L);
+        do {
+            param.setPageNo(pageNo++);
+            String houseName = param.getHouseName();
+            if (StringUtils.isNotEmpty(houseName)) {
+                List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
+                param.setQueryIds(queryIds);
+            }
+            pageResult = super.page(param);
+            if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            pageResult.getList().forEach(o -> {
+                ContractIntentionExportVo exportVo = new ContractIntentionExportVo();
+                BeanUtil.copyProperties(o, exportVo);
+                exportDataList.add(exportVo);
+            });
+        } while (CollUtil.isNotEmpty(pageResult.getList()));
         excelExportService.excelExport(ExcelReportDto.<TbContractIntentionParam, ContractIntentionExportVo>builder().title("意向合同列表").fileName("意向合同导出").SheetName("意向合同列表")
                 .dataList(exportDataList).build(), ContractIntentionExportVo.class);
     }

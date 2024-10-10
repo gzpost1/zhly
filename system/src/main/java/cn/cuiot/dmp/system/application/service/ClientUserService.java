@@ -6,7 +6,6 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.system.application.param.vo.export.ClientUserExportVo;
-import cn.cuiot.dmp.system.application.param.vo.export.CodeArchiveExportVo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.ClientUserQuery;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.ClientUserVo;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.ClientUserMapper;
@@ -17,6 +16,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * C端用户服务
@@ -51,19 +53,23 @@ public class ClientUserService {
     }
 
     public void export(ClientUserQuery pageQuery) throws Exception {
-        IPage<ClientUserVo> pageResult = clientUserMapper.queryForList(new Page<ClientUserVo>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery);
-        if (CollUtil.isEmpty(pageResult.getRecords())) {
-            return;
-        }
-        if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
-            throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-        }
-        IPage<ClientUserExportVo> exportDataList = pageResult.convert(o -> {
-            ClientUserExportVo exportVo = new ClientUserExportVo();
-            BeanUtils.copyProperties(o, exportVo);
-            return exportVo;
-        });
+        IPage<ClientUserVo> pageResult = new Page<>();
+        Long pageNo = 1L;
+        pageQuery.setPageSize(2000L);
+        List<ClientUserExportVo> exportDataList = new ArrayList<>();
+        do {
+            pageQuery.setPageNo(pageNo++);
+            pageResult = this.queryForPage(pageQuery);
+            if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            pageResult.getRecords().forEach(o -> {
+                ClientUserExportVo exportVo = new ClientUserExportVo();
+                BeanUtils.copyProperties(o, exportVo);
+                exportDataList.add(exportVo);
+            });
+        } while (CollUtil.isNotEmpty(pageResult.getRecords()));
         excelExportService.excelExport(ExcelReportDto.<ClientUserQuery, ClientUserExportVo>builder().title("C端用户列表").fileName("C端用户导出").SheetName("C端用户列表")
-                .dataList(exportDataList.getRecords()).build(), ClientUserExportVo.class);
+                .dataList(exportDataList).build(), ClientUserExportVo.class);
     }
 }

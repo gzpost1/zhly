@@ -8,19 +8,14 @@ import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
-import cn.cuiot.dmp.lease.dto.contract.TbContractIntentionParam;
 import cn.cuiot.dmp.lease.dto.contract.TbContractLeaseParam;
-import cn.cuiot.dmp.lease.entity.BaseContractEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
 import cn.cuiot.dmp.lease.vo.export.ContractIntentionExportVo;
 import cn.cuiot.dmp.lease.vo.export.ContractLeaseExportVo;
 import cn.hutool.core.bean.BeanUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -90,6 +85,7 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         });
         return list;
     }
+
     @Override
     public PageResult<TbContractLeaseEntity> page(PageQuery param) {
         TbContractLeaseParam params = (TbContractLeaseParam) param;
@@ -104,6 +100,7 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         });
         return page;
     }
+
     public PageResult<TbContractLeaseEntity> pageNoSigned(PageQuery param) {
         TbContractLeaseParam params = (TbContractLeaseParam) param;
         List<Long> leaseIds = contractIntentionService.queryBindContractLeaseId();
@@ -117,27 +114,32 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
 
     @Override
     public TbContractLeaseEntity getById(Serializable id) {
-        AssertUtil.notNull(id,"id不能为空");
+        AssertUtil.notNull(id, "id不能为空");
         TbContractLeaseEntity leaseEntity = super.getById(id);
         baseContractService.fillBindHouseInfo(leaseEntity);
         return leaseEntity;
     }
 
 
-
     public List<BaseVO> statisticsContract() {
         return baseMapper.statisticsContract();
     }
 
-    public void export(TbContractIntentionParam pageQuery) throws Exception {
-        PageResult<TbContractLeaseEntity> pageResult = this.page(pageQuery);
+    public void export(TbContractLeaseParam pageQuery) throws Exception {
         List<ContractLeaseExportVo> exportDataList = new ArrayList<>();
-        pageResult.getList().forEach(o -> {
-            ContractLeaseExportVo exportVo = new ContractLeaseExportVo();
-            BeanUtil.copyProperties(o, exportVo);
-            exportDataList.add(exportVo);
-        });
-        excelExportService.excelExport(ExcelReportDto.<TbContractIntentionParam, ContractLeaseExportVo>builder().title("租赁合同列表").fileName("租赁合同导出").SheetName("租赁合同列表")
+        PageResult<TbContractLeaseEntity> pageResult = new PageResult<>();
+        Long pageNo = 1L;
+        pageQuery.setPageSize(2000L);
+        do {
+            pageQuery.setPageNo(pageNo++);
+            pageResult = this.page(pageQuery);
+            pageResult.getList().forEach(o -> {
+                ContractLeaseExportVo exportVo = new ContractLeaseExportVo();
+                BeanUtil.copyProperties(o, exportVo);
+                exportDataList.add(exportVo);
+            });
+        } while (CollUtil.isNotEmpty(pageResult.getRecords()));
+        excelExportService.excelExport(ExcelReportDto.<TbContractLeaseParam, ContractLeaseExportVo>builder().title("租赁合同列表").fileName("租赁合同导出").SheetName("租赁合同列表")
                 .dataList(exportDataList).build(), ContractIntentionExportVo.class);
     }
 }

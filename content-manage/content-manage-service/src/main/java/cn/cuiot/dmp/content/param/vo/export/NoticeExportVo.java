@@ -24,8 +24,17 @@ public class NoticeExportVo {
     /**
      * 发布端
      */
-    @Excel(name = "发布端", width = 3, orderNum = "2", replace = {"1_管理端", "2_客户端"})
-    private String publishSource;
+    private Byte publishSource;
+
+    /**
+     * 发布端
+     */
+    @Excel(name = "发布端", width = 10, orderNum = "2", replace = {"管理端_1", "客户端_2"})
+    private String publishSourceName;
+
+    public String getPublishSourceName() {
+        return publishSource.toString();
+    }
 
     private List<String> departmentNames;
 
@@ -41,7 +50,7 @@ public class NoticeExportVo {
 
     private List<String> buildingNames;
 
-    @Excel(name = "发布楼盘", orderNum = "4")
+    @Excel(name = "发布楼盘", orderNum = "4", width = 20)
     private String buildingNamesStr;
 
     public String getBuildingNamesStr() {
@@ -55,7 +64,7 @@ public class NoticeExportVo {
      * 公告类型
      */
     @Excel(name = "公告类型", orderNum = "5")
-    private String type;
+    private String typeName;
 
     /**
      * 生效开始时间
@@ -78,6 +87,12 @@ public class NoticeExportVo {
     /**
      * 审核状态
      */
-    @Excel(name = "审核状态", orderNum = "10", width = 3, replace = {"1_未审核", "2_审核通过", "3_审核不通过"})
     private Byte auditStatus;
+
+    @Excel(name = "审核状态", orderNum = "10", width = 8, replace = {"未审核_1", "审核通过_2", "审核不通过_3"})
+    private String auditStatusName;
+
+    public String getAuditStatusName() {
+        return auditStatus.toString();
+    }
 }

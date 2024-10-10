@@ -7,6 +7,7 @@ import lombok.Data;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
@@ -73,7 +74,7 @@ public class ContractIntentionExportVo {
     private String auditStatusName;
 
     public String getAuditStatusName() {
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String s = Objects.requireNonNull(ContractEnum.getEnumByCode(auditStatus)).getDesc() + "\n";
         if (updateTime != null) {
             s = s + df.format(updateTime);
@@ -104,7 +105,7 @@ public class ContractIntentionExportVo {
     private String contractCycle;
 
     public String getContractCycle() {
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return df.format(beginDate) + "至" + df.format(endDate);
     }
 

@@ -318,7 +318,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
      * @throws Exception
      */
     @PostMapping("export")
-    public IdmResDTO export(@RequestBody @Valid TbContractIntentionParam pageQuery) throws Exception {
+    public IdmResDTO export(@RequestBody @Valid TbContractLeaseParam pageQuery) throws Exception {
         service.export(pageQuery);
         return IdmResDTO.success();
     }

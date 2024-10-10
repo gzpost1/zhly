@@ -331,27 +331,31 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
     }
 
     public void export(UserHouseAuditPageQueryDTO pageQuery) throws Exception {
-        IPage<UserHouseAuditDTO> pageResult = this.queryForPage(pageQuery);
-        if (CollUtil.isEmpty(pageResult.getRecords())) {
-            return;
-        }
-        if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
-            throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-        }
-        IPage<UserHouseAuditExportVo> exportDataList = pageResult.convert(o -> {
-            UserHouseAuditExportVo exportVo = new UserHouseAuditExportVo();
-            BeanUtils.copyProperties(o, exportVo);
-            return exportVo;
-        });
+        IPage<UserHouseAuditDTO> pageResult = new Page<>();
+        Long pageNo = 1L;
+        pageQuery.setPageSize(2000L);
+        List<UserHouseAuditExportVo> exportDataList = new ArrayList<>();
+        do {
+            pageQuery.setPageNo(pageNo++);
+            pageResult = this.queryForPage(pageQuery);
+            if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            pageResult.getRecords().forEach(o -> {
+                UserHouseAuditExportVo exportVo = new UserHouseAuditExportVo();
+                BeanUtils.copyProperties(o, exportVo);
+                exportDataList.add(exportVo);
+            });
+        } while (CollUtil.isNotEmpty(pageResult.getRecords()));
         ExcelReportDto<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo> excelReportDto = null;
         if (UserHouseAuditStatusConstants.WAIT.equals(pageQuery.getAuditStatus())) {
             excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("待审核C端用户").fileName("待审核C端用户导出").SheetName("待审核C端用户").dataList(exportDataList.getRecords()).build();
-        }else if (UserHouseAuditStatusConstants.PASS.equals(pageQuery.getAuditStatus())) {
+        } else if (UserHouseAuditStatusConstants.PASS.equals(pageQuery.getAuditStatus())) {
             excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("审核通过C端用户").fileName("审核通过C端用户导出").SheetName("审核通过C端用户").dataList(exportDataList.getRecords()).build();
-        }else if (UserHouseAuditStatusConstants.REJECT.equals(pageQuery.getAuditStatus())) {
+        } else if (UserHouseAuditStatusConstants.REJECT.equals(pageQuery.getAuditStatus())) {
             excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("审核驳回C端用户").fileName("审核驳回C端用户导出").SheetName("审核驳回C端用户").dataList(exportDataList.getRecords()).build();
-        }else {
-            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,"传入的审核状态不对");
+        } else {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "传入的审核状态不对");
         }
         excelExportService.excelExport(excelReportDto, UserHouseAuditExportVo.class);
     }

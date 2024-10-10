@@ -42,7 +42,7 @@ public class ExcelExportService {
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
 
         ExcelUtil.downLoadExcel(
-                dto.getFileName() + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                dto.getFileName() + "("+DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")",
                 response,
                 workbook);
     }

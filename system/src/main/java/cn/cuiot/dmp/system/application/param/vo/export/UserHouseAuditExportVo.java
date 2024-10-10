@@ -23,7 +23,7 @@ public class UserHouseAuditExportVo {
     /**
      * 手机号
      */
-    @Excel(name = "手机号码", width = 11, orderNum = "2")
+    @Excel(name = "手机号码", width = 15, orderNum = "2")
     private String phoneNumber;
 
     /**
@@ -41,8 +41,8 @@ public class UserHouseAuditExportVo {
     /**
      * 身份类型(1:户主,2:租户,3:家属)
      */
-    @Excel(name = "认证身份", width = 10, orderNum = "5", replace = {"1_户主", "2_租户", "3_家属"})
-    private String identityType;
+    @Excel(name = "认证身份", width = 10, orderNum = "5", replace = {"户主_1", "租户_2", "家属_3"})
+    private String identityTypeName;
 
     /**
      * 创建时间
@@ -50,4 +50,12 @@ public class UserHouseAuditExportVo {
     @Excel(name = "提交时间", width = 20, orderNum = "6", exportFormat = "yyyy-MM-dd HH:mm:ss")
     private Date auditTime;
 
+    /**
+     * 身份类型(1:户主,2:租户,3:家属)
+     */
+    private Byte identityType;
+
+    public String getIdentityTypeName() {
+        return identityType.toString();
+    }
 }

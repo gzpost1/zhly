@@ -81,7 +81,7 @@ public class RoomArchivesExportVo implements Serializable {
     /**
      * 状态（默认启用，点击关闭）
      */
-    @Excel(name = "状态", orderNum = "11", width = 30, replace = {"1_启用", "0_停用"})
+    @Excel(name = "状态", orderNum = "11", width = 30, replace = {"启用_1", "停用_0"})
     private Byte status;
 
 }

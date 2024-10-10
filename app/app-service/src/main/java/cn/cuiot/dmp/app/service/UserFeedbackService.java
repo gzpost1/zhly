@@ -20,7 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -93,19 +95,23 @@ public class UserFeedbackService extends ServiceImpl<UserFeedbackMapper, UserFee
     }
 
     public void export(UserFeedbackQuery pageQuery) throws Exception {
-        IPage<UserFeedbackEntity> pageResult = userFeedbackMapper.queryForPage(new Page<UserFeedbackEntity>(pageQuery.getPageNo(), pageQuery.getPageSize()), pageQuery);
-        if (CollUtil.isEmpty(pageResult.getRecords())) {
-            return;
-        }
-        if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
-            throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-        }
-        IPage<UserFeedbackExportVo> exportDataList = pageResult.convert(o -> {
-            UserFeedbackExportVo exportVo = new UserFeedbackExportVo();
-            BeanUtil.copyProperties(o, exportVo);
-            return exportVo;
-        });
+        IPage<UserFeedbackEntity> pageResult = new Page<>();
+        Long pageNo = 1L;
+        pageQuery.setPageSize(2000L);
+        List<UserFeedbackExportVo> exportDataList = new ArrayList<>();
+        do {
+            pageQuery.setPageNo(pageNo++);
+            pageResult = this.queryForPage(pageQuery);
+            if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            pageResult.getRecords().forEach(o -> {
+                UserFeedbackExportVo exportVo = new UserFeedbackExportVo();
+                BeanUtil.copyProperties(o, exportVo);
+                exportDataList.add(exportVo);
+            });
+        } while (CollUtil.isNotEmpty(pageResult.getRecords()));
         excelExportService.excelExport(ExcelReportDto.<UserFeedbackQuery, UserFeedbackExportVo>builder().title("意见反馈列表").fileName("意见反馈导出").SheetName("意见反馈列表")
-                .dataList(exportDataList.getRecords()).build(), UserFeedbackExportVo.class);
+                .dataList(exportDataList).build(), UserFeedbackExportVo.class);
     }
 }

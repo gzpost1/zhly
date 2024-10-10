@@ -18,7 +18,7 @@ public class ClientUserExportVo implements Serializable {
     /**
      * pk
      */
-    @Excel(name = "用户ID", orderNum = "0")
+    @Excel(name = "用户ID", orderNum = "0",width = 20)
     private Long id;
 
     /**

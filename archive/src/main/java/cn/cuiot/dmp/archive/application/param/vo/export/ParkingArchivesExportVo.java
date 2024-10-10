@@ -40,7 +40,7 @@ public class ParkingArchivesExportVo implements Serializable {
     /**
      * 状态
      */
-    @Excel(name = "状态", width = 30, orderNum = "6", replace = {"1_启用", "0_停用"})
+    @Excel(name = "状态", width = 30, orderNum = "6", replace = {"启用_1", "停用_0"})
     private String status;
 
     /**

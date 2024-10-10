@@ -411,19 +411,22 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
     }
 
     public void export(PriceManagePageQueryDTO pageQuery) throws Exception {
-        PageResult<PriceManageDTO> pageResult = this.queryForPage(pageQuery);
-        if (CollUtil.isEmpty(pageResult.getRecords())) {
-            return;
-        }
-        if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
-            throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-        }
-        List<PriceManageExportVo> exportDataList = new ArrayList();
-        pageResult.getList().forEach(o -> {
-            PriceManageExportVo exportVo = new PriceManageExportVo();
-            BeanUtil.copyProperties(o, exportVo);
-            exportDataList.add(exportVo);
-        });
+        List<PriceManageExportVo> exportDataList = new ArrayList<>();
+        PageResult<PriceManageDTO> pageResult = new PageResult<>();
+        Long pageNo = 1L;
+        pageQuery.setPageSize(2000L);
+        do {
+            pageQuery.setPageNo(pageNo++);
+            pageResult = this.queryForPage(pageQuery);
+            if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            pageResult.getList().forEach(o -> {
+                PriceManageExportVo exportVo = new PriceManageExportVo();
+                BeanUtil.copyProperties(o, exportVo);
+                exportDataList.add(exportVo);
+            });
+        } while (CollUtil.isNotEmpty(pageResult.getRecords()));
         excelExportService.excelExport(ExcelReportDto.<PriceManagePageQueryDTO, PriceManageExportVo>builder().title("工单列表").fileName("工单导出").SheetName("工单列表")
                 .dataList(exportDataList).build(), PriceManageExportVo.class);
     }
