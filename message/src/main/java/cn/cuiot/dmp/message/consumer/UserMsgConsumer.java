@@ -66,14 +66,19 @@ public class UserMsgConsumer {
             SmsMsgDto smsMsgDto = userMessageAcceptDto.getSmsMsgDto();
             BaseUserReqDto query = new BaseUserReqDto();
             query.setUserIdList(smsMsgDto.getUserIds());
-            log.info("lookUpUserList-params:{}",JsonUtil.writeValueAsString(query));
+            log.info("lookUpUserList-params:{}", JsonUtil.writeValueAsString(query));
             List<BaseUserDto> userDtoList = systemApiFeignService.lookUpUserList(query).getData();
-            log.info("lookUpUserList-result:{}",JsonUtil.writeValueAsString(userDtoList));
+            log.info("lookUpUserList-result:{}", JsonUtil.writeValueAsString(userDtoList));
             if (CollUtil.isNotEmpty(userDtoList)) {
                 List<String> collect = userDtoList.stream().map(BaseUserDto::getPhoneNumber).filter(StrUtil::isNotEmpty).distinct().collect(Collectors.toList());
                 String mobile = String.join(",", collect);
                 SmsSendQuery smsSendQuery = new SmsSendQuery();
-                smsSendQuery.setMobile(mobile).setCompanyId(Long.parseLong(userDtoList.get(0).getOrgId())).setParams(smsMsgDto.getParams()).setStdTemplate(smsMsgDto.getTemplateId());
+                smsSendQuery.setMobile(mobile).setParams(smsMsgDto.getParams()).setStdTemplate(smsMsgDto.getTemplateId());
+                if (userDtoList.get(0).getOrgId() != null) {
+                    smsSendQuery.setCompanyId(Long.parseLong(userDtoList.get(0).getOrgId()));
+                }else {
+                    log.info("该用户企业为空：{}",userDtoList.get(0).getId());
+                }
                 log.info("发送短信：{}", JsonUtil.writeValueAsString(smsSendQuery));
                 smsSendService.sendMsg(smsSendQuery);
             }
@@ -104,7 +109,7 @@ public class UserMsgConsumer {
                 return;
             }
             List<SmsBusinessMsgDto> smsMsgDto = dto.getSmsMsgDto();
-            smsMsgDto.forEach(item ->{
+            smsMsgDto.forEach(item -> {
                 SmsSendQuery smsSendQuery = new SmsSendQuery();
                 smsSendQuery.setMobile(item.getTelNumbers()).setCompanyId(item.getCompanyId()).setParams(item.getParams()).setStdTemplate(item.getTemplateId());
                 log.info("发送短信：{}", JsonUtil.writeValueAsString(smsSendQuery));
