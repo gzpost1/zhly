@@ -1,5 +1,8 @@
 package cn.cuiot.dmp.externalapi.provider.task;
 
+import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
+import cn.cuiot.dmp.common.enums.OrgTypeEnum;
+import cn.cuiot.dmp.sms.contant.SmsRedisKeyConstant;
 import cn.cuiot.dmp.sms.entity.SmsSignEntity;
 import cn.cuiot.dmp.sms.entity.SmsTemplateEntity;
 import cn.cuiot.dmp.sms.enums.SmsThirdStatusEnum;
@@ -42,6 +45,8 @@ public class SmsTask {
     private SmsSignService smsSignService;
     @Autowired
     private SmsApiFeignService smsApiFeignService;
+    @Autowired
+    private RedisUtil redisUtil;
 
     /**
      * 同步短信模板状态
@@ -85,6 +90,9 @@ public class SmsTask {
                         // 更新状态
                         if (CollectionUtils.isNotEmpty(collect)) {
                             smsTemplateService.updateBatchById(collect);
+
+                            // 批量删除模板缓存
+                            collect.forEach(item -> redisUtil.del(SmsRedisKeyConstant.TEMPLATE + item.getStdTemplate()));
                         }
 
                     } catch (Exception e) {
@@ -142,6 +150,15 @@ public class SmsTask {
                         // 更新状态
                         if (CollectionUtils.isNotEmpty(collect)) {
                             smsSignService.updateBatchById(collect);
+
+                            // 批量删除模板缓存
+                            collect.forEach(item ->{
+                                if (Objects.equals(item.getOrgTypeId(), OrgTypeEnum.PLATFORM.getValue())) {
+                                    redisUtil.del(SmsRedisKeyConstant.SIGN_PLATFORM);
+                                } else if (Objects.equals(item.getOrgTypeId(), OrgTypeEnum.ENTERPRISE.getValue())) {
+                                    redisUtil.del(SmsRedisKeyConstant.SIGN_COMPANY + item.getCompanyId());
+                                }
+                            });
                         }
 
                     } catch (Exception e) {
