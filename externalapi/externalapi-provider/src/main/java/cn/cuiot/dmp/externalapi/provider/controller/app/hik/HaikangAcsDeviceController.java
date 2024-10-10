@@ -4,7 +4,9 @@ import cn.cuiot.dmp.base.application.annotation.ResolveExtData;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDeviceQuery;
+import cn.cuiot.dmp.externalapi.service.query.hik.HaikangRegionQuery;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsDeviceService;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikRegionResp;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDeviceVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.List;
@@ -57,5 +59,17 @@ public class HaikangAcsDeviceController {
         return IdmResDTO.success(list);
     }
 
+    /**
+     * 查询区域
+     */
+    @ResolveExtData
+    @PostMapping("/queryRegions")
+    public IdmResDTO<List<HikRegionResp.DataItem>> queryRegions(
+            @RequestBody HaikangRegionQuery query) {
+        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
+        query.setCompanyId(currentOrgId);
+        List<HikRegionResp.DataItem> list = haikangAcsDeviceService.queryRegions(query);
+        return IdmResDTO.success(list);
+    }
 
 }

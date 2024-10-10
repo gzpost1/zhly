@@ -150,13 +150,7 @@ public class HaikangAcsDoorEntity implements Serializable {
 
 
     /**
-     * 状态小于0则代表资源已被删除
-     */
-    private Byte status;
-
-
-    /**
-     * 设门状态，0 初始状态，1 开门状态，2关门状态，3离线状态,小于0则代表资源已被删除
+     * 门状态，0 初始状态，1 开门状态，2关门状态，3离线状态,状态小于0则代表资源已被删除
      */
     private Byte doorState;
 

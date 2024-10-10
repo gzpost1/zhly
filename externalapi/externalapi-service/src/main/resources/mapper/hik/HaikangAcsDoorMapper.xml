@@ -25,7 +25,6 @@
         <result column="region_name" property="regionName" />
         <result column="region_path_name" property="regionPathName" />
         <result column="install_location" property="installLocation" />
-        <result column="status" property="status" />
         <result column="door_state" property="doorState" />
         <result column="auth_state" property="authState" />
         <result column="update_time" property="updateTime" />
@@ -35,7 +34,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, org_id, index_code, resource_type, name, door_no, channel_no, parent_index_code, control_one_id, control_two_id, reader_in_id, reader_out_id, door_serial, treaty_type, region_index_code, region_path, description, channel_type, region_name, region_path_name, install_location, status, door_state, auth_state, update_time, create_time, data_time
+        id, org_id, index_code, resource_type, name, door_no, channel_no, parent_index_code, control_one_id, control_two_id, reader_in_id, reader_out_id, door_serial, treaty_type, region_index_code, region_path, description, channel_type, region_name, region_path_name, install_location, door_state, auth_state, update_time, create_time, data_time
     </sql>
 
     <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo">

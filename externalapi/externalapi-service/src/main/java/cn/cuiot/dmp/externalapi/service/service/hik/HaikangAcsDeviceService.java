@@ -1,9 +1,15 @@
 package cn.cuiot.dmp.externalapi.service.service.hik;
 
+import cn.cuiot.dmp.common.bean.external.HIKEntranceGuardBO;
 import cn.cuiot.dmp.externalapi.service.converter.hik.HaikangAcsDeviceConverter;
 import cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsDeviceEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.hik.HaikangAcsDeviceMapper;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDeviceQuery;
+import cn.cuiot.dmp.externalapi.service.query.hik.HaikangRegionQuery;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.HikApiFeignService;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.HikRegionReq;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikRegionResp;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikRegionResp.DataItem;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDeviceVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -36,11 +42,23 @@ public class HaikangAcsDeviceService extends
     @Autowired
     private HaikangAcsDeviceConverter haikangAcsDeviceConverter;
 
+    @Autowired
+    private HikApiFeignService hikApiFeignService;
+
+    @Autowired
+    private HikCommonHandle hikCommonHandle;
+
+    /**
+     * 区域查询默认分页大小
+     */
+    private final static Long DEFAULT_PAGE_SIZE = 1000L;
+
     /**
      * 分页查询
      */
     public IPage<HaikangAcsDeviceVo> queryForPage(HaikangAcsDeviceQuery query) {
-        Page<HaikangAcsDeviceVo> page = haikangAcsDeviceMapper.searchList(new Page<HaikangAcsDeviceVo>(query.getPageNo(), query.getPageSize()),query);
+        Page<HaikangAcsDeviceVo> page = haikangAcsDeviceMapper.searchList(
+                new Page<HaikangAcsDeviceVo>(query.getPageNo(), query.getPageSize()), query);
         return page;
     }
 
@@ -54,8 +72,6 @@ public class HaikangAcsDeviceService extends
 
     /**
      * 下拉列表查询
-     * @param query
-     * @return
      */
     public List<HaikangAcsDeviceVo> listForSelect(HaikangAcsDeviceQuery query) {
         LambdaQueryWrapper<HaikangAcsDeviceEntity> lambdaedQuery = Wrappers.lambdaQuery();
@@ -83,6 +99,45 @@ public class HaikangAcsDeviceService extends
             return haikangAcsDeviceConverter.entityListToVoList(selectList);
         }
         return Lists.newArrayList();
+    }
+
+    /**
+     * 查询区域
+     */
+    public List<DataItem> queryRegions(HaikangRegionQuery query) {
+        HikRegionReq req = new HikRegionReq();
+
+        req.setPageNo(query.getPageNo());
+        if (Objects.isNull(req.getPageNo())) {
+            req.setPageNo(1L);
+        }
+        req.setPageSize(query.getPageSize());
+        if (Objects.isNull(req.getPageSize())) {
+            req.setPageSize(DEFAULT_PAGE_SIZE);
+        }
+        req.setResourceType(req.getResourceType());
+        if (StringUtils.isBlank(req.getResourceType())) {
+            req.setResourceType("region");
+        }
+        req.setIsSubRegion(req.getIsSubRegion());
+        if (Objects.isNull(req.getIsSubRegion())) {
+            req.setIsSubRegion(true);
+        }
+
+        req.setRegionType(query.getRegionType());
+
+        req.setRegionName(query.getRegionName());
+
+        req.setCascadeFlag(req.getCascadeFlag());
+        if (Objects.isNull(req.getCascadeFlag())) {
+            req.setCascadeFlag(0);
+        }
+
+        HIKEntranceGuardBO hikEntranceGuardBO = hikCommonHandle.queryHikConfigByPlatfromInfo(
+                query.getCompanyId());
+
+        HikRegionResp hikRegionResp = hikApiFeignService.queryRegions(req, hikEntranceGuardBO);
+        return hikRegionResp.getList();
     }
 
 }

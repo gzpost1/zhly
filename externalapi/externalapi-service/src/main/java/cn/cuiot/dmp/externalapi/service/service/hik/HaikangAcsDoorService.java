@@ -9,20 +9,23 @@ import cn.cuiot.dmp.externalapi.service.entity.hik.HaikangDataDictEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.hik.HaikangAcsDoorMapper;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorControlDto;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorQuery;
+import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorStateQuery;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.HikApiFeignService;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.HikDoorControlReq;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.HikDoorStatesReq;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorStatesResp;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorStatesResp.AuthDoor;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -138,12 +141,14 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
     /**
      * 门禁点反控
      */
-    public void dooControlDoor(HaikangAcsDoorControlDto dto) {
+    public void doControlDoor(HaikangAcsDoorControlDto dto) {
         LambdaQueryWrapper<HaikangAcsDoorEntity> lambdaedQuery = Wrappers.lambdaQuery();
         lambdaedQuery.eq(HaikangAcsDoorEntity::getOrgId, dto.getCompanyId());
         lambdaedQuery.in(HaikangAcsDoorEntity::getIndexCode, dto.getIndexCodes());
-        List<HaikangAcsDoorEntity> selectList = Optional.ofNullable(haikangAcsDoorMapper.selectList(lambdaedQuery)).orElse(Lists.newArrayList());
-        AssertUtil.isFalse(dto.getIndexCodes().size()>selectList.size(),"操作失败，只能操作本企业的数据");
+        List<HaikangAcsDoorEntity> selectList = Optional.ofNullable(
+                haikangAcsDoorMapper.selectList(lambdaedQuery)).orElse(
+                Lists.newArrayList());
+        AssertUtil.isFalse(dto.getIndexCodes().size() > selectList.size(), "操作失败，越权操作数据");
 
         HikDoorControlReq req = new HikDoorControlReq();
         req.setControlType(dto.getControlType());
@@ -152,8 +157,31 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
         HIKEntranceGuardBO hikEntranceGuardBO = hikCommonHandle.queryHikConfigByPlatfromInfo(
                 dto.getCompanyId());
 
-        hikApiFeignService.doorDoControl(req,hikEntranceGuardBO);
+        hikApiFeignService.doorDoControl(req, hikEntranceGuardBO);
 
     }
+
+    /**
+     * 查询门禁点状态
+     */
+    public Byte queryDoorState(HaikangAcsDoorStateQuery query) {
+        HikDoorStatesReq req = new HikDoorStatesReq();
+        req.setDoorIndexCodes(Lists.newArrayList(query.getIndexCode()));
+        HIKEntranceGuardBO hikEntranceGuardBO = hikCommonHandle.queryHikConfigByPlatfromInfo(
+                query.getCompanyId());
+        HikDoorStatesResp resp = hikApiFeignService.queryDoorStates(req,
+                hikEntranceGuardBO);
+        Optional<AuthDoor> findOptional = Optional.ofNullable(resp.getAuthDoorList())
+                .orElse(Lists.newArrayList()).stream()
+                .filter(item -> item.getDoorIndexCode().equals(query.getIndexCode())).findFirst();
+        if (findOptional.isPresent()) {
+            Integer doorState = findOptional.get().getDoorState();
+            if (Objects.nonNull(doorState)) {
+                return doorState.byteValue();
+            }
+        }
+        return null;
+    }
+
 
 }

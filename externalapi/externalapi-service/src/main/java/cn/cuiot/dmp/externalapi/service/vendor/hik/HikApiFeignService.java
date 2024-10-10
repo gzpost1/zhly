@@ -57,7 +57,7 @@ public class HikApiFeignService {
      * @Param req 参数
      */
     public HikRegionResp queryRegions(HikRegionReq req, HIKEntranceGuardBO bo) {
-        String gateway = "/api/resource/v2/regions/subRegions";
+        String gateway = "/api/resource/v2/regions/nodesByParams";
         HikBaseResp<HikRegionResp> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
                 new TypeReference<HikBaseResp<HikRegionResp>>() {
                 });
