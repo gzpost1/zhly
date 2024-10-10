@@ -3,11 +3,13 @@ package cn.cuiot.dmp.externalapi.provider.controller.admin.hik;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorControlDto;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorQuery;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsDoorService;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.List;
+import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,6 +55,18 @@ public class HaikangAcsDoorController {
         query.setCompanyId(currentOrgId);
         List<HaikangAcsDoorVo> list = haikangAcsDoorService.listForSelect(query);
         return IdmResDTO.success(list);
+    }
+
+    /**
+     * 门禁点反控
+     */
+    @RequiresPermissions
+    @PostMapping("/dooControlDoor")
+    public IdmResDTO dooControlDoor(@RequestBody @Valid HaikangAcsDoorControlDto dto) {
+        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
+        dto.setCompanyId(currentOrgId);
+        haikangAcsDoorService.dooControlDoor(dto);
+        return IdmResDTO.success();
     }
 
 }

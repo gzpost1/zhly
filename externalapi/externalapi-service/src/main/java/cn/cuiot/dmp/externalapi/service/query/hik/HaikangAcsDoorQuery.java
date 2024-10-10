@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.query.hik;
 
 import cn.cuiot.dmp.common.bean.PageQuery;
+import java.util.List;
 import lombok.Data;
 
 /**
@@ -41,6 +42,4 @@ public class HaikangAcsDoorQuery extends PageQuery {
      * 所属设备编码
      */
     private String parentIndexCode;
-
-
 }
