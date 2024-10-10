@@ -31,6 +31,16 @@ public class HikAcpsAuthConfigAddReq {
     private List<ResourceInfoDTO> resourceInfos;
 
     /**
+     * 开始日期，采用ISO8601时间格式
+     */
+    private String startTime;
+
+    /**
+     * 结束日期，采用ISO8601时间格式
+     */
+    private String endTime;
+
+    /**
      * 内部类：人员数据对象
      */
     @Data
@@ -64,15 +74,5 @@ public class HikAcpsAuthConfigAddReq {
          * 通道号
          */
         private List<Number> channelNos;
-
-        /**
-         * 开始日期，采用ISO8601时间格式
-         */
-        private String startTime;
-
-        /**
-         * 结束日期，采用ISO8601时间格式
-         */
-        private String endTime;
     }
 }

@@ -14,10 +14,10 @@ public class HikBaseReq {
     /**
      * 当前页码
      */
-    private Integer pageNo;
+    private Long pageNo;
 
     /**
      * 当前页码
      */
-    private Integer pageSize;
+    private Long pageSize;
 }
