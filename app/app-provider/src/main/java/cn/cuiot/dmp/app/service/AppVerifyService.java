@@ -201,7 +201,7 @@ public class AppVerifyService {
     public boolean sendSmsCode(String smsCode, String phoneNumber, Long companyId) {
         try {
             SmsSendQuery query = new SmsSendQuery();
-            query.setCompanyId(companyId).setMobile(phoneNumber).setParams(Collections.singletonList(smsCode)).setStdTemplate(SmsStdTemplate.MANAGE_LOGIN_OR_UPDATE_PASSWORD);
+            query.setCompanyId(companyId).setMobile(phoneNumber).setParams(Collections.singletonList(smsCode)).setStdTemplate(SmsStdTemplate.CLIENT_LOGIN);
             log.info("发送短信验证码：{}", JsonUtil.writeValueAsString(query));
             smsSendService.sendMsg(query);
         }catch (Exception ex){
