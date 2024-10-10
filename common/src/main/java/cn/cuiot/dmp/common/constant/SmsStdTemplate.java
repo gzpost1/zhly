@@ -178,5 +178,5 @@ public class SmsStdTemplate {
     /**
      * 尊敬的客户您好，您目前已有XX条费用，总计欠缴XX元，还请您及时缴费，如已完成缴费还请忽略此通知！
      */
-    public static final Integer CLIENT_PAST_DUE_NOTICE = 205001;
+    public static final Integer CLIENT_PAST_DUE_NOTICE = 205002;
 }
