@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.hik.HaikangAcsDoorMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsDoorEntity">
+        <id column="id" property="id" />
+        <result column="org_id" property="orgId" />
+        <result column="index_code" property="indexCode" />
+        <result column="resource_type" property="resourceType" />
+        <result column="name" property="name" />
+        <result column="door_no" property="doorNo" />
+        <result column="channel_no" property="channelNo" />
+        <result column="parent_index_code" property="parentIndexCode" />
+        <result column="control_one_id" property="controlOneId" />
+        <result column="control_two_id" property="controlTwoId" />
+        <result column="reader_in_id" property="readerInId" />
+        <result column="reader_out_id" property="readerOutId" />
+        <result column="door_serial" property="doorSerial" />
+        <result column="treaty_type" property="treatyType" />
+        <result column="region_index_code" property="regionIndexCode" />
+        <result column="region_path" property="regionPath" />
+        <result column="description" property="description" />
+        <result column="channel_type" property="channelType" />
+        <result column="region_name" property="regionName" />
+        <result column="region_path_name" property="regionPathName" />
+        <result column="install_location" property="installLocation" />
+        <result column="status" property="status" />
+        <result column="door_state" property="doorState" />
+        <result column="auth_state" property="authState" />
+        <result column="update_time" property="updateTime" />
+        <result column="create_time" property="createTime" />
+        <result column="data_time" property="dataTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, org_id, index_code, resource_type, name, door_no, channel_no, parent_index_code, control_one_id, control_two_id, reader_in_id, reader_out_id, door_serial, treaty_type, region_index_code, region_path, description, channel_type, region_name, region_path_name, install_location, status, door_state, auth_state, update_time, create_time, data_time
+    </sql>
+
+    <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo">
+        <result column="parent_index_name" property="parentIndexName" />
+    </resultMap>
+
+    <select id="searchList" resultMap="VoResultMap">
+        SELECT
+        a.*,
+        b.name as parent_index_name
+        FROM
+        tb_haikang_acs_door AS a
+        left join tb_haikang_acs_device b on a.parent_index_code=b.index_code
+        <where>
+            <if test="param.companyId != null">
+                and a.org_id=#{param.companyId}
+            </if>
+            <if test="param.indexCode != null and param.indexCode != ''">
+                and a.index_code=#{param.indexCode}
+            </if>
+            <if test="param.doorNo != null and param.doorNo != ''">
+                and a.door_no=#{param.doorNo}
+            </if>
+            <if test="param.regionIndexCode != null and param.regionIndexCode != ''">
+                and a.region_index_code=#{param.regionIndexCode}
+            </if>
+            <if test="param.parentIndexCode != null and param.parentIndexCode != ''">
+                and a.parent_index_code=#{param.parentIndexCode}
+            </if>
+            <if test="param.name != null and param.name != ''">
+                and a.name like CONCAT('%',#{param.name}, '%')
+            </if>
+        </where>
+        order by a.create_time desc,a.id desc
+    </select>
+
+
+</mapper>

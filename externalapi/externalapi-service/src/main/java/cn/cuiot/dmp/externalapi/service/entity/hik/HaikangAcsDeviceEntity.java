@@ -30,6 +30,11 @@ public class HaikangAcsDeviceEntity implements Serializable {
     @TableId("id")
     private Long id;
 
+    /**
+     * 企业ID
+     */
+    private Long orgId;
+
 
     /**
      * 资源唯一编码
@@ -194,7 +199,7 @@ public class HaikangAcsDeviceEntity implements Serializable {
 
 
     /**
-     * 设备状态（0离线，1在线）
+     * 设备状态（1-在线，0-离线，-1-未检测）
      */
     private Byte online;
 

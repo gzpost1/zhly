@@ -30,6 +30,10 @@ public class HaikangAcsReaderEntity implements Serializable {
     @TableId("id")
     private Long id;
 
+    /**
+     * 企业ID
+     */
+    private Long orgId;
 
     /**
      * 资源类型，reader：门禁读卡器

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.hik.HaikangAcsDeviceMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsDeviceEntity">
+        <id column="id" property="id" />
+        <result column="org_id" property="orgId" />
+        <result column="index_code" property="indexCode" />
+        <result column="parent_index_code" property="parentIndexCode" />
+        <result column="resource_type" property="resourceType" />
+        <result column="name" property="name" />
+        <result column="dev_type_code" property="devTypeCode" />
+        <result column="dev_type_desc" property="devTypeDesc" />
+        <result column="device_code" property="deviceCode" />
+        <result column="manufacturer" property="manufacturer" />
+        <result column="region_index_code" property="regionIndexCode" />
+        <result column="region_path" property="regionPath" />
+        <result column="treaty_type" property="treatyType" />
+        <result column="card_capacity" property="cardCapacity" />
+        <result column="finger_capacity" property="fingerCapacity" />
+        <result column="vein_capacity" property="veinCapacity" />
+        <result column="face_capacity" property="faceCapacity" />
+        <result column="door_capacity" property="doorCapacity" />
+        <result column="deploy_id" property="deployId" />
+        <result column="net_zone_id" property="netZoneId" />
+        <result column="description" property="description" />
+        <result column="acs_reader_verify_mode_ability" property="acsReaderVerifyModeAbility" />
+        <result column="region_name" property="regionName" />
+        <result column="region_path_name" property="regionPathName" />
+        <result column="ip" property="ip" />
+        <result column="port" property="port" />
+        <result column="capability" property="capability" />
+        <result column="dev_serial_num" property="devSerialNum" />
+        <result column="data_version" property="dataVersion" />
+        <result column="online" property="online" />
+        <result column="collect_time" property="collectTime" />
+        <result column="device_type" property="deviceType" />
+        <result column="update_time" property="updateTime" />
+        <result column="create_time" property="createTime" />
+        <result column="data_time" property="dataTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, org_id, index_code, parent_index_code, resource_type, name, dev_type_code, dev_type_desc, device_code, manufacturer, region_index_code, region_path, treaty_type, card_capacity, finger_capacity, vein_capacity, face_capacity, door_capacity, deploy_id, net_zone_id, description, acs_reader_verify_mode_ability, region_name, region_path_name, ip, port, capability, dev_serial_num, data_version, online, collect_time, device_type, update_time, create_time, data_time
+    </sql>
+
+    <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDeviceVo">
+        <result column="door_cou" property="doorCou" />
+        <result column="reader_cou" property="readerCou" />
+    </resultMap>
+
+    <select id="searchList" resultMap="VoResultMap">
+        SELECT
+            a.*,
+            ifnull(b.door_cou,0) as door_cou,
+            ifnull(b.reader_cou,0) as reader_cou
+        FROM
+        tb_haikang_acs_device AS a
+        join (
+            SELECT
+                a.id,
+                COUNT( b.id ) AS door_cou,
+                COUNT( c.id ) AS reader_cou
+            FROM
+            tb_haikang_acs_device AS a
+            left join tb_haikang_acs_door b on a.index_code=b.parent_index_code
+            left join tb_haikang_acs_reader c on a.index_code=c.parent_index_code
+            <where>
+                <if test="param.companyId != null">
+                    and a.org_id=#{param.companyId}
+                </if>
+                <if test="param.indexCode != null and param.indexCode != ''">
+                    and a.index_code=#{param.indexCode}
+                </if>
+                <if test="param.regionIndexCode != null and param.regionIndexCode != ''">
+                    and a.region_index_code=#{param.regionIndexCode}
+                </if>
+                <if test="param.name != null and param.name != ''">
+                    and a.name like CONCAT('%',#{param.name}, '%')
+                </if>
+                <if test="param.online != null">
+                    and a.online=#{param.online}
+                </if>
+            </where>
+            group by a.id
+        ) b on a.id=b.id
+        order by a.create_time desc,a.id desc
+    </select>
+
+
+</mapper>
