@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.service.hik;
 
 import cn.cuiot.dmp.common.bean.external.HIKEntranceGuardBO;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.externalapi.service.constant.HaikangDataDictConstant;
 import cn.cuiot.dmp.externalapi.service.converter.hik.HaikangAcsDoorConverter;
@@ -17,11 +18,13 @@ import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorStatesResp;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorStatesResp.AuthDoor;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -183,5 +186,56 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
         return null;
     }
 
+    /**
+     * 根据资源码获取数据
+     */
+    public HaikangAcsDoorEntity selectByIndexCode(String indexCode) {
+        LambdaQueryWrapper<HaikangAcsDoorEntity> queryWrapper = Wrappers.<HaikangAcsDoorEntity>lambdaQuery()
+                .eq(HaikangAcsDoorEntity::getIndexCode, indexCode);
+        List<HaikangAcsDoorEntity> selectList = haikangAcsDoorMapper.selectList(queryWrapper);
+        if (CollectionUtils.isNotEmpty(selectList)) {
+            return selectList.get(0);
+        }
+        return null;
+    }
 
+    /**
+     * 落地到数据库
+     */
+    public void saveToDB(List<HaikangAcsDoorEntity> entityList) {
+        List<HaikangAcsDoorEntity> addList = Lists.newArrayList();
+        List<HaikangAcsDoorEntity> updateList = Lists.newArrayList();
+        for (HaikangAcsDoorEntity entity : entityList) {
+            HaikangAcsDoorEntity existEntity = selectByIndexCode(entity.getIndexCode());
+            if (Objects.isNull(existEntity)) {
+                entity.setDeleted(EntityConstants.NOT_DELETED);
+                addList.add(entity);
+            } else {
+                entity.setId(existEntity.getId());
+                updateList.add(entity);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(updateList)) {
+            super.updateBatchById(updateList);
+        }
+        if (CollectionUtils.isNotEmpty(addList)) {
+            super.saveBatch(addList);
+        }
+    }
+
+    public void updateDoorState(String doorIndexCode, Byte doorState, Byte authState) {
+        if (StringUtils.isNotBlank(doorIndexCode)) {
+            HaikangAcsDoorEntity entity = selectByIndexCode(doorIndexCode);
+            if (Objects.nonNull(entity)) {
+                LambdaUpdateWrapper<HaikangAcsDoorEntity> lambdaedUpdate = Wrappers.lambdaUpdate();
+                lambdaedUpdate.eq(HaikangAcsDoorEntity::getId, entity.getId());
+                lambdaedUpdate.set(HaikangAcsDoorEntity::getAuthState, authState);
+                if (Objects.nonNull(doorState)) {
+                    lambdaedUpdate.set(HaikangAcsDoorEntity::getDoorState, doorState);
+                }
+                lambdaedUpdate.set(HaikangAcsDoorEntity::getDataTime, new Date());
+                haikangAcsDoorMapper.update(null, lambdaedUpdate);
+            }
+        }
+    }
 }

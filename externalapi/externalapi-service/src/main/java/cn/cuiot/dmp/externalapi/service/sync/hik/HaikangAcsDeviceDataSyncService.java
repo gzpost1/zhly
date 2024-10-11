@@ -44,6 +44,11 @@ public class HaikangAcsDeviceDataSyncService {
     @Autowired
     private HaikangAcsDeviceService haikangAcsDeviceService;
 
+    /**
+     * 转换数据
+     * @param item
+     * @return
+     */
     public HaikangAcsDeviceEntity convertDataItemToEntity(HikAcsListResp.DataItem item) {
 
         HaikangAcsDeviceEntity haikangAcsDeviceEntity = new HaikangAcsDeviceEntity();

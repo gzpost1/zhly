@@ -115,6 +115,11 @@ public class HikReaderResp {
         private String parentIndexCode;
 
         /**
+         * 门禁点编码
+         */
+        private String channelIndexCode;
+
+        /**
          * 显示顺序
          */
         private Integer sort;

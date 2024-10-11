@@ -1,16 +1,19 @@
 package cn.cuiot.dmp.externalapi.service.service.hik;
 
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.externalapi.service.converter.hik.HaikangAcsReaderConverter;
 import cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsReaderEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.hik.HaikangAcsReaderMapper;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsReaderQuery;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsReaderVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.collections.CollectionUtils;
@@ -98,4 +101,60 @@ public class HaikangAcsReaderService extends
         return Lists.newArrayList();
     }
 
+    /**
+     * 根据资源码获取数据
+     */
+    public HaikangAcsReaderEntity selectByIndexCode(String indexCode) {
+        LambdaQueryWrapper<HaikangAcsReaderEntity> queryWrapper = Wrappers.<HaikangAcsReaderEntity>lambdaQuery()
+                .eq(HaikangAcsReaderEntity::getIndexCode, indexCode);
+        List<HaikangAcsReaderEntity> selectList = haikangAcsReaderMapper.selectList(queryWrapper);
+        if (CollectionUtils.isNotEmpty(selectList)) {
+            return selectList.get(0);
+        }
+        return null;
+    }
+
+    /**
+     * 落地到数据库
+     */
+    public void saveToDB(List<HaikangAcsReaderEntity> entityList) {
+        List<HaikangAcsReaderEntity> addList = Lists.newArrayList();
+        List<HaikangAcsReaderEntity> updateList = Lists.newArrayList();
+        for (HaikangAcsReaderEntity entity : entityList) {
+            HaikangAcsReaderEntity existEntity = selectByIndexCode(entity.getIndexCode());
+            if (Objects.isNull(existEntity)) {
+                entity.setDeleted(EntityConstants.NOT_DELETED);
+                addList.add(entity);
+            } else {
+                entity.setId(existEntity.getId());
+                updateList.add(entity);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(updateList)) {
+            super.updateBatchById(updateList);
+        }
+        if (CollectionUtils.isNotEmpty(addList)) {
+            super.saveBatch(addList);
+        }
+    }
+
+
+    /**
+     * 更新在线状态
+     */
+    public void updateOnlineStatus(String indexCode, Date collectTime, Byte status) {
+        if (StringUtils.isNotBlank(indexCode) && Objects.nonNull(status)) {
+            HaikangAcsReaderEntity entity = selectByIndexCode(indexCode);
+            if (Objects.nonNull(entity)) {
+                LambdaUpdateWrapper<HaikangAcsReaderEntity> lambdaedUpdate = Wrappers.lambdaUpdate();
+                lambdaedUpdate.eq(HaikangAcsReaderEntity::getId, entity.getId());
+                lambdaedUpdate.set(HaikangAcsReaderEntity::getStatus, status);
+                lambdaedUpdate.set(HaikangAcsReaderEntity::getDataTime, new Date());
+                if (Objects.nonNull(collectTime)) {
+                    lambdaedUpdate.set(HaikangAcsReaderEntity::getCollectTime, collectTime);
+                }
+                haikangAcsReaderMapper.update(null, lambdaedUpdate);
+            }
+        }
+    }
 }
