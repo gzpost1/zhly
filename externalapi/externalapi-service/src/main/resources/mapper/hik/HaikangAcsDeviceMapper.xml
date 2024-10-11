@@ -82,8 +82,8 @@
                 <if test="param.name != null and param.name != ''">
                     and a.name like CONCAT('%',#{param.name}, '%')
                 </if>
-                <if test="param.online != null">
-                    and a.online=#{param.online}
+                <if test="param.status != null">
+                    and a.status=#{param.status}
                 </if>
             </where>
             group by a.id

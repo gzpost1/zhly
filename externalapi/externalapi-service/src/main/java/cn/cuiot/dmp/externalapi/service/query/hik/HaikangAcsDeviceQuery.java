@@ -33,9 +33,8 @@ public class HaikangAcsDeviceQuery extends PageQuery {
     private String regionIndexCode;
 
     /**
-     * 设备状态（1-在线，0-离线，-1-未检测）
+     * 设备状态（0离线，1在线）
      */
-    private Byte online;
-
+    private Byte status;
 
 }

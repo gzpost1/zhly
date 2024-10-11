@@ -89,8 +89,8 @@ public class HaikangAcsDeviceService extends
             lambdaedQuery.eq(HaikangAcsDeviceEntity::getRegionIndexCode,
                     query.getRegionIndexCode());
         }
-        if (Objects.nonNull(query.getOnline())) {
-            lambdaedQuery.eq(HaikangAcsDeviceEntity::getOnline, query.getOnline());
+        if (Objects.nonNull(query.getStatus())) {
+            lambdaedQuery.eq(HaikangAcsDeviceEntity::getStatus, query.getStatus());
         }
         lambdaedQuery.orderByAsc(HaikangAcsDeviceEntity::getCreateTime,
                 HaikangAcsDeviceEntity::getId);
