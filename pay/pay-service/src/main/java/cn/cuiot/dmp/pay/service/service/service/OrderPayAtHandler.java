@@ -145,6 +145,7 @@ public class OrderPayAtHandler {
             orderQueryResp.setPayChannel(orderEntity.getPayChannel());
             orderQueryResp.setPayMethod(queryBO.getPayMethod());
             orderQueryResp.setPayCharge(queryBO.getPayCharge());
+            orderQueryResp.setPayOrderId(queryBO.getPayOrderId());
             paySuccessCallbackHandler(orderEntity,queryBO);
         }
         return orderQueryResp;

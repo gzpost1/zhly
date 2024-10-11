@@ -78,6 +78,11 @@ public class PayOrderQueryResp implements Serializable {
      * 支付总金额
      */
     private Integer totalFee;
+
+    /**
+     * 微信订单号
+     */
+    private String payOrderId;
     /**
      * 交易终端IP
      */
