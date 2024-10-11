@@ -982,7 +982,11 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         userReqDto.setUserIdList(userIds);
         IdmResDTO<List<BaseUserDto>> listIdmResDTO = systemApiFeignService.lookUpUserList(userReqDto);
         List<BaseUserDto> data = Optional.ofNullable(listIdmResDTO.getData()).orElseThrow(()->new RuntimeException("用户信息不存在"));
-        return data.stream().collect(Collectors.toMap(BaseUserDto::getId,BaseUserDto::getName ));
+        Map<Long, String> collect = data.stream().collect(Collectors.toMap(
+                BaseUserDto::getId,
+                BaseUserDto::getName,
+                (existingValue, newValue) -> existingValue));
+        return collect;
     }
 
     public Map<Long,String> getBusiMap(List<Long> businessIds){
