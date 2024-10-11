@@ -162,5 +162,10 @@ public class HikDoorEventsResp {
          * 证件号码
          */
         private String certNo;
+
+        /**
+         * （图片）非第三方返回，因业务处理设置的字段
+         */
+        private String picture;
     }
 }

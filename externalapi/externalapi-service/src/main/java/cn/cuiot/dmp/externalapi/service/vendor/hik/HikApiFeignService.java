@@ -334,10 +334,24 @@ public class HikApiFeignService {
      * @return HikDoorEventsResp
      * @Param req 参数
      */
-    public HikBaseResp<String> queryEventPictures(HikAcsEventPicturesReq req, HIKEntranceGuardBO bo) {
+    public String queryEventPictures(HikAcsEventPicturesReq req, HIKEntranceGuardBO bo) {
         String gateway = "/api/acs/v1/event/pictures";
-        HikBaseResp<HikBaseResp<String>> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
-                new TypeReference<HikBaseResp<HikBaseResp<String>>>() {
+        HikBaseResp<String> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
+                new TypeReference<HikBaseResp<String>>() {
+                });
+        return resp.getData();
+    }
+
+    /**
+     * 查询资源列表v2
+     *
+     * @return HikIrdsResourcesByParamsResp
+     * @Param req 参数
+     */
+    public HikIrdsResourcesByParamsResp queryIrdsResourcesByParams(HikIrdsResourcesByParamsReq req, HIKEntranceGuardBO bo) {
+        String gateway = "/api/irds/v2/resource/resourcesByParams";
+        HikBaseResp<HikIrdsResourcesByParamsResp> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
+                new TypeReference<HikBaseResp<HikIrdsResourcesByParamsResp>>() {
                 });
         return resp.getData();
     }

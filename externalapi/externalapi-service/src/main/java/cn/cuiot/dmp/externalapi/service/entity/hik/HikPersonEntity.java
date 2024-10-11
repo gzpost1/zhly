@@ -29,7 +29,7 @@ public class HikPersonEntity extends YjBaseEntity {
     /**
      * 企业id
      */
-    private Long company;
+    private Long companyId;
 
     /**
      * 人员名称，1~32个字符；不能包含特殊字符
@@ -70,6 +70,11 @@ public class HikPersonEntity extends YjBaseEntity {
      * 人员照片
      */
     private String faceData;
+
+    /**
+     * 人员照片状态（0:未添加，1:已添加）
+     */
+    private Byte faceDataStatus;
 
     /**
      * 权限有效期类型（0:长期有效；1:自定义有效期）

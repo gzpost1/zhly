@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,10 +19,10 @@ import java.util.List;
 public class HikPersonAuthorizeDto {
 
     /**
-     * id
+     * 人员id列表
      */
-    @NotNull(message = "id不能为空")
-    private Long id;
+    @NotEmpty(message = "id列表不能为空")
+    private List<Long> ids;
 
     /**
      * 权限有效期类型（0:长期有效；1:自定义有效期）

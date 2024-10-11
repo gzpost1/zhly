@@ -90,7 +90,7 @@ public class VideoTask {
             reqDTO.setPageNo(pageNo.getAndAdd(1));
             reqDTO.setPageSize(pageSize);
             reqDTO.setPlatformId(FootPlateInfoEnum.VSUAP_VIDEO.getId());
-            if (StringUtils.isBlank(param)) {
+            if (StringUtils.isNotBlank(param)) {
                 reqDTO.setCompanyId(Long.parseLong(param));
             }
             IPage<PlatfromInfoRespDTO> iPage = platfromInfoService.queryForPage(reqDTO);
@@ -155,7 +155,7 @@ public class VideoTask {
     public ReturnT<String> syncVideoChannel(String param) {
         log.info("开始同步通道信息......");
         Long companyId = null;
-        if (StringUtils.isBlank(param)) {
+        if (StringUtils.isNotBlank(param)) {
             companyId = Long.parseLong(param);
         }
         AtomicLong pageNo = new AtomicLong(1);
@@ -225,7 +225,7 @@ public class VideoTask {
     public ReturnT<String> syncVideoPlay(String param) {
         log.info("开始同步播放信息......");
         Long companyId = null;
-        if (StringUtils.isBlank(param)) {
+        if (StringUtils.isNotBlank(param)) {
             companyId = Long.parseLong(param);
         }
 

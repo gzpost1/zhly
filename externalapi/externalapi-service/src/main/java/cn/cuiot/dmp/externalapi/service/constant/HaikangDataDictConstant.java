@@ -18,5 +18,9 @@ public class HaikangDataDictConstant {
      */
     public static final String RESOURCE_TYPE = "resourceType";
 
+    /**
+     * 门禁点事件类型
+     */
+    public static final String ACS_DOOR_EVENT_TYPE = "acsDoorEventType";
 
 }

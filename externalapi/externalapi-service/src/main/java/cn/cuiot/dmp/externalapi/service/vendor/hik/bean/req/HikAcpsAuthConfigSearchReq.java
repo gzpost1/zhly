@@ -38,12 +38,12 @@ public class HikAcpsAuthConfigSearchReq {
     /**
      * 页码，pageNo > 0
      */
-    private int pageNo;
+    private Long pageNo;
 
     /**
      * 页大小，默认值为 20
      */
-    private int pageSize;
+    private Long pageSize;
 
     /**
      * 设备通道对象

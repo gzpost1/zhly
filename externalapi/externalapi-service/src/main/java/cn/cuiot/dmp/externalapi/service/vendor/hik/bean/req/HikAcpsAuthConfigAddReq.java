@@ -21,11 +21,6 @@ public class HikAcpsAuthConfigAddReq {
     private List<PersonDataDTO> personDatas;
 
     /**
-     * 人员数据类型， person 人员， org 组织
-     */
-    private String personDataType;
-
-    /**
      * 设备通道对象列表
      */
     private List<ResourceInfoDTO> resourceInfos;
@@ -52,6 +47,11 @@ public class HikAcpsAuthConfigAddReq {
          * 当personDataType传入人员时,indexCodes传入的是人员ID
          */
         private List<String> indexCodes;
+
+        /**
+         * 人员数据类型， person 人员， org 组织
+         */
+        private String personDataType;
     }
 
     /**

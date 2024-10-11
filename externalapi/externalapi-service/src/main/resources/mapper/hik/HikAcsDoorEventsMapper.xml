@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.hik.HikAcsDoorEventsMapper">
+
+    <insert id="batchReplaceInsert" parameterType="java.util.List">
+        REPLACE INTO tb_haikang_acs_door_events
+        (
+        id,
+        company_id,
+        event_id,
+        event_name,
+        event_time,
+        person_id,
+        card_no,
+        person_name,
+        org_index_code,
+        org_name,
+        door_name,
+        door_index_code,
+        door_region_index_code,
+        pic_uri,
+        svr_index_code,
+        event_type,
+        in_and_out_type,
+        reader_dev_index_code,
+        reader_dev_name,
+        dev_index_code,
+        dev_name,
+        identity_card_uri,
+        receive_time,
+        job_no,
+        student_id,
+        cert_no
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.id},
+            #{item.companyId},
+            #{item.eventId},
+            #{item.eventName},
+            #{item.eventTime},
+            #{item.personId},
+            #{item.cardNo},
+            #{item.personName},
+            #{item.orgIndexCode},
+            #{item.orgName},
+            #{item.doorName},
+            #{item.doorIndexCode},
+            #{item.doorRegionIndexCode},
+            #{item.picUri},
+            #{item.svrIndexCode},
+            #{item.eventType},
+            #{item.inAndOutType},
+            #{item.readerDevIndexCode},
+            #{item.readerDevName},
+            #{item.devIndexCode},
+            #{item.devName},
+            #{item.identityCardUri},
+            #{item.receiveTime},
+            #{item.jobNo},
+            #{item.studentId},
+            #{item.certNo}
+            )
+        </foreach>
+    </insert>
+</mapper>
