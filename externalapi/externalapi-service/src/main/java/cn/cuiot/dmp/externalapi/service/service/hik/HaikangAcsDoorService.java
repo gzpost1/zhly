@@ -2,6 +2,8 @@ package cn.cuiot.dmp.externalapi.service.service.hik;
 
 import cn.cuiot.dmp.common.bean.external.HIKEntranceGuardBO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.externalapi.service.constant.HaikangDataDictConstant;
 import cn.cuiot.dmp.externalapi.service.converter.hik.HaikangAcsDoorConverter;
@@ -14,6 +16,7 @@ import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorStateQuery;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.HikApiFeignService;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.HikDoorControlReq;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.HikDoorStatesReq;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorControlResp;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorStatesResp;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorStatesResp.AuthDoor;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo;
@@ -23,11 +26,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +63,11 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
 
     @Autowired
     private HikCommonHandle hikCommonHandle;
+
+    /**
+     * 反控成功标识
+     */
+    private final static Integer CONTROL_DOOR_SUCCESS = 0;
 
     /**
      * 分页查询
@@ -160,8 +170,20 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
         HIKEntranceGuardBO hikEntranceGuardBO = hikCommonHandle.queryHikConfigByPlatfromInfo(
                 dto.getCompanyId());
 
-        hikApiFeignService.doorDoControl(req, hikEntranceGuardBO);
-
+        List<HikDoorControlResp> respList = hikApiFeignService.doorDoControl(req,
+                hikEntranceGuardBO);
+        if (CollectionUtils.isNotEmpty(respList)) {
+            List<HikDoorControlResp> failList = respList.stream()
+                    .filter(item -> !CONTROL_DOOR_SUCCESS.equals(item.getControlResultCode()))
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(failList)) {
+                List<String> failMsgList = failList.stream()
+                        .map(item -> item.getDoorIndexCode() + "|" + item.getControlResultDesc())
+                        .collect(Collectors.toList());
+                throw new BusinessException(ResultCode.ERROR,
+                        "存在操控失败的门禁点，" + Joiner.on("，").join(failMsgList));
+            }
+        }
     }
 
     /**

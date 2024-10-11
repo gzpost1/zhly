@@ -2,9 +2,11 @@ package cn.cuiot.dmp.externalapi;
 
 import cn.cuiot.dmp.externalapi.provider.ExternalapiApplication;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorControlDto;
+import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorStateQuery;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsDoorService;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +38,12 @@ public class HaikangAcsDoorServiceTest {
 
     @Test
     public void queryDoorStateTest(){
-
+        HaikangAcsDoorStateQuery query = new HaikangAcsDoorStateQuery();
+        query.setCompanyId(1810947563259998210L);
+        query.setIndexCode("c788bb00f64249629036ea2d205292ca");
+        Byte state = haikangAcsDoorService.queryDoorState(query);
+        log.info("state:{}", state);
+        Assert.assertNotNull(state);
     }
 
 }
