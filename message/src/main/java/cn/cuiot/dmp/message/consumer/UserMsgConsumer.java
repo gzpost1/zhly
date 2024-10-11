@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -66,21 +67,22 @@ public class UserMsgConsumer {
             SmsMsgDto smsMsgDto = userMessageAcceptDto.getSmsMsgDto();
             BaseUserReqDto query = new BaseUserReqDto();
             query.setUserIdList(smsMsgDto.getUserIds());
-            log.info("lookUpUserList-params:{}", JsonUtil.writeValueAsString(query));
             List<BaseUserDto> userDtoList = systemApiFeignService.lookUpUserList(query).getData();
             log.info("lookUpUserList-result:{}", JsonUtil.writeValueAsString(userDtoList));
             if (CollUtil.isNotEmpty(userDtoList)) {
-                List<String> collect = userDtoList.stream().map(BaseUserDto::getPhoneNumber).filter(StrUtil::isNotEmpty).distinct().collect(Collectors.toList());
-                String mobile = String.join(",", collect);
-                SmsSendQuery smsSendQuery = new SmsSendQuery();
-                smsSendQuery.setMobile(mobile).setParams(smsMsgDto.getParams()).setStdTemplate(smsMsgDto.getTemplateId());
-                if (userDtoList.get(0).getOrgId() != null) {
-                    smsSendQuery.setCompanyId(Long.parseLong(userDtoList.get(0).getOrgId()));
-                }else {
-                    log.info("该用户企业为空：{}",userDtoList.get(0).getId());
+                Map<String, List<BaseUserDto>> groupByOrgId = userDtoList.stream().collect(Collectors.groupingBy(BaseUserDto::getOrgId));
+                for (String key : groupByOrgId.keySet()) {
+                    if (StrUtil.isEmpty(key)) {
+                        continue;
+                    }
+                    List<BaseUserDto> baseUserDtos = groupByOrgId.get(key);
+                    List<String> collect = baseUserDtos.stream().map(BaseUserDto::getPhoneNumber).filter(StrUtil::isNotEmpty).distinct().collect(Collectors.toList());
+                    String mobile = String.join(",", collect);
+                    SmsSendQuery smsSendQuery = new SmsSendQuery();
+                    smsSendQuery.setMobile(mobile).setParams(smsMsgDto.getParams()).setStdTemplate(smsMsgDto.getTemplateId()).setCompanyId(Long.parseLong(key));
+                    log.info("发送短信：{}", JsonUtil.writeValueAsString(smsSendQuery));
+                    smsSendService.sendMsg(smsSendQuery);
                 }
-                log.info("发送短信：{}", JsonUtil.writeValueAsString(smsSendQuery));
-                smsSendService.sendMsg(smsSendQuery);
             }
         }
     }
