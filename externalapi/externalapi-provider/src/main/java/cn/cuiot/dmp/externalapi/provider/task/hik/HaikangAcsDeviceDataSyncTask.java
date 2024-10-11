@@ -26,7 +26,9 @@ public class HaikangAcsDeviceDataSyncTask {
      */
     @XxlJob("hikAcsDeviceFullDataSyncJobHandler")
     public ReturnT<String> haikangAcsDeviceFullDataSyncJobHandler(String param) {
-
+        log.info("hikAcsDeviceFullDataSyncJobHandler begin...");
+        haikangAcsDeviceDataSyncService.haikangAcsDeviceFullDataSync();
+        log.info("hikAcsDeviceFullDataSyncJobHandler end...");
         return ReturnT.SUCCESS;
     }
 
@@ -35,7 +37,9 @@ public class HaikangAcsDeviceDataSyncTask {
      */
     @XxlJob("hikAcsDeviceIncrementDataSyncJobHandler")
     public ReturnT<String> hikAcsDeviceIncrementDataSyncJobHandler(String param) {
-
+        log.info("hikAcsDeviceIncrementDataSyncJobHandler begin...");
+        haikangAcsDeviceDataSyncService.hikAcsDeviceIncrementDataSync();
+        log.info("hikAcsDeviceIncrementDataSyncJobHandler end...");
         return ReturnT.SUCCESS;
     }
 
@@ -44,7 +48,9 @@ public class HaikangAcsDeviceDataSyncTask {
      */
     @XxlJob("hikAcsDeviceOnlineStatusSyncJobHandler")
     public ReturnT<String> hikAcsDeviceOnlineStatusSyncJobHandler(String param) {
-
+        log.info("hikAcsDeviceOnlineStatusSyncJobHandler begin...");
+        haikangAcsDeviceDataSyncService.hikAcsDeviceOnlineStatusSync();
+        log.info("hikAcsDeviceOnlineStatusSyncJobHandler end...");
         return ReturnT.SUCCESS;
     }
 

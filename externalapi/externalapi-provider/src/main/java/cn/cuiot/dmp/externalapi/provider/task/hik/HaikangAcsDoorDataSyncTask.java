@@ -25,7 +25,9 @@ public class HaikangAcsDoorDataSyncTask {
      */
     @XxlJob("hikAcsDoorFullDataSyncJobHandler")
     public ReturnT<String> haikangAcsDoorFullDataSyncJobHandler(String param) {
-
+        log.info("hikAcsDoorFullDataSyncJobHandler begin...");
+        haikangAcsDoorDataSyncService.haikangAcsDoorFullDataSync();
+        log.info("hikAcsDoorFullDataSyncJobHandler end...");
         return ReturnT.SUCCESS;
     }
 
@@ -34,7 +36,9 @@ public class HaikangAcsDoorDataSyncTask {
      */
     @XxlJob("hikAcsDoorIncrementDataSyncJobHandler")
     public ReturnT<String> hikAcsDoorIncrementDataSyncJobHandler(String param) {
-
+        log.info("hikAcsDoorIncrementDataSyncJobHandler begin...");
+        haikangAcsDoorDataSyncService.hikAcsDoorIncrementDataSync();
+        log.info("hikAcsDoorIncrementDataSyncJobHandler end...");
         return ReturnT.SUCCESS;
     }
 
@@ -43,7 +47,9 @@ public class HaikangAcsDoorDataSyncTask {
      */
     @XxlJob("hikAcsDoorStateSyncJobHandler")
     public ReturnT<String> hikAcsDoorStateSyncJobHandler(String param) {
-
+        log.info("hikAcsDoorStateSyncJobHandler begin...");
+        haikangAcsDoorDataSyncService.hikAcsDoorStateSync();
+        log.info("hikAcsDoorStateSyncJobHandler end...");
         return ReturnT.SUCCESS;
     }
 

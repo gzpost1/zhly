@@ -12,4 +12,24 @@ import org.springframework.stereotype.Component;
 @Component
 public class HaikangAcsDoorDataSyncService {
 
+    /**
+     * 门禁点数据全量同步
+     */
+    public void haikangAcsDoorFullDataSync() {
+
+    }
+
+    /**
+     * 门禁点数据增量同步
+     */
+    public void hikAcsDoorIncrementDataSync() {
+
+    }
+
+    /**
+     * 门禁点状态同步
+     */
+    public void hikAcsDoorStateSync() {
+
+    }
 }
