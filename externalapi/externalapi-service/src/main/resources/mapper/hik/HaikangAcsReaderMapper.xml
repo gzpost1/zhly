@@ -46,7 +46,45 @@
         id, org_id, resource_type, index_code, name, region_index_code, region_path, ip, port, device_code, device_key, device_model, device_type, data_version, net_zone_id, deploy_id, communication_mode, parent_index_code, channel_index_code, sort, capability, com_id, door_no, acs_reader_card_capacity, acs_reader_finger_capacity, acs_reader_face_capacity, region_path_name, region_name, status, collect_time, description, update_time, create_time, deleted, data_time
     </sql>
 
+    <resultMap id="VoResultMap" extends="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsReaderVo">
+        <result column="parent_index_name" property="parentIndexName" />
+        <result column="channel_index_name" property="channelIndexName" />
+    </resultMap>
 
+    <select id="searchList" resultMap="VoResultMap">
+        SELECT
+            a.*,
+            b.name as parent_index_name,
+            c.name as channel_index_name
+        FROM
+        tb_haikang_acs_reader AS a
+        left join tb_haikang_acs_device b on a.parent_index_code=b.index_code
+        left join tb_haikang_acs_door c on a.channel_index_code=c.index_code
+        <where>
+            <if test="param.companyId != null">
+                and a.org_id=#{param.companyId}
+            </if>
+            <if test="param.indexCode != null and param.indexCode != ''">
+                and a.index_code=#{param.indexCode}
+            </if>
+            <if test="param.regionIndexCode != null and param.regionIndexCode != ''">
+                and a.region_index_code=#{param.regionIndexCode}
+            </if>
+            <if test="param.parentIndexCode != null and param.parentIndexCode != ''">
+                and a.parent_index_code=#{param.parentIndexCode}
+            </if>
+            <if test="param.channelIndexCode != null and param.channelIndexCode != ''">
+                and a.channel_index_code=#{param.channelIndexCode}
+            </if>
+            <if test="param.name != null and param.name != ''">
+                and a.name like CONCAT('%',#{param.name}, '%')
+            </if>
+            <if test="param.deviceModel != null and param.deviceModel != ''">
+                and a.device_model like CONCAT('%',#{param.deviceModel}, '%')
+            </if>
+        </where>
+        order by a.create_time desc,a.id desc
+    </select>
 
 
 </mapper>
