@@ -14,7 +14,7 @@ import java.util.Date;
 @Data
 public class MyApprovalDto extends ExportWorkOrderDto{
 
-    @Excel(name = "工单状态",  width = 20)
+    @Excel(name = "工单状态",orderNum = "7",  width = 20)
     private String statusName;
 
 
@@ -23,6 +23,6 @@ public class MyApprovalDto extends ExportWorkOrderDto{
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @Excel(name = "节点完成时间", width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "节点完成时间",orderNum = "6", width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
     private Date entTime;
 }

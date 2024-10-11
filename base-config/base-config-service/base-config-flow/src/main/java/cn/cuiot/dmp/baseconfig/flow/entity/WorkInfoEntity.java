@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.entity;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -37,6 +38,7 @@ public class WorkInfoEntity implements Serializable {
      * 业务类型名称
      */
     @TableField(exist = false)
+    @Excel(name = "业务类型", orderNum = "1", width = 20)
     private String businessTypeName;
 
     /**
@@ -48,6 +50,7 @@ public class WorkInfoEntity implements Serializable {
      * 组织名称
      */
     @TableField(exist = false)
+    @Excel(name = "所属组织", orderNum = "2", width = 20)
     private String orgPath;
 
     /**
@@ -59,6 +62,7 @@ public class WorkInfoEntity implements Serializable {
     /**
      * 工单名称
      */
+    @Excel(name = "工单流程", orderNum = "3", width = 20)
     private String workName;
 
 
@@ -79,8 +83,13 @@ public class WorkInfoEntity implements Serializable {
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @Excel(name = "发起时间",orderNum = "4",  width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
+    @TableField(exist = false)
+
+    @Excel(name = "工单状态", orderNum = "5", width = 20)
+    private String statusName;
     /**
      * 创建的用户id
      */
@@ -95,6 +104,7 @@ public class WorkInfoEntity implements Serializable {
     /**
      * 流程实例id
      */
+    @Excel(name = "工单编号", orderNum = "0", width = 20)
     private String procInstId;
 
     /**

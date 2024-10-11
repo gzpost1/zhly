@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
- * 待审批-待审批-操作-我提交的列表
+ * 待审批
  *
  * @Description 查询列表
  * @author pengjian
@@ -47,6 +47,7 @@ public class ApprovalController {
      * @return
      */
     @PostMapping("exportMyNotApproval")
+    @RequiresPermissions
     public IdmResDTO exportMyNotApproval(@RequestBody QueryMyApprovalDto dto) throws Exception {
          workInfoService.export(dto);
         return IdmResDTO.success();
@@ -69,6 +70,7 @@ public class ApprovalController {
      * @throws Exception
      */
     @PostMapping("exportMyApproval")
+    @RequiresPermissions
     public IdmResDTO exportMyApproval(@RequestBody QueryMyApprovalDto dto) throws Exception {
         workInfoService.exportMyApproval(dto);
         return IdmResDTO.success();
@@ -86,6 +88,18 @@ public class ApprovalController {
     }
 
     /**
+     * 导出抄送列表
+     * @param dto
+     * @return
+     */
+    @PostMapping("exportMakeApproval")
+    @RequiresPermissions
+    public IdmResDTO exportMakeApproval(@RequestBody QueryMyApprovalDto dto) throws Exception {
+        workInfoService.exportMakeApproval(dto);
+        return IdmResDTO.success();
+    }
+
+    /**
      * 获取我提交的
      * @param dto
      * @return
@@ -94,6 +108,19 @@ public class ApprovalController {
     @RequiresPermissions
     public IdmResDTO<IPage<WorkInfoEntity>> queryMySubmitWorkInfo(@RequestBody QueryMyApprovalDto dto){
         return workInfoService.queryMySubmitWorkInfo(dto);
+    }
+
+    /**
+     * 导出我提交的
+     * @param dto
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("exportMySubmitWorkInfo")
+    @RequiresPermissions
+    public IdmResDTO exportMySubmitWorkInfo(@RequestBody QueryMyApprovalDto dto) throws Exception {
+        workInfoService.exportMySubmitWorkInfo(dto);
+       return IdmResDTO.success();
     }
 
     /**
