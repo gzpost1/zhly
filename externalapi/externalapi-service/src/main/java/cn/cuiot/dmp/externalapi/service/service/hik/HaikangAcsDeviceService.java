@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.service.hik;
 
 import cn.cuiot.dmp.common.bean.external.HIKEntranceGuardBO;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.externalapi.service.converter.hik.HaikangAcsDeviceConverter;
 import cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsDeviceEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.hik.HaikangAcsDeviceMapper;
@@ -138,6 +139,44 @@ public class HaikangAcsDeviceService extends
 
         HikRegionResp hikRegionResp = hikApiFeignService.queryRegions(req, hikEntranceGuardBO);
         return hikRegionResp.getList();
+    }
+
+
+    /**
+     * 根据资源码获取数据
+     */
+    public HaikangAcsDeviceEntity selectByIndexCode(String indexCode) {
+        LambdaQueryWrapper<HaikangAcsDeviceEntity> queryWrapper = Wrappers.<HaikangAcsDeviceEntity>lambdaQuery()
+                .eq(HaikangAcsDeviceEntity::getIndexCode, indexCode);
+        List<HaikangAcsDeviceEntity> selectList = haikangAcsDeviceMapper.selectList(queryWrapper);
+        if (CollectionUtils.isNotEmpty(selectList)) {
+            return selectList.get(0);
+        }
+        return null;
+    }
+
+    /**
+     * 落地到数据库
+     */
+    public void saveToDB(List<HaikangAcsDeviceEntity> entityList) {
+        List<HaikangAcsDeviceEntity> addList = Lists.newArrayList();
+        List<HaikangAcsDeviceEntity> updateList = Lists.newArrayList();
+        for (HaikangAcsDeviceEntity entity : entityList) {
+            HaikangAcsDeviceEntity existEntity = selectByIndexCode(entity.getIndexCode());
+            if (Objects.isNull(existEntity)) {
+                entity.setDeleted(EntityConstants.NOT_DELETED);
+                addList.add(entity);
+            } else {
+                entity.setId(existEntity.getId());
+                updateList.add(entity);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(updateList)) {
+            super.updateBatchById(updateList);
+        }
+        if (CollectionUtils.isNotEmpty(addList)) {
+            super.saveBatch(addList);
+        }
     }
 
 }

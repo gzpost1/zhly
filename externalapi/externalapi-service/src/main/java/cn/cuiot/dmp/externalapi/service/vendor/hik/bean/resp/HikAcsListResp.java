@@ -75,6 +75,16 @@ public class HikAcsListResp {
         private String deviceCode;
 
         /**
+         * 设备型号
+         */
+        private String deviceModel;
+
+        /**
+         * 设备系列
+         */
+        private String deviceType;
+
+        /**
          * 厂商
          */
         private String manufacturer;
