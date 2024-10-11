@@ -37,6 +37,20 @@ public class HikApiFeignService {
     }
 
     /**
+     * 增量获取门禁设备数据
+     *
+     * @return HikResourcesResp
+     * @Param req 参数
+     */
+    public HikAcsListResp queryAcsDeviceByTimeRange(HikAcsListReq req, HIKEntranceGuardBO bo) {
+        String gateway = "/api/resource/v1/acsDevice/timeRange";
+        HikBaseResp<HikAcsListResp> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
+                new TypeReference<HikBaseResp<HikAcsListResp>>() {
+                });
+        return resp.getData();
+    }
+
+    /**
      * 获取门禁设备在线状态
      *
      * @return HikResourcesResp
@@ -79,6 +93,20 @@ public class HikApiFeignService {
     }
 
     /**
+     * 增量获取门禁点数据
+     *
+     * @return HikDoorResp
+     * @Param req 参数
+     */
+    public HikDoorResp queryDoorByTimeRange(HikDoorReq req, HIKEntranceGuardBO bo) {
+        String gateway = "/api/resource/v1/door/timeRange";
+        HikBaseResp<HikDoorResp> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
+                new TypeReference<HikBaseResp<HikDoorResp>>() {
+                });
+        return resp.getData();
+    }
+
+    /**
      * 查询门禁点状态
      *
      * @return HikDoorStatesResp
@@ -114,6 +142,20 @@ public class HikApiFeignService {
      */
     public HikReaderResp queryReaderSearch(HikReaderReq req, HIKEntranceGuardBO bo) {
         String gateway = "/api/resource/v1/reader/search";
+        HikBaseResp<HikReaderResp> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
+                new TypeReference<HikBaseResp<HikReaderResp>>() {
+                });
+        return resp.getData();
+    }
+
+    /**
+     * 增量获取门禁读卡器数据
+     *
+     * @return HikReaderResp
+     * @Param req 参数
+     */
+    public HikReaderResp queryReaderByTimeRange(HikReaderReq req, HIKEntranceGuardBO bo) {
+        String gateway = "/api/resource/v1/reader/timeRange";
         HikBaseResp<HikReaderResp> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
                 new TypeReference<HikBaseResp<HikReaderResp>>() {
                 });

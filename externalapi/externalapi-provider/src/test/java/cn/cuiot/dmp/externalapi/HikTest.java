@@ -24,8 +24,8 @@ public class HikTest {
     @Test
     public void acsDeviceSearch() {
         HikAcsListReq req = new HikAcsListReq();
-        req.setPageNo(1);
-        req.setPageSize(100);
+        req.setPageNo(1L);
+        req.setPageSize(100L);
 
         HIKEntranceGuardBO bo = new HIKEntranceGuardBO();
         HikAcsListResp resp = hikApiFeignService.queryAcsDeviceSearch(req, bo);

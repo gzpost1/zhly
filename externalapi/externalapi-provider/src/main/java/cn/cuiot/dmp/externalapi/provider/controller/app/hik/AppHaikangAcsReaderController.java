@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/app/hik/acs-reader")
-public class HaikangAcsReaderController {
+public class AppHaikangAcsReaderController {
 
     @Autowired
     private HaikangAcsReaderService haikangAcsReaderService;

@@ -1,7 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.sync.hik;
 
 import cn.cuiot.dmp.common.bean.external.HIKEntranceGuardBO;
-import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsDeviceEntity;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsDeviceService;
@@ -10,6 +9,8 @@ import cn.cuiot.dmp.externalapi.service.vendor.hik.HikApiFeignService;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.HikAcsListReq;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikAcsListResp;
 import com.google.common.collect.Lists;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,7 +40,7 @@ public class HaikangAcsDeviceDataSyncService {
     @Autowired
     private HaikangAcsDeviceService haikangAcsDeviceService;
 
-    public HaikangAcsDeviceEntity convertDataItemToEntity(HikAcsListResp.DataItem item){
+    public HaikangAcsDeviceEntity convertDataItemToEntity(HikAcsListResp.DataItem item) {
 
         HaikangAcsDeviceEntity haikangAcsDeviceEntity = new HaikangAcsDeviceEntity();
 
@@ -73,11 +74,14 @@ public class HaikangAcsDeviceDataSyncService {
         haikangAcsDeviceEntity.setDevSerialNum(item.getDevSerialNum());
         haikangAcsDeviceEntity.setDataVersion(item.getDataVersion());
 
-        if(StringUtils.isNotBlank(item.getCreateTime())){
-            haikangAcsDeviceEntity.setCreateTime(DateTimeUtil.stringToDate(item.getCreateTime(),"yyyy-MM-ddTHH:mm:ss"));
+        if (StringUtils.isNotBlank(item.getCreateTime())) {
+            haikangAcsDeviceEntity.setCreateTime(DateTimeUtil.localDateTimeToDate(
+                    LocalDateTime.parse(item.getCreateTime(), DateTimeFormatter.ISO_DATE_TIME)));
         }
-        if(StringUtils.isNotBlank(item.getUpdateTime())){
-            haikangAcsDeviceEntity.setUpdateTime(DateTimeUtil.stringToDate(item.getUpdateTime(),"yyyy-MM-ddTHH:mm:ss"));
+        if (StringUtils.isNotBlank(item.getUpdateTime())) {
+            haikangAcsDeviceEntity.setUpdateTime(DateTimeUtil.localDateTimeToDate(
+                    LocalDateTime.parse(item.getUpdateTime(),
+                            DateTimeFormatter.ISO_DATE_TIME)));
         }
 
         //haikangAcsDeviceEntity.setStatus(EntityConstants.NO);
@@ -86,6 +90,7 @@ public class HaikangAcsDeviceDataSyncService {
         //haikangAcsDeviceEntity.setDataTime();
 
         return haikangAcsDeviceEntity;
+
     }
 
     /**
@@ -104,7 +109,7 @@ public class HaikangAcsDeviceDataSyncService {
                     hikEntranceGuardBO);
             List<HikAcsListResp.DataItem> list = resp.getList();
             size = list.size();
-            if(CollectionUtils.isNotEmpty(list)){
+            if (CollectionUtils.isNotEmpty(list)) {
                 List<HaikangAcsDeviceEntity> entityList = Lists.newArrayList();
                 for (HikAcsListResp.DataItem item : list) {
                     HaikangAcsDeviceEntity entity = convertDataItemToEntity(item);
@@ -112,7 +117,7 @@ public class HaikangAcsDeviceDataSyncService {
                     entity.setDataTime(new Date());
                     entityList.add(entity);
                 }
-                if(CollectionUtils.isNotEmpty(entityList)){
+                if (CollectionUtils.isNotEmpty(entityList)) {
                     haikangAcsDeviceService.saveToDB(entityList);
                 }
             }

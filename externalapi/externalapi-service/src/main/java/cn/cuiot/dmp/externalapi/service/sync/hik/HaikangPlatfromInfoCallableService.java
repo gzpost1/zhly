@@ -33,7 +33,7 @@ public class HaikangPlatfromInfoCallableService {
     /**
      * 获取企业海康配置信息并处理
      */
-    public void resolveHotelInfos(Integer limit, HaikangPlatfromInfoCallable callable) {
+    public void resolvePlatfromInfos(Integer limit, HaikangPlatfromInfoCallable callable) {
         if (Objects.isNull(limit)) {
             limit = DEFAULT_LIMIT;
         }

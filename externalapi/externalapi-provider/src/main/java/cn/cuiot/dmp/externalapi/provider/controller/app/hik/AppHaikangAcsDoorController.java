@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/app/hik/acs-door")
-public class HaikangAcsDoorController {
+public class AppHaikangAcsDoorController {
 
     @Autowired
     private HaikangAcsDoorService haikangAcsDoorService;

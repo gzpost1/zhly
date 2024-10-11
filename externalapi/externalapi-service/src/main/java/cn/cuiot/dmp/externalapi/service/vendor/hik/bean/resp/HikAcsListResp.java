@@ -195,5 +195,10 @@ public class HikAcsListResp {
          * 版本号
          */
         private String dataVersion;
+
+        /**
+         * 增量状态：小于0则代表资源已被删除
+         */
+        private Integer status;
     }
 }

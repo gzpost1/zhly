@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/app/hik/data-dict")
-public class HaikangDataDictController {
+public class AppHaikangDataDictController {
 
     @Autowired
     private HaikangDataDictService haikangDataDictService;

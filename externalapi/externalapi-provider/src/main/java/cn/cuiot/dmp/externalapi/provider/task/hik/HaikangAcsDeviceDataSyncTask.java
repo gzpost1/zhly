@@ -36,7 +36,7 @@ public class HaikangAcsDeviceDataSyncTask {
     @XxlJob("hikAcsDeviceFullDataSyncJobHandler")
     public ReturnT<String> haikangAcsDeviceFullDataSyncJobHandler(String param) {
         log.info("hikAcsDeviceFullDataSyncJobHandler begin...");
-        haikangPlatfromInfoCallableService.resolveHotelInfos(1,
+        haikangPlatfromInfoCallableService.resolvePlatfromInfos(1,
                 new HaikangPlatfromInfoCallable() {
                     @Override
                     public void process(List<PlatfromInfoRespDTO> platfromInfoList) {

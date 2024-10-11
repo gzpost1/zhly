@@ -38,4 +38,10 @@ public class HikDoorReq extends HikBaseReq {
      * 降序升序,降序：desc 升序：asc
      */
     private String orderType;
+
+    /**
+     * (非必填)
+     * 开始日期,格式：yyyy-MM-dd'T'HH:mm:ss.SSS
+     */
+    private String startTime;
 }

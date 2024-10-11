@@ -142,5 +142,10 @@ public class HikDoorResp {
          * 安装位置
          */
         private String installLocation;
+
+        /**
+         * 增量状态：小于0则代表资源已被删除
+         */
+        private Integer status;
     }
 }

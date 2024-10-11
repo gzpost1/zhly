@@ -173,5 +173,10 @@ public class HikReaderResp {
          * 区域名称
          */
         private String regionName;
+
+        /**
+         * 增量状态：小于0则代表资源已被删除
+         */
+        private Integer status;
     }
 }
