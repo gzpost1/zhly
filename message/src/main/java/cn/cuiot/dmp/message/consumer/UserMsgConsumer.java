@@ -70,11 +70,8 @@ public class UserMsgConsumer {
             List<BaseUserDto> userDtoList = systemApiFeignService.lookUpUserList(query).getData();
             log.info("lookUpUserList-result:{}", JsonUtil.writeValueAsString(userDtoList));
             if (CollUtil.isNotEmpty(userDtoList)) {
-                Map<String, List<BaseUserDto>> groupByOrgId = userDtoList.stream().collect(Collectors.groupingBy(BaseUserDto::getOrgId));
+                Map<String, List<BaseUserDto>> groupByOrgId = userDtoList.stream().filter(o -> Objects.nonNull(o.getOrgId())).collect(Collectors.groupingBy(BaseUserDto::getOrgId));
                 for (String key : groupByOrgId.keySet()) {
-                    if (StrUtil.isEmpty(key)) {
-                        continue;
-                    }
                     List<BaseUserDto> baseUserDtos = groupByOrgId.get(key);
                     List<String> collect = baseUserDtos.stream().map(BaseUserDto::getPhoneNumber).filter(StrUtil::isNotEmpty).distinct().collect(Collectors.toList());
                     String mobile = String.join(",", collect);
