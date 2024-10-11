@@ -105,7 +105,7 @@ public class PayOrderQueryAggregate implements Serializable {
         private String subOrderId;
 
         /**
-         * 支付子单号
+         * 微信单号
          */
         private String paySubOrderId;
         /**

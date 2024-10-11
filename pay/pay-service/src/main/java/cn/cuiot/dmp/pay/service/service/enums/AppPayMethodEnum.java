@@ -1,6 +1,5 @@
 package cn.cuiot.dmp.pay.service.service.enums;
 
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.Getter;
 
 /**

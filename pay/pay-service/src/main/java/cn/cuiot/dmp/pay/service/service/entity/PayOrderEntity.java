@@ -4,6 +4,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.pay.service.service.config.NormalWeChatConfig;
 import cn.cuiot.dmp.pay.service.service.dto.CreateOrderReq;
+import cn.cuiot.dmp.pay.service.service.enums.AppPayMethodEnum;
 import cn.cuiot.dmp.pay.service.service.enums.OrderStatusEnum;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -127,14 +128,9 @@ public class PayOrderEntity extends YjBaseEntity {
     private String openId;
 
 
-    /**
-     * 账单请求数据
-     */
-    private String payReqJson;
-
 
     /**
-     * 预付单接口返回数据
+     * 支付接口返回数据
      */
     private String payResultJson;
 
@@ -143,6 +139,11 @@ public class PayOrderEntity extends YjBaseEntity {
      * 支付手续费
      */
     private Integer payCharge;
+
+    /**
+     * 微信支付系统生成的订单号
+     */
+    private String transactionId;
 
 
     /**

@@ -24,21 +24,8 @@ import java.util.Objects;
 public class CloseOrderReq implements Serializable {
 
     /**
-     * 渠道订单号
-     * 平台支付订单号与渠道订单号二选一必传
-     */
-    private String outOrderId;
-    /**
      * 平台支付订单号
      * 平台支付订单号与合单订单号二选一必传
      */
     private Long orderId;
-    /**
-     * 校验
-     */
-    public void validData() {
-        if (StringUtils.isEmpty(this.outOrderId) && Objects.isNull(this.orderId)) {
-            throw new BusinessException(ResultCode.REQ_PARAM_ERROR, "平台支付订单号与渠道订单号二选一必传");
-        }
-    }
 }

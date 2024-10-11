@@ -62,7 +62,6 @@ public class NormalPayHttpService  implements PaySettingInit{
     public UnifiedOrderResponseDto payOrder(NormalOrderReq query, String payMethod) {
 
         String url = PAY_URL.replace("{payMethod}", payMethod);
-        query.setNotifyUrl(weChatConfig.getPayNotify().replace("{mchId}", weChatConfig.getPayMchId() + ""));
         String jsonStr = httpClient.requestHttpPostObj(url, query, "下单失败");
         JSONObject json = JSON.parseObject(jsonStr);
         String prepayId = json.get("prepay_id").toString();

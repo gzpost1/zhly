@@ -30,6 +30,7 @@ import com.chinaunicom.yunjingtech.httpclient.util.PemUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +54,7 @@ public class WeNormalPayAdapter implements IPayBaseInterface {
     private NormalWeChatConfig weChatConfig;
 
     @Autowired
+    @Qualifier("NormalCertificatesVerifier")
     private AutoUpdateCertificatesVerifier verifier;
 
     @Autowired
@@ -67,8 +69,8 @@ public class WeNormalPayAdapter implements IPayBaseInterface {
     @Override
     public void initSetting(SysPayChannelSetting payChannelSetting) {
         weChatConfig.setPayNotify(payChannelSetting.getPayNotify().replace("${domain.url}", communityPayProperties.getUrl()));
-        weChatConfig.setRefundNotify(payChannelSetting.getRefundNotify().replace("${domain.url}",
-                 communityPayProperties.getUrl()));
+        /*weChatConfig.setRefundNotify(payChannelSetting.getRefundNotify().replace("${domain.url}",
+                 communityPayProperties.getUrl()));*/
         weChatConfig.setAppId(appId);
         //配置了全局为普通商户模式
         if(Objects.isNull(payChannelSetting.getPayMchId())){

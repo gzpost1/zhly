@@ -35,10 +35,6 @@ public class CreateOrderAggregate implements Serializable {
      */
     private String prepayId;
     /**
-     * 交易支付号（广州银联有）
-     */
-    private String payOrderId;
-    /**
      * H5 支付跳转链接，可通过访问 mweb_url 拉起微信/支付宝/
      * 云闪付支付收银台的中间页面
      */
