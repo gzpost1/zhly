@@ -137,7 +137,7 @@ public class LoginController extends BaseController {
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY, "请输入验证码");
         }
         //图形验证码校验
-        if (!verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid(),true)) {
+        if (!verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid(), true)) {
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_ERROR, "验证码错误");
         }
 
@@ -150,8 +150,10 @@ public class LoginController extends BaseController {
             throw new BusinessException(ResultCode.KID_EXPIRED_ERROR, "密钥ID已过期，请重新获取");
         }
         Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
-        // 密码解密
-        loginReqDTO.setPassword(aes.getDecodeValue(loginReqDTO.getPassword()));
+        if (PASSWORD_LOGIN.equals(loginReqDTO.getLoginType())) {
+            // 密码解密
+            loginReqDTO.setPassword(aes.getDecodeValue(loginReqDTO.getPassword()));
+        }
         // 账号密码校验
         User validateUser = loginService.authDmp(loginReqDTO);
         //设置小程序openid
