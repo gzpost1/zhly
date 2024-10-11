@@ -1,18 +1,22 @@
 package cn.cuiot.dmp.externalapi.service.sync.hik;
 
 import cn.cuiot.dmp.common.bean.external.HIKEntranceGuardBO;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsDeviceEntity;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsDeviceService;
 import cn.cuiot.dmp.externalapi.service.service.hik.HikCommonHandle;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.HikApiFeignService;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.HikAcsListReq;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.HikAcsStatesReq;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikAcsListResp;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikAcsStatesResp;
 import com.google.common.collect.Lists;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -127,15 +131,76 @@ public class HaikangAcsDeviceDataSyncService {
     /**
      * 门禁设备数据增量同步
      */
-    public void hikAcsDeviceIncrementDataSync() {
+    public void hikAcsDeviceIncrementDataSync(Long companyId) {
+        HIKEntranceGuardBO hikEntranceGuardBO = hikCommonHandle.queryHikConfigByPlatfromInfo(
+                companyId);
+        AtomicLong pageNo = new AtomicLong(1);
+        Integer size = 0;
+        do {
+            HikAcsListReq req = new HikAcsListReq();
+            req.setPageNo(pageNo.getAndAdd(1));
+            req.setPageSize(1000L);
+            req.setStartTime(
+                    LocalDateTime.now().minusHours(47).format(DateTimeFormatter.ISO_DATE_TIME));
 
+            HikAcsListResp resp = hikApiFeignService.queryAcsDeviceByTimeRange(req,
+                    hikEntranceGuardBO);
+            List<HikAcsListResp.DataItem> list = resp.getList();
+            size = list.size();
+            if (CollectionUtils.isNotEmpty(list)) {
+                List<HaikangAcsDeviceEntity> entityList = Lists.newArrayList();
+                for (HikAcsListResp.DataItem item : list) {
+                    HaikangAcsDeviceEntity entity = convertDataItemToEntity(item);
+                    if (Objects.nonNull(item.getStatus())) {
+                        //小于0则代表资源已被删除
+                        if (item.getStatus() < 0) {
+                            entity.setDeleted(EntityConstants.DELETED);
+                        }
+                    }
+                    entity.setOrgId(companyId);
+                    entity.setDataTime(new Date());
+                    entityList.add(entity);
+                }
+                if (CollectionUtils.isNotEmpty(entityList)) {
+                    haikangAcsDeviceService.saveToDB(entityList);
+                }
+            }
+        } while (size > 0);
     }
 
     /**
      * 门禁设备在线状态同步
      */
-    public void hikAcsDeviceOnlineStatusSync() {
+    public void hikAcsDeviceOnlineStatusSync(Long companyId) {
+        HIKEntranceGuardBO hikEntranceGuardBO = hikCommonHandle.queryHikConfigByPlatfromInfo(
+                companyId);
+        AtomicLong pageNo = new AtomicLong(1);
+        Integer size = 0;
+        do {
+            HikAcsStatesReq req = new HikAcsStatesReq();
+            req.setPageNo(pageNo.getAndAdd(1));
+            req.setPageSize(1000L);
 
+            HikAcsStatesResp resp = hikApiFeignService.queryAcsStatus(req,
+                    hikEntranceGuardBO);
+            List<HikAcsStatesResp.DataItem> list = resp.getList();
+            size = list.size();
+            if (CollectionUtils.isNotEmpty(list)) {
+                for (HikAcsStatesResp.DataItem item : list) {
+                    Date collectTime = null;
+                    if(StringUtils.isNotBlank(item.getCollectTime())){
+                        collectTime = DateTimeUtil.localDateTimeToDate(
+                                LocalDateTime.parse(item.getCollectTime(),
+                                        DateTimeFormatter.ISO_DATE_TIME));
+                    }
+                    Byte status = null;
+                    if(Objects.nonNull(item.getOnline())){
+                        status = item.getOnline().byteValue();
+                    }
+                    haikangAcsDeviceService.updateOnlineStatus(item.getIndexCode(),collectTime,status);
+                }
+            }
+        } while (size > 0);
     }
 
 }

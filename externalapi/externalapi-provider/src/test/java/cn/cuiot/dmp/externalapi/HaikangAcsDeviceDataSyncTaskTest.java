@@ -30,7 +30,7 @@ public class HaikangAcsDeviceDataSyncTaskTest {
     private HaikangPlatfromInfoCallableService haikangPlatfromInfoCallableService;
 
     @Test
-    public void hikAcsDeviceFullDataSyncJobHandler(){
+    public void haikangAcsDeviceFullDataSyncTest(){
         haikangPlatfromInfoCallableService.resolvePlatfromInfos(1,
                 new HaikangPlatfromInfoCallable() {
                     @Override
@@ -38,6 +38,36 @@ public class HaikangAcsDeviceDataSyncTaskTest {
                         if(CollectionUtils.isNotEmpty(platfromInfoList)){
                             Long companyId = platfromInfoList.get(0).getCompanyId();
                             haikangAcsDeviceDataSyncService.haikangAcsDeviceFullDataSync(companyId);
+                        }
+                    }
+                });
+
+    }
+
+    @Test
+    public void hikAcsDeviceIncrementDataSyncTest(){
+        haikangPlatfromInfoCallableService.resolvePlatfromInfos(1,
+                new HaikangPlatfromInfoCallable() {
+                    @Override
+                    public void process(List<PlatfromInfoRespDTO> platfromInfoList) {
+                        if(CollectionUtils.isNotEmpty(platfromInfoList)){
+                            Long companyId = platfromInfoList.get(0).getCompanyId();
+                            haikangAcsDeviceDataSyncService.hikAcsDeviceIncrementDataSync(companyId);
+                        }
+                    }
+                });
+
+    }
+
+    @Test
+    public void hikAcsDeviceOnlineStatusSyncTest(){
+        haikangPlatfromInfoCallableService.resolvePlatfromInfos(1,
+                new HaikangPlatfromInfoCallable() {
+                    @Override
+                    public void process(List<PlatfromInfoRespDTO> platfromInfoList) {
+                        if(CollectionUtils.isNotEmpty(platfromInfoList)){
+                            Long companyId = platfromInfoList.get(0).getCompanyId();
+                            haikangAcsDeviceDataSyncService.hikAcsDeviceOnlineStatusSync(companyId);
                         }
                     }
                 });

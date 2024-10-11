@@ -56,7 +56,16 @@ public class HaikangAcsDeviceDataSyncTask {
     @XxlJob("hikAcsDeviceIncrementDataSyncJobHandler")
     public ReturnT<String> hikAcsDeviceIncrementDataSyncJobHandler(String param) {
         log.info("hikAcsDeviceIncrementDataSyncJobHandler begin...");
-        haikangAcsDeviceDataSyncService.hikAcsDeviceIncrementDataSync();
+        haikangPlatfromInfoCallableService.resolvePlatfromInfos(1,
+                new HaikangPlatfromInfoCallable() {
+                    @Override
+                    public void process(List<PlatfromInfoRespDTO> platfromInfoList) {
+                        if(CollectionUtils.isNotEmpty(platfromInfoList)){
+                            Long companyId = platfromInfoList.get(0).getCompanyId();
+                            haikangAcsDeviceDataSyncService.hikAcsDeviceIncrementDataSync(companyId);
+                        }
+                    }
+                });
         log.info("hikAcsDeviceIncrementDataSyncJobHandler end...");
         return ReturnT.SUCCESS;
     }
@@ -67,7 +76,16 @@ public class HaikangAcsDeviceDataSyncTask {
     @XxlJob("hikAcsDeviceOnlineStatusSyncJobHandler")
     public ReturnT<String> hikAcsDeviceOnlineStatusSyncJobHandler(String param) {
         log.info("hikAcsDeviceOnlineStatusSyncJobHandler begin...");
-        haikangAcsDeviceDataSyncService.hikAcsDeviceOnlineStatusSync();
+        haikangPlatfromInfoCallableService.resolvePlatfromInfos(1,
+                new HaikangPlatfromInfoCallable() {
+                    @Override
+                    public void process(List<PlatfromInfoRespDTO> platfromInfoList) {
+                        if(CollectionUtils.isNotEmpty(platfromInfoList)){
+                            Long companyId = platfromInfoList.get(0).getCompanyId();
+                            haikangAcsDeviceDataSyncService.hikAcsDeviceOnlineStatusSync(companyId);
+                        }
+                    }
+                });
         log.info("hikAcsDeviceOnlineStatusSyncJobHandler end...");
         return ReturnT.SUCCESS;
     }

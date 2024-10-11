@@ -13,10 +13,12 @@ import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikRegionResp;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikRegionResp.DataItem;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDeviceVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.collections.CollectionUtils;
@@ -176,6 +178,24 @@ public class HaikangAcsDeviceService extends
         }
         if (CollectionUtils.isNotEmpty(addList)) {
             super.saveBatch(addList);
+        }
+    }
+
+    /**
+     * 更新在线状态
+     */
+    public void updateOnlineStatus(String indexCode, Date collectTime, Byte status) {
+        if (StringUtils.isNotBlank(indexCode) && Objects.nonNull(status)) {
+            HaikangAcsDeviceEntity entity = selectByIndexCode(indexCode);
+            if (Objects.nonNull(entity)) {
+                LambdaUpdateWrapper<HaikangAcsDeviceEntity> lambdaedUpdate = Wrappers.lambdaUpdate();
+                lambdaedUpdate.eq(HaikangAcsDeviceEntity::getId, entity.getId());
+                lambdaedUpdate.set(HaikangAcsDeviceEntity::getStatus, status);
+                if (Objects.nonNull(collectTime)) {
+                    lambdaedUpdate.set(HaikangAcsDeviceEntity::getCollectTime, collectTime);
+                }
+                haikangAcsDeviceMapper.update(null, lambdaedUpdate);
+            }
         }
     }
 
