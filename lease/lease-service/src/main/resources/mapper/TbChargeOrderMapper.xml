@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.charge.TbChargeOrderMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.lease.entity.charge.TbChargeOrder">
+    <!--@mbg.generated-->
+    <!--@Table tb_charge_order-->
+    <id column="order_id" jdbcType="BIGINT" property="orderId" />
+    <result column="pay_id" jdbcType="BIGINT" property="payId" />
+    <result column="create_user" jdbcType="BIGINT" property="createUser" />
+    <result column="order_detail" jdbcType="LONGVARCHAR" property="orderDetail"
+      javaType="cn.cuiot.dmp.lease.dto.charge.ChargePayToWechatDetailDto"
+            typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"
+      />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="data_type" jdbcType="TINYINT" property="dataType" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    order_id, pay_id, order_detail, create_time,data_type,create_user
+  </sql>
+</mapper>

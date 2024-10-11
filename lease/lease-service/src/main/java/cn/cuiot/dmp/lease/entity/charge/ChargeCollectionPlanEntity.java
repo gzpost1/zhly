@@ -1,12 +1,14 @@
 package cn.cuiot.dmp.lease.entity.charge;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.util.Date;
+import java.util.List;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,7 +20,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName(value = "tb_charge_collection_plan")
+@TableName(value = "tb_charge_collection_plan",autoResultMap = true,resultMap = "basemap")
 public class ChargeCollectionPlanEntity extends YjBaseEntity {
     /**
      * id
@@ -35,8 +37,8 @@ public class ChargeCollectionPlanEntity extends YjBaseEntity {
     /**
      * 通知渠道（1：系统消息；2：短信）
      */
-    @TableField(value = "channel")
-    private Byte channel;
+    @TableField(value = "channel",typeHandler = JsonTypeHandler.class)
+    private List<String> channel;
 
     /**
      * 发送日期类型（1:每天，2:每周，3:每月）
