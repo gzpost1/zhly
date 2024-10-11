@@ -126,10 +126,10 @@ public class HikApiFeignService {
      * @return HikDoorControlResp
      * @Param req 参数
      */
-    public HikDoorControlResp doorDoControl(HikDoorControlReq req, HIKEntranceGuardBO bo) {
+    public List<HikDoorControlResp> doorDoControl(HikDoorControlReq req, HIKEntranceGuardBO bo) {
         String gateway = "/api/acs/v1/door/doControl";
-        HikBaseResp<HikDoorControlResp> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
-                new TypeReference<HikBaseResp<HikDoorControlResp>>() {
+        HikBaseResp<List<HikDoorControlResp>> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
+                new TypeReference<HikBaseResp<List<HikDoorControlResp>>>() {
                 });
         return resp.getData();
     }

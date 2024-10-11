@@ -25,4 +25,6 @@ public class HikDoorControlResp {
      * 与controlResultCode对应的描述，见附录E.3 门禁管理错误码说明
      */
     private String controlResultDesc;
+    
+
 }
