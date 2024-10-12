@@ -39,6 +39,7 @@ public class HikAcsDoorEventsController {
      * @return IPage
      * @Param query 参数
      */
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<HikAcsDoorEventsPageVO>> queryForPage(@RequestBody HikAcsDoorEventsPageQuery query) {
         return IdmResDTO.success(hikAcsDoorEventsService.queryForPage(query));
@@ -62,6 +63,7 @@ public class HikAcsDoorEventsController {
      * @return List<HikIrdsResourcesByParamsVO>
      * @Param query 参数
      */
+    @RequiresPermissions
     @PostMapping("/queryAcsDeviceList")
     public IdmResDTO<List<HikCommonResourcesVO>> queryAcsDeviceList(HikIrdsResourcesByParamsQuery query) {
         return IdmResDTO.success(hikAcsDoorEventsService.queryAcsDeviceList(query));

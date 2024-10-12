@@ -91,6 +91,7 @@ public class HikPersonController {
      * @return IPage<HikPersonEntity>
      * @Param query 参数
      */
+    @RequiresPermissions
     @PostMapping("queryForPage")
     public IdmResDTO<IPage<HikPersonPageVO>> queryForPage(@RequestBody HikPersonPageQuery query) {
         return IdmResDTO.success(hikPersonService.queryForPage(query));
@@ -102,6 +103,7 @@ public class HikPersonController {
      * @return HikPersonEntity
      * @Param id 人员id
      */
+    @RequiresPermissions
     @PostMapping("queryForDetail")
     public IdmResDTO<HikPersonEntity> queryForDetail(@RequestBody @Valid IdParam param) {
         return IdmResDTO.success(hikPersonService.queryForDetail(param.getId()));
@@ -113,6 +115,7 @@ public class HikPersonController {
      * @return 照片
      * @Param id 人员id
      */
+    @RequiresPermissions
     @PostMapping("queryFaceData")
     public IdmResDTO<String> queryFaceData(@RequestBody @Valid IdParam param) {
         return IdmResDTO.success(hikPersonService.queryFaceData(param.getId()));
@@ -124,6 +127,7 @@ public class HikPersonController {
      * @return PersonAuthorizeValidityVO
      * @Param id 人员id
      */
+    @RequiresPermissions
     @PostMapping("queryAuthorizeValidity")
     public IdmResDTO<HikPersonAuthorizeValidityVO> queryAuthorizeValidity(@RequestBody @Valid IdParam param) {
         return IdmResDTO.success(hikPersonService.queryAuthorizeValidity(param.getId()));
@@ -135,6 +139,7 @@ public class HikPersonController {
      * @return IPage<HikPersonAuthorizeVO>
      * @Param query 参数
      */
+    @RequiresPermissions
     @PostMapping("queryAuthorizeForPage")
     public IdmResDTO<IPage<HikPersonAuthorizeVO>> queryAuthorizeForPage(@RequestBody @Valid HikPersonAuthorizePageQuery query) {
         return IdmResDTO.success(hikPersonService.queryAuthorizeForPage(query));
