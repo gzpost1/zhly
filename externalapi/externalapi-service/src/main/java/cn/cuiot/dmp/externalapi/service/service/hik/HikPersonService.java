@@ -8,14 +8,12 @@ import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.entity.hik.HikPersonEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.hik.HikPersonMapper;
 import cn.cuiot.dmp.externalapi.service.query.hik.*;
+import cn.cuiot.dmp.externalapi.service.utils.HikImageUtil;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.HikApiFeignService;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.*;
-import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikAcpsAuthConfigSearchResp;
-import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorResp;
-import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikOrgListResp;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.*;
 import cn.cuiot.dmp.externalapi.service.vo.hik.*;
 import cn.cuiot.dmp.util.Sm4;
-import cn.hutool.core.codec.Base64;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -28,7 +26,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -134,12 +133,25 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
         // 获取当前企业的对接配置
         HIKEntranceGuardBO bo = hikCommonHandle.queryHikConfigByPlatfromInfo(companyId);
 
-        // 调用外部接口编辑照片
-        HikFaceSingleUpdateReq req = new HikFaceSingleUpdateReq();
-        req.setFaceId(entity.getId() + "");
-        req.setFaceData(Base64.encode(dto.getFaceData().getBytes(StandardCharsets.UTF_8)));
-        hikApiFeignService.faceSingleUpdate(req, bo);
+        String faceData = dto.getFaceData();
+        // 判断是否存在第三方人脸id,有则修改无则新增
+        if (StringUtils.isNotBlank(entity.getFaceId())) {
+            // 调用外部接口编辑照片
+            HikFaceSingleUpdateReq req = new HikFaceSingleUpdateReq();
+            req.setFaceId(entity.getFaceId());
+            req.setFaceData(HikImageUtil.imageToBase64Converter(faceData));
+            HikFaceSingleUpdateResp resp = hikApiFeignService.faceSingleUpdate(req, bo);
 
+            entity.setFaceId(resp.getFaceId());
+        } else {
+            // 调用外部接口新增照片
+            HikFaceSingleAddReq req = new HikFaceSingleAddReq();
+            req.setPersonId(entity.getId() + "");
+            req.setFaceData(HikImageUtil.imageToBase64Converter(faceData));
+            HikFaceSingleAddResp resp = hikApiFeignService.faceSingleAdd(req, bo);
+
+            entity.setFaceId(resp.getFaceId());
+        }
         entity.setFaceData(dto.getFaceData());
         entity.setFaceDataStatus(EntityConstants.YES);
         updateById(entity);
@@ -157,16 +169,17 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
         List<Long> personIds = dto.getIds();
 
         // 检查有效期
-        personIds.forEach(item -> {
-            if (Objects.equals(dto.getValidityType(), EntityConstants.ENABLED)) {
-                if (Objects.isNull(dto.getBeginTime()) || Objects.isNull(dto.getEndTime())) {
-                    throw new BusinessException(ResultCode.ERROR, "权限有效期为自定义有效期时，开始结束时间不能为空");
-                }
-                if (dto.getBeginTime().isAfter(dto.getEndTime())) {
-                    throw new BusinessException(ResultCode.ERROR, "权限有效期结束日期必须大于开始日期");
-                }
+        if (Objects.equals(dto.getValidityType(), EntityConstants.ENABLED)) {
+            if (Objects.isNull(dto.getBeginTime()) || Objects.isNull(dto.getEndTime())) {
+                throw new BusinessException(ResultCode.ERROR, "权限有效期为自定义有效期时，开始结束时间不能为空");
             }
-        });
+            if (dto.getBeginTime().isAfter(dto.getEndTime())) {
+                throw new BusinessException(ResultCode.ERROR, "权限有效期结束日期必须大于开始日期");
+            }
+        } else {
+            dto.setBeginTime(null);
+            dto.setEndTime(null);
+        }
 
         // 企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
@@ -176,8 +189,10 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
         // 批量删除用户授权
         batchDeleteAuthorize(personIds, bo);
 
-        // 批量设置授权信息
-        batchAddAuthorize(dto, bo);
+        if (CollectionUtils.isNotEmpty(dto.getThirdDoorIdList())) {
+            // 批量设置授权信息
+            batchAddAuthorize(dto, bo);
+        }
 
         List<HikPersonEntity> collect = dto.getIds().stream().map(personId -> {
             // 获取人员信息
@@ -222,11 +237,16 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
 
         // 设置组织信息
         if (Objects.nonNull(iPage) && CollectionUtils.isNotEmpty(iPage.getRecords())) {
-            // 远程请求组织信息
+            // 组织列表
             List<String> orgIndexCodes = iPage.getRecords().stream()
                     .map(HikPersonPageVO::getOrgIndexCode)
                     .distinct().collect(Collectors.toList());
 
+            // 人员id列表
+            List<Long> personIds = iPage.getRecords().stream()
+                    .map(HikPersonPageVO::getId).collect(Collectors.toList());
+
+            // 远程请求组织信息
             HikOrgListReq req = new HikOrgListReq();
             req.setOrgIndexCodes(String.join(",", orgIndexCodes));
             List<HikOrgListResp.DataItem> orgList = queryOrgList(req, bo);
@@ -234,7 +254,6 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
                     .collect(Collectors.toMap(HikOrgListResp.DataItem::getOrgIndexCode, e -> e));
 
             // 远程请求人员授权信息
-            List<Long> personIds = iPage.getRecords().stream().map(HikPersonPageVO::getId).collect(Collectors.toList());
             List<HikAcpsAuthConfigSearchResp.PermissionConfig> authorizeByPersonIds = queryAuthorizeByPersonIds(personIds, bo);
             Map<String, Long> authorizeMap = authorizeByPersonIds.stream()
                     .collect(Collectors.groupingBy(HikAcpsAuthConfigSearchResp.PermissionConfig::getPersonDataId, Collectors.counting()));
@@ -303,7 +322,15 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
         // 企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
         // 获取人员信息
-        return getHikPersonEntity(id, companyId);
+        HikPersonEntity entity = getHikPersonEntity(id, companyId);
+
+        if (StringUtils.isNotBlank(entity.getPhoneNo())) {
+            entity.setPhoneNo(Sm4.decrypt(entity.getPhoneNo()));
+        }
+        if (StringUtils.isNotBlank(entity.getCertificateNo())) {
+            entity.setCertificateNo(Sm4.decrypt(entity.getCertificateNo()));
+        }
+        return entity;
     }
 
     /**
@@ -317,7 +344,7 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
         Long companyId = LoginInfoHolder.getCurrentOrgId();
         // 获取人员信息
         HikPersonEntity entity = getHikPersonEntity(id, companyId);
-        return Objects.nonNull(entity) ? entity.getFaceData() : null;
+        return entity.getFaceData();
     }
 
     /**
@@ -333,11 +360,9 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
         HikPersonEntity entity = getHikPersonEntity(id, companyId);
 
         HikPersonAuthorizeValidityVO vo = new HikPersonAuthorizeValidityVO();
-        if (Objects.nonNull(entity)) {
-            vo.setValidityType(entity.getValidityType());
-            vo.setBeginTime(entity.getBeginTime());
-            vo.setEndTime(entity.getEndTime());
-        }
+        vo.setValidityType(entity.getValidityType());
+        vo.setBeginTime(entity.getBeginTime());
+        vo.setEndTime(entity.getEndTime());
         return vo;
     }
 
@@ -354,8 +379,8 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
         HIKEntranceGuardBO bo = hikCommonHandle.queryHikConfigByPlatfromInfo(companyId);
         // 查询门禁点分页数据
         HikDoorReq req = new HikDoorReq();
-        req.setPageNo(query.getPageNo());
-        req.setPageSize(query.getPageSize());
+        req.setPageNo(Objects.nonNull(query.getPageNo()) ? query.getPageNo() : 1L);
+        req.setPageSize(Objects.nonNull(query.getPageSize()) ? query.getPageSize() : DEFAULT_PAGE_SIZE);
         HikDoorResp search = hikApiFeignService.queryDoorSearch(req, bo);
 
         List<HikPersonAuthorizeVO> collect = Lists.newArrayList();
@@ -367,14 +392,9 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
             Map<String, HikAcpsAuthConfigSearchResp.PermissionConfig> authorizeEntityMap = authorizeEntityList.stream()
                     .collect(Collectors.toMap(HikAcpsAuthConfigSearchResp.PermissionConfig::getChannelIndexCode, e -> e));
 
-            collect = search.getList().stream().filter(Objects::nonNull).map(item -> {
-                HikPersonAuthorizeVO vo = new HikPersonAuthorizeVO();
-                vo.setName(item.getName());
-                // 数据库存在则设置为已选择
-                vo.setIsSelect(authorizeEntityMap.containsKey(item.getIndexCode()) ? EntityConstants.YES : EntityConstants.NO);
-                vo.setRegionPathName(item.getRegionPathName());
-                return vo;
-            }).collect(Collectors.toList());
+            collect = search.getList().stream()
+                    .map(item -> HikPersonAuthorizeVO.buildHikPersonAuthorizeVO(item, authorizeEntityMap))
+                    .collect(Collectors.toList());
         }
 
         // 创建并返回 IPage 对象
@@ -419,12 +439,8 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
     }
 
     private List<HikOrgListResp.DataItem> queryOrgList(HikOrgListReq req, HIKEntranceGuardBO bo) {
-        if (Objects.isNull(req.getPageNo())) {
-            req.setPageNo(1L);
-        }
-        if (Objects.isNull(req.getPageSize())) {
-            req.setPageSize(DEFAULT_PAGE_SIZE);
-        }
+        req.setPageNo(Objects.nonNull(req.getPageNo()) ? req.getPageNo() : 1L);
+        req.setPageSize(Objects.nonNull(req.getPageSize()) ? req.getPageSize() : DEFAULT_PAGE_SIZE);
         req.setIsSubOrg(true);
         HikOrgListResp resp = hikApiFeignService.queryOrgList(req, bo);
         if (Objects.nonNull(resp) && CollectionUtils.isNotEmpty(resp.getList())) {
@@ -452,7 +468,7 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
         do {
             HikAcpsAuthConfigSearchReq searchReq = new HikAcpsAuthConfigSearchReq();
             searchReq.setPersonDataIds(personIdStr);
-            searchReq.setResourceDataType("person");
+            searchReq.setPersonDataType("person");
             searchReq.setPageNo(pageNo.getAndAdd(1));
             searchReq.setPageSize(pageSize);
             // 查询当前用户授权
@@ -533,6 +549,12 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
             return resourceInfoDTO;
         }).collect(Collectors.toList());
         req.setResourceInfos(resourceInfoDtoList);
+
+        req.setStartTime(Objects.nonNull(dto.getBeginTime()) ?
+                dto.getBeginTime().atOffset(ZoneOffset.of("+08:00")).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) : "");
+
+        req.setEndTime(Objects.nonNull(dto.getEndTime()) ?
+                dto.getEndTime().atOffset(ZoneOffset.of("+08:00")).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) : "");
 
         hikApiFeignService.acpsAuthConfigAdd(req, bo);
     }

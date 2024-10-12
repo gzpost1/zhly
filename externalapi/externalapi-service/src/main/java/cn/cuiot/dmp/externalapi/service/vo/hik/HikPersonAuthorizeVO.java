@@ -1,6 +1,11 @@
 package cn.cuiot.dmp.externalapi.service.vo.hik;
 
+import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikAcpsAuthConfigSearchResp;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorResp;
 import lombok.Data;
+
+import java.util.Map;
 
 /**
  * 授权设备
@@ -30,4 +35,22 @@ public class HikPersonAuthorizeVO {
      * 资源名称
      */
     private String name;
+
+    /**
+     * 构造vo
+     *
+     * @return HikPersonAuthorizeVO
+     * @Param dataItem 参数
+     * @Param map 参数
+     */
+    public static HikPersonAuthorizeVO buildHikPersonAuthorizeVO(HikDoorResp.DataItem dataItem,
+                                                                 Map<String, HikAcpsAuthConfigSearchResp.PermissionConfig> map) {
+        HikPersonAuthorizeVO vo = new HikPersonAuthorizeVO();
+        vo.setThirdDoorId(dataItem.getIndexCode());
+        vo.setName(dataItem.getName());
+        vo.setRegionPathName(dataItem.getRegionPathName());
+        // 数据库存在则设置为已选择
+        vo.setIsSelect(map.containsKey(dataItem.getIndexCode()) ? EntityConstants.YES : EntityConstants.NO);
+        return vo;
+    }
 }
