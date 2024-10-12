@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 
 /**
  * 订单关闭参数
@@ -22,49 +20,12 @@ import java.util.List;
 @AllArgsConstructor
 public class CloseOrderParam implements Serializable {
 
+    private Long orgId;
 
     /**
-     * 平台支付父订单号
+     * 渠道订单号
      */
-    private String orderId;
-    /**
-     * 支付渠道父订单号
-     */
-    private String payOrderId;
-    /**
-     * 交易时间
-     */
-    private Date payTime;
-    /**
-     * 子单信息
-     */
-    private List<CloseSubOrderItem> subOrderItems;
-    /**
-     * 交易渠道：
-     * 03：公众号支付
-     * 04：H5支付
-     * 05：APP支付
-     * 06：native支付
-     * 01：小程序支付
-     * 09:二维码主扫支付（订 单）
-     */
-    private String tradeType;
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class CloseSubOrderItem implements Serializable {
-        /**
-         * 子单订单号
-         */
-        private Long subOrderId;
+    private String outOrderId;
 
-        /**
-         * 二级商户支付号
-         */
-        private String payMchId;
-
-
-    }
 
 }

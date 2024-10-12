@@ -2,10 +2,12 @@ package cn.cuiot.dmp.pay.service.service.normal;
 
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.pay.service.service.config.NormalWeChatConfig;
+import cn.cuiot.dmp.pay.service.service.config.CommunityPayProperties;
 import cn.cuiot.dmp.pay.service.service.config.PayHttpClient;
 import cn.cuiot.dmp.pay.service.service.dto.UnifiedOrderResponseDto;
 import cn.cuiot.dmp.pay.service.service.dto.WePayOrderQuery;
+import cn.cuiot.dmp.pay.service.service.entity.SysPayChannelSetting;
+import cn.cuiot.dmp.pay.service.service.service.CertificatesVerifierCacheService;
 import cn.cuiot.dmp.pay.service.service.utils.WechatSignTool;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -18,7 +20,7 @@ import com.chinaunicom.yunjingtech.httpclient.util.AesUtil;
 import com.chinaunicom.yunjingtech.httpclient.util.PemUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -38,19 +40,16 @@ public class NormalPayHttpService  implements PaySettingInit{
     private static final String CLOSE_URL = "https://api.mch.weixin.qq" +
             ".com/v3/pay/transactions/out-trade-no/{out_trade_no}/close";
 
-    private PayHttpClient httpClient;
+    private PayHttpClient httpClient =new PayHttpClient();
 
     @Autowired
-    private NormalWeChatConfig weChatConfig;
+    private CertificatesVerifierCacheService cacheService;
 
     @Autowired
-    @Qualifier("NormalCertificatesVerifier")
-    private AutoUpdateCertificatesVerifier verifier;
+    private CommunityPayProperties communityPayProperties;
 
-    @Override
-    public void init() {
-        httpClient = PayHttpClient.build(weChatConfig, verifier);
-    }
+    @Value("${rest.connectionTimeout:5000}")
+    private int connectionTimeout;
     /**
      * 功能描述: 下预付单
      *
@@ -59,10 +58,12 @@ public class NormalPayHttpService  implements PaySettingInit{
      * @author huq
      * @date 2021/7/20 11:44
      **/
-    public UnifiedOrderResponseDto payOrder(NormalOrderReq query, String payMethod) {
-
+    public UnifiedOrderResponseDto payOrder(NormalOrderReq query, SysPayChannelSetting paySetting, String payMethod) {
+        AutoUpdateCertificatesVerifier certificatesVerifier =
+                cacheService.getAutoUpdateCertificatesVerifierByPayMchId(paySetting);
         String url = PAY_URL.replace("{payMethod}", payMethod);
-        String jsonStr = httpClient.requestHttpPostObj(url, query, "下单失败");
+        query.setNotifyUrl(communityPayProperties.getNotifyUrl().replace("{orgId}", String.valueOf(paySetting.getOrgId())));
+        String jsonStr = httpClient.requestHttpPostObj(url, query,"下单失败",certificatesVerifier,paySetting);
         JSONObject json = JSON.parseObject(jsonStr);
         String prepayId = json.get("prepay_id").toString();
         UnifiedOrderResponseDto responseDto = new UnifiedOrderResponseDto();
@@ -75,7 +76,7 @@ public class NormalPayHttpService  implements PaySettingInit{
                 responseDto.getNonceStr(), responseDto.getPkg());
         PrivateKey privateKey = null;
         try {
-            privateKey = PemUtil.loadPrivateKey(new ByteArrayInputStream(weChatConfig.getPrivateKey()));
+            privateKey = PemUtil.loadPrivateKey(new ByteArrayInputStream(paySetting.getPrivateKeyBlob()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -90,11 +91,13 @@ public class NormalPayHttpService  implements PaySettingInit{
      * @author huq
      * @date 2021/7/26 11:43
      **/
-    public NormalQueryOrderResp queryOrder(WePayOrderQuery orderQuery) {
+    public NormalQueryOrderResp queryOrder(WePayOrderQuery orderQuery,SysPayChannelSetting paySetting) {
         try {
+            AutoUpdateCertificatesVerifier certificatesVerifier =
+                    cacheService.getAutoUpdateCertificatesVerifierByPayMchId(paySetting);
             String url = QUERY_URL.replace("{out_trade_no}", orderQuery.getOutTradeNo());
             url = url + String.format("?mchid=%s", orderQuery.getPayMchId());
-            String responseStr = httpClient.requestHttpGetObj(url, "查单失败");
+            String responseStr = httpClient.requestHttpGetObj(url, "查单失败",certificatesVerifier,paySetting);
             return JSON.parseObject(responseStr,
                     new TypeReference<NormalQueryOrderResp>() {
                     });
@@ -108,14 +111,14 @@ public class NormalPayHttpService  implements PaySettingInit{
     /**
      * 关单
      *
-     * @param outTradeNo
      * @return
      */
-    public Boolean closeOrder(String outTradeNo) {
-
+    public Boolean closeOrder(String outTradeNo,SysPayChannelSetting paySetting) {
+        AutoUpdateCertificatesVerifier certificatesVerifier =
+                cacheService.getAutoUpdateCertificatesVerifierByPayMchId(paySetting);
         String url = CLOSE_URL.replace("{out_trade_no}", outTradeNo);
-        NormalCloseOrderReq closeOrderReq = NormalCloseOrderReq.builder().mchId(weChatConfig.getPayMchId()).build();
-        httpClient.requestHttpPostNoReturn(url, closeOrderReq, "关单失败");
+        NormalCloseOrderReq closeOrderReq = NormalCloseOrderReq.builder().mchId(paySetting.getPayMchId()).build();
+        httpClient.requestHttpPostNoReturn(url, closeOrderReq, "关单失败",certificatesVerifier,paySetting);
         return true;
     }
 

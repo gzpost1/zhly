@@ -24,7 +24,7 @@ public class PayOrderQueryAggregate implements Serializable {
     /**
      * 支付父订单号
      */
-    private String orderId;
+    private String outOrderId;
 
     /**
      * 支付方式：
@@ -63,26 +63,6 @@ public class PayOrderQueryAggregate implements Serializable {
      * yyyy-MM-dd HH:mm:ss
      */
     private Date payCompleteTime;
-    /**
-     * 支付手续费
-     */
-    private Integer payCharge;
-    /**
-     * 支付手续费率
-     */
-    private BigDecimal payChargeRate;
-    /**
-     * 子单信息
-     */
-    private List<SubOrderItem> subOrderItems;
-
-    /**
-     * 账号类型
-     * 0 个人借记卡、
-     * 1 贷记卡
-     * qilu新增
-     */
-    private Integer payerAcctType;
 
     /**
      * 支付号
@@ -94,72 +74,18 @@ public class PayOrderQueryAggregate implements Serializable {
      */
     private List<PromotionDetailResp> promotionDetail;
 
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class SubOrderItem implements Serializable {
-        /**
-         * 平台子订单号
-         */
-        private String subOrderId;
+    /**
+     * 优惠金额
+     */
+    private Integer discountAmount;
 
-        /**
-         * 微信单号
-         */
-        private String paySubOrderId;
-        /**
-         * 子单金额，单位分
-         */
-        private Integer totalFee;
-        /**
-         * 实付金额
-         */
-        private Integer payerAmount;
-        /**
-         * 优惠金额
-         */
-        private Integer discountAmount;
-        /**
-         * 二级商户支付号
-         */
-        private String payMchId;
+    /**
+     * 商品简单描述。需传入应用市场上的APP名字-实际商品名称，例如：天天爱消除-游戏充值。
+     * 对应以前的body字段
+     * 不能超过20字符
+     */
+    private String productName;
 
-        /**
-         * 商品简单描述。需传入应用市场上的APP名字-实际商品名称，例如：天天爱消除-游戏充值。
-         * 对应以前的body字段
-         * 不能超过20字符
-         */
-        private String productName;
-
-        /**
-         * 备注信息
-         */
-        private String remark;
-        /**
-         * 支付状态：
-         * 1：待支付
-         * 2：已取消
-         * 3：支付中
-         * 4：支付失败
-         * 5：已支付
-         * 99：其他
-         */
-        private Byte status;
-        /**
-         * 支付收单方状态
-         */
-        private String thirdStatus;
-
-        /**
-         * 支付手续费
-         */
-        private Integer payCharge;
-
-        /**
-         * 微信优惠信息
-         */
-        private List<PromotionDetailResp> promotionDetail;
-    }
+    private String attach;
 
 }

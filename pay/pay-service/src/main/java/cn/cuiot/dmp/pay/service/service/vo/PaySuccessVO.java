@@ -15,13 +15,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PaySuccessVO {
 
-    /**
-     * 支付订单号
-     */
-    private Long orderId;
 
     /**
-     * 支付订单号
+     * 渠道订单号
      */
     private String outOrderId;
 

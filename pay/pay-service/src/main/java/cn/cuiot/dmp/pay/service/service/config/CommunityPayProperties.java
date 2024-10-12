@@ -12,11 +12,11 @@ import org.springframework.stereotype.Component;
 @Component
 @Data
 @RefreshScope
-@ConfigurationProperties(prefix = "pay.domain")
+@ConfigurationProperties(prefix = "pay")
 public class CommunityPayProperties {
     /**
-     * 域名
+     * 支付回调
      */
-    private String url;
+    private String notifyUrl;
 
 }

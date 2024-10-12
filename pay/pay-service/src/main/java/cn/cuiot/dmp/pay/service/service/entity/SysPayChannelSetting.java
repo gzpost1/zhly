@@ -2,8 +2,10 @@ package cn.cuiot.dmp.pay.service.service.entity;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import cn.cuiot.dmp.base.infrastructure.persistence.handler.EncryptPhoneTypeHandler;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.pay.service.service.dto.PayChannelSettingDto;
 import cn.cuiot.dmp.pay.service.service.enums.PayChannelEnum;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -41,9 +43,19 @@ public class SysPayChannelSetting extends YjBaseEntity {
     private Long id;
 
     /**
+     * 企业ID
+     */
+    private Long orgId;
+
+    /**
      * 支付渠道名称
      */
     private String name;
+
+    /**
+     * 小程序appId
+     */
+    private String appId;
 
 
     /**
@@ -106,14 +118,6 @@ public class SysPayChannelSetting extends YjBaseEntity {
      * 商户模式
      */
     private Byte mchType;
-    /**
-     * 支付通知
-     */
-    private String payNotify;
-    /**
-     * 退款通知
-     */
-    private String refundNotify;
 
     /**
      * 更新基础信息
@@ -121,6 +125,11 @@ public class SysPayChannelSetting extends YjBaseEntity {
      * @param settingDto
      */
     public void update(PayChannelSettingDto settingDto) {
+        this.status = EntityConstants.ENABLED;
+        this.payChannel = settingDto.getPayChannel();
+        this.mchType = settingDto.getMchType();
+        this.orgId = LoginInfoHolder.getCurrentOrgId();
+        this.appId = settingDto.getAppId();
         this.payMchId = settingDto.getPayMchId();
         this.payMchName = settingDto.getPayMchName();
         this.charge = settingDto.getCharge();

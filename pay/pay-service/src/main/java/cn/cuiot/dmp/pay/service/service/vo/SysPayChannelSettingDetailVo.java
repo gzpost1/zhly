@@ -50,6 +50,20 @@ public class SysPayChannelSettingDetailVo implements Serializable {
      */
     private Byte mchType;
 
+    /**
+     * 企业ID
+     */
+    private Long orgId;
+
+    /**
+     * 支付渠道名称
+     */
+    private String name;
+
+    /**
+     * 小程序appId
+     */
+    private String appId;
 
     /**
      * 是否已上传私钥证书

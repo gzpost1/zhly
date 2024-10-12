@@ -1,7 +1,6 @@
 package cn.cuiot.dmp.pay.service.service.init;
 
 import cn.cuiot.dmp.pay.service.service.entity.SysPayChannelSetting;
-import cn.cuiot.dmp.pay.service.service.normal.PaySettingInit;
 import cn.cuiot.dmp.pay.service.service.service.SysPayChannelSettingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +25,6 @@ public class AutoRegisterPayConfig implements ApplicationListener<ApplicationIni
     @Autowired
     private SysPayChannelSettingService settingService;
 
-    @Autowired
-    private List<PaySettingInit> settingInitList;
-
     @Override
     public void onApplicationEvent(ApplicationInitializingEvent applicationInitializingEvent) {
         List<SysPayChannelSetting> channelSettingList = settingService.list();
@@ -40,9 +36,8 @@ public class AutoRegisterPayConfig implements ApplicationListener<ApplicationIni
                 log.warn("支付渠道注册失败：{},失败渠道：{}", ex.getMessage(), item.getName());
             }
         });
-        for (PaySettingInit paySettingInit : settingInitList) {
-            paySettingInit.init();
-        }
         log.info("支付渠道注册完成");
     }
+
+
 }

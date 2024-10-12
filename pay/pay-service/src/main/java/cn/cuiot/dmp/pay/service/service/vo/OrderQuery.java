@@ -18,10 +18,6 @@ import java.util.List;
 @NoArgsConstructor
 public class OrderQuery extends PageQuery {
     /**
-     * 平台父订单号
-     */
-    private String orderId;
-    /**
      * 渠道父订单号
      */
     private String outOrderId;

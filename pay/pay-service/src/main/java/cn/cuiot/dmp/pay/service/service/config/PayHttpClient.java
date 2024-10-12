@@ -2,6 +2,9 @@ package cn.cuiot.dmp.pay.service.service.config;
 
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.JsonUtil;
+import cn.cuiot.dmp.pay.service.service.entity.SysPayChannelSetting;
+import cn.cuiot.dmp.pay.service.service.vo.WeChatConfigVo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.chinaunicom.yunjingtech.httpclient.WechatPayHttpClientBuilder;
@@ -18,7 +21,8 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -39,32 +43,6 @@ public class PayHttpClient {
     public static final int CODE_404 = 404;
 
 
-    protected WeChatConfig weChatConfig;
-    protected AutoUpdateCertificatesVerifier verifier;
-
-    public static PayHttpClient build(WeChatConfig weChatConfig, AutoUpdateCertificatesVerifier verifier) {
-        PayHttpClient client = new PayHttpClient();
-        try {
-            client.setWeChatConfig(weChatConfig);
-            client.setVerifier(verifier);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return client;
-    }
-
-    /**
-     * post请求(服务商模式）
-     *
-     * @param url
-     * @param query
-     * @param err
-     * @param <M>
-     * @return
-     */
-    public <M extends BaseReq> String requestHttpPostObj(String url, M query, String err) {
-        return requestHttpPostObj(url, query, err, this.verifier);
-    }
 
     /**
      * post请求
@@ -76,9 +54,9 @@ public class PayHttpClient {
      * @return
      */
     public <M extends BaseReq> String requestHttpPostObj(String url, M query, String err,
-                                                         AutoUpdateCertificatesVerifier verifier) {
+                                                         AutoUpdateCertificatesVerifier verifier, SysPayChannelSetting paySetting) {
         try {
-            CloseableHttpClient httpClient = initHttpClient(verifier, weChatConfig);
+            CloseableHttpClient httpClient = initHttpClient(verifier, paySetting);
 
             //接口URL
             HttpPost httpPost = new HttpPost(url);
@@ -105,17 +83,6 @@ public class PayHttpClient {
         }
     }
 
-    /**
-     * 合单支付-调用微信无返回post方法
-     *
-     * @param url
-     * @param query
-     * @param err
-     * @param <M>
-     */
-    public <M extends BaseReq> void requestHttpPostNoReturn(String url, M query, String err) {
-        requestHttpPostNoReturn(url, query, err, verifier);
-    }
 
     /**
      * 功能描述: 调用微信post方法，无返回
@@ -129,10 +96,10 @@ public class PayHttpClient {
      * @date 2021/7/27 9:47
      **/
     public <M extends BaseReq> void requestHttpPostNoReturn(String url, M query, String err,
-                                                            AutoUpdateCertificatesVerifier verifier
+                                                            AutoUpdateCertificatesVerifier verifier, SysPayChannelSetting paySetting
                                                             ) {
         try {
-            CloseableHttpClient httpClient = initHttpClient(verifier, weChatConfig);
+            CloseableHttpClient httpClient = initHttpClient(verifier, paySetting);
             //接口URL
             HttpPost httpPost = new HttpPost(url);
             initHttpPost(query, httpPost, verifier);
@@ -156,16 +123,6 @@ public class PayHttpClient {
         }
     }
 
-    /**
-     * 服务商模式
-     *
-     * @param url
-     * @param err
-     * @return
-     */
-    public String requestHttpGetObj(String url, String err) {
-        return requestHttpGetObj(url, err, verifier);
-    }
 
     /**
      * 调用微信get方法
@@ -175,11 +132,11 @@ public class PayHttpClient {
      * @param verifier
      * @return
      */
-    public String requestHttpGetObj(String url, String err, AutoUpdateCertificatesVerifier verifier) {
+    public String requestHttpGetObj(String url, String err, AutoUpdateCertificatesVerifier verifier, SysPayChannelSetting paySetting) {
         try {
             HttpGet httpGet = new HttpGet(url);
             httpGet.addHeader("Accept", "application/json");
-            CloseableHttpClient client = initHttpClient(verifier, weChatConfig);
+            CloseableHttpClient client = initHttpClient(verifier, paySetting);
             CloseableHttpResponse response = client.execute(httpGet);
             String responseStr = EntityUtils.toString(response.getEntity());
             log.info("applyment response" + responseStr);
@@ -212,33 +169,6 @@ public class PayHttpClient {
 
     }
 
-    /**
-     * 调用微信get方法
-     *
-     * @param url
-     * @param err
-     * @return
-     */
-    public <M extends BaseReq> String requestHttpGetObj(String url, M query, String err) {
-        String queryStr = objToQuery(query);
-        url = url + "?" + queryStr;
-        return requestHttpGetObj(url, err, verifier);
-    }
-
-    /**
-     * 调用微信get方法
-     *
-     * @param url
-     * @param err
-     * @param verifier
-     * @return
-     */
-    public <M extends BaseReq> String requestHttpGetObj(String url, M query, String err,
-                                                        AutoUpdateCertificatesVerifier verifier) {
-        String queryStr = objToQuery(query);
-        url = url + "?" + queryStr;
-        return requestHttpGetObj(url, err, verifier);
-    }
 
     /**
      * 初始化httpPost
@@ -268,11 +198,12 @@ public class PayHttpClient {
     /**
      * 初始化HttpClient
      */
-    public CloseableHttpClient initHttpClient(AutoUpdateCertificatesVerifier verifier, WeChatConfig weChatConfig) {
+    public CloseableHttpClient initHttpClient(AutoUpdateCertificatesVerifier verifier, SysPayChannelSetting paySetting) {
 
-        PrivateKey privateKey = PemUtil.loadPrivateKey(new ByteArrayInputStream(weChatConfig.getPrivateKey()));
+        PrivateKey privateKey = PemUtil.loadPrivateKey(new ByteArrayInputStream(paySetting.getPrivateKeyBlob()));
+        WeChatConfigVo config = JsonUtil.readValue(paySetting.getSettingConfig(), WeChatConfigVo.class);
         CloseableHttpClient httpClient = WechatPayHttpClientBuilder.create()
-                .withMerchant(weChatConfig.getPayMchId(), weChatConfig.getMchSerialNo(), privateKey)
+                .withMerchant(paySetting.getPayMchId(), config.getSerialNo(), privateKey)
                 .withValidator(new WechatPay2Validator(verifier)).build();
         return httpClient;
     }

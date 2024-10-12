@@ -18,9 +18,9 @@ import java.io.Serializable;
 public class CreateOrderAggregate implements Serializable {
 
     /**
-     * 平台支付订单号
+     * 渠道订单号
      */
-    private String orderId;
+    private String outOrderId;
     /**
      * 支付系统交易订单号（微信为空，支付宝返回）
      */

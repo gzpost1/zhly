@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.pay.service.service.dto;
 
+import cn.cuiot.dmp.pay.service.service.enums.TradeChannelEnum;
 import com.chinaunicom.yunjingtech.httpclient.bean.pay.SettleInfoEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,54 +51,58 @@ public class CreateOrderParam implements Serializable {
      * 终端IP
      */
     private String spbillCreateIp;
-    /**
-     * 子单信息
-     */
-    private List<SubOrderItem> subOrderItems;
+
 
     /**
-     * 支付平台订单号
+     * 渠道订单号
      */
-    private String orderId;
+    private String outOrderId;
+
+    /**
+     * 企业id
+     */
+    private Long orgId;
+
+    /**
+     * 附加数据（可作为自定义字段使用，查询API和支付通知中原样返回）
+     */
+    private String attach;
+
+    /**
+     * 商户支付号
+     */
+    private String payMchId;
+    /**
+
+     /**
+     * 优惠标记
+     */
+    private String goodsTag;
+
+    /**
+     * 商品简单描述。需传入应用市场上的APP名字-实际商品名称，例如：天天爱消除-游戏充值。
+     * 对应以前的body字段
+     * 不能超过20字符
+     */
+    private String productName;
 
 
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class SubOrderItem implements Serializable {
-        /**
-         * 附加数据（可作为自定义字段使用，查询API和支付通知中原样返回）
-         */
-        private String attach;
-        /**
-         * 子单金额，单位分
-         */
-        private Integer totalFee;
 
-        /**
-         * 商户支付号
-         */
-        private String payMchId;
-        /**
-
-        /**
-         * 优惠标记
-         */
-        private String goodsTag;
-        /**
-         * 结算信息
-         */
-        private SettleInfoEntity settleInfo;
-
-        /**
-         * 商品简单描述。需传入应用市场上的APP名字-实际商品名称，例如：天天爱消除-游戏充值。
-         * 对应以前的body字段
-         * 不能超过20字符
-         */
-        private String productName;
-
-
+    public static CreateOrderParam initDate(CreateOrderReq param){
+        CreateOrderParam createOrderParam = CreateOrderParam.builder()
+                .appId(param.getAppId())
+                .tradeType(TradeChannelEnum.getPayCode(param.getTradeType()))
+                .openId(param.getOpenId())
+                .totalFee(param.getTotalFee())
+                .spbillCreateIp(param.getSpbillCreateIp())
+                .outOrderId(param.getOutOrderId())
+                .orgId(param.getOrgId())
+                .attach(param.getAttach())
+                .payMchId(param.getPayMchId())
+                .goodsTag(param.getGoodsTag())
+                .productName(param.getProductName())
+                .build();
+        return createOrderParam;
     }
 
 }

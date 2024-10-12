@@ -1,13 +1,11 @@
 package cn.cuiot.dmp.pay.service.service.vo;
 
-import cn.cuiot.dmp.pay.service.service.entity.PayOrderEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 支付订单查询参数
@@ -23,23 +21,9 @@ import java.util.Date;
 public class PayOrderQueryParam implements Serializable {
 
     /**
-     * 平台父订单号
+     * 渠道订单号
      */
-    private Long orderId;
-    /**
-     * 交易时间
-     */
-    private Date payTime;
-    /**
-     * 交易渠道：
-     * 03：公众号支付
-     * 04：H5支付
-     * 05：APP支付
-     * 06：native支付
-     * 01：小程序支付
-     * 09:二维码主扫支付（订 单）
-     */
-    private String tradeType;
+    private String outOrderId;
 
 
     /**
@@ -47,12 +31,16 @@ public class PayOrderQueryParam implements Serializable {
      */
     private String payMchId;
 
-    public static PayOrderQueryParam initPayOrderQueryParam(Long orderId, PayOrderEntity orderEntity, String payMchId) {
+    /**
+     * 企业id
+     */
+    private Long orgId;
+
+    public static PayOrderQueryParam initPayOrderQueryParam(String outOrderId, String payMchId,Long orgId) {
         return PayOrderQueryParam.builder()
-                .orderId(orderId)
-                .payTime(orderEntity.getCreateTime())
-                .tradeType(orderEntity.getTradeType())
+                .outOrderId(outOrderId)
                 .payMchId(payMchId)
+                .orgId(orgId)
                 .build();
     }
 }

@@ -1,15 +1,11 @@
 package cn.cuiot.dmp.pay.service.service.dto;
 
-import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.exception.BusinessException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * 订单关闭参数
@@ -24,8 +20,12 @@ import java.util.Objects;
 public class CloseOrderReq implements Serializable {
 
     /**
-     * 平台支付订单号
-     * 平台支付订单号与合单订单号二选一必传
+     * 渠道订单号
      */
-    private Long orderId;
+    private String outOrderId;
+
+    /**
+     * 企业id
+     */
+    private Long orgId;
 }

@@ -3,6 +3,7 @@ package cn.cuiot.dmp.pay.service.service.dto;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.pay.service.service.enums.PayChannelEnum;
+import cn.cuiot.dmp.pay.service.service.vo.WeChatConfigVo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +20,8 @@ import java.math.BigDecimal;
  **/
 @Data
 public class PayChannelSettingDto implements Serializable {
+
+
     /**
      * 支付渠道
      * 0：银联，1-微信、2-支付宝、3-工行、4-网付通、20-余额支付
@@ -65,17 +68,20 @@ public class PayChannelSettingDto implements Serializable {
     /**
      * 其他支付参数
      * 微信的json格式为：
-     * {"apiV3key":"xxx","mchSerialNo":"xxx"}
+     * {"apiV3key":"xxx","serialNo":"xxx"}
      */
     private String settingConfig;
+
+    @NotBlank(message = "appId不能为空")
+    private String appId;
 
     public void valid() {
         if (PayChannelEnum.isWeChat(this.payChannel)) {
             AssertUtil.notBlank(this.settingConfig, "支付参数不能为空");
-            WeChatPayChannelSetting channelSetting = JsonUtil.readValue(this.settingConfig,
-                    WeChatPayChannelSetting.class);
+            WeChatConfigVo channelSetting = JsonUtil.readValue(this.settingConfig,
+                    WeChatConfigVo.class);
             AssertUtil.notBlank(channelSetting.getApiV3key(), "apiV3秘钥不能为空");
-            AssertUtil.notBlank(channelSetting.getMchSerialNo(), "证书序列号不能为空");
+            AssertUtil.notBlank(channelSetting.getSerialNo(), "证书序列号不能为空");
         }
     }
 }

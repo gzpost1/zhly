@@ -21,10 +21,6 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class CreateOrderResp implements Serializable {
 
-    /**
-     * 平台支付父订单号
-     */
-    private String orderId;
 
     /**
      * 渠道支付订单号
