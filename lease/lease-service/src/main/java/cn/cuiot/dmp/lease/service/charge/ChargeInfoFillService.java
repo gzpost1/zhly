@@ -3,6 +3,7 @@ package cn.cuiot.dmp.lease.service.charge;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CommonOptionSettingReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonOptionSettingRspDTO;
 import cn.cuiot.dmp.lease.dto.charge.*;
+import cn.cuiot.dmp.lease.entity.charge.TbChargeStandard;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
@@ -25,10 +26,13 @@ import java.util.stream.Collectors;
 public class ChargeInfoFillService {
     @Autowired
     private SystemToFlowService systemToFlowService;
+    @Autowired
+    private TbChargeStandardService tbChargeStandardService;
 
 
     public <T extends ChargeFill> void fillinfo(List<T> records, Class<T> clazz) {
         List<Long> carteIds = new ArrayList<>();
+        List<Long> chargeStandardIds = new ArrayList<>();
 
         boolean isChargeItemFlag = ChargeItemNameSet.class.isAssignableFrom(clazz);
         boolean transactionModeFlag = TransactionModeNameSet.class.isAssignableFrom(clazz);
@@ -46,7 +50,7 @@ public class ChargeInfoFillService {
                 carteIds.add(((RefundModeNameSet)record).getRefundMode());
             }
             if(chargeStandardFlag){
-                carteIds.add(((ChargeStandardNameSet)record).getChargeStandard());
+                chargeStandardIds.add(((ChargeStandardNameSet)record).getChargeStandard());
             }
         }
 
@@ -84,13 +88,20 @@ public class ChargeInfoFillService {
                             ((RefundModeNameSet) record).setRefundModeName(changeItemMap.get(refundMode).getName());
                         }
                     }
+                }
+            }
+        }
 
-                    if(chargeStandardFlag){
-                        changeItemMap.put(0L,new CommonOptionSettingRspDTO(0L,"自定义金额",(byte)1));
-                        Long chargeStandard = ((ChargeStandardNameSet) record).getChargeStandard();
-                        if (changeItemMap.containsKey(chargeStandard)) {
-                            ((ChargeStandardNameSet) record).setChargeStandardName(changeItemMap.get(chargeStandard).getName());
-                        }
+        //填充收费标准
+        if(CollectionUtils.isNotEmpty(chargeStandardIds)){
+            List<TbChargeStandard> tbChargeStandards = Optional.ofNullable(tbChargeStandardService.listByIds(chargeStandardIds)).orElse(new ArrayList<>());
+            Map<Long, TbChargeStandard> chargeStandardMap = tbChargeStandards.stream().collect(Collectors.toMap(TbChargeStandard::getId, Function.identity()));
+
+            if(chargeStandardMap != null && !chargeStandardMap.isEmpty()){
+                for (T record : records) {
+                    Long chargeStandard = ((ChargeStandardNameSet) record).getChargeStandard();
+                    if (chargeStandardMap.containsKey(chargeStandard)) {
+                        ((ChargeStandardNameSet) record).setChargeStandardName(chargeStandardMap.get(chargeStandard).getChargeStandard());
                     }
                 }
             }

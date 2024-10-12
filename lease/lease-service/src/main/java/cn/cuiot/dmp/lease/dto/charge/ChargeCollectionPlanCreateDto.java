@@ -29,8 +29,8 @@ public class ChargeCollectionPlanCreateDto {
     /**
      * 通知渠道（1：系统消息；2：短信）
      */
-    @NotNull(message = "通知渠道不能为空")
-    private Byte channel;
+    @NotEmpty(message = "通知渠道不能为空")
+    private List<String> channel;
 
     /**
      * 发送日期类型（1:每天，2:每周，3:每月）

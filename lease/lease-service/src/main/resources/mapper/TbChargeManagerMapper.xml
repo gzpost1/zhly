@@ -7,6 +7,7 @@
         <id column="id" jdbcType="BIGINT" property="id"/>
         <result column="customer_user_id" jdbcType="BIGINT" property="customerUserId"/>
         <result column="house_id" jdbcType="BIGINT" property="houseId"/>
+        <result column="order_id" jdbcType="BIGINT" property="orderId"/>
         <result column="loupan_id" jdbcType="BIGINT" property="loupanId"/>
         <result column="charge_item_id" jdbcType="BIGINT" property="chargeItemId"/>
         <result column="charge_standard" jdbcType="BIGINT" property="chargeStandard"/>
@@ -16,6 +17,7 @@
         <result column="ownership_period_end" jdbcType="DATE" property="ownershipPeriodEnd"/>
         <result column="company_id" jdbcType="BIGINT" property="companyId"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="last_pay_time" jdbcType="TIMESTAMP" property="lastPayTime"/>
         <result column="update_user" jdbcType="BIGINT" property="updateUser"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="create_user" jdbcType="BIGINT" property="createUser"/>
@@ -26,6 +28,7 @@
         <result column="receivble_status" jdbcType="TINYINT" property="receivbleStatus"/>
         <result column="hang_up_status" jdbcType="TINYINT" property="hangUpStatus"/>
         <result column="abrogate_status" jdbcType="TINYINT" property="abrogateStatus"/>
+        <result column="pay_status" jdbcType="TINYINT" property="payStatus"/>
         <result column="receivable_amount_rate" jdbcType="DECIMAL" property="receivableAmountRate"/>
         <result column="receivable_amount_received" jdbcType="INTEGER" property="receivableAmountReceived"/>
         <result column="liquidated_damages_need" jdbcType="INTEGER" property="liquidatedDamagesNeed"/>
@@ -66,6 +69,9 @@
         loupan_id,
         page_liquidated_damages_need,
         page_liquidated_damages_rate,
+        last_pay_time,
+        pay_status,
+        order_id,
         liquidated_damages_not_tax
     </sql>
 
@@ -141,12 +147,14 @@
         liquidated_damages_received = liquidated_damages_received + #{received.liquidatedDamagesReceived},
         liquidated_damages_tax      = liquidated_damages_tax + #{received.liquidatedDamagesTax},
         liquidated_damages_not_tax  = liquidated_damages_not_tax + #{received.liquidatedDamagesNotTax},
-        receivable_amount_received  = receivable_amount_received + #{received.receivableAmountReceived}
-
+        receivable_amount_received  = receivable_amount_received + #{received.receivableAmountReceived},
+        pay_status = 3,
+        last_pay_time = now()
         where id = #{received.chargeId}
           and hang_up_status = 0
           and receivble_status in (0, 1)
           and abrogate_status = 0
+          and pay_status != 0
           and receivable_amount >= receivable_amount_received + #{received.receivableAmountReceived}
     </update>
 
@@ -256,6 +264,8 @@
         create_user,
         update_user,
         loupan_id,
+        pay_status,
+        order_id,
         deleted
         )VALUES
         <foreach collection="list" item="element" index="index" separator=",">
@@ -287,6 +297,8 @@
             #{element.createUser,jdbcType=BIGINT},
             #{element.updateUser,jdbcType=BIGINT},
             #{element.loupanId,jdbcType=BIGINT},
+            #{element.payStatus,jdbcType=TINYINT},
+            #{element.orderId,jdbcType=BIGINT},
             #{element.deleted,jdbcType=TINYINT}
             )
         </foreach>
@@ -418,4 +430,97 @@
         </where>
         GROUP BY a.customer_user_id
     </select>
+
+    <select id="appChargeManager" resultType="cn.cuiot.dmp.lease.dto.charge.AppChargeManagerDto">
+        select
+            id,house_id,charge_item_id,ownership_period_begin,ownership_period_end,create_time,receivable_amount,receivable_amount_received,last_pay_time
+        from
+            tb_charge_manager a
+        <where>
+            deleted = 0
+            and house_id = #{query.houseId}
+            <if test="query.receivableStatus != null and query.receivableStatus.toString() == '0'.toString() ">
+                and receivble_status IN (0,1)
+            </if>
+            <if test="query.receivableStatus != null and query.receivableStatus.toString() == '1'.toString() ">
+                and receivble_status = 2
+            </if>
+            and abrogate_status = 0
+            and hang_up_status = 0
+            <if test="query.receivableStatus != null and query.receivableStatus.toString() == '0'.toString() ">
+                order by a.due_date desc
+            </if>
+            <if test="query.receivableStatus != null and query.receivableStatus.toString() == '0'.toString() ">
+                order by a.last_pay_time desc
+            </if>
+        </where>
+    </select>
+
+    <update id="updateChargePayStatus">
+        update tb_charge_manager
+        set pay_status = 0,
+        order_id = #{orderId}
+        where
+        deleted = 0
+        and receivble_status in (0,1)
+        and hang_up_status = 0
+        and abrogate_status = 0
+        and pay_status != 0
+        and id in
+        <foreach collection="chargeIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="queryForPayToWechat" resultType="cn.cuiot.dmp.lease.dto.charge.ChargePayToWechatDetailDto">
+         select
+             id,(receivable_amount-receivable_amount_received) as chargeAmount
+        from tb_charge_manager
+        where
+        deleted = 0
+        and receivble_status in (0,1)
+        and hang_up_status = 0
+        and abrogate_status = 0
+        and pay_status = 0
+        and id in
+        <foreach collection="chargeIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="queryNeedPayPage" resultType="cn.cuiot.dmp.lease.dto.charge.Chargeovertimeorderdto">
+        select
+            id as data_id,order_id
+        from tb_charge_manager
+        where
+            receivble_status in (0,1)
+        and pay_status = 0
+
+    </select>
+
+    <update id="updateChargePayStatusToSuccsess">
+        update tb_charge_manager
+        set pay_status       = 3,
+            receivble_status = 2,
+            last_pay_time    = now()
+        where receivble_status in (0, 1)
+          and pay_status = 0
+          and id in
+        <foreach collection="chargeIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="updateChargePayStatusToCancel">
+        update tb_charge_manager
+        set pay_status = 1
+        where
+        receivble_status in (0, 1)
+        and pay_status = 0
+        and id in
+        <foreach collection="chargeIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
 </mapper>

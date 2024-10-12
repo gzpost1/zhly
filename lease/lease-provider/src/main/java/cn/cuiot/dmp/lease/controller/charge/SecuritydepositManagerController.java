@@ -23,8 +23,10 @@ import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeAbrogateService;
 import cn.cuiot.dmp.lease.service.charge.TbSecuritydepositManagerService;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -171,7 +173,6 @@ public class SecuritydepositManagerController {
         return IdmResDTO.success();
     }
 
-
     /**
      * 作废
      *
@@ -208,12 +209,12 @@ public class SecuritydepositManagerController {
         entity.setAccountNumber(dto.getAccountNumber());
         entity.setReceivedDate(new Date());
         entity.setReceivableAmountReceived(entity.getReceivableAmount());
-        entity.setReceivedDate(new Date());
         entity.setStatus(SecurityDepositStatusEnum.PAID_OFF.getCode());
         entity.setReceivedId(IdWorker.getId());
         entity.setPaymentMode(EntityConstants.YES);
 
-        securitydepositManagerService.updateById(entity);
+        int count  = securitydepositManagerService.receivedAmount(entity);
+        AssertUtil.isTrue(count > 0, "账单正在支付中，请勿重复操作");
         return IdmResDTO.success();
     }
 
@@ -223,7 +224,7 @@ public class SecuritydepositManagerController {
      * @param createDto
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/create")
     @LogRecord(operationCode = "create", operationName = "押金管理-创建", serviceType = ServiceTypeConst.SECURITYDEPOSITMANAGER)
     public IdmResDTO create(@RequestBody @Valid SecuritydepositManagerInsertDto createDto) {

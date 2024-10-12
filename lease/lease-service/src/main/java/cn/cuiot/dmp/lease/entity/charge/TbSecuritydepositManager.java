@@ -6,7 +6,10 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 
@@ -142,4 +145,21 @@ public class TbSecuritydepositManager extends YjBaseEntity {
      * 交易单号
      */
     private String transactionNo;
+
+    /**
+     * 缴费时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date lastPayTime;
+
+    /**
+     * 支付状态 0待支付 1支付取消 2支付失败 3支付成功
+     */
+    private Byte payStatus;
+
+    /**
+     * 某次下单使用的订单号
+     */
+    private Long orderId;
 }

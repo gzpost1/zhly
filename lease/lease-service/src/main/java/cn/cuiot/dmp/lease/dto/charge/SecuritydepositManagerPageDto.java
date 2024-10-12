@@ -145,12 +145,10 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
      */
     private Date receivedDate;
 
-
     /**
      * 备注
      */
     private String remark;
-
 
     /**
      * 实收编码

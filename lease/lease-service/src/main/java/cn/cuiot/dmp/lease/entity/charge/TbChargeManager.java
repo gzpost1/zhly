@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -161,4 +162,21 @@ public class TbChargeManager extends YjBaseEntity {
      * 页面保存使用违约金税率
      */
     private BigDecimal pageLiquidatedDamagesRate;
+
+    /**
+     * 缴费时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date lastPayTime;
+
+    /**
+     * 支付状态 0待支付 1支付取消 2支付失败 3支付成功
+     */
+    private Byte payStatus;
+
+    /**
+     * 某次下单使用的订单号
+     */
+    private Long orderId;
 }

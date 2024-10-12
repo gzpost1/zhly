@@ -18,7 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -113,5 +115,29 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
         entity.setReceivableAmountReceived(0);
         entity.setReturnedAmount(0);
         this.save(entity);
+    }
+
+    public int receivedAmount( TbSecuritydepositManager dto) {
+        return baseMapper.receivedAmount(dto);
+    }
+
+    public int updateChargePayStatus(List<Long> chargeIds, Long orderId) {
+        return baseMapper.updateChargePayStatus(chargeIds,orderId);
+    }
+
+    public List<ChargePayToWechatDetailDto> queryForPayToWechat(List<Long> chargeIds) {
+        return baseMapper.queryForPayToWechat(chargeIds);
+    }
+
+    public int updateChargePayStatusToCancel(List<Long> chargeIds) {
+        return baseMapper.updateChargePayStatusToCancel(chargeIds);
+    }
+
+    public int updateChargePayStatusToSuccsess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
+        return baseMapper.updateChargePayStatusToPaySuccess(chargeOrderPaySuccInsertDto);
+    }
+
+    public IPage<Chargeovertimeorderdto> queryNeedPayPage(Page<Chargeovertimeorderdto> page) {
+        return baseMapper.queryNeedPayPage(page);
     }
 }

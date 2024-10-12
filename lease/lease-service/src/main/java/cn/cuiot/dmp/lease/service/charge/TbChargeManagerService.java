@@ -14,12 +14,12 @@ import cn.cuiot.dmp.lease.enums.*;
 import cn.cuiot.dmp.lease.mapper.charge.TbChargeManagerMapper;
 import cn.cuiot.dmp.lease.vo.ChargeCollectionManageVo;
 import cn.cuiot.dmp.lease.vo.ChargeManagerCustomerStatisticsVo;
-import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,8 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.TemporalAdjuster;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -223,6 +221,18 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
      */
     @Transactional(rollbackFor = Exception.class)
     public void receivedAmount(ChargeReceiptsReceivedDto dto) {
+        List<TbChargeReceived> receiveds = getTbChargeReceiveds(dto);
+
+        //更新收款表相关
+        for (TbChargeReceived received : receiveds) {
+            int updateNum = baseMapper.receivedAmount(received);
+            AssertUtil.isTrue(updateNum > 0, "锁定账单收款失败");
+        }
+        //插入收款明细
+        tbChargeReceivedService.insertList(receiveds);
+    }
+
+    public List<TbChargeReceived> getTbChargeReceiveds(ChargeReceiptsReceivedDto dto) {
         List<TbChargeReceived> receiveds = dto.getReceivedList().stream().map(e -> {
             TbChargeReceived tbChargeReceived = new TbChargeReceived();
             tbChargeReceived.setId(IdWorker.getId());
@@ -269,14 +279,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
             return tbChargeReceived;
 
         }).collect(Collectors.toList());
-
-        //更新收款表相关
-        for (TbChargeReceived received : receiveds) {
-            int updateNum = baseMapper.receivedAmount(received);
-            AssertUtil.isTrue(updateNum > 0, "收款失败");
-        }
-        //插入收款明细
-        tbChargeReceivedService.insertList(receiveds);
+        return receiveds;
     }
 
     /**
@@ -337,5 +340,29 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
      */
     public IPage<ChargeCollectionManageSendDto> queryUserArrearsStatistics(Page<?> page, ChargeCollectionManageSendQuery query) {
         return baseMapper.queryUserArrearsStatistics(page, query);
+    }
+
+    public IPage<AppChargeManagerDto> appChargeManager(AppChargemanagerQuery query) {
+        return baseMapper.appChargeManager(new Page(query.getPageNo(), query.getPageSize()), query);
+    }
+
+    public int updateChargePayStatus(List<Long> chargeIds,Long orderId) {
+        return baseMapper.updateChargePayStatus(chargeIds,orderId);
+    }
+
+    public List<ChargePayToWechatDetailDto> queryForPayToWechat(List<Long> chargeIds) {
+        return baseMapper.queryForPayToWechat(chargeIds);
+    }
+
+    public IPage<Chargeovertimeorderdto> queryNeedPayPage(Page<Chargeovertimeorderdto> page) {
+        return baseMapper.queryNeedPayPage(page);
+    }
+
+    public int updateChargePayStatusToSuccsess(List<Long> chargeIds) {
+        return baseMapper.updateChargePayStatusToSuccsess(chargeIds);
+    }
+
+    public int updateChargePayStatusToCancel(List<Long> chargeIds) {
+        return baseMapper.updateChargePayStatusToCancel(chargeIds);
     }
 }
