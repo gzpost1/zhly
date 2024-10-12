@@ -37,9 +37,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>
- * 智慧物联-宇泛水表 前端控制器
- * </p>
+ *
+ * 管理端-智慧物联-宇泛水表
+ *
  *
  * @author xiaotao
  * @since 2024-10-10
@@ -57,7 +57,7 @@ public class YfWaterMeterController extends BaseController {
 
 
     /**
-     * 新增电表
+     * 新增水表
      *
      * @return Long
      */
@@ -70,7 +70,7 @@ public class YfWaterMeterController extends BaseController {
 
 
     /**
-     * 编辑电表
+     * 编辑水表
      *
      * @return Long
      */
@@ -82,7 +82,7 @@ public class YfWaterMeterController extends BaseController {
     }
 
     /**
-     * 删除电表
+     * 删除水表
      *
      * @return Long
      */
@@ -95,7 +95,7 @@ public class YfWaterMeterController extends BaseController {
 
 
     /**
-     * 电表分页查询
+     * 水表分页查询
      *
      * @param vo YfWaterMeterDTO
      * @return  YfWaterMeterDTO
@@ -109,7 +109,7 @@ public class YfWaterMeterController extends BaseController {
 
 
     /**
-     * 电表详情
+     * 水表详情
      *
      * @param idParam IdParam
      * @return  YfWaterMeterDTO
@@ -123,7 +123,7 @@ public class YfWaterMeterController extends BaseController {
 
 
     /**
-     * 导出电表设备列表
+     * 导出水表设备列表
      */
 
     @PostMapping(value = "/export", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -149,7 +149,7 @@ public class YfWaterMeterController extends BaseController {
 
 
     /**
-     * 电表用量分页查询
+     * 水表用量分页查询
      *
      * @param vo YfWaterMeterDTO
      * @return  YfWaterMeterDTO
@@ -162,7 +162,7 @@ public class YfWaterMeterController extends BaseController {
 
 
     /**
-     * 导出电表统计量
+     * 导出水表统计量
      */
 
     @PostMapping(value = "/amount/export", produces = MediaType.APPLICATION_JSON_VALUE)

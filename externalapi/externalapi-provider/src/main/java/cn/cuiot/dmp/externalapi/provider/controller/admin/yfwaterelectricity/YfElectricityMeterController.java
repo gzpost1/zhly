@@ -36,9 +36,9 @@ import java.util.Map;
 
 
 /**
- * <p>
- * 智慧物联-宇泛电表 前端控制器
- * </p>
+ *
+ * 管理端-智慧物联-宇泛电表
+ *
  *
  * @author xiaotao
  * @since 2024-10-10
