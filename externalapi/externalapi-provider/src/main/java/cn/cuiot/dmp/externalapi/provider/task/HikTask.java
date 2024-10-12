@@ -5,6 +5,8 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.common.bean.external.HIKEntranceGuardBO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
+import cn.cuiot.dmp.common.utils.JsonUtil;
+import cn.cuiot.dmp.externalapi.service.query.hik.HikSyncQuery;
 import cn.cuiot.dmp.externalapi.service.service.hik.HikAcsDoorEventsService;
 import cn.cuiot.dmp.externalapi.service.service.hik.HikCommonHandle;
 import cn.cuiot.dmp.externalapi.service.service.park.PlatfromInfoService;
@@ -22,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
@@ -53,18 +57,31 @@ public class HikTask {
     public ReturnT<String> syncHikEvents(String param) {
         log.info("开始同步海康事件......");
 
+        HikSyncQuery query = null;
+        if (StringUtils.isNotBlank(param)) {
+            query = JsonUtil.readValue(param, HikSyncQuery.class);
+        }
+
         AtomicLong pageNo = new AtomicLong(1);
         long pageSize = 200;
         long pages;
 
+        // 设置开始结束时间
         LocalDateTime now = LocalDateTime.now();
+        LocalDateTime beginTime = now.toLocalDate().atStartOfDay();
+        LocalDateTime endTime = now;
+        if (Objects.nonNull(query) && Objects.nonNull(query.getBeginDate()) && Objects.nonNull(query.getEndDate())) {
+            beginTime = LocalDateTime.of(query.getBeginDate(), LocalTime.MIN);
+            endTime = LocalDateTime.of(query.getEndDate(), LocalTime.MAX).withNano(0);
+        }
+
         do {
             PlatfromInfoReqDTO reqDTO = new PlatfromInfoReqDTO();
             reqDTO.setPageNo(pageNo.getAndAdd(1));
             reqDTO.setPageSize(pageSize);
             reqDTO.setPlatformId(FootPlateInfoEnum.HIK_ENTRANCE_GUARD.getId());
-            if (StringUtils.isNotBlank(param)) {
-                reqDTO.setCompanyId(Long.parseLong(param));
+            if (Objects.nonNull(query) && Objects.nonNull(query.getCompanyId())) {
+                reqDTO.setCompanyId(query.getCompanyId());
             }
             IPage<PlatfromInfoRespDTO> iPage = platfromInfoService.queryForPage(reqDTO);
             // 获取总页数
@@ -73,7 +90,9 @@ public class HikTask {
             List<PlatfromInfoRespDTO> records;
             if (CollectionUtils.isNotEmpty(records = iPage.getRecords())) {
                 // 同步设备信息
-                records.forEach(item -> eventsHandle(item, now));
+                for (PlatfromInfoRespDTO item : records) {
+                    eventsHandle(item, beginTime, endTime);
+                }
             }
         } while (pageNo.get() < pages);
 
@@ -84,7 +103,7 @@ public class HikTask {
     /**
      * 数据同步处理
      */
-    private void eventsHandle(PlatfromInfoRespDTO dto, LocalDateTime now) {
+    private void eventsHandle(PlatfromInfoRespDTO dto, LocalDateTime beginTime, LocalDateTime endTime) {
         HIKEntranceGuardBO bo = hikCommonHandle.queryHikConfigByPlatfromInfo(dto.getCompanyId());
 
         if (Objects.nonNull(bo) && Objects.equals(bo.getStatus(), EntityConstants.YES) &&
@@ -97,9 +116,8 @@ public class HikTask {
                 HikDoorEventsReq req = new HikDoorEventsReq();
                 req.setPageNo(pageNo.getAndAdd(1));
                 req.setPageSize(pageSize);
-                DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-                req.setStartTime(now.toLocalDate().atStartOfDay().format(formatter));
-                req.setEndTime(now.format(formatter));
+                req.setStartTime(beginTime.atOffset(ZoneOffset.of("+08:00")).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+                req.setEndTime(endTime.atOffset(ZoneOffset.of("+08:00")).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
 
                 HikDoorEventsResp resp = hikApiFeignService.queryDoorEvents(req, bo);
 
@@ -111,11 +129,13 @@ public class HikTask {
                     // 远程调用获取图片
                     list.forEach(item -> {
                         try {
-                            HikAcsEventPicturesReq picturesReq = new HikAcsEventPicturesReq();
-                            picturesReq.setPicUri(item.getPicUri());
-                            picturesReq.setSvrIndexCode(item.getSvrIndexCode());
-                            String pictures = hikApiFeignService.queryEventPictures(picturesReq, bo);
-                            item.setPicture(pictures);
+                            if (StringUtils.isNotBlank(item.getPicUri()) && StringUtils.isNotBlank(item.getSvrIndexCode())) {
+                                HikAcsEventPicturesReq picturesReq = new HikAcsEventPicturesReq();
+                                picturesReq.setPicUri(item.getPicUri());
+                                picturesReq.setSvrIndexCode(item.getSvrIndexCode());
+                                String pictures = hikApiFeignService.queryEventPictures(picturesReq, bo);
+                                item.setPicture(pictures);
+                            }
                         } catch (Exception e) {
                             log.error("事件获取图片异常......eventId:{}，picUri:{}，svrIndexCode:{}", item.getEventId(),
                                     item.getPicUri(), item.getSvrIndexCode());

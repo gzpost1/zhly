@@ -11,10 +11,12 @@ import cn.cuiot.dmp.externalapi.service.query.hik.HikAcsDoorEventsPageQuery;
 import cn.cuiot.dmp.externalapi.service.query.hik.HikIrdsResourcesByParamsQuery;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.HikApiFeignService;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.HikIrdsResourcesByParamsReq;
-import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.HikRegionReq;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.HikRegionDetailReq;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorEventsResp;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikIrdsResourcesByParamsResp;
-import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikRegionResp;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikRegionDetailResp;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.config.HikProperties;
+import cn.cuiot.dmp.externalapi.service.vendor.hik.enums.ProtocolEnum;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HikAcsDoorEventsPageVO;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HikCommonResourcesVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -50,6 +52,8 @@ public class HikAcsDoorEventsService extends ServiceImpl<HikAcsDoorEventsMapper,
     private HikApiFeignService hikApiFeignService;
     @Autowired
     private HikCommonHandle hikCommonHandle;
+    @Autowired
+    private HikProperties hikProperties;
 
     /**
      * 区域查询默认分页大小
@@ -84,9 +88,13 @@ public class HikAcsDoorEventsService extends ServiceImpl<HikAcsDoorEventsMapper,
         }
         wrapper.orderByDesc(HikAcsDoorEventsEntity::getEventTime);
 
+        String host = hikProperties.getHost();
         IPage<HikAcsDoorEventsPageVO> iPage = page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper).convert(item -> {
             HikAcsDoorEventsPageVO vo = new HikAcsDoorEventsPageVO();
             BeanUtils.copyProperties(item, vo);
+            if (StringUtils.isNotBlank(vo.getPicture())) {
+                vo.setPicture(ProtocolEnum.HTTPS.getGet() + host + vo.getPicture());
+            }
             return vo;
         });
 
@@ -122,22 +130,22 @@ public class HikAcsDoorEventsService extends ServiceImpl<HikAcsDoorEventsMapper,
      * 填充区域名称
      */
     private void patchRegionName(List<HikAcsDoorEventsPageVO> dataList, HIKEntranceGuardBO bo) {
-        HikRegionReq req = new HikRegionReq();
-        req.setPageNo(1L);
-        req.setPageSize(DEFAULT_PAGE_SIZE);
-        req.setResourceType("region");
-        req.setIsSubRegion(true);
-        req.setCascadeFlag(0);
 
-        HikRegionResp resp = hikApiFeignService.queryRegions(req, bo);
-        if (Objects.nonNull(resp) && CollectionUtils.isNotEmpty(resp.getList())) {
+        List<String> doorRegionIndexCodes = dataList.stream().map(HikAcsDoorEventsPageVO::getDoorRegionIndexCode)
+                .filter(Objects::nonNull).distinct().collect(Collectors.toList());
 
-            Map<String, String> map = resp.getList().stream()
-                    .collect(Collectors.toMap(HikRegionResp.DataItem::getIndexCode, HikRegionResp.DataItem::getName));
+        if (CollectionUtils.isNotEmpty(doorRegionIndexCodes)) {
+            HikRegionDetailReq req = new HikRegionDetailReq();
+            req.setIndexCodes(doorRegionIndexCodes);
+            HikRegionDetailResp resp = hikApiFeignService.queryRegionDetail(req, bo);
 
-            dataList.forEach(item -> item.setDoorRegionName(map.getOrDefault(item.getDoorRegionIndexCode(), null)));
+            if (Objects.nonNull(resp) && CollectionUtils.isNotEmpty(resp.getList())) {
+                Map<String, String> map = resp.getList().stream()
+                        .collect(Collectors.toMap(HikRegionDetailResp.RegionInfo::getIndexCode, HikRegionDetailResp.RegionInfo::getName));
+
+                dataList.forEach(item -> item.setDoorRegionName(map.getOrDefault(item.getDoorRegionIndexCode(), null)));
+            }
         }
-
     }
 
     /**
@@ -189,12 +197,8 @@ public class HikAcsDoorEventsService extends ServiceImpl<HikAcsDoorEventsMapper,
         HIKEntranceGuardBO bo = hikCommonHandle.queryHikConfigByPlatfromInfo(companyId);
 
         HikIrdsResourcesByParamsReq req = new HikIrdsResourcesByParamsReq();
-        if (Objects.isNull(query.getPageNo())) {
-            req.setPageNo(1L);
-        }
-        if (Objects.isNull(query.getPageSize())) {
-            req.setPageSize(DEFAULT_PAGE_SIZE);
-        }
+        req.setPageNo(Objects.nonNull(req.getPageNo()) ? req.getPageNo() : 1L);
+        req.setPageSize(Objects.nonNull(req.getPageSize()) ? req.getPageSize() : DEFAULT_PAGE_SIZE);
         req.setResourceType("acsDevice");
         if (StringUtils.isNotBlank(query.getName())) {
             req.setName(query.getName());

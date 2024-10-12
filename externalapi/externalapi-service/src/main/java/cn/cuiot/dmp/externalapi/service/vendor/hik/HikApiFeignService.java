@@ -71,9 +71,23 @@ public class HikApiFeignService {
      * @Param req 参数
      */
     public HikRegionResp queryRegions(HikRegionReq req, HIKEntranceGuardBO bo) {
-        String gateway = "/api/resource/v2/regions/nodesByParams";
+        String gateway = "/api/irds/v2/region/nodesByParams";
         HikBaseResp<HikRegionResp> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
                 new TypeReference<HikBaseResp<HikRegionResp>>() {
+                });
+        return resp.getData();
+    }
+
+    /**
+     * 根据编号获取区域详细信息
+     *
+     * @return List<HikRegionDetailResp>
+     * @Param req 参数
+     */
+    public HikRegionDetailResp queryRegionDetail(HikRegionDetailReq req, HIKEntranceGuardBO bo) {
+        String gateway = "/api/resource/v1/region/regionCatalog/regionInfo";
+        HikBaseResp<HikRegionDetailResp> resp = hikApiService.postForHttps(bo, gateway, JsonUtil.writeValueAsString(req),
+                new TypeReference<HikBaseResp<HikRegionDetailResp>>() {
                 });
         return resp.getData();
     }

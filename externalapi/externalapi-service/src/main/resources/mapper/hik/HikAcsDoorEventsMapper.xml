@@ -30,7 +30,10 @@
         receive_time,
         job_no,
         student_id,
-        cert_no
+        cert_no,
+        create_time,
+        update_time,
+        deleted
         )
         VALUES
         <foreach collection="list" item="item" separator=",">
@@ -60,7 +63,10 @@
             #{item.receiveTime},
             #{item.jobNo},
             #{item.studentId},
-            #{item.certNo}
+            #{item.certNo},
+            now(),
+            now(),
+            0
             )
         </foreach>
     </insert>
