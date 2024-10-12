@@ -81,4 +81,6 @@ public interface ContentImgTextService extends AuditResultDealService, IService<
      * @return
      */
     List<AuditStatusNumVo> getAuditStatusNum(Long typeId);
+
+    void export(ContentImgTextPageQuery pageQuery) throws Exception;
 }

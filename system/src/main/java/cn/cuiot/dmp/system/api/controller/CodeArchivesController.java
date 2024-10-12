@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.system.application.param.dto.CodeArchivesCreateDTO;
@@ -103,4 +104,15 @@ public class CodeArchivesController extends BaseController {
         return codeArchivesService.associateCodeArchives(updateDTO);
     }
 
+    /**
+     * 导出
+     * @param pageQuery
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody @Valid CodeArchivesPageQuery pageQuery) throws Exception {
+        codeArchivesService.export(pageQuery);
+        return IdmResDTO.success();
+    }
 }

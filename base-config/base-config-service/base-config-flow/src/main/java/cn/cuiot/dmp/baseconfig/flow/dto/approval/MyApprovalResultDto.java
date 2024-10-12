@@ -92,6 +92,11 @@ public class MyApprovalResultDto {
     private Byte state;
 
     /**
+     * 状态名称
+     */
+    private String statusName;
+
+    /**
      * 流程关联的组织
      */
     private String orgIds;

@@ -54,4 +54,6 @@ public interface ImgTextTypeService {
      * 获取所有数量
      */
     Long getAllCount();
+
+    List<ImgTextType> queryByIds(List<Long> typeIds);
 }

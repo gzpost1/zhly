@@ -236,6 +236,8 @@ public enum ResultCode {
 
     SMS_NOT_ENABLED("1900003","短信功能未开通，请联系管理员！"),
 
+    EXPORT_DATA_OVER_LIMIT("2000001","一次最多可导出1万条数据，请选择时间段分多次导出！"),
+
     ;
 
 

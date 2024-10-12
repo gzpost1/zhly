@@ -178,4 +178,16 @@ public class NoticeController extends BaseController {
         return IdmResDTO.success(noticeVo);
     }
 
+    /**
+     * 导出
+     * @param pageQuery
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody @Valid NoticPageQuery pageQuery) throws Exception {
+        noticeService.export(pageQuery);
+        return IdmResDTO.success();
+    }
+
 }

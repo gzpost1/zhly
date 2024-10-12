@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.system.application.service;
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
@@ -13,15 +15,12 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditCreateDTO;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditDTO;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditPageQueryDTO;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditStatusDTO;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditUpdateDTO;
-import cn.cuiot.dmp.system.application.param.dto.UserHouseBuildingDTO;
+import cn.cuiot.dmp.system.application.param.dto.*;
+import cn.cuiot.dmp.system.application.param.vo.export.UserHouseAuditExportVo;
 import cn.cuiot.dmp.system.infrastructure.entity.UserHouseAuditEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.UserResDTO;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserHouseAuditMapper;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -29,10 +28,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +35,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author caorui
@@ -60,6 +58,8 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 查询详情
@@ -86,7 +86,7 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
      * 查询列表
      */
     public List<UserHouseAuditDTO> queryForList(UserHouseAuditPageQueryDTO queryDTO) {
-        if(StringUtils.isNotBlank(queryDTO.getPhoneNumber())){
+        if (StringUtils.isNotBlank(queryDTO.getPhoneNumber())) {
             queryDTO.setPhoneNumber(Sm4.encryption(queryDTO.getPhoneNumber()));
         }
         List<UserHouseAuditDTO> selectList = userHouseAuditMapper.queryForList(queryDTO);
@@ -102,7 +102,7 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
      * 查询分页列表
      */
     public IPage<UserHouseAuditDTO> queryForPage(UserHouseAuditPageQueryDTO queryDTO) {
-        if(StringUtils.isNotBlank(queryDTO.getPhoneNumber())){
+        if (StringUtils.isNotBlank(queryDTO.getPhoneNumber())) {
             queryDTO.setPhoneNumber(Sm4.encryption(queryDTO.getPhoneNumber()));
         }
         IPage<UserHouseAuditDTO> page = userHouseAuditMapper
@@ -330,4 +330,33 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         return buildingUserMap;
     }
 
+    public void export(UserHouseAuditPageQueryDTO pageQuery) throws Exception {
+        IPage<UserHouseAuditDTO> pageResult = new Page<>();
+        Long pageNo = 1L;
+        pageQuery.setPageSize(2000L);
+        List<UserHouseAuditExportVo> exportDataList = new ArrayList<>();
+        do {
+            pageQuery.setPageNo(pageNo++);
+            pageResult = this.queryForPage(pageQuery);
+            if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            pageResult.getRecords().forEach(o -> {
+                UserHouseAuditExportVo exportVo = new UserHouseAuditExportVo();
+                BeanUtils.copyProperties(o, exportVo);
+                exportDataList.add(exportVo);
+            });
+        } while (CollUtil.isNotEmpty(pageResult.getRecords()));
+        ExcelReportDto<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo> excelReportDto = null;
+        if (UserHouseAuditStatusConstants.WAIT.equals(pageQuery.getAuditStatus())) {
+            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("待审核C端用户").fileName("待审核C端用户导出").SheetName("待审核C端用户").dataList(exportDataList).build();
+        } else if (UserHouseAuditStatusConstants.PASS.equals(pageQuery.getAuditStatus())) {
+            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("审核通过C端用户").fileName("审核通过C端用户导出").SheetName("审核通过C端用户").dataList(exportDataList).build();
+        } else if (UserHouseAuditStatusConstants.REJECT.equals(pageQuery.getAuditStatus())) {
+            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("审核驳回C端用户").fileName("审核驳回C端用户导出").SheetName("审核驳回C端用户").dataList(exportDataList).build();
+        } else {
+            throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "传入的审核状态不对");
+        }
+        excelExportService.excelExport(excelReportDto, UserHouseAuditExportVo.class);
+    }
 }

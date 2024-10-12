@@ -54,6 +54,12 @@ public class WorkPlanInfoController {
         return workPlanInfoService.queryWordPlanInfo(dto);
     }
 
+    @PostMapping("exportWordPlanInfo")
+    public IdmResDTO exportWordPlanInfo(@RequestBody QueryWorkPlanInfoDto dto){
+        workPlanInfoService.exportWordPlanInfo(dto);
+        return IdmResDTO.success();
+    }
+
     /**
      * 启停用
      * @param dto

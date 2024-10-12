@@ -1,11 +1,14 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.NodeButton;
 import cn.cuiot.dmp.baseconfig.flow.entity.CommitProcessEntity;
 import cn.cuiot.dmp.query.PageQuery;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.jpedal.parser.shape.S;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 import java.util.List;
@@ -28,6 +31,7 @@ public class WorkInfoDto extends PageQuery {
     /**
      * 业务类型名称
      */
+    @Excel(name = "业务类型", orderNum = "1", width = 20)
     private String businessTypeName;
 
     /**
@@ -43,12 +47,14 @@ public class WorkInfoDto extends PageQuery {
     /**
      * 组织名称
      */
+    @Excel(name = "所属组织", orderNum = "2", width = 20)
     private String orgPath;
 
 
     /**
      * 工单名称
      */
+    @Excel(name = "工单流程", orderNum = "3", width = 20)
     private String workName;
 
 
@@ -56,6 +62,9 @@ public class WorkInfoDto extends PageQuery {
      * 工单来源 0 计划生成  1 自查报事2客户提单3代录工单
      */
     private Byte workSouce;
+
+    @Excel(name = "工单来源", orderNum = "4", width = 20)
+    private String workSource;
 
     /**
      * 用户手机号
@@ -65,12 +74,18 @@ public class WorkInfoDto extends PageQuery {
     /**
      * 状态 1已完结2进行中3已终止4已挂起5已撤回
      */
+
     private Byte status;
+
+    @Excel(name = "工单状态", orderNum = "7", width = 20)
+    private String statusName;
 
     /**
      * 创建时间
      */
-
+    @Excel(name = "发起时间",orderNum = "6",  width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
     /**
@@ -86,6 +101,7 @@ public class WorkInfoDto extends PageQuery {
     /**
      * 创建人名称
      */
+    @Excel(name = "发起人", orderNum = "5", width = 20)
     private String userName;
 
     /**
@@ -116,6 +132,7 @@ public class WorkInfoDto extends PageQuery {
     /**
      * 流程实例id
      */
+    @Excel(name = "工单编号", orderNum = "0", width = 20)
     private String procInstId;
     /**
      * 超时 0未超时 1超时
