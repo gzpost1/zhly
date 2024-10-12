@@ -502,6 +502,7 @@
         update tb_charge_manager
         set pay_status       = 3,
             receivble_status = 2,
+            receivable_amount_received = receivable_amount,
             last_pay_time    = now()
         where receivble_status in (0, 1)
           and pay_status = 0
@@ -523,4 +524,17 @@
         </foreach>
     </update>
 
+    <select id="queryNeedToPayAmount" resultType="java.lang.Integer">
+        select receivable_amount-receivable_amount_received from tb_charge_manager where deleted = 0 and receivble_status in (0,1) and pay_status != 0 and id = #{chargeId}
+    </select>
+
+    <update id="updateChargePayStatusToPaySuccessBYPrePay">
+        update tb_charge_manager
+        set pay_status = 3,
+            receivble_status = 2,
+            receivable_amount_received =  receivable_amount_received + #{needToPayAmount},
+            last_pay_time = now()
+        where deleted = 0 and receivble_status in (0,1) and pay_status != 0 and id = #{chargeId}
+          and receivable_amount = receivable_amount_received + #{needToPayAmount}
+    </update>
 </mapper>

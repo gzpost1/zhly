@@ -37,7 +37,7 @@ public class ChargeOrderMsgConsumer {
         log.info("userMessageInput:{}", JsonUtil.writeValueAsString(paySuccessVO));
 
         PayOrderQueryReq payOrderQueryReq = new PayOrderQueryReq();
-        payOrderQueryReq.setOrderId(paySuccessVO.getOrderId());
+        payOrderQueryReq.setOutOrderId(paySuccessVO.getOutOrderId());
         PayOrderQueryResp payOrderQueryResp = orderPayAtHandler.queryOrder(payOrderQueryReq);
 
         boolean isPaySuccess = Objects.equals(payOrderQueryResp.getStatus(), OrderStatusEnum.PAID.getStatus());
@@ -47,7 +47,7 @@ public class ChargeOrderMsgConsumer {
             //支付成功
             ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto = new ChargeOrderPaySuccInsertDto();
             chargeOrderPaySuccInsertDto.setTransactionNo(payOrderQueryResp.getPayOrderId());
-            chargeOrderPaySuccInsertDto.setOrderId(paySuccessVO.getOrderId());
+            chargeOrderPaySuccInsertDto.setOrderId(Long.valueOf(paySuccessVO.getOutOrderId()));
             chargePayService.paySuccess(chargeOrderPaySuccInsertDto);
         } else {
             //支付失败，直接取消订单

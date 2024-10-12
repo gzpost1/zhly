@@ -14,12 +14,14 @@ import cn.cuiot.dmp.lease.enums.*;
 import cn.cuiot.dmp.lease.mapper.charge.TbChargeManagerMapper;
 import cn.cuiot.dmp.lease.vo.ChargeCollectionManageVo;
 import cn.cuiot.dmp.lease.vo.ChargeManagerCustomerStatisticsVo;
+import cn.cuiot.dmp.pay.service.service.entity.TbOrderSettlement;
+import cn.cuiot.dmp.pay.service.service.service.TbOrderSettlementService;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.jetbrains.annotations.NotNull;
+import com.google.common.collect.Lists;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,8 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
     private TbChargeReceivedService tbChargeReceivedService;
     @Autowired
     private TbSecuritydepositManagerService securitydepositManagerService;
+    @Autowired
+    private TbOrderSettlementService orderSettlementService;
 
 
     /**
@@ -120,27 +124,29 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
 
     /**
      * 获取指定日期时的收费时间
+     *
      * @param dueDateNum
      * @param tbChargeManager
      */
     public static void setDueDate(Integer dueDateNum, TbChargeManager tbChargeManager) {
         int dayOfMonth = DateTimeUtil.dateToLocalDate(DateUtil.endOfMonth(tbChargeManager.getOwnershipPeriodBegin())).getDayOfMonth();
-        if(dayOfMonth <= dueDateNum){
+        if (dayOfMonth <= dueDateNum) {
             tbChargeManager.setDueDate(DateTimeUtil.getStartTime(DateUtil.endOfMonth(tbChargeManager.getOwnershipPeriodBegin())));
-        }else {
+        } else {
             LocalDate localDate = DateTimeUtil.dateToLocalDate(tbChargeManager.getOwnershipPeriodBegin());
-            tbChargeManager.setDueDate(DateTimeUtil.localDateToDate(LocalDate.of(localDate.getYear(),localDate.getMonth(),dueDateNum)));
+            tbChargeManager.setDueDate(DateTimeUtil.localDateToDate(LocalDate.of(localDate.getYear(), localDate.getMonth(), dueDateNum)));
         }
     }
 
     /**
      * 获取TbChargeManager
+     *
      * @param createDto
      * @param createType
      * @param receivblePlanId
      * @return
      */
-    public  TbChargeManager getTbChargeManager(ChargeManagerInsertVo createDto, Byte createType, Long receivblePlanId) {
+    public TbChargeManager getTbChargeManager(ChargeManagerInsertVo createDto, Byte createType, Long receivblePlanId) {
         TbChargeManager entity = new TbChargeManager();
         BeanUtils.copyProperties(createDto, entity);
         entity.setId(IdWorker.getId());
@@ -230,6 +236,8 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         }
         //插入收款明细
         tbChargeReceivedService.insertList(receiveds);
+        //3 插入账单
+        this.insertSettleMent(receiveds,EntityConstants.NO,EntityConstants.YES,null, null);
     }
 
     public List<TbChargeReceived> getTbChargeReceiveds(ChargeReceiptsReceivedDto dto) {
@@ -284,6 +292,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
 
     /**
      * 获取收款明细
+     *
      * @param queryDto
      * @return
      */
@@ -293,6 +302,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
 
     /**
      * 获取收款明细
+     *
      * @param queryDto
      * @return
      */
@@ -302,6 +312,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
 
     /**
      * 查询房屋下的所有客户
+     *
      * @param query
      * @return
      */
@@ -346,8 +357,8 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         return baseMapper.appChargeManager(new Page(query.getPageNo(), query.getPageSize()), query);
     }
 
-    public int updateChargePayStatus(List<Long> chargeIds,Long orderId) {
-        return baseMapper.updateChargePayStatus(chargeIds,orderId);
+    public int updateChargePayStatus(List<Long> chargeIds, Long orderId) {
+        return baseMapper.updateChargePayStatus(chargeIds, orderId);
     }
 
     public List<ChargePayToWechatDetailDto> queryForPayToWechat(List<Long> chargeIds) {
@@ -364,5 +375,49 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
 
     public int updateChargePayStatusToCancel(List<Long> chargeIds) {
         return baseMapper.updateChargePayStatusToCancel(chargeIds);
+    }
+
+    public Integer queryNeedToPayAmount(Long chargeId) {
+        return baseMapper.queryNeedToPayAmount(chargeId);
+    }
+
+    public int updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount) {
+        return baseMapper.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount);
+    }
+
+    /**
+     * 插入结算报表
+     *
+     * @param receiveds  收款记录
+     * @param incomeType   收支类型 0收入 1支出
+     * @param paymentMode  收款方式 0平台 1人工
+     * @param orderId   微信支付订单id
+     * @param charge  应收账款id
+     */
+    public void insertSettleMent(List<TbChargeReceived> receiveds, Byte incomeType, Byte paymentMode, Long orderId, TbChargeManager charge) {
+        List<TbOrderSettlement> orderSettlements = Lists.newArrayList();
+        for (TbChargeReceived received : receiveds) {
+            if (Objects.isNull(charge)) {
+                charge = this.getById(received.getChargeId());
+            }
+            TbOrderSettlement tbOrderSettlement = new TbOrderSettlement();
+            tbOrderSettlement.setId(IdWorker.getId());
+            tbOrderSettlement.setReceivableId(received.getChargeId());
+            tbOrderSettlement.setPaidUpId(received.getId());
+            tbOrderSettlement.setCreateTime(new Date());
+            tbOrderSettlement.setLoupanId(charge.getLoupanId());
+            tbOrderSettlement.setHouseId(received.getHouseId());
+            tbOrderSettlement.setCompanyId(charge.getCompanyId());
+            tbOrderSettlement.setPaymentMode(paymentMode);
+            tbOrderSettlement.setTransactionNo(received.getTransactionNo());
+            tbOrderSettlement.setOrderId(orderId);
+            tbOrderSettlement.setIncomeType(incomeType);
+            tbOrderSettlement.setChargeItemId(received.getChargeItemId());
+            tbOrderSettlement.setTransactionMode(received.getTransactionMode());
+            tbOrderSettlement.setPayAmount(received.getTotalReceived());
+            tbOrderSettlement.setSettlementTime(new Date());
+            orderSettlements.add(tbOrderSettlement);
+        }
+        orderSettlementService.insertList(orderSettlements);
     }
 }

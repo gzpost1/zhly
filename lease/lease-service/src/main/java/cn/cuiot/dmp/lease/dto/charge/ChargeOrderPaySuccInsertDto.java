@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
 import cn.cuiot.dmp.lease.entity.charge.TbChargeOrder;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.util.List;
@@ -31,4 +32,19 @@ public class ChargeOrderPaySuccInsertDto {
      * 下单环境
      */
     private TbChargeOrder order;
+
+    /**
+     * 交易方式 0微信支付 1预缴代扣
+     */
+    private Long transactionMode;
+
+    /**
+     * 备注
+     */
+    private String remark;
+
+    /**
+     * 收款方式 0平台 1人工
+     */
+    private Byte paymentMode;
 }

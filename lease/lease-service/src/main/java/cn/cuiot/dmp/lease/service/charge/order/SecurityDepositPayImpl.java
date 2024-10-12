@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.lease.service.charge.order;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
@@ -22,8 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @Description 押金支付实现类
@@ -35,8 +39,7 @@ import java.util.List;
 public class SecurityDepositPayImpl extends AbstrChargePay {
     @Autowired
     private TbSecuritydepositManagerService securitydepositManagerService;
-    @Autowired
-    private TbOrderSettlementService orderSettlementService;
+
 
     @Override
     public Byte getDataType() {
@@ -76,31 +79,12 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
         int updateCount =  securitydepositManagerService.updateChargePayStatusToSuccsess(chargeOrderPaySuccInsertDto);
 
         //3 插入账单
-        List<TbSecuritydepositManager> tbSecuritydepositManagers = securitydepositManagerService.listByIds(chargeOrderPaySuccInsertDto.getDataIds());
-        List<TbOrderSettlement> orderSettlements = Lists.newArrayList();
-
-        for (TbSecuritydepositManager received : tbSecuritydepositManagers) {
-            TbOrderSettlement tbOrderSettlement = new TbOrderSettlement();
-            tbOrderSettlement.setId(IdWorker.getId());
-            tbOrderSettlement.setReceivableId(received.getId());
-            tbOrderSettlement.setPaidUpId(received.getId());
-            tbOrderSettlement.setCreateTime(new Date());
-            tbOrderSettlement.setLoupanId(received.getLoupanId());
-            tbOrderSettlement.setHouseId(received.getHouseId());
-            tbOrderSettlement.setCompanyId(received.getCompanyId());
-            tbOrderSettlement.setPaymentMode(EntityConstants.NO);
-            tbOrderSettlement.setTransactionNo(received.getTransactionNo());
-            tbOrderSettlement.setOrderId(chargeOrderPaySuccInsertDto.getOrderId());
-            tbOrderSettlement.setIncomeType(EntityConstants.NO);
-            tbOrderSettlement.setChargeItemId(received.getChargeItemId());
-            tbOrderSettlement.setTransactionMode(received.getTransactionMode());
-            tbOrderSettlement.setPayAmount(received.getReceivableAmount());
-            tbOrderSettlement.setSettlementTime(new Date());
-            orderSettlements.add(tbOrderSettlement);
-        }
-        orderSettlementService.insertList(orderSettlements);
+        chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.NO);
+        securitydepositManagerService.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
         return updateCount;
     }
+
+
 
 
     @Override
@@ -113,9 +97,33 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
         return securitydepositManagerService.queryNeedPayPage(page);
     }
 
+    @Override
+    public Integer queryNeedToPayAmount(Long chargeId) {
+        return securitydepositManagerService.queryNeedToPayAmount(chargeId);
+    }
+
+    @Override
+    public int updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long createUserId) {
+        //1 更新订单状态为已支付
+        int updateCount =  securitydepositManagerService.updateChargePayStatusToPaySuccessBYPrePay(chargeId,needToPayAmount);
+        AssertUtil.isTrue(updateCount > 0, "锁定账单收款失败");
+
+        //3 插入账单
+        ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto = new ChargeOrderPaySuccInsertDto();
+        chargeOrderPaySuccInsertDto.setDataIds(Lists.newArrayList(chargeId));
+        chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.NO);
+        securitydepositManagerService.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
+        return updateCount;
+    }
+
     private LambdaQueryWrapper<TbSecuritydepositManager> getNeedPayWrapper() {
         return new LambdaQueryWrapper<TbSecuritydepositManager>()
                 .eq(TbSecuritydepositManager::getStatus, EntityConstants.NO)
                 .eq(TbSecuritydepositManager::getPayStatus, ChargePayStatusEnum.WAIT_PAY.getCode());
+    }
+
+    @Override
+    public List<Long> getCompanyIdByChargeIds(List<Long> chargeIds) {
+        return Optional.ofNullable(securitydepositManagerService.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbSecuritydepositManager::getCompanyId).collect(Collectors.toList());
     }
 }

@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @Description 支付详细参数
@@ -8,6 +10,8 @@ import lombok.Data;
  * @Created by libo
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChargePayToWechatDetailDto {
     /**
      * 应收账目id

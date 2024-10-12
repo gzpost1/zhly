@@ -57,4 +57,8 @@ public interface TbChargeManagerMapper extends BaseMapper<TbChargeManager> {
     int updateChargePayStatusToSuccsess(@Param("chargeIds") List<Long> chargeIds);
 
     int updateChargePayStatusToCancel(@Param("chargeIds") List<Long> chargeIds);
+
+    Integer queryNeedToPayAmount(Long chargeId);
+
+    int updateChargePayStatusToPaySuccessBYPrePay(@Param("chargeId") Long chargeId, @Param("needToPayAmount") Integer needToPayAmount);
 }

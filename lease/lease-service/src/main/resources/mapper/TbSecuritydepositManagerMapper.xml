@@ -160,7 +160,10 @@
       set
       pay_status = 3,
       last_pay_time = now(),
+      transaction_mode = 0,
+      payment_mode = 0,
       transaction_no = #{query.transactionNo},
+      receivable_amount_received = receivable_amount,
       status = 1
       where
       deleted = 0
@@ -180,4 +183,27 @@
           status = 0
         and pay_status = 0
     </select>
+
+  <select id="queryNeedToPayAmount" resultType="java.lang.Integer">
+      select receivable_amount from tb_securitydeposit_manager
+      where id = #{dto.id}
+      and status = 0
+      and pay_status != 0
+      and deleted = 0
+  </select>
+
+  <update id="updateChargePayStatusToPaySuccessBYPrePay">
+      update tb_securitydeposit_manager
+      set
+      pay_status = 3,
+      last_pay_time = now(),
+      transaction_mode = 1,
+      payment_mode = 0,
+      receivable_amount_received = receivable_amount,
+      status = 1
+      where id = #{chargeId}
+      and status = 0
+      and pay_status != 0
+      and deleted = 0
+    </update>
 </mapper>

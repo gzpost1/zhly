@@ -46,4 +46,14 @@ public class ChargePayController {
         chargePayService.cancelPay(idParam.getId());
         return IdmResDTO.success();
     }
+
+    /**
+     * 预缴支付
+     */
+    @RequiresPermissions
+    @PostMapping("/prePay")
+    public IdmResDTO prePay(@RequestBody @Valid ChargePayDto chargePayDto) {
+        chargePayService.prePay(chargePayDto);
+        return IdmResDTO.success();
+    }
 }

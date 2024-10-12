@@ -71,4 +71,10 @@ public abstract class AbstrChargePay {
     public abstract Long queryNeedPayCount();
 
     public abstract IPage<Chargeovertimeorderdto> queryNeedPayPage(Page<Chargeovertimeorderdto> objectPage);
+
+    public abstract Integer queryNeedToPayAmount(Long chargeId);
+
+    public abstract int updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long createUserId);
+
+    public abstract List<Long> getCompanyIdByChargeIds(List<Long> chargeIds);
 }

@@ -127,6 +127,10 @@ public class CreateOrderReq implements Serializable {
      */
     private String payMchId;
 
+    /**
+     * 房间id
+     */
+    private Long companyId;
 
     /**
      * 支付校验

@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.lease.service.charge.order;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
+import cn.cuiot.dmp.lease.entity.charge.TbChargeOrder;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.enums.ChargePayDataTypeEnum;
 import cn.cuiot.dmp.lease.enums.ChargePayStatusEnum;
@@ -20,8 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description 房屋账单支付实现类
@@ -35,9 +37,6 @@ public class ChargePayImpl extends AbstrChargePay {
     private TbChargeManagerService chargeManager;
     @Autowired
     private TbChargeReceivedService tbChargeReceivedService;
-    @Autowired
-    private TbOrderSettlementService orderSettlementService;
-
     @Override
     public Byte getDataType() {
         return ChargePayDataTypeEnum.HOUSE_BILL.getCode();
@@ -75,11 +74,19 @@ public class ChargePayImpl extends AbstrChargePay {
         //1 更新订单状态为已支付
         int updateCount =  chargeManager.updateChargePayStatusToSuccsess(chargeOrderPaySuccInsertDto.getDataIds());
 
+        chargeOrderPaySuccInsertDto.setTransactionMode(0L);
+        chargeOrderPaySuccInsertDto.setRemark("微信支付");
+        chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.NO);
         //2 插入收款记录
+        insertReceivedAndSettlement(chargeOrderPaySuccInsertDto);
+        return updateCount;
+    }
+
+    private void insertReceivedAndSettlement(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
         ChargeReceiptsReceivedDto chargeReceiptsReceivedDto = new ChargeReceiptsReceivedDto();
         chargeReceiptsReceivedDto.setOnlyPrincipal(EntityConstants.YES);
-        chargeReceiptsReceivedDto.setTransactionMode(0L);
-        chargeReceiptsReceivedDto.setRemark("微信支付");
+        chargeReceiptsReceivedDto.setTransactionMode(chargeOrderPaySuccInsertDto.getTransactionMode());
+        chargeReceiptsReceivedDto.setRemark(chargeOrderPaySuccInsertDto.getRemark());
         chargeReceiptsReceivedDto.setCustomerUserId(chargeOrderPaySuccInsertDto.getOrder().getCreateUser());
 
         List<ChargeReceiptsReceivedInsertDetailDto> receivedList = Lists.newArrayList();
@@ -106,29 +113,7 @@ public class ChargePayImpl extends AbstrChargePay {
         tbChargeReceivedService.insertList(receiveds);
 
         //3 插入账单
-        List<TbOrderSettlement> orderSettlements = Lists.newArrayList();
-        for (TbChargeReceived received : receiveds) {
-            TbChargeManager charge =  chargeManager.getById(received.getChargeId());
-            TbOrderSettlement tbOrderSettlement = new TbOrderSettlement();
-            tbOrderSettlement.setId(IdWorker.getId());
-            tbOrderSettlement.setReceivableId(received.getChargeId());
-            tbOrderSettlement.setPaidUpId(received.getId());
-            tbOrderSettlement.setCreateTime(new Date());
-            tbOrderSettlement.setLoupanId(charge.getLoupanId());
-            tbOrderSettlement.setHouseId(received.getHouseId());
-            tbOrderSettlement.setCompanyId(charge.getCompanyId());
-            tbOrderSettlement.setPaymentMode(EntityConstants.NO);
-            tbOrderSettlement.setTransactionNo(received.getTransactionNo());
-            tbOrderSettlement.setOrderId(chargeOrderPaySuccInsertDto.getOrderId());
-            tbOrderSettlement.setIncomeType(EntityConstants.NO);
-            tbOrderSettlement.setChargeItemId(received.getChargeItemId());
-            tbOrderSettlement.setTransactionMode(received.getTransactionMode());
-            tbOrderSettlement.setPayAmount(received.getTotalReceived());
-            tbOrderSettlement.setSettlementTime(new Date());
-            orderSettlements.add(tbOrderSettlement);
-        }
-        orderSettlementService.insertList(orderSettlements);
-        return updateCount;
+        chargeManager.insertSettleMent(receiveds,EntityConstants.NO,EntityConstants.NO,chargeOrderPaySuccInsertDto.getOrderId(), null);
     }
 
 
@@ -140,6 +125,44 @@ public class ChargePayImpl extends AbstrChargePay {
     @Override
     public IPage<Chargeovertimeorderdto> queryNeedPayPage(Page<Chargeovertimeorderdto> page) {
         return chargeManager.queryNeedPayPage(page);
+    }
+
+    @Override
+    public Integer queryNeedToPayAmount(Long chargeId) {
+        return chargeManager.queryNeedToPayAmount(chargeId);
+    }
+
+    @Override
+    public int updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount,Long createUserId) {
+        int updateNum = chargeManager.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount);
+        AssertUtil.isTrue(updateNum > 0, "锁定账单收款失败");
+
+
+        //插入收款记录和账单
+        ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto = new ChargeOrderPaySuccInsertDto();
+        chargeOrderPaySuccInsertDto.setDataIds(Lists.newArrayList(chargeId));
+        chargeOrderPaySuccInsertDto.setTransactionMode(1L);
+        chargeOrderPaySuccInsertDto.setRemark("用户微信调用预缴代扣");
+        chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.NO);
+
+        TbChargeOrder order = new  TbChargeOrder();
+        order.setCreateTime(new Date());
+        order.setCreateUser(createUserId);
+        order.setDataType(getDataType());
+        chargeOrderPaySuccInsertDto.setOrder(order);
+
+        List<ChargePayToWechatDetailDto> orderDetail = Lists.newArrayList();
+        orderDetail.add(new ChargePayToWechatDetailDto(chargeId, needToPayAmount));
+        order.setOrderDetail(orderDetail);
+
+        insertReceivedAndSettlement(chargeOrderPaySuccInsertDto);
+
+        return updateNum;
+    }
+
+    @Override
+    public List<Long> getCompanyIdByChargeIds(List<Long> chargeIds) {
+        return Optional.ofNullable(chargeManager.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbChargeManager::getCompanyId).collect(Collectors.toList());
     }
 
     private LambdaQueryWrapper<TbChargeManager> getNeedPayWrapper() {

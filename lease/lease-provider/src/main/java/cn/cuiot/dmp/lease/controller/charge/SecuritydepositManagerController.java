@@ -8,25 +8,19 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.common.enums.CustomerIdentityTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeAbrogate;
-import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositManager;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositRefund;
-import cn.cuiot.dmp.lease.enums.ChargeTypeEnum;
 import cn.cuiot.dmp.lease.enums.SecurityDepositStatusEnum;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
-import cn.cuiot.dmp.lease.service.charge.TbChargeAbrogateService;
 import cn.cuiot.dmp.lease.service.charge.TbSecuritydepositManagerService;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,9 +54,9 @@ public class SecuritydepositManagerController {
     private ChargeHouseAndUserService chargeHouseAndUserService;
     @Autowired
     private ChargeInfoFillService chargeInfoFillService;
-
     @Autowired
     private SystemToFlowService systemToFlowService;
+
     /**
      * 获取分页
      *
@@ -101,7 +95,7 @@ public class SecuritydepositManagerController {
                 }
             }
 
-            chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(),SecuritydepositManagerPageDto.class);
+            chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(), SecuritydepositManagerPageDto.class);
 
         }
 
@@ -117,7 +111,7 @@ public class SecuritydepositManagerController {
     @PostMapping("/queryForDetail")
     public IdmResDTO<SecuritydepositManagerDto> queryForDetail(@RequestBody @Valid IdParam idParam) {
         SecuritydepositManagerDto securitydepositManagerDto = securitydepositManagerService.queryForDetail(idParam.getId());
-        if(Objects.nonNull(securitydepositManagerDto)){
+        if (Objects.nonNull(securitydepositManagerDto)) {
             List<Long> userIds = Lists.newArrayList(securitydepositManagerDto.getCustomerUserId());
             List<CustomerUserInfo> userInfoByIds = chargeHouseAndUserService.getUserInfoByIds(userIds);
             if (CollectionUtils.isNotEmpty(userInfoByIds)) {
@@ -131,15 +125,15 @@ public class SecuritydepositManagerController {
             }
 
             //填充操作人名称
-            if(CollectionUtils.isNotEmpty(securitydepositManagerDto.getAbrogateList())){
+            if (CollectionUtils.isNotEmpty(securitydepositManagerDto.getAbrogateList())) {
                 List<Long> abrogateUserIds = securitydepositManagerDto.getAbrogateList().stream().map(TbChargeAbrogate::getCreateUser).distinct().collect(Collectors.toList());
                 BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
                 baseUserReqDto.setUserIdList(abrogateUserIds);
                 List<BaseUserDto> baseUserDtoList = systemToFlowService.lookUpUserList(baseUserReqDto);
-                if(CollectionUtils.isNotEmpty(baseUserDtoList)){
+                if (CollectionUtils.isNotEmpty(baseUserDtoList)) {
                     for (TbChargeAbrogate record : securitydepositManagerDto.getAbrogateList()) {
                         for (BaseUserDto baseUserDto : baseUserDtoList) {
-                            if(Objects.equals(record.getCreateUser(),baseUserDto.getId())){
+                            if (Objects.equals(record.getCreateUser(), baseUserDto.getId())) {
                                 record.setOperatorName(baseUserDto.getName());
                                 break;
                             }
@@ -148,7 +142,7 @@ public class SecuritydepositManagerController {
                 }
             }
 
-            chargeInfoFillService.fillinfo(Lists.newArrayList(securitydepositManagerDto),SecuritydepositManagerDto.class);
+            chargeInfoFillService.fillinfo(Lists.newArrayList(securitydepositManagerDto), SecuritydepositManagerDto.class);
             chargeInfoFillService.fillinfo(Lists.newArrayList(securitydepositManagerDto.getSecuritydepositRefundList()), TbSecuritydepositRefund.class);
 
         }
@@ -201,20 +195,7 @@ public class SecuritydepositManagerController {
     @PostMapping("/receivedAmount")
     @LogRecord(operationCode = "receivedAmount", operationName = "押金管理-收款", serviceType = ServiceTypeConst.SECURITYDEPOSITMANAGER)
     public IdmResDTO receivedAmount(@RequestBody @Valid DepositReceiptsReceivedDto dto) {
-        TbSecuritydepositManager entity = securitydepositManagerService.getById(dto.getChargeId());
-        AssertUtil.notNull(entity, "数据不存在");
-
-        entity.setTransactionMode(dto.getTransactionMode());
-        entity.setAccountBank(dto.getAccountBank());
-        entity.setAccountNumber(dto.getAccountNumber());
-        entity.setReceivedDate(new Date());
-        entity.setReceivableAmountReceived(entity.getReceivableAmount());
-        entity.setStatus(SecurityDepositStatusEnum.PAID_OFF.getCode());
-        entity.setReceivedId(IdWorker.getId());
-        entity.setPaymentMode(EntityConstants.YES);
-
-        int count  = securitydepositManagerService.receivedAmount(entity);
-        AssertUtil.isTrue(count > 0, "账单正在支付中，请勿重复操作");
+        securitydepositManagerService.receivedAmountByPlatform(dto);
         return IdmResDTO.success();
     }
 
