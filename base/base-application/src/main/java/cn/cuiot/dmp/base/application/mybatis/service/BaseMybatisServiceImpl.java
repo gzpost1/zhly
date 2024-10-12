@@ -26,7 +26,7 @@ import java.util.List;
  * @Author Mujun~
  * @Date 2020-09-25 11:21
  */
-public abstract class BaseMybatisServiceImpl<M extends BaseMybatisMapper<T>,T> extends ServiceImpl  implements BaseService<T> {
+public abstract class BaseMybatisServiceImpl<M extends BaseMybatisMapper<T>,T> extends ServiceImpl<M,T>  implements BaseService<T> {
     @Autowired
     protected M baseMapper;
 

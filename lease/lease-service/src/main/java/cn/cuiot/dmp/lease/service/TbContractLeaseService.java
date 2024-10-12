@@ -38,7 +38,7 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
     BaseContractService baseContractService;
 
     @Override
-    public boolean save(Object o) {
+    public boolean save(TbContractLeaseEntity o) {
         TbContractLeaseEntity entity = (TbContractLeaseEntity) o;
         if (Objects.isNull(entity.getContractNo())) {
             Long code = SnowflakeIdWorkerUtil.nextId();
@@ -50,7 +50,7 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
     }
 
     @Override
-    public boolean updateById(Object o) {
+    public boolean updateById(TbContractLeaseEntity o) {
         TbContractLeaseEntity entity = (TbContractLeaseEntity) o;
         bindInfoService.createContractBind(entity);
         return super.updateById(entity);

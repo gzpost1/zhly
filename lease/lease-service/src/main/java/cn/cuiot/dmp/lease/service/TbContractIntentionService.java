@@ -85,7 +85,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
 
 
     @Override
-    public boolean save(Object o) {
+    public boolean save(TbContractIntentionEntity o) {
         TbContractIntentionEntity entity = (TbContractIntentionEntity) o;
         if(Objects.isNull(entity.getContractNo())) {
             Long code = SnowflakeIdWorkerUtil.nextId();
@@ -109,7 +109,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     }
 
     @Override
-    public boolean updateById(Object entity) {
+    public boolean updateById(TbContractIntentionEntity entity) {
         TbContractIntentionEntity o = (TbContractIntentionEntity) entity;
         bindInfoService.createContractBind(o);
         return super.updateById(o);

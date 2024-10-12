@@ -12,7 +12,7 @@ import java.util.List;
  * @author Mujun
  * @since 2020-09-27
  */
-public interface BaseService<T> extends IService {
+public interface BaseService<T> extends IService<T> {
 
       List<T> list(T params);
 

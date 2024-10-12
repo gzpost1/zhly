@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.yfwaterelectricity.YfElectricityMeterStatisticsDayMapper">
+
+    <select id="queryDayAmount" resultType="cn.cuiot.dmp.externalapi.service.entity.yfwaterelectricity.YfElectricityMeterStatisticsDay">
+        select meter_id , sum(amount) as amount from
+            tb_yf_electricity_meter_statistics_day
+        <where>
+
+        <if test="params.recordBeginTime !=null">
+            record_time <![CDATA[>=]]> #{params.recordBeginTime}
+        </if>
+
+        <if test="params.recordEndTime !=null">
+            and record_time <![CDATA[<=]]> #{params.recordEndTime}
+        </if>
+
+         <if test="params.meterIds != null and params.meterIds.size() >0">
+             AND meter_id in
+             <foreach collection="params.meterIds" item="meterId" open="(" separator="," close=")">
+                 #{meterId}
+             </foreach>
+        </if>
+
+        </where>
+        group by
+            meter_id
+
+    </select>
+</mapper>

@@ -53,6 +53,17 @@ public enum FootPlateInfoEnum {
      */
     HIK_ENTRANCE_GUARD(8L, HIKEntranceGuardBO.class),
 
+
+    /**
+     * 水表（宇泛）
+     */
+    YF_WATER_METER(9L, YFWaterMeterBO.class),
+
+    /**
+     *  电表（宇泛）
+     */
+    YF_ELECTRICITY_METER(10L, YFElectricityMeterBO.class),
+
     ;
 
     private Long id;
