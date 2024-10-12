@@ -83,6 +83,7 @@ public class WeNormalPayAdapter implements IPayBaseInterface {
         weChatConfig.setMchSerialNo(config.getMchSerialNo());
         weChatConfig.setPayMchId(payChannelSetting.getPayMchId());
         weChatConfig.setPayMchName(payChannelSetting.getPayMchName());
+        weChatConfig.setCharge(payChannelSetting.getCharge());
 
         PrivateKey privateKey = PemUtil.loadPrivateKey(new ByteArrayInputStream(weChatConfig.getPrivateKey()));
         verifier.setVerifier(new WechatPay2Credentials(weChatConfig.getPayMchId(),

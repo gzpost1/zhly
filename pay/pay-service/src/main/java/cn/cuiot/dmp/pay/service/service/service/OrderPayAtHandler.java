@@ -1,6 +1,5 @@
 package cn.cuiot.dmp.pay.service.service.service;
 
-import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
@@ -18,7 +17,6 @@ import cn.cuiot.dmp.pay.service.service.vo.PayOrderQueryParam;
 import cn.cuiot.dmp.pay.service.service.vo.PaySuccessVO;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.chinaunicom.yunjingtech.httpclient.bean.pay.SettleInfoEntity;
 import com.chinaunicom.yunjingtech.httpclient.bean.pay.response.normal.NormalQueryOrderResp;
 import com.google.common.collect.Lists;
@@ -34,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.MimeTypeUtils;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -218,6 +217,8 @@ public class OrderPayAtHandler {
             orderEntity.setStatus(queryBO.getStatus());
             orderEntity.setPayCompleteTime(queryBO.getPayCompleteTime());
             orderEntity.setPayResultJson(JsonUtil.writeValueAsString(queryBO));
+            orderEntity.setPayOrderId(queryBO.getPayOrderId());
+            orderEntity.setPayCharge(new BigDecimal(queryBO.getTotalFee()).multiply(weChatConfig.getCharge()).divide(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
             payOrderService.updateById(orderEntity);
             //通知渠道
             PaySuccessVO paySuccessVO = PaySuccessVO.builder().outOrderId(orderEntity.getOutOrderId())
@@ -267,7 +268,6 @@ public class OrderPayAtHandler {
             // 回调支付成功，但是查询订单结果失败,直接返回
             log.warn("支付回调订单结果是支付成功，但是查单支付结果是失败，两次结果不一致");
         } else {
-            // 支付失败处理, 只更新支付渠道切换流水支付状态
             payFailCallbackHandler(payOrderEntity);
         }
     }
@@ -288,6 +288,42 @@ public class OrderPayAtHandler {
             }
             log.error("更新订单支付渠道流水异常", ex);
             throw new BusinessException(ResultCode.ERROR, "系统异常，请稍后再试");
+        }
+    }
+
+
+    /**
+     * 待支付订单晚上对账
+     * 查询
+     */
+    public void orderPayStatusTriggerHandler(PayOrderEntity orderEntity) {
+
+
+        PayOrderQueryParam queryParam = PayOrderQueryParam.initPayOrderQueryParam(orderEntity.getOrderId(), orderEntity,orderEntity.getPayMchId());
+        IPayBaseInterface payBaseInterface = (IPayBaseInterface) choose.choose(PayChannelEnum.getPayMark(orderEntity.getPayChannel(), orderEntity.getMchType()));
+        // 查询订单实际支付状态
+        PayOrderQueryAggregate queryBO = payBaseInterface.orderQuery(queryParam);
+
+        if (OrderStatusEnum.CANCEL.getStatus().equals(queryBO.getStatus())) {
+            cancel(orderEntity, "超时未支付");
+        }
+        if (OrderStatusEnum.TO_BE_PAY.getStatus().equals(queryBO.getStatus())) {
+            // 可进行关单，调用第三方支付渠道进行关单
+            payBaseInterface.closeOrder(CloseOrderParam.builder()
+                    .orderId(String.valueOf(orderEntity.getOrderId()))
+                    .payOrderId(orderEntity.getPayOrderId())
+                    .payTime(orderEntity.getCreateTime())
+                    .tradeType(orderEntity.getTradeType())
+                    .build());
+
+            // 存在关单成功，就给主订单和子订单置为关单状态
+            cancel(orderEntity, "超时未支付取消");
+        }
+        if (OrderStatusEnum.PAID.getStatus().equals(queryBO.getStatus())) {
+            paySuccessCallbackHandler(orderEntity,queryBO);
+        }
+        if (OrderStatusEnum.PAY_FAILED.getStatus().equals(queryBO.getStatus())) {
+            payFailCallbackHandler(orderEntity);
         }
     }
 

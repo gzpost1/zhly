@@ -4,6 +4,8 @@ import com.chinaunicom.yunjingtech.httpclient.auth.AutoUpdateCertificatesVerifie
 import lombok.Data;
 import org.springframework.context.annotation.Bean;
 
+import java.math.BigDecimal;
+
 /**
  * @author huq
  * @ClassName WeChatConfig
@@ -39,8 +41,8 @@ public class WeChatConfig {
      */
     private String payMchName;
 
-    @Bean("NormalCertificatesVerifier")
-    public AutoUpdateCertificatesVerifier getCertificatesVerifier() {
-        return new AutoUpdateCertificatesVerifier();
-    }
+    /**
+     * 支付手续费费率
+     */
+    private BigDecimal charge;
 }
