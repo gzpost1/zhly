@@ -1,14 +1,12 @@
 package cn.cuiot.dmp.pay.service.service.dto;
 
 import cn.cuiot.dmp.pay.service.service.enums.TradeChannelEnum;
-import com.chinaunicom.yunjingtech.httpclient.bean.pay.SettleInfoEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * 支付请求参数
@@ -86,7 +84,10 @@ public class CreateOrderParam implements Serializable {
      */
     private String productName;
 
-
+    /**
+     * 房屋id（房屋充值时不能为空）
+     */
+    private Long houseId;
 
     public static CreateOrderParam initDate(CreateOrderReq param){
         CreateOrderParam createOrderParam = CreateOrderParam.builder()
