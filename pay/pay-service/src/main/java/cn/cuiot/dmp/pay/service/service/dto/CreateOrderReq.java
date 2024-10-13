@@ -133,6 +133,10 @@ public class CreateOrderReq implements Serializable {
     private Long companyId;
 
     /**
+     * 房屋id
+     */
+    private Long houseId;
+    /**
      * 支付校验
      */
     public void validData() {

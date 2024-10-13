@@ -102,6 +102,7 @@ public class CreateOrderParam implements Serializable {
                 .payMchId(param.getPayMchId())
                 .goodsTag(param.getGoodsTag())
                 .productName(param.getProductName())
+                .houseId(param.getHouseId())
                 .build();
         return createOrderParam;
     }
