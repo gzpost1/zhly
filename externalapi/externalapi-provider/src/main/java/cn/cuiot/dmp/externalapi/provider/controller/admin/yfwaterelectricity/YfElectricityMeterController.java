@@ -5,6 +5,7 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.application.utils.ExcelUtil;
 import cn.cuiot.dmp.base.application.utils.ExcelUtils;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
@@ -136,7 +137,7 @@ public class YfElectricityMeterController extends BaseController {
 
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
 
-        ExcelUtils.downLoadExcel(
+        ExcelUtil.downLoadExcel(
                 "电表设备导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss")+")",
                 response,
                 workbook);
@@ -177,7 +178,7 @@ public class YfElectricityMeterController extends BaseController {
 
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
 
-        ExcelUtils.downLoadExcel(
+        ExcelUtil.downLoadExcel(
                 "电表用量导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss")+")",
                 response,
                 workbook);

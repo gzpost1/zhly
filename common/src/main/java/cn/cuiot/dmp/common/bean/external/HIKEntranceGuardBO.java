@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.common.bean.external;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 海康门禁
@@ -8,13 +9,9 @@ import lombok.Data;
  * @Author: zc
  * @Date: 2024-10-09
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class HIKEntranceGuardBO {
-
-    /**
-     * 启停用状态（0：停用；1：启用）
-     */
-    private Byte status;
+public class HIKEntranceGuardBO extends ExternalapiBaseStatusBO {
 
     /**
      * ak

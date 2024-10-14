@@ -73,12 +73,13 @@ public class HikAcsDoorEventsService extends ServiceImpl<HikAcsDoorEventsMapper,
         HIKEntranceGuardBO bo = hikCommonHandle.queryHikConfigByPlatfromInfo(companyId);
 
         LambdaQueryWrapper<HikAcsDoorEventsEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(query.getPersonName()), HikAcsDoorEventsEntity::getPersonName, query.getPersonName());
-        wrapper.eq(StringUtils.isNotBlank(query.getPersonId()), HikAcsDoorEventsEntity::getPersonId, query.getPersonId());
-        wrapper.eq(StringUtils.isNotBlank(query.getJobNo()), HikAcsDoorEventsEntity::getJobNo, query.getJobNo());
-        wrapper.eq(StringUtils.isNotBlank(query.getOrgIndexCode()), HikAcsDoorEventsEntity::getOrgIndexCode, query.getOrgIndexCode());
-        wrapper.eq(StringUtils.isNotBlank(query.getDoorIndexCode()), HikAcsDoorEventsEntity::getDoorIndexCode, query.getDoorIndexCode());
-        wrapper.eq(StringUtils.isNotBlank(query.getDevIndexCode()), HikAcsDoorEventsEntity::getDevIndexCode, query.getDevIndexCode());
+        wrapper.eq(HikAcsDoorEventsEntity::getCompanyId, companyId);
+        wrapper.like(StringUtils.isNotBlank(query.getPersonName()), HikAcsDoorEventsEntity::getPersonName, query.getPersonName());
+        wrapper.like(StringUtils.isNotBlank(query.getPersonId()), HikAcsDoorEventsEntity::getPersonId, query.getPersonId());
+        wrapper.like(StringUtils.isNotBlank(query.getJobNo()), HikAcsDoorEventsEntity::getJobNo, query.getJobNo());
+        wrapper.like(StringUtils.isNotBlank(query.getOrgIndexCode()), HikAcsDoorEventsEntity::getOrgIndexCode, query.getOrgIndexCode());
+        wrapper.like(StringUtils.isNotBlank(query.getDoorIndexCode()), HikAcsDoorEventsEntity::getDoorIndexCode, query.getDoorIndexCode());
+        wrapper.like(StringUtils.isNotBlank(query.getDevIndexCode()), HikAcsDoorEventsEntity::getDevIndexCode, query.getDevIndexCode());
         wrapper.eq(StringUtils.isNotBlank(query.getDoorRegionIndexCode()), HikAcsDoorEventsEntity::getDoorRegionIndexCode, query.getDoorRegionIndexCode());
         wrapper.eq(Objects.nonNull(query.getEventType()), HikAcsDoorEventsEntity::getEventType, query.getEventType());
         wrapper.eq(Objects.nonNull(query.getInAndOutType()), HikAcsDoorEventsEntity::getInAndOutType, query.getInAndOutType());

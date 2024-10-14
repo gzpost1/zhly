@@ -39,6 +39,11 @@ public class HikAcsDoorEventsPageQuery extends PageQuery {
     private String jobNo;
 
     /**
+     * 卡号
+     */
+    private String cardNo;
+
+    /**
      * 人员所属组织编码
      */
     private String orgIndexCode;
