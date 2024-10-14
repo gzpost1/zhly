@@ -4,6 +4,7 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeOrder;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -47,4 +48,9 @@ public class ChargeOrderPaySuccInsertDto {
      * 收款方式 0平台 1人工
      */
     private Byte paymentMode;
+
+    /**
+     * 支付手续费费率
+     */
+    private BigDecimal payRate;
 }

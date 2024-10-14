@@ -207,4 +207,16 @@
       and pay_status != 0
       and deleted = 0
     </update>
+
+  <select id="queryOverTimeOrderAndClosePage" resultType="cn.cuiot.dmp.lease.dto.charge.Chargeovertimeorderdto">
+      select
+          id as data_id
+      from tb_securitydeposit_manager
+      where
+          deleted = 0
+        and status = 0
+        and pay_status != 0
+        and date_format(now(),'%Y-%m-%d') = date_format(due_date,'%Y-%m-%d')
+       order by receivable_amount desc
+    </select>
 </mapper>

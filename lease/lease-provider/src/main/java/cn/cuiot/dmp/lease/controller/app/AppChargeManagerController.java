@@ -1,13 +1,14 @@
 package cn.cuiot.dmp.lease.controller.app;
 
 
-import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.lease.dto.charge.*;
+import cn.cuiot.dmp.lease.dto.charge.AppChargeManagerDto;
+import cn.cuiot.dmp.lease.dto.charge.AppChargemanagerQuery;
+import cn.cuiot.dmp.lease.dto.charge.ChargeHangupQueryDto;
+import cn.cuiot.dmp.lease.dto.charge.ChargeManagerDetailDto;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
-import cn.cuiot.dmp.lease.service.charge.order.ChargePayService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
@@ -42,7 +43,7 @@ public class AppChargeManagerController {
      * @param query
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<AppChargeManagerDto>> appChargeManager(@RequestBody AppChargemanagerQuery query) {
 
@@ -62,7 +63,7 @@ public class AppChargeManagerController {
      * @param idParam
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<ChargeManagerDetailDto> queryForDetail(@RequestBody @Valid IdParam idParam) {
         ChargeManagerDetailDto chargeManagerDetailDto = tbChargeManagerService.queryForDetail(idParam.getId());
@@ -80,7 +81,7 @@ public class AppChargeManagerController {
      * @param queryDto
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("/queryForReceivedPage")
     public IdmResDTO<IPage<TbChargeReceived>> queryForReceivedPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeReceived> tbChargeHangupIPage = tbChargeManagerService.queryForReceivedPage(queryDto);

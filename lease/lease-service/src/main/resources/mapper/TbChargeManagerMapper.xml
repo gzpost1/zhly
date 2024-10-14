@@ -159,12 +159,15 @@
     </update>
 
     <select id="getHouseInfoByIds" resultType="cn.cuiot.dmp.lease.dto.charge.HouseInfoDto">
-        select id   as house_id,
-               name as house_name,
-               code as house_code
-        from tb_houses_archives
-        where deleted = 0
-          and id in
+        select b.id   as house_id,
+               b.name as house_name,
+               b.code as house_code,
+               a.name as loupan_name
+        from tb_building_archives a
+            inner join tb_houses_archives b on a.id = b.loupan_id
+        where a.deleted = 0
+          and b.deleted = 0
+          and a.id in
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
@@ -435,7 +438,7 @@
         select
             id,house_id,charge_item_id,ownership_period_begin,ownership_period_end,create_time,receivable_amount,receivable_amount_received,last_pay_time
         from
-            tb_charge_manager a
+            tb_charge_manager
         <where>
             deleted = 0
             and house_id = #{query.houseId}
@@ -448,10 +451,10 @@
             and abrogate_status = 0
             and hang_up_status = 0
             <if test="query.receivableStatus != null and query.receivableStatus.toString() == '0'.toString() ">
-                order by a.due_date desc
+                order by due_date desc
             </if>
-            <if test="query.receivableStatus != null and query.receivableStatus.toString() == '0'.toString() ">
-                order by a.last_pay_time desc
+            <if test="query.receivableStatus != null and query.receivableStatus.toString() == '1'.toString() ">
+                order by last_pay_time desc
             </if>
         </where>
     </select>
@@ -537,4 +540,18 @@
         where deleted = 0 and receivble_status in (0,1) and pay_status != 0 and id = #{chargeId}
           and receivable_amount = receivable_amount_received + #{needToPayAmount}
     </update>
+
+    <select id="queryOverTimeOrderAndClosePage" resultType="cn.cuiot.dmp.lease.dto.charge.Chargeovertimeorderdto">
+        select
+            id as data_id
+        from tb_charge_manager
+        where
+            deleted = 0
+        and receivble_status in (0,1)
+        and pay_status != 0
+        and date_format(now(),'%Y-%m-%d') = date_format(due_date,'%Y-%m-%d')
+        and hang_up_status = 0
+        and abrogate_status = 0
+        order by (receivable_amount-receivable_amount_received) desc
+    </select>
 </mapper>
