@@ -14,6 +14,7 @@ import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.req.*;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.*;
 import cn.cuiot.dmp.externalapi.service.vo.hik.*;
 import cn.cuiot.dmp.util.Sm4;
+import com.alibaba.nacos.shaded.com.google.common.collect.Maps;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -386,15 +387,20 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
         List<HikPersonAuthorizeVO> collect = Lists.newArrayList();
         // 判断返回的list是否为空
         if (Objects.nonNull(search) && CollectionUtils.isNotEmpty(search.getList())) {
-            // 调用外部接口查询当前用户的授权信息
-            List<HikAcpsAuthConfigSearchResp.PermissionConfig> authorizeEntityList =
-                    queryAuthorizeByPersonIds(Collections.singletonList(query.getId()), bo);
-            Map<String, HikAcpsAuthConfigSearchResp.PermissionConfig> authorizeEntityMap = authorizeEntityList.stream()
-                    .collect(Collectors.toMap(HikAcpsAuthConfigSearchResp.PermissionConfig::getChannelIndexCode, e -> e));
 
-            collect = search.getList().stream()
-                    .map(item -> HikPersonAuthorizeVO.buildHikPersonAuthorizeVO(item, authorizeEntityMap))
-                    .collect(Collectors.toList());
+            Map<String, HikAcpsAuthConfigSearchResp.PermissionConfig> authorizeEntityMap = Maps.newHashMap();
+
+            if (Objects.nonNull(query.getId())) {
+                // 调用外部接口查询当前用户的授权信息
+                List<HikAcpsAuthConfigSearchResp.PermissionConfig> authorizeEntityList =
+                        queryAuthorizeByPersonIds(Collections.singletonList(query.getId()), bo);
+                authorizeEntityMap = authorizeEntityList.stream()
+                        .collect(Collectors.toMap(HikAcpsAuthConfigSearchResp.PermissionConfig::getChannelIndexCode, e -> e));
+            }
+            // 构造返回
+            for (HikDoorResp.DataItem item:search.getList()) {
+                collect.add(HikPersonAuthorizeVO.buildHikPersonAuthorizeVO(item, authorizeEntityMap));
+            }
         }
 
         // 创建并返回 IPage 对象
