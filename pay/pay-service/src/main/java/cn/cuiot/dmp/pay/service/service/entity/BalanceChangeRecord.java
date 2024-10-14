@@ -83,4 +83,9 @@ public class BalanceChangeRecord extends YjBaseEntity {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
+
+    /**
+     * 数据类型 0账单 1押金
+     */
+    private Byte dateType;
 }

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * @author xulei
  * @create 2024-10-11 17:06
@@ -36,4 +38,15 @@ public class PaySuccessVO {
      * 99：未知状态
      */
     private Byte status;
+
+    /**
+     * 1:账单缴费
+     * 2：预缴
+     */
+    private Byte businessType;
+
+    /**
+     * 支付手续费费率
+     */
+    private BigDecimal payRate;
 }

@@ -51,7 +51,7 @@ public class WePayNotifyController {
         // 获取最终应答数据
         WeChatConfigVo config = JsonUtil.readValue(paySetting.getSettingConfig(), WeChatConfigVo.class);
         String wechatResourceStringData = WxSignUtil.getWechatResourceStringData(JSON.parseObject(jsonStr, CombinePayNotifyReq.class), config.getApiV3key());
-        orderPayAtHandler.onReceiverWechatNormalPayNotify(wechatResourceStringData);
+        orderPayAtHandler.onReceiverWechatNormalPayNotify(wechatResourceStringData,paySetting);
         return PaySuccessNotifyRsp.builder().code("SUCCESS").build();
     }
 

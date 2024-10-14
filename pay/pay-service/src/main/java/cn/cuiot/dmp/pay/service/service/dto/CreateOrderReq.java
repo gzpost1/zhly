@@ -3,6 +3,7 @@ package cn.cuiot.dmp.pay.service.service.dto;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.pay.service.service.enums.PayChannelEnum;
 import cn.cuiot.dmp.pay.service.service.enums.TradeChannelEnum;
 import com.chinaunicom.yunjingtech.httpclient.bean.pay.SettleInfoEntity;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 创建订单请求参数
@@ -71,11 +73,6 @@ public class CreateOrderReq implements Serializable {
      */
     private String tradeType;
 
-    /**
-     * 支付方式：
-     01:工银e支付 02:微信支付 03:支付宝 04:预付卡 05:转账 06:二维码主扫支付 07:POS支付 08:e支 付有协议小额免密 09:微信线下支付 10:会员卡小额免密 11:支付宝线下支付 12:二维码被扫支付 15:全额优惠 16:融 资支付 17:云闪付 99:其他
-     */
-    private String payMethod;
 
     /**
      * 用户openId（小程序、公众号支付必填）
@@ -101,19 +98,10 @@ public class CreateOrderReq implements Serializable {
     private String spbillCreateIp;
 
     /**
-     * 附加数据（可作为自定义字段使用，查询API和支付通知中原样返回）
-     */
-    private String attach;
-
-    /**
      * 优惠标记
      */
     private String goodsTag;
 
-    /**
-     * 结算信息
-     */
-    private SettleInfoEntity settleInfo;
 
     /**
      * 商品简单描述。需传入应用市场上的APP名字-实际商品名称，例如：天天爱消除-游戏充值。
@@ -127,15 +115,24 @@ public class CreateOrderReq implements Serializable {
      */
     private String payMchId;
 
-    /**
-     * 房间id
-     */
-    private Long companyId;
 
     /**
      * 房屋id
      */
     private Long houseId;
+
+    /**
+     * 1:账单缴费
+     * 2：预缴
+     * 微信支付时不能为空
+     */
+    private Byte businessType;
+
+    /**
+     * 数据类型 0账单 1押金
+     */
+    private Byte dateType;
+
     /**
      * 支付校验
      */
@@ -148,6 +145,11 @@ public class CreateOrderReq implements Serializable {
         if (TradeChannelEnum.MINI_APP.getType().equals(this.tradeType)) {
             AssertUtil.notBlank(this.appId, "小程序支付情况下，appId必传");
             AssertUtil.notBlank(this.openId, "小程序支付情况下，openId必传");
+            AssertUtil.isFalse(Objects.isNull(this.businessType), "小程序支付情况下，businessType必传");
+        }
+
+        if (PayChannelEnum.BALANCE.getPayChannel().equals(this.getPayChannel())) {
+            AssertUtil.isFalse(Objects.isNull(this.dateType), "余额支付情况下，dateType必传");
         }
     }
 

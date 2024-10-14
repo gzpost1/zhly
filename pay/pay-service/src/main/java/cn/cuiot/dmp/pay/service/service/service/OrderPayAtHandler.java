@@ -14,6 +14,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.chinaunicom.yunjingtech.httpclient.bean.pay.response.normal.NormalQueryOrderResp;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -76,7 +77,7 @@ public class OrderPayAtHandler {
         IPayBaseInterface payBaseInterface = (IPayBaseInterface) choose.choose(PayChannelEnum.getPayMark(paySetting.getPayChannel(), paySetting.getMchType()));
         // 查询订单实际支付状态
         PayOrderQueryAggregate queryBO = payBaseInterface.orderQuery(queryParam);
-        return PayOrderQueryResp.initReturn(queryBO);
+        return PayOrderQueryResp.initReturn(queryBO,paySetting);
     }
 
     /**
@@ -99,7 +100,7 @@ public class OrderPayAtHandler {
     /**
      * 微信普通商户模式支付通知消费
      */
-    public void onReceiverWechatNormalPayNotify(String jsonStr) {
+    public void onReceiverWechatNormalPayNotify(String jsonStr,SysPayChannelSetting paySetting) {
         NormalQueryOrderResp order = JSON.parseObject(jsonStr,
                 new TypeReference<NormalQueryOrderResp>() {
                 });
@@ -107,7 +108,10 @@ public class OrderPayAtHandler {
         //通知渠道
         PaySuccessVO paySuccessVO = PaySuccessVO.builder().outOrderId(order.getOutTradeNo())
                 .transactionNo(order.getTransactionId())
-                .status(WxOrderConstant.WePayOrderStatus.getYjStatus(order.getTradeState())).build();
+                .status(WxOrderConstant.WePayOrderStatus.getYjStatus(order.getTradeState()))
+                .businessType(StringUtils.isNotBlank(order.getAttach())?null:Byte.valueOf(order.getAttach()))
+                .payRate(paySetting.getCharge())
+                .build();
         sendDeviceInfo(paySuccessVO);
 
     }

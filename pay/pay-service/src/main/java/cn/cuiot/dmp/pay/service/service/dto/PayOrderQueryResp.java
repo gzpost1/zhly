@@ -2,16 +2,15 @@ package cn.cuiot.dmp.pay.service.service.dto;
 
 import cn.cuiot.dmp.pay.service.service.entity.SysPayChannelSetting;
 import cn.cuiot.dmp.pay.service.service.vo.PayOrderQueryAggregate;
-import com.github.dozermapper.core.Mapping;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author huq
@@ -60,15 +59,21 @@ public class PayOrderQueryResp implements Serializable {
     private String payMchId;
 
 
+    /**
+     * 1:账单缴费
+     * 2：预缴
+     */
+    private Byte businessType;
 
     /**
-     * 附加数据（可作为自定义字段使用，查询API和支付通知中原样返回）
+     * 支付手续费费率
      */
-    private String attach;
+    private BigDecimal payRate;
 
 
 
-    public static PayOrderQueryResp initReturn(PayOrderQueryAggregate queryBO) {
+
+    public static PayOrderQueryResp initReturn(PayOrderQueryAggregate queryBO, SysPayChannelSetting paySetting) {
         return PayOrderQueryResp.builder()
                 .outOrderId(queryBO.getOutOrderId())
                 .status(queryBO.getStatus())
@@ -76,7 +81,8 @@ public class PayOrderQueryResp implements Serializable {
                 .payOrderId(queryBO.getPayOrderId())
                 .payCompleteTime(queryBO.getPayCompleteTime())
                 .payMchId(queryBO.getPayMchId())
-                .attach(queryBO.getAttach())
+                .businessType(StringUtils.isNotBlank(queryBO.getAttach())?null:Byte.valueOf(queryBO.getAttach()))
+                .payRate(paySetting.getCharge())
                 .build();
     }
 }

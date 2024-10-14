@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.balance.MbRechargeOrderMapper">
+
+
+
+    <update id="updateRechargeOrderByCondition">
+        update tb_mb_recharge_order
+        <set>
+            version = version+1,update_time=now(3),
+            <if test="param.updateUser != null">
+                update_user = #{param.updateUser},
+            </if>
+            <if test="param.status != null">
+                status = #{param.status,jdbcType=TINYINT},
+            </if>
+            <if test="param.payStatus != null">
+                pay_status = #{param.payStatus,jdbcType=TINYINT},
+            </if>
+            <if test="param.payNo != null">
+                pay_no = #{param.payNo},
+            </if>
+            <if test="param.payCharge != null">
+                pay_charge = #{param.payCharge},
+            </if>
+            <if test="param.payChargeRate != null">
+                pay_charge_rate = #{param.payChargeRate},
+            </if>
+        </set>
+        where order_id = #{param.orderId} and version = #{param.version}
+    </update>
+
+    <select id="quertOrgIdByHouse" resultType="java.lang.Long" parameterType="java.lang.Long">
+        SELECT
+            company_id
+        FROM
+            tb_houses_archives a
+                INNER JOIN tb_building_archives b ON a.loupan_id = b.id
+        WHERE
+            a.id = #{houseId}
+    </select>
+
+</mapper>

@@ -89,6 +89,17 @@ public class CreateOrderParam implements Serializable {
      */
     private Long houseId;
 
+    /**
+     * 1:账单缴费
+     * 2：预缴
+     */
+    private Byte businessType;
+
+    /**
+     * 数据类型 0账单 1押金
+     */
+    private Byte dateType;
+
     public static CreateOrderParam initDate(CreateOrderReq param){
         CreateOrderParam createOrderParam = CreateOrderParam.builder()
                 .appId(param.getAppId())
@@ -98,11 +109,14 @@ public class CreateOrderParam implements Serializable {
                 .spbillCreateIp(param.getSpbillCreateIp())
                 .outOrderId(param.getOutOrderId())
                 .orgId(param.getOrgId())
-                .attach(param.getAttach())
+                //微信支付时加上业务类型，用于支付回调时区分是缴费还是预缴
+                .attach(String.valueOf(param.getBusinessType()))
                 .payMchId(param.getPayMchId())
                 .goodsTag(param.getGoodsTag())
                 .productName(param.getProductName())
                 .houseId(param.getHouseId())
+                .businessType(param.getBusinessType())
+                .dateType(param.getDateType())
                 .build();
         return createOrderParam;
     }

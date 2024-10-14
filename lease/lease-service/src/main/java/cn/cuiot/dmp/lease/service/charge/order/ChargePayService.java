@@ -87,7 +87,7 @@ public class ChargePayService {
         createOrderReq.setOpenId(queryDto.getOpenId());
         createOrderReq.setTotalFee(totalAmount);
 
-        createOrderReq.setCompanyId(companyId);
+        createOrderReq.setOrgId(companyId);
         CreateOrderResp createOrderResp = orderPayAtHandler.makeOrder(createOrderReq);
 
         //构建返回值

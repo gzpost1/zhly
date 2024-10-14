@@ -44,6 +44,7 @@ public class BalancePayAdapter implements IPayBaseInterface {
                 .createTime(new Date())
                 .changeType(BalanceChangeTypeEnum.BALANCE_PAY.getType())
                 .houseId(param.getHouseId())
+                .dateType(param.getDateType())
                 .build();
         Long reportId = balancePayService.handler(eventDto);
         CreateOrderAggregate responseDto = new CreateOrderAggregate();

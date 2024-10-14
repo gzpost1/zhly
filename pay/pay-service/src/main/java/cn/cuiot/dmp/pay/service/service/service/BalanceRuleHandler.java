@@ -56,6 +56,7 @@ public class BalanceRuleHandler {
                 .orderId(Objects.nonNull(param.getOrderId()) ? Long.parseLong(param.getOrderId()) : null)
                 .orderName(param.getOrderName())
                 .reason(BalanceChangeTypeEnum.getMessage(param.getChangeType()))
+                .dateType(param.getDateType())
                 .build();
         switch (typeEnum) {
             case BALANCE_PAY:
