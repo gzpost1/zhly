@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.entity;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -29,18 +30,21 @@ public class WorkPlanInfoEntity extends YjBaseEntity {
      * 主键id
      */
     @TableId("id")
+    @Excel(name = "计划id", orderNum = "1", width = 20)
     private Long id;
 
 
     /**
      * 计划名称
      */
+    @Excel(name = "计划名称", orderNum = "0", width = 20)
     private String planName;
 
 
     /**
      * 计划说明
      */
+    @Excel(name = "计划说明", orderNum = "2", width = 20)
     private String planDesc;
 
     /**
@@ -67,6 +71,7 @@ public class WorkPlanInfoEntity extends YjBaseEntity {
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @Excel(name = "计划开始时间",orderNum = "3",  width = 20,exportFormat = "yyyy-MM-dd")
     private Date startDate;
 
 
@@ -75,6 +80,7 @@ public class WorkPlanInfoEntity extends YjBaseEntity {
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @Excel(name = "计划结束时间",orderNum = "4",  width = 20,exportFormat = "yyyy-MM-dd")
     private Date endDate;
 
 
@@ -166,6 +172,13 @@ public class WorkPlanInfoEntity extends YjBaseEntity {
      */
     private Byte state;
 
+    @Excel(name = "启用状态", orderNum = "7", width = 20)
+    @TableField(exist = false)
+    private String stateName;
+
+    @Excel(name = "启用状态", orderNum = "6", width = 20)
+    @TableField(exist = false)
+    private String planState;
 
     /**
      * 备用字段
@@ -177,6 +190,7 @@ public class WorkPlanInfoEntity extends YjBaseEntity {
      * 创建人名称
      */
     @TableField(exist = false)
+    @Excel(name = "创建人", orderNum = "6", width = 20)
     private  String createName;
 
     @TableField(exist = false)

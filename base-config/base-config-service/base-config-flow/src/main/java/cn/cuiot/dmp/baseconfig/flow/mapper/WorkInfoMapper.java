@@ -31,9 +31,13 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
 
     Page<MyApprovalResultDto> queryMyNotApproval(Page<MyApprovalResultDto> myApprovalResultDtoPage,@Param("query") QueryMyApprovalDto dto);
 
+    List<MyApprovalResultDto> queryMyNotApproval(@Param("query") QueryMyApprovalDto dto);
+
     BaseDto queryMyNotApprocalCount(@Param("query") PendingProcessQuery query);
 
     Page<MyApprovalResultDto> queryMyApproval(Page<MyApprovalResultDto> page,@Param("query") QueryMyApprovalDto dto);
+
+    List<MyApprovalResultDto> queryMyApproval(@Param("query") QueryMyApprovalDto dto);
 
     Page<MyApprovalResultDto> queryMakeApproval(Page<MyApprovalResultDto> page,@Param("query") QueryMyApprovalDto dto);
 

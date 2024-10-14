@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.baseconfig.flow.service;
 
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
 import cn.cuiot.dmp.base.application.service.ApiArchiveService;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
@@ -23,6 +25,9 @@ import cn.cuiot.dmp.baseconfig.flow.dto.app.ProcessResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.UserSubmitDataDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.export.ExportWorkOrderDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.export.MakeApprovalDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.export.MyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.*;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.Properties;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
@@ -39,8 +44,10 @@ import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
+import cn.cuiot.dmp.domain.types.LoginInfo;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
@@ -56,6 +63,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.xmlbeans.impl.xb.xsdschema.LocalSimpleType;
 import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.Process;
 import org.flowable.common.engine.impl.identity.Authentication;
@@ -139,6 +147,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     @Autowired
     private ApiArchiveService apiArchiveService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO start(StartProcessInstanceDTO startProcessInstanceDTO) {
@@ -875,6 +885,74 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     }
 
     /**
+     * 工单管理导出
+     * @param dto
+     */
+    public void exportWorkOrder(WorkInfoDto dto) throws Exception {
+        excelExportService.excelExport(ExcelReportDto.<WorkInfoDto,WorkInfoDto>builder().title("工单导出").fileName("工单导出")
+                .dataList(queryExportWorkOrder(dto)).build(),WorkInfoDto.class);
+    }
+
+    /**
+     * 查询工单管理别表信息
+     * @param dto
+     * @return
+     */
+    public List<WorkInfoDto> queryExportWorkOrder(WorkInfoDto dto){
+        dto.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        //根据组织id获取本组织与子组织信息
+        if(CollectionUtils.isEmpty(dto.getOrgIds())){
+            List<DepartmentDto> departs = getDeptIds(dto.getOrg());
+            List<Long> deptIds = departs.stream().map(DepartmentDto::getId).collect(Collectors.toList());
+            dto.setOrgIds(deptIds);
+        }
+        Boolean flag =true;
+        Long pageNo = 1L;
+        dto.setPageSize(Integer.parseInt(String.valueOf(WorkOrderConstants.PAGE_SIZE)));
+        List<WorkInfoDto> resultList = new ArrayList<>();
+        do{
+            IPage<WorkInfoDto> workInfoEntityPage = getBaseMapper().queryWorkOrderInfo(new Page<WorkInfoDto>(pageNo,dto.getPageSize()),dto);
+            List<WorkInfoDto> records = workInfoEntityPage.getRecords();
+            if(workInfoEntityPage.getTotal()> WorkOrderConstants.pageSize){
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            if(CollectionUtils.isEmpty(records)){
+                flag=false;
+            }
+
+            if(CollectionUtils.isNotEmpty(records)){
+                //企业id 获取业务类型
+                List<Long> businessIds = records.stream().map(WorkInfoDto::getBusinessType).collect(Collectors.toList());
+                Map<Long, String> busiMap = getBusiMap(businessIds);
+
+                //获取全部userId
+                List<Long> userIds = records.stream().map(WorkInfoDto::getCreateUser).collect(Collectors.toList());
+                Map<Long, String> userMap = getUserMap(userIds);
+
+                //部门ids
+                records.stream().forEach(item->{
+                    //组织名称
+                    item.setOrgPath(getOrgPath(item.getDeptIds()));
+                    //用户名称
+                    item.setUserName(userMap.get(item.getCreateUser()));
+                    //业务类型
+                    item.setBusinessTypeName(busiMap.get(item.getBusinessType()));
+                    //获取流程输入的组织信息
+                    item.setOrgIds(getOrgIds(item.getDeptIds()));
+                    //工单状态
+                    item.setStatusName(WorkOrderStatusEnums.getWorkOrderStatus(item.getStatus()));
+                    //工单来源
+                    item.setWorkSource(WorkSourceEnums.getWorkOrderSource(item.getWorkSouce()));
+                });
+                pageNo++;
+                resultList.addAll(records);
+            }
+        }while (flag);
+
+            return resultList;
+    }
+
+    /**
      * 获取客户工单列表
      * @param dto
      * @return
@@ -1568,10 +1646,57 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
             });
         }
-
         return IdmResDTO.success(pages);
     }
 
+    /**
+     * 导出
+     * @param dto
+     * @throws Exception
+     */
+
+    public void export(QueryMyApprovalDto dto) throws Exception {
+        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,ExportWorkOrderDto>builder().title("待审批数据").fileName("待审批数据")
+                .dataList(exportMyNotApproval(dto)).build(),ExportWorkOrderDto.class);
+    }
+
+
+
+    /**
+     * 导出待审批数据
+     * @param dto
+     * @return
+     */
+    public  List<ExportWorkOrderDto>  exportMyNotApproval(QueryMyApprovalDto dto) {
+        dto.setAssignee(LoginInfoHolder.getCurrentUserId());
+        List<MyApprovalResultDto> records = baseMapper.queryMyNotApproval(dto);
+
+        List<ExportWorkOrderDto> exportWorkOrderDtos = Optional.ofNullable(BeanMapper.mapList(records, ExportWorkOrderDto.class)).orElse(new ArrayList<>());
+        if(exportWorkOrderDtos.size()> WorkOrderConstants.pageSize){
+            throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+        }
+
+        if(CollectionUtils.isNotEmpty(records)){
+            //根据业务类型获取数据
+            List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
+            Map<Long, String> busiMap = getBusiMap(busiTypes);
+            //userIds
+            List<Long> usreIds = records.stream().map(MyApprovalResultDto::getUserId).collect(Collectors.toList());
+            Map<Long, String> userMap = getUserMap(usreIds);
+            records.stream().forEach(item->{
+                //根据业务类型id获取业务类型数据
+                item.setBusinessTypeName(busiMap.get(item.getBusinessType()));
+                //获取所属组织
+                item.setOrgPath(getOrgPath(item.getOrgIds()));
+                // 发起人
+                item.setUserName(userMap.get(item.getUserId()));
+            });
+        }
+        List<ExportWorkOrderDto> exportWorkOrderDtoList = BeanMapper.mapList(records, ExportWorkOrderDto.class);
+
+       return exportWorkOrderDtoList;
+
+    }
     /**
      * 查询已审批列表
      * @param dto
@@ -1602,6 +1727,38 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         }
         return IdmResDTO.success(page);
     }
+
+    public void exportMyApproval(QueryMyApprovalDto dto) throws Exception {
+        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,MyApprovalDto>builder().title("已审批数据").fileName("已审批数据")
+                .dataList(queryExportMyApproval(dto)).clazz(dto.getClazz()).build(),MyApprovalDto.class);
+    }
+    public List<MyApprovalDto> queryExportMyApproval(QueryMyApprovalDto dto) {
+        dto.setAssignee(LoginInfoHolder.getCurrentUserId());
+        List<MyApprovalResultDto> records=baseMapper.
+                queryMyApproval(dto);
+        if(CollectionUtils.isNotEmpty(records)){
+
+            //根据业务类型获取数据
+            List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
+            Map<Long, String> busiMap = getBusiMap(busiTypes);
+            //userIds
+            List<Long> usreIds = records.stream().map(MyApprovalResultDto::getUserId).collect(Collectors.toList());
+            Map<Long, String> userMap = getUserMap(usreIds);
+            records.stream().forEach(item->{
+                //根据业务类型id获取业务类型数据
+                item.setBusinessTypeName(busiMap.get(item.getBusinessType()));
+                //获取所属组织
+                item.setOrgPath(getOrgPath(item.getOrgIds()));
+                // 发起人
+                item.setUserName(userMap.get(item.getUserId()));
+                //
+                item.setStatusName(WorkOrderStatusEnums.getWorkOrderStatus(item.getState()));
+            });
+        }
+        dto.setClazz(MyApprovalDto.class);
+        return BeanMapper.mapList(records, MyApprovalDto.class);
+    }
+
 
     /**
      * 获取抄送列表
@@ -1638,6 +1795,59 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(page);
     }
 
+
+    public void exportMakeApproval(QueryMyApprovalDto dto) throws Exception {
+        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,MakeApprovalDto>builder().title("抄送我列表").fileName("抄送我列表")
+                .dataList(queryExportMakeApproval(dto)).build(),MakeApprovalDto.class);
+    }
+    public  List<MakeApprovalDto>  queryExportMakeApproval(QueryMyApprovalDto dto){
+        dto.setMakeUserId(LoginInfoHolder.getCurrentUserId());
+        dto.setPageSize(WorkOrderConstants.PAGE_SIZE);
+        List<MakeApprovalDto> exportList = new ArrayList<>();
+        Boolean flag =true;
+        Long pageNo = 1L;
+        do{
+            Page<MyApprovalResultDto> page = baseMapper.queryMakeApproval(new Page<MyApprovalResultDto>(pageNo,dto.getPageSize()),
+                    dto);
+            if(page.getTotal()> WorkOrderConstants.pageSize){
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            List<MyApprovalResultDto> records = page.getRecords();
+            if(CollectionUtils.isEmpty(records)){
+                flag=false;
+            }
+            if(CollectionUtils.isNotEmpty(records)){
+                //根据业务类型获取数据
+                List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
+                Map<Long, String> busiMap = getBusiMap(busiTypes);
+
+                //组织ids
+//            List<Long> orgIds = records.stream().map(MyApprovalResultDto::getOrgId).collect(Collectors.toList());
+//            Map<Long, String> deptMap = getDeptMap(orgIds);
+
+                //userIds
+                List<Long> usreIds = records.stream().map(MyApprovalResultDto::getUserId).collect(Collectors.toList());
+                Map<Long, String> userMap = getUserMap(usreIds);
+                records.stream().forEach(item->{
+                    //根据业务类型id获取业务类型数据
+                    item.setBusinessTypeName(busiMap.get(item.getBusinessType()));
+                    //获取所属组织
+                    item.setOrgPath(getOrgPath(item.getOrgIds()));
+                    // 发起人
+                    item.setUserName(userMap.get(item.getUserId()));
+
+                    item.setStatusName(WorkOrderStatusEnums.getWorkOrderStatus(item.getState()));
+                });
+
+                List<MakeApprovalDto> makeApprovalDtos = BeanMapper.mapList(records, MakeApprovalDto.class);
+                exportList.addAll(makeApprovalDtos);
+            }
+            pageNo++;
+        }while (flag);
+
+        return exportList;
+    }
+
     public IdmResDTO<IPage<WorkInfoEntity>> queryMySubmitWorkInfo(QueryMyApprovalDto dto) {
         dto.setCreateUser(LoginInfoHolder.getCurrentUserId());
         Page<WorkInfoEntity> page = baseMapper.queryMySubmitWorkInfo(new Page<WorkInfoEntity>(dto.getPageNo(),dto.getPageSize()),
@@ -1665,6 +1875,51 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(page);
     }
 
+    public void exportMySubmitWorkInfo(QueryMyApprovalDto dto) throws Exception {
+        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,WorkInfoEntity>builder().title("我提交的").fileName("我提交的")
+                .dataList(QueryExportMySubmitWorkInfo(dto)).build(),WorkInfoEntity.class);
+    }
+    public List<WorkInfoEntity> QueryExportMySubmitWorkInfo(QueryMyApprovalDto dto){
+
+        dto.setCreateUser(LoginInfoHolder.getCurrentUserId());
+        dto.setPageSize(WorkOrderConstants.PAGE_SIZE);
+        Long pageNo = 1L;
+        boolean flag =true;
+        List<WorkInfoEntity> resultList = new ArrayList<>();
+        do{
+            Page<WorkInfoEntity> page = baseMapper.queryMySubmitWorkInfo(new Page<WorkInfoEntity>(pageNo,dto.getPageSize()),
+                    dto);
+            if(page.getTotal()> WorkOrderConstants.pageSize){
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            List<WorkInfoEntity> records = page.getRecords();
+            if(CollectionUtils.isEmpty(records)){
+                flag=false;
+            }
+
+            if(CollectionUtils.isNotEmpty(records)){
+                //根据业务类型获取数据
+                List<Long> busiTypes = records.stream().map(WorkInfoEntity::getBusinessType).collect(Collectors.toList());
+                Map<Long, String> busiMap = getBusiMap(busiTypes);
+                List<Long> usreIds = records.stream().map(WorkInfoEntity::getCreateUser).collect(Collectors.toList());
+                Map<Long, String> userMap = getUserMap(usreIds);
+                records.stream().forEach(item->{
+                    //根据业务类型id获取业务类型数据
+                    item.setBusinessTypeName(busiMap.get(item.getBusinessType()));
+                    //获取所属组织
+                    item.setOrgPath(getOrgPath(item.getOrgIds()));
+                    // 发起人
+                    item.setUserName(userMap.get(item.getCreateUser()));
+                    //判断能否撤回
+                    item.setStatusName(WorkOrderStatusEnums.getWorkOrderStatus(item.getStatus()));
+                });
+                pageNo++;
+                resultList.addAll(records);
+            }
+        }while (flag);
+
+        return resultList;
+    }
     /**
      * 判断是否可以重新提交
      * @param procInstId
@@ -1842,6 +2097,76 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(page);
     }
 
+    /**
+     * 导出客户工单
+     * @param dto
+     * @throws Exception
+     */
+    public void exportCustomerWorkOrder(QueryCustomerWorkOrderDto dto) throws Exception {
+        excelExportService.excelExport(ExcelReportDto.<QueryCustomerWorkOrderDto,CustomerWorkOrderDto>builder().title("客户工单列表").fileName("客户工单列表")
+                .dataList(queryExportCustomerWorkOrder(dto)).build(),CustomerWorkOrderDto.class);
+    }
+
+
+    /**
+     * 查询客户工单信息
+     * @param req
+     * @return
+     */
+    public  List<CustomerWorkOrderDto>  queryExportCustomerWorkOrder(QueryCustomerWorkOrderDto req){
+        //校验楼盘信息
+        List<Long> propertyList = queryPropertyInfoByDeptId();
+        checkProperty(req.getPropertyIds(),propertyList);
+        if(CollectionUtils.isEmpty(req.getPropertyIds())){
+            //根据当前管理人员信息查询下面的楼盘id
+            req.setPropertyIds(propertyList);
+        }
+        Boolean flag =true;
+        Long pageNo = 1L;
+        req.setPageSize(WorkOrderConstants.PAGE_SIZE);
+        List<CustomerWorkOrderDto> resultList = new ArrayList<>();
+        do{
+            IPage<CustomerWorkOrderDto> page= baseMapper.queryCustomerWorkOrder(new Page<CustomerWorkOrderDto>(pageNo,req.getPageSize()),req);
+            List<CustomerWorkOrderDto> records = page.getRecords();
+            if(CollectionUtils.isEmpty(records)){
+                flag=false;
+            }
+            if (CollectionUtils.isNotEmpty(records)){
+                //获取业务类型
+                List<Long> businessTypeIds = records.stream().map(CustomerWorkOrderDto::getBusinessType).collect(Collectors.toList());
+                Map<Long, String> businessMap = getBusiMap(businessTypeIds);
+
+                //获取楼盘信息
+                List<Long> propertyIds = records.stream().map(CustomerWorkOrderDto::getPropertyId).collect(Collectors.toList());
+                Map<Long,String> propertyMap =getPropertyMap(propertyIds);
+                //获取发起人与报单人信息
+                List<Long> userIds = records.stream().map(CustomerWorkOrderDto::getCreateUser).collect(Collectors.toList());
+                List<Long> actualUserId = records.stream().map(CustomerWorkOrderDto::getActualUserId).collect(Collectors.toList());
+                List<Long> combinedList = Stream.concat(userIds.stream(), actualUserId.stream()).distinct()
+                        .collect(Collectors.toList());
+
+                Map<Long, String> userMap = getUserMap(combinedList);
+                records.stream().forEach(item->{
+                    //填充业务业务类型
+                    item.setBusinessTypeName(businessMap.get(item.getBusinessType()));
+                    //填充楼盘信息
+                    item.setPropertyName(propertyMap.get(item.getPropertyId()));
+                    //创建人
+                    item.setCreateUserName(userMap.get(item.getCreateUser()));
+                    //填报人
+                    item.setActualUserName(userMap.get(item.getActualUserId()));
+                    //工单状态
+                    item.setStatusName(WorkOrderStatusEnums.getWorkOrderStatus(item.getStatus()));
+                    //工单来源
+                    item.setWorkSourceDesc(WorkSourceEnums.getWorkOrderSource(item.getWorkSource()));
+                });
+                pageNo++;
+                resultList.addAll(records);
+            }
+        }while (flag);
+
+        return resultList;
+    }
     /**
      * 校验查询范围
      * @param propertyIds
@@ -2022,4 +2347,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         return IdmResDTO.success(entity);
 
     }
+
+
 }

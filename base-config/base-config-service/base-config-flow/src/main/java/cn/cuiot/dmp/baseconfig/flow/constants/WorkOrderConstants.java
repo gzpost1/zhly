@@ -48,4 +48,12 @@ public interface WorkOrderConstants {
      */
     String taskNode="TASK";
 
+    /**
+     * 导出页面
+     */
+     Integer pageSize = 10000;
+    /**
+     * 导出数据
+     */
+    Long PAGE_SIZE =2000L;
 }

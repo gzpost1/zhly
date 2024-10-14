@@ -7,10 +7,14 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.base.infrastructure.xxljob.XxlJobClient;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
+import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
 import cn.cuiot.dmp.baseconfig.flow.entity.*;
+import cn.cuiot.dmp.baseconfig.flow.enums.PlanWordStatusEnums;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkPlanInfoMapper;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollectionUtil;
@@ -444,6 +448,64 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             });
         }
         return IdmResDTO.success(workPlanInfoEntityPage);
+    }
+
+    /**
+     * 导出工单计划列表数据
+     * @param dto
+     */
+    public void exportWordPlanInfo(QueryWorkPlanInfoDto dto){
+
+    }
+
+    public  List<WorkPlanInfoEntity> queryExportWordPlanInfo(QueryWorkPlanInfoDto dto){
+        //根据组织id获取自己及下属的组织id
+        if(CollectionUtil.isEmpty(dto.getOrgIds())){
+            List<DepartmentDto> deptList = getDeptIds(LoginInfoHolder.getCurrentDeptId());
+            List<Long> deptIds = deptList.stream().map(DepartmentDto::getId).collect(Collectors.toList());
+            dto.setOrgIds(deptIds);
+        }
+        Boolean flag =true;
+        Long pageNo = 1L;
+        dto.setPageSize(Integer.parseInt(String.valueOf(WorkOrderConstants.PAGE_SIZE)));
+        List<WorkPlanInfoEntity> resultList = new ArrayList<>();
+
+        do {
+            Page<WorkPlanInfoEntity> workPlanInfoEntityPage = this.getBaseMapper().queryWordPlanInfo(new Page<>(pageNo, dto.getPageSize()), dto);
+            List<WorkPlanInfoEntity> records = workPlanInfoEntityPage.getRecords();
+            if(workPlanInfoEntityPage.getTotal()> WorkOrderConstants.pageSize){
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            if(CollectionUtils.isEmpty(records)){
+                flag=false;
+            }
+            if(CollectionUtil.isNotEmpty(records)){
+                List<Long> userIds = records.stream().map(WorkPlanInfoEntity::getCreateUser).collect(Collectors.toList());
+                Map<Long, String> userMap = getUserMap(userIds);
+                List<Long> ids = records.stream().map(WorkPlanInfoEntity::getId).collect(Collectors.toList());
+                Map<Long, String> contentMap = getContent(ids);
+                records.stream().forEach(item->{
+                    //根据userId获取userName
+                    item.setCreateName(userMap.get(item.getCreateUser()));
+                    //停启用信息
+                    item.setStateName(PlanWordStatusEnums.getWorkOrderSource(Integer.parseInt(String.valueOf(item.getState()))));
+                    //有效状态
+                });
+                pageNo++;
+                resultList.addAll(records);
+            }
+        }while (flag);
+
+        return resultList;
+    }
+
+    public String planWordStatus(Date startTime ,Date endTime){
+
+//        if(){
+//
+//        }
+
+        return null;
     }
 
     public Map<Long, String> getContent(List<Long> ids){
