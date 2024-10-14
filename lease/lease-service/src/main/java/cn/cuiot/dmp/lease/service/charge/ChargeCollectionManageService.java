@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.lease.service.charge;
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.application.service.impl.ApiArchiveServiceImpl;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
@@ -8,10 +10,9 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.common.bean.dto.SmsBusinessMsgDto;
 import cn.cuiot.dmp.common.bean.dto.SysBusinessMsgDto;
 import cn.cuiot.dmp.common.bean.dto.UserBusinessMessageAcceptDto;
-import cn.cuiot.dmp.common.constant.InformTypeConstant;
-import cn.cuiot.dmp.common.constant.MsgDataType;
-import cn.cuiot.dmp.common.constant.MsgTypeConstant;
-import cn.cuiot.dmp.common.constant.SmsStdTemplate;
+import cn.cuiot.dmp.common.constant.*;
+import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
@@ -35,6 +36,9 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -59,6 +63,9 @@ public class ChargeCollectionManageService {
     private ChargeMsgChannel chargeMsgChannel;
     @Autowired
     private ApiArchiveServiceImpl apiArchiveService;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 分页
@@ -97,6 +104,79 @@ public class ChargeCollectionManageService {
         }
         return page;
     }
+
+    /**
+     * 导出
+     * @param dto
+     * @throws Exception
+     */
+    public void export(ChargeCollectionManageQuery dto) throws Exception {
+        excelExportService.excelExport(ExcelReportDto.<ChargeCollectionManageQuery,ChargeCollectionManageVo>builder().title("欠费催款导出").fileName("欠费催款导出")
+                .dataList(queryChargeCollection(dto)).build(),ChargeCollectionManageVo.class);
+    }
+    /**
+     * 获取列表信息
+     * @param query
+     * @return
+     */
+    public List<ChargeCollectionManageVo> queryChargeCollection(ChargeCollectionManageQuery query){
+        //获取前一天23:59:59
+        Date date = DateTimeUtil.localDateTimeToDate(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MAX)
+                .withNano(999999000));
+        query.setDueDate(date);
+        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(query.getCustomerUserPhone())) {
+            query.setCustomerUserPhone(Sm4.encryption(query.getCustomerUserPhone()));
+        }
+        Boolean flag =true;
+        Long pageNo = 1L;
+        query.setPageSize(NumberConst.PAGE_MAX_SIZE);
+        List<ChargeCollectionManageVo> resultList = new ArrayList<>();
+        do{
+            query.setPageNo(pageNo);
+            IPage<ChargeCollectionManageVo> page = chargeManagerService.queryCollectionManagePage(query);
+            if(page.getTotal()> NumberConst.QUERY_MAX_SIZE){
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            if(CollectionUtils.isEmpty(page.getRecords())){
+                flag=false;
+            }
+            if (Objects.nonNull(page) && CollectionUtils.isNotEmpty(page.getRecords())) {
+                //手机号解密
+                page.getRecords().forEach(item -> {
+                    if (StringUtils.isNotBlank(item.getCustomerUserPhone())) {
+                        item.setCustomerUserPhone(Sm4.decrypt(item.getCustomerUserPhone()));
+                    }
+                });
+
+                List<Long> customerUserIds = page.getRecords().stream().map(ChargeCollectionManageVo::getCustomerUserId)
+                        .filter(Objects::nonNull).collect(Collectors.toList());
+
+                if (CollectionUtils.isNotEmpty(customerUserIds)) {
+                    //查询记录统计
+                    ChargeCollectionRecordStatisticsQuery statisticsQuery = new ChargeCollectionRecordStatisticsQuery();
+                    statisticsQuery.setCompanyId(query.getCompanyId());
+                    statisticsQuery.setCustomerUserIds(customerUserIds);
+                    List<ChargeCollectionRecordStatisticsDto> recordStatisticsDtoList = chargeCollectionRecordService.getStatistics(statisticsQuery);
+                    Map<Long, ChargeCollectionRecordStatisticsDto> recordStatisticsMap = recordStatisticsDtoList.stream()
+                            .collect(Collectors.toMap(ChargeCollectionRecordStatisticsDto::getCustomerUserId, e -> e));
+
+                    //设置上次催款时间、累计催款次数
+                    page.getRecords().forEach(item -> {
+                        if (recordStatisticsMap.containsKey(item.getCustomerUserId())) {
+                            ChargeCollectionRecordStatisticsDto recordStatisticsDto = recordStatisticsMap.get(item.getCustomerUserId());
+                            item.setLastNoticeTime(recordStatisticsDto.getLastNoticeTime());
+                            item.setTotalNoticeNum(recordStatisticsDto.getTotalNoticeNum());
+                        }
+                    });
+                }
+            }
+            pageNo++;
+            resultList.addAll( page.getRecords());
+        }while (flag);
+        return resultList;
+    }
+
 
     /**
      * 催款记录
@@ -169,7 +249,7 @@ public class ChargeCollectionManageService {
                         chargeMsgChannel.userBusinessMessageOutput().send(MessageBuilder.withPayload(msgDto)
                                 .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                                 .build());
-                    } else {
+                    }else {
                         log.info("==============催款管理发送系统信息失败，用户id为空==============");
                     }
                 }
@@ -216,8 +296,7 @@ public class ChargeCollectionManageService {
                     SmsBusinessMsgDto msgDto = new SmsBusinessMsgDto();
                     msgDto.setParams(Arrays.asList(item.getTotal(), item.getAmount()));
                     msgDto.setTelNumbers(phoneNumber);
-                    msgDto.setCompanyId(Long.parseLong(dtoMap.get(item.getCustomerUserId()).getOrgId()));
-                    msgDto.setTemplateId(SmsStdTemplate.CLIENT_PAST_DUE_NOTICE);
+                    msgDto.setTemplateId(ChargeMsgTemplateEnum.CUSTOMER_NOTICE_TEMPLATE.getDesc());
                     return msgDto;
                 }
             }
@@ -234,7 +313,6 @@ public class ChargeCollectionManageService {
 
     /**
      * 保存催款记录
-     *
      * @Param customerUserIds 客户ids
      * @Param companyId 公司id
      * @Param channel 消息发送类型（1：系统消息；2：短信）
@@ -271,7 +349,7 @@ public class ChargeCollectionManageService {
         List<CustomerUserRspDto> userList = apiArchiveService.lookupCustomerUsers(dto);
         if (CollectionUtils.isNotEmpty(userList)) {
             Map<Long, CustomerUserRspDto> map = userList.stream().collect(Collectors.toMap(CustomerUserRspDto::getCustomerId, e -> e));
-            records.forEach(item -> {
+            records.forEach(item ->{
                 if (map.containsKey(item.getCustomerUserId())) {
                     CustomerUserRspDto user = map.get(item.getCustomerUserId());
                     item.setUserId(user.getUserId());

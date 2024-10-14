@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.vo;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,11 +18,13 @@ public class ChargeCollectionPlanVo {
     /**
      * id
      */
+    @Excel(name = "催缴计划编码", orderNum = "0", width = 20)
     private Long id;
 
     /**
      * 计划名称
      */
+    @Excel(name = "计划名称", orderNum = "1", width = 20)
     private String name;
 
     /**
@@ -29,10 +32,16 @@ public class ChargeCollectionPlanVo {
      */
     private Byte channel;
 
+    @Excel(name = "通知渠道", orderNum = "2", width = 20)
+    private String channelName;
+
     /**
      * 发送日期类型（1:每天，2:每周，3:每月）
      */
     private Byte cronType;
+
+    @Excel(name = "生产频率", orderNum = "5", width = 20)
+    private String cornTypeName;
 
     /**
      * 执行频率-指定日期 1-31
@@ -55,6 +64,9 @@ public class ChargeCollectionPlanVo {
      * 停启用状态（0停用，1启用）
      */
     private Byte status;
+
+    @Excel(name = "状态", orderNum = "6", width = 20)
+    private String statusName;
 
     /**
      * 楼盘id列表

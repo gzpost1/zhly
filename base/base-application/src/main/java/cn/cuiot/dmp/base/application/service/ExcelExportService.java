@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * @author pengjian
  * @create 2024/9/27 9:47
@@ -56,11 +57,12 @@ public class ExcelExportService {
                 workbook);
     }
 
+
     /**
      * 导出
      */
-    public <T extends PageQuery, R> void  excelExport(ExcelDownloadDto<T> dto,Class<R> clzz ,
-            ExcelDownloadCallable<T,R> func) {
+    public <T extends PageQuery, R> void  excelExport(ExcelDownloadDto<T> dto, Class<R> clzz ,
+                                                      ExcelDownloadCallable<T,R> func) {
         AtomicLong pageNo = new AtomicLong(1);
         long pages = 0;
         try {

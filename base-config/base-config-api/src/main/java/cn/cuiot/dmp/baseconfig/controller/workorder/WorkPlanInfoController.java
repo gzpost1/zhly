@@ -54,8 +54,13 @@ public class WorkPlanInfoController {
         return workPlanInfoService.queryWordPlanInfo(dto);
     }
 
+    /**
+     * 工单计划导出(20240601)
+     * @param dto
+     * @return
+     */
     @PostMapping("exportWordPlanInfo")
-    public IdmResDTO exportWordPlanInfo(@RequestBody QueryWorkPlanInfoDto dto){
+    public IdmResDTO exportWordPlanInfo(@RequestBody QueryWorkPlanInfoDto dto) throws Exception {
         workPlanInfoService.exportWordPlanInfo(dto);
         return IdmResDTO.success();
     }

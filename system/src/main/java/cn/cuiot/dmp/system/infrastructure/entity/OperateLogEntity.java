@@ -4,6 +4,8 @@ import static cn.cuiot.dmp.common.constant.EntityConstants.BLANK_STR;
 import static cn.cuiot.dmp.common.constant.EntityConstants.NULL_STR;
 
 import java.util.Objects;
+
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 
@@ -23,6 +25,7 @@ public class OperateLogEntity {
     /**
      * 操作端 1:web端 2:小程序-管理端 3:小程序-客户端
      */
+    @Excel(name = "操作端", orderNum = "0", width = 20,replace = {"web端_1", "管理端_2", "客户端_3"})
     private String operationSource;
 
     /**
@@ -33,6 +36,7 @@ public class OperateLogEntity {
     /**
      * 请求时间
      */
+    @Excel(name = "操作时间", orderNum = "6", width = 20)
     private String requestTime;
 
     /**
@@ -48,6 +52,7 @@ public class OperateLogEntity {
     /**
      * 操作名称
      */
+    @Excel(name = "操作内容", orderNum = "2", width = 20)
     private String operationName;
 
     /**
@@ -58,17 +63,20 @@ public class OperateLogEntity {
     /**
      * 操作者名称
      */
+    @Excel(name = "操作用户", orderNum = "5", width = 20)
     private String operationByName;
 
     /**
      * 用户类型
      */
+    @Excel(name = "操作用户类型", orderNum = "4", width = 20)
     private Integer userType;
 
 
     /**
      * 操作对象信息
      */
+    @Excel(name = "操作对象", orderNum = "3", width = 20)
     private String operationTargetInfo;
 
     /**
@@ -79,6 +87,7 @@ public class OperateLogEntity {
     /**
      * 业务类型名称
      */
+    @Excel(name = "操作类型", orderNum = "1", width = 20)
     private String serviceTypeName;
 
     /**

@@ -42,6 +42,11 @@ public class ChargeCollectionPlanController {
         return IdmResDTO.success(chargeCollectionPlanService.queryForPage(dto));
     }
 
+    @PostMapping("/export")
+    public IdmResDTO export(@RequestBody ChargeCollectionPlanPageQuery dto) throws Exception {
+        chargeCollectionPlanService.export(dto);
+        return IdmResDTO.success();
+    }
     /**
      * 查询详情
      */

@@ -66,6 +66,18 @@ public class ChargeCollectionManageController {
     }
 
     /**
+     * 欠费催款导出
+     * @param query
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/export")
+    public IdmResDTO export(@RequestBody ChargeCollectionManageQuery query) throws Exception {
+        chargeCollectionManageService.export(query);
+        return IdmResDTO.success();
+    }
+
+    /**
      * 客户应收统计
      */
     @RequiresPermissions

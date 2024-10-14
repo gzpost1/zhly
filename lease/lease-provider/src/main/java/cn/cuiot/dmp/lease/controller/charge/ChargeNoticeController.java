@@ -45,6 +45,18 @@ public class ChargeNoticeController {
     }
 
     /**
+     * 通知单列表导出
+     * @param dto
+     * @return
+     */
+    @RequiresPermissions
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody ChargeNoticePageQuery dto) throws Exception {
+        chargeNoticeService.export(dto);
+        return IdmResDTO.success();
+    }
+
+    /**
      * 查询详情
      */
     @RequiresPermissions

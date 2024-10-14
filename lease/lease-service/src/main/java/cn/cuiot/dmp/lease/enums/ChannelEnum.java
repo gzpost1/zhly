@@ -1,25 +1,25 @@
 package cn.cuiot.dmp.lease.enums;
 
-
 import java.util.Objects;
 
 /**
- * 收费管理-收银台-缴费管理-作废状态 0正常 1已作废
+ * @author pengjian
+ * @create 2024/10/13 21:10
  */
-public enum ChargeAbrogateEnum {
-    NORMAL((byte) 0, "正常"),
-    ABROGATE((byte) 1, "已作废");
+public enum ChannelEnum {
+    SYSTEM_MESSAGE((byte) 1, "系统消息"),
+    SMS_MESSAGE((byte) 2, "短息");
 
     private Byte code;
     private String desc;
 
-    ChargeAbrogateEnum(Byte code, String desc) {
+    ChannelEnum(Byte code, String desc) {
         this.code = code;
         this.desc = desc;
     }
 
     public static String getDesc(Byte code){
-        for(ChargeAbrogateEnum chargeAbrogateEnum:ChargeAbrogateEnum.values()){
+        for(ChannelEnum chargeAbrogateEnum:ChannelEnum.values()){
             if(Objects.equals(code,chargeAbrogateEnum.getCode())){
                 return chargeAbrogateEnum.getDesc();
             }

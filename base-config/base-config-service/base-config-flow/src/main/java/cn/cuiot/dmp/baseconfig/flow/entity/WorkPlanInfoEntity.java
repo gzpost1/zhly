@@ -176,7 +176,7 @@ public class WorkPlanInfoEntity extends YjBaseEntity {
     @TableField(exist = false)
     private String stateName;
 
-    @Excel(name = "启用状态", orderNum = "6", width = 20)
+    @Excel(name = "计划状态", orderNum = "6", width = 20)
     @TableField(exist = false)
     private String planState;
 

@@ -49,5 +49,20 @@ public class NumberConst {
      */
     public static final Integer M_FOUR = -4;
 
+    /**
+     * 最大的分页条数
+     */
+    public static final Long PAGE_MAX_SIZE =2000L;
+
+    /**
+     * 允许查询的最大条数
+     */
+    public static final Long QUERY_MAX_SIZE = 10000L;
+
+    /**
+     * 数据状态
+     */
+    public static final Byte DATA_STATUS =0;
+
 
 }
