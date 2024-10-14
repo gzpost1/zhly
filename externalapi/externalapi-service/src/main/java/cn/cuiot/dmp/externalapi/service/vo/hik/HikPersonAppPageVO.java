@@ -30,4 +30,9 @@ public class HikPersonAppPageVO {
      * 人员所属组织名称
      */
     private String orgName;
+
+    /**
+     * 人员照片
+     */
+    private String faceData;
 }
