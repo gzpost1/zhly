@@ -193,4 +193,9 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
      * 交易单号
      */
     private String transactionNo;
+
+    /**
+     * 订单id
+     */
+    private Long orderId;
 }

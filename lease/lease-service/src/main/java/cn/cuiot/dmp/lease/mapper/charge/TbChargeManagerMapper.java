@@ -3,6 +3,7 @@ package cn.cuiot.dmp.lease.mapper.charge;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
+import cn.cuiot.dmp.lease.dto.charge.PrePayAmountAndHouseId;
 import cn.cuiot.dmp.lease.vo.ChargeCollectionManageVo;
 import cn.cuiot.dmp.lease.vo.ChargeManagerCustomerStatisticsVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -58,7 +59,7 @@ public interface TbChargeManagerMapper extends BaseMapper<TbChargeManager> {
 
     int updateChargePayStatusToCancel(@Param("chargeIds") List<Long> chargeIds);
 
-    Integer queryNeedToPayAmount(Long chargeId);
+    PrePayAmountAndHouseId queryNeedToPayAmount(Long chargeId);
 
     int updateChargePayStatusToPaySuccessBYPrePay(@Param("chargeId") Long chargeId, @Param("needToPayAmount") Integer needToPayAmount);
 }

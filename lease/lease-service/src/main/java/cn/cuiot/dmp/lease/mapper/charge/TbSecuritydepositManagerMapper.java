@@ -28,8 +28,8 @@ public interface TbSecuritydepositManagerMapper extends BaseMapper<TbSecuritydep
 
     IPage<Chargeovertimeorderdto> queryNeedPayPage(Page<Chargeovertimeorderdto> page);
 
-    Integer queryNeedToPayAmount(Long chargeId);
+    PrePayAmountAndHouseId queryNeedToPayAmount(Long chargeId);
 
-    int updateChargePayStatusToPaySuccessBYPrePay(@Param("chargeId") Long chargeId, @Param("needToPayAmount") Integer needToPayAmount);
+    int updateChargePayStatusToPaySuccessBYPrePay(@Param("chargeId") Long chargeId, @Param("needToPayAmount") Integer needToPayAmount,@Param("orderId") Long orderId);
 
 }

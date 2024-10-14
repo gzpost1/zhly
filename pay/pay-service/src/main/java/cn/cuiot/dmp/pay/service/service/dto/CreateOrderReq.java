@@ -73,6 +73,11 @@ public class CreateOrderReq implements Serializable {
      */
     private String tradeType;
 
+    /**
+     * 支付方式：
+     01:工银e支付 02:微信支付 03:支付宝 04:预付卡 05:转账 06:二维码主扫支付 07:POS支付 08:e支 付有协议小额免密 09:微信线下支付 10:会员卡小额免密 11:支付宝线下支付 12:二维码被扫支付 15:全额优惠 16:融 资支付 17:云闪付 99:其他
+     */
+    private String payMethod;
 
     /**
      * 用户openId（小程序、公众号支付必填）

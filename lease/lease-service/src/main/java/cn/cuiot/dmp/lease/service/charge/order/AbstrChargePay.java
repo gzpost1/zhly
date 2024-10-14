@@ -1,9 +1,7 @@
 package cn.cuiot.dmp.lease.service.charge.order;
 
 import cn.cuiot.dmp.common.utils.AssertUtil;
-import cn.cuiot.dmp.lease.dto.charge.ChargeOrderPaySuccInsertDto;
-import cn.cuiot.dmp.lease.dto.charge.ChargePayToWechatDetailDto;
-import cn.cuiot.dmp.lease.dto.charge.Chargeovertimeorderdto;
+import cn.cuiot.dmp.lease.dto.charge.*;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
@@ -72,9 +70,9 @@ public abstract class AbstrChargePay {
 
     public abstract IPage<Chargeovertimeorderdto> queryNeedPayPage(Page<Chargeovertimeorderdto> objectPage);
 
-    public abstract Integer queryNeedToPayAmount(Long chargeId);
+    public abstract PrePayAmountAndHouseId queryNeedToPayAmount(Long chargeId);
 
-    public abstract int updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long createUserId);
+    public abstract UpdateChargePayStatusToPaySuccessBYPrePayDto updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long createUserId, Long orderId);
 
     public abstract List<Long> getCompanyIdByChargeIds(List<Long> chargeIds);
 }

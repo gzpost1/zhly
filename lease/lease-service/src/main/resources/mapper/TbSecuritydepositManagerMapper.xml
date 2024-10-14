@@ -184,8 +184,8 @@
         and pay_status = 0
     </select>
 
-  <select id="queryNeedToPayAmount" resultType="java.lang.Integer">
-      select receivable_amount from tb_securitydeposit_manager
+  <select id="queryNeedToPayAmount" resultType="cn.cuiot.dmp.lease.dto.charge.PrePayAmountAndHouseId">
+      select receivable_amount as amount,house_id as houseId from tb_securitydeposit_manager
       where id = #{dto.id}
       and status = 0
       and pay_status != 0
@@ -198,6 +198,7 @@
       pay_status = 3,
       last_pay_time = now(),
       transaction_mode = 1,
+      order_id = #{orderId},
       payment_mode = 0,
       receivable_amount_received = receivable_amount,
       status = 1
