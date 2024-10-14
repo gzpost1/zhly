@@ -4,6 +4,7 @@ package cn.cuiot.dmp.externalapi.provider.controller.admin.yfwaterelectricity;
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.application.utils.ExcelUtil;
 import cn.cuiot.dmp.base.application.utils.ExcelUtils;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
@@ -15,7 +16,6 @@ import cn.cuiot.dmp.common.validator.ValidGroup;
 import cn.cuiot.dmp.externalapi.service.query.yfwaterelectricity.YfWaterMeterDTO;
 import cn.cuiot.dmp.externalapi.service.service.yfwaterelectricity.IYfWaterMeterService;
 import cn.cuiot.dmp.externalapi.service.sync.yfwaterelectricity.YFWaterElectricityDeviceDataSyncService;
-import cn.cuiot.dmp.externalapi.service.vo.watermeter.YfElectricityMeterStatisticsVO;
 import cn.cuiot.dmp.externalapi.service.vo.watermeter.YfWaterMeterStatisticsVO;
 import cn.cuiot.dmp.externalapi.service.vo.yfwaterelectricity.YfWaterMeterVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -141,7 +141,7 @@ public class YfWaterMeterController extends BaseController {
 
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
 
-        ExcelUtils.downLoadExcel(
+        ExcelUtil.downLoadExcel(
                 "电表设备导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss") + ")",
                 response,
                 workbook);
@@ -181,7 +181,7 @@ public class YfWaterMeterController extends BaseController {
 
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
 
-        ExcelUtils.downLoadExcel(
+        ExcelUtil.downLoadExcel(
                 "水表用量导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss") + ")",
                 response,
                 workbook);
