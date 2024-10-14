@@ -173,7 +173,7 @@ public class HaikangAcsReaderEntity implements Serializable {
 
 
     /**
-     * 指纹容量
+     * 人脸容量
      */
     private Integer acsReaderFaceCapacity;
 

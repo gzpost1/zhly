@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.converter.hik;
 
 import cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsReaderEntity;
+import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsReaderExportVo;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsReaderVo;
 import java.util.List;
 import org.mapstruct.Mapper;
@@ -21,4 +22,6 @@ public interface HaikangAcsReaderConverter {
     @Mappings({})
     List<HaikangAcsReaderVo> entityListToVoList(List<HaikangAcsReaderEntity> entityList);
 
+    @Mappings({})
+    HaikangAcsReaderExportVo entityToExportVo(HaikangAcsReaderEntity entity);
 }

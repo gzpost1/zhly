@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.converter.hik;
 
 import cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsDoorEntity;
+import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorExportVo;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo;
 import java.util.List;
 import org.mapstruct.Mapper;
@@ -21,4 +22,6 @@ public interface HaikangAcsDoorConverter {
     @Mappings({})
     List<HaikangAcsDoorVo> entityListToVoList(List<HaikangAcsDoorEntity> entityList);
 
+    @Mappings({})
+    HaikangAcsDoorExportVo entityToExportVo(HaikangAcsDoorEntity entity);
 }

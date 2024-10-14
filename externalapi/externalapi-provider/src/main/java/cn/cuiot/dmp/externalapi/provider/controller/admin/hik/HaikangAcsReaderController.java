@@ -7,9 +7,11 @@ import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.externalapi.service.converter.hik.HaikangAcsReaderConverter;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsReaderQuery;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsReaderService;
 import cn.cuiot.dmp.externalapi.service.sync.hik.HaikangAcsDataManualSyncService;
+import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsReaderExportVo;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsReaderVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.Date;
@@ -41,6 +43,10 @@ public class HaikangAcsReaderController {
 
     @Autowired
     private ExcelExportService excelExportService;
+
+    @Autowired
+    private HaikangAcsReaderConverter haikangAcsReaderConverter;
+
 
     /**
      * 分页查询
@@ -93,14 +99,18 @@ public class HaikangAcsReaderController {
                 .fileName("读卡器导出（" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + "）")
                 .build();
 
-        excelExportService.excelExport(dto, HaikangAcsReaderVo.class,
-                new ExcelDownloadCallable<HaikangAcsReaderQuery, HaikangAcsReaderVo>() {
+        excelExportService.excelExport(dto, HaikangAcsReaderExportVo.class,
+                new ExcelDownloadCallable<HaikangAcsReaderQuery, HaikangAcsReaderExportVo>() {
                     @Override
-                    public IPage<HaikangAcsReaderVo> excute(
+                    public IPage<HaikangAcsReaderExportVo> excute(
                             ExcelDownloadDto<HaikangAcsReaderQuery> dto) {
                         IPage<HaikangAcsReaderVo> page = haikangAcsReaderService.queryForPage(
                                 query);
-                        return page;
+                        return page.convert(item -> {
+                            HaikangAcsReaderExportVo exportVo = haikangAcsReaderConverter.entityToExportVo(
+                                    item);
+                            return exportVo;
+                        });
                     }
                 });
 

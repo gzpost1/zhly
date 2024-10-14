@@ -18,6 +18,7 @@ import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorQuery;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorStateQuery;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsDoorService;
 import cn.cuiot.dmp.externalapi.service.sync.hik.HaikangAcsDataManualSyncService;
+import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorExportVo;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.Date;
@@ -138,15 +139,19 @@ public class HaikangAcsDoorController {
                 .fileName("门禁点导出（" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + "）")
                 .build();
 
-        excelExportService.excelExport(dto, HaikangAcsDoorVo.class,
-                new ExcelDownloadCallable<HaikangAcsDoorQuery, HaikangAcsDoorVo>() {
+        excelExportService.excelExport(dto, HaikangAcsDoorExportVo.class,
+                new ExcelDownloadCallable<HaikangAcsDoorQuery, HaikangAcsDoorExportVo>() {
                     @Override
-                    public IPage<HaikangAcsDoorVo> excute(
+                    public IPage<HaikangAcsDoorExportVo> excute(
                             ExcelDownloadDto<HaikangAcsDoorQuery> dto) {
 
                         IPage<HaikangAcsDoorVo> page = haikangAcsDoorService.queryForPage(query);
 
-                        return page;
+                        return page.convert(item->{
+                            HaikangAcsDoorExportVo exportVo = haikangAcsDoorConverter.entityToExportVo(
+                                    item);
+                            return exportVo;
+                        });
                     }
                 });
 
