@@ -91,6 +91,17 @@ public class LoginController extends BaseController {
     private static final String TRUE_WORD = "true";
 
     /**
+     * 密码登录
+     */
+    public final static Byte PASSWORD_LOGIN = 1;
+
+    /**
+     * 验证码登录
+     */
+    private final static Byte VERIFICATION_CODE_LOGIN = 2;
+
+
+    /**
      * 登录
      */
     @LogRecord(operationCode = "session", operationName = "登录系统", serviceType = "login", serviceTypeName = "登录")
@@ -106,7 +117,7 @@ public class LoginController extends BaseController {
             throw new BusinessException(ResultCode.PHONE_NUMBER_IS_NOT_VALID, "请输入11位手机号码");
         }
         // 密码参数校验
-        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getPassword())) {
+        if (PASSWORD_LOGIN.equals(loginReqDTO.getLoginType()) && (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getPassword()))) {
             throw new BusinessException(ResultCode.PASSWORD_IS_EMPTY, "请输入密码");
         }
         //临时Aes密钥ID参数校验
@@ -126,7 +137,7 @@ public class LoginController extends BaseController {
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY, "请输入验证码");
         }
         //图形验证码校验
-        if (!verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid(),true)) {
+        if (!verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid(), true)) {
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_ERROR, "验证码错误");
         }
 
@@ -139,8 +150,10 @@ public class LoginController extends BaseController {
             throw new BusinessException(ResultCode.KID_EXPIRED_ERROR, "密钥ID已过期，请重新获取");
         }
         Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
-        // 密码解密
-        loginReqDTO.setPassword(aes.getDecodeValue(loginReqDTO.getPassword()));
+        if (PASSWORD_LOGIN.equals(loginReqDTO.getLoginType())) {
+            // 密码解密
+            loginReqDTO.setPassword(aes.getDecodeValue(loginReqDTO.getPassword()));
+        }
         // 账号密码校验
         User validateUser = loginService.authDmp(loginReqDTO);
         //设置小程序openid
@@ -148,7 +161,7 @@ public class LoginController extends BaseController {
             validateUser.setOpenid(loginReqDTO.getOpenid());
         }
         // 短信验证码验证
-        if (TRUE_WORD.equals(smsWord)) {
+        if (VERIFICATION_CODE_LOGIN.equals(loginReqDTO.getLoginType())) {
             List<String> userNameList = Arrays.asList(sidPassUserNameList.split(","));
             if (!userNameList.contains(loginReqDTO.getUserAccount())) {
                 // 手机号验证码参数校验
@@ -211,51 +224,40 @@ public class LoginController extends BaseController {
             // 图形验证码sid为空
             throw new BusinessException(ResultCode.ACCESS_ERROR);
         }
-        if (!TRUE_WORD.equals(smsWord)) {
-            throw new BusinessException(ResultCode.ERROR, "未开启短信验证码功能");
+        // 加密后的用户名或邮箱或者手机号
+        String safeAccount = Sm4.encryption(smsReqDTO.getUserAccount());
+        String jsonObject = stringRedisTemplate.opsForValue().get(SECRET_INFO_KEY + smsReqDTO.getKid());
+        if (StringUtils.isEmpty(jsonObject)) {
+            throw new BusinessException(ResultCode.SMS_CODE_EXPIRED_ERROR);
         }
-
-        // 图形验证码校验
-        boolean kaptchaVerified = verifyUnit.checkKaptchaText(smsReqDTO.getKaptchaText(), smsReqDTO.getSid(),false);;
-
-        if (kaptchaVerified) {
-            // 加密后的用户名或邮箱或者手机号
-            String safeAccount = Sm4.encryption(smsReqDTO.getUserAccount());
-            String jsonObject = stringRedisTemplate.opsForValue().get(SECRET_INFO_KEY + smsReqDTO.getKid());
-            if (StringUtils.isEmpty(jsonObject)) {
-                throw new BusinessException(ResultCode.SMS_CODE_EXPIRED_ERROR);
-            }
-            Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
-            // 查询用户信息
-            UserDTO userDataEntity = userService.getOneUser(smsReqDTO.getUserAccount(), safeAccount, aes.getDecodeValue(smsReqDTO.getPassword()));
-            Assert.isTrue(Objects.nonNull(userDataEntity), () -> new BusinessException(ResultCode.USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR));
-            if (StringUtils.isEmpty(userDataEntity.getPhoneNumber())) {
-                throw new BusinessException(ResultCode.PHONE_NUMBER_IS_EMPTY);
-            } else {
-                //手机号解密
-                String phoneNumber = Sm4.decrypt(userDataEntity.getPhoneNumber());
-                // 设置redis缓存，key为日期加手机号，value为这个手机号每天发送登录验证码的次数
-                String key = CacheConst.LOGIN_SMS_CODE_ONE_DAY_PHONE_NUMBER + LocalDate.now() + ":" + phoneNumber;
-                long smsCount = redisUtil.incr(key, Const.NUMBER_1);
-                if (smsCount > smsCodeNumber) {
-                    throw new BusinessException(ResultCode.SMS_COUNT_EXCEEDS_LIMIT);
-                }
-                redisUtil.expire(key, Const.ONE_DAY_SECOND);
-                SimpleStringResDTO simpleStringResDTO;
-                Long orgId = userService.getUserOrg(userDataEntity.getId());
-                if (Objects.isNull(orgId)) {
-                    throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
-                }
-                try {
-                    simpleStringResDTO = verifyService.sendSmsCodeWithoutKaptcha(phoneNumber, userDataEntity.getId().toString());
-                } catch (Exception e) {
-                    redisUtil.decr(key, Const.NUMBER_1);
-                    throw e;
-                }
-                return simpleStringResDTO;
-            }
+        Aes aes = JSONObject.parseObject(jsonObject, Aes.class);
+        // 查询用户信息
+        UserDTO userDataEntity = userService.getOneUser(smsReqDTO.getUserAccount(), safeAccount);
+        Assert.isTrue(Objects.nonNull(userDataEntity), () -> new BusinessException(ResultCode.USER_ACCOUNT_OR_PASSWORD_ERROR_OR_CODE_ERROR));
+        if (StringUtils.isEmpty(userDataEntity.getPhoneNumber())) {
+            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_EMPTY);
         } else {
-            throw new BusinessException(ResultCode.KAPTCHA_TEXT_ERROR);
+            //手机号解密
+            String phoneNumber = Sm4.decrypt(userDataEntity.getPhoneNumber());
+            // 设置redis缓存，key为日期加手机号，value为这个手机号每天发送登录验证码的次数
+            String key = CacheConst.LOGIN_SMS_CODE_ONE_DAY_PHONE_NUMBER + LocalDate.now() + ":" + phoneNumber;
+            long smsCount = redisUtil.incr(key, Const.NUMBER_1);
+            if (smsCount > smsCodeNumber) {
+                throw new BusinessException(ResultCode.SMS_COUNT_EXCEEDS_LIMIT);
+            }
+            redisUtil.expire(key, Const.ONE_DAY_SECOND);
+            SimpleStringResDTO simpleStringResDTO;
+            Long orgId = userService.getUserOrg(userDataEntity.getId());
+            if (Objects.isNull(orgId)) {
+                throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
+            }
+            try {
+                simpleStringResDTO = verifyService.sendSmsCodeWithoutKaptcha(phoneNumber, userDataEntity.getId().toString());
+            } catch (Exception e) {
+                redisUtil.decr(key, Const.NUMBER_1);
+                throw e;
+            }
+            return simpleStringResDTO;
         }
     }
 }

@@ -1,35 +1,35 @@
 package cn.cuiot.dmp.system.application.service;
 
-import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
-import static cn.cuiot.dmp.common.constant.ResultCode.PASSWORD_IS_INVALID;
-import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_EXIST;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_TEXT_OLD_INVALID;
-import static cn.cuiot.dmp.common.constant.ResultCode.USER_ACCOUNT_NOT_EXIST;
-
 import cn.cuiot.dmp.common.constant.RegexConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.ValidateUtil;
 import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.Password;
+import cn.cuiot.dmp.domain.types.PhoneNumber;
 import cn.cuiot.dmp.system.application.param.dto.auth.ChangePhoneDto;
 import cn.cuiot.dmp.system.application.param.dto.auth.PwdChangeDto;
 import cn.cuiot.dmp.system.application.param.dto.auth.SampleUserInfoDto;
 import cn.cuiot.dmp.system.application.param.dto.auth.SmsCodeCheckResDto;
+import cn.cuiot.dmp.system.domain.entity.User;
+import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntity;
 import cn.cuiot.dmp.system.infrastructure.persistence.mapper.UserEntityMapper;
 import cn.cuiot.dmp.util.Sm4;
 import cn.hutool.core.util.PhoneUtil;
 import com.alibaba.fastjson.JSONObject;
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.Optional;
+
+import static cn.cuiot.dmp.common.constant.CacheConst.SECRET_INFO_KEY;
+import static cn.cuiot.dmp.common.constant.ResultCode.*;
 
 /**
  * @author: wuyongchong
@@ -47,6 +47,8 @@ public class AuthService {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * 设置用户头像与昵称
@@ -106,8 +108,8 @@ public class AuthService {
             throw new BusinessException(SMS_TEXT_ERROR);
         }
         UserEntity existUser = getUserByPhoneAndUserType(dto.getPhoneNumber(), userEntity.getUserType());
-        if(Objects.nonNull(existUser)){
-            if(!userEntity.getId().equals(existUser.getId())){
+        if (Objects.nonNull(existUser)) {
+            if (!userEntity.getId().equals(existUser.getId())) {
                 throw new BusinessException(PHONE_NUMBER_EXIST);
             }
         }
@@ -146,6 +148,13 @@ public class AuthService {
         if (StringUtils.isBlank(dto.getSmsCode())) {
             throw new BusinessException(ResultCode.SMS_TEXT_IS_EMPTY, "请输入验证码");
         }
+        if (Objects.isNull(dto.getUserId())) {
+            User user = userRepository.queryUserForLogin(null, new PhoneNumber(dto.getPhoneNumber()));
+            if (user == null) {
+                throw new BusinessException(ResultCode.USER_ID_NOT_EXIST);
+            }
+            dto.setUserId(user.getId().getValue());
+        }
         /**
          * 获取AES密钥信息
          */
@@ -162,7 +171,7 @@ public class AuthService {
         // 判断密码不符合规则
         if (!password.matches(RegexConst.PASSWORD_REGEX) || ValidateUtil.checkRepeat(password)
                 || ValidateUtil.checkBoardContinuousChar(password)) {
-            throw new BusinessException(PASSWORD_IS_INVALID,"请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
+            throw new BusinessException(PASSWORD_IS_INVALID, "请设置8-20位字符，含数字、特殊字符（!@#$%^&*.?）、大小写字母的密码，且不能连续3位以上");
         }
 
         SmsCodeCheckResDto res = verifyService

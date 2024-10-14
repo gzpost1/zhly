@@ -208,7 +208,7 @@ public class VerifyServiceImpl implements VerifyService {
             throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
         }
         // 发送短信
-        boolean sendSucceed = verifyUnit.sendSmsCode(String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber, orgId);
+        boolean sendSucceed = verifyUnit.sendSmsCode(smsCode, phoneNumber, orgId);
         // 发送成功
         if (sendSucceed) {
             // 存入redis并设置过期时间
@@ -274,12 +274,22 @@ public class VerifyServiceImpl implements VerifyService {
         // 生成短信验证码
         String smsCode = RandomStringUtils.random(SendMessageConst.SMS_CODE_LENGTH, false, true);
         log.warn("sendPhoneSmsCode===smsCode:{}", smsCode);
-        Long orgId = userDao.getOrgId(userId);
+        Long orgId = null;
+        if (userId == null) {
+            User user = userRepository.queryUserForLogin(null, new PhoneNumber(phoneNumber));
+            if (user == null) {
+                throw new BusinessException(ResultCode.USER_ID_NOT_EXIST);
+            }
+            userId = user.getId().getValue();
+            orgId = userDao.getOrgId(user.getId().getValue());
+        } else {
+            orgId = userDao.getOrgId(userId);
+        }
         if (Objects.isNull(orgId)) {
             throw new BusinessException(ResultCode.ORG_ID_NOT_EXIST);
         }
         // 发送短信
-        boolean sendSucceed = verifyUnit.sendSmsCode(String.format(SendMessageConst.SEND_MESSAGE_TEMPLATE, smsCode), phoneNumber, orgId);
+        boolean sendSucceed = verifyUnit.sendSmsCode(smsCode, phoneNumber, orgId);
         // 发送成功
         if (sendSucceed) {
             // 存入redis并设置过期时间
@@ -303,6 +313,13 @@ public class VerifyServiceImpl implements VerifyService {
      */
     @Override
     public SmsCodeCheckResDto checkPhoneSmsCode(String phoneNumber, Long userId, String smsCode, Boolean needDeleteCache) {
+        if (Objects.isNull(userId)) {
+            User user = userRepository.queryUserForLogin(null, new PhoneNumber(phoneNumber));
+            if (user == null) {
+                throw new BusinessException(ResultCode.USER_ID_NOT_EXIST);
+            }
+            userId = user.getId().getValue();
+        }
         // 获取redis中的短信验证码文本
         String expectedText = stringRedisTemplate.opsForValue()
                 .get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);

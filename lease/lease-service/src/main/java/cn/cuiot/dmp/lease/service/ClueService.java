@@ -220,7 +220,7 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
                 .setMessageTime(new Date()).setMsgType(MsgTypeConstant.CLUE)
                 .setUserType(UserTypeEnum.USER.getValue());
         SmsMsgDto smsMsgDto = new SmsMsgDto();
-        smsMsgDto.setUserIds(Lists.newArrayList(distributeDTO.getCurrentFollowerId())).setParams(Collections.singletonList(clueEntity.getName()))
+        smsMsgDto.setUserIds(Lists.newArrayList(distributeDTO.getCurrentFollowerId())).setParams(Arrays.asList(LoginInfoHolder.getCurrentName(), clueEntity.getName()))
                 .setTemplateId(SmsStdTemplate.MANAGE_CLUE);
         userMessageAcceptDto.setSysMsgDto(sysMsgDto).setSmsMsgDto(smsMsgDto);
         msgChannel.userMessageOutput().send(MessageBuilder.withPayload(userMessageAcceptDto)

@@ -52,7 +52,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static com.google.common.collect.Maps.*;
+import static com.google.common.collect.Maps.newHashMap;
 
 
 /**
@@ -205,7 +205,7 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
         BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
         baseUserReqDto.setUserIdList(userIds);
         List<BaseUserDto> baseUserDtoList = systemToFlowService.lookUpUserList(baseUserReqDto);
-        return baseUserDtoList.stream().collect(Collectors.toMap(BaseUserDto::getId, e -> e));
+        return baseUserDtoList.stream().collect(Collectors.toMap(BaseUserDto::getId, e -> e,(o1,o2)->o1));
     }
 
     /**
@@ -311,7 +311,7 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
     public void sengMsg(ChargeNoticeSendQuery query) {
         ChargeNoticeEntity noticeEntity = getOptById(query.getId())
                 .orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST, "数据不存在"));
-        AssertUtil.isFalse(Objects.equals(noticeEntity.getStatus(),EntityConstants.DISABLED),"数据已停用");
+        AssertUtil.isFalse(Objects.equals(noticeEntity.getStatus(), EntityConstants.DISABLED), "数据已停用");
 
         query.setCompanyId(noticeEntity.getCompanyId());
         query.setOwnershipPeriodBegin(noticeEntity.getOwnershipPeriodBegin());
@@ -338,7 +338,7 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
                 List<CommonOptionSettingRspDTO> commonOptionSettingRspDtos = systemToFlowService.batchQueryCommonOptionSetting(dto);
                 Map<Long, CommonOptionSettingRspDTO> map = commonOptionSettingRspDtos.stream().collect(Collectors.toMap(CommonOptionSettingRspDTO::getId, e -> e));
 
-                records.forEach(item ->{
+                records.forEach(item -> {
                     //设置项目名称
                     item.setChargeItemName(map.containsKey(item.getChargeItemId()) ? map.get(item.getChargeItemId()).getName() : "");
                     //设置所属账期-开始时间
@@ -352,6 +352,8 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
 
                 //判断消息类型
                 if (Objects.equals(query.getMsgType(), InformTypeConstant.SMS)) {
+                    //绑定用户id
+                    bindUserId(records);
                     List<SmsBusinessMsgDto> msgDto = constructorSmsBusinessMsgDto(records);
                     if (CollectionUtils.isNotEmpty(msgDto)) {
                         log.info("==============客户账单通知单发送短信==============");
@@ -373,7 +375,7 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
                         chargeMsgChannel.userBusinessMessageOutput().send(MessageBuilder.withPayload(msgDto)
                                 .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
                                 .build());
-                    }else {
+                    } else {
                         log.info("==============客户账单通知单发送系统信息失败，用户id为空==============");
                     }
                 }
@@ -408,22 +410,26 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
      * 构造短信消息
      */
     private List<SmsBusinessMsgDto> constructorSmsBusinessMsgDto(List<ChargeNoticeSendDto> list) {
-        List<Long> userIds = list.stream().map(ChargeNoticeSendDto::getCustomerUserId)
+        log.info("constructorSmsBusinessMsgDto--list:{}",list);
+        List<Long> userIds = list.stream().map(ChargeNoticeSendDto::getUserId)
                 .filter(Objects::nonNull).distinct().collect(Collectors.toList());
         Map<Long, BaseUserDto> dtoMap = getSystemUserMap(userIds);
-
         return list.stream().map(item -> {
-            if (dtoMap.containsKey(item.getCustomerUserId())) {
-                String phoneNumber = dtoMap.get(item.getCustomerUserId()).getPhoneNumber();
+            if (dtoMap.containsKey(item.getUserId())) {
+                String phoneNumber = dtoMap.get(item.getUserId()).getPhoneNumber();
                 if (StringUtils.isNotBlank(phoneNumber)) {
                     SmsBusinessMsgDto msgDto = new SmsBusinessMsgDto();
                     String date = dateFormat(item.getOwnershipPeriodBegin()) + "-" + dateFormat(item.getOwnershipPeriodEnd());
                     msgDto.setParams(Arrays.asList(date, item.getChargeItemName()));
                     msgDto.setTelNumbers(phoneNumber);
-                    msgDto.setCompanyId(Long.parseLong(dtoMap.get(item.getCustomerUserId()).getOrgId()));
+                    msgDto.setCompanyId(Long.parseLong(dtoMap.get(item.getUserId()).getOrgId()));
                     msgDto.setTemplateId(SmsStdTemplate.CLIENT_CHARGE_BILL);
                     return msgDto;
+                }else {
+                    log.info("没手机号不发送短信,userId:{}", item.getUserId());
                 }
+            }else {
+                log.info("没用户不发送短信,userId:{}", item.getUserId());
             }
             return null;
         }).filter(Objects::nonNull).collect(Collectors.toList());
@@ -454,8 +460,8 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
         dto.setCustomerIdList(customerUserIds);
         List<CustomerUserRspDto> userList = apiArchiveService.lookupCustomerUsers(dto);
         if (CollectionUtils.isNotEmpty(userList)) {
-            Map<Long, CustomerUserRspDto> map = userList.stream().collect(Collectors.toMap(CustomerUserRspDto::getCustomerId, e -> e));
-            records.forEach(item ->{
+            Map<Long, CustomerUserRspDto> map = userList.stream().collect(Collectors.toMap(CustomerUserRspDto::getCustomerId, e -> e,(o1,o2)->o1));
+            records.forEach(item -> {
                 if (map.containsKey(item.getCustomerUserId())) {
                     CustomerUserRspDto user = map.get(item.getCustomerUserId());
                     item.setUserId(user.getUserId());
