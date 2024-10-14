@@ -67,6 +67,6 @@ public class BalanceEventAggregate implements Serializable {
     /**
      * 数据类型 0账单 1押金
      */
-    private Byte dateType;
+    private Byte dataType;
 
 }

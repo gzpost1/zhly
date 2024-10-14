@@ -5,16 +5,13 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.pay.service.service.enums.PayChannelEnum;
 import cn.cuiot.dmp.pay.service.service.enums.TradeChannelEnum;
-import com.chinaunicom.yunjingtech.httpclient.bean.pay.SettleInfoEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -136,7 +133,7 @@ public class CreateOrderReq implements Serializable {
     /**
      * 数据类型 0账单 1押金
      */
-    private Byte dateType;
+    private Byte dataType;
 
     /**
      * 支付校验
@@ -154,7 +151,7 @@ public class CreateOrderReq implements Serializable {
         }
 
         if (PayChannelEnum.BALANCE.getPayChannel().equals(this.getPayChannel())) {
-            AssertUtil.isFalse(Objects.isNull(this.dateType), "余额支付情况下，dateType必传");
+            AssertUtil.isFalse(Objects.isNull(this.dataType), "余额支付情况下，dataType必传");
         }
     }
 

@@ -34,8 +34,8 @@
     <result column="cron_appoint_week" property="cronAppointWeek"/>
     <result column="cron_time" property="cronTime"/>
     <result column="status" property="status"/>
-    <result column="buildings" property="buildings"/>
-    <result column="charge_items" property="chargeItems"/>
+    <result column="buildings" property="buildings" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+    <result column="charge_items" property="chargeItems" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
   </resultMap>
   <select id="queryForPage" parameterType="cn.cuiot.dmp.lease.dto.charge.ChargeCollectionPlanPageQuery"
           resultMap="ChargeCollectionPlanPageVoResultMap">

@@ -98,7 +98,7 @@ public class CreateOrderParam implements Serializable {
     /**
      * 数据类型 0账单 1押金
      */
-    private Byte dateType;
+    private Byte dataType;
 
     public static CreateOrderParam initDate(CreateOrderReq param){
         CreateOrderParam createOrderParam = CreateOrderParam.builder()
@@ -116,7 +116,7 @@ public class CreateOrderParam implements Serializable {
                 .productName(param.getProductName())
                 .houseId(param.getHouseId())
                 .businessType(param.getBusinessType())
-                .dateType(param.getDateType())
+                .dataType(param.getDataType())
                 .build();
         return createOrderParam;
     }
