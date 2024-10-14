@@ -50,7 +50,7 @@ public class ClientUserController {
      * @throws Exception
      */
     @PostMapping("export")
-    public IdmResDTO export(@RequestBody @Valid ClientUserQuery pageQuery) throws Exception {
+    public IdmResDTO export(@RequestBody @Valid ClientUserQuery pageQuery) {
         clientUserService.export(pageQuery);
         return IdmResDTO.success();
     }

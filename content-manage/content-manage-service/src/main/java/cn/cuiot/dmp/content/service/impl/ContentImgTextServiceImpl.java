@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.content.service.impl;//	模板
 
 
-import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
@@ -14,9 +14,8 @@ import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
 import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetData;
 import cn.cuiot.dmp.base.infrastructure.syslog.OptTargetInfo;
 import cn.cuiot.dmp.common.constant.EntityConstants;
-import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.AuditConfigTypeEnum;
-import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.content.constant.ContentConstants;
 import cn.cuiot.dmp.content.conver.ImgTextConvert;
@@ -185,32 +184,10 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
     }
 
     @Override
-    public void export(ContentImgTextPageQuery pageQuery) throws Exception {
-        IPage<ImgTextVo> pageResult = new Page<>();
-        Long pageNo = 1L;
-        pageQuery.setPageSize(2000L);
-        List<ImgTextExportVo> exportDataList = new ArrayList<>();
-        do {
-            pageQuery.setPageNo(pageNo++);
-            pageResult = this.queryForPage(pageQuery);
-            if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
-                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-            }
-            List<Long> typeIds = pageResult.getRecords().stream().map(ImgTextVo::getId).collect(Collectors.toList());
-            List<ImgTextType> imgTextTypes = imgTextTypeService.queryByIds(typeIds);
-            HashMap<Long, ImgTextType> imgTextTypeMap = imgTextTypes.stream().collect(Collectors.toMap(ImgTextType::getId, imgTextType -> imgTextType, (k1, k2) -> k1, HashMap::new));
-            pageResult.getRecords().forEach(o -> {
-                ImgTextExportVo exportVo = new ImgTextExportVo();
-                BeanUtil.copyProperties(o, exportVo);
-                if (imgTextTypeMap.containsKey(o.getTypeId())) {
-                    exportVo.setTypeName(imgTextTypeMap.get(o.getTypeId()).getName());
-                }
-                exportDataList.add(exportVo);
-            });
-
-        } while (CollUtil.isNotEmpty(pageResult.getRecords()));
-        excelExportService.excelExport(ExcelReportDto.<ContentImgTextPageQuery, ImgTextExportVo>builder().title("图文列表").fileName("图文导出").SheetName("图文列表")
-                .dataList(exportDataList).build(), ImgTextExportVo.class);
+    public void export(ContentImgTextPageQuery pageQuery) {
+        ExcelDownloadDto<ContentImgTextPageQuery> excelDownloadDto = ExcelDownloadDto.<ContentImgTextPageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery).title("图文列表")
+                .fileName("图文导出" + "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("图文列表").build();
+        excelExportService.excelExport(excelDownloadDto, ImgTextExportVo.class, this::executePageQuery);
     }
 
     @Override
@@ -237,5 +214,20 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
                 pageQuery.setBuildings(archiveConverService.lookupBuildingArchiveByDepartmentList(reqDto));
             }
         }
+    }
+
+    public IPage<ImgTextExportVo> executePageQuery(ExcelDownloadDto<ContentImgTextPageQuery> dto) {
+        IPage<ImgTextVo> pageResult = this.queryForPage(dto.getQuery());
+        List<Long> typeIds = pageResult.getRecords().stream().map(ImgTextVo::getId).collect(Collectors.toList());
+        List<ImgTextType> imgTextTypes = imgTextTypeService.queryByIds(typeIds);
+        HashMap<Long, ImgTextType> imgTextTypeMap = imgTextTypes.stream().collect(Collectors.toMap(ImgTextType::getId, imgTextType -> imgTextType, (k1, k2) -> k1, HashMap::new));
+        return pageResult.convert(o -> {
+            ImgTextExportVo exportVo = new ImgTextExportVo();
+            BeanUtil.copyProperties(o, exportVo);
+            if (imgTextTypeMap.containsKey(o.getTypeId())) {
+                exportVo.setTypeName(imgTextTypeMap.get(o.getTypeId()).getName());
+            }
+            return exportVo;
+        });
     }
 }

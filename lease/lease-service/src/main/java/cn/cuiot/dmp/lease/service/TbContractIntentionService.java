@@ -1,29 +1,31 @@
 package cn.cuiot.dmp.lease.service;
 
-import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
-import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.contract.TbContractIntentionParam;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractIntentionMapper;
 import cn.cuiot.dmp.lease.vo.export.ContractIntentionExportVo;
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -143,28 +145,26 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     }
 
     public void export(TbContractIntentionParam param) throws Exception {
+        excelExportService.excelExport(ExcelDownloadDto.<TbContractIntentionParam>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(param)
+                .title("意向合同列表").fileName("意向合同导出" + "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("意向合同列表")
+                .build(), ContractIntentionExportVo.class, this::executePageQuery);
+    }
+
+    private IPage<ContractIntentionExportVo> executePageQuery(ExcelDownloadDto<TbContractIntentionParam> dto) {
+        TbContractIntentionParam query = dto.getQuery();
+        String houseName = query.getHouseName();
+        if (StringUtils.isNotEmpty(houseName)) {
+            List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
+            query.setQueryIds(queryIds);
+        }
+        PageResult<TbContractIntentionEntity> pageResult = super.page(query);
         List<ContractIntentionExportVo> exportDataList = new ArrayList<>();
-        PageResult<TbContractIntentionEntity> pageResult = new PageResult<>();
-        Long pageNo = 1L;
-        param.setPageSize(2000L);
-        do {
-            param.setPageNo(pageNo++);
-            String houseName = param.getHouseName();
-            if (StringUtils.isNotEmpty(houseName)) {
-                List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
-                param.setQueryIds(queryIds);
-            }
-            pageResult = super.page(param);
-            if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
-                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-            }
-            pageResult.getList().forEach(o -> {
-                ContractIntentionExportVo exportVo = new ContractIntentionExportVo();
-                BeanUtil.copyProperties(o, exportVo);
-                exportDataList.add(exportVo);
-            });
-        } while (CollUtil.isNotEmpty(pageResult.getList()));
-        excelExportService.excelExport(ExcelReportDto.<TbContractIntentionParam, ContractIntentionExportVo>builder().title("意向合同列表").fileName("意向合同导出").SheetName("意向合同列表")
-                .dataList(exportDataList).build(), ContractIntentionExportVo.class);
+        pageResult.getList().forEach(o -> {
+            ContractIntentionExportVo exportVo = new ContractIntentionExportVo();
+            BeanUtil.copyProperties(o, exportVo);
+            exportDataList.add(exportVo);
+        });
+        Page<ContractIntentionExportVo> page = new Page<>(pageResult.getCurrentPage(), pageResult.getPageSize(), pageResult.getTotal());
+        return page.setRecords(exportDataList);
     }
 }

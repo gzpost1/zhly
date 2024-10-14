@@ -150,12 +150,13 @@ public class ContentImgTextController extends BaseController {
 
     /**
      * 导出
+     *
      * @param pageQuery
      * @return
      * @throws Exception
      */
     @PostMapping("export")
-    public IdmResDTO export(@RequestBody @Valid ContentImgTextPageQuery pageQuery) throws Exception {
+    public IdmResDTO export(@RequestBody @Valid ContentImgTextPageQuery pageQuery) {
         contentImgTextService.export(pageQuery);
         return IdmResDTO.success();
     }

@@ -1,11 +1,11 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
-import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.PageResult;
-import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.CodeArchivesCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.CodeArchivesUpdateDTO;
 import cn.cuiot.dmp.system.application.param.vo.CodeArchivesVO;
@@ -14,7 +14,8 @@ import cn.cuiot.dmp.system.application.service.CodeArchivesService;
 import cn.cuiot.dmp.system.domain.aggregate.CodeArchives;
 import cn.cuiot.dmp.system.domain.aggregate.CodeArchivesPageQuery;
 import cn.cuiot.dmp.system.domain.repository.CodeArchivesRepository;
-import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -101,23 +103,20 @@ public class CodeArchivesServiceImpl implements CodeArchivesService {
 
     @Override
     public void export(CodeArchivesPageQuery pageQuery) throws Exception {
+        excelExportService.excelExport(ExcelDownloadDto.<CodeArchivesPageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery).title("二维码档案").fileName("二维码档案导出"+ "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("二维码档案").build(),
+                CodeArchiveExportVo.class, this::executePageQuery);
+    }
+
+    private IPage<CodeArchiveExportVo> executePageQuery(ExcelDownloadDto<CodeArchivesPageQuery> codeArchivesPageQueryExcelDownloadDto) {
+        CodeArchivesPageQuery pageQuery = codeArchivesPageQueryExcelDownloadDto.getQuery();
+        PageResult<CodeArchives> pageResult = codeArchivesRepository.queryForPage(pageQuery);
         List<CodeArchiveExportVo> exportDataList = new ArrayList<>();
-        PageResult<CodeArchives> pageResult = new PageResult<>();
-        Long pageNo = 1L;
-        pageQuery.setPageSize(2000L);
-        do {
-            pageQuery.setPageNo(pageNo++);
-            pageResult = codeArchivesRepository.queryForPage(pageQuery);
-            if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
-                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-            }
-            pageResult.getList().forEach(o -> {
-                CodeArchiveExportVo codeArchiveExportVo = new CodeArchiveExportVo();
-                BeanUtils.copyProperties(o, codeArchiveExportVo);
-                exportDataList.add(codeArchiveExportVo);
-            });
-        } while (CollUtil.isNotEmpty(pageResult.getRecords()));
-        excelExportService.excelExport(ExcelReportDto.<CodeArchivesPageQuery, CodeArchiveExportVo>builder().title("二维码档案").fileName("二维码档案导出").SheetName("二维码档案")
-                .dataList(exportDataList).build(), CodeArchiveExportVo.class);
+        pageResult.getList().forEach(o -> {
+            CodeArchiveExportVo codeArchiveExportVo = new CodeArchiveExportVo();
+            BeanUtils.copyProperties(o, codeArchiveExportVo);
+            exportDataList.add(codeArchiveExportVo);
+        });
+        Page<CodeArchiveExportVo> page = new Page<>(pageResult.getPageNo(), pageResult.getPageSize(), pageResult.getTotal());
+        return page.setRecords(exportDataList);
     }
 }

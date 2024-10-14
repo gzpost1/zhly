@@ -18,11 +18,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.cuiot.dmp.system.domain.aggregate.CodeArchivesPageQuery;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import java.util.Date;
-import java.util.Objects;
-import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +26,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
+import java.util.Date;
+import java.util.Objects;
 
 /**
  * 【PC】意见反馈
@@ -82,9 +82,9 @@ public class UserFeedbackController {
     @PostMapping("/queryForDetail")
     public IdmResDTO<UserFeedbackEntity> queryForDetail(@RequestBody @Valid IdParam idParam) {
         UserFeedbackEntity data = userFeedbackService.queryForDetail(idParam.getId());
-        if(Objects.nonNull(data)){
+        if (Objects.nonNull(data)) {
             AppUserDto user = appUserService.getUserById(data.getUserId());
-            if(Objects.nonNull(user)){
+            if (Objects.nonNull(user)) {
                 data.setAvatar(user.getAvatar());
             }
         }
@@ -112,12 +112,13 @@ public class UserFeedbackController {
 
     /**
      * 导出
+     *
      * @param pageQuery
      * @return
      * @throws Exception
      */
     @PostMapping("export")
-    public IdmResDTO export(@RequestBody @Valid UserFeedbackQuery pageQuery) throws Exception {
+    public IdmResDTO export(@RequestBody @Valid UserFeedbackQuery pageQuery) {
         userFeedbackService.export(pageQuery);
         return IdmResDTO.success();
     }

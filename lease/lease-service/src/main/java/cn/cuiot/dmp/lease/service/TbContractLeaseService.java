@@ -1,25 +1,29 @@
 package cn.cuiot.dmp.lease.service;
 
-import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.contract.TbContractLeaseParam;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
 import cn.cuiot.dmp.lease.vo.export.ContractLeaseExportVo;
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -124,26 +128,29 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         return baseMapper.statisticsContract();
     }
 
+
     public void export(TbContractLeaseParam pageQuery) throws Exception {
+        excelExportService.excelExport(ExcelDownloadDto.<TbContractLeaseParam>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
+                .title("租赁合同列表").fileName("租赁合同导出" + "(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + ")").sheetName("租赁合同列表")
+                .build(), ContractLeaseExportVo.class, this::executePageQuery);
+    }
+
+    private IPage<ContractLeaseExportVo> executePageQuery(ExcelDownloadDto<TbContractLeaseParam> tbContractLeaseParamExcelDownloadDto) {
+        TbContractLeaseParam pageQuery = tbContractLeaseParamExcelDownloadDto.getQuery();
+        String houseName = pageQuery.getHouseName();
+        if (StringUtils.isNotEmpty(houseName)) {
+
+            List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
+            pageQuery.setQueryIds(queryIds);
+        }
+        PageResult<TbContractLeaseEntity> pageResult = super.page(pageQuery);
         List<ContractLeaseExportVo> exportDataList = new ArrayList<>();
-        PageResult<TbContractLeaseEntity> pageResult = new PageResult<>();
-        Long pageNo = 1L;
-        pageQuery.setPageSize(2000L);
-        do {
-            pageQuery.setPageNo(pageNo++);
-            String houseName = pageQuery.getHouseName();
-            if (StringUtils.isNotEmpty(houseName)) {
-                List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
-                pageQuery.setQueryIds(queryIds);
-            }
-            pageResult = super.page(pageQuery);
-            pageResult.getList().forEach(o -> {
-                ContractLeaseExportVo exportVo = new ContractLeaseExportVo();
-                BeanUtil.copyProperties(o, exportVo);
-                exportDataList.add(exportVo);
-            });
-        } while (CollUtil.isNotEmpty(pageResult.getRecords()));
-        excelExportService.excelExport(ExcelReportDto.<TbContractLeaseParam, ContractLeaseExportVo>builder().title("租赁合同列表").fileName("租赁合同导出").SheetName("租赁合同列表")
-                .dataList(exportDataList).build(), ContractLeaseExportVo.class);
+        pageResult.getList().forEach(o -> {
+            ContractLeaseExportVo exportVo = new ContractLeaseExportVo();
+            BeanUtil.copyProperties(o, exportVo);
+            exportDataList.add(exportVo);
+        });
+        Page<ContractLeaseExportVo> page = new Page<>(pageResult.getCurrentPage(), pageResult.getPageSize(), pageResult.getTotal());
+        return page.setRecords(exportDataList);
     }
 }

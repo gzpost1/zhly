@@ -10,7 +10,6 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.content.constant.ContentConstants;
-import cn.cuiot.dmp.content.conver.NoticeConvert;
 import cn.cuiot.dmp.content.dal.entity.ContentAudit;
 import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.param.dto.NoticeCreateDto;
@@ -180,12 +179,13 @@ public class NoticeController extends BaseController {
 
     /**
      * 导出
+     *
      * @param pageQuery
      * @return
      * @throws Exception
      */
     @PostMapping("export")
-    public IdmResDTO export(@RequestBody @Valid NoticPageQuery pageQuery) throws Exception {
+    public IdmResDTO export(@RequestBody @Valid NoticPageQuery pageQuery) {
         noticeService.export(pageQuery);
         return IdmResDTO.success();
     }

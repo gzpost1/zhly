@@ -100,5 +100,5 @@ public interface NoticeService extends IService<ContentNoticeEntity>, AuditResul
      */
     void getMyNotice(Long communityId);
 
-    void export(NoticPageQuery pageQuery) throws Exception;
+    void export(NoticPageQuery pageQuery);
 }

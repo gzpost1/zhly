@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.lease.service;
 
-import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
@@ -19,6 +19,7 @@ import cn.cuiot.dmp.common.bean.dto.UserMessageAcceptDto;
 import cn.cuiot.dmp.common.constant.*;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.domain.types.enums.UserTypeEnum;
 import cn.cuiot.dmp.lease.config.MsgChannel;
@@ -33,7 +34,6 @@ import cn.cuiot.dmp.lease.vo.export.ClueExportVo;
 import cn.cuiot.dmp.lease.vo.export.ClueFinishExportVo;
 import cn.cuiot.dmp.lease.vo.export.ClueFollowUpExportVo;
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -552,36 +552,53 @@ public class ClueService extends ServiceImpl<ClueMapper, ClueEntity> {
             throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
         }
         if (ClueStatusEnum.DISTRIBUTE_STATUS.getCode().equals(pageQuery.getStatus())) {
-            List<ClueExportVo> exportDataList = new ArrayList<>();
-            pageResult.getList().forEach(o -> {
-                ClueExportVo exportVo = new ClueExportVo();
-                BeanUtil.copyProperties(o, exportVo);
-                exportDataList.add(exportVo);
-            });
-            excelExportService.excelExport(ExcelReportDto.<CluePageQueryDTO, ClueExportVo>builder().title("待分配列表").fileName("待分配线索导出").SheetName("待分配列表")
-                    .dataList(exportDataList).build(), ClueExportVo.class);
+            excelExportService.excelExport(ExcelDownloadDto.<CluePageQueryDTO>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
+                    .title("待分配列表").fileName("待分配线索导出" + "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("待分配列表").build(), ClueExportVo.class, this::executePageQuery);
         } else if (ClueStatusEnum.FOLLOW_STATUS.getCode().equals(pageQuery.getStatus())) {
-            List<ClueFollowUpExportVo> exportDataList = new ArrayList<>();
-            pageResult.getList().forEach(o -> {
-                ClueFollowUpExportVo exportVo = new ClueFollowUpExportVo();
-                BeanUtil.copyProperties(o, exportVo);
-                exportDataList.add(exportVo);
-            });
-            excelExportService.excelExport(ExcelReportDto.<CluePageQueryDTO, ClueFollowUpExportVo>builder().title("跟进中列表").fileName("跟进中线索导出").SheetName("跟进中列表")
-                    .dataList(exportDataList).build(), ClueExportVo.class);
+            excelExportService.excelExport(ExcelDownloadDto.<CluePageQueryDTO>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
+                    .title("跟进中列表").fileName("跟进中线索导出" + "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("跟进中列表").build(), ClueFollowUpExportVo.class, this::executeFollowUpPageQuery);
         } else if (ClueStatusEnum.FINISH_STATUS.getCode().equals(pageQuery.getStatus())) {
-            List<ClueFinishExportVo> exportDataList = new ArrayList<>();
-            pageResult.getList().forEach(o -> {
-                ClueFinishExportVo exportVo = new ClueFinishExportVo();
-                BeanUtil.copyProperties(o, exportVo);
-                exportDataList.add(exportVo);
-            });
-            excelExportService.excelExport(ExcelReportDto.<CluePageQueryDTO, ClueFinishExportVo>builder().title("已完成列表").fileName("已完成线索导出").SheetName("已完成列表")
-                    .dataList(exportDataList).build(), ClueExportVo.class);
+            excelExportService.excelExport(ExcelDownloadDto.<CluePageQueryDTO>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
+                    .title("已完成列表").fileName("已完成线索导出" + "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("已完成列表").build(), ClueFinishExportVo.class, this::executeFinishPageQuery);
         } else {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "传入的状态不对");
         }
-
-
     }
+
+    private IPage<ClueFinishExportVo> executeFinishPageQuery(ExcelDownloadDto<CluePageQueryDTO> cluePageQueryDTOExcelDownloadDto) {
+        PageResult<ClueDTO> pageResult = this.queryForPage(cluePageQueryDTOExcelDownloadDto.getQuery());
+        List<ClueFinishExportVo> exportDataList = new ArrayList<>();
+        pageResult.getList().forEach(o -> {
+            ClueFinishExportVo exportVo = new ClueFinishExportVo();
+            BeanUtil.copyProperties(o, exportVo);
+            exportDataList.add(exportVo);
+        });
+        Page<ClueFinishExportVo> page = new Page<>(pageResult.getCurrentPage(), pageResult.getPageSize(), pageResult.getTotal());
+        return page.setRecords(exportDataList);
+    }
+
+    private IPage<ClueFollowUpExportVo> executeFollowUpPageQuery(ExcelDownloadDto<CluePageQueryDTO> cluePageQueryDTOExcelDownloadDto) {
+        PageResult<ClueDTO> pageResult = this.queryForPage(cluePageQueryDTOExcelDownloadDto.getQuery());
+        List<ClueFollowUpExportVo> exportDataList = new ArrayList<>();
+        pageResult.getList().forEach(o -> {
+            ClueFollowUpExportVo exportVo = new ClueFollowUpExportVo();
+            BeanUtil.copyProperties(o, exportVo);
+            exportDataList.add(exportVo);
+        });
+        Page<ClueFollowUpExportVo> page = new Page<>(pageResult.getCurrentPage(), pageResult.getPageSize(), pageResult.getTotal());
+        return page.setRecords(exportDataList);
+    }
+
+    private IPage<ClueExportVo> executePageQuery(ExcelDownloadDto<CluePageQueryDTO> cluePageQueryDTOExcelDownloadDto) {
+        PageResult<ClueDTO> pageResult = this.queryForPage(cluePageQueryDTOExcelDownloadDto.getQuery());
+        List<ClueExportVo> exportDataList = new ArrayList<>();
+        pageResult.getList().forEach(o -> {
+            ClueExportVo exportVo = new ClueExportVo();
+            BeanUtil.copyProperties(o, exportVo);
+            exportDataList.add(exportVo);
+        });
+        Page<ClueExportVo> page = new Page<>(pageResult.getCurrentPage(), pageResult.getPageSize(), pageResult.getTotal());
+        return page.setRecords(exportDataList);
+    }
+
 }
