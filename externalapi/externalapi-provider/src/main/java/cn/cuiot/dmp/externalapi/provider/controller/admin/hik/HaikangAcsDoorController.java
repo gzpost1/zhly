@@ -1,11 +1,15 @@
 package cn.cuiot.dmp.externalapi.provider.controller.admin.hik;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadCallable;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.converter.hik.HaikangAcsDoorConverter;
 import cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsDoorEntity;
@@ -16,6 +20,7 @@ import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsDoorService;
 import cn.cuiot.dmp.externalapi.service.sync.hik.HaikangAcsDataManualSyncService;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -45,6 +50,9 @@ public class HaikangAcsDoorController {
 
     @Autowired
     private HaikangAcsDoorConverter haikangAcsDoorConverter;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 分页查询
@@ -113,6 +121,36 @@ public class HaikangAcsDoorController {
     public IdmResDTO syncData() {
         haikangAcsDataManualSyncService.haikangAcsDoorDataManualSync();
         return IdmResDTO.success(null);
+    }
+
+    /**
+     * 导出
+     */
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody HaikangAcsDoorQuery query) {
+
+        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
+        query.setCompanyId(currentOrgId);
+
+        ExcelDownloadDto<HaikangAcsDoorQuery> dto = ExcelDownloadDto.<HaikangAcsDoorQuery>builder()
+                .loginInfo(LoginInfoHolder.getCurrentLoginInfo())
+                .query(query)
+                .fileName("门禁点导出（" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + "）")
+                .build();
+
+        excelExportService.excelExport(dto, HaikangAcsDoorVo.class,
+                new ExcelDownloadCallable<HaikangAcsDoorQuery, HaikangAcsDoorVo>() {
+                    @Override
+                    public IPage<HaikangAcsDoorVo> excute(
+                            ExcelDownloadDto<HaikangAcsDoorQuery> dto) {
+
+                        IPage<HaikangAcsDoorVo> page = haikangAcsDoorService.queryForPage(query);
+
+                        return page;
+                    }
+                });
+
+        return IdmResDTO.success();
     }
 
 }

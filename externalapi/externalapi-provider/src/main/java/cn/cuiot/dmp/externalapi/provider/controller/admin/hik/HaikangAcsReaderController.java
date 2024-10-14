@@ -1,13 +1,18 @@
 package cn.cuiot.dmp.externalapi.provider.controller.admin.hik;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadCallable;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsReaderQuery;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsReaderService;
 import cn.cuiot.dmp.externalapi.service.sync.hik.HaikangAcsDataManualSyncService;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsReaderVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import java.util.Date;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +38,9 @@ public class HaikangAcsReaderController {
 
     @Autowired
     private HaikangAcsDataManualSyncService haikangAcsDataManualSyncService;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 分页查询
@@ -70,4 +78,32 @@ public class HaikangAcsReaderController {
         return IdmResDTO.success(null);
     }
 
+    /**
+     * 导出
+     */
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody HaikangAcsReaderQuery query) {
+
+        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
+        query.setCompanyId(currentOrgId);
+
+        ExcelDownloadDto<HaikangAcsReaderQuery> dto = ExcelDownloadDto.<HaikangAcsReaderQuery>builder()
+                .loginInfo(LoginInfoHolder.getCurrentLoginInfo())
+                .query(query)
+                .fileName("读卡器导出（" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + "）")
+                .build();
+
+        excelExportService.excelExport(dto, HaikangAcsReaderVo.class,
+                new ExcelDownloadCallable<HaikangAcsReaderQuery, HaikangAcsReaderVo>() {
+                    @Override
+                    public IPage<HaikangAcsReaderVo> excute(
+                            ExcelDownloadDto<HaikangAcsReaderQuery> dto) {
+                        IPage<HaikangAcsReaderVo> page = haikangAcsReaderService.queryForPage(
+                                query);
+                        return page;
+                    }
+                });
+
+        return IdmResDTO.success();
+    }
 }

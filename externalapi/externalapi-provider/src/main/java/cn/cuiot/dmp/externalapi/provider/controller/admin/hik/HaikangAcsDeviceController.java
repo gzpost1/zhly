@@ -5,14 +5,18 @@ import cn.cuiot.dmp.base.application.dto.ExcelDownloadCallable;
 import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.externalapi.service.converter.hik.HaikangAcsDeviceConverter;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDeviceQuery;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangRegionQuery;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsDeviceService;
 import cn.cuiot.dmp.externalapi.service.sync.hik.HaikangAcsDataManualSyncService;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikRegionResp;
+import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDeviceExportVo;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDeviceVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import java.util.Date;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +46,9 @@ public class HaikangAcsDeviceController {
 
     @Autowired
     private ExcelExportService excelExportService;
+
+    @Autowired
+    private HaikangAcsDeviceConverter haikangAcsDeviceConverter;
 
     /**
      * 分页查询
@@ -104,19 +111,21 @@ public class HaikangAcsDeviceController {
         ExcelDownloadDto<HaikangAcsDeviceQuery> dto = ExcelDownloadDto.<HaikangAcsDeviceQuery>builder()
                 .loginInfo(LoginInfoHolder.getCurrentLoginInfo())
                 .query(query)
-                .fileName("门禁设备导出（20241212）")
+                .fileName("门禁设备导出（" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + "）")
                 .build();
 
-        excelExportService.excelExport(dto, HaikangAcsDeviceVo.class,
-                new ExcelDownloadCallable<HaikangAcsDeviceQuery, HaikangAcsDeviceVo>() {
+        excelExportService.excelExport(dto, HaikangAcsDeviceExportVo.class,
+                new ExcelDownloadCallable<HaikangAcsDeviceQuery, HaikangAcsDeviceExportVo>() {
                     @Override
-                    public IPage<HaikangAcsDeviceVo> excute(
+                    public IPage<HaikangAcsDeviceExportVo> excute(
                             ExcelDownloadDto<HaikangAcsDeviceQuery> dto) {
 
                         IPage<HaikangAcsDeviceVo> page = haikangAcsDeviceService.queryForPage(
                                 dto.getQuery());
 
-                        return page;
+                        return page.convert(item -> {
+                            return haikangAcsDeviceConverter.entityToExportVo(item);
+                        });
                     }
                 });
 
