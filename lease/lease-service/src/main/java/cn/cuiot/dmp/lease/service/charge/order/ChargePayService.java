@@ -4,10 +4,7 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.cuiot.dmp.lease.dto.charge.ChargeOrderPaySuccInsertDto;
-import cn.cuiot.dmp.lease.dto.charge.ChargePayDto;
-import cn.cuiot.dmp.lease.dto.charge.ChargePayToWechatDetailDto;
-import cn.cuiot.dmp.lease.dto.charge.ChargePayWechatResultDto;
+import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeOrder;
 import cn.cuiot.dmp.lease.service.charge.TbChargeOrderService;
 import cn.cuiot.dmp.pay.service.service.dto.*;
@@ -182,6 +179,7 @@ public class ChargePayService {
      *
      * @param chargePayDto
      */
+    @Transactional(rollbackFor = Exception.class)
     public void prePay(@Valid ChargePayDto chargePayDto) {
         for (Long chargeId : chargePayDto.getChargeIds()) {
             //1 修改业务表收款
@@ -189,13 +187,22 @@ public class ChargePayService {
             AbstrChargePay chargePay = chargePays.stream()
                     .filter(item -> item.getDataType().equals(chargePayDto.getDataType())).findFirst().orElseThrow(() -> new BusinessException(DEFAULT_ERROR_CODE, "业务不支持，请检查"));
             //1.1 查询修改收款的钱
-            Integer needToPayAmount = chargePay.queryNeedToPayAmount(chargeId);
+            PrePayAmountAndHouseId needToPayAmount = chargePay.queryNeedToPayAmount(chargeId);
             //1.2 更新业务表收款状态 插入结算报表
-            int updateCount = chargePay.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount, LoginInfoHolder.getCurrentUserId());
-            AssertUtil.isTrue(updateCount > 0, "锁定账单收款失败");
+            Long orderId =  IdWorker.getId();
+            UpdateChargePayStatusToPaySuccessBYPrePayDto prePayDto = chargePay.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount.getAmount(), LoginInfoHolder.getCurrentUserId(),orderId);
+            AssertUtil.isTrue(prePayDto.getUpdateCount() > 0, "锁定账单收款失败");
 
             //2修改预缴余额，如果不通过则失败，否则修改预缴余额，插入预缴流水
-            // todo 调用徐雷处理
+            CreateOrderReq createOrderReq = new CreateOrderReq();
+            createOrderReq.setOutOrderId(orderId.toString());
+            createOrderReq.setPayChannel(20);
+            createOrderReq.setMchType((byte)3);
+            createOrderReq.setProductName("预缴付费");
+            createOrderReq.setTotalFee(needToPayAmount.getAmount());
+            createOrderReq.setHouseId(needToPayAmount.getHouseId());
+            createOrderReq.setDataType(chargePayDto.getDataType());
+            orderPayAtHandler.makeOrder(createOrderReq);
         }
     }
 }

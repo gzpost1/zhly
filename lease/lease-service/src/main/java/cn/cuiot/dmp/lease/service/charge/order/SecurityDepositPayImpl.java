@@ -98,22 +98,25 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
     }
 
     @Override
-    public Integer queryNeedToPayAmount(Long chargeId) {
+    public PrePayAmountAndHouseId queryNeedToPayAmount(Long chargeId) {
         return securitydepositManagerService.queryNeedToPayAmount(chargeId);
     }
 
     @Override
-    public int updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long createUserId) {
+    public UpdateChargePayStatusToPaySuccessBYPrePayDto updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long createUserId,Long orderId) {
+        UpdateChargePayStatusToPaySuccessBYPrePayDto prePayDto = new UpdateChargePayStatusToPaySuccessBYPrePayDto();
         //1 更新订单状态为已支付
-        int updateCount =  securitydepositManagerService.updateChargePayStatusToPaySuccessBYPrePay(chargeId,needToPayAmount);
+        int updateCount =  securitydepositManagerService.updateChargePayStatusToPaySuccessBYPrePay(chargeId,needToPayAmount,orderId);
+        prePayDto.setUpdateCount(updateCount);
         AssertUtil.isTrue(updateCount > 0, "锁定账单收款失败");
 
         //3 插入账单
         ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto = new ChargeOrderPaySuccInsertDto();
         chargeOrderPaySuccInsertDto.setDataIds(Lists.newArrayList(chargeId));
         chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.NO);
+        chargeOrderPaySuccInsertDto.setOrderId(orderId);
         securitydepositManagerService.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
-        return updateCount;
+        return prePayDto;
     }
 
     private LambdaQueryWrapper<TbSecuritydepositManager> getNeedPayWrapper() {

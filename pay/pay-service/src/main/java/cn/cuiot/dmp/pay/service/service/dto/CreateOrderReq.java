@@ -136,6 +136,12 @@ public class CreateOrderReq implements Serializable {
      * 房屋id
      */
     private Long houseId;
+
+    /**
+     * 数据类型 0账单 1押金
+     */
+    private Byte dataType;
+
     /**
      * 支付校验
      */

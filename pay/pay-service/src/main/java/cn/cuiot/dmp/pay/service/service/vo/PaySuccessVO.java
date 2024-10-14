@@ -36,4 +36,9 @@ public class PaySuccessVO {
      * 99：未知状态
      */
     private Byte status;
+
+    /**
+     * 支付费率
+     */
+    private Double payRate;
 }

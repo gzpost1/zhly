@@ -10,11 +10,8 @@ import cn.cuiot.dmp.lease.enums.ChargePayDataTypeEnum;
 import cn.cuiot.dmp.lease.enums.ChargePayStatusEnum;
 import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeReceivedService;
-import cn.cuiot.dmp.pay.service.service.entity.TbOrderSettlement;
-import cn.cuiot.dmp.pay.service.service.service.TbOrderSettlementService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import lombok.Data;
@@ -82,7 +79,7 @@ public class ChargePayImpl extends AbstrChargePay {
         return updateCount;
     }
 
-    private void insertReceivedAndSettlement(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
+    private List<Long> insertReceivedAndSettlement(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
         ChargeReceiptsReceivedDto chargeReceiptsReceivedDto = new ChargeReceiptsReceivedDto();
         chargeReceiptsReceivedDto.setOnlyPrincipal(EntityConstants.YES);
         chargeReceiptsReceivedDto.setTransactionMode(chargeOrderPaySuccInsertDto.getTransactionMode());
@@ -108,12 +105,15 @@ public class ChargePayImpl extends AbstrChargePay {
             k.setPaymentMode(EntityConstants.NO);
             k.setTransactionMode(0L);
             k.setTransactionNo(chargeOrderPaySuccInsertDto.getTransactionNo());
+            k.setOrderId(chargeOrderPaySuccInsertDto.getOrderId());
         });
 
         tbChargeReceivedService.insertList(receiveds);
 
         //3 插入账单
         chargeManager.insertSettleMent(receiveds,EntityConstants.NO,EntityConstants.NO,chargeOrderPaySuccInsertDto.getOrderId(), null);
+
+        return receiveds.stream().map(TbChargeReceived::getId).collect(Collectors.toList());
     }
 
 
@@ -128,13 +128,16 @@ public class ChargePayImpl extends AbstrChargePay {
     }
 
     @Override
-    public Integer queryNeedToPayAmount(Long chargeId) {
+    public PrePayAmountAndHouseId queryNeedToPayAmount(Long chargeId) {
         return chargeManager.queryNeedToPayAmount(chargeId);
     }
 
     @Override
-    public int updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount,Long createUserId) {
+    public UpdateChargePayStatusToPaySuccessBYPrePayDto updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount,Long createUserId,Long orderId) {
+        UpdateChargePayStatusToPaySuccessBYPrePayDto prePayDto = new UpdateChargePayStatusToPaySuccessBYPrePayDto();
+
         int updateNum = chargeManager.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount);
+        prePayDto.setUpdateCount(updateNum);
         AssertUtil.isTrue(updateNum > 0, "锁定账单收款失败");
 
 
@@ -155,9 +158,9 @@ public class ChargePayImpl extends AbstrChargePay {
         orderDetail.add(new ChargePayToWechatDetailDto(chargeId, needToPayAmount));
         order.setOrderDetail(orderDetail);
 
-        insertReceivedAndSettlement(chargeOrderPaySuccInsertDto);
-
-        return updateNum;
+        List<Long> receiptIds =  insertReceivedAndSettlement(chargeOrderPaySuccInsertDto);
+        prePayDto.setChargeReceivedId(receiptIds.get(0));
+        return prePayDto;
     }
 
     @Override

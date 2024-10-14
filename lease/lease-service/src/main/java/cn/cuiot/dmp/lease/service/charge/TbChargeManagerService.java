@@ -12,6 +12,7 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.enums.*;
 import cn.cuiot.dmp.lease.mapper.charge.TbChargeManagerMapper;
+import cn.cuiot.dmp.lease.dto.charge.PrePayAmountAndHouseId;
 import cn.cuiot.dmp.lease.vo.ChargeCollectionManageVo;
 import cn.cuiot.dmp.lease.vo.ChargeManagerCustomerStatisticsVo;
 import cn.cuiot.dmp.pay.service.service.entity.TbOrderSettlement;
@@ -377,7 +378,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         return baseMapper.updateChargePayStatusToCancel(chargeIds);
     }
 
-    public Integer queryNeedToPayAmount(Long chargeId) {
+    public PrePayAmountAndHouseId queryNeedToPayAmount(Long chargeId) {
         return baseMapper.queryNeedToPayAmount(chargeId);
     }
 
