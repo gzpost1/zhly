@@ -48,4 +48,5 @@ public interface CodeArchivesService {
      */
     int associateCodeArchives(CodeArchivesUpdateDTO updateDTO);
 
+    void export(CodeArchivesPageQuery pageQuery) throws Exception;
 }

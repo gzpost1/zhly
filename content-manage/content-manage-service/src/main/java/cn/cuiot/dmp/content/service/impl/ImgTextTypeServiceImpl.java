@@ -98,6 +98,13 @@ public class ImgTextTypeServiceImpl extends ServiceImpl<ImgTextTypeMapper, ImgTe
         return count(queryWrapper);
     }
 
+    @Override
+    public List<ImgTextType> queryByIds(List<Long> typeIds) {
+        LambdaQueryWrapper<ImgTextType> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(ImgTextType::getId, typeIds);
+        return list(queryWrapper);
+    }
+
     public void checkCreateOrUpdate(ImgTextType imgTextType) {
         Long allCount = this.getAllCount();
         if (allCount >= 20 && imgTextType.getId() == null) {

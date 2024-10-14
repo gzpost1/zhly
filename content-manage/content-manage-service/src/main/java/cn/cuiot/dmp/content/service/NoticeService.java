@@ -99,4 +99,6 @@ public interface NoticeService extends IService<ContentNoticeEntity>, AuditResul
      * @param communityId
      */
     void getMyNotice(Long communityId);
+
+    void export(NoticPageQuery pageQuery) throws Exception;
 }

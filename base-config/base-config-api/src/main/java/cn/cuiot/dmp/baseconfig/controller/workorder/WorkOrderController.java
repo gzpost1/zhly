@@ -61,6 +61,17 @@ public class WorkOrderController extends BaseController {
     }
 
     /**
+     * 工单导出(20240601)
+     * @param dto
+     * @return
+     */
+    @PostMapping("exportWorkOrder")
+    @RequiresPermissions
+    public IdmResDTO exportWorkOrder(@RequestBody WorkInfoDto dto) throws Exception {
+         workInfoService.exportWorkOrder(dto );
+        return IdmResDTO.success();
+    }
+    /**
      * 客户工单列表
      * @param dto
      * @return
@@ -77,6 +88,7 @@ public class WorkOrderController extends BaseController {
      * @return
      */
     @PostMapping("queryDeptList")
+    @RequiresPermissions
     public List<DepartmentDto> queryDeptList(@RequestBody WorkInfoDto dto){
         return workInfoService.queryDeptList(dto);
     }
@@ -127,6 +139,17 @@ public class WorkOrderController extends BaseController {
 
 
     /**
+     * 导出客户工单信息
+     * @param req
+     * @return
+     */
+    @PostMapping("exportCustomerWorkOrder")
+    @RequiresPermissions
+    public IdmResDTO exportCustomerWorkOrder(@RequestBody QueryCustomerWorkOrderDto req) throws Exception {
+        workInfoService.exportCustomerWorkOrder(req);
+        return IdmResDTO.success();
+    }
+    /**
      * 4.2.1-客户工单-代录客单
      * @param startProcessInstanceDTO
      * @return
@@ -170,6 +193,7 @@ public class WorkOrderController extends BaseController {
      * @return
      */
     @PostMapping("queryAgencyHandlingNumber")
+    @RequiresPermissions
     public IdmResDTO<AgencyHandlingDto> queryAgencyHandlingNumber(@RequestBody QueryAgencyDto dto){
         return workInfoService.queryAgencyHandlingNumber(dto);
     }

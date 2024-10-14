@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.api.controller;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditDTO;
@@ -10,6 +11,7 @@ import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditPageQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditStatusDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseBuildingDTO;
 import cn.cuiot.dmp.system.application.service.UserHouseAuditService;
+import cn.cuiot.dmp.system.domain.aggregate.CodeArchivesPageQuery;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.List;
 import javax.validation.Valid;
@@ -91,6 +93,18 @@ public class UserHouseAuditController {
     @PostMapping("/cancelAuditStatus")
     public boolean cancelAuditStatus(@RequestBody @Valid IdParam idParam) {
         return userHouseAuditService.cancelAuditStatus(idParam);
+    }
+
+    /**
+     * 导出
+     * @param pageQuery
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody @Valid UserHouseAuditPageQueryDTO pageQuery) throws Exception {
+        userHouseAuditService.export(pageQuery);
+        return IdmResDTO.success();
     }
 
 }

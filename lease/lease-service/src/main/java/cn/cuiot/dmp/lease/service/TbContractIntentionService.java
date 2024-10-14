@@ -1,21 +1,29 @@
 package cn.cuiot.dmp.lease.service;
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.lease.dto.contract.TbContractIntentionParam;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractIntentionMapper;
+import cn.cuiot.dmp.lease.vo.export.ContractIntentionExportVo;
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -35,6 +43,8 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     SystemApiFeignService systemApiFeignService;
     @Autowired
     BaseContractService baseContractService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     @Override
     public List<TbContractIntentionEntity> list(TbContractIntentionEntity params) {
@@ -67,7 +77,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
 
     @Override
     public TbContractIntentionEntity getById(Serializable id) {
-        AssertUtil.notNull(id,"id不能为空");
+        AssertUtil.notNull(id, "id不能为空");
         TbContractIntentionEntity intentionEntity = super.getById(id);
         baseContractService.fillBindHouseInfo(intentionEntity);
         return intentionEntity;
@@ -83,11 +93,10 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     }
 
 
-
     @Override
     public boolean save(TbContractIntentionEntity o) {
         TbContractIntentionEntity entity = (TbContractIntentionEntity) o;
-        if(Objects.isNull(entity.getContractNo())) {
+        if (Objects.isNull(entity.getContractNo())) {
             Long code = SnowflakeIdWorkerUtil.nextId();
             entity.setContractNo(String.valueOf(code));
         }
@@ -99,6 +108,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
 
     /**
      * 删除合同同时删除绑定信息
+     *
      * @param id
      * @return
      */
@@ -121,9 +131,10 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
 
     /**
      * 查询已经有关联的租赁合同
+     *
      * @return
      */
-    public List<Long> queryBindContractLeaseId(){
+    public List<Long> queryBindContractLeaseId() {
         LambdaQueryWrapper<TbContractIntentionEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.isNotNull(TbContractIntentionEntity::getContractLeaseId);
         List<TbContractIntentionEntity> intentionEntities = baseMapper.selectList(queryWrapper);
@@ -131,4 +142,29 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
         return leaseIds;
     }
 
+    public void export(TbContractIntentionParam param) throws Exception {
+        List<ContractIntentionExportVo> exportDataList = new ArrayList<>();
+        PageResult<TbContractIntentionEntity> pageResult = new PageResult<>();
+        Long pageNo = 1L;
+        param.setPageSize(2000L);
+        do {
+            param.setPageNo(pageNo++);
+            String houseName = param.getHouseName();
+            if (StringUtils.isNotEmpty(houseName)) {
+                List<Long> queryIds = bindInfoService.queryContractIdsByHouseName(houseName);
+                param.setQueryIds(queryIds);
+            }
+            pageResult = super.page(param);
+            if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            pageResult.getList().forEach(o -> {
+                ContractIntentionExportVo exportVo = new ContractIntentionExportVo();
+                BeanUtil.copyProperties(o, exportVo);
+                exportDataList.add(exportVo);
+            });
+        } while (CollUtil.isNotEmpty(pageResult.getList()));
+        excelExportService.excelExport(ExcelReportDto.<TbContractIntentionParam, ContractIntentionExportVo>builder().title("意向合同列表").fileName("意向合同导出").SheetName("意向合同列表")
+                .dataList(exportDataList).build(), ContractIntentionExportVo.class);
+    }
 }

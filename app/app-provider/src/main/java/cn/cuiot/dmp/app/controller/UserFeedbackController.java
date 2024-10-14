@@ -18,6 +18,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.system.domain.aggregate.CodeArchivesPageQuery;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.Date;
 import java.util.Objects;
@@ -106,6 +107,18 @@ public class UserFeedbackController {
         userFeedbackService
                 .replyUserFeedback(dto.getId(), userInfo.getId(), userInfo.getName(), new Date(),
                         dto.getReplyContent());
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 导出
+     * @param pageQuery
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody @Valid UserFeedbackQuery pageQuery) throws Exception {
+        userFeedbackService.export(pageQuery);
         return IdmResDTO.success();
     }
 

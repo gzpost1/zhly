@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.enums;
 
+import java.util.Objects;
+
 /**
  * @author pengjian
  * @create 2024/5/7 16:13
@@ -22,8 +24,22 @@ public enum WorkOrderStatusEnums {
     this.desc = desc;
     }
 
+
+    public static String getWorkOrderStatus(Byte status) {
+        for (WorkOrderStatusEnums WorkOrderStatusEnums : WorkOrderStatusEnums.values()) {
+            if (Objects.equals(WorkOrderStatusEnums.getStatus(),status)) {
+                return WorkOrderStatusEnums.getDesc();
+            }
+        }
+        return null;
+    }
     public Byte getStatus() {
         return status;
+    }
+
+
+    public String getDesc() {
+        return desc;
     }
 
     public void setTypeName(Byte status) {

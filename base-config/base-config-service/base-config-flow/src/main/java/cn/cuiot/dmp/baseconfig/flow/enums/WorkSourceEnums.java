@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.enums;
 
+import java.util.Objects;
+
 /**
  * @author pengjian
  * @create 2024/6/12 9:28
@@ -24,6 +26,19 @@ public enum WorkSourceEnums {
         this.desc=desc;
     }
 
+    /**
+     * 根据编码查询工单来源
+     * @param code
+     * @return
+     */
+    public static String getWorkOrderSource(Byte code) {
+        for (WorkSourceEnums WorkOrderStatusEnums : WorkSourceEnums.values()) {
+            if (Objects.equals(WorkOrderStatusEnums.getCode(),code)) {
+                return WorkOrderStatusEnums.getDesc();
+            }
+        }
+        return null;
+    }
     public byte getCode() {
         return code;
     }

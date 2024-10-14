@@ -3,11 +3,13 @@ package cn.cuiot.dmp.lease.controller;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.clue.*;
 import cn.cuiot.dmp.lease.service.ClueService;
+import cn.cuiot.dmp.system.domain.aggregate.CodeArchivesPageQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -159,6 +161,18 @@ public class ClueController {
     @PostMapping("/batchDelete")
     public boolean batchDeleteClue(@RequestBody @Valid ClueBatchUpdateDTO batchUpdateDTO) {
         return clueService.batchDeleteClue(batchUpdateDTO.getIdList());
+    }
+
+    /**
+     * 导出
+     * @param pageQuery
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody @Valid CluePageQueryDTO pageQuery) throws Exception {
+        clueService.export(pageQuery);
+        return IdmResDTO.success();
     }
 
 }
