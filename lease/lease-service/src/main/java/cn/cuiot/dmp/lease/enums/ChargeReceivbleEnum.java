@@ -2,6 +2,8 @@ package cn.cuiot.dmp.lease.enums;
 
 import com.google.common.collect.Lists;
 
+import java.util.Objects;
+
 /**
  * 收费管理-收银台-缴费管理-应收状态 0未交款 1已交款 2已交清
  */
@@ -18,6 +20,20 @@ public enum ChargeReceivbleEnum {
         this.desc = desc;
     }
 
+    /**
+     * 获取desc
+     * @param code
+     * @return
+     */
+    public static String getDesc(Byte code){
+        for (ChargeReceivbleEnum chargeEnum:ChargeReceivbleEnum.values()){
+            if(Objects.equals(code,chargeEnum.getCode())){
+                return chargeEnum.getDesc();
+            }
+        }
+
+        return null;
+    }
     public Byte getCode() {
         return code;
     }

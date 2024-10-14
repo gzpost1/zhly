@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.baseconfig.flow.service;
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
@@ -9,6 +11,8 @@ import cn.cuiot.dmp.base.infrastructure.xxljob.XxlJobClient;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkFlowConstants;
 import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.*;
+import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
+import cn.cuiot.dmp.baseconfig.flow.dto.export.ExportWorkOrderDto;
 import cn.cuiot.dmp.baseconfig.flow.entity.*;
 import cn.cuiot.dmp.baseconfig.flow.enums.PlanWordStatusEnums;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkPlanInfoMapper;
@@ -75,6 +79,9 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
 
     @Autowired
     private ProcessAndDeptService processAndDeptService;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 创建工单计划
@@ -454,7 +461,10 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
      * 导出工单计划列表数据
      * @param dto
      */
-    public void exportWordPlanInfo(QueryWorkPlanInfoDto dto){
+    public void exportWordPlanInfo(QueryWorkPlanInfoDto dto) throws Exception {
+
+            excelExportService.excelExport(ExcelReportDto.<QueryWorkPlanInfoDto, WorkPlanInfoEntity>builder().title("工单计划导出").fileName("工单计划导出")
+                    .dataList(queryExportWordPlanInfo(dto)).build(),WorkPlanInfoEntity.class);
 
     }
 
@@ -490,6 +500,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
                     //停启用信息
                     item.setStateName(PlanWordStatusEnums.getWorkOrderSource(Integer.parseInt(String.valueOf(item.getState()))));
                     //有效状态
+                    item.setPlanState(planWordStatus(item.getStartDate(),item.getEndDate()));
                 });
                 pageNo++;
                 resultList.addAll(records);
@@ -500,11 +511,18 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
     }
 
     public String planWordStatus(Date startTime ,Date endTime){
+        Date date = new Date();
+        //未生效
+        if(date.before(startTime)){
+            return WorkOrderConstants.NOT_EFFECTIVE;
+        }
 
-//        if(){
-//
-//        }
-
+        if(date.after(startTime) && date.before(endTime)){
+            return WorkOrderConstants.EFFECTIVE;
+        }
+        if(endTime.before(date)){
+            return WorkOrderConstants.END;
+        }
         return null;
     }
 

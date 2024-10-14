@@ -56,4 +56,12 @@ public interface WorkOrderConstants {
      * 导出数据
      */
     Long PAGE_SIZE =2000L;
+    /**
+     * 未生效
+     */
+     String NOT_EFFECTIVE="未生效";
+
+    String EFFECTIVE ="进行中";
+
+    String END = "已结束";
 }

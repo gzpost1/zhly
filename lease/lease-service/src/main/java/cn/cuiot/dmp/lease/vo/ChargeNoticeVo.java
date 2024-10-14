@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.vo;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,6 +18,7 @@ public class ChargeNoticeVo {
     /**
      * id
      */
+    @Excel(name = "通知单号", orderNum = "0", width = 20)
     private Long id;
 
     /**
@@ -34,6 +36,7 @@ public class ChargeNoticeVo {
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Excel(name = "通知单月份开始日期",orderNum = "2",  width = 20,exportFormat = "yyyy-MM-dd")
     private Date ownershipPeriodBegin;
 
     /**
@@ -41,6 +44,7 @@ public class ChargeNoticeVo {
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Excel(name = "通知单月份结束日期",orderNum = "3",  width = 20,exportFormat = "yyyy-MM-dd")
     private Date ownershipPeriodEnd;
 
     /**
@@ -52,4 +56,10 @@ public class ChargeNoticeVo {
      * 停启用状态（0停用，1启用）
      */
     private Byte status;
+
+    /**
+     * 状态
+     */
+    @Excel(name = "状态", orderNum = "7", width = 20)
+    private String statusName;
 }

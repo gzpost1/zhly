@@ -1656,7 +1656,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
 
     public void export(QueryMyApprovalDto dto) throws Exception {
-        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,ExportWorkOrderDto>builder().title("待审批数据").fileName("待审批数据")
+        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,ExportWorkOrderDto>builder().title("待审批工单导出").fileName("待审批工单导出")
                 .dataList(exportMyNotApproval(dto)).build(),ExportWorkOrderDto.class);
     }
 
@@ -1729,7 +1729,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     }
 
     public void exportMyApproval(QueryMyApprovalDto dto) throws Exception {
-        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,MyApprovalDto>builder().title("已审批数据").fileName("已审批数据")
+        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,MyApprovalDto>builder().title("已审批工单导出").fileName("已审批工单导出")
                 .dataList(queryExportMyApproval(dto)).clazz(dto.getClazz()).build(),MyApprovalDto.class);
     }
     public List<MyApprovalDto> queryExportMyApproval(QueryMyApprovalDto dto) {
@@ -1797,7 +1797,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
 
     public void exportMakeApproval(QueryMyApprovalDto dto) throws Exception {
-        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,MakeApprovalDto>builder().title("抄送我列表").fileName("抄送我列表")
+        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,MakeApprovalDto>builder().title("抄送我工单导出").fileName("抄送我工单导出")
                 .dataList(queryExportMakeApproval(dto)).build(),MakeApprovalDto.class);
     }
     public  List<MakeApprovalDto>  queryExportMakeApproval(QueryMyApprovalDto dto){
@@ -1876,7 +1876,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     }
 
     public void exportMySubmitWorkInfo(QueryMyApprovalDto dto) throws Exception {
-        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,WorkInfoEntity>builder().title("我提交的").fileName("我提交的")
+        excelExportService.excelExport(ExcelReportDto.<QueryMyApprovalDto,WorkInfoEntity>builder().title("我提交的工单导出").fileName("我提交的工单导出")
                 .dataList(QueryExportMySubmitWorkInfo(dto)).build(),WorkInfoEntity.class);
     }
     public List<WorkInfoEntity> QueryExportMySubmitWorkInfo(QueryMyApprovalDto dto){
@@ -2103,7 +2103,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @throws Exception
      */
     public void exportCustomerWorkOrder(QueryCustomerWorkOrderDto dto) throws Exception {
-        excelExportService.excelExport(ExcelReportDto.<QueryCustomerWorkOrderDto,CustomerWorkOrderDto>builder().title("客户工单列表").fileName("客户工单列表")
+        excelExportService.excelExport(ExcelReportDto.<QueryCustomerWorkOrderDto,CustomerWorkOrderDto>builder().title("客户工单导出").fileName("客户工单导出")
                 .dataList(queryExportCustomerWorkOrder(dto)).build(),CustomerWorkOrderDto.class);
     }
 

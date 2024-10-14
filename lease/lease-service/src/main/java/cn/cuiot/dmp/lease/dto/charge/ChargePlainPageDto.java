@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +19,7 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
     /**
      * id
      */
+    @Excel(name = "生成计划编码", orderNum = "0", width = 20)
     private Long id;
 
     /**
@@ -33,6 +35,7 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
     /**
      * 收费项目名称
      */
+    @Excel(name = "收费项目", orderNum = "2", width = 20)
     private String chargeItemName;
 
     /**
@@ -43,6 +46,7 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
     /**
      * 应收金额/本金
      */
+    @Excel(name = "应收金额", orderNum = "3", width = 20)
     private Integer receivableAmount;
 
     /**
@@ -65,6 +69,7 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
     /**
      * 创建人名称
      */
+    @Excel(name = "创建人", orderNum = "8", width = 20)
     private String createUserName;
 
     /**
@@ -72,19 +77,25 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
      */
     private Byte cronType;
 
+    @Excel(name = "执行频率", orderNum = "4", width = 20)
+    private String cornTypeName;
+
     /**
      * 执行频率-指定日期-开始时间
      */
+    @Excel(name = "执行开始时间", orderNum = "5", width = 20)
     private String cronBeginDate;
 
     /**
      * 执行频率-指定日期-结束时间
      */
+    @Excel(name = "执行结束时间", orderNum = "6", width = 20)
     private String cronEndDate;
 
     /**
      * 执行频率-指定日期 1-31
      */
+    @Excel(name = "执行日期", orderNum = "7", width = 20)
     private Integer cronAppointDate;
 
     /**
@@ -98,6 +109,9 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
      * 状态 0停用 1启用
      */
     private Byte status;
+
+    @Excel(name = "状态", orderNum = "9", width = 20)
+    private String statusName;
     /**
      * 收费对象
      */
@@ -106,6 +120,7 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
     /**
      * 收费对象名称
      */
+    @Excel(name = "收费对象", orderNum = "1", width = 20)
     private String receivableObjName;
 
     /**

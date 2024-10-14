@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.lease.enums.SecurityDepositStatusEnum;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -7,6 +8,7 @@ import com.google.common.collect.Lists;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Objects;
 
@@ -20,7 +22,11 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
     /**
      *  应收编码/实收编码
      */
+    @Excel(name = "押金实收编码", orderNum = "0", width = 20)
     private Long id;
+
+    @Excel(name = "押金应收编码", orderNum = "1", width = 20)
+    private Long receivableId;
 
     /**
      * 客户id
@@ -30,6 +36,7 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
     /**
      * 客户名称
      */
+    @Excel(name = "客户名称", orderNum = "4", width = 20)
     private String customerUserName;
 
     /**
@@ -40,11 +47,13 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
     /**
      * 房屋名称
      */
+    @Excel(name = "房屋名称", orderNum = "2", width = 20)
     private String houseName;
 
     /**
      * 房屋编号
      */
+    @Excel(name = "房屋编码", orderNum = "3", width = 20)
     private String houseCode;
 
     /**
@@ -55,6 +64,7 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
     /**
      * 收费项目名称
      */
+    @Excel(name = "收费项目", orderNum = "5", width = 20)
     private String chargeItemName;
 
     /**
@@ -72,6 +82,7 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Excel(name = "所属账期-开始时间",orderNum = "6",  width = 20,exportFormat = "yyyy-MM-dd")
     private Date ownershipPeriodBegin;
 
     /**
@@ -79,6 +90,7 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Excel(name = "所属账期-结束时间",orderNum = "7",  width = 20,exportFormat = "yyyy-MM-dd")
     private Date ownershipPeriodEnd;
 
     /**
@@ -105,6 +117,18 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
      */
     private Integer receivableAmountReceived;
 
+    @Excel(name = "实收金额", orderNum = "8", width = 20)
+    private String receivableAmountReceivedName;
+
+    public String getReceivableAmountReceivedName(){
+        Double num = receivableAmountReceived / 100.0;
+
+        DecimalFormat decimalFormat = new DecimalFormat("#.00"); //定义格式，小数点后两位
+
+        String formattedAmount = decimalFormat.format(num);
+        return formattedAmount;
+    }
+
     /**
      * 已退金额
      */
@@ -123,16 +147,19 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
     /**
      * 交易方式名称
      */
+    @Excel(name = "交易方式", orderNum = "11", width = 20)
     private String transactionModeName;
 
     /**
      * 入账银行
      */
+    @Excel(name = "入账银行", orderNum = "9", width = 20)
     private String accountBank;
 
     /**
      * 入账账号
      */
+    @Excel(name = "入账账号", orderNum = "10", width = 20)
     private String accountNumber;
 
     /**
@@ -158,5 +185,8 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
             return 0;
         }
         return receivableAmount - returnedAmount;
+    }
+    public Long getReceivableId(){
+        return id;
     }
 }

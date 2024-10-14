@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.entity.charge;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.lease.dto.charge.ChargeItemNameSet;
 import cn.cuiot.dmp.lease.dto.charge.TransactionModeNameSet;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -8,6 +9,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -24,12 +26,14 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
      * 实收id
      */
     @TableId(value = "id", type = IdType.INPUT)
+    @Excel(name = "实收编码", orderNum = "1", width = 20)
     private Long id;
 
     /**
      * 应收id
      */
     @TableField(value = "charge_id")
+    @Excel(name = "应收编码", orderNum = "0", width = 20)
     private Long chargeId;
 
     /**
@@ -38,6 +42,19 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
     @TableField(value = "receivable_amount_received")
     private Integer receivableAmountReceived;
 
+
+    @Excel(name = "实收本金", orderNum = "8", width = 20)
+    @TableField(exist = false)
+    private String receivableAmountReceivedName;
+
+    public String getReceivableAmountReceivedName(){
+        Double num = receivableAmountReceived / 100.0;
+
+        DecimalFormat decimalFormat = new DecimalFormat("#.00"); //定义格式，小数点后两位
+
+        String formattedAmount = decimalFormat.format(num);
+        return formattedAmount;
+    }
     /**
      * 违约金应收
      */
@@ -49,6 +66,19 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
      */
     @TableField(value = "liquidated_damages_received")
     private Integer liquidatedDamagesReceived;
+
+    @Excel(name = "实收违约金", orderNum = "9", width = 20)
+    @TableField(exist = false)
+    private String liquidatedDamagesReceivedName;
+
+    public String getLiquidatedDamagesReceivedName(){
+        Double num = liquidatedDamagesReceived / 100.0;
+
+        DecimalFormat decimalFormat = new DecimalFormat("#.00"); //定义格式，小数点后两位
+
+        String formattedAmount = decimalFormat.format(num);
+        return formattedAmount;
+    }
 
     /**
      * 违约金税额
@@ -68,6 +98,7 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
     @TableField(value = "create_time")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @Excel(name = "创建时间",orderNum = "13",  width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     /**
@@ -81,6 +112,19 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
      */
     @TableField(value = "total_received")
     private Integer totalReceived;
+
+    @Excel(name = "实收合计", orderNum = "7", width = 20)
+    @TableField(exist = false)
+    private String totalReceivedName;
+
+    public String getTotalReceivedName(){
+        Double num = totalReceived / 100.0;
+
+        DecimalFormat decimalFormat = new DecimalFormat("#.00"); //定义格式，小数点后两位
+
+        String formattedAmount = decimalFormat.format(num);
+        return formattedAmount;
+    }
 
     /**
      * 是否只收本金 0否 1是
@@ -98,18 +142,21 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
      * 交易方式名称
      */
     @TableField(exist = false)
+    @Excel(name = "交易方式", orderNum = "10", width = 20)
     private String transactionModeName;
 
     /**
      * 入账银行
      */
     @TableField(value = "account_bank")
+    @Excel(name = "入账银行", orderNum = "11", width = 20)
     private String accountBank;
 
     /**
      * 入账账号
      */
     @TableField(value = "account_number")
+    @Excel(name = "入账账号", orderNum = "12", width = 20)
     private String accountNumber;
 
     /**
@@ -154,6 +201,7 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
     private Long chargeItemId;
 
     @TableField(exist = false)
+    @Excel(name = "收费项目", orderNum = "4", width = 20)
     private String chargeItemName;
 
     /**
@@ -162,6 +210,7 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
     @TableField(value = "ownership_period_begin")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Excel(name = "所属账期-开始时间",orderNum = "5",  width = 20,exportFormat = "yyyy-MM-dd")
     private Date ownershipPeriodBegin;
 
     /**
@@ -170,12 +219,14 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
     @TableField(value = "ownership_period_end")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Excel(name = "所属账期-结束时间",orderNum = "6",  width = 20,exportFormat = "yyyy-MM-dd")
     private Date ownershipPeriodEnd;
 
     /**
      * 客户名称
      */
     @TableField(exist = false)
+    @Excel(name = "客户名称", orderNum = "3", width = 20)
     private String customerUserName;
 
     /**

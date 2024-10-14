@@ -1,10 +1,14 @@
 package cn.cuiot.dmp.lease.service.charge;
 
+import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.common.constant.InformTypeConstant;
+import cn.cuiot.dmp.common.constant.NumberConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.StatusConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -12,6 +16,7 @@ import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.ChargeCollectionPlanBuildingEntity;
 import cn.cuiot.dmp.lease.entity.charge.ChargeCollectionPlanEntity;
 import cn.cuiot.dmp.lease.entity.charge.ChargeCollectionPlanItemEntity;
+import cn.cuiot.dmp.lease.enums.ChannelEnum;
 import cn.cuiot.dmp.lease.enums.ChargeCollectionPlainCronTypeEnum;
 import cn.cuiot.dmp.lease.enums.ChargeCollectionTypeEnum;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
@@ -56,6 +61,8 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
     private SystemToFlowService systemToFlowService;
     @Autowired
     private ChargeCollectionManageService chargeCollectionManageService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
 
     /**
@@ -90,6 +97,75 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
             }
         }
         return page;
+    }
+
+    /**
+     * 导出
+     * @param dto
+     * @throws Exception
+     */
+
+    public void export(ChargeCollectionPlanPageQuery dto) throws Exception {
+        excelExportService.excelExport(ExcelReportDto.<ChargeCollectionPlanPageQuery,ChargeCollectionPlanPageVo>builder().title("催款计划导出").fileName("催款计划导出")
+                .dataList(queryChargeCollectionPlan(dto)).build(),ChargeCollectionPlanPageVo.class);
+    }
+    /**
+     * 查询催缴计划列表
+     * @param query
+     * @return
+     */
+    public List<ChargeCollectionPlanPageVo> queryChargeCollectionPlan(ChargeCollectionPlanPageQuery query){
+        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        Boolean flag =true;
+        Long pageNo = 1L;
+        query.setPageSize(NumberConst.PAGE_MAX_SIZE);
+        List<ChargeCollectionPlanPageVo> resultList = new ArrayList<>();
+        do {
+            query.setPageNo(pageNo);
+            IPage<ChargeCollectionPlanPageVo> page = getBaseMapper().queryForPage(new Page<>(query.getPageNo(), query.getPageSize()), query);
+            if(page.getTotal()> NumberConst.QUERY_MAX_SIZE){
+                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
+            }
+            if(CollectionUtils.isEmpty(page.getRecords())){
+                flag=false;
+            }
+
+                if (Objects.nonNull(page) && CollectionUtils.isNotEmpty(page.getRecords())) {
+                //获取通知单当前分页ids列表
+                List<Long> ids = page.getRecords().stream().map(ChargeCollectionPlanPageVo::getId).collect(Collectors.toList());
+                //获取楼盘名称信息
+                Map<Long, List<String>> buildingNameMap = getBuildingNameMap(ids);
+                //获取收费项目名称信息
+                Map<Long, List<String>> chargeItemNameMap = getChargeItemNameMap(ids);
+
+                //获取系统用户信息
+                List<Long> userIds = page.getRecords().stream().map(ChargeCollectionPlanPageVo::getCreateUser)
+                        .filter(Objects::nonNull).distinct().collect(Collectors.toList());
+                Map<Long, BaseUserDto> systemUserMap = getSystemUserMap(userIds);
+
+                //设置楼盘名称、收费项目名称、操作人名称
+                for (ChargeCollectionPlanPageVo vo : page.getRecords()) {
+                    if (buildingNameMap.containsKey(vo.getId())) {
+                        vo.setBuildingsName(String.join(",", buildingNameMap.get(vo.getId())));
+                    }
+                    if (chargeItemNameMap.containsKey(vo.getId())) {
+                        vo.setChargeItemsName(String.join(",", chargeItemNameMap.get(vo.getId())));
+                    }
+                    if (systemUserMap.containsKey(vo.getCreateUser())) {
+                        vo.setOperatorName(systemUserMap.get(vo.getCreateUser()).getName());
+                    }
+                }
+                    page.getRecords().stream().forEach(item->{
+                        item.setChannelName(ChannelEnum.getDesc(item.getChannel()));
+                        item.setCornTypeName(ChargeCollectionPlainCronTypeEnum.getByCode(item.getCronType()).getDesc());
+                        item.setStatusName(Objects.equals(item.getStatus(), NumberConst.DATA_STATUS)? StatusConst.STOP: StatusConst.ENABLE);
+                    });
+                    pageNo++;
+                    resultList.addAll(page.getRecords());
+            }
+        }while (flag);
+
+        return resultList;
     }
 
     /**
