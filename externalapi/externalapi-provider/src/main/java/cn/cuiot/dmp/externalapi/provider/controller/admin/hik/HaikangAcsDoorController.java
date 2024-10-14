@@ -13,6 +13,7 @@ import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorControlDto;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorQuery;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorStateQuery;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsDoorService;
+import cn.cuiot.dmp.externalapi.service.sync.hik.HaikangAcsDataManualSyncService;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.List;
@@ -38,6 +39,9 @@ public class HaikangAcsDoorController {
 
     @Autowired
     private HaikangAcsDoorService haikangAcsDoorService;
+
+    @Autowired
+    private HaikangAcsDataManualSyncService haikangAcsDataManualSyncService;
 
     @Autowired
     private HaikangAcsDoorConverter haikangAcsDoorConverter;
@@ -99,6 +103,16 @@ public class HaikangAcsDoorController {
         HaikangAcsDoorVo vo = haikangAcsDoorConverter.entityToVo(acsDoorEntity);
         vo.setDoorState(state);
         return IdmResDTO.success(vo);
+    }
+
+    /**
+     * 手动同步数据
+     */
+    @RequiresPermissions
+    @PostMapping("/syncData")
+    public IdmResDTO syncData() {
+        haikangAcsDataManualSyncService.haikangAcsDoorDataManualSync();
+        return IdmResDTO.success(null);
     }
 
 }

@@ -5,6 +5,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsReaderQuery;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsReaderService;
+import cn.cuiot.dmp.externalapi.service.sync.hik.HaikangAcsDataManualSyncService;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsReaderVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.List;
@@ -29,6 +30,9 @@ public class HaikangAcsReaderController {
 
     @Autowired
     private HaikangAcsReaderService haikangAcsReaderService;
+
+    @Autowired
+    private HaikangAcsDataManualSyncService haikangAcsDataManualSyncService;
 
     /**
      * 分页查询
@@ -56,5 +60,14 @@ public class HaikangAcsReaderController {
         return IdmResDTO.success(list);
     }
 
+    /**
+     * 手动同步数据
+     */
+    @RequiresPermissions
+    @PostMapping("/syncData")
+    public IdmResDTO syncData() {
+        haikangAcsDataManualSyncService.haikangAcsReaderDataManualSync();
+        return IdmResDTO.success(null);
+    }
 
 }
