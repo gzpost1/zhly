@@ -127,6 +127,7 @@ public class HaikangAcsDoorController {
     /**
      * 导出
      */
+    @RequiresPermissions
     @PostMapping("export")
     public IdmResDTO export(@RequestBody HaikangAcsDoorQuery query) {
 
@@ -148,7 +149,7 @@ public class HaikangAcsDoorController {
                         IPage<HaikangAcsDoorVo> page = haikangAcsDoorService.queryForPage(query);
 
                         return page.convert(item->{
-                            HaikangAcsDoorExportVo exportVo = haikangAcsDoorConverter.entityToExportVo(
+                            HaikangAcsDoorExportVo exportVo = haikangAcsDoorConverter.voToExportVo(
                                     item);
                             return exportVo;
                         });

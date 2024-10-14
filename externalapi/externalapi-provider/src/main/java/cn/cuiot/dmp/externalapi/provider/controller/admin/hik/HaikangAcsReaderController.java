@@ -87,6 +87,7 @@ public class HaikangAcsReaderController {
     /**
      * 导出
      */
+    @RequiresPermissions
     @PostMapping("export")
     public IdmResDTO export(@RequestBody HaikangAcsReaderQuery query) {
 
@@ -107,7 +108,7 @@ public class HaikangAcsReaderController {
                         IPage<HaikangAcsReaderVo> page = haikangAcsReaderService.queryForPage(
                                 query);
                         return page.convert(item -> {
-                            HaikangAcsReaderExportVo exportVo = haikangAcsReaderConverter.entityToExportVo(
+                            HaikangAcsReaderExportVo exportVo = haikangAcsReaderConverter.voToExportVo(
                                     item);
                             return exportVo;
                         });

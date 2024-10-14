@@ -22,5 +22,5 @@ public interface HaikangAcsDeviceConverter {
     List<HaikangAcsDeviceVo> entityListToVoList(List<HaikangAcsDeviceEntity> entityList);
 
     @Mappings({})
-    HaikangAcsDeviceExportVo entityToExportVo(HaikangAcsDeviceEntity entity);
+    HaikangAcsDeviceExportVo voToExportVo(HaikangAcsDeviceVo vo);
 }

@@ -23,5 +23,5 @@ public interface HaikangAcsReaderConverter {
     List<HaikangAcsReaderVo> entityListToVoList(List<HaikangAcsReaderEntity> entityList);
 
     @Mappings({})
-    HaikangAcsReaderExportVo entityToExportVo(HaikangAcsReaderEntity entity);
+    HaikangAcsReaderExportVo voToExportVo(HaikangAcsReaderVo vo);
 }

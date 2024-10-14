@@ -23,5 +23,5 @@ public interface HaikangAcsDoorConverter {
     List<HaikangAcsDoorVo> entityListToVoList(List<HaikangAcsDoorEntity> entityList);
 
     @Mappings({})
-    HaikangAcsDoorExportVo entityToExportVo(HaikangAcsDoorEntity entity);
+    HaikangAcsDoorExportVo voToExportVo(HaikangAcsDoorVo vo);
 }

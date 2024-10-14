@@ -102,6 +102,7 @@ public class HaikangAcsDeviceController {
     /**
      * 导出
      */
+    @RequiresPermissions
     @PostMapping("export")
     public IdmResDTO export(@RequestBody HaikangAcsDeviceQuery query) {
 
@@ -124,7 +125,9 @@ public class HaikangAcsDeviceController {
                                 dto.getQuery());
 
                         return page.convert(item -> {
-                            return haikangAcsDeviceConverter.entityToExportVo(item);
+                            HaikangAcsDeviceExportVo exportVo = haikangAcsDeviceConverter.voToExportVo(
+                                    item);
+                            return exportVo;
                         });
                     }
                 });
