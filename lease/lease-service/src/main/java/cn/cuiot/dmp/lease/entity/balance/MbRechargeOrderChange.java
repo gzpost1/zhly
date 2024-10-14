@@ -61,6 +61,9 @@ public class MbRechargeOrderChange extends YjBaseEntity {
      */
     private String changeUser;
 
-
+    /**
+     * 微信支付号
+     */
+    private String payOrderId;
 
 }

@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static cn.cuiot.dmp.pay.service.service.enums.BalanceChangeTypeEnum.*;
+import static cn.cuiot.dmp.pay.service.service.enums.Constants.PLATFORM;
 
 
 /**
@@ -55,8 +56,10 @@ public class BalanceRuleHandler {
                 .houseId(param.getHouseId())
                 .orderId(Objects.nonNull(param.getOrderId()) ? Long.parseLong(param.getOrderId()) : null)
                 .orderName(param.getOrderName())
-                .reason(BalanceChangeTypeEnum.getMessage(param.getChangeType()))
+                .reason(param.getReason())
                 .dataType(param.getDataType())
+                .changeUser(Objects.isNull(param.getChangeUser())?PLATFORM:param.getChangeUser())
+                .payOrderId(param.getPayOrderId())
                 .build();
         switch (typeEnum) {
             case BALANCE_PAY:

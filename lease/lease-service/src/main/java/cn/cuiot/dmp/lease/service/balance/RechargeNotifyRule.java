@@ -48,6 +48,7 @@ public class RechargeNotifyRule {
             BigDecimal payRate = paySuccessVO.getPayRate();
             rechargeOrder.setPayChargeRate(paySuccessVO.getPayRate());
             rechargeOrder.setPayCharge(new BigDecimal(rechargeOrder.getTotalFee()).multiply(payRate).divide(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
+            rechargeOrder.setPayOrderId(paySuccessVO.getTransactionNo());
             orderPayRule.paySuccessHandler(rechargeOrder);
         } else {
             orderPayRule.payFailHandler(rechargeOrder, MbRechargeOrderStatus.PAY_FAILED.getStatus());

@@ -22,7 +22,6 @@ import cn.cuiot.dmp.pay.service.service.vo.BalanceEventAggregate;
 import com.xxl.job.core.util.IpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -32,8 +31,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
-import static cn.cuiot.dmp.lease.constants.Constants.PLATFORM;
-import static cn.cuiot.dmp.lease.constants.Constants.RECHARGE_ORDER_NOTIFY;
+import static cn.cuiot.dmp.pay.service.service.enums.Constants.PLATFORM;
 import static cn.cuiot.dmp.pay.service.service.enums.BalanceChangeTypeEnum.BALANCE_RECHARGE;
 
 /**
@@ -163,6 +161,7 @@ public class RechargeOrderPayRule {
             BigDecimal payRate = payOrderQueryResp.getPayRate();
             order.setPayChargeRate(payOrderQueryResp.getPayRate());
             order.setPayCharge(new BigDecimal(order.getTotalFee()).multiply(payRate).divide(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
+            order.setPayOrderId(payOrderQueryResp.getPayOrderId());
             paySuccessHandler(order);
             return;
         }
@@ -184,7 +183,6 @@ public class RechargeOrderPayRule {
         updateOrder.updateStatus(order, MbRechargeOrderStatus.RECHARGING.getStatus(), PayStatus.P_PAID.getStatus());
         updateOrder.setPayCharge(order.getPayCharge());
         updateOrder.setPayChargeRate(order.getPayChargeRate());
-        //先变更为支付成功充值中，再调用余额充值，如果余额充值失败，则发mq重试，重试还是失败则发起退款
         updateToSql(updateOrder);
         order.setVersion(updateOrder.getVersion() + 1);
         Boolean flag = recharge(order);
@@ -214,8 +212,9 @@ public class RechargeOrderPayRule {
                     .changeType(BALANCE_RECHARGE.getType())
                     .createTime(new Date())
                     .orderId(order.getOrderId().toString())
-                    .orderName("余额充值")
+                    .orderName("小程序充值")
                     .houseId(order.getHouseId())
+                    .payOrderId(order.getPayOrderId())
                     .build();
             orderService.updateOrder(updateOrder);
             // 2023/11/30 状态变更

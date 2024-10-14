@@ -1,6 +1,9 @@
 package cn.cuiot.dmp.pay.controller;
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.pay.service.service.dto.PayChannelSettingDto;
 import cn.cuiot.dmp.pay.service.service.service.SysPayChannelSettingService;
 import cn.cuiot.dmp.pay.service.service.vo.SysPayChannelSettingDetailVo;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Objects;
 
 /**
  * 交易中心-支付渠道管理
@@ -43,6 +47,7 @@ public class PayChannelSettingController {
      *
      * @param param
      */
+    @RequiresPermissions
     @PostMapping("/update")
     public IdmResDTO update(@Valid PayChannelSettingDto param) {
         settingService.updatePaySetting(param);

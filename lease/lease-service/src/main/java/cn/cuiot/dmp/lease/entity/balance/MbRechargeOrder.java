@@ -103,6 +103,11 @@ public class MbRechargeOrder extends YjBaseEntity {
      */
     private String openId;
 
+    /**
+     * 微信支付单号
+     */
+    private String payOrderId;
+
     public void init(){
         this.orderId = IdWorker.getId();
         this.orderTime = new Date();
@@ -119,5 +124,6 @@ public class MbRechargeOrder extends YjBaseEntity {
         this.setStatus(status);
         this.setPayStatus(payStatus);
         this.setVersion(old.getVersion());
+        this.setPayOrderId(old.getPayOrderId());
     }
 }

@@ -7,6 +7,8 @@ import cn.cuiot.dmp.lease.mapper.balance.MbRechargeOrderMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
  * 充值订单 服务类
@@ -32,5 +34,9 @@ public class MbRechargeOrderService extends ServiceImpl<MbRechargeOrderMapper, M
 
     public Long quertOrgIdByHouse(Long houseId){
         return baseMapper.quertOrgIdByHouse(houseId);
+    }
+
+    public List<Long> queryHouseIdsByUser(Long houseId){
+        return baseMapper.queryHouseIdsByUser(houseId);
     }
 }

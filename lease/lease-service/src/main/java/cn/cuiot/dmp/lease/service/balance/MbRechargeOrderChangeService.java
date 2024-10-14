@@ -28,6 +28,7 @@ public class MbRechargeOrderChangeService extends ServiceImpl<MbRechargeOrderCha
                 .changeTime(new Date())
                 .changeUser(changeUser)
                 .status(updateOrder.getStatus())
+                .payOrderId(updateOrder.getPayOrderId())
                 .build();
         this.save(orderChange);
     }

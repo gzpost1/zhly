@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.pay.service.service.service;
 
+import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeDto;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
@@ -36,6 +37,16 @@ public class BalanceRuleAtHandler {
      */
     public IPage<BalanceChangeRecord> queryBalanceChangeRecordForPage(BalanceChangeRecordQuery query) {
         return changeRecordService.queryForPage(query);
+    }
+
+    /**
+     * 查询余额明细
+     *
+     * @param param
+     * @return
+     */
+    public BalanceChangeRecord queryBalanceChangeRecordForDetail(IdParam param) {
+        return changeRecordService.getById(param.getId());
     }
 
     /**

@@ -330,4 +330,10 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         return buildingUserMap;
     }
 
+
+    public List<Long> queryHouseIdByUserId(Long  userId){
+        LambdaQueryWrapper<UserHouseAuditEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserHouseAuditEntity::getUserId,userId);
+        return this.list(queryWrapper).stream().map(vo->vo.getHouseId()).collect(Collectors.toList());
+    }
 }

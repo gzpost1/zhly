@@ -5,7 +5,7 @@
 
 
     <update id="updateRechargeOrderByCondition">
-        update tb_mb_recharge_order
+        update tb_house_recharge_order
         <set>
             version = version+1,update_time=now(3),
             <if test="param.updateUser != null">
@@ -16,9 +16,6 @@
             </if>
             <if test="param.payStatus != null">
                 pay_status = #{param.payStatus,jdbcType=TINYINT},
-            </if>
-            <if test="param.payNo != null">
-                pay_no = #{param.payNo},
             </if>
             <if test="param.payCharge != null">
                 pay_charge = #{param.payCharge},
@@ -40,4 +37,8 @@
             a.id = #{houseId}
     </select>
 
+    <select id="queryHouseIdsByUser" resultType="java.lang.Long" parameterType="java.lang.Long">
+        SELECT house_id
+        FROM `user_house_audit` where user_id=#{userId}
+    </select>
 </mapper>

@@ -1,13 +1,14 @@
-package cn.cuiot.dmp.pay.controller;
+package cn.cuiot.dmp.lease.controller.balance;
 
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeDto;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceEntity;
+import cn.cuiot.dmp.pay.service.service.enums.BalanceChangeTypeEnum;
 import cn.cuiot.dmp.pay.service.service.service.BalanceRuleAtHandler;
 import cn.cuiot.dmp.pay.service.service.vo.BalanceEventAggregate;
+import cn.cuiot.dmp.pay.service.service.vo.RechargeBalanceVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,22 +22,22 @@ import javax.validation.Valid;
 import static cn.cuiot.dmp.pay.service.service.enums.Constants.ARTIFICIAL;
 
 /**
- * 会员中心-账户余额
+ * 系统管理-预缴
  *
  * @author wuyongchong
  * @since 2023-11-16
  */
 @Slf4j
 @RestController
-@RequestMapping("/mb-balance")
-public class BalanceController {
+@RequestMapping("/balance")
+public class HouseBalanceController {
 
     @Autowired
     private BalanceRuleAtHandler ruleAtHandler;
 
 
     /**
-     * 查询余额明细
+     * 充值记录列表
      *
      * @param query
      * @return
@@ -47,17 +48,7 @@ public class BalanceController {
         return IdmResDTO.success(pageResult);
     }
 
-    /**
-     * 增加或减少用户余额（系统管理端）
-     *
-     * @param param
-     * @return
-     */
-    @PostMapping("/updateBalance")
-    public IdmResDTO updateBalance(@RequestBody @Valid BalanceChangeDto param) {
-        ruleAtHandler.updateBalance(param);
-        return IdmResDTO.success();
-    }
+
 
     /**
      * 查询房屋当前余额
@@ -75,9 +66,15 @@ public class BalanceController {
      * 余额变动(包括充值，扣减等)-业务端调用
      */
     @PostMapping("/changeBalance")
-    public IdmResDTO changeBalance(@RequestBody @Valid BalanceEventAggregate param) {
-        param.setChangeUser(ARTIFICIAL);
-        ruleAtHandler.handler(param);
+    public IdmResDTO changeBalance(@RequestBody @Valid RechargeBalanceVo vo) {
+        BalanceEventAggregate balanceEventAggregate = new BalanceEventAggregate();
+        balanceEventAggregate.setChangeUser(ARTIFICIAL);
+        balanceEventAggregate.setBalance(vo.getBalance());
+        balanceEventAggregate.setHouseId(vo.getHouseId());
+        balanceEventAggregate.setReason(vo.getReason());
+        balanceEventAggregate.setOrderName("后台充值");
+        balanceEventAggregate.setChangeType(BalanceChangeTypeEnum.BALANCE_RECHARGE.getType());
+        ruleAtHandler.handler(balanceEventAggregate);
         return IdmResDTO.success();
     }
 

@@ -69,4 +69,18 @@ public class BalanceEventAggregate implements Serializable {
      */
     private Byte dataType;
 
+    /**
+     * 操作人类型
+     */
+    private String changeUser;
+
+    /**
+     * 原因
+     */
+    private String reason;
+
+    /**
+     * 微信支付单号
+     */
+    private String payOrderId;
 }

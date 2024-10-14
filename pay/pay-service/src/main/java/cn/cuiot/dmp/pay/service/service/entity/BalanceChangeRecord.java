@@ -88,4 +88,14 @@ public class BalanceChangeRecord extends YjBaseEntity {
      * 数据类型 0账单 1押金
      */
     private Byte dataType;
+
+    /**
+     * 操作人类型
+     */
+    private String changeUser;
+
+    /**
+     * 微信支付单号
+     */
+    private String payOrderId;
 }
