@@ -1,6 +1,9 @@
 package cn.cuiot.dmp.externalapi.provider.controller.admin.hik;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadCallable;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDeviceQuery;
@@ -36,6 +39,9 @@ public class HaikangAcsDeviceController {
     @Autowired
     private HaikangAcsDataManualSyncService haikangAcsDataManualSyncService;
 
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 分页查询
@@ -84,6 +90,37 @@ public class HaikangAcsDeviceController {
     public IdmResDTO syncData() {
         haikangAcsDataManualSyncService.haikangAcsDeviceDataManualSync();
         return IdmResDTO.success(null);
+    }
+
+    /**
+     * 导出
+     */
+    @PostMapping("export")
+    public IdmResDTO export(@RequestBody HaikangAcsDeviceQuery query) {
+
+        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
+        query.setCompanyId(currentOrgId);
+
+        ExcelDownloadDto<HaikangAcsDeviceQuery> dto = ExcelDownloadDto.<HaikangAcsDeviceQuery>builder()
+                .loginInfo(LoginInfoHolder.getCurrentLoginInfo())
+                .query(query)
+                .fileName("门禁设备导出（20241212）")
+                .build();
+
+        excelExportService.excelExport(dto, HaikangAcsDeviceVo.class,
+                new ExcelDownloadCallable<HaikangAcsDeviceQuery, HaikangAcsDeviceVo>() {
+                    @Override
+                    public IPage<HaikangAcsDeviceVo> excute(
+                            ExcelDownloadDto<HaikangAcsDeviceQuery> dto) {
+
+                        IPage<HaikangAcsDeviceVo> page = haikangAcsDeviceService.queryForPage(
+                                dto.getQuery());
+
+                        return page;
+                    }
+                });
+
+        return IdmResDTO.success();
     }
 
 }
