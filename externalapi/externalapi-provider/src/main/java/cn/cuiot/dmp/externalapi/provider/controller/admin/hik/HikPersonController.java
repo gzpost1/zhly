@@ -2,12 +2,18 @@ package cn.cuiot.dmp.externalapi.provider.controller.admin.hik;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadCallable;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.entity.hik.HikPersonEntity;
 import cn.cuiot.dmp.externalapi.service.query.hik.*;
 import cn.cuiot.dmp.externalapi.service.service.hik.HikPersonService;
+import cn.cuiot.dmp.externalapi.service.vo.hik.HikAcsDoorEventsPageVO;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HikPersonAuthorizeVO;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HikPersonAuthorizeValidityVO;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HikPersonPageVO;
@@ -19,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Date;
 
 /**
  * 后台-海康人员信息
@@ -32,6 +39,8 @@ public class HikPersonController {
 
     @Autowired
     private HikPersonService hikPersonService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 创建人员基础信息 Step 1
@@ -155,6 +164,34 @@ public class HikPersonController {
     @PostMapping("delete")
     public IdmResDTO<?> delete(@RequestBody @Valid IdsParam param) {
         hikPersonService.delete(param.getIds());
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 导出
+     *
+     * @Param query 参数
+     */
+    @RequiresPermissions
+    @PostMapping("/export")
+    public IdmResDTO<?> export(@RequestBody HikPersonPageQuery query) {
+
+        ExcelDownloadDto<HikPersonPageQuery> dto = ExcelDownloadDto.<HikPersonPageQuery>builder()
+                .loginInfo(LoginInfoHolder.getCurrentLoginInfo())
+                .query(query)
+                .fileName("通行记录导出（" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + "）")
+                .build();
+
+        excelExportService.excelExport(dto, HikPersonPageVO.class,
+                new ExcelDownloadCallable<HikPersonPageQuery, HikPersonPageVO>() {
+                    @Override
+                    public IPage<HikPersonPageVO> excute(
+                            ExcelDownloadDto<HikPersonPageQuery> dto) {
+
+                        return hikPersonService.queryForPage(dto.getQuery());
+                    }
+                });
+
         return IdmResDTO.success();
     }
 }

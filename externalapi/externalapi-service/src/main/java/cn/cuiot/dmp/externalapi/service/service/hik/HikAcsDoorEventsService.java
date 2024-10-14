@@ -136,15 +136,20 @@ public class HikAcsDoorEventsService extends ServiceImpl<HikAcsDoorEventsMapper,
                 .filter(Objects::nonNull).distinct().collect(Collectors.toList());
 
         if (CollectionUtils.isNotEmpty(doorRegionIndexCodes)) {
-            HikRegionDetailReq req = new HikRegionDetailReq();
-            req.setIndexCodes(doorRegionIndexCodes);
-            HikRegionDetailResp resp = hikApiFeignService.queryRegionDetail(req, bo);
+            try {
+                HikRegionDetailReq req = new HikRegionDetailReq();
+                req.setIndexCodes(doorRegionIndexCodes);
+                HikRegionDetailResp resp = hikApiFeignService.queryRegionDetail(req, bo);
 
-            if (Objects.nonNull(resp) && CollectionUtils.isNotEmpty(resp.getList())) {
-                Map<String, String> map = resp.getList().stream()
-                        .collect(Collectors.toMap(HikRegionDetailResp.RegionInfo::getIndexCode, HikRegionDetailResp.RegionInfo::getName));
+                if (Objects.nonNull(resp) && CollectionUtils.isNotEmpty(resp.getList())) {
+                    Map<String, String> map = resp.getList().stream()
+                            .collect(Collectors.toMap(HikRegionDetailResp.RegionInfo::getIndexCode, HikRegionDetailResp.RegionInfo::getName));
 
-                dataList.forEach(item -> item.setDoorRegionName(map.getOrDefault(item.getDoorRegionIndexCode(), null)));
+                    dataList.forEach(item -> item.setDoorRegionName(map.getOrDefault(item.getDoorRegionIndexCode(), null)));
+                }
+            } catch (Exception e) {
+                log.error("获取海康门禁区域信息异常........");
+                e.printStackTrace();
             }
         }
     }
@@ -204,16 +209,23 @@ public class HikAcsDoorEventsService extends ServiceImpl<HikAcsDoorEventsMapper,
         if (StringUtils.isNotBlank(query.getName())) {
             req.setName(query.getName());
         }
-        HikIrdsResourcesByParamsResp resp = hikApiFeignService.queryIrdsResourcesByParams(req, bo);
-
         List<HikCommonResourcesVO> list = Lists.newArrayList();
-        if (Objects.nonNull(resp) && CollectionUtils.isNotEmpty(resp.getList())) {
-            list = resp.getList().stream().map(item -> {
-                HikCommonResourcesVO vo = new HikCommonResourcesVO();
-                vo.setId(item.getIndexCode());
-                vo.setName(item.getName());
-                return vo;
-            }).collect(Collectors.toList());
+
+        HikIrdsResourcesByParamsResp resp;
+        try {
+            resp = hikApiFeignService.queryIrdsResourcesByParams(req, bo);
+
+            if (Objects.nonNull(resp) && CollectionUtils.isNotEmpty(resp.getList())) {
+                list = resp.getList().stream().map(item -> {
+                    HikCommonResourcesVO vo = new HikCommonResourcesVO();
+                    vo.setId(item.getIndexCode());
+                    vo.setName(item.getName());
+                    return vo;
+                }).collect(Collectors.toList());
+            }
+        } catch (Exception e) {
+            log.error("获取海康门禁控制器异常.........");
+            e.printStackTrace();
         }
         return list;
     }

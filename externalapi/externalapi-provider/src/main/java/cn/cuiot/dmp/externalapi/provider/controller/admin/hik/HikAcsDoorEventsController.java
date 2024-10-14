@@ -1,7 +1,12 @@
 package cn.cuiot.dmp.externalapi.provider.controller.admin.hik;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadCallable;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.query.hik.HikAcsDoorEventsPageQuery;
 import cn.cuiot.dmp.externalapi.service.query.hik.HikIrdsResourcesByParamsQuery;
 import cn.cuiot.dmp.externalapi.service.query.hik.HikOrgListQuery;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -32,6 +38,8 @@ public class HikAcsDoorEventsController {
     private HikAcsDoorEventsService hikAcsDoorEventsService;
     @Autowired
     private HikPersonService hikPersonService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 分页
@@ -67,5 +75,32 @@ public class HikAcsDoorEventsController {
     @PostMapping("/queryAcsDeviceList")
     public IdmResDTO<List<HikCommonResourcesVO>> queryAcsDeviceList(HikIrdsResourcesByParamsQuery query) {
         return IdmResDTO.success(hikAcsDoorEventsService.queryAcsDeviceList(query));
+    }
+
+    /**
+     * 导出
+     *
+     * @Param query 参数
+     */
+    @RequiresPermissions
+    @PostMapping("/export")
+    public IdmResDTO<?> export(@RequestBody HikAcsDoorEventsPageQuery query) {
+
+        ExcelDownloadDto<HikAcsDoorEventsPageQuery> dto = ExcelDownloadDto.<HikAcsDoorEventsPageQuery>builder()
+                .loginInfo(LoginInfoHolder.getCurrentLoginInfo())
+                .query(query)
+                .fileName("人员导出（" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + "）")
+                .build();
+
+        excelExportService.excelExport(dto, HikAcsDoorEventsPageVO.class,
+                new ExcelDownloadCallable<HikAcsDoorEventsPageQuery, HikAcsDoorEventsPageVO>() {
+                    @Override
+                    public IPage<HikAcsDoorEventsPageVO> excute(
+                            ExcelDownloadDto<HikAcsDoorEventsPageQuery> dto) {
+
+                        return hikAcsDoorEventsService.queryForPage(dto.getQuery());
+                    }
+                });
+        return IdmResDTO.success();
     }
 }

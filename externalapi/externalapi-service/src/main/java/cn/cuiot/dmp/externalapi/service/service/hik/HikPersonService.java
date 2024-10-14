@@ -439,13 +439,19 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
     }
 
     private List<HikOrgListResp.DataItem> queryOrgList(HikOrgListReq req, HIKEntranceGuardBO bo) {
-        req.setPageNo(Objects.nonNull(req.getPageNo()) ? req.getPageNo() : 1L);
-        req.setPageSize(Objects.nonNull(req.getPageSize()) ? req.getPageSize() : DEFAULT_PAGE_SIZE);
-        req.setIsSubOrg(true);
-        HikOrgListResp resp = hikApiFeignService.queryOrgList(req, bo);
-        if (Objects.nonNull(resp) && CollectionUtils.isNotEmpty(resp.getList())) {
-            return resp.getList();
+        try {
+            req.setPageNo(Objects.nonNull(req.getPageNo()) ? req.getPageNo() : 1L);
+            req.setPageSize(Objects.nonNull(req.getPageSize()) ? req.getPageSize() : DEFAULT_PAGE_SIZE);
+            req.setIsSubOrg(true);
+            HikOrgListResp resp = hikApiFeignService.queryOrgList(req, bo);
+            if (Objects.nonNull(resp) && CollectionUtils.isNotEmpty(resp.getList())) {
+                return resp.getList();
+            }
+        } catch (Exception e) {
+            log.error("获取海康门禁组织信息异常......");
+            e.printStackTrace();
         }
+
         return Lists.newArrayList();
     }
 
@@ -461,30 +467,34 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
 
         List<HikAcpsAuthConfigSearchResp.PermissionConfig> list = Lists.newArrayList();
 
-        AtomicLong pageNo = new AtomicLong(1);
-        long pageSize = 200;
-        long totalSize = 0;
-        long currentSize = 0;
-        do {
-            HikAcpsAuthConfigSearchReq searchReq = new HikAcpsAuthConfigSearchReq();
-            searchReq.setPersonDataIds(personIdStr);
-            searchReq.setPersonDataType("person");
-            searchReq.setPageNo(pageNo.getAndAdd(1));
-            searchReq.setPageSize(pageSize);
-            // 查询当前用户授权
-            HikAcpsAuthConfigSearchResp search = hikApiFeignService.acpsAuthConfigSearch(searchReq, bo);
+        try {
+            AtomicLong pageNo = new AtomicLong(1);
+            long pageSize = 200;
+            long totalSize = 0;
+            long currentSize = 0;
+            do {
+                HikAcpsAuthConfigSearchReq searchReq = new HikAcpsAuthConfigSearchReq();
+                searchReq.setPersonDataIds(personIdStr);
+                searchReq.setPersonDataType("person");
+                searchReq.setPageNo(pageNo.getAndAdd(1));
+                searchReq.setPageSize(pageSize);
+                // 查询当前用户授权
+                HikAcpsAuthConfigSearchResp search = hikApiFeignService.acpsAuthConfigSearch(searchReq, bo);
 
-            if (Objects.nonNull(search)) {
+                if (Objects.nonNull(search)) {
 
-                totalSize = search.getTotal();
-                currentSize += pageSize;
+                    totalSize = search.getTotal();
+                    currentSize += pageSize;
 
-                if (CollectionUtils.isNotEmpty(search.getList())) {
-                    list.addAll(search.getList());
+                    if (CollectionUtils.isNotEmpty(search.getList())) {
+                        list.addAll(search.getList());
+                    }
                 }
-            }
-        } while (currentSize < totalSize);
-
+            } while (currentSize < totalSize);
+        } catch (Exception e) {
+            log.error("获取海康门禁授权信息异常......");
+            e.printStackTrace();
+        }
         return list;
     }
 
