@@ -6,6 +6,7 @@ import cn.cuiot.dmp.base.application.dto.ExcelDownloadCallable;
 import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
 import cn.cuiot.dmp.base.application.utils.ExcelUtil;
+import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -58,14 +59,16 @@ public class ExcelExportService {
     /**
      * 导出
      */
-    public <T, R> void  excelExport(ExcelDownloadDto<T> dto,Class<R> clzz ,
+    public <T extends PageQuery, R> void  excelExport(ExcelDownloadDto<T> dto,Class<R> clzz ,
             ExcelDownloadCallable<T,R> func) {
         AtomicLong pageNo = new AtomicLong(1);
         long pages = 0;
         try {
             List<R> dataList = Lists.newArrayList();
             do {
-                IPage<R> page = func.excute(dto,pageNo.getAndAdd(1),2000L);
+                dto.getQuery().setPageNo(pageNo.getAndIncrement());
+                dto.getQuery().setPageSize(2000L);
+                IPage<R> page = func.excute(dto);
                 if (page.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
                     throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
                 }
@@ -75,6 +78,7 @@ public class ExcelExportService {
                     dataList.addAll(records);
                 }
             }while (pageNo.get() <= pages);
+
             if(CollectionUtils.isNotEmpty(dataList)){
 
                 List<Map<String, Object>> sheetsList = new ArrayList<>();
@@ -91,5 +95,6 @@ public class ExcelExportService {
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
         }
+
     }
 }

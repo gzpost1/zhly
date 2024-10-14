@@ -8,5 +8,7 @@ import java.util.List;
  * @date: 2024/10/14 11:02
  */
 public interface ExcelDownloadCallable<T, R> {
-    IPage<R> excute(ExcelDownloadDto<T> dto,Long PageNo,Long pageSize);
+
+    IPage<R> excute(ExcelDownloadDto<T> dto);
+
 }
