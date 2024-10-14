@@ -62,11 +62,13 @@ public class ChargeOrderMsgConsumer {
         boolean isPaySuccess = Objects.equals(payOrderQueryResp.getStatus(), OrderStatusEnum.PAID.getStatus());
         AssertUtil.isTrue(isPaySuccess, "微信未支付");
 
-        if (true) {
+        if (isPaySuccess) {
             //支付成功
             ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto = new ChargeOrderPaySuccInsertDto();
             chargeOrderPaySuccInsertDto.setTransactionNo(payOrderQueryResp.getPayOrderId());
             chargeOrderPaySuccInsertDto.setOrderId(Long.valueOf(paySuccessVO.getOutOrderId()));
+            chargeOrderPaySuccInsertDto.setPayRate(payOrderQueryResp.getPayRate());
+
             chargePayService.paySuccess(chargeOrderPaySuccInsertDto);
         } else {
             //支付失败，直接取消订单

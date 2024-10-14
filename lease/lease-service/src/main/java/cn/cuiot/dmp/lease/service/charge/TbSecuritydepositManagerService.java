@@ -210,4 +210,8 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
         chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.YES);
         this.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
     }
+
+    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage) {
+        return baseMapper.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage);
+    }
 }

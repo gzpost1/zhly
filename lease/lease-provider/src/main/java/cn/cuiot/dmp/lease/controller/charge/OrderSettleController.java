@@ -1,14 +1,22 @@
-package cn.cuiot.dmp.pay.controller;
+package cn.cuiot.dmp.lease.controller.charge;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.infrastructure.dto.req.CommonOptionSettingReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonOptionSettingRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.lease.dto.charge.ChargeItemNameSet;
+import cn.cuiot.dmp.lease.dto.charge.HouseInfoDto;
+import cn.cuiot.dmp.lease.dto.charge.SecuritydepositManagerPageDto;
+import cn.cuiot.dmp.lease.feign.SystemToFlowService;
+import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.pay.service.service.dto.OrderSettlementQuery;
 import cn.cuiot.dmp.pay.service.service.entity.TbOrderSettlement;
 import cn.cuiot.dmp.pay.service.service.service.TbOrderSettlementService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +41,10 @@ import java.util.stream.Collectors;
 public class OrderSettleController {
     @Autowired
     private TbOrderSettlementService orderSettlementService;
+    @Autowired
+    private ChargeHouseAndUserService chargeHouseAndUserService;
+    @Autowired
+    private SystemToFlowService systemToFlowService;
 
     /**
      * 获取分页
@@ -64,11 +76,40 @@ public class OrderSettleController {
 
         if (Objects.nonNull(page) && CollectionUtils.isNotEmpty(page.getRecords())) {
             List<Long> houseIds = page.getRecords().stream().map(TbOrderSettlement::getHouseId).collect(Collectors.toList());
-            List<Long> loanIds = page.getRecords().stream().map(TbOrderSettlement::getLoupanId).collect(Collectors.toList());
             List<Long> chargeItemIds = page.getRecords().stream().map(TbOrderSettlement::getChargeItemId).collect(Collectors.toList());
             List<Long> transactionItemIds = page.getRecords().stream().map(TbOrderSettlement::getTransactionMode).collect(Collectors.toList());
+            //收费项目名称
+            CommonOptionSettingReqDTO commonOptionSettingReqDTO = new CommonOptionSettingReqDTO();
+            ArrayList<Long> selectList = Lists.newArrayList();
+            selectList.addAll(chargeItemIds);
+            selectList.addAll(transactionItemIds);
+            commonOptionSettingReqDTO.setIdList(selectList);
+            List<CommonOptionSettingRspDTO> commonOptionSettingRspDTOS = Optional.ofNullable(systemToFlowService.batchQueryCommonOptionSetting(commonOptionSettingReqDTO)).orElse(new ArrayList<>());
+            commonOptionSettingRspDTOS.add(new CommonOptionSettingRspDTO(0L,"微信支付",(byte)1));
+            commonOptionSettingRspDTOS.add(new CommonOptionSettingRspDTO(1L,"预缴代扣",(byte)2));
+            Map<Long, CommonOptionSettingRspDTO> changeItemMap = commonOptionSettingRspDTOS.stream().collect(Collectors.toMap(CommonOptionSettingRspDTO::getId, Function.identity()));
 
             //填充名称
+            List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(houseIds);
+            Map<Long, HouseInfoDto> userInfoMap = null;
+            if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
+                userInfoMap = houseInfoDtos.stream().collect(Collectors.toMap(HouseInfoDto::getHouseId, Function.identity()));
+            }
+
+            for (TbOrderSettlement record : page.getRecords()) {
+                if (userInfoMap.containsKey(record.getHouseId())) {
+                    record.setHouseName(userInfoMap.get(record.getHouseId()).getHouseName());
+                    record.setLoupanName(userInfoMap.get(record.getHouseId()).getLoupanName());
+                }
+
+                if (changeItemMap.containsKey(record.getChargeItemId())) {
+                    record.setChargeItemName(changeItemMap.get(record.getChargeItemId()).getName());
+                }
+
+                if (changeItemMap.containsKey(record.getTransactionMode())) {
+                    record.setTransactionModeName(changeItemMap.get(record.getTransactionMode()).getName());
+                }
+            }
         }
         return IdmResDTO.success().body(page);
     }

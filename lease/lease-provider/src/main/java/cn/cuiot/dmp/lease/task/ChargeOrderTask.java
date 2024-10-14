@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.task;
 
+import cn.cuiot.dmp.lease.dto.charge.ChargePayDto;
 import cn.cuiot.dmp.lease.dto.charge.Chargeovertimeorderdto;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeOrder;
 import cn.cuiot.dmp.lease.service.charge.TbChargeOrderService;
@@ -7,6 +8,7 @@ import cn.cuiot.dmp.lease.service.charge.order.AbstrChargePay;
 import cn.cuiot.dmp.lease.service.charge.order.ChargePayService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
@@ -37,13 +39,13 @@ public class ChargeOrderTask {
     private ChargePayService chargePayService;
 
     /**
-     * 每天生成计费任务
+     * 每五分钟执行一次，查询未支付订单，关闭第三方订单，修改本地订单状态为已取消
      *
      * @param param
      * @return
      */
     @XxlJob("queryOverTimeOrderAndClose")
-    public ReturnT<String> createDayWork(String param) {
+    public ReturnT<String> cancelOverTimeOrderAndClose(String param) {
         //1 首先查询订单状态为未支付状态的订单，然后关闭订单，并修改订单状态为已取消
         log.info("开始执行订单超时未支付任务");
         for (AbstrChargePay abstrChargePay : chargePayList) {
@@ -83,6 +85,51 @@ public class ChargeOrderTask {
                                             chargePayService.cancelPay(dataIds, abstrChargePay, tbChargeOrder);
                                         }
                                     });
+                        }
+                    }
+                }
+            }
+        }
+
+        return ReturnT.SUCCESS;
+    }
+
+    /**
+     * 每天晚上一点预缴支付应收账单
+     *
+     * @param param
+     * @return
+     */
+    @XxlJob("prePayChargeId")
+    public ReturnT<String> prePayChargeId(String param) {
+        //1 首先查询订单状态为未支付状态的订单，然后关闭订单，并修改订单状态为已取消
+        log.info("开始执行每天晚上一点预缴支付应收账单");
+        for (AbstrChargePay abstrChargePay : chargePayList) {
+            //所需统计的企业，分页
+            int pageNo = 0;
+            int totalProcess = 0;
+
+            long count = abstrChargePay.queryNeedPayCount();
+            if (count > 0) {
+                while (totalProcess < count) {
+                    IPage<Chargeovertimeorderdto> checkCompanyIPage = abstrChargePay.queryOverTimeOrderAndClosePage(new Page<Chargeovertimeorderdto>(pageNo, PAGE_SIZE));
+                    if (checkCompanyIPage.getTotal() <= 0 || CollectionUtils.isEmpty(checkCompanyIPage.getRecords())) {
+                        return ReturnT.SUCCESS;
+                    } else {
+                        totalProcess += checkCompanyIPage.getRecords().size();
+
+                        for (Chargeovertimeorderdto record : checkCompanyIPage.getRecords()) {
+                            try {
+                                log.info("开始预缴账单，账单计划id为{}",record.getDataId());
+
+                                ChargePayDto chargePayDto = new ChargePayDto();
+                                chargePayDto.setChargeIds(Lists.newArrayList(record.getDataId()));
+                                chargePayDto.setDataType(abstrChargePay.getDataType());
+                                chargePayService.prePay(chargePayDto);
+
+                            } catch (Exception e) {
+                                log.error("账单计划扣减错误，账单计划id为{},错误为{}",record.getDataId(),e);
+                            }
                         }
                     }
                 }

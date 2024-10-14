@@ -75,4 +75,6 @@ public abstract class AbstrChargePay {
     public abstract UpdateChargePayStatusToPaySuccessBYPrePayDto updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long createUserId, Long orderId);
 
     public abstract List<Long> getCompanyIdByChargeIds(List<Long> chargeIds);
+
+    public abstract IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage);
 }

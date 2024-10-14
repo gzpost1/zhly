@@ -168,6 +168,11 @@ public class ChargePayImpl extends AbstrChargePay {
         return Optional.ofNullable(chargeManager.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbChargeManager::getCompanyId).collect(Collectors.toList());
     }
 
+    @Override
+    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage) {
+        return chargeManager.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage);
+    }
+
     private LambdaQueryWrapper<TbChargeManager> getNeedPayWrapper() {
         return new LambdaQueryWrapper<TbChargeManager>()
                 .in(TbChargeManager::getReceivbleStatus, Lists.newArrayList("0", "1"))

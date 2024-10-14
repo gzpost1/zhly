@@ -40,7 +40,6 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
     @Autowired
     private TbSecuritydepositManagerService securitydepositManagerService;
 
-
     @Override
     public Byte getDataType() {
         return ChargePayDataTypeEnum.HOUSE_DEPOSIT.getCode();
@@ -128,5 +127,10 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
     @Override
     public List<Long> getCompanyIdByChargeIds(List<Long> chargeIds) {
         return Optional.ofNullable(securitydepositManagerService.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbSecuritydepositManager::getCompanyId).collect(Collectors.toList());
+    }
+
+    @Override
+    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage) {
+        return securitydepositManagerService.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage);
     }
 }
