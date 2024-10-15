@@ -25,10 +25,8 @@
   <select id="queryForPage" resultMap="BaseResultMap">
     select a.* from
     tb_charge_standard a
-    inner join common_option b on a.charge_project_id = b.id
     where
     a.deleted=0
-    and b.deleted_flag = 0
     and a.company_id=#{query.companyId}
     <if test="query.chargeProjectId != null">
       and a.charge_project_id=#{query.chargeProjectId}
