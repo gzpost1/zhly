@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.lease.dto.charge.ChargePayDto;
 import cn.cuiot.dmp.lease.dto.charge.ChargePayWechatResultDto;
 import cn.cuiot.dmp.lease.service.charge.order.ChargePayService;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Objects;
 
 /**
  * 账单支付
@@ -59,6 +61,8 @@ public class ChargePayController {
     @PostMapping("/prePay")
     @LogRecord(operationCode = "prePay", operationName = "账单支付-预缴支付", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO prePay(@RequestBody @Valid ChargePayDto chargePayDto) {
+        //房屋押金不能预缴支付
+        AssertUtil.isFalse(Objects.equals(chargePayDto.getDataType(), Byte.valueOf("1")),"房屋押金不支持预缴支付");
         chargePayService.prePay(chargePayDto);
         return IdmResDTO.success();
     }

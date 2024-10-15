@@ -52,7 +52,7 @@ public class TbOrderSettlement {
     private Long companyId;
 
     /**
-     * 收款方式 0平台 1人工
+     * 交易渠道 0平台 1人工
      */
     @TableField(value = "payment_mode")
     private Byte paymentMode;

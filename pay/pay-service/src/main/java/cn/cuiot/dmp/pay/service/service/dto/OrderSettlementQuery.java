@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description 结算报表查询
@@ -53,12 +54,12 @@ public class OrderSettlementQuery extends PageQuery {
     /**
      * 所属楼盘id
      */
-    private Long loupanId;
+    private List<Long> loupanIds;
 
     /**
      * 房屋id
      */
-    private Long houseId;
+    private List<Long> houseIds;
 
     /**
      * 结算日期-开始时间

@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.pay.service.service.service;
 
+import cn.cuiot.dmp.pay.service.service.dto.OrderSettlementStatics;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
@@ -11,5 +13,9 @@ public class TbOrderSettlementService extends ServiceImpl<TbOrderSettlementMappe
 
     public void insertList(List<TbOrderSettlement> orderSettlements) {
         baseMapper.insertList(orderSettlements);
+    }
+
+    public OrderSettlementStatics queryForStatics(LambdaQueryWrapper<TbOrderSettlement> queryWrapper) {
+        return baseMapper.queryForStatics(queryWrapper);
     }
 }

@@ -85,6 +85,7 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
             }).forEach(e -> {
                 e.setId(IdWorker.getId());
                 e.setIncomeType(EntityConstants.YES);
+                e.setPayAmount(MathTool.percentCalculate(e.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate()));
             });
             if (CollectionUtils.isNotEmpty(tbSecuritydepositManagers)) {
                 orderSettlementService.insertList(tbSecuritydepositManagers);

@@ -6,9 +6,11 @@ import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeOrder;
+import cn.cuiot.dmp.lease.enums.ChargePayDataTypeEnum;
 import cn.cuiot.dmp.lease.service.charge.TbChargeOrderService;
 import cn.cuiot.dmp.pay.service.service.dto.*;
 import cn.cuiot.dmp.pay.service.service.enums.OrderStatusEnum;
+import cn.cuiot.dmp.pay.service.service.enums.PayBusinessTypeEnum;
 import cn.cuiot.dmp.pay.service.service.service.OrderPayAtHandler;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.extern.slf4j.Slf4j;
@@ -85,6 +87,8 @@ public class ChargePayService {
         createOrderReq.setTotalFee(totalAmount);
 
         createOrderReq.setOrgId(companyId);
+        createOrderReq.setBusinessType(
+                Objects.equals(queryDto.getDataType(), ChargePayDataTypeEnum.HOUSE_BILL.getCode()) ? PayBusinessTypeEnum.CHARGE.getCode() : PayBusinessTypeEnum.DEPOSIT.getCode());
         CreateOrderResp createOrderResp = orderPayAtHandler.makeOrder(createOrderReq);
 
         //构建返回值

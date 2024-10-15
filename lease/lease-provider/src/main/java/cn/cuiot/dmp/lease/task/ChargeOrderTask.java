@@ -104,7 +104,10 @@ public class ChargeOrderTask {
     public ReturnT<String> prePayChargeId(String param) {
         //1 首先查询订单状态为未支付状态的订单，然后关闭订单，并修改订单状态为已取消
         log.info("开始执行每天晚上一点预缴支付应收账单");
-        for (AbstrChargePay abstrChargePay : chargePayList) {
+
+        //押金不能使用预缴支付
+        List<AbstrChargePay> needTOProcessMethodList = chargePayList.stream().filter(abstrChargePay -> !abstrChargePay.getDataType().equals(Byte.valueOf("1"))).collect(Collectors.toList());
+        for (AbstrChargePay abstrChargePay : needTOProcessMethodList) {
             //所需统计的企业，分页
             int pageNo = 0;
             int totalProcess = 0;
