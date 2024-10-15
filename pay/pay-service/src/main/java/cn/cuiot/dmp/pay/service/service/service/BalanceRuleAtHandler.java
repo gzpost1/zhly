@@ -61,6 +61,16 @@ public class BalanceRuleAtHandler {
     public IPage<BalanceChargeRecordVO> queryChargeForPage(BalanceChargeRecordQuery query) {
         return changeRecordService.queryChargeForPage(query);
     }
+
+    /**
+     * 查询充值金额
+     *
+     * @param houseId
+     * @return
+     */
+    public Integer queryTotalBalanceRecharge(Long houseId) {
+        return changeRecordService.queryTotalBalanceRecharge(houseId);
+    }
     /**
      * 后台调用-增加或减少房屋余额
      *

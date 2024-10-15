@@ -19,9 +19,9 @@ import cn.cuiot.dmp.lease.service.charge.TbSecuritydepositManagerService;
 import cn.cuiot.dmp.lease.vo.balance.MbRechargeOrderCreateVo;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
-import cn.cuiot.dmp.pay.service.service.entity.BalanceEntity;
 import cn.cuiot.dmp.pay.service.service.service.BalanceRuleAtHandler;
 import cn.cuiot.dmp.pay.service.service.vo.BalanceChangeRecordVo;
+import cn.cuiot.dmp.pay.service.service.vo.BalanceCurrrentVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 /**
@@ -85,7 +86,7 @@ public class AppHouseBalanceOrderController {
     }
 
     /**
-     * 查询余额明细列表
+     * 查询余额明细详情
      *
      * @return
      */
@@ -120,10 +121,13 @@ public class AppHouseBalanceOrderController {
      * @return
      */
     @PostMapping("/queryHouseBalance")
-    public IdmResDTO<BalanceEntity> queryHouseBalance(@RequestBody @Valid IdParam param) {
+    public IdmResDTO<BalanceCurrrentVo> queryHouseBalance(@RequestBody @Valid IdParam param) {
         List<Long> houseIds = mbRechargeOrderService.queryHouseIdsByUser(LoginInfoHolder.getCurrentUserId());
         AssertUtil.isFalse(!houseIds.contains(param.getId()),"您没有权限查看该用户信息");
-        return IdmResDTO.success(ruleAtHandler.queryHouseBalance(param.getId()));
+        //当前余额
+        Integer currentBalance = Optional.ofNullable(ruleAtHandler.queryHouseBalance(param.getId())).map(vo -> vo.getBalance()).orElse(0);
+        Integer totalBalance = Optional.ofNullable(ruleAtHandler.queryTotalBalanceRecharge(param.getId())).orElse(0);
+        return IdmResDTO.success(BalanceCurrrentVo.builder().currentBalance(currentBalance).totalBalance(totalBalance).build());
     }
 
 }

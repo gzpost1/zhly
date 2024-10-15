@@ -5,6 +5,7 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChargeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
+import cn.cuiot.dmp.pay.service.service.enums.BalanceChangeTypeEnum;
 import cn.cuiot.dmp.pay.service.service.mapper.BalanceChangeRecordMapper;
 import cn.cuiot.dmp.pay.service.service.utils.PageHelper;
 import cn.cuiot.dmp.pay.service.service.vo.BalanceChargeRecordVO;
@@ -93,5 +94,14 @@ public class MbBalanceChangeRecordService extends ServiceImpl<BalanceChangeRecor
 
     public IPage<BalanceChargeRecordVO> queryChargeForPage(BalanceChargeRecordQuery query) {
         return baseMapper.queryChargeForPage(new Page(query.getPageNo(), query.getPageSize()), query);
+    }
+
+    public Integer queryTotalBalanceRecharge(Long houseId){
+        LambdaQueryWrapper<BalanceChangeRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BalanceChangeRecord::getHouseId,houseId);
+        queryWrapper.eq(BalanceChangeRecord::getChangeType, BalanceChangeTypeEnum.BALANCE_RECHARGE.getType());
+        List<BalanceChangeRecord> records = baseMapper.selectList(queryWrapper);
+        int sum = records.stream().mapToInt(BalanceChangeRecord::getBalance).sum();
+        return sum;
     }
 }
