@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.lease.controller.app;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.lease.dto.charge.ChargePayDto;
 import cn.cuiot.dmp.lease.dto.charge.ChargePayWechatResultDto;
 import cn.cuiot.dmp.lease.service.charge.order.ChargePayService;
@@ -33,6 +35,7 @@ public class ChargePayController {
      */
     @RequiresPermissions
     @PostMapping("/payByWechat")
+    @LogRecord(operationCode = "payByWechat", operationName = "账单支付-微信支付", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO<ChargePayWechatResultDto> payByWechat(@RequestBody @Valid ChargePayDto queryDto) {
         return IdmResDTO.success().body(chargePayService.payByWechat(queryDto));
     }
@@ -42,6 +45,7 @@ public class ChargePayController {
      */
     @RequiresPermissions
     @PostMapping("/cancelPay")
+    @LogRecord(operationCode = "cancelPay", operationName = "账单支付-取消支付", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO cancelPay(@RequestBody @Valid IdParam idParam) {
         chargePayService.cancelPay(idParam.getId());
         return IdmResDTO.success();
@@ -52,6 +56,7 @@ public class ChargePayController {
      */
     @RequiresPermissions
     @PostMapping("/prePay")
+    @LogRecord(operationCode = "prePay", operationName = "账单支付-预缴支付", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO prePay(@RequestBody @Valid ChargePayDto chargePayDto) {
         chargePayService.prePay(chargePayDto);
         return IdmResDTO.success();

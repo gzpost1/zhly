@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.lease.service.charge.order;
 
+import cn.cuiot.dmp.base.infrastructure.utils.MathTool;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeOrder;
@@ -10,11 +12,15 @@ import cn.cuiot.dmp.lease.enums.ChargePayDataTypeEnum;
 import cn.cuiot.dmp.lease.enums.ChargePayStatusEnum;
 import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeReceivedService;
+import cn.hutool.core.map.MapUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import lombok.Data;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -112,6 +118,24 @@ public class ChargePayImpl extends AbstrChargePay {
 
         //3 插入账单
         chargeManager.insertSettleMent(receiveds,EntityConstants.NO,EntityConstants.NO,chargeOrderPaySuccInsertDto.getOrderId(), null);
+
+        //4 插入支付手续费记录
+        if(Objects.equals(chargeOrderPaySuccInsertDto.getTransactionMode(),EntityConstants.NO)){
+            List<TbChargeReceived> platformCommissions = JSONObject.parseObject(JsonUtil.writeValueAsString(receiveds), new com.alibaba.fastjson.TypeReference<List<TbChargeReceived>>() {
+            });
+            List<TbChargeReceived> insertPayCOmissions = new ArrayList<>();
+
+            for (TbChargeReceived received : platformCommissions) {
+                int platformCommission = MathTool.percentCalculate(received.getTotalReceived(), chargeOrderPaySuccInsertDto.getPayRate());
+                if(platformCommission > 0){
+                    received.setTotalReceived(platformCommission);
+                    insertPayCOmissions.add(received);
+                }
+            }
+            if(CollectionUtils.isNotEmpty(insertPayCOmissions)){
+                chargeManager.insertSettleMent(insertPayCOmissions,EntityConstants.YES,EntityConstants.NO,chargeOrderPaySuccInsertDto.getOrderId(), null);
+            }
+        }
 
         return receiveds.stream().map(TbChargeReceived::getId).collect(Collectors.toList());
     }
