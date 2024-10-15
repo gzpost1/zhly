@@ -223,9 +223,9 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
 
         LambdaQueryWrapper<HikPersonEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(HikPersonEntity::getCompanyId, companyId);
-        wrapper.eq(StringUtils.isNotBlank(query.getPersonName()), HikPersonEntity::getPersonName, query.getPersonName());
-        wrapper.eq(Objects.nonNull(query.getId()), HikPersonEntity::getId, query.getId());
-        wrapper.eq(StringUtils.isNotBlank(query.getJobNo()), HikPersonEntity::getJobNo, query.getJobNo());
+        wrapper.like(StringUtils.isNotBlank(query.getPersonName()), HikPersonEntity::getPersonName, query.getPersonName());
+        wrapper.like(Objects.nonNull(query.getId()), HikPersonEntity::getId, query.getId());
+        wrapper.like(StringUtils.isNotBlank(query.getJobNo()), HikPersonEntity::getJobNo, query.getJobNo());
         wrapper.eq(StringUtils.isNotBlank(query.getOrgIndexCode()), HikPersonEntity::getOrgIndexCode, query.getOrgIndexCode());
         wrapper.eq(Objects.nonNull(query.getFaceDataStatus()), HikPersonEntity::getFaceDataStatus, query.getFaceDataStatus());
         wrapper.orderByDesc(HikPersonEntity::getCreateTime);
@@ -398,7 +398,7 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
                         .collect(Collectors.toMap(HikAcpsAuthConfigSearchResp.PermissionConfig::getChannelIndexCode, e -> e));
             }
             // 构造返回
-            for (HikDoorResp.DataItem item:search.getList()) {
+            for (HikDoorResp.DataItem item : search.getList()) {
                 collect.add(HikPersonAuthorizeVO.buildHikPersonAuthorizeVO(item, authorizeEntityMap));
             }
         }
@@ -428,20 +428,27 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
             throw new BusinessException(ResultCode.ERROR, "存在非当前企业的数据，无法删除");
         }
 
-        List<String> idstrList = ids.stream().map(e -> e + "").collect(Collectors.toList());
+        List<HikPersonEntity> personEntityList = listByIds(ids);
+        if (CollectionUtils.isNotEmpty(personEntityList)) {
+            personEntityList.forEach(item -> {
+                if (!Objects.equals(item.getCompanyId(), companyId)) {
+                    throw new BusinessException(ResultCode.ERROR, "人员【" + item.getPersonName() + "】不属于该企业，无法删除");
+                }
+            });
 
-        // 批量删除授权信息
-        batchDeleteAuthorize(ids, bo);
+            // 批量删除授权信息
+            batchDeleteAuthorize(ids, bo);
 
-        // 删除人脸数据
-        batchDeleteFaceData(ids, bo);
+            // 删除人脸数据
+            batchDeleteFaceData(ids, personEntityList, bo);
 
-        // 批量删除第三方人员信息
-        HikPersonBatchDeleteReq req = new HikPersonBatchDeleteReq();
-        req.setPersonIds(idstrList);
-        hikApiFeignService.personBatchDelete(req, bo);
+            // 批量删除第三方人员信息
+            HikPersonBatchDeleteReq req = new HikPersonBatchDeleteReq();
+            req.setPersonIds(ids.stream().map(e -> e + "").collect(Collectors.toList()));
+            hikApiFeignService.personBatchDelete(req, bo);
 
-        removeByIds(ids);
+            removeByIds(ids);
+        }
     }
 
     private List<HikOrgListResp.DataItem> queryOrgList(HikOrgListReq req, HIKEntranceGuardBO bo) {
@@ -529,12 +536,21 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
      *
      * @Param personIds 用户id列表
      * @Param bo 当前企业对接配置
+     * @Param personEntityList 人员列表
      */
-    private void batchDeleteFaceData(List<Long> personIds, HIKEntranceGuardBO bo) {
+    private void batchDeleteFaceData(List<Long> personIds, List<HikPersonEntity> personEntityList, HIKEntranceGuardBO bo) {
+        Map<Long, HikPersonEntity> map = personEntityList.stream()
+                .filter(e -> StringUtils.isNotBlank(e.getFaceId()))
+                .collect(Collectors.toMap(HikPersonEntity::getId, e -> e));
+
         personIds.forEach(personId -> {
-            HikFaceSingleDeleteReq req = new HikFaceSingleDeleteReq();
-            req.setFaceId(personId + "");
-            hikApiFeignService.faceSingleDelete(req, bo);
+            if (map.containsKey(personId)) {
+                HikPersonEntity entity = map.get(personId);
+
+                HikFaceSingleDeleteReq req = new HikFaceSingleDeleteReq();
+                req.setFaceId(entity.getFaceId());
+                hikApiFeignService.faceSingleDelete(req, bo);
+            }
         });
     }
 
