@@ -2,9 +2,12 @@ package cn.cuiot.dmp.externalapi.provider.controller.admin.watermeter;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.application.utils.PageUtils;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.entity.water.WaterManagementEntity;
 import cn.cuiot.dmp.externalapi.service.service.water.WaterManagementService;
 import cn.cuiot.dmp.externalapi.service.vo.watermeter.UpdateWaterManagementVO;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -43,6 +47,9 @@ public class WaterMeterController {
 
     @Autowired
     private WaterManagementService waterManagementService;
+
+    @Autowired
+    private ExcelExportService excelExportService;
     /**
      * 查询分页
      *
@@ -72,11 +79,24 @@ public class WaterMeterController {
         return waterManagementService.queryForPage(vo);
     }
 
+    /**
+     * 智能水表导出
+     * @param vo
+     * @return
+     */
+    @PostMapping(value = "/export")
+    @RequiresPermissions
+    public IdmResDTO export(@RequestBody WaterMeterQueryVO vo){
+        excelExportService.excelExport(ExcelDownloadDto.<WaterMeterQueryVO>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(vo)
+                .title("智能水表导出").fileName("智能水表导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("智能水表导出")
+                .build(), WaterManagementEntity.class, this::queryExport);
+        return IdmResDTO.success();
+    }
+
 
     public IPage<WaterManagementEntity> queryExport(ExcelDownloadDto<WaterMeterQueryVO> downloadDto){
         WaterMeterQueryVO pageQuery = downloadDto.getQuery();
         IPage<WaterManagementEntity> data = this.queryForPage(pageQuery).getData();
-
         return data;
     }
 

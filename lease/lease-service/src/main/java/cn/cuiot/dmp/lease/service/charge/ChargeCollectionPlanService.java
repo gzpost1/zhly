@@ -121,7 +121,7 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
         ChargeCollectionPlanPageQuery pageQuery = downloadDto.getQuery();
         IPage<ChargeCollectionPlanPageVo> data = this.queryForPage(pageQuery);
         data.getRecords().stream().forEach(item->{
-            item.setChannelName(ChannelEnum.getDesc(item.getChannel()));
+//            item.setChannelName(ChannelEnum.getDesc(item.getChannel()));
             item.setCornTypeName(ChargeCollectionPlainCronTypeEnum.getByCode(item.getCronType()).getDesc());
             item.setStatusName(Objects.equals(item.getStatus(), NumberConst.DATA_STATUS)? StatusConst.STOP: StatusConst.ENABLE);
         });
@@ -174,7 +174,7 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
                     }
                 }
                     page.getRecords().stream().forEach(item->{
-                        item.setChannelName(ChannelEnum.getDesc(item.getChannel()));
+//                        item.setChannelName(ChannelEnum.getDesc(item.getChannel()));
                         item.setCornTypeName(ChargeCollectionPlainCronTypeEnum.getByCode(item.getCronType()).getDesc());
                         item.setStatusName(Objects.equals(item.getStatus(), NumberConst.DATA_STATUS)? StatusConst.STOP: StatusConst.ENABLE);
                     });
