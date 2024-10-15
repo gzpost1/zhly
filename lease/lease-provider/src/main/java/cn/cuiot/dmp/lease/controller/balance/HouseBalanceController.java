@@ -1,7 +1,10 @@
 package cn.cuiot.dmp.lease.controller.balance;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
@@ -82,6 +85,8 @@ public class HouseBalanceController {
     /**
      * 余额变动(包括充值，扣减等)-业务端调用
      */
+    @RequiresPermissions
+    @LogRecord(operationCode = "changeBalance", operationName = "系统管理端-余额变动", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @PostMapping("/changeBalance")
     public IdmResDTO changeBalance(@RequestBody @Valid RechargeBalanceVo vo) {
         BalanceEventAggregate balanceEventAggregate = new BalanceEventAggregate();

@@ -1,7 +1,10 @@
 package cn.cuiot.dmp.lease.controller.app;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -57,6 +60,8 @@ public class AppHouseBalanceOrderController {
      *
      * @return
      */
+    @RequiresPermissions
+    @LogRecord(operationCode = "placeOrder", operationName = "小程序充值下单", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @PostMapping("/placeOrder")
     public IdmResDTO<MbRechargeOrderCreateVo> placeOrder(@RequestBody @Valid MbRechargeOrderCreateDto param) {
         MbRechargeOrder order = BeanMapper.map(param, MbRechargeOrder.class);
