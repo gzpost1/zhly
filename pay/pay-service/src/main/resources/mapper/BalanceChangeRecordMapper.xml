@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.pay.service.service.mapper.BalanceChangeRecordMapper">
+
+  <select id="queryChargeForPage" parameterType="cn.cuiot.dmp.pay.service.service.dto.BalanceChargeRecordQuery"
+          resultType="cn.cuiot.dmp.pay.service.service.vo.BalanceChargeRecordVO">
+    SELECT
+      b.received_id received_id,b.id receivable_id,b.house_id,charge_item_id,charge_standard,ownership_period_begin,ownership_period_end,a.balance,a.create_time
+    FROM
+      ( SELECT * FROM `tb_house_balance_change_record` WHERE order_name IN ( '账单扣缴', '押金扣缴' ) ) a
+        INNER JOIN ( SELECT * FROM tb_securitydeposit_manager WHERE pay_status = 3 ) b ON a.order_id = b.id
+      <where>
+        <if test="param.receivedId != null">
+          and  b.received_id =#{param.receivedId}
+        </if>
+        <if test="param.receivableId != null">
+          and  b.id =#{receivableId}
+        </if>
+        <if test="param.beginDate != null">
+          and  a.create_time >= #{beginDate}
+        </if>
+        <if test="param.endDate != null">
+          and  a.create_time <![CDATA[<= ]]> DATE_ADD(#{endDate},INTERVAL '1' DAY)
+        </if>
+      </where>
+    union all
+
+    SELECT
+      b.id,b.charge_id,b.house_id,charge_item_id, charge_standard,ownership_period_begin,ownership_period_end,a.balance,a.create_time
+    FROM
+      ( SELECT * FROM `tb_house_balance_change_record` WHERE order_name IN ( '账单扣缴', '押金扣缴' ) ) a
+        INNER JOIN ( SELECT * FROM tb_charge_received ) b ON a.order_id = b.id
+
+    <where>
+      <if test="param.receivedId != null">
+        and  b.id =#{param.receivedId}
+      </if>
+      <if test="param.receivableId != null">
+        and  b.charge_id =#{receivableId}
+      </if>
+      <if test="param.beginDate != null">
+        and  a.create_time >= #{beginDate}
+      </if>
+      <if test="param.endDate != null">
+        and  a.create_time <![CDATA[<= ]]> DATE_ADD(#{endDate},INTERVAL '1' DAY)
+      </if>
+    </where>
+  </select>
+</mapper>
