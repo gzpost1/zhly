@@ -1,7 +1,10 @@
 package cn.cuiot.dmp.pay.service.service.vo;
 
-import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
+import cn.afterturn.easypoi.excel.annotation.Excel;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * <p>
@@ -12,16 +15,62 @@ import lombok.Data;
  * @since 2023-11-29
  */
 @Data
-public class BalanceChangeRecordSysVo extends BalanceChangeRecord {
+public class BalanceChangeRecordSysVo  {
+
+    /**
+     * 实收编码
+     */
+    @Excel(name = "实收编码", orderNum = "0", width = 20)
+    private Long id;
+
+
+    /**
+     * 房屋id
+     */
+    private Long houseId;
 
     /**
      * 房屋名称
      */
+    @Excel(name = "房屋名称", orderNum = "1", width = 20)
     private String houseName;
 
 
     /**
+     * 金额
+     */
+    @Excel(name = "充值金额", orderNum = "2", width = 20)
+    private Integer balance;
+
+
+    /**
+     * 备注
+     */
+    @Excel(name = "备注", orderNum = "3", width = 20)
+    private String reason;
+
+    /**
+     * 充值方式
+     */
+    @Excel(name = "充值方式", orderNum = "4", width = 20)
+    private String orderName;
+
+    private Long createUser;
+    /**
      * 操作人名称
      */
+    @Excel(name = "操作人", orderNum = "5", width = 20)
     private String createName;
+
+    /**
+     * 创建时间
+     */
+    @Excel(name = "充值人", orderNum = "5", width = 20)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createTime;
+
+
+
+
+
 }

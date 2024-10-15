@@ -1,7 +1,10 @@
 package cn.cuiot.dmp.lease.controller.balance;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
@@ -10,11 +13,13 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonOptionSettingRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.lease.dto.charge.HouseInfoDto;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeStandard;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeStandardService;
+import cn.cuiot.dmp.lease.util.ExcelUtils;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChargeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
@@ -30,13 +35,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,7 +61,7 @@ import static cn.cuiot.dmp.pay.service.service.enums.Constants.ARTIFICIAL;
 @Slf4j
 @RestController
 @RequestMapping("/balance")
-public class HouseBalanceController {
+public class HouseBalanceController extends BaseController {
 
     @Autowired
     private BalanceRuleAtHandler ruleAtHandler;
@@ -71,11 +79,38 @@ public class HouseBalanceController {
      */
     @PostMapping("/queryBalanceChangeRecordForPage")
     public IdmResDTO<IPage<BalanceChangeRecordSysVo>> queryBalanceChangeRecordForPage(@RequestBody @Valid BalanceChangeRecordQuery query) {
+        IPage<BalanceChangeRecordSysVo> pageVo = queryBalanceChangeRecord(query);
+        return IdmResDTO.success(pageVo);
+    }
+
+    /**
+     * 充值记录导出
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/balanceChangeRecord/export", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void export(@RequestBody @Valid BalanceChangeRecordQuery query) throws IOException {
+        query.setPageSize(10000L);
+        IPage<BalanceChangeRecordSysVo> pageVo = queryBalanceChangeRecord(query);
+        List<Map<String, Object>> sheetsList = new ArrayList<>();
+        Map<String, Object> sheet1 = ExcelUtils
+                .createSheet("空间档案", pageVo.getRecords(), BalanceChangeRecordSysVo.class);
+
+        sheetsList.add(sheet1);
+
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
+
+        ExcelUtils.downLoadExcel(
+                "room-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                response,
+                workbook);
+    }
+
+    private IPage<BalanceChangeRecordSysVo> queryBalanceChangeRecord(BalanceChangeRecordQuery query){
         IPage<BalanceChangeRecord> pageResult = ruleAtHandler.queryBalanceChangeRecordForPage(query);
         IPage<BalanceChangeRecordSysVo> pageVo = getPageVo(pageResult, BalanceChangeRecordSysVo.class);
         List<BalanceChangeRecordSysVo> records = pageVo.getRecords();
         if(CollectionUtils.isEmpty(records)){
-            return IdmResDTO.success(pageVo);
+            return pageVo;
         }
         //转译用户名称及房屋名称
         List<Long> houseIds = records.stream().map(vo->vo.getHouseId()).collect(Collectors.toList());
@@ -93,7 +128,7 @@ public class HouseBalanceController {
             vo.setCreateName(Objects.isNull(user)?null:user.getName()+"("+user.getPhoneNumber()+")");
         }
 
-        return IdmResDTO.success(pageVo);
+        return pageVo;
     }
 
 
@@ -107,19 +142,47 @@ public class HouseBalanceController {
         return newPage;
     }
 
-
     /**
-     * 充值记录列表
+     * 扣缴记录列表
      *
      * @param query
      * @return
      */
     @PostMapping("/queryChargeForPage")
     public IdmResDTO<IPage<BalanceChargeRecordVO>> queryChargeForPage(@RequestBody @Valid BalanceChargeRecordQuery query) {
+        IPage<BalanceChargeRecordVO> page = queryCharge(query);
+        return IdmResDTO.success(page);
+    }
+
+
+    /**
+     * 扣缴录导出
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/Charge/export", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void export(@RequestBody @Valid BalanceChargeRecordQuery query) throws IOException {
+        query.setPageSize(10000L);
+        IPage<BalanceChargeRecordVO> pageVo = queryCharge(query);
+        List<Map<String, Object>> sheetsList = new ArrayList<>();
+        Map<String, Object> sheet1 = ExcelUtils
+                .createSheet("空间档案", pageVo.getRecords(), BalanceChargeRecordVO.class);
+
+        sheetsList.add(sheet1);
+
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
+
+        ExcelUtils.downLoadExcel(
+                "room-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                response,
+                workbook);
+    }
+
+
+    public IPage<BalanceChargeRecordVO> queryCharge(BalanceChargeRecordQuery query) {
         IPage<BalanceChargeRecordVO> page = ruleAtHandler.queryChargeForPage(query);
         List<BalanceChargeRecordVO> records = page.getRecords();
         if(CollectionUtils.isEmpty(records)){
-            return IdmResDTO.success(page);
+            return page;
         }
         //转译房屋名称
         List<Long> houseIds = records.stream().map(vo->vo.getHouseId()).collect(Collectors.toList());
@@ -142,7 +205,7 @@ public class HouseBalanceController {
             vo.setChargeItemName(Optional.ofNullable(changeItemMap.get(vo.getChargeItemId())).map(v->v.getName()).orElse(null));
         }
 
-        return IdmResDTO.success(page);
+        return page;
     }
 
     /**
