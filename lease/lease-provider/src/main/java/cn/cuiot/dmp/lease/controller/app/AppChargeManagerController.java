@@ -44,7 +44,6 @@ public class AppChargeManagerController {
      * @param query
      * @return
      */
-    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<AppChargeManagerDto>> appChargeManager(@RequestBody AppChargemanagerQuery query) {
 
@@ -64,7 +63,6 @@ public class AppChargeManagerController {
      * @param idParam
      * @return
      */
-    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<ChargeManagerDetailDto> queryForDetail(@RequestBody @Valid IdParam idParam) {
         ChargeManagerDetailDto chargeManagerDetailDto = tbChargeManagerService.queryForDetail(idParam.getId());
@@ -82,7 +80,6 @@ public class AppChargeManagerController {
      * @param queryDto
      * @return
      */
-    @RequiresPermissions
     @PostMapping("/queryForReceivedPage")
     public IdmResDTO<IPage<TbChargeReceived>> queryForReceivedPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeReceived> tbChargeHangupIPage = tbChargeManagerService.queryForReceivedPage(queryDto);

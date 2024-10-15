@@ -36,7 +36,6 @@ public class ChargePayController {
      * @param queryDto
      * @return
      */
-    @RequiresPermissions
     @PostMapping("/payByWechat")
     @LogRecord(operationCode = "payByWechat", operationName = "账单支付-微信支付", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO<ChargePayWechatResultDto> payByWechat(@RequestBody @Valid ChargePayDto queryDto) {
@@ -46,7 +45,6 @@ public class ChargePayController {
     /**
      * 取消支付，关闭微信预订单
      */
-    @RequiresPermissions
     @PostMapping("/cancelPay")
     @LogRecord(operationCode = "cancelPay", operationName = "账单支付-取消支付", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO cancelPay(@RequestBody @Valid IdParam idParam) {
@@ -57,7 +55,6 @@ public class ChargePayController {
     /**
      * 预缴支付
      */
-    @RequiresPermissions
     @PostMapping("/prePay")
     @LogRecord(operationCode = "prePay", operationName = "账单支付-预缴支付", serviceType = ServiceTypeConst.RECEIVED_MANAGER)
     public IdmResDTO prePay(@RequestBody @Valid ChargePayDto chargePayDto) {
