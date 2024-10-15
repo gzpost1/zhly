@@ -2,14 +2,17 @@ package cn.cuiot.dmp.lease.controller.balance;
 
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceEntity;
 import cn.cuiot.dmp.pay.service.service.enums.BalanceChangeTypeEnum;
 import cn.cuiot.dmp.pay.service.service.service.BalanceRuleAtHandler;
+import cn.cuiot.dmp.pay.service.service.vo.BalanceChangeRecordSysVo;
 import cn.cuiot.dmp.pay.service.service.vo.BalanceEventAggregate;
 import cn.cuiot.dmp.pay.service.service.vo.RechargeBalanceVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.function.BiConsumer;
+
+import static cn.cuiot.dmp.base.infrastructure.utils.MathTool.checkCollectionEmpty;
 import static cn.cuiot.dmp.pay.service.service.enums.Constants.ARTIFICIAL;
 
 /**
@@ -43,12 +51,21 @@ public class HouseBalanceController {
      * @return
      */
     @PostMapping("/queryBalanceChangeRecordForPage")
-    public IdmResDTO<IPage<BalanceChangeRecord>> queryBalanceChangeRecordForPage(@RequestBody @Valid BalanceChangeRecordQuery query) {
+    public IdmResDTO<IPage<BalanceChangeRecordSysVo>> queryBalanceChangeRecordForPage(@RequestBody @Valid BalanceChangeRecordQuery query) {
         IPage<BalanceChangeRecord> pageResult = ruleAtHandler.queryBalanceChangeRecordForPage(query);
-        return IdmResDTO.success(pageResult);
+        IPage<BalanceChangeRecordSysVo> pageVo = getPageVo(pageResult, BalanceChangeRecordSysVo.class);
+        return IdmResDTO.success(pageVo);
     }
 
-
+    public static <T, R> IPage<R> getPageVo(IPage<T> iPage, Class<R> clz) {
+        List<T> sourceList = checkCollectionEmpty(iPage.getRecords()) ? Collections.emptyList() : iPage.getRecords();
+        List<R> targetList = BeanMapper.mapList(sourceList, clz);
+        IPage<R> newPage = new Page<>();
+        iPage.setRecords(null);
+        BeanMapper.copy(iPage,newPage);
+        newPage.setRecords(targetList);
+        return newPage;
+    }
 
     /**
      * 查询房屋当前余额
