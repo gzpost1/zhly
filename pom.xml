@@ -20,6 +20,7 @@
         <module>lease</module>
         <module>externalapi</module>
         <module>sms</module>
+        <module>largescreen</module>
     </modules>
 
     <parent>

@@ -11,19 +11,19 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.constant.PortraitInputConstant;
+import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardEntity;
 import cn.cuiot.dmp.externalapi.service.entity.park.AccessControlEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.park.AccessControlMapper;
-import cn.cuiot.dmp.externalapi.service.query.AccessCommunityDto;
-import cn.cuiot.dmp.externalapi.service.query.DeviceListDto;
-import cn.cuiot.dmp.externalapi.service.query.QueryAccessCommunity;
-import cn.cuiot.dmp.externalapi.service.query.UpdateAccessCommunityVO;
+import cn.cuiot.dmp.externalapi.service.query.*;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -145,4 +145,14 @@ public class AccessControlService extends ServiceImpl<AccessControlMapper, Acces
         List<DeviceListDto> deviceListDtos = BeanMapper.mapList(accessControlEntities, DeviceListDto.class);
         return IdmResDTO.success(deviceListDtos);
     }
+
+
+    /**
+     * 获取 宇泛门禁 数量的统计
+     */
+    public Long queryAccessCommunityCount(StatisInfoReqDTO statisInfoReqDTO) {
+        return getBaseMapper().queryAccessCommunityCount(statisInfoReqDTO);
+    }
+
+
 }

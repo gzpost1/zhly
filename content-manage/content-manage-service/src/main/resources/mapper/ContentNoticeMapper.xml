@@ -107,4 +107,140 @@
 
     </sql>
 
+    <select id="queryContentAdminNoticeStatistic" resultType="cn.cuiot.dmp.content.param.vo.ContentNoticeVo">
+
+        select
+            distinct t1.id as id ,
+            t1.create_time as create_time ,
+            t1.title as title
+        from
+            tb_content_notice t1
+            left join (
+                SELECT t.id, JSON_UNQUOTE(JSON_EXTRACT(t.departments , CONCAT('$[', idx, ']'))) AS dep
+                    FROM tb_content_notice t
+                    JOIN (
+                        SELECT a.N + b.N * 10  AS idx
+                            FROM (
+                        SELECT 0 AS N
+                            UNION ALL SELECT 1
+                            UNION ALL SELECT 2
+                            UNION ALL SELECT 3
+                            UNION ALL SELECT 4
+                            UNION ALL SELECT 5
+                            UNION ALL SELECT 6
+                            UNION ALL SELECT 7
+                            UNION ALL SELECT 8
+                            UNION ALL SELECT 9
+                ) a
+                CROSS JOIN (
+                        SELECT 0 AS N
+                            UNION ALL SELECT 1
+                            UNION ALL SELECT 2
+                            UNION ALL SELECT 3
+                            UNION ALL SELECT 4
+                            UNION ALL SELECT 5
+                            UNION ALL SELECT 6
+                            UNION ALL SELECT 7
+                            UNION ALL SELECT 8
+                            UNION ALL SELECT 9
+                ) b
+                    WHERE a.N + b.N * 10 &lt;= 100
+                ) AS index_generator
+                WHERE idx &lt; JSON_LENGTH(t.departments)
+            ) t3 on t1.id = t3.id
+                left join tb_building_archives t2 on
+                t3.dep  = t2.department_id
+        where
+            t1.deleted = 0
+          -- 已发布
+          and t1.publish_status = 2
+          -- 发布端 1 管理端   2 客户端
+          and t1.publish_source = 1
+        <if test="params.companyId != null">
+            and t2.company_id = #{params.companyId}
+        </if>
+        <if test="params.departmentIds != null and params.departmentIds.size() > 0">
+            and t3.dep in
+            <foreach collection="params.departmentIds" item="dep" open="(" separator="," close=")">
+                #{dep}
+            </foreach>
+        </if>
+        <if test="params.loupanIds != null and params.loupanIds.size() > 0">
+            and t2.id in
+            <foreach collection="params.loupanIds" item="loupan" open="(" separator="," close=")">
+                #{loupan}
+            </foreach>
+        </if>
+        order by
+            t1.create_time desc
+
+    </select>
+
+    <select id="queryContentAppNoticeStatistic" resultType="cn.cuiot.dmp.content.param.vo.ContentNoticeVo">
+
+        select
+            distinct t1.id as id ,
+            t1.create_time as create_time ,
+            t1.title as title
+        from
+            tb_content_notice t1
+            left join (
+
+                SELECT t.id, JSON_UNQUOTE(JSON_EXTRACT(t.buildings , CONCAT('$[', idx, ']'))) AS loupan
+                    FROM tb_content_notice t
+                JOIN (
+                    SELECT a.N + b.N * 10  AS idx
+                        FROM (
+                    SELECT 0 AS N
+                    UNION ALL SELECT 1
+                    UNION ALL SELECT 2
+                    UNION ALL SELECT 3
+                    UNION ALL SELECT 4
+                    UNION ALL SELECT 5
+                    UNION ALL SELECT 6
+                    UNION ALL SELECT 7
+                    UNION ALL SELECT 8
+                    UNION ALL SELECT 9
+                    ) a
+                CROSS JOIN (
+                    SELECT 0 AS N
+                    UNION ALL SELECT 1
+                    UNION ALL SELECT 2
+                    UNION ALL SELECT 3
+                    UNION ALL SELECT 4
+                    UNION ALL SELECT 5
+                    UNION ALL SELECT 6
+                    UNION ALL SELECT 7
+                    UNION ALL SELECT 8
+                    UNION ALL SELECT 9
+                ) b
+                    WHERE a.N + b.N * 10 &lt;= 100
+                ) AS index_generator
+            WHERE idx &lt; JSON_LENGTH(t.buildings)
+            ) t3 on t1.id = t3.id
+            inner join tb_building_archives t2 on t3.loupan = t2.id
+        where
+            t1.deleted = 0
+          -- 已发布
+          and t1.publish_status = 2
+          -- 发布端 1 管理端   2 客户端
+          and t1.publish_source = 2
+        <if test="params.companyId != null">
+            and t2.company_id = #{params.companyId}
+        </if>
+        <if test="params.loupanIds != null and params.loupanIds.size() > 0">
+            and t3.loupan in
+            <foreach collection="params.loupanIds" item="lou" open="(" separator="," close=")">
+                #{lou}
+            </foreach>
+        </if>
+        <if test="params.departmentIds != null and params.departmentIds.size() > 0">
+            and t2.department_id in
+            <foreach collection="params.departmentIds" item="dep" open="(" separator="," close=")">
+                #{dep}
+            </foreach>
+        </if>
+        order by
+            t1.create_time desc
+    </select>
 </mapper>

@@ -4,8 +4,11 @@ import cn.cuiot.dmp.base.application.annotation.InternalApi;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.lease.dto.contract.ContractLeaseStatisticParam;
 import cn.cuiot.dmp.lease.service.PriceManageDetailService;
 import cn.cuiot.dmp.lease.service.TbContractBindInfoService;
+import cn.cuiot.dmp.lease.service.TbContractLeaseService;
+import cn.cuiot.dmp.lease.vo.ContractLeaseStatisticVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,6 +37,9 @@ public class ApiController {
     @Autowired
     private PriceManageDetailService priceManageDetailService;
 
+    @Autowired
+    private TbContractLeaseService contractLeaseService;
+
     /**
      * 根据房屋id获取意向合同和租赁合同信息
      */
@@ -50,5 +55,16 @@ public class ApiController {
     IdmResDTO<Map<Long, Integer>> batchQueryHousePriceForMap(@RequestBody @Valid IdsReq idsReq){
         return IdmResDTO.success(priceManageDetailService.batchQueryHousePriceForMap(idsReq.getIds()));
     }
+
+
+    /**
+     * 查询租赁合同按楼盘统计信息
+     */
+    @PostMapping(value = "/contractLeaseArchiveStatistic", produces = MediaType.APPLICATION_JSON_VALUE)
+    ContractLeaseStatisticVO contractLeaseArchiveStatistic(@RequestBody @Valid ContractLeaseStatisticParam idsReq){
+        return contractLeaseService.contractLeaseArchiveStatistic(idsReq);
+    }
+
+
 
 }

@@ -40,6 +40,22 @@ public class BuildingArchivesCreateDTO implements Serializable {
     private String areaDetail;
 
     /**
+     * 详细位置
+     */
+    private String address;
+
+    /**
+     * 经度
+     */
+    private String longitude;
+
+    /**
+     * 纬度
+     */
+    private String latitude;
+
+
+    /**
      * 企业ID
      */
     private Long companyId;

@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.archive.api.controller;//	模板
 
+import cn.cuiot.dmp.archive.application.param.vo.ArchivesStatisticVO;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.CustomerService;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
@@ -90,5 +92,26 @@ public class ApiController {
     public List<CustomerUserRspDto> lookupCustomerUsers(@RequestBody @Valid CustomerUseReqDto reqDto){
         return customerService.lookupCustomerUsers(reqDto);
     }
+
+
+    /**
+     * 根据条件查询楼栋信息
+     */
+    @PostMapping("/queryArchiveInfoList")
+    public List<BuildingArchivesVO> queryArchiveInfoList(@RequestBody @Valid BuildingArchivesPageQuery pageQuery){
+        return buildingArchivesService.queryForList(pageQuery);
+    }
+
+
+    /**
+     * 查询基础档案统计
+     * @param pageQuery 楼盘信息
+     * @return ArchivesStatisticVO
+     */
+    @PostMapping("/queryArchiveBaseStatisticInfo")
+    public ArchivesStatisticVO queryArchiveBaseStatisticInfo(@RequestBody @Valid BuildingArchivesPageQuery pageQuery){
+        return buildingArchivesService.queryArchiveBaseStatisticInfo(pageQuery);
+    }
+
 
 }

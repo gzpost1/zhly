@@ -5,6 +5,7 @@ import cn.cuiot.dmp.archive.application.param.dto.BatchBuildingArchivesDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchiveImportDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesCreateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesUpdateDTO;
+import cn.cuiot.dmp.archive.application.param.vo.ArchivesStatisticVO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesExportVO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
@@ -15,10 +16,12 @@ import cn.cuiot.dmp.archive.infrastructure.entity.BuildingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMapper;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
+import cn.cuiot.dmp.base.application.utils.CalculateUtils;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
+import cn.cuiot.dmp.base.infrastructure.feign.ContractFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -28,9 +31,11 @@ import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +62,9 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
     private ArchivesApiMapper archivesApiMapper;
     @Autowired
     private BuildingArchivesMapper buildingArchivesMapper;
+
+    @Autowired
+    private ContractFeignService contractFeignService;
 
     @Override
     public BuildingArchivesVO queryForDetail(Long id) {
@@ -317,6 +325,26 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
                     return buildingArchive;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ArchivesStatisticVO queryArchiveBaseStatisticInfo(BuildingArchivesPageQuery pageQuery) {
+        // 楼盘信息
+        List<BuildingArchivesVO> buildingArchivesVOS = queryForList(pageQuery);
+        // 楼盘数
+        int parks = Optional.ofNullable(buildingArchivesVOS).orElse(new ArrayList<>()).size();
+        // 楼栋数
+        BigDecimal buildingNum = CalculateUtils.calculateSum(buildingArchivesVOS, BuildingArchivesVO::getBuildingNum);
+        // 房间数
+        BigDecimal hoursNum = CalculateUtils.calculateSum(buildingArchivesVOS, BuildingArchivesVO::getHouseNum);
+
+
+        ArchivesStatisticVO statisticVO = new ArchivesStatisticVO();
+        statisticVO.setParks(parks);
+        statisticVO.setBuildings(buildingNum.longValue());
+        statisticVO.setHouses(hoursNum.longValue());
+
+        return statisticVO;
     }
 
 }
