@@ -77,6 +77,7 @@ public class HouseBalanceController extends BaseController {
      * @param query
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryBalanceChangeRecordForPage")
     public IdmResDTO<IPage<BalanceChangeRecordSysVo>> queryBalanceChangeRecordForPage(@RequestBody BalanceChangeRecordQuery query) {
         IPage<BalanceChangeRecordSysVo> pageVo = queryBalanceChangeRecord(query);
@@ -148,6 +149,7 @@ public class HouseBalanceController extends BaseController {
      * @param query
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryChargeForPage")
     public IdmResDTO<IPage<BalanceChargeRecordVO>> queryChargeForPage(@RequestBody @Valid BalanceChargeRecordQuery query) {
         IPage<BalanceChargeRecordVO> page = queryCharge(query);
@@ -214,6 +216,7 @@ public class HouseBalanceController extends BaseController {
      * @param param
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/queryHouseBalance")
     public IdmResDTO<BalanceEntity> queryHouseBalance(@RequestBody @Valid IdParam param) {
         return IdmResDTO.success(ruleAtHandler.queryHouseBalance(param.getId()));

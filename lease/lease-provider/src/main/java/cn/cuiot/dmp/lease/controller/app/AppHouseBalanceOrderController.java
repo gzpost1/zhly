@@ -61,7 +61,6 @@ public class AppHouseBalanceOrderController {
      *
      * @return
      */
-    @RequiresPermissions
     @LogRecord(operationCode = "placeOrder", operationName = "小程序充值下单", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @PostMapping("/placeOrder")
     public IdmResDTO<MbRechargeOrderCreateVo> placeOrder(@RequestBody @Valid MbRechargeOrderCreateDto param) {
