@@ -2,6 +2,7 @@ package cn.cuiot.dmp.lease.controller.charge;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
@@ -15,6 +16,7 @@ import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.enums.CustomerIdentityTypeEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeAbrogate;
@@ -36,10 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -127,79 +126,27 @@ public class ReceivableGenerationController {
      */
     @RequiresPermissions
     @PostMapping("/export")
-    public void export(TbChargeManagerQuery dto) throws Exception {
-        excelExportService.excelExport(ExcelReportDto.<TbChargeManagerQuery,ChargeManagerPageDto>builder().title("应收生成导出").fileName("应收生成导出")
-                .dataList(queryChargeManager(dto)).build(),ChargeManagerPageDto.class);
-    }
+    public IdmResDTO export(TbChargeManagerQuery dto) throws Exception {
 
-    public List<ChargeManagerPageDto> queryChargeManager(@RequestBody TbChargeManagerQuery query){
-        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
-        Boolean flag =true;
-        Long pageNo = 1L;
-        query.setPageSize(NumberConst.PAGE_MAX_SIZE);
-        List<ChargeManagerPageDto> resultList = new ArrayList<>();
-        do {
-
-            query.setPageNo(pageNo);
-            IPage<ChargeManagerPageDto> chargeManagerPageDtoIPage = tbChargeManagerService.queryForPage(query);
-            if(chargeManagerPageDtoIPage.getTotal()> NumberConst.QUERY_MAX_SIZE){
-                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-            }
-            if(CollectionUtils.isEmpty(chargeManagerPageDtoIPage.getRecords())){
-                flag=false;
-            }
-            if (Objects.nonNull(chargeManagerPageDtoIPage) && CollectionUtils.isNotEmpty(chargeManagerPageDtoIPage.getRecords())) {
-                List<Long> houseIds = chargeManagerPageDtoIPage.getRecords().stream().map(ChargeManagerPageDto::getHouseId).collect(Collectors.toList());
-                List<Long> userIds = chargeManagerPageDtoIPage.getRecords().stream().map(ChargeManagerPageDto::getCustomerUserId).collect(Collectors.toList());
-                List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(Lists.newArrayList(houseIds));
-
-                List<CustomerUserInfo> userInfoList = chargeHouseAndUserService.getUserInfo(houseIds, userIds);
-                if (CollectionUtils.isNotEmpty(userInfoList)) {
-                    for (ChargeManagerPageDto record : chargeManagerPageDtoIPage.getRecords()) {
-                        for (CustomerUserInfo userInfo : userInfoList) {
-                            if (Objects.equals(record.getCustomerUserId(), userInfo.getCustomerUserId())) {
-                                record.setCustomerUserName(userInfo.getCustomerUserName());
-                                record.setCustomerUserPhone(userInfo.getCustomerUserPhone());
-
-                                if (Objects.equals(record.getHouseId(), userInfo.getHouseId())) {
-                                    if (Objects.nonNull(userInfo.getIdentityType())) {
-                                        CustomerIdentityTypeEnum customerIdentityTypeEnum = CustomerIdentityTypeEnum.parseByCode(userInfo.getIdentityType().toString());
-                                        if (Objects.nonNull(customerIdentityTypeEnum)) {
-                                            record.setCustomerUserRoleName(customerIdentityTypeEnum.getName());
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                //填充房屋相关信息
-                if (CollectionUtils.isNotEmpty(houseInfoDtos)) {
-                    Map<Long, HouseInfoDto> houseMap = houseInfoDtos.stream().collect(Collectors.toMap(HouseInfoDto::getHouseId, Function.identity()));
-                    for (ChargeManagerPageDto record : chargeManagerPageDtoIPage.getRecords()) {
-                        if (houseMap.containsKey(record.getHouseId())) {
-                            record.setHouseCode(houseMap.get(record.getHouseId()).getHouseCode());
-                            record.setHouseName(houseMap.get(record.getHouseId()).getHouseName());
-                        }
-                    }
-                }
-
-                chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(), ChargeManagerPageDto.class);
-
-                chargeManagerPageDtoIPage.getRecords().stream().forEach(item->{
-                    item.setCreateTypeName(ChargeTypeEnum.getDesc(item.getCreateType()));
-                    item.setReceivbleStatusName(ChargeReceivbleEnum.getDesc(item.getReceivbleStatus()));
-                    item.setHangUpStatusName(ChargeHangUpEnum.getDesc(item.getHangUpStatus()));
-                    item.setAbrogateStatusName(ChargeAbrogateEnum.getDesc(item.getAbrogateStatus()));
-                });
-            }
-            pageNo++;
-        }while (flag);
-        return resultList;
+        excelExportService.excelExport(ExcelDownloadDto.<TbChargeManagerQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(dto)
+                .title("应收生成导出").fileName("应收生成导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("应收生成导出")
+                .build(), ChargeManagerPageDto.class, this::queryExport);
+        return IdmResDTO.success();
 
     }
+
+    public IPage<ChargeManagerPageDto> queryExport(ExcelDownloadDto<TbChargeManagerQuery> downloadDto){
+        TbChargeManagerQuery pageQuery = downloadDto.getQuery();
+        IPage<ChargeManagerPageDto> data = this.queryForPage(pageQuery).getData();
+        data.getRecords().stream().forEach(item->{
+            item.setCreateTypeName(ChargeTypeEnum.getDesc(item.getCreateType()));
+            item.setReceivbleStatusName(ChargeReceivbleEnum.getDesc(item.getReceivbleStatus()));
+            item.setHangUpStatusName(ChargeHangUpEnum.getDesc(item.getHangUpStatus()));
+            item.setAbrogateStatusName(ChargeAbrogateEnum.getDesc(item.getAbrogateStatus()));
+        });
+        return data;
+    }
+
 
     /**
      * 获取详情

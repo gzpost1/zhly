@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.service.charge;
 
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
@@ -106,8 +107,25 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
      */
 
     public void export(ChargeCollectionPlanPageQuery dto) throws Exception {
-        excelExportService.excelExport(ExcelReportDto.<ChargeCollectionPlanPageQuery,ChargeCollectionPlanPageVo>builder().title("催款计划导出").fileName("催款计划导出")
-                .dataList(queryChargeCollectionPlan(dto)).build(),ChargeCollectionPlanPageVo.class);
+        excelExportService.excelExport(ExcelDownloadDto.<ChargeCollectionPlanPageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(dto)
+                .title("催款计划导出").fileName("催款计划导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("催款计划导出")
+                .build(), ChargeCollectionPlanPageVo.class, this::queryExport);
+    }
+
+    /**
+     * 导出列表
+     * @param downloadDto
+     * @return
+     */
+    public IPage<ChargeCollectionPlanPageVo> queryExport(ExcelDownloadDto<ChargeCollectionPlanPageQuery> downloadDto){
+        ChargeCollectionPlanPageQuery pageQuery = downloadDto.getQuery();
+        IPage<ChargeCollectionPlanPageVo> data = this.queryForPage(pageQuery);
+        data.getRecords().stream().forEach(item->{
+            item.setChannelName(ChannelEnum.getDesc(item.getChannel()));
+            item.setCornTypeName(ChargeCollectionPlainCronTypeEnum.getByCode(item.getCronType()).getDesc());
+            item.setStatusName(Objects.equals(item.getStatus(), NumberConst.DATA_STATUS)? StatusConst.STOP: StatusConst.ENABLE);
+        });
+        return data;
     }
     /**
      * 查询催缴计划列表

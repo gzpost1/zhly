@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.entity.water;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.Date;
 import java.io.Serializable;
@@ -104,6 +105,7 @@ public class WaterManagementEntity implements Serializable {
     /**
      * 水表名称
      */
+    @Excel(name = "水表名称", orderNum = "0", width = 20)
     private String waterName;
 
 }

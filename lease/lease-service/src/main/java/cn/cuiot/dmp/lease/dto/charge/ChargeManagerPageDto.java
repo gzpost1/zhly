@@ -117,7 +117,7 @@ public class ChargeManagerPageDto implements ChargeItemNameSet {
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    @Excel(name = "所属账期-结束时间",orderNum = "11",  width = 20,exportFormat = "yyyy-MM-dd")
+    @Excel(name = "应收日期",orderNum = "11",  width = 20,exportFormat = "yyyy-MM-dd")
     private Date dueDate;
 
     /**

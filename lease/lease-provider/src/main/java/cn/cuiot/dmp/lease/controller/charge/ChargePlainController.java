@@ -2,6 +2,7 @@ package cn.cuiot.dmp.lease.controller.charge;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
@@ -10,12 +11,10 @@ import cn.cuiot.dmp.base.infrastructure.dto.DeleteParam;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
-import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.common.constant.NumberConst;
-import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.constant.*;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargePlain;
@@ -33,10 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -112,63 +108,25 @@ public class ChargePlainController {
     @RequiresPermissions
     @PostMapping("/export")
     public void export(ChargePlainQuery dto) throws Exception {
-        excelExportService.excelExport(ExcelReportDto.<ChargePlainQuery,ChargePlainPageDto>builder().title("应收计划导出").fileName("应收计划导出")
-                .dataList(queryChargePlain(dto)).build(),ChargePlainPageDto.class);
+        excelExportService.excelExport(ExcelDownloadDto.<ChargePlainQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(dto)
+                .title("应收计划导出").fileName("应收计划导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("应收计划导出")
+                .build(), ChargePlainPageDto.class, this::queryExport);
     }
-    public  List<ChargePlainPageDto> queryChargePlain(@RequestBody ChargePlainQuery query){
-        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
 
-        Boolean flag =true;
-        Long pageNo = 1L;
-        query.setPageSize(NumberConst.PAGE_MAX_SIZE);
-        List<ChargePlainPageDto> resultList = new ArrayList<>();
-        do {
-            query.setPageNo(pageNo);
-            IPage<ChargePlainPageDto> tbFlowPageDtoIPage = chargePlainService.queryForPage(query);
-            if(tbFlowPageDtoIPage.getTotal()> NumberConst.QUERY_MAX_SIZE){
-                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-            }
-            if(CollectionUtils.isEmpty(tbFlowPageDtoIPage.getRecords())){
-                flag=false;
-            }
-            //填充操作用户名称
-            if (Objects.nonNull(tbFlowPageDtoIPage) && CollectionUtils.isNotEmpty(tbFlowPageDtoIPage.getRecords())) {
-                BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
-                List<Long> createUserIds = tbFlowPageDtoIPage.getRecords().stream().map(ChargePlainPageDto::getCreateUser).distinct().collect(Collectors.toList());
-                baseUserReqDto.setUserIdList(createUserIds);
+    /**
+     * 查询导出数据
+     * @param downloadDto
+     * @return
+     */
+    public IPage<ChargePlainPageDto> queryExport(ExcelDownloadDto<ChargePlainQuery> downloadDto){
+        ChargePlainQuery pageQuery = downloadDto.getQuery();
+        IPage<ChargePlainPageDto> data = this.queryForPage(pageQuery).getData();
+        data.getRecords().stream().forEach(item->{
+                item.setStatusName(Objects.equals(NumberConst.DATA_STATUS,item.getStatus())? StatusConst.STOP:StatusConst.ENABLE);
+                item.setCornTypeName(ChargePlainCronType.getByCode(item.getCronType()).getDesc());
 
-                List<BaseUserDto> baseUserDtos = systemToFlowService.lookUpUserList(baseUserReqDto);
-                if (CollectionUtils.isNotEmpty(baseUserDtos)) {
-                    tbFlowPageDtoIPage.getRecords().forEach(e -> {
-                        baseUserDtos.stream().filter(baseUserDto -> Objects.equals(e.getCreateUser(), baseUserDto.getId())).findFirst().ifPresent(baseUserDto -> e.setCreateUserName(baseUserDto.getName()));
-                    });
-                }
-
-                chargeInfoFillService.fillinfo(tbFlowPageDtoIPage.getRecords(), ChargePlainPageDto.class);
-
-                //填充对象名称
-                List<Long> receivableIds = tbFlowPageDtoIPage.getRecords().stream().map(ChargePlainPageDto::getReceivableObj).collect(Collectors.toList());
-                BuildingArchiveReq buildingArchiveReq = new BuildingArchiveReq();
-                buildingArchiveReq.setIdList(receivableIds);
-                List<BuildingArchive> buildingArchives = systemToFlowService.buildingArchiveQueryForList(buildingArchiveReq);
-                if(CollectionUtils.isNotEmpty(buildingArchives)){
-                    Map<Long, BuildingArchive> archiveMap = buildingArchives.stream().collect(Collectors.toMap(BuildingArchive::getId, Function.identity()));
-                    for (ChargePlainPageDto record : tbFlowPageDtoIPage.getRecords()) {
-                        if(archiveMap.containsKey(record.getReceivableObj())){
-                            record.setReceivableObjName(archiveMap.get(record.getReceivableObj()).getName());
-                        }
-                    }
-                }
-                pageNo++;
-                tbFlowPageDtoIPage.getRecords().stream().forEach(item->{
-                    item.setStatusName(Objects.equals(NumberConst.DATA_STATUS,item.getStatus())? "停用":"启用");
-                    item.setCornTypeName(ChargePlainCronType.getByCode(item.getCronType()).getDesc());
-                });
-                resultList.addAll(tbFlowPageDtoIPage.getRecords());
-            }
-        }while (flag);
-
-        return resultList;
+        });
+        return data;
     }
 
     /**

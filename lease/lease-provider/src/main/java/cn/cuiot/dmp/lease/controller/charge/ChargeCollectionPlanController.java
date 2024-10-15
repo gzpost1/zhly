@@ -42,6 +42,12 @@ public class ChargeCollectionPlanController {
         return IdmResDTO.success(chargeCollectionPlanService.queryForPage(dto));
     }
 
+    /**
+     * 催款计划导出
+     * @param dto
+     * @return
+     * @throws Exception
+     */
     @PostMapping("/export")
     public IdmResDTO export(@RequestBody ChargeCollectionPlanPageQuery dto) throws Exception {
         chargeCollectionPlanService.export(dto);

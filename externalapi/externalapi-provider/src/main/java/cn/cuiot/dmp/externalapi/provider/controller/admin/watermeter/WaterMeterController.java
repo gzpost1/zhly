@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi.provider.controller.admin.watermeter;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.utils.PageUtils;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
@@ -56,6 +57,9 @@ public class WaterMeterController {
         return IdmResDTO.success(PageUtils.page(vo.getPageNo(), vo.getPageSize(), waterMeterPage.getData()));
     }
 
+
+
+
     /**
      * 查询分页-新
      *
@@ -66,6 +70,14 @@ public class WaterMeterController {
     @RequiresPermissions
     public IdmResDTO<IPage<WaterManagementEntity>> queryForPage(@RequestBody WaterMeterQueryVO vo){
         return waterManagementService.queryForPage(vo);
+    }
+
+
+    public IPage<WaterManagementEntity> queryExport(ExcelDownloadDto<WaterMeterQueryVO> downloadDto){
+        WaterMeterQueryVO pageQuery = downloadDto.getQuery();
+        IPage<WaterManagementEntity> data = this.queryForPage(pageQuery).getData();
+
+        return data;
     }
 
     /**

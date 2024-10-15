@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.service;
 
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
@@ -20,6 +21,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -441,7 +443,7 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
             List<Long> deptIds = deptList.stream().map(DepartmentDto::getId).collect(Collectors.toList());
             dto.setOrgIds(deptIds);
         }
-        Page<WorkPlanInfoEntity> workPlanInfoEntityPage = this.getBaseMapper().queryWordPlanInfo(new Page<>(dto.getCurrentPage(), dto.getPageSize()), dto);
+        Page<WorkPlanInfoEntity> workPlanInfoEntityPage = this.getBaseMapper().queryWordPlanInfo(new Page<>(dto.getPageNo(), dto.getPageSize()), dto);
         List<WorkPlanInfoEntity> records = workPlanInfoEntityPage.getRecords();
         if(CollectionUtil.isNotEmpty(records)){
             List<Long> userIds = records.stream().map(WorkPlanInfoEntity::getCreateUser).collect(Collectors.toList());
@@ -463,51 +465,39 @@ public class WorkPlanInfoService extends ServiceImpl<WorkPlanInfoMapper, WorkPla
      */
     public void exportWordPlanInfo(QueryWorkPlanInfoDto dto) throws Exception {
 
-            excelExportService.excelExport(ExcelReportDto.<QueryWorkPlanInfoDto, WorkPlanInfoEntity>builder().title("工单计划导出").fileName("工单计划导出")
-                    .dataList(queryExportWordPlanInfo(dto)).build(),WorkPlanInfoEntity.class);
-
+        excelExportService.excelExport(ExcelDownloadDto.<QueryWorkPlanInfoDto>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(dto)
+                .title("工单计划导出").fileName("工单计划导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("工单计划导出")
+                .build(), WorkPlanInfoEntity.class, this::queryExportWordPlanInfo);
     }
 
-    public  List<WorkPlanInfoEntity> queryExportWordPlanInfo(QueryWorkPlanInfoDto dto){
+
+    public IPage<WorkPlanInfoEntity> queryExportWordPlanInfo(ExcelDownloadDto<QueryWorkPlanInfoDto> downloadDto) {
+        QueryWorkPlanInfoDto dto = downloadDto.getQuery();
+
         //根据组织id获取自己及下属的组织id
         if(CollectionUtil.isEmpty(dto.getOrgIds())){
             List<DepartmentDto> deptList = getDeptIds(LoginInfoHolder.getCurrentDeptId());
             List<Long> deptIds = deptList.stream().map(DepartmentDto::getId).collect(Collectors.toList());
             dto.setOrgIds(deptIds);
         }
-        Boolean flag =true;
-        Long pageNo = 1L;
-        dto.setPageSize(Integer.parseInt(String.valueOf(WorkOrderConstants.PAGE_SIZE)));
-        List<WorkPlanInfoEntity> resultList = new ArrayList<>();
-
-        do {
-            Page<WorkPlanInfoEntity> workPlanInfoEntityPage = this.getBaseMapper().queryWordPlanInfo(new Page<>(pageNo, dto.getPageSize()), dto);
-            List<WorkPlanInfoEntity> records = workPlanInfoEntityPage.getRecords();
-            if(workPlanInfoEntityPage.getTotal()> WorkOrderConstants.pageSize){
-                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-            }
-            if(CollectionUtils.isEmpty(records)){
-                flag=false;
-            }
-            if(CollectionUtil.isNotEmpty(records)){
-                List<Long> userIds = records.stream().map(WorkPlanInfoEntity::getCreateUser).collect(Collectors.toList());
-                Map<Long, String> userMap = getUserMap(userIds);
-                List<Long> ids = records.stream().map(WorkPlanInfoEntity::getId).collect(Collectors.toList());
-                Map<Long, String> contentMap = getContent(ids);
-                records.stream().forEach(item->{
-                    //根据userId获取userName
-                    item.setCreateName(userMap.get(item.getCreateUser()));
-                    //停启用信息
-                    item.setStateName(PlanWordStatusEnums.getWorkOrderSource(Integer.parseInt(String.valueOf(item.getState()))));
-                    //有效状态
-                    item.setPlanState(planWordStatus(item.getStartDate(),item.getEndDate()));
-                });
-                pageNo++;
-                resultList.addAll(records);
-            }
-        }while (flag);
-
-        return resultList;
+        Page<WorkPlanInfoEntity> workPlanInfoEntityPage = this.getBaseMapper().queryWordPlanInfo(new Page<>(dto.getPageNo(), dto.getPageSize()), dto);
+        List<WorkPlanInfoEntity> records = workPlanInfoEntityPage.getRecords();
+        if(CollectionUtil.isNotEmpty(records)){
+            List<Long> userIds = records.stream().map(WorkPlanInfoEntity::getCreateUser).collect(Collectors.toList());
+            Map<Long, String> userMap = getUserMap(userIds);
+            List<Long> ids = records.stream().map(WorkPlanInfoEntity::getId).collect(Collectors.toList());
+            Map<Long, String> contentMap = getContent(ids);
+            records.stream().forEach(item->{
+                //根据userId获取userName
+                item.setCreateName(userMap.get(item.getCreateUser()));
+                item.setStartProcessInstanceDTO(contentMap.get(item.getId()));
+                //停启用信息
+                item.setStateName(PlanWordStatusEnums.getWorkOrderSource(Integer.parseInt(String.valueOf(item.getState()))));
+                //有效状态
+                item.setPlanState(planWordStatus(item.getStartDate(),item.getEndDate()));
+            });
+        }
+        return workPlanInfoEntityPage;
     }
 
     public String planWordStatus(Date startTime ,Date endTime){

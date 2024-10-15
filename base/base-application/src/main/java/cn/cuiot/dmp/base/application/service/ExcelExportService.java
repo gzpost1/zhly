@@ -81,7 +81,7 @@ public class ExcelExportService {
                 }
             }while (pageNo.get() <= pages);
 
-            if(CollectionUtils.isNotEmpty(dataList)){
+
 
                 List<Map<String, Object>> sheetsList = new ArrayList<>();
 
@@ -93,7 +93,7 @@ public class ExcelExportService {
                 Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
 
                 ExcelUtil.downLoadExcel(dto.getFileName(),response,workbook);
-            }
+
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
         }

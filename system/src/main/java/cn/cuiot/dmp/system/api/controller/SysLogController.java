@@ -1,12 +1,14 @@
 package cn.cuiot.dmp.system.api.controller;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.NumberConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.service.SysLogService;
 import cn.cuiot.dmp.system.application.param.dto.SysLogQuery;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -59,33 +62,20 @@ public class SysLogController {
     @RequiresPermissions
     @PostMapping("/export")
     public void export(@RequestBody SysLogQuery dto) throws Exception {
-        excelExportService.excelExport(ExcelReportDto.<SysLogQuery,OperateLogEntity>builder().title("系统日志导出").fileName("系统日志导出")
-                .dataList(queryOperateLog(dto)).build(),OperateLogEntity.class);
+        excelExportService.excelExport(ExcelDownloadDto.<SysLogQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(dto)
+                .title("系统日志导出").fileName("系统日志导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("系统日志导出")
+                .build(), OperateLogEntity.class, this::queryExport);
     }
+
     /**
-     * 获取日志列表
-     * @param query
+     * 查询导出列表
+     * @param downloadDto
      * @return
      */
-    public List<OperateLogEntity> queryOperateLog(SysLogQuery query){
-        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
-        query.setOrgId(currentOrgId);
-        query.setPageSize(NumberConst.PAGE_MAX_SIZE);
-        Boolean flag =true;
-        Long pageNo = 1L;
-        List<OperateLogEntity> resultList = new ArrayList<>();
-        do {
-            query.setPageNo(pageNo);
-            IPage<OperateLogEntity> pageData = sysLogService.queryForPage(query);
-            if(pageData.getTotal()> NumberConst.QUERY_MAX_SIZE){
-                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-            }
-            if(CollectionUtils.isEmpty(pageData.getRecords())){
-                flag=false;
-            }
-            pageNo++;
-            resultList.addAll(pageData.getRecords());
-        }while (flag);
-        return resultList;
+    public IPage<OperateLogEntity> queryExport(ExcelDownloadDto<SysLogQuery> downloadDto){
+        SysLogQuery pageQuery = downloadDto.getQuery();
+        IPage<OperateLogEntity> data = this.queryForPage(pageQuery).getData();
+        return data;
     }
+
 }

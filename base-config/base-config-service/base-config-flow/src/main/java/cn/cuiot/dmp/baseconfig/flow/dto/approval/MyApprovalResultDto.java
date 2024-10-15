@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.approval;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.NodeButton;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class MyApprovalResultDto {
     /**
      * 任务实例id
      */
+    @Excel(name = "工单编号", orderNum = "0", width = 20)
     private Long procInstId;
 
     /**
@@ -42,11 +44,13 @@ public class MyApprovalResultDto {
     /**
      *工单名称
      */
+    @Excel(name = "工单流程", orderNum = "3", width = 20)
     private String workName;
 
     /**
      * 业务类型名称
      */
+    @Excel(name = "业务类型", orderNum = "1", width = 20)
     private String businessTypeName;
 
     /**
@@ -54,6 +58,7 @@ public class MyApprovalResultDto {
      */
     private Long orgId;
 
+    @Excel(name = "所属组织", orderNum = "2", width = 20)
     private String orgPath;
 
     /**
@@ -68,6 +73,7 @@ public class MyApprovalResultDto {
     /**
      * 发起人名称
      */
+    @Excel(name = "发起人", orderNum = "4", width = 20)
     private String userName;
 
     /**
@@ -75,6 +81,7 @@ public class MyApprovalResultDto {
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @Excel(name = "发起时间",orderNum = "5",  width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     /**
@@ -82,6 +89,7 @@ public class MyApprovalResultDto {
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @Excel(name = "节点完成时间",orderNum = "6", width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
     private Date entTime;
 
     /**
@@ -94,6 +102,7 @@ public class MyApprovalResultDto {
     /**
      * 状态名称
      */
+    @Excel(name = "工单状态",orderNum = "7",  width = 20)
     private String statusName;
 
     /**

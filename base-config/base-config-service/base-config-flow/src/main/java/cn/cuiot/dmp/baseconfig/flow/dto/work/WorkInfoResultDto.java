@@ -1,15 +1,14 @@
 package cn.cuiot.dmp.baseconfig.flow.dto.work;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
-import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.ChildNode;
 import cn.cuiot.dmp.baseconfig.flow.dto.flowjson.NodeButton;
 import cn.cuiot.dmp.baseconfig.flow.entity.CommitProcessEntity;
-import cn.cuiot.dmp.common.bean.PageQuery;
+import cn.cuiot.dmp.query.PageQuery;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.jpedal.parser.shape.S;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -18,7 +17,7 @@ import java.util.List;
  * @create 2024/4/25 15:53
  */
 @Data
-public class WorkInfoDto extends PageQuery {
+public class WorkInfoResultDto implements Serializable {
 
 
     private String id;
