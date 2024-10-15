@@ -18,6 +18,7 @@
         door_name,
         door_index_code,
         door_region_index_code,
+        is_exist_pic_uri,
         pic_uri,
         svr_index_code,
         event_type,
@@ -31,6 +32,7 @@
         job_no,
         student_id,
         cert_no,
+        picture,
         create_time,
         update_time,
         deleted
@@ -51,6 +53,7 @@
             #{item.doorName},
             #{item.doorIndexCode},
             #{item.doorRegionIndexCode},
+            #{item.isExistPicUri},
             #{item.picUri},
             #{item.svrIndexCode},
             #{item.eventType},
@@ -64,6 +67,7 @@
             #{item.jobNo},
             #{item.studentId},
             #{item.certNo},
+            #{item.picture},
             now(),
             now(),
             0
