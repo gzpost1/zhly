@@ -4,6 +4,7 @@ import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 
 /**
  * @author wuyongchong
@@ -39,5 +40,16 @@ public class BalanceChangeRecordQuery extends PageQuery {
      * 退款单号-退款时存在，跟订单号分开
      */
     private String outRefundNo;
+
+    /**
+     * 开始时间
+     */
+    private LocalDate beginDate;
+
+    /**
+     * 结束时间
+     */
+    private LocalDate endDate;
+
 
 }

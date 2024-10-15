@@ -3,13 +3,16 @@ package cn.cuiot.dmp.pay.service.service.service;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
+import cn.cuiot.dmp.pay.service.service.dto.BalanceChargeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
 import cn.cuiot.dmp.pay.service.service.mapper.BalanceChangeRecordMapper;
 import cn.cuiot.dmp.pay.service.service.utils.PageHelper;
+import cn.cuiot.dmp.pay.service.service.vo.BalanceChargeRecordVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
@@ -80,6 +83,12 @@ public class MbBalanceChangeRecordService extends ServiceImpl<BalanceChangeRecor
         if (StringUtils.isNotEmpty(query.getOrderName())) {
             queryWrapper.like(BalanceChangeRecord::getOrderName, query.getOrderName().trim());
         }
+        queryWrapper.ge(nonNull(query.getBeginDate()), BalanceChangeRecord::getCreateTime, query.getBeginDate());
+        queryWrapper.le(nonNull(query.getEndDate()), BalanceChangeRecord::getCreateTime, query.getEndDate().plusDays(1));
         return queryWrapper;
+    }
+
+    public IPage<BalanceChargeRecordVO> queryChargeForPage(BalanceChargeRecordQuery query) {
+        return baseMapper.queryChargeForPage(new Page(query.getPageNo(), query.getPageSize()), query);
     }
 }

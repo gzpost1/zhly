@@ -4,8 +4,10 @@ import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeDto;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
+import cn.cuiot.dmp.pay.service.service.dto.BalanceChargeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceEntity;
+import cn.cuiot.dmp.pay.service.service.vo.BalanceChargeRecordVO;
 import cn.cuiot.dmp.pay.service.service.vo.BalanceEventAggregate;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +51,16 @@ public class BalanceRuleAtHandler {
         return changeRecordService.getById(param.getId());
     }
 
+
+    /**
+     * 查询扣缴记录
+     *
+     * @param query
+     * @return
+     */
+    public IPage<BalanceChargeRecordVO> queryChargeForPage(BalanceChargeRecordQuery query) {
+        return changeRecordService.queryChargeForPage(query);
+    }
     /**
      * 后台调用-增加或减少房屋余额
      *
