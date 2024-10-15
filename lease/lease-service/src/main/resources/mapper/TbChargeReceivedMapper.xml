@@ -30,11 +30,12 @@
     <result column="order_id" jdbcType="BIGINT" property="orderId" />
     <result column="payment_mode" jdbcType="TINYINT" property="paymentMode" />
     <result column="transaction_no" jdbcType="VARCHAR" property="transactionNo" />
+    <result column="charge_standard" jdbcType="BIGINT" property="chargeStandard"/>
 
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, charge_id, receivable_amount_received, liquidated_damages_need, liquidated_damages_received, 
+    id, charge_id, receivable_amount_received, liquidated_damages_need, liquidated_damages_received, charge_standard,
     liquidated_damages_tax, liquidated_damages_not_tax, create_time, create_user, total_received, order_id,
     only_principal, transaction_mode, account_bank, account_number, remark, customer_user_id, payment_mode,transaction_no,
     total_owe,liquidated_damages_rate,house_id,charge_item_id,ownership_period_begin,ownership_period_end,company_id
@@ -68,6 +69,7 @@
     ownership_period_end,
     payment_mode,
     transaction_no,
+    charge_standard,
     order_id
     )VALUES
     <foreach collection="list" item="element" index="index" separator=",">
@@ -97,6 +99,7 @@
       #{element.ownershipPeriodEnd,jdbcType=DATE},
       #{element.paymentMode,jdbcType=TINYINT},
       #{element.transactionNo,jdbcType=VARCHAR},
+      #{element.chargeStandard,jdbcType=BIGINT},
       #{element.orderId,jdbcType=BIGINT}
       )
     </foreach>

@@ -255,7 +255,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
             tbChargeReceived.setCreateTime(new Date());
             tbChargeReceived.setCreateUser(LoginInfoHolder.getCurrentUserId());
             tbChargeReceived.setPaymentMode(EntityConstants.YES);
-
+            tbChargeReceived.setChargeStandard(this.getById(e.getChargeId()).getChargeStandard());
             //违约金相关
             tbChargeReceived.setLiquidatedDamagesNeed(e.getLiquidatedDamagesNeed());
             tbChargeReceived.setLiquidatedDamagesRate(e.getLiquidatedDamagesRate());

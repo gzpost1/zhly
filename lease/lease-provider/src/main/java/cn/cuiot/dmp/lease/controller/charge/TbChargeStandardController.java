@@ -13,6 +13,7 @@ import cn.cuiot.dmp.lease.dto.charge.TbChargeStandardQuery;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeStandard;
 import cn.cuiot.dmp.lease.service.charge.TbChargeStandardService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 收费标准
@@ -44,6 +46,19 @@ public class TbChargeStandardController {
     public IdmResDTO<IPage<TbChargeStandard>> queryForPage(@RequestBody TbChargeStandardQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         return IdmResDTO.success().body(tbChargeStandardService.queryForPage(query));
+    }
+
+    /**
+     * 获取分页
+     *
+     * @param query
+     * @return
+     */
+    @RequiresPermissions
+    @PostMapping("/queryForList")
+    public IdmResDTO<List<TbChargeStandard>> queryForList(@RequestBody TbChargeStandardQuery query) {
+        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        return IdmResDTO.success().body(tbChargeStandardService.queryForList(query));
     }
 
 
@@ -72,7 +87,8 @@ public class TbChargeStandardController {
     public IdmResDTO create(@RequestBody @Valid TbChargeStandard createDto) {
         createDto.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         createDto.setStatus(EntityConstants.ENABLED);
-
+        createDto.setId(IdWorker.getId());
+        createDto.setDeleted(EntityConstants.NO);
         tbChargeStandardService.save(createDto);
 
         return IdmResDTO.success();

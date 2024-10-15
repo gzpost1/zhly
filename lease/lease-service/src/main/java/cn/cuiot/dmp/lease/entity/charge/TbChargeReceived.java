@@ -198,4 +198,10 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
      * 订单id
      */
     private Long orderId;
+
+    /**
+     * 收费标准 0自定义金额
+     */
+    @TableField(value = "charge_standard")
+    private Long chargeStandard;
 }
