@@ -85,6 +85,8 @@
             sum(if(income_type = 1,0,pay_amount)) as expenditure_total
         from
             tb_order_settlement
-        where  ${ew.customSqlSegment}
+        <where>
+            ${ew.customSqlSegment}
+        </where>
     </select>
 </mapper>
