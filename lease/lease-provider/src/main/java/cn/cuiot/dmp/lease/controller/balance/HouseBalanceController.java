@@ -78,7 +78,7 @@ public class HouseBalanceController extends BaseController {
      * @return
      */
     @PostMapping("/queryBalanceChangeRecordForPage")
-    public IdmResDTO<IPage<BalanceChangeRecordSysVo>> queryBalanceChangeRecordForPage(@RequestBody @Valid BalanceChangeRecordQuery query) {
+    public IdmResDTO<IPage<BalanceChangeRecordSysVo>> queryBalanceChangeRecordForPage(@RequestBody BalanceChangeRecordQuery query) {
         IPage<BalanceChangeRecordSysVo> pageVo = queryBalanceChangeRecord(query);
         return IdmResDTO.success(pageVo);
     }

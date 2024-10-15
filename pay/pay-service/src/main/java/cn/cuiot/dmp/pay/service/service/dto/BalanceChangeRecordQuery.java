@@ -16,10 +16,11 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BalanceChangeRecordQuery extends PageQuery {
+
+    private Long id;
     /**
      * 房屋id
      */
-    @NotNull(message = "房屋id不能为空")
     private Long houseId;
 
     /**

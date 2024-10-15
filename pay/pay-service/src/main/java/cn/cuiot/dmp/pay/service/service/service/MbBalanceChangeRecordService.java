@@ -75,6 +75,7 @@ public class MbBalanceChangeRecordService extends ServiceImpl<BalanceChangeRecor
     }
     private LambdaQueryWrapper<BalanceChangeRecord> initQuery(BalanceChangeRecordQuery query) {
         LambdaQueryWrapper<BalanceChangeRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(nonNull(query.getId()), BalanceChangeRecord::getId, query.getId());
         queryWrapper.eq(nonNull(query.getHouseId()), BalanceChangeRecord::getHouseId, query.getHouseId());
         queryWrapper.eq(nonNull(query.getOrderId()), BalanceChangeRecord::getOrderId, query.getOrderId());
         queryWrapper.eq(nonNull(query.getChangeType()), BalanceChangeRecord::getChangeType, query.getChangeType());
