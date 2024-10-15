@@ -16,4 +16,8 @@ public class TbChargeStandardService extends ServiceImpl<TbChargeStandardMapper,
     public IPage<TbChargeStandard> queryForPage(TbChargeStandardQuery query) {
         return baseMapper.queryForPage(new Page(query.getPageNo(), query.getPageSize()), query);
     }
+
+    public List<TbChargeStandard> queryForList(TbChargeStandardQuery query) {
+        return baseMapper.queryForList(query);
+    }
 }

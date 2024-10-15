@@ -41,4 +41,24 @@
     </if>
     order by a.create_time desc
   </select>
+
+  <select id="queryForList" resultMap="BaseResultMap">
+    select a.* from
+    tb_charge_standard a
+    inner join common_option b on a.charge_project_id = b.id
+    where
+    a.deleted=0
+    and b.deleted_flag = 0
+    and a.company_id=#{query.companyId}
+    <if test="query.chargeProjectId != null">
+      and a.charge_project_id=#{query.chargeProjectId}
+    </if>
+    <if test="query.status != null">
+      and a.status= #{query.status}
+    </if>
+    <if test="query.chargeStandard != null">
+      and a.charge_standard like CONCAT('%',#{query.chargeStandard},'%' )
+    </if>
+    order by a.create_time desc
+    </select>
 </mapper>

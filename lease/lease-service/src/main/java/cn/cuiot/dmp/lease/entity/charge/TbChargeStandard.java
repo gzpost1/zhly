@@ -16,7 +16,7 @@ public class TbChargeStandard extends YjBaseEntity {
     /**
      * id
      */
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    @TableId(value = "id", type = IdType.INPUT)
     private Long id;
 
 
