@@ -14,6 +14,7 @@ import cn.cuiot.dmp.lease.rocketmq.IMqMemberConsumerConfig;
 import cn.cuiot.dmp.lease.vo.balance.MbRechargeOrderCreateVo;
 import cn.cuiot.dmp.pay.service.service.dto.*;
 import cn.cuiot.dmp.pay.service.service.enums.OrderStatusEnum;
+import cn.cuiot.dmp.pay.service.service.enums.PayBusinessTypeEnum;
 import cn.cuiot.dmp.pay.service.service.enums.PayChannelEnum;
 import cn.cuiot.dmp.pay.service.service.enums.TradeChannelEnum;
 import cn.cuiot.dmp.pay.service.service.service.BalanceRuleAtHandler;
@@ -101,7 +102,7 @@ public class RechargeOrderPayRule {
         createOrderDto.setSpbillCreateIp(IpUtil.getIp());
         createOrderDto.setGoodsTag(param.getGoodsTag());
         createOrderDto.setProductName(param.getProductName());
-        createOrderDto.setBusinessType((byte)2);
+        createOrderDto.setBusinessType(PayBusinessTypeEnum.RECHARGE.getCode());
         CreateOrderResp createOrderResp = orderPayAtHandler.makeOrder(createOrderDto);
 
         MbRechargeOrderCreateVo resp = MbRechargeOrderCreateVo.builder()

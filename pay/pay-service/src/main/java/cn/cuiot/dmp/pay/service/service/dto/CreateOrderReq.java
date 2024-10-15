@@ -126,6 +126,7 @@ public class CreateOrderReq implements Serializable {
     /**
      * 1:账单缴费
      * 2：预缴
+     * 3 押金缴费
      * 微信支付时不能为空
      */
     private Byte businessType;

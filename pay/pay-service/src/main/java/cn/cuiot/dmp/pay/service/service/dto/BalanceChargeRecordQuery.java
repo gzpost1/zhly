@@ -18,6 +18,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class BalanceChargeRecordQuery extends PageQuery {
 
+    /**
+     * 房屋id
+     */
+    private Long houseId;
 
     /**
      * 实收id

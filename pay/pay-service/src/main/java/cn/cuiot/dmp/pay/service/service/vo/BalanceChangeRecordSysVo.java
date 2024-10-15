@@ -55,17 +55,23 @@ public class BalanceChangeRecordSysVo  {
     @Excel(name = "充值方式", orderNum = "4", width = 20)
     private String orderName;
 
+    /**
+     * 微信支付单号
+     */
+    @Excel(name = "交易单号", orderNum = "5", width = 20)
+    private String payOrderId;
+
     private Long createUser;
     /**
      * 操作人名称
      */
-    @Excel(name = "操作人", orderNum = "5", width = 20)
+    @Excel(name = "操作人", orderNum = "6", width = 20)
     private String createName;
 
     /**
      * 创建时间
      */
-    @Excel(name = "充值人", orderNum = "5", width = 20)
+    @Excel(name = "充值人", orderNum = "7", width = 20)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 

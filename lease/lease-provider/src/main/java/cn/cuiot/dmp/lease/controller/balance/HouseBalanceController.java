@@ -100,7 +100,7 @@ public class HouseBalanceController extends BaseController {
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
 
         ExcelUtils.downLoadExcel(
-                "room-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                "充值记录-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
                 response,
                 workbook);
     }
@@ -113,7 +113,7 @@ public class HouseBalanceController extends BaseController {
             return pageVo;
         }
         //转译用户名称及房屋名称
-        List<Long> houseIds = records.stream().map(vo->vo.getHouseId()).collect(Collectors.toList());
+        List<Long> houseIds = records.stream().map(vo->vo.getHouseId()).distinct().collect(Collectors.toList());
         List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(Lists.newArrayList(houseIds));
         Map<Long, String> houseMap = houseInfoDtos.stream().collect(Collectors.toMap(HouseInfoDto::getHouseId, HouseInfoDto::getHouseName));
         //填充操作人名称
@@ -172,7 +172,7 @@ public class HouseBalanceController extends BaseController {
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
 
         ExcelUtils.downLoadExcel(
-                "room-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                "扣缴记录-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
                 response,
                 workbook);
     }
@@ -185,7 +185,7 @@ public class HouseBalanceController extends BaseController {
             return page;
         }
         //转译房屋名称
-        List<Long> houseIds = records.stream().map(vo->vo.getHouseId()).collect(Collectors.toList());
+        List<Long> houseIds = records.stream().map(vo->vo.getHouseId()).distinct().collect(Collectors.toList());
         List<HouseInfoDto> houseInfoDtos = chargeHouseAndUserService.getHouseInfoByIds(Lists.newArrayList(houseIds));
         Map<Long, String> houseMap = houseInfoDtos.stream().collect(Collectors.toMap(HouseInfoDto::getHouseId, HouseInfoDto::getHouseName));
         //填充收费标准

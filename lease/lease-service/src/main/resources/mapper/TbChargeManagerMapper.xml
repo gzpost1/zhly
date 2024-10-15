@@ -167,7 +167,7 @@
             inner join tb_houses_archives b on a.id = b.loupan_id
         where a.deleted = 0
           and b.deleted = 0
-          and a.id in
+          and b.id in
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>

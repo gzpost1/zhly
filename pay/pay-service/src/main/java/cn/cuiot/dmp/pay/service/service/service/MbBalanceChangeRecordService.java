@@ -85,7 +85,9 @@ public class MbBalanceChangeRecordService extends ServiceImpl<BalanceChangeRecor
             queryWrapper.like(BalanceChangeRecord::getOrderName, query.getOrderName().trim());
         }
         queryWrapper.ge(nonNull(query.getBeginDate()), BalanceChangeRecord::getCreateTime, query.getBeginDate());
-        queryWrapper.le(nonNull(query.getEndDate()), BalanceChangeRecord::getCreateTime, query.getEndDate().plusDays(1));
+        if(nonNull(query.getEndDate())){
+            queryWrapper.le(BalanceChangeRecord::getCreateTime, query.getEndDate().plusDays(1));
+        }
         return queryWrapper;
     }
 
