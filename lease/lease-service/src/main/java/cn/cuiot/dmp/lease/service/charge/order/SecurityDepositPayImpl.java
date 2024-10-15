@@ -1,15 +1,12 @@
 package cn.cuiot.dmp.lease.service.charge.order;
 
+import cn.cuiot.dmp.base.infrastructure.utils.MathTool;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.lease.dto.charge.*;
-import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
-import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositManager;
 import cn.cuiot.dmp.lease.enums.ChargePayDataTypeEnum;
 import cn.cuiot.dmp.lease.enums.ChargePayStatusEnum;
-import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
-import cn.cuiot.dmp.lease.service.charge.TbChargeReceivedService;
 import cn.cuiot.dmp.lease.service.charge.TbSecuritydepositManagerService;
 import cn.cuiot.dmp.pay.service.service.entity.TbOrderSettlement;
 import cn.cuiot.dmp.pay.service.service.service.TbOrderSettlementService;
@@ -19,12 +16,11 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import lombok.Data;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,6 +35,8 @@ import java.util.stream.Collectors;
 public class SecurityDepositPayImpl extends AbstrChargePay {
     @Autowired
     private TbSecuritydepositManagerService securitydepositManagerService;
+    @Autowired
+    private TbOrderSettlementService orderSettlementService;
 
     @Override
     public Byte getDataType() {
@@ -75,15 +73,26 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
     @Override
     protected int doPaySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
         //1 更新订单状态为已支付
-        int updateCount =  securitydepositManagerService.updateChargePayStatusToSuccsess(chargeOrderPaySuccInsertDto);
+        int updateCount = securitydepositManagerService.updateChargePayStatusToSuccsess(chargeOrderPaySuccInsertDto);
 
         //3 插入账单
         chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.NO);
-        securitydepositManagerService.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
+        List<TbOrderSettlement> tbSecuritydepositManagers = securitydepositManagerService.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
+        //4 插入微信支付手续费
+        if (CollectionUtils.isNotEmpty(tbSecuritydepositManagers)) {
+            tbSecuritydepositManagers.stream().filter(e -> {
+                return MathTool.percentCalculate(e.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate()) > 0;
+            }).forEach(e -> {
+                e.setId(IdWorker.getId());
+                e.setIncomeType(EntityConstants.YES);
+            });
+            if (CollectionUtils.isNotEmpty(tbSecuritydepositManagers)) {
+                orderSettlementService.insertList(tbSecuritydepositManagers);
+            }
+        }
+        
         return updateCount;
     }
-
-
 
 
     @Override
@@ -102,10 +111,10 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
     }
 
     @Override
-    public UpdateChargePayStatusToPaySuccessBYPrePayDto updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long createUserId,Long orderId) {
+    public UpdateChargePayStatusToPaySuccessBYPrePayDto updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long createUserId, Long orderId) {
         UpdateChargePayStatusToPaySuccessBYPrePayDto prePayDto = new UpdateChargePayStatusToPaySuccessBYPrePayDto();
         //1 更新订单状态为已支付
-        int updateCount =  securitydepositManagerService.updateChargePayStatusToPaySuccessBYPrePay(chargeId,needToPayAmount,orderId);
+        int updateCount = securitydepositManagerService.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount, orderId);
         prePayDto.setUpdateCount(updateCount);
         AssertUtil.isTrue(updateCount > 0, "锁定账单收款失败");
 

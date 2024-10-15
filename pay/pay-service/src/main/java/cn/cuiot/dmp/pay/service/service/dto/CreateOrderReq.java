@@ -135,6 +135,7 @@ public class CreateOrderReq implements Serializable {
      */
     private Byte dataType;
 
+    private String orderName;
     /**
      * 支付校验
      */

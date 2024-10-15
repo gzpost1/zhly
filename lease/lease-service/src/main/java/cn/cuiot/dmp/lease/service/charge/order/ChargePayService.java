@@ -189,16 +189,16 @@ public class ChargePayService {
             //1.1 查询修改收款的钱
             PrePayAmountAndHouseId needToPayAmount = chargePay.queryNeedToPayAmount(chargeId);
             //1.2 更新业务表收款状态 插入结算报表
-            Long orderId =  IdWorker.getId();
-            UpdateChargePayStatusToPaySuccessBYPrePayDto prePayDto = chargePay.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount.getAmount(), LoginInfoHolder.getCurrentUserId(),orderId);
+            Long orderId = IdWorker.getId();
+            UpdateChargePayStatusToPaySuccessBYPrePayDto prePayDto = chargePay.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount.getAmount(), LoginInfoHolder.getCurrentUserId(), orderId);
             AssertUtil.isTrue(prePayDto.getUpdateCount() > 0, "锁定账单收款失败");
 
             //2修改预缴余额，如果不通过则失败，否则修改预缴余额，插入预缴流水
             CreateOrderReq createOrderReq = new CreateOrderReq();
             createOrderReq.setOutOrderId(orderId.toString());
             createOrderReq.setPayChannel(20);
-            createOrderReq.setMchType((byte)3);
-            createOrderReq.setProductName("预缴付费");
+            createOrderReq.setMchType((byte) 3);
+            createOrderReq.setProductName(Objects.equals(1, chargePayDto.getDataType()) ? "押金扣缴" : "账单扣缴");
             createOrderReq.setTotalFee(needToPayAmount.getAmount());
             createOrderReq.setHouseId(needToPayAmount.getHouseId());
             createOrderReq.setDataType(chargePayDto.getDataType());

@@ -156,7 +156,7 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
         return baseMapper.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount,orderId);
     }
 
-    public void saveReceivedAndSettlement(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
+    public List<TbOrderSettlement> saveReceivedAndSettlement(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
         List<TbSecuritydepositManager> tbSecuritydepositManagers = this.listByIds(chargeOrderPaySuccInsertDto.getDataIds());
         List<TbOrderSettlement> orderSettlements = Lists.newArrayList();
 
@@ -180,6 +180,7 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
             orderSettlements.add(tbOrderSettlement);
         }
         orderSettlementService.insertList(orderSettlements);
+        return orderSettlements;
     }
 
     /**

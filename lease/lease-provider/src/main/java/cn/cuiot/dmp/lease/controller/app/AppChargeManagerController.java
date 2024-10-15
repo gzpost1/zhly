@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.lease.controller.app;
 
 
+import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.lease.dto.charge.AppChargeManagerDto;
@@ -43,7 +44,7 @@ public class AppChargeManagerController {
      * @param query
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<AppChargeManagerDto>> appChargeManager(@RequestBody AppChargemanagerQuery query) {
 
@@ -63,7 +64,7 @@ public class AppChargeManagerController {
      * @param idParam
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<ChargeManagerDetailDto> queryForDetail(@RequestBody @Valid IdParam idParam) {
         ChargeManagerDetailDto chargeManagerDetailDto = tbChargeManagerService.queryForDetail(idParam.getId());
@@ -81,7 +82,7 @@ public class AppChargeManagerController {
      * @param queryDto
      * @return
      */
-//    @RequiresPermissions
+    @RequiresPermissions
     @PostMapping("/queryForReceivedPage")
     public IdmResDTO<IPage<TbChargeReceived>> queryForReceivedPage(@RequestBody @Valid ChargeHangupQueryDto queryDto) {
         IPage<TbChargeReceived> tbChargeHangupIPage = tbChargeManagerService.queryForReceivedPage(queryDto);
