@@ -201,7 +201,7 @@ public class ChargePayService {
             //1.2 更新业务表收款状态 插入结算报表
             Long orderId = IdWorker.getId();
             UpdateChargePayStatusToPaySuccessBYPrePayDto prePayDto = chargePay.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount.getAmount(), LoginInfoHolder.getCurrentUserId(), orderId);
-            AssertUtil.isFalse(prePayDto.getUpdateCount() > 0, "锁定账单收款失败");
+            AssertUtil.isTrue(prePayDto.getUpdateCount() > 0, "锁定账单收款失败");
 
             //2修改预缴余额，如果不通过则失败，否则修改预缴余额，插入预缴流水
             CreateOrderReq createOrderReq = new CreateOrderReq();
