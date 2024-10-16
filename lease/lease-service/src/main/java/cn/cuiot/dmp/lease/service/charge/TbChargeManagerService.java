@@ -157,6 +157,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         entity.setReceivbleStatus(ChargeReceivbleEnum.UNPAID.getCode());
         entity.setHangUpStatus(ChargeHangUpEnum.UNHANG_UP.getCode());
         entity.setAbrogateStatus(ChargeAbrogateEnum.NORMAL.getCode());
+        entity.setPayStatus(ChargePayStatusEnum.PAY_SUCCESS.getCode());
         return entity;
     }
 
