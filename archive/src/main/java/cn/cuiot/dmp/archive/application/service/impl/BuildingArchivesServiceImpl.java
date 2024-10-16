@@ -101,10 +101,12 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
         if (CollectionUtils.isEmpty(buildingArchivesList)) {
             return new ArrayList<>();
         }
+
         return buildingArchivesList.stream()
                 .map(o -> {
                     BuildingArchivesVO buildingArchivesVO = new BuildingArchivesVO();
                     BeanUtils.copyProperties(o, buildingArchivesVO);
+                    buildingArchivesVO.setDepartmentName(o.getName());
                     return buildingArchivesVO;
                 })
                 .collect(Collectors.toList());
