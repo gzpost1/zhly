@@ -8,6 +8,7 @@ import cn.cuiot.dmp.largescreen.service.vo.EntranceGuardRecordVo;
 import cn.cuiot.dmp.largescreen.service.vo.IOTStatisticVo;
 import cn.cuiot.dmp.largescreen.service.vo.VideoPageVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,14 +34,14 @@ public interface ExternalApiFeignService {
      * @return
      */
     @RequestMapping("/api/video/queryForPage")
-    IdmResDTO<IPage<VideoPageVo>> queryForPage(@RequestBody VideoPageQuery query);
+    IdmResDTO<Page<VideoPageVo>> queryForPage(@RequestBody VideoPageQuery query);
 
 
     @RequestMapping("/api/queryIotStatistic")
      IdmResDTO<IOTStatisticVo> queryIotStatistic(@RequestBody StatisInfoReqDTO reqDTO);
 
     @PostMapping("/api/entranceGuard/queryForPage")
-    IdmResDTO<IPage<EntranceGuardRecordVo>> entranceGuardQueryForPage(@RequestBody EntranceGuardRecordReqDTO query);
+    IdmResDTO<Page<EntranceGuardRecordVo>> entranceGuardQueryForPage(@RequestBody EntranceGuardRecordReqDTO query);
 
 
 }

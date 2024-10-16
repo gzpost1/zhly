@@ -140,7 +140,7 @@ public class ArchivesScreenController {
      */
     @RequiresPermissions
     @RequestMapping("/video/queryForPage")
-    public IdmResDTO<IPage<VideoPageVo>> videoQueryForPage(@RequestBody StatisInfoReqDTO query){
+    public IdmResDTO<Page<VideoPageVo>> videoQueryForPage(@RequestBody StatisInfoReqDTO query){
         BuildingArchivesPageQuery pageQuery = buildStatisticPageReq(query);
         VideoPageQuery videoPageQuery = BeanMapper.map(pageQuery, VideoPageQuery.class);
         // 查询在线的设备  1: 未注册    2: 在线    3: 离线
@@ -167,15 +167,9 @@ public class ArchivesScreenController {
      */
     @RequiresPermissions
     @PostMapping("/entranceGuard/queryForPage")
-    public IdmResDTO<IPage<EntranceGuardRecordVo>> entranceGuardQueryForPage(@RequestBody EntranceGuardRecordReqDTO query) {
+    public IdmResDTO<Page<EntranceGuardRecordVo>> entranceGuardQueryForPage(@RequestBody EntranceGuardRecordReqDTO query) {
         buildStatisticPageReq(query);
-
-        Page<EntranceGuardRecordVo> objectPage = new Page<>(query.getPageNo(), query.getPageSize());
-        objectPage.setRecords(CollectionUtil.newArrayList(new EntranceGuardRecordVo()));
-        return IdmResDTO.success(objectPage);
-
-
-        //return externalApiFeignService.entranceGuardQueryForPage(query);
+        return externalApiFeignService.entranceGuardQueryForPage(query);
     }
 
 
