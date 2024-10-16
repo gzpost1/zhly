@@ -109,7 +109,7 @@ public class OrderPayAtHandler {
         PaySuccessVO paySuccessVO = PaySuccessVO.builder().outOrderId(order.getOutTradeNo())
                 .transactionNo(order.getTransactionId())
                 .status(WxOrderConstant.WePayOrderStatus.getYjStatus(order.getTradeState()))
-                .businessType(StringUtils.isNotBlank(order.getAttach())?null:Byte.valueOf(order.getAttach()))
+                .businessType(StringUtils.isBlank(order.getAttach())?null:Byte.valueOf(order.getAttach()))
                 .payRate(paySetting.getCharge())
                 .build();
         sendDeviceInfo(paySuccessVO);

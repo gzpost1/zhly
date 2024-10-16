@@ -2,7 +2,6 @@ package cn.cuiot.dmp.lease.service.balance;
 
 import cn.cuiot.dmp.base.infrastructure.stream.StreamMessageSender;
 import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
-import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -10,7 +9,7 @@ import cn.cuiot.dmp.lease.dto.balance.MbRechargeOrderCreateDto;
 import cn.cuiot.dmp.lease.entity.balance.MbRechargeOrder;
 import cn.cuiot.dmp.lease.enums.MbRechargeOrderStatus;
 import cn.cuiot.dmp.lease.enums.PayStatus;
-import cn.cuiot.dmp.lease.rocketmq.IMqMemberConsumerConfig;
+import cn.cuiot.dmp.lease.rocketmq.IMqMemberSenderConfig;
 import cn.cuiot.dmp.lease.vo.balance.MbRechargeOrderCreateVo;
 import cn.cuiot.dmp.pay.service.service.dto.*;
 import cn.cuiot.dmp.pay.service.service.enums.OrderStatusEnum;
@@ -32,8 +31,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
-import static cn.cuiot.dmp.pay.service.service.enums.Constants.PLATFORM;
 import static cn.cuiot.dmp.pay.service.service.enums.BalanceChangeTypeEnum.BALANCE_RECHARGE;
+import static cn.cuiot.dmp.pay.service.service.enums.Constants.PLATFORM;
 
 /**
  * 充值订单支付业务
@@ -74,7 +73,7 @@ public class RechargeOrderPayRule {
         createToSql(order);
         //丢超时处理队列，5分钟够了
         streamMessageSender.sendGenericMessage(
-                IMqMemberConsumerConfig.MB_RECHARGE_ORDER_MESSAGE_INPUT,
+                IMqMemberSenderConfig.MB_RECHARGE_ORDER_MESSAGE_OUTPUT,
                 SimpleMsg.builder()
                         .delayTimeLevel(9)
                         .data(order.getOrderId())
@@ -155,6 +154,7 @@ public class RechargeOrderPayRule {
 
         PayOrderQueryReq orderDto = new PayOrderQueryReq();
         orderDto.setOutOrderId(order.getOrderId().toString());
+        orderDto.setOrgId(orderService.quertOrgIdByHouse(order.getHouseId()));
         PayOrderQueryResp payOrderQueryResp = orderPayAtHandler.queryOrder(orderDto);
         boolean isPaySuccess = Objects.equals(payOrderQueryResp.getStatus(), OrderStatusEnum.PAID.getStatus());
         if (isPaySuccess) {
@@ -162,6 +162,7 @@ public class RechargeOrderPayRule {
             BigDecimal payRate = payOrderQueryResp.getPayRate();
             order.setPayChargeRate(payOrderQueryResp.getPayRate());
             order.setPayCharge(new BigDecimal(order.getTotalFee()).multiply(payRate).divide(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
+            order.setPayOrderId(payOrderQueryResp.getPayOrderId());
             order.setPayOrderId(payOrderQueryResp.getPayOrderId());
             paySuccessHandler(order);
             return;
@@ -221,7 +222,7 @@ public class RechargeOrderPayRule {
             // 2023/11/30 状态变更
             changeService.orderChange(updateOrder, PLATFORM);
             IdmResDTO handler = balanceRuleAtHandler.handler(balanceEventAggregate);
-            if (!ErrorCode.SUCCESS.getCode().equals(handler.getCode())) {
+            if (!ResultCode.SUCCESS.getCode().equals(handler.getCode())) {
                 throw new BusinessException(handler.getCode(), handler.getMessage());
             }
             transactionManager.commit(transaction);
@@ -230,7 +231,7 @@ public class RechargeOrderPayRule {
             if (Objects.nonNull(transaction)) {
                 transactionManager.rollback(transaction);
             }
-            log.error("余额充值发生异常，等待重试", ex);
+            log.error("余额充值发生异常", ex);
             return false;
         }
     }
