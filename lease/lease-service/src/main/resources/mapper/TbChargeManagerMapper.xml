@@ -543,15 +543,18 @@
 
     <select id="queryOverTimeOrderAndClosePage" resultType="cn.cuiot.dmp.lease.dto.charge.Chargeovertimeorderdto">
         select
-            id as data_id
-        from tb_charge_manager
+            a.id as data_id
+        from tb_charge_manager a
+            inner join tb_pre_pay_auto_config b on a.company_id = b.company_id
         where
-            deleted = 0
-        and receivble_status in (0,1)
-        and pay_status != 0
+            a.deleted = 0
+        and b.is_auto_pay = 1
+        and b.charge_item_ids like concat('%',a.charge_item_id,'%')
+        and a.receivble_status in (0,1)
+        and a.pay_status != 0
         and date_format(now(),'%Y-%m-%d') = date_format(due_date,'%Y-%m-%d')
-        and hang_up_status = 0
-        and abrogate_status = 0
-        order by (receivable_amount-receivable_amount_received) desc
+        and a.hang_up_status = 0
+        and a.abrogate_status = 0
+        order by (a.receivable_amount-a.receivable_amount_received) desc
     </select>
 </mapper>
