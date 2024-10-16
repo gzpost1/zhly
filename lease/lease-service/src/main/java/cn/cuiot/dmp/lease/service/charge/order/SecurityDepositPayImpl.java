@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -80,15 +81,22 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
         List<TbOrderSettlement> tbSecuritydepositManagers = securitydepositManagerService.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
         //4 插入微信支付手续费
         if (CollectionUtils.isNotEmpty(tbSecuritydepositManagers)) {
-            tbSecuritydepositManagers.stream().filter(e -> {
-                return MathTool.percentCalculate(e.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate()) > 0;
-            }).forEach(e -> {
-                e.setId(IdWorker.getId());
-                e.setIncomeType(EntityConstants.YES);
-                e.setPayAmount(MathTool.percentCalculate(e.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate()));
-            });
-            if (CollectionUtils.isNotEmpty(tbSecuritydepositManagers)) {
-                orderSettlementService.insertList(tbSecuritydepositManagers);
+
+            List<TbOrderSettlement> insertPayComssion = new ArrayList<>();
+            for (TbOrderSettlement tbSecuritydepositManager : tbSecuritydepositManagers) {
+                int i = MathTool.percentCalculate(tbSecuritydepositManager.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate());
+                if(i > 0 ){
+                    TbOrderSettlement tbOrderSettlement = new TbOrderSettlement();
+                    BeanUtils.copyProperties(tbSecuritydepositManager, tbOrderSettlement);
+                    tbOrderSettlement.setId(IdWorker.getId());
+                    tbOrderSettlement.setIncomeType(EntityConstants.YES);
+                    tbOrderSettlement.setPayAmount(i);
+                    insertPayComssion.add(tbOrderSettlement);
+                }
+            }
+
+            if (CollectionUtils.isNotEmpty(insertPayComssion)) {
+                orderSettlementService.insertList(insertPayComssion);
             }
         }
         
