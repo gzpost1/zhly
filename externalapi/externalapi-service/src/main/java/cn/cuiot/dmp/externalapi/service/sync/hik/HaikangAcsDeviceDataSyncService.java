@@ -202,7 +202,7 @@ public class HaikangAcsDeviceDataSyncService {
                     if(Objects.nonNull(item.getOnline())){
                         status = item.getOnline().byteValue();
                     }
-                    haikangAcsDeviceService.updateOnlineStatus(item.getIndexCode(),collectTime,status);
+                    haikangAcsDeviceService.updateOnlineStatus(companyId,item.getIndexCode(),collectTime,status);
                 }
             }
         } while (size > 0);
