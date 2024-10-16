@@ -103,7 +103,8 @@ public class CodeArchivesServiceImpl implements CodeArchivesService {
 
     @Override
     public void export(CodeArchivesPageQuery pageQuery) throws Exception {
-        excelExportService.excelExport(ExcelDownloadDto.<CodeArchivesPageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery).title("二维码档案").fileName("二维码档案导出"+ "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("二维码档案").build(),
+        excelExportService.excelExport(ExcelDownloadDto.<CodeArchivesPageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
+                        .title("二维码档案").fileName("二维码档案导出"+ "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("二维码档案").build(),
                 CodeArchiveExportVo.class, this::executePageQuery);
     }
 

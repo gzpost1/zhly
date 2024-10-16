@@ -37,8 +37,17 @@ public class CodeArchiveExportVo implements Serializable {
     /**
      * 码类型（1:二维码）
      */
+    private Byte codeType;
+
+    /**
+     * 码类型（1:二维码）
+     */
     @Excel(name = "码类型", orderNum = "3", width = 5, replace = {"二维码_1"})
-    private String codeType;
+    private String codeTypeName;
+
+    public String getCodeTypeName() {
+        return codeType.toString();
+    }
 
     /**
      * 停启用状态（0停用，1启用）生成数量
@@ -48,7 +57,7 @@ public class CodeArchiveExportVo implements Serializable {
     @Excel(name = "停启用状态", orderNum = "5", width = 5, replace = {"启用_1", "停用_0"})
     private String statusName;
 
-    public String getStatusBame() {
+    public String getStatusName() {
         return status.toString();
     }
 

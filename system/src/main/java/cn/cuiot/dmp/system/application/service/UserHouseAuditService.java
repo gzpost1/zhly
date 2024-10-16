@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.system.application.service;
 
-import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
@@ -13,6 +13,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.UserHouseAuditStatusConstants;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.*;
@@ -36,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -331,32 +333,29 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
     }
 
     public void export(UserHouseAuditPageQueryDTO pageQuery) throws Exception {
-        IPage<UserHouseAuditDTO> pageResult = new Page<>();
-        Long pageNo = 1L;
-        pageQuery.setPageSize(2000L);
-        List<UserHouseAuditExportVo> exportDataList = new ArrayList<>();
-        do {
-            pageQuery.setPageNo(pageNo++);
-            pageResult = this.queryForPage(pageQuery);
-            if (pageResult.getTotal() > ExcelExportService.MAX_EXPORT_DATA) {
-                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-            }
-            pageResult.getRecords().forEach(o -> {
-                UserHouseAuditExportVo exportVo = new UserHouseAuditExportVo();
-                BeanUtils.copyProperties(o, exportVo);
-                exportDataList.add(exportVo);
-            });
-        } while (CollUtil.isNotEmpty(pageResult.getRecords()));
-        ExcelReportDto<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo> excelReportDto = null;
+        ExcelDownloadDto<UserHouseAuditPageQueryDTO> excelReportDto = null;
         if (UserHouseAuditStatusConstants.WAIT.equals(pageQuery.getAuditStatus())) {
-            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("待审核C端用户").fileName("待审核C端用户导出").SheetName("待审核C端用户").dataList(exportDataList).build();
+            excelReportDto = ExcelDownloadDto.<UserHouseAuditPageQueryDTO>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
+                    .title("待审核C端用户").fileName("待审核C端用户导出" + "(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + ")").sheetName("待审核C端用户").build();
         } else if (UserHouseAuditStatusConstants.PASS.equals(pageQuery.getAuditStatus())) {
-            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("审核通过C端用户").fileName("审核通过C端用户导出").SheetName("审核通过C端用户").dataList(exportDataList).build();
+            excelReportDto = ExcelDownloadDto.<UserHouseAuditPageQueryDTO>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
+                    .title("审核通过C端用户").fileName("审核通过C端用户导出" + "(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + ")").sheetName("审核通过C端用户").build();
         } else if (UserHouseAuditStatusConstants.REJECT.equals(pageQuery.getAuditStatus())) {
-            excelReportDto = ExcelReportDto.<UserHouseAuditPageQueryDTO, UserHouseAuditExportVo>builder().title("审核驳回C端用户").fileName("审核驳回C端用户导出").SheetName("审核驳回C端用户").dataList(exportDataList).build();
+            excelReportDto = ExcelDownloadDto.<UserHouseAuditPageQueryDTO>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
+                    .title("审核驳回C端用户").fileName("审核驳回C端用户导出" + "(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + ")").sheetName("审核驳回C端用户").build();
         } else {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "传入的审核状态不对");
         }
-        excelExportService.excelExport(excelReportDto, UserHouseAuditExportVo.class);
+        excelExportService.excelExport(excelReportDto, UserHouseAuditExportVo.class, this::executePageQuery);
+    }
+
+    private IPage<UserHouseAuditExportVo> executePageQuery(ExcelDownloadDto<UserHouseAuditPageQueryDTO> userHouseAuditPageQueryDTOExcelDownloadDto) {
+        IPage<UserHouseAuditDTO> pageResult = this.queryForPage(userHouseAuditPageQueryDTOExcelDownloadDto.getQuery());
+        return pageResult.convert(o -> {
+            UserHouseAuditExportVo exportVo = new UserHouseAuditExportVo();
+            BeanUtils.copyProperties(o, exportVo);
+            exportVo.setAuditTime(Date.from(o.getCreatedOn().atZone(ZoneId.systemDefault()).toInstant()));
+            return exportVo;
+        });
     }
 }

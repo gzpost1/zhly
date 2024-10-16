@@ -220,7 +220,7 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
         IPage<ImgTextVo> pageResult = this.queryForPage(dto.getQuery());
         List<Long> typeIds = pageResult.getRecords().stream().map(ImgTextVo::getId).collect(Collectors.toList());
         List<ImgTextType> imgTextTypes = imgTextTypeService.queryByIds(typeIds);
-        HashMap<Long, ImgTextType> imgTextTypeMap = imgTextTypes.stream().collect(Collectors.toMap(ImgTextType::getId, imgTextType -> imgTextType, (k1, k2) -> k1, HashMap::new));
+        Map<Long, ImgTextType> imgTextTypeMap = imgTextTypes.stream().collect(Collectors.toMap(ImgTextType::getId, o -> o));
         return pageResult.convert(o -> {
             ImgTextExportVo exportVo = new ImgTextExportVo();
             BeanUtil.copyProperties(o, exportVo);

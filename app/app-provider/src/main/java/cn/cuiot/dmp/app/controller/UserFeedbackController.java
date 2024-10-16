@@ -6,9 +6,12 @@ import cn.cuiot.dmp.app.dto.UserFeedbackReplyDto;
 import cn.cuiot.dmp.app.entity.UserFeedbackEntity;
 import cn.cuiot.dmp.app.service.AppUserService;
 import cn.cuiot.dmp.app.service.UserFeedbackService;
+import cn.cuiot.dmp.app.vo.export.UserFeedbackExportVo;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
@@ -17,7 +20,9 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -50,6 +55,8 @@ public class UserFeedbackController {
 
     @Autowired
     private AppUserService appUserService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
 
     /**
@@ -119,8 +126,19 @@ public class UserFeedbackController {
      */
     @PostMapping("export")
     public IdmResDTO export(@RequestBody @Valid UserFeedbackQuery pageQuery) {
-        userFeedbackService.export(pageQuery);
+        ExcelDownloadDto<UserFeedbackQuery> excelDownloadDto = ExcelDownloadDto.<UserFeedbackQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
+                .title("图文列表").fileName("图文导出" + "(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + ")").sheetName("图文列表").build();
+        excelExportService.excelExport(excelDownloadDto, UserFeedbackExportVo.class, this::executePageQuery);
         return IdmResDTO.success();
+    }
+
+    private IPage<UserFeedbackExportVo> executePageQuery(ExcelDownloadDto<UserFeedbackQuery> userFeedbackQueryExcelDownloadDto) {
+        IPage<UserFeedbackEntity> page = this.queryForPage(userFeedbackQueryExcelDownloadDto.getQuery()).getData();
+        return page.convert(o -> {
+            UserFeedbackExportVo exportVo = new UserFeedbackExportVo();
+            BeanUtil.copyProperties(o, exportVo);
+            return exportVo;
+        });
     }
 
 }

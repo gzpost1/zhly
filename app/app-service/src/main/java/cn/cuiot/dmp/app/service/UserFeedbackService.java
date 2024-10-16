@@ -6,6 +6,7 @@ import cn.cuiot.dmp.app.mapper.UserFeedbackMapper;
 import cn.cuiot.dmp.app.vo.export.UserFeedbackExportVo;
 import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
@@ -35,9 +36,6 @@ public class UserFeedbackService extends ServiceImpl<UserFeedbackMapper, UserFee
 
     @Autowired
     private UserFeedbackMapper userFeedbackMapper;
-
-    @Autowired
-    private ExcelExportService excelExportService;
 
     /**
      * 提交反馈意见
@@ -89,20 +87,5 @@ public class UserFeedbackService extends ServiceImpl<UserFeedbackMapper, UserFee
         updateEntity.setReplyContent(replyContent);
         updateEntity.setStatus(EntityConstants.YES);
         userFeedbackMapper.updateById(updateEntity);
-    }
-
-    public void export(UserFeedbackQuery pageQuery) {
-        ExcelDownloadDto<UserFeedbackQuery> excelDownloadDto = ExcelDownloadDto.<UserFeedbackQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
-                .title("图文列表").fileName("图文导出"+ "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("图文列表").build();
-        excelExportService.excelExport(excelDownloadDto, UserFeedbackExportVo.class, this::executePageQuery);
-    }
-
-    private IPage<UserFeedbackExportVo> executePageQuery(ExcelDownloadDto<UserFeedbackQuery> userFeedbackQueryExcelDownloadDto) {
-        IPage<UserFeedbackEntity> page = this.queryForPage(userFeedbackQueryExcelDownloadDto.getQuery());
-        return page.convert(o -> {
-            UserFeedbackExportVo exportVo = new UserFeedbackExportVo();
-            BeanUtil.copyProperties(o, exportVo);
-            return exportVo;
-        });
     }
 }

@@ -327,9 +327,11 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     public void export(NoticPageQuery pageQuery) {
         ExcelDownloadDto<NoticPageQuery> excelDownloadDto = null;
         if (ContentConstants.PublishStatus.UNPUBLISHED.equals(pageQuery.getPublishStatus())) {
-            excelDownloadDto = ExcelDownloadDto.<NoticPageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery).title("未发布公告列表").fileName("未发布公告导出"+ "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("未发布公告列表").build();
+            excelDownloadDto = ExcelDownloadDto.<NoticPageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
+                    .title("未发布公告列表").fileName("未发布公告导出"+ "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("未发布公告列表").build();
         } else if (ContentConstants.PublishStatus.PUBLISHED.equals(pageQuery.getPublishStatus())) {
-            excelDownloadDto = ExcelDownloadDto.<NoticPageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery).title("已发布公告列表").fileName("已发布公告导出"+ "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("已发布公告列表").build();
+            excelDownloadDto = ExcelDownloadDto.<NoticPageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
+                    .title("已发布公告列表").fileName("已发布公告导出"+ "("+ DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("已发布公告列表").build();
         } else {
             throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "传入的发布状态不对");
         }
