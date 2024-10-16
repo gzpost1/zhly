@@ -3,7 +3,6 @@ package cn.cuiot.dmp.externalapi.service.service;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import cn.cuiot.dmp.externalapi.service.constant.PersonGroupRelationConstant;
 import cn.cuiot.dmp.externalapi.service.query.PersonGroupCreateDTO;
 import cn.cuiot.dmp.externalapi.service.query.PersonGroupPageQuery;
 import cn.cuiot.dmp.externalapi.service.query.PersonGroupUpdateDTO;
@@ -19,6 +18,7 @@ import cn.cuiot.dmp.externalapi.service.mapper.PersonGroupMapper;
 import cn.cuiot.dmp.externalapi.service.entity.PersonGroupEntity;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 人员分组 业务层
@@ -68,12 +68,14 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
 
     /**
      * 根据id获取分组名称
+     *
      * @param ids id列表
      * @return list
      */
-    public List<PersonGroupEntity> queryPersonGroupByIds(List<Long> ids){
-       return getBaseMapper().selectBatchIds(ids);
+    public List<PersonGroupEntity> queryPersonGroupByIds(List<Long> ids) {
+        return getBaseMapper().selectBatchIds(ids);
     }
+
     /**
      * 详情
      *
@@ -82,13 +84,7 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
      */
     public PersonGroupEntity queryForDetail(Long id) {
         Long companyId = LoginInfoHolder.getCurrentOrgId();
-
-        List<PersonGroupEntity> entityList = list(
-                new LambdaQueryWrapper<PersonGroupEntity>()
-                        .eq(PersonGroupEntity::getCompanyId, companyId)
-                        .eq(PersonGroupEntity::getId, id));
-
-        return CollectionUtils.isNotEmpty(entityList) ? entityList.get(0) : null;
+        return getPersonGroupEntity(id, companyId);
     }
 
     /**
@@ -101,6 +97,7 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
 
         List<PersonGroupEntity> entityList = list(
                 new LambdaQueryWrapper<PersonGroupEntity>()
+                        .eq(PersonGroupEntity::getCompanyId, companyId)
                         .eq(PersonGroupEntity::getName, dto.getName()));
 
         if (CollectionUtils.isNotEmpty(entityList)) {
@@ -121,12 +118,8 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
     public void update(PersonGroupUpdateDTO dto) {
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        List<PersonGroupEntity> entityList = list(
-                new LambdaQueryWrapper<PersonGroupEntity>()
-                        .eq(PersonGroupEntity::getCompanyId, companyId)
-                        .eq(PersonGroupEntity::getId, dto.getId()));
-
-        if (CollectionUtils.isEmpty(entityList)) {
+        PersonGroupEntity entity = getPersonGroupEntity(dto.getId(), companyId);
+        if (Objects.isNull(entity)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
 
@@ -134,12 +127,10 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
                 new LambdaQueryWrapper<PersonGroupEntity>()
                         .ne(PersonGroupEntity::getId, dto.getId())
                         .eq(PersonGroupEntity::getName, dto.getName()));
-
         if (CollectionUtils.isNotEmpty(entityList1)) {
             throw new BusinessException(ResultCode.ERROR, "分组名称已存在，请重新输入");
         }
 
-        PersonGroupEntity entity = entityList.get(0);
         entity.setName(dto.getName());
         updateById(entity);
     }
@@ -152,12 +143,8 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
     public void delete(Long id) {
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        List<PersonGroupEntity> entityList = list(
-                new LambdaQueryWrapper<PersonGroupEntity>()
-                        .eq(PersonGroupEntity::getCompanyId, companyId)
-                        .eq(PersonGroupEntity::getId, id));
-
-        if (CollectionUtils.isEmpty(entityList)) {
+        PersonGroupEntity entity = getPersonGroupEntity(id, companyId);
+        if (Objects.isNull(entity)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
 
@@ -168,5 +155,19 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
         }
 
         removeById(id);
+    }
+
+    /**
+     * 根据id和企业id查询人员分组
+     *
+     * @return PersonGroupEntity
+     * @Param id 数据id
+     * @Param companyId 企业id
+     */
+    private PersonGroupEntity getPersonGroupEntity(Long id, Long companyId) {
+        return getOne(new LambdaQueryWrapper<PersonGroupEntity>()
+                        .eq(PersonGroupEntity::getCompanyId, companyId)
+                        .eq(PersonGroupEntity::getId, id)
+                        .last(" LIMIT 1 "));
     }
 }
