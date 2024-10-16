@@ -443,7 +443,7 @@
             deleted = 0
             and house_id = #{query.houseId}
             <if test="query.receivableStatus != null and query.receivableStatus.toString() == '0'.toString() ">
-                and receivble_status IN (0,1)
+                and receivble_status IN (0,1) and pay_status != 0
             </if>
             <if test="query.receivableStatus != null and query.receivableStatus.toString() == '1'.toString() ">
                 and receivble_status = 2
