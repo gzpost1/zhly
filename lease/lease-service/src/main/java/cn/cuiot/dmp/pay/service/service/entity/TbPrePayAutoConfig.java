@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.ListObjectJsonTypeHandler;
 import lombok.Data;
 
 import java.util.List;
@@ -30,6 +30,6 @@ public class TbPrePayAutoConfig {
     /**
      * 收费项目id
      */
-    @TableField(value = "charge_item_ids",typeHandler = JacksonTypeHandler.class )
+    @TableField(value = "charge_item_ids",typeHandler = ListObjectJsonTypeHandler.class )
     private List<Long> chargeItemIds;
 }

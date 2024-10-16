@@ -477,14 +477,14 @@
 
     <select id="queryForPayToWechat" resultType="cn.cuiot.dmp.lease.dto.charge.ChargePayToWechatDetailDto">
          select
-             id,(receivable_amount-receivable_amount_received) as chargeAmount
+             id as charge_id,(receivable_amount-receivable_amount_received) as chargeAmount,company_id
         from tb_charge_manager
         where
         deleted = 0
         and receivble_status in (0,1)
         and hang_up_status = 0
         and abrogate_status = 0
-        and pay_status != 0
+        and pay_status = 0
         and id in
         <foreach collection="chargeIds" item="item" index="index" open="(" separator="," close=")">
             #{item}

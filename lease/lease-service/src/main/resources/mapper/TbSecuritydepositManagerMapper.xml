@@ -130,7 +130,7 @@
 
   <select id="queryForPayToWechat" resultType="cn.cuiot.dmp.lease.dto.charge.ChargePayToWechatDetailDto">
       select
-      id,receivable_amount as chargeAmount
+      id as charge_id,receivable_amount as chargeAmount,company_id
       from tb_securitydeposit_manager
       where
       deleted = 0

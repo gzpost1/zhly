@@ -179,7 +179,7 @@ public class ChargePayImpl extends AbstrChargePay {
         chargeOrderPaySuccInsertDto.setOrder(order);
 
         List<ChargePayToWechatDetailDto> orderDetail = Lists.newArrayList();
-        orderDetail.add(new ChargePayToWechatDetailDto(chargeId, needToPayAmount));
+        orderDetail.add(new ChargePayToWechatDetailDto(chargeId, needToPayAmount,null));
         order.setOrderDetail(orderDetail);
 
         List<Long> receiptIds =  insertReceivedAndSettlement(chargeOrderPaySuccInsertDto);

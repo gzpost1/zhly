@@ -6,16 +6,17 @@
     <!--@Table tb_charge_order-->
     <id column="order_id" jdbcType="BIGINT" property="orderId" />
     <result column="pay_id" jdbcType="BIGINT" property="payId" />
+    <result column="company_id" jdbcType="BIGINT" property="companyId" />
     <result column="create_user" jdbcType="BIGINT" property="createUser" />
     <result column="order_detail" jdbcType="LONGVARCHAR" property="orderDetail"
       javaType="cn.cuiot.dmp.lease.dto.charge.ChargePayToWechatDetailDto"
-            typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"
+            typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.ListObjectJsonTypeHandler"
       />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="data_type" jdbcType="TINYINT" property="dataType" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    order_id, pay_id, order_detail, create_time,data_type,create_user
+    order_id, pay_id, order_detail, create_time,data_type,create_user,company_id
   </sql>
 </mapper>
