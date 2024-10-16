@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.service.charge;
 
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.dto.ExcelReportDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.application.service.impl.ApiArchiveServiceImpl;
@@ -115,55 +116,19 @@ public class ChargeNoticeService extends ServiceImpl<ChargeNoticeMapper, ChargeN
      * @throws Exception
      */
     public void export(ChargeNoticePageQuery dto) throws Exception {
-        excelExportService.excelExport(ExcelReportDto.<ChargeNoticePageQuery,ChargeNoticePageVo>builder().title("待审批数据").fileName("待审批数据")
-                .dataList(queryChargeNotice(dto)).build(),ChargeNoticePageVo.class);
+        excelExportService.excelExport(ExcelDownloadDto.<ChargeNoticePageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(dto)
+                .title("通知单列表导出").fileName("通知单列表导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("通知单列表导出")
+                .build(), ChargeNoticePageVo.class, this::queryExport);
+    }
+    public IPage<ChargeNoticePageVo> queryExport(ExcelDownloadDto<ChargeNoticePageQuery> downloadDto){
+        ChargeNoticePageQuery pageQuery = downloadDto.getQuery();
+        IPage<ChargeNoticePageVo> data = this.queryForPage(pageQuery);
+        if(CollectionUtils.isNotEmpty(data.getRecords())){
+            data.getRecords().stream().forEach(item->item.setStatusName(String.valueOf(item.getStatus())));
+        }
+        return data;
     }
 
-    public List<ChargeNoticePageVo> queryChargeNotice(ChargeNoticePageQuery query){
-        Boolean flag =true;
-        Long pageNo = 1L;
-        query.setPageSize(NumberConst.PAGE_MAX_SIZE);
-        List<ChargeNoticePageVo> resultList = new ArrayList<>();
-        do{
-            query.setPageNo(pageNo);
-            IPage<ChargeNoticePageVo> page = baseMapper.queryForPage(new Page<>(query.getPageNo(), query.getPageSize()), query);
-            if(page.getTotal()> NumberConst.QUERY_MAX_SIZE){
-                throw new BusinessException(ResultCode.EXPORT_DATA_OVER_LIMIT);
-            }
-            if(CollectionUtils.isEmpty(page.getRecords())){
-                flag=false;
-            }
-            if (Objects.nonNull(page) && CollectionUtils.isNotEmpty(page.getRecords())) {
-                //获取通知单当前分页ids列表
-                List<Long> ids = page.getRecords().stream().map(ChargeNoticePageVo::getId).collect(Collectors.toList());
-                //获取楼盘名称信息
-                Map<Long, List<String>> buildingNameMap = getBuildingNameMap(ids);
-                //获取收费项目名称信息
-                Map<Long, List<String>> chargeItemNameMap = getChargeItemNameMap(ids);
-
-                //获取系统用户信息
-                List<Long> userIds = page.getRecords().stream().map(ChargeNoticePageVo::getCreateUser)
-                        .filter(Objects::nonNull).distinct().collect(Collectors.toList());
-                Map<Long, BaseUserDto> systemUserMap = getSystemUserMap(userIds);
-
-                //设置楼盘名称、收费项目名称、操作人名称
-                for (ChargeNoticePageVo vo : page.getRecords()) {
-                    if (buildingNameMap.containsKey(vo.getId())) {
-                        vo.setBuildingsName(String.join(",", buildingNameMap.get(vo.getId())));
-                    }
-                    if (chargeItemNameMap.containsKey(vo.getId())) {
-                        vo.setChargeItemsName(String.join(",", chargeItemNameMap.get(vo.getId())));
-                    }
-                    if (systemUserMap.containsKey(vo.getCreateUser())) {
-                        vo.setOperatorName(systemUserMap.get(vo.getCreateUser()).getName());
-                    }
-                    vo.setStatusName(Objects.equals(NumberConst.DATA_STATUS,vo.getStatus())? StatusConst.STOP: StatusConst.ENABLE);
-                }
-                resultList.addAll(page.getRecords());
-            }
-        }while (flag);
-            return resultList;
-    }
     /**
      * 根据通知单id查询楼盘名称并返回map
      *

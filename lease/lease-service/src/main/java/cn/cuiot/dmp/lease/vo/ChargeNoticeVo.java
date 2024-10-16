@@ -60,6 +60,6 @@ public class ChargeNoticeVo {
     /**
      * 状态
      */
-    @Excel(name = "状态", orderNum = "7", width = 20)
+    @Excel(name = "状态", orderNum = "7", width = 20, replace = {"启用_1", "停用_0"})
     private String statusName;
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Objects;
 
@@ -93,8 +94,10 @@ public class ChargeManagerPageDto implements ChargeItemNameSet {
     /**
      * 应收金额/本金
      */
-    @Excel(name = "应收金额", orderNum = "8", width = 20)
     private Integer receivableAmount;
+    @Excel(name = "应收金额", orderNum = "8", width = 20)
+    private String receivableAmountName;
+
 
     /**
      * 所属账期-开始时间
@@ -197,5 +200,15 @@ public class ChargeManagerPageDto implements ChargeItemNameSet {
             return 0;
         }
         return MathTool.percentCalculate(getReceivableAmount(), receivableAmountRate);
+    }
+
+
+    public String getReceivableAmountName(){
+        Double num = receivableAmount / 100.0;
+
+        DecimalFormat decimalFormat = new DecimalFormat("#.00"); //定义格式，小数点后两位
+
+        String formattedAmount = decimalFormat.format(num);
+        return formattedAmount;
     }
 }

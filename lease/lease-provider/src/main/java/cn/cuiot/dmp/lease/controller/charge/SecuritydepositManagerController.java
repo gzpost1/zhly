@@ -115,8 +115,8 @@ public class SecuritydepositManagerController {
      * @param query
      * @return
      */
-    @PostMapping("/export")
     @RequiresPermissions
+    @PostMapping("/export")
     public IdmResDTO export(@RequestBody SecuritydepositManagerQuery query){
         excelExportService.excelExport(ExcelDownloadDto.<SecuritydepositManagerQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(query)
                 .title("押金导出").fileName("押金导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("押金导出")
