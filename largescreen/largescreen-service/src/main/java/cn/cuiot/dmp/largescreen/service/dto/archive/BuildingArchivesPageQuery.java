@@ -49,7 +49,7 @@ public class BuildingArchivesPageQuery extends PageQuery {
     /**
      * 楼盘id列表
      */
-    private List<Long> idList;
+    private List<Long> loupanIds;
 
     /**
      * 区域编码

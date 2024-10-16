@@ -1,11 +1,12 @@
 package cn.cuiot.dmp.largescreen.controller;
 
 
-import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.service.ApiArchiveService;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.utils.BeanMapper;
@@ -17,8 +18,6 @@ import cn.cuiot.dmp.largescreen.service.dto.external.EntranceGuardRecordReqDTO;
 import cn.cuiot.dmp.largescreen.service.dto.external.VideoPageQuery;
 import cn.cuiot.dmp.largescreen.service.feign.*;
 import cn.cuiot.dmp.largescreen.service.vo.*;
-import cn.hutool.core.collection.CollectionUtil;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +38,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/archive/screen")
 public class ArchivesScreenController {
 
+
+    @Autowired
+    private ApiArchiveService apiArchiveService;
 
     @Autowired
     private ApiSystemService apiSystemService;
@@ -166,7 +168,7 @@ public class ArchivesScreenController {
 
 
     private BuildingArchivesPageQuery buildStatisticPageReq(StatisInfoReqDTO statisInfoReqDTO) {
-        BuildingArchivesPageQuery buildingArchivesReqDTO = new BuildingArchivesPageQuery();
+        BuildingArchivesPageQuery buildingArchivesReqDTO = BeanMapper.map(statisInfoReqDTO, BuildingArchivesPageQuery.class);
         if (statisInfoReqDTO.getCompanyId() == null) {
             // 设置企业
             buildingArchivesReqDTO.setCompanyId(LoginInfoHolder.getCurrentOrgId());
@@ -185,10 +187,22 @@ public class ArchivesScreenController {
             buildingArchivesReqDTO.setDepartmentIdList(departmentIdList);
         }
 
+        if(CollectionUtils.isEmpty(statisInfoReqDTO.getLoupanIds())) {
+            //获取当前账号自己的组织及其下属组织的楼盘id
+            DepartmentReqDto dto = new DepartmentReqDto();
+            dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
+            dto.setSelfReturn(true);
+            List<BuildingArchive> archives = apiArchiveService.lookupBuildingArchiveByDepartmentList(dto);
+            if (CollectionUtils.isNotEmpty(archives)) {
+                List<Long> collect = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
+                buildingArchivesReqDTO.setLoupanIds(collect);
+            }
+        }
+
+
         buildingArchivesReqDTO.setPageNo(statisInfoReqDTO.getPageNo());
         buildingArchivesReqDTO.setPageSize(statisInfoReqDTO.getPageSize());
 
-        buildingArchivesReqDTO.setIdList(statisInfoReqDTO.getLoupanIds());
         return buildingArchivesReqDTO;
     }
 
@@ -211,6 +225,19 @@ public class ArchivesScreenController {
                     .collect(Collectors.toList());
             statisInfoReqDTO.setDepartmentIdList(departmentIdList);
         }
+
+        if(CollectionUtils.isEmpty(statisInfoReqDTO.getLoupanIds())) {
+            //获取当前账号自己的组织及其下属组织的楼盘id
+            DepartmentReqDto dto = new DepartmentReqDto();
+            dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
+            dto.setSelfReturn(true);
+            List<BuildingArchive> archives = apiArchiveService.lookupBuildingArchiveByDepartmentList(dto);
+            if (CollectionUtils.isNotEmpty(archives)) {
+                List<Long> collect = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
+                statisInfoReqDTO.setLoupanIds(collect);
+            }
+        }
+
 
     }
 
