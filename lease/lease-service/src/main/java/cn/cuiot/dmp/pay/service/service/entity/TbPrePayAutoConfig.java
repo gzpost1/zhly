@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.pay.service.service.entity;
 
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -30,6 +31,6 @@ public class TbPrePayAutoConfig {
     /**
      * 收费项目id
      */
-    @TableField(value = "charge_item_ids",typeHandler = ListObjectJsonTypeHandler.class )
+    @TableField(value = "charge_item_ids",typeHandler = JsonTypeHandler.class )
     private List<Long> chargeItemIds;
 }

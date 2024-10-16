@@ -557,4 +557,8 @@
         and a.abrogate_status = 0
         order by (a.receivable_amount-a.receivable_amount_received) desc
     </select>
+
+    <select id="getCompanyIdByloupanId" resultType="java.lang.Long">
+        select company_id from tb_building_archives where id = #{loupanId}
+    </select>
 </mapper>

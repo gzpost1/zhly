@@ -136,7 +136,7 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
 
     @Override
     public List<Long> getCompanyIdByChargeIds(List<Long> chargeIds) {
-        return Optional.ofNullable(securitydepositManagerService.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbSecuritydepositManager::getCompanyId).collect(Collectors.toList());
+        return Optional.ofNullable(securitydepositManagerService.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbSecuritydepositManager::getCompanyId).distinct().collect(Collectors.toList());
     }
 
     @Override

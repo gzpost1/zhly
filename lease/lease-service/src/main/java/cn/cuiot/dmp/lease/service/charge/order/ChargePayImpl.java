@@ -189,7 +189,7 @@ public class ChargePayImpl extends AbstrChargePay {
 
     @Override
     public List<Long> getCompanyIdByChargeIds(List<Long> chargeIds) {
-        return Optional.ofNullable(chargeManager.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbChargeManager::getCompanyId).collect(Collectors.toList());
+        return Optional.ofNullable(chargeManager.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbChargeManager::getCompanyId).distinct().collect(Collectors.toList());
     }
 
     @Override

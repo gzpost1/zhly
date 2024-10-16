@@ -7,7 +7,7 @@
     <id column="company_id" jdbcType="BIGINT" property="companyId" />
     <result column="is_auto_pay" jdbcType="TINYINT" property="isAutoPay" />
     <result column="charge_item_ids" jdbcType="LONGVARCHAR" property="chargeItemIds"
-      typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.ListObjectJsonTypeHandler"
+      typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"
     />
   </resultMap>
   <sql id="Base_Column_List">
