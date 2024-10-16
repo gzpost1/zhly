@@ -42,7 +42,7 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
     /**
      * 收费标准 0自定义金额
      */
-    private Byte chargeStandard;
+    private Long chargeStandard;
 
     /**
      * 应收金额/本金
