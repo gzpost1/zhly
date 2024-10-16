@@ -67,8 +67,8 @@
                 COUNT( c.id ) AS reader_cou
             FROM
             tb_haikang_acs_device AS a
-            left join tb_haikang_acs_door b on a.index_code=b.parent_index_code
-            left join tb_haikang_acs_reader c on a.index_code=c.parent_index_code
+            left join tb_haikang_acs_door b on a.index_code=b.parent_index_code and a.org_id=b.org_id
+            left join tb_haikang_acs_reader c on a.index_code=c.parent_index_code and a.org_id=c.org_id
             <where>
                 <if test="param.companyId != null">
                     and a.org_id=#{param.companyId}
