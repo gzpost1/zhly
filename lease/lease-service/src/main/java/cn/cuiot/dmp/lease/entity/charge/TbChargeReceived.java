@@ -241,9 +241,13 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
      */
     private Byte paymentMode;
 
+    @Excel(name = "收费标准", width = 20, orderNum = "15", replace = {"人工_1", "平台_0"})
+    private String paymentModeName;
+
     /**
      * 交易单号
      */
+    @Excel(name = "交易单号", width = 20, orderNum = "16")
     private String transactionNo;
 
     /**
@@ -260,5 +264,6 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
     /**
      * 收费标准 0自定义金额
      */
+    @Excel(name = "收费标准", orderNum = "14", width = 20)
     private String chargeStandardName;
 }
