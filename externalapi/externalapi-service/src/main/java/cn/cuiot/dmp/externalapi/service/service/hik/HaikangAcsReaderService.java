@@ -75,7 +75,7 @@ public class HaikangAcsReaderService extends
             lambdaedQuery.like(HaikangAcsReaderEntity::getName, query.getName());
         }
         if (StringUtils.isNotBlank(query.getIndexCode())) {
-            lambdaedQuery.eq(HaikangAcsReaderEntity::getIndexCode, query.getIndexCode());
+            lambdaedQuery.like(HaikangAcsReaderEntity::getIndexCode, query.getIndexCode());
         }
         if (StringUtils.isNotBlank(query.getDeviceModel())) {
             lambdaedQuery.like(HaikangAcsReaderEntity::getDeviceModel, query.getDeviceModel());
