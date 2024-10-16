@@ -7,18 +7,18 @@ import java.util.Objects;
  * @create 2024/10/13 21:10
  */
 public enum ChannelEnum {
-    SYSTEM_MESSAGE((byte) 1, "系统消息"),
-    SMS_MESSAGE((byte) 2, "短息");
+    SYSTEM_MESSAGE("1", "系统消息"),
+    SMS_MESSAGE("2", "短信");
 
-    private Byte code;
+    private String code;
     private String desc;
 
-    ChannelEnum(Byte code, String desc) {
+    ChannelEnum(String code, String desc) {
         this.code = code;
         this.desc = desc;
     }
 
-    public static String getDesc(Byte code){
+    public static String getDesc(String code){
         for(ChannelEnum chargeAbrogateEnum:ChannelEnum.values()){
             if(Objects.equals(code,chargeAbrogateEnum.getCode())){
                 return chargeAbrogateEnum.getDesc();
@@ -26,7 +26,7 @@ public enum ChannelEnum {
         }
         return null;
     }
-    public Byte getCode() {
+    public String getCode() {
         return code;
     }
 

@@ -1,10 +1,13 @@
 package cn.cuiot.dmp.lease.vo;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import cn.cuiot.dmp.lease.enums.ChannelEnum;
+import cn.hutool.core.collection.CollectionUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -30,10 +33,25 @@ public class ChargeCollectionPlanVo {
     /**
      * 通知渠道（1：系统消息；2：短信）
      */
-    private Byte channel;
+    private List<String> channel;
+
 
     @Excel(name = "通知渠道", orderNum = "2", width = 20)
     private String channelName;
+
+    public String getChannelName(){
+        List<String> channelList = new ArrayList<>();
+        if(CollectionUtil.isNotEmpty(channel)){
+            for(String channel :channel){
+                String desc = ChannelEnum.getDesc(channel);
+                channelList.add(desc);
+            }
+
+            return String.join(", ", channelList);
+        }
+
+        return null;
+    }
 
     /**
      * 发送日期类型（1:每天，2:每周，3:每月）
