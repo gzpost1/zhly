@@ -348,6 +348,24 @@ public class ChargeManagerController {
     }
 
     /**
+     * 编辑
+     *
+     * @param updateDto
+     * @return
+     */
+    @RequiresPermissions
+    @PostMapping("/update")
+    @LogRecord(operationCode = "update", operationName = "缴费管理-编辑", serviceType = ServiceTypeConst.RECEIVED_MANAGER, serviceTypeName = ServiceTypeConst.BASE_CONFIG)
+    public IdmResDTO update(@RequestBody @Valid ChargeManagerUpdateVo updateDto) {
+        TbChargeManager chargeManager = tbChargeManagerService.getById(updateDto.getChargeId());
+        AssertUtil.notNull(chargeManager, "数据不存在");
+        chargeManager.setPageLiquidatedDamagesNeed(updateDto.getPageLiquidatedDamagesNeed());
+        chargeManager.setPageLiquidatedDamagesRate(updateDto.getPageLiquidatedDamagesRate());
+        tbChargeManagerService.updateById(chargeManager);
+        return IdmResDTO.success();
+    }
+
+    /**
      * 挂起/解挂
      *
      * @param idParam

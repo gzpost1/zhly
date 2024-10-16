@@ -52,4 +52,14 @@
         </foreach>
     </insert>
 
+    <select id="quertOrgIdByHouse" resultType="java.lang.Long" parameterType="java.lang.Long">
+        SELECT
+            company_id
+        FROM
+            tb_houses_archives a
+                INNER JOIN tb_building_archives b ON a.loupan_id = b.id
+        WHERE
+            a.id = #{houseId}
+    </select>
+
 </mapper>

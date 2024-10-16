@@ -9,6 +9,4 @@ public interface TbChargeReceivedMapper extends BaseMapper<TbChargeReceived> {
 
     int insertList(@Param("list")List<TbChargeReceived> list);
 
-
-
 }

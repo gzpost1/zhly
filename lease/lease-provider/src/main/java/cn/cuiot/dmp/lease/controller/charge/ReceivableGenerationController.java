@@ -339,4 +339,22 @@ public class ReceivableGenerationController {
         tbChargeManagerService.removeById(deleteParam.getId());
         return IdmResDTO.success();
     }
+
+    /**
+     * 编辑
+     *
+     * @param updateDto
+     * @return
+     */
+    @RequiresPermissions
+    @PostMapping("/update")
+    @LogRecord(operationCode = "update", operationName = "应收生成明细-编辑", serviceType = ServiceTypeConst.RECEIVED_GENERATE, serviceTypeName = ServiceTypeConst.BASE_CONFIG)
+    public IdmResDTO update(@RequestBody @Valid ChargeManagerUpdateVo updateDto) {
+        TbChargeManager chargeManager = tbChargeManagerService.getById(updateDto.getChargeId());
+        AssertUtil.notNull(chargeManager, "数据不存在");
+        chargeManager.setPageLiquidatedDamagesNeed(updateDto.getPageLiquidatedDamagesNeed());
+        chargeManager.setPageLiquidatedDamagesRate(updateDto.getPageLiquidatedDamagesRate());
+        tbChargeManagerService.updateById(chargeManager);
+        return IdmResDTO.success();
+    }
 }

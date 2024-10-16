@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.pay.service.service.mapper.TbPrePayAutoConfigMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.pay.service.service.entity.TbPrePayAutoConfig">
+    <!--@mbg.generated-->
+    <!--@Table tb_pre_pay_auto_config-->
+    <id column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="is_auto_pay" jdbcType="TINYINT" property="isAutoPay" />
+    <result column="charge_item_ids" jdbcType="LONGVARCHAR" property="chargeItemIds"
+      typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"
+    />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    company_id, is_auto_pay, charge_item_ids
+  </sql>
+</mapper>

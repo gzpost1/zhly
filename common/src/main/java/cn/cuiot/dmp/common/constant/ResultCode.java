@@ -238,6 +238,35 @@ public enum ResultCode {
 
     EXPORT_DATA_OVER_LIMIT("2000001","一次最多可导出1万条数据，请选择时间段分多次导出！"),
 
+    /**
+     * 4开头用于应用渠道调用时校验返回
+     */
+    WRONG_KEY("40001", "wrong encrypt key"),
+    APPLICATION_CHANNEL_ID_NOT_FOUND("40002", "应用渠道id错误"),
+    SIGN_IS_FAIL("40003", "签名失败"),
+    PAY_CHANNEL_NOT_EXIT("40004", "支付渠道不支持"),
+    PAY_MCH_ID_NOT_EXIT("40005", "商户号不存在"),
+    PAY_ORDER_NOT_SUPPORT("40006", "当前订单不支持该操作"),
+    PAY_NOTIFY_CHANNEL_FAIL("40007", "渠道通知失败"),
+    PAY_ORDER_NOT_FOUND("40008", "所查订单记录为空"),
+    PAY_SERVICE_ERROR("40009", "支付API调用失败！"),
+    PAY_ORDER_REPEAT("40010", "重复调用"),
+    PAY_ORDER_ALREADY_REFUND("40011", "当前订单已退款"),
+    PAY_ORDER_ALREADY_CONFIRM("40012", "当前订单已清分"),
+    PAY_ORDER_NOT_SUPPORT_REFUND("40013", "当前订单状态不支持退款"),
+
+    /**
+     * 42开通为微信
+     */
+    WECHAT_PAY_RESULT_ERROR("42001", "业务错误"),
+    APPLYMENT_IMG_UPLOAD_FAIL("42002", "图片上传失败"),
+    APPLYMENT_QUERY_FAIL("42003", "特约商户申请单状态查询失败"),
+    APPLYMENT_FAIL("42004", "微信支付特约商户提交申请失败"),
+    WECHAT_PAY_SIGN_ERROR("42005", "签名错误"),
+    WECHAT_PAY_NOT_FOUND("42006", "记录不存在"),
+    WECHAT_PAY_INTERFACE_ERROR("42007", "接口调用错误"),
+    WECHAT_PAY_PROFIT_ERROR("42008", "添加分账失败"),
+    WECHAT_UNSETTLED_ORDER_ERROR("42009", "该商户存在未完结订单"),
     ;
 
 

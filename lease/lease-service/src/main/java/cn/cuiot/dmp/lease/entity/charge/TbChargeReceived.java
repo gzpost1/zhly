@@ -2,6 +2,7 @@ package cn.cuiot.dmp.lease.entity.charge;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.lease.dto.charge.ChargeItemNameSet;
+import cn.cuiot.dmp.lease.dto.charge.ChargeStandardNameSet;
 import cn.cuiot.dmp.lease.dto.charge.TransactionModeNameSet;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -21,7 +22,7 @@ import org.springframework.format.annotation.DateTimeFormat;
  */
 @Data
 @TableName(value = "tb_charge_received",autoResultMap = true)
-public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameSet {
+public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameSet, ChargeStandardNameSet {
     /**
      * 实收id
      */
@@ -133,7 +134,7 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
     private Byte onlyPrincipal;
 
     /**
-     * 交易方式
+     * 交易方式 0微信支付 1预缴代扣
      */
     @TableField(value = "transaction_mode")
     private Long transactionMode;
@@ -234,4 +235,30 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
      */
     @TableField(exist = false)
     private String customerUserPhone;
+
+    /**
+     * 收款方式 0平台 1人工
+     */
+    private Byte paymentMode;
+
+    /**
+     * 交易单号
+     */
+    private String transactionNo;
+
+    /**
+     * 订单id
+     */
+    private Long orderId;
+
+    /**
+     * 收费标准 0自定义金额
+     */
+    @TableField(value = "charge_standard")
+    private Long chargeStandard;
+
+    /**
+     * 收费标准 0自定义金额
+     */
+    private String chargeStandardName;
 }

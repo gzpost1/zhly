@@ -453,13 +453,16 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
                 .withNano(999999000));
         if (CollectionUtils.isNotEmpty(list)) {
             for (ChargeCollectionPlanEntity planEntity : list) {
-                ChargeCollectionManageSendQuery sendQuery = new ChargeCollectionManageSendQuery();
-                sendQuery.setCompanyId(planEntity.getCompanyId());
-                sendQuery.setPlanId(planEntity.getId());
-                sendQuery.setMsgType(planEntity.getChannel());
-                sendQuery.setDueDate(date);
-                sendQuery.setOperationType(ChargeCollectionTypeEnum.AUTO.getCode());
-                chargeCollectionManageService.sengMsg(sendQuery);
+                for (String channel : planEntity.getChannel()) {
+                    ChargeCollectionManageSendQuery sendQuery = new ChargeCollectionManageSendQuery();
+                    sendQuery.setCompanyId(planEntity.getCompanyId());
+                    sendQuery.setPlanId(planEntity.getId());
+                    sendQuery.setMsgType(Byte.valueOf(channel));
+                    sendQuery.setDueDate(date);
+                    sendQuery.setOperationType(ChargeCollectionTypeEnum.AUTO.getCode());
+                    chargeCollectionManageService.sengMsg(sendQuery);
+                }
+
             }
         }
     }
