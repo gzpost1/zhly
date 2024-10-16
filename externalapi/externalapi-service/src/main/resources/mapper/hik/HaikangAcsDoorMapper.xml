@@ -54,10 +54,10 @@
                 and a.org_id=#{param.companyId}
             </if>
             <if test="param.indexCode != null and param.indexCode != ''">
-                and a.index_code=#{param.indexCode}
+                and a.index_code like CONCAT('%',#{param.indexCode}, '%')
             </if>
             <if test="param.doorNo != null and param.doorNo != ''">
-                and a.door_no=#{param.doorNo}
+                and a.door_no like CONCAT('%',#{param.doorNo}, '%')
             </if>
             <if test="param.regionIndexCode != null and param.regionIndexCode != ''">
                 and a.region_index_code=#{param.regionIndexCode}

@@ -129,10 +129,10 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
             lambdaedQuery.like(HaikangAcsDoorEntity::getName, query.getName());
         }
         if (StringUtils.isNotBlank(query.getIndexCode())) {
-            lambdaedQuery.eq(HaikangAcsDoorEntity::getIndexCode, query.getIndexCode());
+            lambdaedQuery.like(HaikangAcsDoorEntity::getIndexCode, query.getIndexCode());
         }
         if (StringUtils.isNotBlank(query.getDoorNo())) {
-            lambdaedQuery.eq(HaikangAcsDoorEntity::getDoorNo, query.getDoorNo());
+            lambdaedQuery.like(HaikangAcsDoorEntity::getDoorNo, query.getDoorNo());
         }
         if (StringUtils.isNotBlank(query.getRegionIndexCode())) {
             lambdaedQuery.eq(HaikangAcsDoorEntity::getRegionIndexCode,

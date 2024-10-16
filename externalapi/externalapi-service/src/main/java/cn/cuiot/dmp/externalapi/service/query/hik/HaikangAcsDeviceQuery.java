@@ -28,6 +28,11 @@ public class HaikangAcsDeviceQuery extends PageQuery {
     private String indexCode;
 
     /**
+     * 设备型号
+     */
+    private String deviceModel;
+
+    /**
      * 区域编号
      */
     private String regionIndexCode;
