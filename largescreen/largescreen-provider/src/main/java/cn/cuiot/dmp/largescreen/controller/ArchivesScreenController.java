@@ -63,7 +63,6 @@ public class ArchivesScreenController {
      *
      * @return BuildingArchive
      */
-    @RequiresPermissions
     @PostMapping("/archive/query")
     public IdmResDTO<List<BuildingArchivesVO>> queryArchive(@RequestBody StatisInfoReqDTO statisInfoReqDTO) {
         BuildingArchivesPageQuery buildingArchivesPageQuery = buildStatisticPageReq(statisInfoReqDTO);
@@ -76,7 +75,6 @@ public class ArchivesScreenController {
      *
      * @return BuildingArchive
      */
-    @RequiresPermissions
     @PostMapping("/archive/statistic")
     public IdmResDTO<ArchivesStatisticVO> queryArchiveStatistic(@RequestBody StatisInfoReqDTO statisInfoReqDTO) {
         BuildingArchivesPageQuery buildingArchivesPageQuery = buildStatisticPageReq(statisInfoReqDTO);
@@ -101,7 +99,6 @@ public class ArchivesScreenController {
      *
      * @return BuildingArchive
      */
-    @RequiresPermissions
     @PostMapping("/work/statistic")
     public IdmResDTO<WorkInfoStatisticVO> queryWorkStatistic(@RequestBody StatisInfoReqDTO statisInfoReqDTO) {
         buildStatisticReq(statisInfoReqDTO);
@@ -113,7 +110,6 @@ public class ArchivesScreenController {
      * 查看公告分页统计
      * @return
      */
-    @RequiresPermissions
     @PostMapping("/notice/queryForPage")
     public IdmResDTO<Page<ContentNoticeVO>> noticeQueryForPage(@RequestBody @Valid NoticeStatisInfoReqDTO noticeReq){
         BuildingArchivesPageQuery pageQuery = buildStatisticPageReq(noticeReq);
@@ -126,7 +122,6 @@ public class ArchivesScreenController {
     /**
      * 根据id获取公告详情
      */
-    @RequiresPermissions
     @PostMapping("/notice/queryForDetail")
     public IdmResDTO<NoticeVo> noticeQueryForDetail(@RequestBody @Valid IdParam idParam) {
         return contentFeignService.queryForDetail(idParam);
@@ -138,7 +133,6 @@ public class ArchivesScreenController {
      * @param query StatisInfoReqDTO
      * @return VideoPageVo
      */
-    @RequiresPermissions
     @RequestMapping("/video/queryForPage")
     public IdmResDTO<Page<VideoPageVo>> videoQueryForPage(@RequestBody StatisInfoReqDTO query){
         BuildingArchivesPageQuery pageQuery = buildStatisticPageReq(query);
@@ -153,7 +147,6 @@ public class ArchivesScreenController {
      * @param reqDTO StatisInfoReqDTO
      * @return IOTStatisticVo
      */
-    @RequiresPermissions
     @RequestMapping("/iot/queryIotStatistic")
     public IdmResDTO<IOTStatisticVo> queryIotStatistic(@RequestBody StatisInfoReqDTO reqDTO) {
         buildStatisticReq(reqDTO);
@@ -165,7 +158,6 @@ public class ArchivesScreenController {
      * @param query
      * @return
      */
-    @RequiresPermissions
     @PostMapping("/entranceGuard/queryForPage")
     public IdmResDTO<Page<EntranceGuardRecordVo>> entranceGuardQueryForPage(@RequestBody EntranceGuardRecordReqDTO query) {
         buildStatisticPageReq(query);
