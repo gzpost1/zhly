@@ -194,7 +194,7 @@ public class ChargePayService {
 
     }
 
-    private void doPaySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto, TbChargeOrder order) {
+    public void doPaySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto, TbChargeOrder order) {
         //2 调用对应服务修改订单状态
         AbstrChargePay chargePay = chargePays.stream()
                 .filter(item -> item.getDataType().equals(order.getDataType())).findFirst().orElseThrow(() -> new BusinessException(DEFAULT_ERROR_CODE, "业务不支持，请检查"));

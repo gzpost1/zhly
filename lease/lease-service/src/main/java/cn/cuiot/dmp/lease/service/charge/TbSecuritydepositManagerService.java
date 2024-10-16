@@ -165,7 +165,7 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
         for (TbSecuritydepositManager received : tbSecuritydepositManagers) {
             TbOrderSettlement tbOrderSettlement = new TbOrderSettlement();
             tbOrderSettlement.setId(IdWorker.getId());
-            tbOrderSettlement.setReceivableId(received.getId());
+            tbOrderSettlement.setReceivableId(chargeOrderPaySuccInsertDto.getReceivedId());
             tbOrderSettlement.setPaidUpId(received.getId());
             tbOrderSettlement.setCreateTime(new Date());
             tbOrderSettlement.setLoupanId(received.getLoupanId());

@@ -77,7 +77,7 @@ public class ChargeOrderMsgConsumer {
             ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto = new ChargeOrderPaySuccInsertDto();
             chargeOrderPaySuccInsertDto.setTransactionNo(payOrderQueryResp.getPayOrderId());
             chargeOrderPaySuccInsertDto.setOrderId(Long.valueOf(paySuccessVO.getOutOrderId()));
-            chargeOrderPaySuccInsertDto.setPayRate(payOrderQueryResp.getPayRate());
+            chargeOrderPaySuccInsertDto.setPayRate(paySuccessVO.getPayRate());
 
             chargePayService.paySuccess(chargeOrderPaySuccInsertDto,order);
         } else {

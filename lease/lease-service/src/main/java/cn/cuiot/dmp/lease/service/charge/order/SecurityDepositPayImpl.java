@@ -16,6 +16,7 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
  * @Date 2024/10/10 20:31
  * @Created by libo
  */
+@Slf4j
 @Data
 @Service
 public class SecurityDepositPayImpl extends AbstrChargePay {
@@ -74,6 +76,9 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
     @Override
     protected int doPaySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
         //1 更新订单状态为已支付
+
+        Long receivedId = IdWorker.getId();
+        chargeOrderPaySuccInsertDto.setReceivedId(receivedId);
         int updateCount = securitydepositManagerService.updateChargePayStatusToSuccsess(chargeOrderPaySuccInsertDto);
 
         //3 插入账单
@@ -84,8 +89,9 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
 
             List<TbOrderSettlement> insertPayComssion = new ArrayList<>();
             for (TbOrderSettlement tbSecuritydepositManager : tbSecuritydepositManagers) {
+                log.error("账单接受-----------------------》:{}--------------------->{}", tbSecuritydepositManager, chargeOrderPaySuccInsertDto);
                 int i = MathTool.percentCalculate(tbSecuritydepositManager.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate());
-                if(i > 0 ){
+                if (i > 0) {
                     TbOrderSettlement tbOrderSettlement = new TbOrderSettlement();
                     BeanUtils.copyProperties(tbSecuritydepositManager, tbOrderSettlement);
                     tbOrderSettlement.setId(IdWorker.getId());
@@ -99,7 +105,7 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
                 orderSettlementService.insertList(insertPayComssion);
             }
         }
-        
+
         return updateCount;
     }
 
