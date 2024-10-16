@@ -224,6 +224,10 @@ public class LoginController extends BaseController {
             // 图形验证码sid为空
             throw new BusinessException(ResultCode.ACCESS_ERROR);
         }
+        //图形验证码校验
+        if (!verifyUnit.checkKaptchaText(smsReqDTO.getKaptchaText(), smsReqDTO.getSid(), false)) {
+            throw new BusinessException(ResultCode.KAPTCHA_TEXT_ERROR, "验证码错误");
+        }
         // 加密后的用户名或邮箱或者手机号
         String safeAccount = Sm4.encryption(smsReqDTO.getUserAccount());
         String jsonObject = stringRedisTemplate.opsForValue().get(SECRET_INFO_KEY + smsReqDTO.getKid());

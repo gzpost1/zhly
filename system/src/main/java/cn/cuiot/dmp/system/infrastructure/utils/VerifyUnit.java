@@ -100,6 +100,7 @@ public class VerifyUnit {
             // 短信验证码过期
             return false;
         }
+        stringRedisTemplate.delete(redisKey);
         // 判断用户输入的验证码是否正确
         return expectedText.equals(checkedText);
     }
