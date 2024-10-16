@@ -318,5 +318,8 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
                 })
                 .collect(Collectors.toList());
     }
-
+    @Override
+    public Long quertOrgIdByHouse(Long houseId){
+        return buildingArchivesRepository.quertOrgIdByHouse(houseId);
+    }
 }

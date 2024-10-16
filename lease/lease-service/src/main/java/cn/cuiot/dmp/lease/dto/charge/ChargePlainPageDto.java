@@ -16,7 +16,7 @@ import java.util.Date;
  * @Created by libo
  */
 @Data
-public class ChargePlainPageDto implements ChargeItemNameSet {
+public class ChargePlainPageDto implements ChargeItemNameSet ,ChargeStandardNameSet{
     /**
      * id
      */
@@ -43,6 +43,11 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
      * 收费标准 0自定义金额
      */
     private Long chargeStandard;
+
+    /**
+     * 收费标准 0自定义金额
+     */
+    private String chargeStandardName;
 
     /**
      * 应收金额/本金

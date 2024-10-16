@@ -40,6 +40,8 @@ spring:
         extension-configs:
           - dataId: community-lease.yaml
             refresh: true
+          - dataId: community-pay.yaml
+            refresh: true
       discovery:
         server-addr: http://nacos-server:8848
         group: DEFAULT_GROUP

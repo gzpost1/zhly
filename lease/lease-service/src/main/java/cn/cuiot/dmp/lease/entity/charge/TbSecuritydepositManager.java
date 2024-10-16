@@ -6,7 +6,10 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 
@@ -44,7 +47,7 @@ public class TbSecuritydepositManager extends YjBaseEntity {
      * 收费标准 0自定义金额
      */
     @TableField(value = "charge_standard")
-    private Byte chargeStandard;
+    private Long chargeStandard;
 
     /**
      * 应收金额/本金
@@ -132,4 +135,31 @@ public class TbSecuritydepositManager extends YjBaseEntity {
      *
      */
     private Long receivedId;
+
+    /**
+     * 收款方式 0平台 1人工
+     */
+    private Byte paymentMode;
+
+    /**
+     * 交易单号
+     */
+    private String transactionNo;
+
+    /**
+     * 缴费时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date lastPayTime;
+
+    /**
+     * 支付状态 0待支付 1支付取消 2支付失败 3支付成功
+     */
+    private Byte payStatus;
+
+    /**
+     * 某次下单使用的订单号
+     */
+    private Long orderId;
 }

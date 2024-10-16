@@ -153,4 +153,9 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
         return buildingArchivesPageResult;
     }
 
+    @Override
+    public Long quertOrgIdByHouse(Long houseId){
+        return buildingArchivesMapper.quertOrgIdByHouse(houseId);
+    }
+
 }

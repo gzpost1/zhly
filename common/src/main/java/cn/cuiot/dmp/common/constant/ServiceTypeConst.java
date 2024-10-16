@@ -112,5 +112,11 @@ public class ServiceTypeConst {
      * 收费管理-通知单
      */
     public static final String CHARGE_NOTICE = "125";
+
+
+    /**
+     * 收费标准
+     */
+    public static final String CHARGE_STANDARD = "126";
     //----------------------------------收费管理----------------------------------end
 }

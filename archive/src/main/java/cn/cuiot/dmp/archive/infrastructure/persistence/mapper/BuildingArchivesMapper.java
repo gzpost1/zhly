@@ -27,4 +27,6 @@ public interface BuildingArchivesMapper extends BaseMapper<BuildingArchivesEntit
      */
     int batchSaveBuildingArchives(@Param("list") List<BuildingArchivesEntity> buildingArchivesEntityList);
 
+    Long quertOrgIdByHouse(@Param("houseId") Long houseId);
+
 }

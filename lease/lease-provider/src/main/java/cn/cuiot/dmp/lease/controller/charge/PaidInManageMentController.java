@@ -93,7 +93,7 @@ public class PaidInManageMentController {
     public void export(@RequestBody PaidInManageMentQuery dto) throws Exception {
 
         excelExportService.excelExport(ExcelDownloadDto.<PaidInManageMentQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(dto)
-                .title("抄送我工单").fileName("租赁合同导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("抄送我工单")
+                .title("实收导出").fileName("实收导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("实收导出")
                 .build(), TbChargeReceived.class, this::queryExport);
     }
 
@@ -105,6 +105,10 @@ public class PaidInManageMentController {
     public IPage<TbChargeReceived> queryExport(ExcelDownloadDto<PaidInManageMentQuery> downloadDto){
         PaidInManageMentQuery pageQuery = downloadDto.getQuery();
         IPage<TbChargeReceived> data = this.queryForPaidinPage(pageQuery).getData();
+        List<TbChargeReceived> tbChargeReceiveds = Optional.ofNullable(data.getRecords()).orElse(data.getRecords());
+        tbChargeReceiveds.stream().forEach(item->{
+            item.setPaymentModeName(String.valueOf(item.getPaymentMode()));
+        });
         return data;
     }
 }

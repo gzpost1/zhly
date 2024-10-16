@@ -22,7 +22,7 @@ public class ChargeReceiptsReceivedDto {
     private Byte onlyPrincipal;
 
     /**
-     * 交易方式
+     * 交易方式 0微信支付 1预缴代扣
      */
     private Long transactionMode;
 

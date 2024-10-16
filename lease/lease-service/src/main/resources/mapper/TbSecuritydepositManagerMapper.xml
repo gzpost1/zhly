@@ -10,7 +10,7 @@
     <result column="house_id" jdbcType="BIGINT" property="houseId" />
     <result column="loupan_id" jdbcType="BIGINT" property="loupanId" />
     <result column="charge_item_id" jdbcType="BIGINT" property="chargeItemId" />
-    <result column="charge_standard" jdbcType="TINYINT" property="chargeStandard" />
+    <result column="charge_standard" jdbcType="BIGINT" property="chargeStandard" />
     <result column="receivable_amount" jdbcType="INTEGER" property="receivableAmount" />
     <result column="ownership_period_begin" jdbcType="DATE" property="ownershipPeriodBegin" />
     <result column="ownership_period_end" jdbcType="DATE" property="ownershipPeriodEnd" />
@@ -18,6 +18,7 @@
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
     <result column="update_user" jdbcType="BIGINT" property="updateUser" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="last_pay_time" jdbcType="TIMESTAMP" property="lastPayTime" />
     <result column="create_user" jdbcType="BIGINT" property="createUser" />
     <result column="deleted" jdbcType="TINYINT" property="deleted" />
     <result column="due_date" jdbcType="TIMESTAMP" property="dueDate" />
@@ -25,17 +26,21 @@
     <result column="receivable_amount_received" jdbcType="INTEGER" property="receivableAmountReceived" />
     <result column="returned_amount" jdbcType="INTEGER" property="returnedAmount" />
       <result column="transaction_mode" jdbcType="BIGINT" property="transactionMode" />
+      <result column="order_id" jdbcType="BIGINT" property="orderId" />
       <result column="account_bank" jdbcType="VARCHAR" property="accountBank" />
       <result column="account_number" jdbcType="VARCHAR" property="accountNumber" />
       <result column="received_date" jdbcType="TIMESTAMP" property="receivedDate" />
       <result column="remark" jdbcType="VARCHAR" property="remark" />
+      <result column="payment_mode" jdbcType="TINYINT" property="paymentMode" />
+      <result column="pay_status" jdbcType="TINYINT" property="payStatus" />
+      <result column="transaction_no" jdbcType="VARCHAR" property="transactionNo" />
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
     id, customer_user_id, house_id, charge_item_id, charge_standard, receivable_amount, received_id,
-    ownership_period_begin, ownership_period_end, company_id, update_time, update_user, 
-    create_time, create_user, deleted, due_date, `status`, receivable_amount_received, remark,
-    returned_amount,transaction_mode,account_bank,account_number,received_date,loupan_id
+    ownership_period_begin, ownership_period_end, company_id, update_time, update_user, staus,
+    create_time, create_user, deleted, due_date, `status`, receivable_amount_received, remark,last_pay_time,pay_status,order_id,
+    returned_amount,transaction_mode,account_bank,account_number,received_date,loupan_id,payment_mode,transaction_no
   </sql>
 
   <select id="queryForPage" resultType="cn.cuiot.dmp.lease.dto.charge.SecuritydepositManagerPageDto">
@@ -89,6 +94,129 @@
   </update>
 
   <select id="getHouseReundableAmount" resultType="java.lang.Integer">
-      select sum(receivable_amount_received - returned_amount) from tb_securitydeposit_manager where house_id = #{houseId} and deleted = 0 and receivable_amount_received > 0
+      select sum(receivable_amount_received - returned_amount) from tb_securitydeposit_manager where house_id = #{houseId} and deleted = 0 and status != 4 and receivable_amount_received > 0
+    </select>
+
+  <update id="receivedAmount">
+      update tb_securitydeposit_manager
+      set transaction_mode           = #{dto.transactionMode},
+          account_bank               = #{dto.accountBank},
+          account_number             = #{dto.accountNumber},
+          received_date              = #{dto.receivedDate},
+          last_pay_time              = #{dto.receivedDate},
+          received_id                = #{dto.receivedId},
+          staus                      = #{dto.status},
+          pay_status                 = 3,
+          payment_mode               = #{dto.paymentMode},
+          receivable_amount_received = receivable_amount
+      where id = #{dto.id}
+        and status = 0
+        and pay_status != 0
+        and deleted = 0
+  </update>
+
+  <update id="updateChargePayStatus">
+      update tb_securitydeposit_manager
+      set pay_status = 0,
+      order_id = #{orderId}
+      where
+      status = 0
+      and pay_status != 0
+      and id in
+      <foreach collection="chargeIds" item="item" index="index" open="(" separator="," close=")">
+          #{item}
+      </foreach>
+    </update>
+
+  <select id="queryForPayToWechat" resultType="cn.cuiot.dmp.lease.dto.charge.ChargePayToWechatDetailDto">
+      select
+      id,receivable_amount as chargeAmount
+      from tb_securitydeposit_manager
+      where
+      deleted = 0
+      and status = 0
+      and pay_status = 0
+      and id in
+      <foreach collection="chargeIds" item="item" index="index" open="(" separator="," close=")">
+          #{item}
+      </foreach>
+    </select>
+
+  <update id="updateChargePayStatusToCancel">
+      update tb_securitydeposit_manager
+      set pay_status = 1
+      where
+      deleted = 0
+      and status = 0
+      and pay_status = 0
+      and id in
+      <foreach collection="chargeIds" item="item" index="index" open="(" separator="," close=")">
+          #{item}
+      </foreach>
+    </update>
+
+  <update id="updateChargePayStatusToPaySuccess">
+      update tb_securitydeposit_manager
+      set
+      pay_status = 3,
+      last_pay_time = now(),
+      transaction_mode = 0,
+      payment_mode = 0,
+      transaction_no = #{query.transactionNo},
+      receivable_amount_received = receivable_amount,
+      status = 1
+      where
+      deleted = 0
+      and status = 0
+      and pay_status = 0
+      and id in
+      <foreach collection="query.dataIds" item="item" index="index" open="(" separator="," close=")">
+          #{item}
+      </foreach>
+    </update>
+
+  <select id="queryNeedPayPage" resultType="cn.cuiot.dmp.lease.dto.charge.Chargeovertimeorderdto">
+      select
+          id as data_id,order_id
+      from tb_securitydeposit_manager
+      where
+          status = 0
+        and pay_status = 0
+    </select>
+
+  <select id="queryNeedToPayAmount" resultType="cn.cuiot.dmp.lease.dto.charge.PrePayAmountAndHouseId">
+      select receivable_amount as amount,house_id as houseId from tb_securitydeposit_manager
+      where id = #{dto.id}
+      and status = 0
+      and pay_status != 0
+      and deleted = 0
+  </select>
+
+  <update id="updateChargePayStatusToPaySuccessBYPrePay">
+      update tb_securitydeposit_manager
+      set
+      pay_status = 3,
+      last_pay_time = now(),
+      transaction_mode = 1,
+      order_id = #{orderId},
+      payment_mode = 0,
+      receivable_amount_received = receivable_amount,
+      status = 1
+      where id = #{chargeId}
+      and status = 0
+      and pay_status != 0
+      and deleted = 0
+    </update>
+
+  <select id="queryOverTimeOrderAndClosePage" resultType="cn.cuiot.dmp.lease.dto.charge.Chargeovertimeorderdto">
+      select
+          id as data_id
+      from tb_securitydeposit_manager
+      where
+          deleted = 0
+        and status = 0
+        and pay_status != 0
+        and date_format(now(),'%Y-%m-%d') = date_format(due_date,'%Y-%m-%d')
+       order by receivable_amount desc
     </select>
 </mapper>

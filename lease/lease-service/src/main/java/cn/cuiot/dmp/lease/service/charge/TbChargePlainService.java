@@ -7,6 +7,7 @@ import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
 import cn.cuiot.dmp.lease.entity.charge.TbChargePlain;
+import cn.cuiot.dmp.lease.enums.ChargePayStatusEnum;
 import cn.cuiot.dmp.lease.enums.ChargePlainCronType;
 import cn.cuiot.dmp.lease.enums.ChargeTypeEnum;
 import cn.cuiot.dmp.lease.mapper.charge.TbChargePlainMapper;
@@ -108,7 +109,7 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
                 createDto.setReceivableAmountRate(tbChargePlain.getReceivableAmountRate());
                 createDto.setReceivableAmount(tbChargePlain.getReceivableAmount());
                 createDto.setChargeItemId(tbChargePlain.getChargeItemId());
-                createDto.setChargeStandard(EntityConstants.NO);
+                createDto.setChargeStandard(tbChargePlain.getChargeStandard());
                 createDto.setCompanyId(tbChargePlain.getCompanyId());
                 createDto.setChargeType(ChargeTypeEnum.AUTO_GENERATE.getCode());
                 if (Objects.equals(tbChargePlain.getCronType(), ChargePlainCronType.DAILY.getCode())) {
@@ -170,6 +171,7 @@ public class TbChargePlainService extends ServiceImpl<TbChargePlainMapper, TbCha
                     tbChargeManager.setDeleted(EntityConstants.NO);
                     tbChargeManager.setHouseId(record.getHouseId());
                     tbChargeManager.setLoupanId(tbChargePlain.getReceivableObj());
+                    tbChargeManager.setPayStatus(ChargePayStatusEnum.PAY_SUCCESS.getCode());
 
                     //如果是指定日期需要重新计算应收日期
                     if (Objects.nonNull(createDto.getDueDateNum()) && createDto.getDueDateNum() > 0) {
