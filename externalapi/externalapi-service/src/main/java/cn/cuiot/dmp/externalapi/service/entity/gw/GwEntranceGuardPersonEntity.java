@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.entity.gw;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -25,6 +26,7 @@ public class GwEntranceGuardPersonEntity extends YjBaseEntity {
      * id
      */
     @TableId(value = "id", type = IdType.ASSIGN_ID)
+    @Excel(name = "人员id", orderNum = "0", width = 20)
     private Long id;
 
     /**
@@ -43,6 +45,7 @@ public class GwEntranceGuardPersonEntity extends YjBaseEntity {
      * 人员姓名
      */
     @TableField(value = "`name`")
+    @Excel(name = "人员姓名", orderNum = "2", width = 20)
     private String name;
 
     /**
@@ -55,6 +58,7 @@ public class GwEntranceGuardPersonEntity extends YjBaseEntity {
      * 手机号
      */
     @TableField(value = "phone")
+    @Excel(name = "手机号", orderNum = "4", width = 20)
     private String phone;
 
     /**
@@ -79,12 +83,14 @@ public class GwEntranceGuardPersonEntity extends YjBaseEntity {
      * 时效开始日期
      */
     @TableField(value = "prescription_begin_date")
+    @Excel(name = "时效开始日期",orderNum = "8",  width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
     private Date prescriptionBeginDate;
 
     /**
      * 时效结束日期
      */
     @TableField(value = "prescription_end_date")
+    @Excel(name = "时效结束日期",orderNum = "9",  width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
     private Date prescriptionEndDate;
 
     /**
@@ -109,6 +115,7 @@ public class GwEntranceGuardPersonEntity extends YjBaseEntity {
      * 人员照片
      */
     @TableField(value = "image")
+    @Excel(name = "人员照片", orderNum = "1", width = 20)
     private String image;
 
     /**

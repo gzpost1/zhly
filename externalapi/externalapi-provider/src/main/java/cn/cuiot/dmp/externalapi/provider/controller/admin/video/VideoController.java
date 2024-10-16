@@ -48,6 +48,18 @@ public class VideoController {
     }
 
     /**
+     * 视频监控导出
+     * @param query
+     * @return
+     */
+    @RequiresPermissions
+    @RequestMapping("/export")
+    public IdmResDTO export(@RequestBody VideoPageQuery query){
+        videoDeviceService.export(query);
+        return IdmResDTO.success();
+    }
+
+    /**
      * 更新
      */
     @RequiresPermissions

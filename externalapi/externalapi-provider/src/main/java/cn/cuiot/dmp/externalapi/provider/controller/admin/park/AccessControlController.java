@@ -75,6 +75,17 @@ public class AccessControlController {
     }
 
     /**
+     * 宇泛门禁-门禁导出
+     * @param queryAccessCommunity
+     * @return
+     */
+    @PostMapping("/export")
+    @RequiresPermissions
+    public IdmResDTO export(@RequestBody QueryAccessCommunity queryAccessCommunity){
+        accessControlService.export(queryAccessCommunity);
+        return IdmResDTO.success();
+    }
+    /**
      * 查询授权门禁信息
      * @return
      */

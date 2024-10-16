@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.externalapi.service.service.gw;
 
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
@@ -8,6 +10,7 @@ import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.constant.PersonGroupRelationConstant;
@@ -15,6 +18,8 @@ import cn.cuiot.dmp.externalapi.service.entity.PersonGroupEntity;
 import cn.cuiot.dmp.externalapi.service.entity.PersonGroupRelationEntity;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardAuthorizeEntity;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardPersonEntity;
+import cn.cuiot.dmp.externalapi.service.enums.AuthorizeEnums;
+import cn.cuiot.dmp.externalapi.service.enums.PersonSexEnums;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.mapper.PersonGroupMapper;
 import cn.cuiot.dmp.externalapi.service.mapper.gw.GwEntranceGuardAuthorizeMapper;
@@ -41,10 +46,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -71,6 +73,9 @@ public class GwEntranceGuardPersonService extends ServiceImpl<GwEntranceGuardPer
     private PersonGroupMapper personGroupMapper;
     @Autowired
     private GwEntranceGuardAuthorizeMapper authorizeMapper;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 查询分页
@@ -99,6 +104,34 @@ public class GwEntranceGuardPersonService extends ServiceImpl<GwEntranceGuardPer
         }
 
         return iPage;
+    }
+
+    /**
+     * 门禁人员导出
+     * @param query
+     */
+    public void export(GwEntranceGuardPersonPageQuery query){
+        excelExportService.excelExport(ExcelDownloadDto.<GwEntranceGuardPersonPageQuery>builder().
+                loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(query)
+                .title("门禁人员导出").fileName("门禁人员导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("门禁人员导出")
+                .build(), GwEntranceGuardPersonPageVO.class, this::queryExport);
+    }
+
+    /**
+     * 获取导出列表数据
+     * @param downloadDto
+     * @return
+     */
+    public IPage<GwEntranceGuardPersonPageVO> queryExport(ExcelDownloadDto<GwEntranceGuardPersonPageQuery> downloadDto){
+        GwEntranceGuardPersonPageQuery pageQuery = downloadDto.getQuery();
+        IPage<GwEntranceGuardPersonPageVO> data = this.queryForPage(pageQuery);
+        List<GwEntranceGuardPersonPageVO> records = Optional.ofNullable(data.getRecords()).orElse(new ArrayList<>());
+        records.stream().forEach(item->{
+            item.setAuthorizeName(AuthorizeEnums.getNameByCode(item.getAuthorize()));
+            item.setSexName(PersonSexEnums.getNameByCode(item.getSex()));
+            item.setCreateExcelTime(item.getCreateTime());
+        });
+        return data;
     }
 
     /**

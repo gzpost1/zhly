@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.vo.video;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import lombok.Data;
 
 /**
@@ -19,11 +20,13 @@ public class VideoPageVo {
     /**
      * 设备id
      */
+    @Excel(name = "设备ID", orderNum = "1", width = 20)
     private String deviceId;
 
     /**
      * 设备名称
      */
+    @Excel(name = "设备名称", orderNum = "0", width = 20)
     private String deviceName;
 
     /**
@@ -34,6 +37,7 @@ public class VideoPageVo {
     /**
      * 设备类型名称
      */
+    @Excel(name = "设备类型", orderNum = "3", width = 20)
     private String deviceTypeName;
 
     /**
@@ -44,6 +48,7 @@ public class VideoPageVo {
     /**
      * 设备状态名称
      */
+    @Excel(name = "设备状态", orderNum = "4", width = 20)
     private String stateName;
 
     /**
@@ -64,5 +69,6 @@ public class VideoPageVo {
     /**
      * 楼盘名称
      */
+    @Excel(name = "所属楼盘", orderNum = "2", width = 20)
     private String buildingName;
 }

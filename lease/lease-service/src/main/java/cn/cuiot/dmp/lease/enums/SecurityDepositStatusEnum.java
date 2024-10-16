@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.lease.enums;
 
+import java.util.Objects;
+
 /**
  * @Description 押金管理状态 0未交款 1已交清 2未退完 3 已退完 4作废
  * @Date 2024/6/14 10:44
@@ -18,6 +20,15 @@ public enum SecurityDepositStatusEnum {
     SecurityDepositStatusEnum(Byte code, String desc) {
         this.code = code;
         this.desc = desc;
+    }
+
+    public static String getDesc(Byte code){
+        for(SecurityDepositStatusEnum statusEnum :SecurityDepositStatusEnum.values()){
+            if(Objects.equals(code,statusEnum.getCode())){
+                return statusEnum.getDesc();
+            }
+        }
+        return null;
     }
 
     public Byte getCode() {
