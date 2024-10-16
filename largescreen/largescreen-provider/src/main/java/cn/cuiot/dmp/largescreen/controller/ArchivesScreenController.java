@@ -193,6 +193,9 @@ public class ArchivesScreenController {
             buildingArchivesReqDTO.setDepartmentIdList(departmentIdList);
         }
 
+        buildingArchivesReqDTO.setPageNo(statisInfoReqDTO.getPageNo());
+        buildingArchivesReqDTO.setPageSize(statisInfoReqDTO.getPageSize());
+
         buildingArchivesReqDTO.setIdList(statisInfoReqDTO.getLoupanIds());
         return buildingArchivesReqDTO;
     }

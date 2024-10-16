@@ -41,7 +41,7 @@ public interface ContentFeignService {
      * @param idParam IdParam
      * @return NoticeVo
      */
-    @PostMapping("/queryForDetail")
+    @PostMapping("/api/queryForDetail")
     IdmResDTO<NoticeVo> queryForDetail(@RequestBody @Valid IdParam idParam);
 
 }
