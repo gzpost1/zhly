@@ -58,8 +58,8 @@
             c.name as channel_index_name
         FROM
         tb_haikang_acs_reader AS a
-        left join tb_haikang_acs_device b on a.parent_index_code=b.index_code
-        left join tb_haikang_acs_door c on a.channel_index_code=c.index_code
+        left join tb_haikang_acs_device b on a.parent_index_code=b.index_code and a.org_id=b.org_id
+        left join tb_haikang_acs_door c on a.channel_index_code=c.index_code and a.org_id=c.org_id
         <where>
             <if test="param.companyId != null">
                 and a.org_id=#{param.companyId}
