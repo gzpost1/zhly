@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.query;
 
-import cn.cuiot.dmp.query.PageQuery;
+import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;
 
 import java.util.List;

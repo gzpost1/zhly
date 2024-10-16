@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.externalapi.service.service.park;
 
 import cn.cuiot.dmp.base.application.dto.AuthDaHuaResp;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.constants.SendMsgRedisKeyConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
@@ -15,6 +17,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.Aes;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -29,6 +32,7 @@ import cn.cuiot.dmp.externalapi.service.mapper.park.PortraitInputMapper;
 import cn.cuiot.dmp.externalapi.service.query.*;
 import cn.cuiot.dmp.externalapi.service.service.PersonGroupService;
 import cn.cuiot.dmp.externalapi.service.service.TbPersonGroupRelationService;
+import cn.cuiot.dmp.externalapi.service.vo.park.PersonManagementVo;
 import cn.cuiot.dmp.externalapi.service.vo.park.PortraitInputVo;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -86,6 +90,9 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
     private SystemApiFeignService systemApiFeignService;
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 保存录入信息
@@ -588,6 +595,47 @@ public class PortraitInputService extends ServiceImpl<PortraitInputMapper, Portr
         });
         return pages;
     }
+
+    /**
+     * 导出人员管理
+     * @param para
+     */
+    public void exportPersonManagement(PortraitInputDTO para){
+        excelExportService.excelExport(ExcelDownloadDto.<PortraitInputDTO>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(para)
+                .title("门禁人员导出").fileName("门禁人员导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("门禁人员导出")
+                .build(), PersonManagementVo.class, this::queryExportPersonManagement);
+    }
+    /**
+     * 导出人员管理信息
+     * @param downloadDto
+     * @return
+     */
+    public IPage<PersonManagementVo> queryExportPersonManagement(ExcelDownloadDto<PortraitInputDTO> downloadDto){
+        PortraitInputDTO pageQuery = downloadDto.getQuery();
+        IPage<PortraitInputVo> data = this.queryPortraitInputPage(pageQuery);
+        List<PortraitInputVo> records = Optional.ofNullable(data.getRecords()).orElse(new ArrayList<>());
+        List<PersonManagementVo> personManagementVos = BeanMapper.mapList(records, PersonManagementVo.class);
+        Page<PersonManagementVo> page = new Page<>(data.getCurrent(), data.getPages(), data.getTotal());
+        return page.setRecords(personManagementVos);
+    }
+
+    public void export(PortraitInputDTO para){
+        excelExportService.excelExport(ExcelDownloadDto.<PortraitInputDTO>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(para)
+                .title("人员录入记录导出").fileName("人员录入记录导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("人员录入记录导出")
+                .build(), PortraitInputVo.class, this::queryExport);
+    }
+    /**
+     * 导出人员信息
+     * @param downloadDto
+     * @return
+     */
+    public IPage<PortraitInputVo> queryExport(ExcelDownloadDto<PortraitInputDTO> downloadDto){
+        PortraitInputDTO pageQuery = downloadDto.getQuery();
+        IPage<PortraitInputVo> data = this.queryPortraitInputPage(pageQuery);
+
+        return data;
+    }
+
 
 
     public Map<Long,String> getUserMap(List<Long> userIds){

@@ -2,6 +2,8 @@ package cn.cuiot.dmp.lease.controller.charge;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
@@ -9,6 +11,8 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.enums.CustomerIdentityTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeAbrogate;
@@ -24,6 +28,7 @@ import cn.cuiot.dmp.lease.service.charge.TbChargeAbrogateService;
 import cn.cuiot.dmp.lease.service.charge.TbSecuritydepositManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -60,6 +62,9 @@ public class SecuritydepositManagerController {
 
     @Autowired
     private SystemToFlowService systemToFlowService;
+
+    @Autowired
+    private ExcelExportService excelExportService;
     /**
      * 获取分页
      *
@@ -104,6 +109,38 @@ public class SecuritydepositManagerController {
 
         return IdmResDTO.success().body(chargeManagerPageDtoIPage);
     }
+
+    /**
+     * 收银台-押金导出
+     * @param query
+     * @return
+     */
+    @PostMapping("/export")
+    @RequiresPermissions
+    public IdmResDTO export(@RequestBody SecuritydepositManagerQuery query){
+        excelExportService.excelExport(ExcelDownloadDto.<SecuritydepositManagerQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(query)
+                .title("押金导出").fileName("押金导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("押金导出")
+                .build(), ExportSecuritydepositDto.class, this::queryExport);
+
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 查询押金管理
+     * @param downloadDto
+     * @return
+     */
+    public IPage<ExportSecuritydepositDto> queryExport(ExcelDownloadDto<SecuritydepositManagerQuery> downloadDto){
+        SecuritydepositManagerQuery pageQuery = downloadDto.getQuery();
+        IPage<SecuritydepositManagerPageDto> data = this.queryForPage(pageQuery).getData();
+        List<SecuritydepositManagerPageDto> pageList = Optional.ofNullable(data.getRecords()).orElse(new ArrayList<>());
+        List<ExportSecuritydepositDto> resultList = Optional.ofNullable(BeanMapper.mapList(pageList, ExportSecuritydepositDto.class)).orElse(new ArrayList<>());
+
+        IPage<ExportSecuritydepositDto> page = new Page<>(data.getCurrent(), data.getPages(), data.getTotal());
+        return page.setRecords(resultList);
+
+    }
+
 
     /**
      * 获取详情

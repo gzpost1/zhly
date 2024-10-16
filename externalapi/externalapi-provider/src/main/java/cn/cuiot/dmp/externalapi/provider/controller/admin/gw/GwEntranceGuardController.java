@@ -54,6 +54,17 @@ public class GwEntranceGuardController {
     }
 
     /**
+     * 格物-门禁导出
+     * @param query
+     * @return
+     */
+    @RequiresPermissions
+    @PostMapping("/export")
+    public IdmResDTO export(@RequestBody GwEntranceGuardPageQuery query){
+        gwEntranceGuardService.export(query);
+        return IdmResDTO.success();
+    }
+    /**
      * 详情
      */
     @RequiresPermissions
@@ -165,4 +176,15 @@ public class GwEntranceGuardController {
     public IdmResDTO<IPage<GwEntranceGuardAccessRecordVO>> queryForPage(@RequestBody GwEntranceGuardAccessRecordQuery query) {
         return IdmResDTO.success(gwEntranceGuardAccessRecordService.queryForPage(query));
     }
+
+    /**
+     * 通行记录导出
+     */
+    @RequiresPermissions
+    @PostMapping("/exportGuardAccess")
+    public IdmResDTO exportGuardAccess(@RequestBody GwEntranceGuardAccessRecordQuery query){
+        gwEntranceGuardAccessRecordService.export(query);
+        return IdmResDTO.success();
+    }
+
 }

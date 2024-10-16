@@ -3,6 +3,8 @@ package cn.cuiot.dmp.lease.controller.charge;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
@@ -12,6 +14,8 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.common.enums.CustomerIdentityTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeAbrogate;
@@ -26,6 +30,7 @@ import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import cn.cuiot.dmp.system.domain.repository.CommonOptionTypeRepository;
 import cn.cuiot.dmp.util.Sm4;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -36,10 +41,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -61,6 +63,9 @@ public class ChargeManagerController {
     private SystemToFlowService systemToFlowService;
     @Autowired
     private ChargeInfoFillService chargeInfoFillService;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     public static final String SERVICETYPENAME = "缴费管理";
 
@@ -166,6 +171,43 @@ public class ChargeManagerController {
         return IdmResDTO.success().body(chargeManagerPageDtoIPage);
     }
 
+    /**
+     * 收银台-缴费导出
+     * @param query
+     * @return
+     */
+    @RequiresPermissions
+    @PostMapping("/export")
+    public IdmResDTO  export(@RequestBody TbChargeManagerQuery query){
+        excelExportService.excelExport(ExcelDownloadDto.<TbChargeManagerQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(query)
+                .title("缴费导出").fileName("缴费导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("缴费导出")
+                .build(), ExportChargeManagerDto.class, this::queryExport);
+
+
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 查询缴费导出
+     * @param downloadDto
+     * @return
+     */
+    public IPage<ExportChargeManagerDto> queryExport(ExcelDownloadDto<TbChargeManagerQuery> downloadDto){
+        TbChargeManagerQuery pageQuery = downloadDto.getQuery();
+        IPage<ChargeManagerPageDto> data = this.queryForPage(pageQuery).getData();
+        List<ChargeManagerPageDto> pageList = Optional.ofNullable(data.getRecords()).orElse(new ArrayList<>());
+
+        List<ExportChargeManagerDto> exportChargeManagerDtos = BeanMapper.mapList(pageList, ExportChargeManagerDto.class);
+        if(CollectionUtils.isNotEmpty(exportChargeManagerDtos)){
+            exportChargeManagerDtos.stream().forEach(item->{
+                item.setCreateTypeName(ChargeTypeEnum.getDesc(item.getCreateType()));
+                item.setReceivbleStatusName(ChargeReceivbleEnum.getDesc(item.getReceivbleStatus()));
+                item.setHangUpStatusName(ChargeHangUpEnum.getDesc(item.getHangUpStatus()));
+            });
+        }
+        IPage<ExportChargeManagerDto> page = new Page<>(data.getCurrent(), data.getPages(), data.getTotal());
+        return page.setRecords(exportChargeManagerDtos);
+    }
     /**
      * 获取详情
      *

@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.vo.gw;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -27,6 +28,7 @@ public class GwEntranceGuardPageVo {
     /**
      * 所属组织
      */
+    @Excel(name = "所属组织", orderNum = "1", width = 20)
     private String deptPathName;
 
     /**
@@ -37,6 +39,7 @@ public class GwEntranceGuardPageVo {
     /**
      * 门禁名称
      */
+    @Excel(name = "门禁名称", orderNum = "0", width = 20)
     private String name;
 
     /**
@@ -47,6 +50,7 @@ public class GwEntranceGuardPageVo {
     /**
      * 楼盘名称
      */
+    @Excel(name = "所属楼盘", orderNum = "2", width = 20)
     private String buildingName;
 
     /**
@@ -62,16 +66,19 @@ public class GwEntranceGuardPageVo {
     /**
      * 门禁型号id
      */
+    @Excel(name = "门禁型号", orderNum = "4", width = 20)
     private Long modelId;
 
     /**
      * 门禁品牌名称
      */
+    @Excel(name = "门禁品牌", orderNum = "3", width = 20)
     private String modelName;
 
     /**
      * 门禁SN
      */
+    @Excel(name = "门禁SN", orderNum = "5", width = 20)
     private String sn;
 
     /**
@@ -104,13 +111,18 @@ public class GwEntranceGuardPageVo {
      */
     private Byte status;
 
+    @Excel(name = "启用状态", orderNum = "7", width = 20)
+    private String statusName;
+
     /**
      * 设备状态 (0: 在线，1: 离线，2: 未激活）接口返回
      */
+    @Excel(name = "门禁状态", orderNum = "6", width = 20)
     private String equipStatus;
 
     /**
      * 创建时间
      */
+    @Excel(name = "创建时间",orderNum = "8",  width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 }

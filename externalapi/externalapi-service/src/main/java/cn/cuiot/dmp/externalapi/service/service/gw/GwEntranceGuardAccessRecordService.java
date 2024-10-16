@@ -1,10 +1,13 @@
 package cn.cuiot.dmp.externalapi.service.service.gw;
 
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.entity.PersonGroupEntity;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
@@ -21,9 +24,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardAccessRecordEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.gw.GwEntranceGuardAccessRecordMapper;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,8 @@ public class GwEntranceGuardAccessRecordService extends ServiceImpl<GwEntranceGu
     private SystemApiService systemApiService;
     @Autowired
     private PersonGroupService personGroupService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 分页
@@ -59,6 +62,32 @@ public class GwEntranceGuardAccessRecordService extends ServiceImpl<GwEntranceGu
         return iPage;
     }
 
+    /**
+     * 格物-通行记录列表
+     * @param query
+     */
+    public void export(GwEntranceGuardAccessRecordQuery query){
+        excelExportService.excelExport(ExcelDownloadDto.<GwEntranceGuardAccessRecordQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(query)
+                .title("通行记录导出").fileName("通行记录导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("通行记录导出")
+                .build(), GwEntranceGuardAccessRecordVO.class, this::queryExportGuardAccess);
+    }
+
+    /**
+     * 通行记录
+     * @param downloadDto
+     * @return
+     */
+    public IPage<GwEntranceGuardAccessRecordVO> queryExportGuardAccess(ExcelDownloadDto<GwEntranceGuardAccessRecordQuery> downloadDto){
+        GwEntranceGuardAccessRecordQuery pageQuery = downloadDto.getQuery();
+        IPage<GwEntranceGuardAccessRecordVO> data = this.queryForPage(pageQuery);
+        List<GwEntranceGuardAccessRecordVO> records = Optional.ofNullable(data.getRecords()).orElse(new ArrayList<>());
+        records.stream().forEach(item->{
+            item.setScanTypeName(String.valueOf(item.getScanTpye()));
+            item.setInOutName(String.valueOf(item.getInOut()));
+            item.setIsOpenName(String.valueOf(item.getIsOpenDoor()));
+        });
+        return data;
+    }
     private void buildPageVo(List<GwEntranceGuardAccessRecordVO> list) {
         // 获取各类信息的 Map
         Map<Long, String> buildingArchiveMap = getDataMap(list, GwEntranceGuardAccessRecordVO::getBuildingId, this::queryBuildingInfo, BuildingArchive::getId, BuildingArchive::getName);
