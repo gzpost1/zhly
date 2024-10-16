@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.util.Date;
 
@@ -46,8 +47,10 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
     /**
      * 应收金额/本金
      */
-    @Excel(name = "应收金额", orderNum = "3", width = 20)
     private Integer receivableAmount;
+
+    @Excel(name = "应收金额", orderNum = "3", width = 20)
+    private String receivableAmountName;
 
     /**
      * 企业ID
@@ -127,4 +130,13 @@ public class ChargePlainPageDto implements ChargeItemNameSet {
      * 应收日期
      */
     private Integer dueDateNum;
+
+    public String getReceivableAmountName(){
+        Double num = receivableAmount / 100.0;
+
+        DecimalFormat decimalFormat = new DecimalFormat("#.00"); //定义格式，小数点后两位
+
+        String formattedAmount = decimalFormat.format(num);
+        return formattedAmount;
+    }
 }
