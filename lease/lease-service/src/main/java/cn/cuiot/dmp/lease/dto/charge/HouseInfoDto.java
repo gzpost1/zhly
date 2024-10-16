@@ -23,4 +23,9 @@ public class HouseInfoDto {
      * 房屋编号
      */
     private String houseCode;
+
+    /**
+     * 楼盘名称
+     */
+    private String loupanName;
 }

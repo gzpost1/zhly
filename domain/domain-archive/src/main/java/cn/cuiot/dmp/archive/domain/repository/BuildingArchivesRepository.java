@@ -57,4 +57,5 @@ public interface BuildingArchivesRepository {
      */
     int batchDeleteBuildingArchives(List<Long> idList);
 
+    Long quertOrgIdByHouse(Long houseId);
 }

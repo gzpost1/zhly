@@ -2,6 +2,7 @@ package cn.cuiot.dmp.lease.dto.charge;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.base.infrastructure.utils.MathTool;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,7 +18,7 @@ import java.util.Objects;
  * @Created by libo
  */
 @Data
-public class ChargeManagerPageDto implements ChargeItemNameSet {
+public class ChargeManagerPageDto implements ChargeItemNameSet,ChargeStandardNameSet {
     /**
      * 应收编码
      */
@@ -186,6 +187,27 @@ public class ChargeManagerPageDto implements ChargeItemNameSet {
      * 本金税额	应收金额*税率=本金税额
      */
     private Integer receivableAmountTax = 0;
+
+
+    /**
+     * 页面保存使用违约金应收
+     */
+    private Integer pageLiquidatedDamagesNeed;
+
+    /**
+     * 页面保存使用违约金税率
+     */
+    private BigDecimal pageLiquidatedDamagesRate;
+
+    /**
+     * 收费标准 0自定义金额
+     */
+    private Long chargeStandard;
+
+    /**
+     * 收费标准 0自定义金额
+     */
+    private String chargeStandardName;
 
     public Integer getTotalOwe() {
         return receivableAmount - receivableAmountReceived;

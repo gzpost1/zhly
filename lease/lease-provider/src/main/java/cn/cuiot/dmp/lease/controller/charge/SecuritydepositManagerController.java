@@ -7,24 +7,21 @@ import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
-import cn.cuiot.dmp.common.enums.CustomerIdentityTypeEnum;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.*;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeAbrogate;
-import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositManager;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositRefund;
-import cn.cuiot.dmp.lease.enums.ChargeTypeEnum;
 import cn.cuiot.dmp.lease.enums.SecurityDepositStatusEnum;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
-import cn.cuiot.dmp.lease.service.charge.TbChargeAbrogateService;
 import cn.cuiot.dmp.lease.service.charge.TbSecuritydepositManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -59,9 +56,9 @@ public class SecuritydepositManagerController {
     private ChargeHouseAndUserService chargeHouseAndUserService;
     @Autowired
     private ChargeInfoFillService chargeInfoFillService;
-
     @Autowired
     private SystemToFlowService systemToFlowService;
+
 
     @Autowired
     private ExcelExportService excelExportService;
@@ -236,18 +233,7 @@ public class SecuritydepositManagerController {
     @PostMapping("/receivedAmount")
     @LogRecord(operationCode = "receivedAmount", operationName = "押金管理-收款", serviceType = ServiceTypeConst.SECURITYDEPOSITMANAGER)
     public IdmResDTO receivedAmount(@RequestBody @Valid DepositReceiptsReceivedDto dto) {
-        TbSecuritydepositManager entity = securitydepositManagerService.getById(dto.getChargeId());
-        AssertUtil.notNull(entity, "数据不存在");
-
-        entity.setTransactionMode(dto.getTransactionMode());
-        entity.setAccountBank(dto.getAccountBank());
-        entity.setAccountNumber(dto.getAccountNumber());
-        entity.setReceivedDate(new Date());
-        entity.setReceivableAmountReceived(entity.getReceivableAmount());
-        entity.setReceivedDate(new Date());
-        entity.setStatus(SecurityDepositStatusEnum.PAID_OFF.getCode());
-        entity.setReceivedId(IdWorker.getId());
-        securitydepositManagerService.updateById(entity);
+        securitydepositManagerService.receivedAmountByPlatform(dto);
         return IdmResDTO.success();
     }
 

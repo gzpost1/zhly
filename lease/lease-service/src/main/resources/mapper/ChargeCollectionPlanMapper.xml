@@ -1,9 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.cuiot.dmp.lease.mapper.charge.ChargeCollectionPlanMapper">
-
+  <resultMap id="basemap" type="cn.cuiot.dmp.lease.entity.charge.ChargeCollectionPlanEntity">
+    <id column="id" property="id"/>
+    <result column="name" property="name"/>
+    <result column="channel" property="channel"
+            typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"
+    />
+    <result column="cron_type" property="cronType"/>
+    <result column="cron_appoint_day" property="cronAppointDay"/>
+    <result column="cron_appoint_week" property="cronAppointWeek"/>
+    <result column="cron_time" property="cronTime"/>
+    <result column="status" property="status"/>
+    <result column="company_id" property="companyId"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_time" property="updateTime"/>
+    <result column="create_user" property="createUser"/>
+    <result column="update_user" property="updateUser"/>
+    <result column="deleted" property="deleted"/>
+  </resultMap>
+  <resultMap id="ChargeCollectionPlanPageVoResultMap" type="cn.cuiot.dmp.lease.vo.ChargeCollectionPlanPageVo">
+    <id column="id" property="id"/>
+    <result column="buildings_name" property="buildingsName"/>
+    <result column="charge_items_name" property="chargeItemsName"/>
+    <result column="operator_name" property="operatorName"/>
+    <result column="create_user" property="createUser"/>
+    <result column="name" property="name"/>
+    <result column="channel" property="channel"
+      typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"
+    />
+    <result column="cron_type" property="cronType"/>
+    <result column="cron_appoint_day" property="cronAppointDay"/>
+    <result column="cron_appoint_week" property="cronAppointWeek"/>
+    <result column="cron_time" property="cronTime"/>
+    <result column="status" property="status"/>
+    <result column="buildings" property="buildings" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+    <result column="charge_items" property="chargeItems" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+  </resultMap>
   <select id="queryForPage" parameterType="cn.cuiot.dmp.lease.dto.charge.ChargeCollectionPlanPageQuery"
-          resultType="cn.cuiot.dmp.lease.vo.ChargeCollectionPlanPageVo">
+          resultMap="ChargeCollectionPlanPageVoResultMap">
     SELECT
     a.*
     FROM

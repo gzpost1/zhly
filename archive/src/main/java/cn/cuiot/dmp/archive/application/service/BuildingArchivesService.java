@@ -94,4 +94,5 @@ public interface BuildingArchivesService {
      */
     List<BuildingArchive> lookupBuildingArchiveByDepartmentList(DepartmentReqDto reqDto);
 
+    Long quertOrgIdByHouse(Long houseId);
 }

@@ -1,9 +1,6 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
-import cn.cuiot.dmp.base.infrastructure.utils.MathTool;
 import lombok.Data;
-
-import java.math.BigDecimal;
 
 /**
  * @Description 收费管理-收银台-缴费管理详情
@@ -11,7 +8,7 @@ import java.math.BigDecimal;
  * @Created by libo
  */
 @Data
-public class ChargeManagerDetailDto extends ChargeManagerPageDto{
+public class ChargeManagerDetailDto extends ChargeManagerPageDto {
     /**
      * 本金不含税	应收金额-应收金额*税率=本金不含税
      */

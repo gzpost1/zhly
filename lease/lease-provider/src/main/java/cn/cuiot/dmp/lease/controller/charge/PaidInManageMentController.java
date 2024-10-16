@@ -105,6 +105,10 @@ public class PaidInManageMentController {
     public IPage<TbChargeReceived> queryExport(ExcelDownloadDto<PaidInManageMentQuery> downloadDto){
         PaidInManageMentQuery pageQuery = downloadDto.getQuery();
         IPage<TbChargeReceived> data = this.queryForPaidinPage(pageQuery).getData();
+        List<TbChargeReceived> tbChargeReceiveds = Optional.ofNullable(data.getRecords()).orElse(data.getRecords());
+        tbChargeReceiveds.stream().forEach(item->{
+            item.setPaymentModeName(String.valueOf(item.getPaymentMode()));
+        });
         return data;
     }
 }

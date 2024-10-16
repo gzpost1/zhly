@@ -55,4 +55,8 @@ public class ChargeHouseDetailDto {
      */
     private Integer depositRefundable = 0;
 
+    /**
+     * 预缴余额
+     */
+    private Integer advanceBalance = 0;
 }
