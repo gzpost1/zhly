@@ -157,6 +157,8 @@ public class ContentImgTextController extends BaseController {
      */
     @PostMapping("export")
     public IdmResDTO export(@RequestBody @Valid ContentImgTextPageQuery pageQuery) {
+        String orgId = getOrgId();
+        pageQuery.setCompanyId(Long.valueOf(orgId));
         contentImgTextService.export(pageQuery);
         return IdmResDTO.success();
     }

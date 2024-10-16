@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.externalapi.service.service.gw;
 
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParams;
@@ -9,8 +11,11 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
+import cn.cuiot.dmp.common.constant.NumberConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.constant.StatusConst;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.constant.GwBusinessTypeConstant;
 import cn.cuiot.dmp.externalapi.service.constant.GwEntranceGuardOperationStatusType;
@@ -45,10 +50,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.gw.GwEntranceGuardMapper;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -74,6 +76,9 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
     private GwEntranceGuardOperationRecordService operationRecordService;
     @Autowired
     private GwDeviceRelationService gwDeviceRelationService;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 分页
@@ -120,6 +125,33 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
 
         return page;
     }
+
+    /**
+     * 门禁导出
+     * @param query
+     */
+    public void export(GwEntranceGuardPageQuery query){
+        excelExportService.excelExport(ExcelDownloadDto.<GwEntranceGuardPageQuery>builder().loginInfo(LoginInfoHolder
+                        .getCurrentLoginInfo()).query(query)
+                .title("门禁导出").fileName("门禁导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("门禁导出")
+                .build(), GwEntranceGuardPageVo.class, this::queryExport);
+    }
+
+    /**
+     * 门禁列表导出
+     * @param downloadDto
+     * @return
+     */
+    public IPage<GwEntranceGuardPageVo> queryExport(ExcelDownloadDto<GwEntranceGuardPageQuery> downloadDto){
+        GwEntranceGuardPageQuery pageQuery = downloadDto.getQuery();
+        IPage<GwEntranceGuardPageVo> data = this.queryForPage(pageQuery);
+        List<GwEntranceGuardPageVo> records =Optional.ofNullable( data.getRecords()).orElse(new ArrayList<>());
+        records.stream().forEach(item->{
+            item.setStatusName(Objects.equals(item.getStatus(), NumberConst.DATA_STATUS)? StatusConst.STOP: StatusConst.ENABLE);
+        });
+        return data;
+    }
+
 
     private LambdaQueryWrapper<GwEntranceGuardEntity> buildWrapper(GwEntranceGuardPageQuery query, Long companyId) {
         LambdaQueryWrapper<GwEntranceGuardEntity> wrapper = new LambdaQueryWrapper<>();

@@ -63,6 +63,18 @@ public class GwEntranceGuardPersonController {
     }
 
     /**
+     *格物门禁-门禁人员导出
+     * @param query
+     * @return
+     */
+    @RequiresPermissions
+    @PostMapping(value = "/export")
+    public IdmResDTO export(@RequestBody GwEntranceGuardPersonPageQuery query){
+        gwEntranceGuardPersonService.export(query);
+        return IdmResDTO.success();
+    }
+
+    /**
      * 详情
      *
      * @param param 参数

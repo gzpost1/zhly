@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.externalapi.service.service.park;
 
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ApiArchiveService;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
@@ -9,6 +11,7 @@ import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.constant.PortraitInputConstant;
 import cn.cuiot.dmp.externalapi.service.entity.park.AccessControlEntity;
@@ -46,6 +49,8 @@ public class AccessControlService extends ServiceImpl<AccessControlMapper, Acces
 
     @Autowired
     private ArchiveFeignService archiveFeignService;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     public void insertOrUpdateBatch( List<AccessControlEntity> accessList){
         accessControlMapper.insertOrUpdateBatch(accessList);
@@ -114,6 +119,27 @@ public class AccessControlService extends ServiceImpl<AccessControlMapper, Acces
             });
         }
         return IdmResDTO.success(pages);
+    }
+
+    /**
+     * 导出门禁
+     * @param queryAccessCommunity
+     */
+    public  void export(QueryAccessCommunity queryAccessCommunity){
+        excelExportService.excelExport(ExcelDownloadDto.<QueryAccessCommunity>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(queryAccessCommunity)
+                .title("门禁导出").fileName("门禁导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("门禁导出")
+                .build(), AccessCommunityDto.class, this::queryExport);
+
+    }
+    /**
+     * 门禁导出列表
+     * @param downloadDto
+     * @return
+     */
+    public IPage<AccessCommunityDto> queryExport(ExcelDownloadDto<QueryAccessCommunity> downloadDto){
+        QueryAccessCommunity pageQuery = downloadDto.getQuery();
+        IPage<AccessCommunityDto> data = this.queryForPage(pageQuery).getData();
+        return data;
     }
 
     /**

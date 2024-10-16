@@ -1,6 +1,8 @@
 package cn.cuiot.dmp.externalapi.service.service.video;
 
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ApiArchiveService;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
@@ -8,6 +10,7 @@ import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoDeviceEntity;
@@ -51,6 +54,9 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
     private SystemApiService systemApiService;
     @Autowired
     private ApiArchiveService apiArchiveService;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     /**
      * 停用设备（不填deviceId修改全部设备）
@@ -183,6 +189,24 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
             }
         }
         return iPage;
+    }
+
+    public void  export(VideoPageQuery query){
+        excelExportService.excelExport(ExcelDownloadDto.<VideoPageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(query)
+                .title("抄送我工单").fileName("租赁合同导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("抄送我工单")
+                .build(), VideoPageVo.class, this::queryExport);
+    }
+
+    /**
+     * 导出视频监控
+     * @param downloadDto
+     * @return
+     */
+    public IPage<VideoPageVo> queryExport(ExcelDownloadDto<VideoPageQuery> downloadDto){
+        VideoPageQuery pageQuery = downloadDto.getQuery();
+        IPage<VideoPageVo> data = this.queryForPage(pageQuery);
+
+        return data;
     }
 
     /**

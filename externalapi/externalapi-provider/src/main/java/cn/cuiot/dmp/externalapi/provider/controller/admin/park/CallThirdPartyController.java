@@ -124,7 +124,30 @@ public class CallThirdPartyController {
         return IdmResDTO.success(portraitInputService.queryPortraitInputPage(para));
     }
 
+    /**
+     * 宇泛门禁-门禁人员导出
+     * @param para
+     * @return
+     */
+    @PostMapping(value = "/exportPersonManagement")
+    @RequiresPermissions
+    public  IdmResDTO exportPersonManagement(@RequestBody PortraitInputDTO para){
+        portraitInputService.exportPersonManagement(para);
+        return IdmResDTO.success();
+    }
 
+
+    /**
+     * 宇泛门禁-人员录入记录导出
+     * @param para
+     * @return
+     */
+    @PostMapping(value = "/export")
+    @RequiresPermissions
+    public IdmResDTO export(@RequestBody PortraitInputDTO para){
+        portraitInputService.export(para);
+        return IdmResDTO.success();
+    }
     /**
      * 查询人像详情
      * @param

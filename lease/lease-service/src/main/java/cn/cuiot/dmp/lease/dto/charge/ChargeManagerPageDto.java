@@ -136,7 +136,7 @@ public class ChargeManagerPageDto implements ChargeItemNameSet {
      */
     private Byte hangUpStatus;
 
-    @Excel(name = "应收状态", orderNum = "14", width = 20)
+    @Excel(name = "挂起状态", orderNum = "14", width = 20)
     private String hangUpStatusName;
 
     /**

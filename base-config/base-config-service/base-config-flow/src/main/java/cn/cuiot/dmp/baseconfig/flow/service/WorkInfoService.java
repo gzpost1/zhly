@@ -1651,7 +1651,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public void export(QueryMyApprovalDto dto)  {
         excelExportService.excelExport(ExcelDownloadDto.<QueryMyApprovalDto>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).title("待审批工单").query(dto)
                 .fileName("待审批工单导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").
-                sheetName("待审批工单").build(),MyApprovalResultDto.class,this::queryExportMyNotApproval);
+                sheetName("待审批工单").build(),ExportWorkOrderDto.class,this::queryExportMyNotApproval);
 
 
     }
@@ -1661,7 +1661,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param downloadDto
      * @return
      */
-    public IPage<MyApprovalResultDto> queryExportMyNotApproval(ExcelDownloadDto<QueryMyApprovalDto> downloadDto) {
+    public IPage<ExportWorkOrderDto> queryExportMyNotApproval(ExcelDownloadDto<QueryMyApprovalDto> downloadDto) {
 
         QueryMyApprovalDto dto = downloadDto.getQuery();
         dto.setAssignee(LoginInfoHolder.getCurrentUserId());
@@ -1670,6 +1670,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 ,dto.getPageSize()),dto);
 
         List<MyApprovalResultDto> records = pages.getRecords();
+        List<ExportWorkOrderDto> resultList = new ArrayList<>();
         if(CollectionUtils.isNotEmpty(records)){
             //根据业务类型获取数据
             List<Long> busiTypes = records.stream().map(MyApprovalResultDto::getBusinessType).collect(Collectors.toList());
@@ -1685,8 +1686,12 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 // 发起人
                 item.setUserName(userMap.get(item.getUserId()));
             });
+            resultList = BeanMapper.mapList(records, ExportWorkOrderDto.class);
         }
-        return pages;
+
+        Page<ExportWorkOrderDto> page = new Page<>(pages.getCurrent(), pages.getPages(), pages.getTotal());
+        return page.setRecords(resultList);
+
     }
 
     /**

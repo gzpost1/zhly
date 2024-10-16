@@ -218,7 +218,7 @@ public class ContentImgTextServiceImpl extends ServiceImpl<ContentImgTextMapper,
 
     public IPage<ImgTextExportVo> executePageQuery(ExcelDownloadDto<ContentImgTextPageQuery> dto) {
         IPage<ImgTextVo> pageResult = this.queryForPage(dto.getQuery());
-        List<Long> typeIds = pageResult.getRecords().stream().map(ImgTextVo::getId).collect(Collectors.toList());
+        List<Long> typeIds = pageResult.getRecords().stream().map(ImgTextVo::getTypeId).collect(Collectors.toList());
         List<ImgTextType> imgTextTypes = imgTextTypeService.queryByIds(typeIds);
         Map<Long, ImgTextType> imgTextTypeMap = imgTextTypes.stream().collect(Collectors.toMap(ImgTextType::getId, o -> o));
         return pageResult.convert(o -> {
