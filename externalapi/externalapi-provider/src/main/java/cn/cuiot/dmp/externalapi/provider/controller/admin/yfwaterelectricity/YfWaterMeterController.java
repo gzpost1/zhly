@@ -1,8 +1,6 @@
 package cn.cuiot.dmp.externalapi.provider.controller.admin.yfwaterelectricity;
 
 
-import cn.afterturn.easypoi.excel.ExcelExportUtil;
-import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.application.dto.ExcelDownloadCallable;
 import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;

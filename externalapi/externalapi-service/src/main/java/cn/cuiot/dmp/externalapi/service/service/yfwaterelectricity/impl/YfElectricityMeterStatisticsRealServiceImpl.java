@@ -6,6 +6,7 @@ import cn.cuiot.dmp.externalapi.service.entity.yfwaterelectricity.YfElectricityM
 import cn.cuiot.dmp.externalapi.service.mapper.yfwaterelectricity.YfElectricityMeterStatisticsRealMapper;
 import cn.cuiot.dmp.externalapi.service.service.yfwaterelectricity.IYfElectricityMeterStatisticsRealService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,7 @@ public class YfElectricityMeterStatisticsRealServiceImpl extends BaseMybatisServ
     @Override
     public List<YfElectricityMeterStatisticsReal> queryRealAmount(List<Long> meterIds) {
         LambdaQueryWrapper<YfElectricityMeterStatisticsReal> wrapper = Wrappers.<YfElectricityMeterStatisticsReal>lambdaQuery()
-                .in(YfElectricityMeterStatisticsReal::getMeterId, meterIds);
+                .in(CollectionUtils.isNotEmpty(meterIds),YfElectricityMeterStatisticsReal::getMeterId, meterIds);
         return getBaseMapper().selectList(wrapper);
     }
 }
