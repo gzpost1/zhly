@@ -211,8 +211,9 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
     /**
      * 根据资源码获取数据
      */
-    public HaikangAcsDoorEntity selectByIndexCode(String indexCode) {
+    public HaikangAcsDoorEntity selectByIndexCode(Long orgId,String indexCode) {
         LambdaQueryWrapper<HaikangAcsDoorEntity> queryWrapper = Wrappers.<HaikangAcsDoorEntity>lambdaQuery()
+                .eq(HaikangAcsDoorEntity::getOrgId, orgId)
                 .eq(HaikangAcsDoorEntity::getIndexCode, indexCode);
         List<HaikangAcsDoorEntity> selectList = haikangAcsDoorMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(selectList)) {
@@ -228,7 +229,7 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
         List<HaikangAcsDoorEntity> addList = Lists.newArrayList();
         List<HaikangAcsDoorEntity> updateList = Lists.newArrayList();
         for (HaikangAcsDoorEntity entity : entityList) {
-            HaikangAcsDoorEntity existEntity = selectByIndexCode(entity.getIndexCode());
+            HaikangAcsDoorEntity existEntity = selectByIndexCode(entity.getOrgId(),entity.getIndexCode());
             if (Objects.isNull(existEntity)) {
                 entity.setDeleted(EntityConstants.NOT_DELETED);
                 addList.add(entity);
@@ -245,9 +246,9 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
         }
     }
 
-    public void updateDoorState(String doorIndexCode, Byte doorState, Byte authState) {
+    public void updateDoorState(Long orgId,String doorIndexCode, Byte doorState, Byte authState) {
         if (StringUtils.isNotBlank(doorIndexCode)) {
-            HaikangAcsDoorEntity entity = selectByIndexCode(doorIndexCode);
+            HaikangAcsDoorEntity entity = selectByIndexCode(orgId,doorIndexCode);
             if (Objects.nonNull(entity)) {
                 LambdaUpdateWrapper<HaikangAcsDoorEntity> lambdaedUpdate = Wrappers.lambdaUpdate();
                 lambdaedUpdate.eq(HaikangAcsDoorEntity::getId, entity.getId());

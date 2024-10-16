@@ -194,7 +194,7 @@ public class HaikangAcsReaderDataSyncService {
                     if (Objects.nonNull(item.getOnline())) {
                         status = item.getOnline().byteValue();
                     }
-                    haikangAcsReaderService.updateOnlineStatus(item.getIndexCode(), collectTime,
+                    haikangAcsReaderService.updateOnlineStatus(companyId,item.getIndexCode(), collectTime,
                             status);
                 }
             }

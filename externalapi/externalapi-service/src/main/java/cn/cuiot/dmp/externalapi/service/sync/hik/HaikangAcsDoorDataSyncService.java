@@ -172,14 +172,14 @@ public class HaikangAcsDoorDataSyncService {
                 if (Objects.nonNull(authDoor.getDoorState())) {
                     doorState = authDoor.getDoorState().byteValue();
                 }
-                haikangAcsDoorService.updateDoorState(authDoor.getDoorIndexCode(), doorState,
+                haikangAcsDoorService.updateDoorState(companyId,authDoor.getDoorIndexCode(), doorState,
                         EntityConstants.YES);
             }
         }
         List<String> noAuthDoorIndexCodeList = resp.getNoAuthDoorIndexCodeList();
         if (CollectionUtils.isNotEmpty(noAuthDoorIndexCodeList)) {
             for (String doorIndexCode : noAuthDoorIndexCodeList) {
-                haikangAcsDoorService.updateDoorState(doorIndexCode, null,
+                haikangAcsDoorService.updateDoorState(companyId,doorIndexCode, null,
                         EntityConstants.NO);
             }
         }
