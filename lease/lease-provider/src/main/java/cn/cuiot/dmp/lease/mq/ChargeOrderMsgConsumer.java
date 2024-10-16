@@ -79,7 +79,7 @@ public class ChargeOrderMsgConsumer {
             chargeOrderPaySuccInsertDto.setOrderId(Long.valueOf(paySuccessVO.getOutOrderId()));
             chargeOrderPaySuccInsertDto.setPayRate(payOrderQueryResp.getPayRate());
 
-            chargePayService.paySuccess(chargeOrderPaySuccInsertDto);
+            chargePayService.paySuccess(chargeOrderPaySuccInsertDto,order);
         } else {
             //支付失败，直接取消订单
             chargePayService.cancelPay(order);

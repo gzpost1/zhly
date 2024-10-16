@@ -182,6 +182,19 @@ public class ChargePayService {
         TbChargeOrder order = chargeOrderService.getById(chargeOrderPaySuccInsertDto.getOrderId());
         AssertUtil.isFalse(order == null, "订单不存在");
 
+        doPaySuccess(chargeOrderPaySuccInsertDto, order);
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void paySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto,TbChargeOrder order) {
+        AssertUtil.isFalse(order == null, "订单不存在");
+
+        doPaySuccess(chargeOrderPaySuccInsertDto, order);
+
+    }
+
+    private void doPaySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto, TbChargeOrder order) {
         //2 调用对应服务修改订单状态
         AbstrChargePay chargePay = chargePays.stream()
                 .filter(item -> item.getDataType().equals(order.getDataType())).findFirst().orElseThrow(() -> new BusinessException(DEFAULT_ERROR_CODE, "业务不支持，请检查"));
@@ -190,7 +203,6 @@ public class ChargePayService {
         chargeOrderPaySuccInsertDto.setOrder(order);
 
         chargePay.updateChargePayStatusToPaySuccess(chargeOrderPaySuccInsertDto);
-
     }
 
     /**
