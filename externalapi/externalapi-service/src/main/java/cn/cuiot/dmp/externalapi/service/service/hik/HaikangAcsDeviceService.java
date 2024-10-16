@@ -150,8 +150,9 @@ public class HaikangAcsDeviceService extends
     /**
      * 根据资源码获取数据
      */
-    public HaikangAcsDeviceEntity selectByIndexCode(String indexCode) {
+    public HaikangAcsDeviceEntity selectByIndexCode(Long orgId,String indexCode) {
         LambdaQueryWrapper<HaikangAcsDeviceEntity> queryWrapper = Wrappers.<HaikangAcsDeviceEntity>lambdaQuery()
+                .eq(HaikangAcsDeviceEntity::getOrgId, orgId)
                 .eq(HaikangAcsDeviceEntity::getIndexCode, indexCode);
         List<HaikangAcsDeviceEntity> selectList = haikangAcsDeviceMapper.selectList(queryWrapper);
         if (CollectionUtils.isNotEmpty(selectList)) {
@@ -167,7 +168,7 @@ public class HaikangAcsDeviceService extends
         List<HaikangAcsDeviceEntity> addList = Lists.newArrayList();
         List<HaikangAcsDeviceEntity> updateList = Lists.newArrayList();
         for (HaikangAcsDeviceEntity entity : entityList) {
-            HaikangAcsDeviceEntity existEntity = selectByIndexCode(entity.getIndexCode());
+            HaikangAcsDeviceEntity existEntity = selectByIndexCode(entity.getOrgId(),entity.getIndexCode());
             if (Objects.isNull(existEntity)) {
                 entity.setDeleted(EntityConstants.NOT_DELETED);
                 addList.add(entity);
@@ -187,9 +188,9 @@ public class HaikangAcsDeviceService extends
     /**
      * 更新在线状态
      */
-    public void updateOnlineStatus(String indexCode, Date collectTime, Byte status) {
+    public void updateOnlineStatus(Long orgId,String indexCode, Date collectTime, Byte status) {
         if (StringUtils.isNotBlank(indexCode) && Objects.nonNull(status)) {
-            HaikangAcsDeviceEntity entity = selectByIndexCode(indexCode);
+            HaikangAcsDeviceEntity entity = selectByIndexCode(orgId,indexCode);
             if (Objects.nonNull(entity)) {
                 LambdaUpdateWrapper<HaikangAcsDeviceEntity> lambdaedUpdate = Wrappers.lambdaUpdate();
                 lambdaedUpdate.eq(HaikangAcsDeviceEntity::getId, entity.getId());
