@@ -115,7 +115,7 @@ public class ArchivesScreenController {
      */
     @RequiresPermissions
     @PostMapping("/notice/queryForPage")
-    public IdmResDTO<Page<ContentNoticeVO>> noticeQueryForPage(@RequestBody NoticeStatisInfoReqDTO noticeReq){
+    public IdmResDTO<Page<ContentNoticeVO>> noticeQueryForPage(@RequestBody @Valid NoticeStatisInfoReqDTO noticeReq){
         BuildingArchivesPageQuery pageQuery = buildStatisticPageReq(noticeReq);
         NoticeStatisInfoReqDTO map = BeanMapper.map(pageQuery, NoticeStatisInfoReqDTO.class);
         map.setType(noticeReq.getType());
