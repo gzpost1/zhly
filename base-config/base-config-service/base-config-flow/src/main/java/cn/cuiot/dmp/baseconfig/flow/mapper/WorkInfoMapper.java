@@ -1,6 +1,5 @@
 package cn.cuiot.dmp.baseconfig.flow.mapper;
 
-import cn.cuiot.dmp.baseconfig.flow.dto.StatisInfoReqDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.AppWorkInfoDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.BaseDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.RepairReportDto;
@@ -74,5 +73,5 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
      * @param params StatisInfoReqDTO
      * @return WorkTypeStatisticResDTO
      */
-    List<WorkTypeStatisticVO> queryTopWorkType(@Param("params") StatisInfoReqDto params);
+    List<WorkTypeStatisticVO> queryTopWorkType(@Param("params") StatisInfoReqDTO params);
 }

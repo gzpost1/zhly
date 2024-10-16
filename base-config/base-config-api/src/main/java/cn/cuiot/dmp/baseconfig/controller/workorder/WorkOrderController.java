@@ -5,7 +5,6 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
-import cn.cuiot.dmp.baseconfig.flow.dto.StatisInfoReqDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.ProcessResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.UserSubmitDataDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
@@ -180,7 +179,7 @@ public class WorkOrderController extends BaseController {
      * @return WorkInfoStatisticResDTO
      */
     @PostMapping("/queryWorkOrderStatistic")
-    public IdmResDTO<WorkInfoStatisticVO> queryWorkOrderStatistic(@RequestBody StatisInfoReqDto dto){
+    public IdmResDTO<WorkInfoStatisticVO> queryWorkOrderStatistic(@RequestBody StatisInfoReqDTO dto){
         return workInfoService.queryWorkOrderStatistic(dto);
     }
 

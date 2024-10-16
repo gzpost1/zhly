@@ -2028,20 +2028,20 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      * @param dto
      * @return
      */
-    public IdmResDTO<WorkInfoStatisticVO> queryWorkOrderStatistic(StatisInfoReqDto dto) {
+    public IdmResDTO<WorkInfoStatisticVO> queryWorkOrderStatistic(StatisInfoReqDTO dto) {
 
         // 临时工单
         LambdaQueryWrapper<WorkInfoEntity> tempWorkWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
                 .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
                 .ne(WorkInfoEntity::getWorkSouce, WorkSourceEnums.WORK_SOURCE_PLAN.getCode())
-                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIds()), WorkInfoEntity::getOrgId, dto.getDepartmentIds());
+                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
         Long tempWorkCount = getBaseMapper().selectCount(tempWorkWrapper);
 
         // 循环工单
         LambdaQueryWrapper<WorkInfoEntity> circleWorkWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
                 .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
                 .eq(WorkInfoEntity::getWorkSouce, WorkSourceEnums.WORK_SOURCE_PLAN.getCode())
-                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIds()), WorkInfoEntity::getOrgId, dto.getDepartmentIds());
+                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
 
         Long circleWorkCount = getBaseMapper().selectCount(circleWorkWrapper);
 
@@ -2049,7 +2049,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         LambdaQueryWrapper<WorkInfoEntity> finishWorkWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
                 .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
                 .eq(WorkInfoEntity::getStatus,WorkOrderStatusEnums.completed.getStatus())
-                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIds()), WorkInfoEntity::getOrgId, dto.getDepartmentIds());
+                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
 
         Long finishWorkCount = getBaseMapper().selectCount(finishWorkWrapper);
 
@@ -2058,7 +2058,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         LambdaQueryWrapper<WorkInfoEntity> workingWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
                 .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
                 .in(WorkInfoEntity::getStatus,WorkOrderStatusEnums.progress.getStatus(),WorkOrderStatusEnums.Suspended.getStatus())
-                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIds()), WorkInfoEntity::getOrgId, dto.getDepartmentIds());
+                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
 
         Long workingCount = getBaseMapper().selectCount(workingWrapper);
 
