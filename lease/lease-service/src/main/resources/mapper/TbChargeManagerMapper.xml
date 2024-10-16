@@ -484,7 +484,7 @@
         and receivble_status in (0,1)
         and hang_up_status = 0
         and abrogate_status = 0
-        and pay_status = 0
+        and pay_status != 0
         and id in
         <foreach collection="chargeIds" item="item" index="index" open="(" separator="," close=")">
             #{item}
