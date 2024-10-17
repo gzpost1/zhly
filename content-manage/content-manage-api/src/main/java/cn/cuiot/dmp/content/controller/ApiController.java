@@ -64,7 +64,6 @@ public class ApiController {
     /**
      * 根据id获取详情
      */
-    @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<NoticeVo> queryForDetail(@RequestBody @Valid IdParam idParam) {
         NoticeVo noticeVo = noticeService.queryForDetail(idParam.getId());
