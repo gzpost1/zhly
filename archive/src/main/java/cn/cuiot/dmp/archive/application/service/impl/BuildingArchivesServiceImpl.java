@@ -299,6 +299,10 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
     public List<BuildingArchive> lookupBuildingArchiveByDepartmentList(DepartmentReqDto reqDto) {
         DepartmentReqDto paraDto = new DepartmentReqDto();
         paraDto.setDeptId(LoginInfoHolder.getCurrentDeptId());
+        if(Objects.isNull(LoginInfoHolder.getCurrentDeptId())){
+            paraDto.setDeptId(reqDto.getDeptId());
+        }
+
         paraDto.setSelfReturn(true);
         List<DepartmentDto> departmentDtoList = apiSystemService.lookUpDepartmentChildList(paraDto);
         List<Long> departmentIdList = departmentDtoList.stream()
