@@ -6,6 +6,7 @@ import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
+import cn.cuiot.dmp.common.utils.TreeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.converter.hik.HaikangAcsDeviceConverter;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDeviceQuery;
@@ -15,9 +16,13 @@ import cn.cuiot.dmp.externalapi.service.sync.hik.HaikangAcsDataManualSyncService
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikRegionResp;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDeviceExportVo;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDeviceVo;
+import cn.cuiot.dmp.externalapi.service.vo.hik.HikRegionTreeNode;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.collect.Lists;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -81,12 +86,24 @@ public class HaikangAcsDeviceController {
      */
     @RequiresPermissions
     @PostMapping("/queryRegions")
-    public IdmResDTO<List<HikRegionResp.DataItem>> queryRegions(
+    public IdmResDTO<List<HikRegionTreeNode>> queryRegions(
             @RequestBody HaikangRegionQuery query) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
         query.setCompanyId(currentOrgId);
         List<HikRegionResp.DataItem> list = haikangAcsDeviceService.queryRegions(query);
-        return IdmResDTO.success(list);
+        List<HikRegionTreeNode> treeList = Optional.ofNullable(list).orElse(Lists.newArrayList()).stream()
+                .map(o -> {
+                    HikRegionTreeNode treeNode = new HikRegionTreeNode(o.getIndexCode(),o.getParentIndexCode(),o.getName());
+                    treeNode.setIndexCode(o.getIndexCode());
+                    treeNode.setParentIndexCode(o.getParentIndexCode());
+                    treeNode.setName(o.getName());
+                    treeNode.setRegionPath(o.getRegionPath());
+                    treeNode.setRegionPathName(o.getRegionPathName());
+                    return treeNode;
+                })
+                .collect(Collectors.toList());
+
+        return IdmResDTO.success(TreeUtil.makeTree(treeList));
     }
 
     /**

@@ -56,6 +56,11 @@ public class HikRegionResp {
         private String regionPath;
 
         /**
+         * 区域完整目录，含本节点，以 / 分割，上级节点在前
+         */
+        private String regionPathName;
+
+        /**
          * 父区域唯一标识码
          */
         private String parentIndexCode;
