@@ -1,19 +1,20 @@
 package cn.cuiot.dmp.lease.entity.charge;
 
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.ListObjectJsonTypeHandler;
 import cn.cuiot.dmp.lease.dto.charge.ChargePayToWechatDetailDto;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
 @Data
 @TableName(value = "tb_charge_order", autoResultMap = true, resultMap = "BaseResultMap")
-public class TbChargeOrder {
+public class TbChargeOrder implements Serializable {
     /**
      * 订单id
      */
@@ -29,7 +30,7 @@ public class TbChargeOrder {
     /**
      * 调取详情
      */
-    @TableField(value = "order_detail", typeHandler = JacksonTypeHandler.class)
+    @TableField(value = "order_detail", typeHandler = ListObjectJsonTypeHandler.class)
     private List<ChargePayToWechatDetailDto> orderDetail;
 
     /**
@@ -47,4 +48,9 @@ public class TbChargeOrder {
      * 下单人
      */
     private Long createUser;
+
+    /**
+     * 企业ID
+     */
+    private Long companyId;
 }

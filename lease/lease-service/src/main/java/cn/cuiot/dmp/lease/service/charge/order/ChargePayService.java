@@ -13,6 +13,7 @@ import cn.cuiot.dmp.pay.service.service.enums.OrderStatusEnum;
 import cn.cuiot.dmp.pay.service.service.enums.PayBusinessTypeEnum;
 import cn.cuiot.dmp.pay.service.service.service.OrderPayAtHandler;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.xxl.job.core.util.IpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +68,7 @@ public class ChargePayService {
 
         //2 创建订单
         List<ChargePayToWechatDetailDto> list = chargePay.queryForPayToWechat(chargeIds);
-        AssertUtil.isTrue(updateCount != list.size() || chargeIds.size() != list.size(), "账单正在支付中，请勿重复操作");
+        AssertUtil.isFalse(updateCount != list.size() || chargeIds.size() != list.size(), "账单正在支付中，请勿重复操作");
         //求出总金额
         Integer totalAmount = list.stream().mapToInt(ChargePayToWechatDetailDto::getChargeAmount).sum();
 
@@ -76,7 +77,7 @@ public class ChargePayService {
         tbChargeOrder.setOrderId(orderId);
         tbChargeOrder.setOrderDetail(list);
         tbChargeOrder.setCreateTime(new Date());
-
+        tbChargeOrder.setDataType(queryDto.getDataType());
         //调用支付服务
         CreateOrderReq createOrderReq = new CreateOrderReq();
         createOrderReq.setOutOrderId(orderId.toString());
@@ -85,10 +86,12 @@ public class ChargePayService {
         createOrderReq.setTradeType("01");
         createOrderReq.setOpenId(queryDto.getOpenId());
         createOrderReq.setTotalFee(totalAmount);
-
+        createOrderReq.setSpbillCreateIp(IpUtil.getIp());
         createOrderReq.setOrgId(companyId);
         createOrderReq.setBusinessType(
                 Objects.equals(queryDto.getDataType(), ChargePayDataTypeEnum.HOUSE_BILL.getCode()) ? PayBusinessTypeEnum.CHARGE.getCode() : PayBusinessTypeEnum.DEPOSIT.getCode());
+        createOrderReq.setProductName(
+                Objects.equals(queryDto.getDataType(), ChargePayDataTypeEnum.HOUSE_BILL.getCode()) ? PayBusinessTypeEnum.CHARGE.getMessage() : PayBusinessTypeEnum.DEPOSIT.getMessage());
         CreateOrderResp createOrderResp = orderPayAtHandler.makeOrder(createOrderReq);
 
         //构建返回值
@@ -98,6 +101,7 @@ public class ChargePayService {
 
         tbChargeOrder.setPayId(orderId);
         tbChargeOrder.setCreateUser(LoginInfoHolder.getCurrentUserId());
+        tbChargeOrder.setCompanyId(list.get(0).getCompanyId());
         chargeOrderService.save(tbChargeOrder);
 
         return chargePayResultDto;
@@ -111,8 +115,17 @@ public class ChargePayService {
     @Transactional(rollbackFor = Exception.class)
     public void cancelPay(Long id) {
         TbChargeOrder order = chargeOrderService.getById(id);
-        AssertUtil.isTrue(order == null, "订单不存在");
+        AssertUtil.isFalse(order == null, "订单不存在");
 
+        doCancelPay(order);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelPay(TbChargeOrder order) {
+        doCancelPay(order);
+    }
+
+    private void doCancelPay(TbChargeOrder order) {
         //2 调用对应服务修改订单状态
         AbstrChargePay chargePay = chargePays.stream()
                 .filter(item -> item.getDataType().equals(order.getDataType())).findFirst().orElseThrow(() -> new BusinessException(DEFAULT_ERROR_CODE, "业务不支持，请检查"));
@@ -131,6 +144,7 @@ public class ChargePayService {
     public void cancelPay(List<Long> dataIds, AbstrChargePay abstrChargePay, TbChargeOrder order) {
         PayOrderQueryReq payOrderQueryReq = new PayOrderQueryReq();
         payOrderQueryReq.setOutOrderId(order.getPayId().toString());
+        payOrderQueryReq.setOrgId(order.getCompanyId());
         PayOrderQueryResp payOrderQueryResp = orderPayAtHandler.queryOrder(payOrderQueryReq);
 
         boolean isPaySuccess = Objects.equals(payOrderQueryResp.getStatus(), OrderStatusEnum.PAID.getStatus());
@@ -146,6 +160,7 @@ public class ChargePayService {
             //2.3 关闭订单
             CloseOrderReq closeOrderReq = new CloseOrderReq();
             closeOrderReq.setOutOrderId(order.getPayId().toString());
+            closeOrderReq.setOrgId(order.getCompanyId());
             try {
                 log.error("关闭订单，订单详细：{}", order);
                 orderPayAtHandler.closeOrder(closeOrderReq);
@@ -165,8 +180,21 @@ public class ChargePayService {
     @Transactional(rollbackFor = Exception.class)
     public void paySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
         TbChargeOrder order = chargeOrderService.getById(chargeOrderPaySuccInsertDto.getOrderId());
-        AssertUtil.isTrue(order == null, "订单不存在");
+        AssertUtil.isFalse(order == null, "订单不存在");
 
+        doPaySuccess(chargeOrderPaySuccInsertDto, order);
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void paySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto,TbChargeOrder order) {
+        AssertUtil.isFalse(order == null, "订单不存在");
+
+        doPaySuccess(chargeOrderPaySuccInsertDto, order);
+
+    }
+
+    public void doPaySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto, TbChargeOrder order) {
         //2 调用对应服务修改订单状态
         AbstrChargePay chargePay = chargePays.stream()
                 .filter(item -> item.getDataType().equals(order.getDataType())).findFirst().orElseThrow(() -> new BusinessException(DEFAULT_ERROR_CODE, "业务不支持，请检查"));
@@ -175,7 +203,6 @@ public class ChargePayService {
         chargeOrderPaySuccInsertDto.setOrder(order);
 
         chargePay.updateChargePayStatusToPaySuccess(chargeOrderPaySuccInsertDto);
-
     }
 
     /**
@@ -202,10 +229,14 @@ public class ChargePayService {
             createOrderReq.setOutOrderId(orderId.toString());
             createOrderReq.setPayChannel(20);
             createOrderReq.setMchType((byte) 3);
-            createOrderReq.setProductName(Objects.equals(1, chargePayDto.getDataType()) ? "押金扣缴" : "账单扣缴");
+            createOrderReq.setBusinessType(
+                    Objects.equals(chargePayDto.getDataType(), ChargePayDataTypeEnum.HOUSE_BILL.getCode()) ? PayBusinessTypeEnum.CHARGE.getCode() : PayBusinessTypeEnum.DEPOSIT.getCode());
+            createOrderReq.setProductName(
+                    Objects.equals(chargePayDto.getDataType(), ChargePayDataTypeEnum.HOUSE_BILL.getCode()) ? PayBusinessTypeEnum.CHARGE.getMessage() : PayBusinessTypeEnum.DEPOSIT.getMessage());
             createOrderReq.setTotalFee(needToPayAmount.getAmount());
             createOrderReq.setHouseId(needToPayAmount.getHouseId());
             createOrderReq.setDataType(chargePayDto.getDataType());
+            createOrderReq.setSpbillCreateIp(IpUtil.getIp());
             orderPayAtHandler.makeOrder(createOrderReq);
         }
     }

@@ -209,5 +209,6 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
     /**
      * 收费标准 0自定义金额
      */
+    @TableField(exist = false)
     private String chargeStandardName;
 }

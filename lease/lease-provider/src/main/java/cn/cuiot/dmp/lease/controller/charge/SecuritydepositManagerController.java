@@ -18,6 +18,7 @@ import cn.cuiot.dmp.lease.enums.SecurityDepositStatusEnum;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.lease.service.charge.ChargeInfoFillService;
+import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import cn.cuiot.dmp.lease.service.charge.TbSecuritydepositManagerService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -56,6 +57,8 @@ public class SecuritydepositManagerController {
     private ChargeInfoFillService chargeInfoFillService;
     @Autowired
     private SystemToFlowService systemToFlowService;
+    @Autowired
+    private TbChargeManagerService tbChargeManagerService;
 
     /**
      * 获取分页
@@ -209,7 +212,7 @@ public class SecuritydepositManagerController {
     @PostMapping("/create")
     @LogRecord(operationCode = "create", operationName = "押金管理-创建", serviceType = ServiceTypeConst.SECURITYDEPOSITMANAGER)
     public IdmResDTO create(@RequestBody @Valid SecuritydepositManagerInsertDto createDto) {
-        createDto.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        createDto.setCompanyId(tbChargeManagerService.getCompanyIdByloupanId(createDto.getLoupanId()));
         securitydepositManagerService.saveData(createDto);
         return IdmResDTO.success();
     }

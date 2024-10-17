@@ -105,7 +105,7 @@
           received_date              = #{dto.receivedDate},
           last_pay_time              = #{dto.receivedDate},
           received_id                = #{dto.receivedId},
-          staus                      = #{dto.status},
+          `status`                      = #{dto.status},
           pay_status                 = 3,
           payment_mode               = #{dto.paymentMode},
           receivable_amount_received = receivable_amount
@@ -130,7 +130,7 @@
 
   <select id="queryForPayToWechat" resultType="cn.cuiot.dmp.lease.dto.charge.ChargePayToWechatDetailDto">
       select
-      id,receivable_amount as chargeAmount
+      id as charge_id,receivable_amount as chargeAmount,company_id
       from tb_securitydeposit_manager
       where
       deleted = 0
@@ -160,9 +160,11 @@
       set
       pay_status = 3,
       last_pay_time = now(),
+      received_date = now(),
       transaction_mode = 0,
       payment_mode = 0,
       transaction_no = #{query.transactionNo},
+      received_id = #{query.receivedId},
       receivable_amount_received = receivable_amount,
       status = 1
       where
@@ -197,6 +199,7 @@
       set
       pay_status = 3,
       last_pay_time = now(),
+      received_date = now(),
       transaction_mode = 1,
       order_id = #{orderId},
       payment_mode = 0,

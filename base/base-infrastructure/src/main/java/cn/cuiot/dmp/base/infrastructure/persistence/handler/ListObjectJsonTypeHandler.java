@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ import java.util.List;
  * @Date 2024/4/23 16:51
  * @Created by libo
  */
-public class ListObjectJsonTypeHandler {
+public class ListObjectJsonTypeHandler extends BaseTypeHandler<Object> {
     private static final Logger log = LoggerFactory.getLogger(ListObjectJsonTypeHandler.class);
     private static ObjectMapper objectMapper = (new ObjectMapper()).findAndRegisterModules();
     private Class<Object> clazz;
