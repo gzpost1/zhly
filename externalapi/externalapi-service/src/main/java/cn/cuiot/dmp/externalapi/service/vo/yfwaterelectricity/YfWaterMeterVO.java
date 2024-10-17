@@ -29,7 +29,6 @@ public class YfWaterMeterVO implements Serializable {
     /**
      * 水表编码
      */
-    @Excel(name = "设备ID", orderNum = "0", width = 20)
     private Long id;
 
     /**
@@ -41,7 +40,7 @@ public class YfWaterMeterVO implements Serializable {
     /**
      * 设备名称
      */
-    @Excel(name = "设备名称", orderNum = "1", width = 20)
+    @Excel(name = "设备名称", orderNum = "2", width = 20)
     private String name;
 
     /**
@@ -52,7 +51,7 @@ public class YfWaterMeterVO implements Serializable {
     /**
      * 楼盘名称
      */
-    @Excel(name = "楼盘名称", orderNum = "3", width = 20)
+    @Excel(name = "楼盘名称", orderNum = "1", width = 20)
     private String buildingName;
 
     /**
@@ -63,25 +62,25 @@ public class YfWaterMeterVO implements Serializable {
     /**
      * 设备序列号
      */
-    @Excel(name = "设备序列号", orderNum = "2", width = 20)
+    @Excel(name = "设备序列号", orderNum = "0", width = 20)
     private String deviceNo;
 
     /**
      * 抄表项，该设备采集哪些数据
      */
-    @Excel(name = "抄表项", orderNum = "4", width = 20)
+    @Excel(name = "抄表项", orderNum = "3", width = 20)
     private String items;
 
     /**
      * 表计类型，水表固定为"44"
      */
-    @Excel(name = "表计类型", orderNum = "5", width = 20)
+    @Excel(name = "表计类型", orderNum = "4", width = 20)
     private Integer meterTypeId;
 
     /**
      * 表计型号，水表固定为4
      */
-    @Excel(name = "表计型号", orderNum = "6", width = 20)
+    @Excel(name = "表计型号", orderNum = "5", width = 20)
     private Integer ptId;
 
     /**
@@ -122,43 +121,43 @@ public class YfWaterMeterVO implements Serializable {
     /**
      * 倍率，固定为1.0
      */
-    @Excel(name = "倍率", orderNum = "7", width = 20)
+    @Excel(name = "倍率", orderNum = "6", width = 20)
     private BigDecimal beilv;
 
     /**
      * 单价，固定为1.2
      */
-    @Excel(name = "单价", orderNum = "8", width = 20)
+    @Excel(name = "单价", orderNum = "7", width = 20)
     private BigDecimal price;
 
     /**
      * 费率 1 单价，固定为1.2
      */
-    @Excel(name = "费率1单价", orderNum = "9", width = 20)
+    @Excel(name = "费率1单价", orderNum = "8", width = 20)
     private BigDecimal price1;
 
     /**
      * 费率 2 单价，固定为1.8
      */
-    @Excel(name = "费率2单价", orderNum = "10", width = 20)
+    @Excel(name = "费率2单价", orderNum = "9", width = 20)
     private BigDecimal price2;
 
     /**
      * 费率 3 单价，固定为1.8
      */
-    @Excel(name = "费率3单价", orderNum = "11", width = 20)
+    @Excel(name = "费率3单价", orderNum = "10", width = 20)
     private BigDecimal price3;
 
     /**
      * 费率 4 单价，固定为1.2
      */
-    @Excel(name = "费率4单价", orderNum = "12", width = 20)
+    @Excel(name = "费率4单价", orderNum = "11", width = 20)
     private BigDecimal price4;
 
     /**
      * 费率，固定为1
      */
-    @Excel(name = "费率", orderNum = "13", width = 20)
+    @Excel(name = "费率", orderNum = "12", width = 20)
     private Integer feilvType;
 
     /**
