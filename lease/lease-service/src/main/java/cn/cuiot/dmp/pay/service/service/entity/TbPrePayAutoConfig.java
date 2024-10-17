@@ -14,7 +14,7 @@ import java.util.List;
  * 预缴代扣设置
  */
 @Data
-@TableName(value = "tb_pre_pay_auto_config", autoResultMap = true)
+@TableName(value = "tb_pre_pay_auto_config", autoResultMap = true,resultMap = "BaseResultMap")
 public class TbPrePayAutoConfig {
     /**
      * 企业id
