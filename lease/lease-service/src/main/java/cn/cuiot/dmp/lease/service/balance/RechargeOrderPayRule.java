@@ -101,6 +101,7 @@ public class RechargeOrderPayRule {
         createOrderDto.setSpbillCreateIp(IpUtil.getIp());
         createOrderDto.setGoodsTag(param.getGoodsTag());
         createOrderDto.setProductName(param.getProductName());
+        createOrderDto.setAppId(param.getAppId());
         createOrderDto.setBusinessType(PayBusinessTypeEnum.RECHARGE.getCode());
         CreateOrderResp createOrderResp = orderPayAtHandler.makeOrder(createOrderDto);
 
