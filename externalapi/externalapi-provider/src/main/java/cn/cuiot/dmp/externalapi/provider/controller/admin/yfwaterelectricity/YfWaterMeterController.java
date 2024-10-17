@@ -67,7 +67,6 @@ public class YfWaterMeterController extends BaseController {
      * @return Long
      */
     @PostMapping(value = "/create")
-
     public IdmResDTO<Long> create(@RequestBody @Validated(value = ValidGroup.Crud.Insert.class) YfWaterMeterDTO electricityMeterDTO) {
         Long id = yfWaterMeterService.create(electricityMeterDTO);
         return IdmResDTO.success(id);
@@ -80,7 +79,6 @@ public class YfWaterMeterController extends BaseController {
      * @return Long
      */
     @PostMapping(value = "/update")
-
     public IdmResDTO<Boolean> update(@RequestBody @Validated(value = ValidGroup.Crud.Update.class) YfWaterMeterDTO electricityMeterDTO) {
         Boolean res = yfWaterMeterService.update(electricityMeterDTO);
         return IdmResDTO.success(res);
