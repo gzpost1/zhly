@@ -44,5 +44,8 @@ public class UserHouseAuditDTO extends UserHouseAuditEntity {
      */
     private UserResDTO user;
 
-
+    /**
+     * 房屋名称
+      */
+    private String houseName;
 }
