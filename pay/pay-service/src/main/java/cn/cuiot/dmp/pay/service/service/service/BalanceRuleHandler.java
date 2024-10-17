@@ -18,12 +18,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import static cn.cuiot.dmp.pay.service.service.enums.BalanceChangeTypeEnum.*;
+import static cn.cuiot.dmp.pay.service.service.enums.Constants.ARTIFICIAL;
 import static cn.cuiot.dmp.pay.service.service.enums.Constants.PLATFORM;
 
 
@@ -218,25 +220,37 @@ public class BalanceRuleHandler {
      */
     public void platformHandler(BalanceChangeDto param) {
         BalanceEntity old =
-                Optional.ofNullable(balanceService.getById(param.getHouseId())).orElseThrow(() -> new BusinessException(ResultCode.OBJECT_NOT_EXIST, "房屋账户不存在"));
+                Optional.ofNullable(balanceService.getById(param.getHouseId())).orElseGet(() -> balanceService.createBalance(param.getHouseId()));
         int updateBalance = param.getBalance();
-        if (EntityConstants.YES.equals(param.getChangeFlag())) {
-            updateBalance = 0 - updateBalance;
-            //如果扣减金额数量大于当前余额，最多扣到0
+        if (updateBalance < 0) {
+            //如果扣减金额数量大于当前余额
             if (param.getBalance() > old.getBalance()) {
-                updateBalance = 0 - old.getBalance();
+                new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "充值金额不可小于"+centToYuan(old.getBalance())+"元");
             }
         }
         BalanceChangeRecord record = BalanceChangeRecord.builder()
                 .id(IdWorker.getId())
+                .changeUser(ARTIFICIAL)
                 .changeType(BalanceChangeTypeEnum.BALANCE_CONSUMPTION.getType())
                 .createTime(new Date())
                 .houseId(param.getHouseId())
                 .balance(updateBalance)
                 .beforeBalance(old.getBalance())
-                .reason(BalanceChangeTypeEnum.BALANCE_CONSUMPTION.getTypeName())
+                .reason(param.getReason())
+                .orderName("后台充值")
                 .build();
         toSql(old, record);
+    }
+
+    /**
+     * 分转元
+     */
+    public static BigDecimal centToYuan(Integer price) {
+        if (Objects.isNull(price)) {
+            return BigDecimal.ZERO;
+        } else {
+            return BigDecimal.valueOf(price).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+        }
     }
 
     /**

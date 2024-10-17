@@ -20,6 +20,7 @@ import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import cn.cuiot.dmp.lease.service.charge.ChargeHouseAndUserService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeStandardService;
 import cn.cuiot.dmp.lease.util.ExcelUtils;
+import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeDto;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChargeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
@@ -229,15 +230,8 @@ public class HouseBalanceController extends BaseController {
     @RequiresPermissions
     @LogRecord(operationCode = "changeBalance", operationName = "系统管理端-余额变动", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @PostMapping("/changeBalance")
-    public IdmResDTO changeBalance(@RequestBody @Valid RechargeBalanceVo vo) {
-        BalanceEventAggregate balanceEventAggregate = new BalanceEventAggregate();
-        balanceEventAggregate.setChangeUser(ARTIFICIAL);
-        balanceEventAggregate.setBalance(vo.getBalance());
-        balanceEventAggregate.setHouseId(vo.getHouseId());
-        balanceEventAggregate.setReason(vo.getReason());
-        balanceEventAggregate.setOrderName("后台充值");
-        balanceEventAggregate.setChangeType(BalanceChangeTypeEnum.BALANCE_RECHARGE.getType());
-        ruleAtHandler.handler(balanceEventAggregate);
+    public IdmResDTO changeBalance(@RequestBody @Valid BalanceChangeDto vo) {
+        ruleAtHandler.updateBalance(vo);
         return IdmResDTO.success();
     }
 

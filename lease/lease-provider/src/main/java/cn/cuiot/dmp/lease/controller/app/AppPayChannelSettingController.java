@@ -1,12 +1,17 @@
 package cn.cuiot.dmp.lease.controller.app;
 
+import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.lease.service.balance.MbRechargeOrderService;
 import cn.cuiot.dmp.pay.service.service.service.SysPayChannelSettingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 /**
  * app端收款商配置
@@ -22,6 +27,8 @@ public class AppPayChannelSettingController {
     @Autowired
     private SysPayChannelSettingService settingService;
 
+    private MbRechargeOrderService mbRechargeOrderService;
+
 
 
     /**
@@ -30,9 +37,9 @@ public class AppPayChannelSettingController {
      * @return
      */
     @PostMapping("/queryHavePayInfo")
-    public IdmResDTO<Boolean> queryAdminForDetail() {
+    public IdmResDTO<Boolean> queryAdminForDetail(@RequestBody @Valid IdParam param) {
         //如果有私钥 说明已经配置了支付信息
-        return IdmResDTO.success(settingService.queryAdminForDetail().getPriUpload());
+        return IdmResDTO.success(settingService.queryAdminForDetail(mbRechargeOrderService.quertOrgIdByHouse(param.getId())).getPriUpload());
     }
 
 }
