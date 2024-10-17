@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
+import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
@@ -10,22 +11,27 @@ import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
+import cn.cuiot.dmp.lease.dto.contract.ContractLeaseStatisticParam;
 import cn.cuiot.dmp.lease.dto.contract.TbContractLeaseParam;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
+import cn.cuiot.dmp.lease.mapper.TbContractIntentionMapper;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
 import cn.cuiot.dmp.lease.vo.export.ContractLeaseExportVo;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import cn.cuiot.dmp.lease.vo.ContractLeaseStatisticVO;
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 租赁合同 服务实现类
@@ -152,5 +158,32 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         });
         Page<ContractLeaseExportVo> page = new Page<>(pageResult.getCurrentPage(), pageResult.getPageSize(), pageResult.getTotal());
         return page.setRecords(exportDataList);
+    }
+
+    public ContractLeaseStatisticVO contractLeaseArchiveStatistic(@Valid ContractLeaseStatisticParam idsReq) {
+
+        // 查询已租
+        // (不包含以下状态)
+        idsReq.setContractStatus(
+                CollectionUtil.newArrayList(ContractEnum.STATUS_DARFT.getCode(),
+                ContractEnum.STATUS_COMMITING.getCode(),
+                ContractEnum.STATUS_END.getCode(),
+                ContractEnum.STATUS_USELESS.getCode()));
+
+        Long leased = baseMapper.queryLeaseStatistic(idsReq);
+
+        // 查询待租
+        // (包含以下状态)
+        idsReq.setContractStatus(
+                CollectionUtil.newArrayList(ContractEnum.STATUS_WAITING.getCode(),
+                        ContractEnum.STATUS_EXECUTING.getCode(),
+                        ContractEnum.STATUS_CANCELING.getCode()));
+
+        Long leasing = ((TbContractIntentionMapper)contractIntentionService.getBaseMapper()).queryIntentionStatistic(idsReq);
+
+        ContractLeaseStatisticVO statisticResDTO = new ContractLeaseStatisticVO();
+        statisticResDTO.setLeased(Optional.ofNullable(leased).orElse(0L));
+        statisticResDTO.setLeasing(Optional.ofNullable(leasing).orElse(0L));
+        return statisticResDTO;
     }
 }

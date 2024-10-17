@@ -4,16 +4,15 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
-import cn.cuiot.dmp.baseconfig.flow.constants.WorkOrderConstants;
 import cn.cuiot.dmp.baseconfig.flow.dto.StartProcessInstanceDTO;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.ProcessResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.app.query.UserSubmitDataDto;
-import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
 import cn.cuiot.dmp.baseconfig.flow.entity.CommitProcessEntity;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkSourceEnums;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
+import cn.cuiot.dmp.baseconfig.flow.vo.WorkInfoStatisticVO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -197,4 +196,15 @@ public class WorkOrderController extends BaseController {
     public IdmResDTO<AgencyHandlingDto> queryAgencyHandlingNumber(@RequestBody QueryAgencyDto dto){
         return workInfoService.queryAgencyHandlingNumber(dto);
     }
+
+    /**
+     * 工单统计
+     * @param dto StatisInfoReqDTO
+     * @return WorkInfoStatisticResDTO
+     */
+    @PostMapping("/queryWorkOrderStatistic")
+    public IdmResDTO<WorkInfoStatisticVO> queryWorkOrderStatistic(@RequestBody StatisInfoReqDTO dto){
+        return workInfoService.queryWorkOrderStatistic(dto);
+    }
+
 }

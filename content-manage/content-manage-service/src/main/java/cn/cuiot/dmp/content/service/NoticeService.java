@@ -5,7 +5,9 @@ import cn.cuiot.dmp.content.dal.entity.ContentNoticeEntity;
 import cn.cuiot.dmp.content.param.dto.NoticeCreateDto;
 import cn.cuiot.dmp.content.param.dto.NoticeUpdateDto;
 import cn.cuiot.dmp.content.param.query.NoticPageQuery;
+import cn.cuiot.dmp.content.param.req.NoticeStatisInfoReqVo;
 import cn.cuiot.dmp.content.param.req.PublishReqVo;
+import cn.cuiot.dmp.content.param.vo.ContentNoticeVo;
 import cn.cuiot.dmp.content.param.vo.NoticeVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -99,6 +101,13 @@ public interface NoticeService extends IService<ContentNoticeEntity>, AuditResul
      * @param communityId
      */
     void getMyNotice(Long communityId);
+
+    /**
+     * 查看大屏公告统计
+     * @param dto
+     * @return
+     */
+    IPage<ContentNoticeVo> queryContentNoticeStatistic(NoticeStatisInfoReqVo dto);
 
     void export(NoticPageQuery pageQuery);
 }

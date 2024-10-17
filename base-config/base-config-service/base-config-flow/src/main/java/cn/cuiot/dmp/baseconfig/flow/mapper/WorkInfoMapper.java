@@ -10,6 +10,7 @@ import cn.cuiot.dmp.baseconfig.flow.dto.approval.MyApprovalResultDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
 import cn.cuiot.dmp.baseconfig.flow.entity.WorkInfoEntity;
+import cn.cuiot.dmp.baseconfig.flow.vo.WorkTypeStatisticVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -70,4 +71,11 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
     AgencyHandlingDto queryAgencyHandlingNumber(@Param("query") QueryAgencyDto dto);
 
     Integer queryWorkOrderNumber(@Param("userId") Long userId,@Param("procInstId") Long procInstId, @Param("nodeType") String nodeType);
+
+    /**
+     * 查询工单统计 TOP
+     * @param params StatisInfoReqDTO
+     * @return WorkTypeStatisticResDTO
+     */
+    List<WorkTypeStatisticVO> queryTopWorkType(@Param("params") StatisInfoReqDTO params);
 }
