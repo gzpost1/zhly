@@ -179,7 +179,7 @@ public class ChargePayImpl extends AbstrChargePay {
         chargeOrderPaySuccInsertDto.setOrder(order);
 
         List<ChargePayToWechatDetailDto> orderDetail = Lists.newArrayList();
-        orderDetail.add(new ChargePayToWechatDetailDto(chargeId, needToPayAmount));
+        orderDetail.add(new ChargePayToWechatDetailDto(chargeId, needToPayAmount,null));
         order.setOrderDetail(orderDetail);
 
         List<Long> receiptIds =  insertReceivedAndSettlement(chargeOrderPaySuccInsertDto);
@@ -189,7 +189,7 @@ public class ChargePayImpl extends AbstrChargePay {
 
     @Override
     public List<Long> getCompanyIdByChargeIds(List<Long> chargeIds) {
-        return Optional.ofNullable(chargeManager.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbChargeManager::getCompanyId).collect(Collectors.toList());
+        return Optional.ofNullable(chargeManager.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbChargeManager::getCompanyId).distinct().collect(Collectors.toList());
     }
 
     @Override

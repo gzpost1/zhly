@@ -28,7 +28,7 @@ public abstract class AbstrChargePay {
      */
     public int updateChargePayStatusToNeedPay(List<Long> chargeIds, long orderId) {
         int updateCount = doPay(chargeIds, orderId);
-        AssertUtil.isTrue(updateCount != chargeIds.size(), "账单正在支付中，请勿重复操作");
+        AssertUtil.isFalse(updateCount != chargeIds.size(), "账单正在支付中，请勿重复操作");
         return updateCount;
     }
 
@@ -46,7 +46,7 @@ public abstract class AbstrChargePay {
      */
     public void updateChargePayStatusToCancel(List<Long> chargeIds) {
         int updateCount = doCancel(chargeIds);
-        AssertUtil.isTrue(updateCount != chargeIds.size(), "账单正在支付中，请勿重复操作");
+        AssertUtil.isFalse(updateCount != chargeIds.size(), "账单正在支付中，请勿重复操作");
     }
 
     protected abstract int doCancel(List<Long> chargeIds);
@@ -58,7 +58,7 @@ public abstract class AbstrChargePay {
      */
     public void updateChargePayStatusToPaySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
         int updateCount = doPaySuccess(chargeOrderPaySuccInsertDto);
-        AssertUtil.isTrue(updateCount != chargeOrderPaySuccInsertDto.getDataIds().size(), "账单正在支付中，请勿重复操作");
+        AssertUtil.isFalse(updateCount != chargeOrderPaySuccInsertDto.getDataIds().size(), "账单正在支付中，请勿重复操作");
     }
 
     protected abstract int doPaySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto);

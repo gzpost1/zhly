@@ -264,6 +264,7 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
     /**
      * 收费标准 0自定义金额
      */
+    @TableField(exist = false)
     @Excel(name = "收费标准", orderNum = "14", width = 20)
     private String chargeStandardName;
 }

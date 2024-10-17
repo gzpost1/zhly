@@ -53,4 +53,11 @@ public class ChargeOrderPaySuccInsertDto {
      * 支付手续费费率
      */
     private BigDecimal payRate;
+
+
+    /**
+     * 实收编码
+     *
+     */
+    private Long receivedId;
 }

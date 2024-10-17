@@ -147,7 +147,7 @@ public class CreateOrderReq implements Serializable {
         }
 
         if (TradeChannelEnum.MINI_APP.getType().equals(this.tradeType)) {
-            AssertUtil.notBlank(this.appId, "小程序支付情况下，appId必传");
+            //AssertUtil.notBlank(this.appId, "小程序支付情况下，appId必传");
             AssertUtil.notBlank(this.openId, "小程序支付情况下，openId必传");
             AssertUtil.isFalse(Objects.isNull(this.businessType), "小程序支付情况下，businessType必传");
         }

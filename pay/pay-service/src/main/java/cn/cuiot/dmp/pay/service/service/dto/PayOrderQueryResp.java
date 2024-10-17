@@ -81,7 +81,7 @@ public class PayOrderQueryResp implements Serializable {
                 .payOrderId(queryBO.getPayOrderId())
                 .payCompleteTime(queryBO.getPayCompleteTime())
                 .payMchId(queryBO.getPayMchId())
-                .businessType(StringUtils.isNotBlank(queryBO.getAttach())?null:Byte.valueOf(queryBO.getAttach()))
+                .businessType(StringUtils.isBlank(queryBO.getAttach())?null:Byte.valueOf(queryBO.getAttach()))
                 .payRate(paySetting.getCharge())
                 .build();
     }

@@ -443,7 +443,7 @@
             deleted = 0
             and house_id = #{query.houseId}
             <if test="query.receivableStatus != null and query.receivableStatus.toString() == '0'.toString() ">
-                and receivble_status IN (0,1)
+                and receivble_status IN (0,1) and pay_status != 0
             </if>
             <if test="query.receivableStatus != null and query.receivableStatus.toString() == '1'.toString() ">
                 and receivble_status = 2
@@ -477,7 +477,7 @@
 
     <select id="queryForPayToWechat" resultType="cn.cuiot.dmp.lease.dto.charge.ChargePayToWechatDetailDto">
          select
-             id,(receivable_amount-receivable_amount_received) as chargeAmount
+             id as charge_id,(receivable_amount-receivable_amount_received) as chargeAmount,company_id
         from tb_charge_manager
         where
         deleted = 0
@@ -556,5 +556,9 @@
         and a.hang_up_status = 0
         and a.abrogate_status = 0
         order by (a.receivable_amount-a.receivable_amount_received) desc
+    </select>
+
+    <select id="getCompanyIdByloupanId" resultType="java.lang.Long">
+        select company_id from tb_building_archives where id = #{loupanId}
     </select>
 </mapper>
