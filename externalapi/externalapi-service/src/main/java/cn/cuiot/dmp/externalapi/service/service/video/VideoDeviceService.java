@@ -193,7 +193,7 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
 
     public void  export(VideoPageQuery query){
         excelExportService.excelExport(ExcelDownloadDto.<VideoPageQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(query)
-                .title("抄送我工单").fileName("租赁合同导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("抄送我工单")
+                .title("视频监控导出").fileName("视频监控导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("视频监控导出")
                 .build(), VideoPageVo.class, this::queryExport);
     }
 
