@@ -4,6 +4,7 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -39,9 +40,20 @@ public class BalanceChangeRecordSysVo  {
     /**
      * 金额
      */
-    @Excel(name = "充值金额", orderNum = "2", width = 20)
     private Integer balance;
 
+    /**
+     * 金额
+     */
+    @Excel(name = "充值金额", orderNum = "2", width = 20)
+    private double balanceYuan;
+
+    public double getBalanceYuan() {
+        if (balance == null) {
+            return 0;
+        }
+        return BigDecimal.valueOf(balance).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+    }
 
     /**
      * 备注
