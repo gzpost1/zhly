@@ -36,7 +36,7 @@ public class TbPrePayAutoConfigController {
     @RequiresPermissions
     @PostMapping("/queryForDetail")
     public IdmResDTO<TbPrePayAutoConfig> queryForDetail(@RequestBody IdParam idParam) {
-        return IdmResDTO.success().body(tbPrePayAutoConfigService.getById(idParam.getId()));
+        return IdmResDTO.success().body(tbPrePayAutoConfigService.getById(LoginInfoHolder.getCurrentOrgId()));
     }
 
 

@@ -72,7 +72,7 @@ public class PayChannelSettingDto implements Serializable {
      */
     private String settingConfig;
 
-    @NotBlank(message = "appId不能为空")
+    //@NotBlank(message = "appId不能为空")
     private String appId;
 
     public void valid() {

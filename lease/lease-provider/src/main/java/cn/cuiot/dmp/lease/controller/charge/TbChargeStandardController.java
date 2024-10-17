@@ -8,10 +8,12 @@ import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.charge.TbChargeStandardQuery;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeStandard;
 import cn.cuiot.dmp.lease.service.charge.TbChargeStandardService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +87,12 @@ public class TbChargeStandardController {
     @PostMapping("/create")
     @LogRecord(operationCode = "create", operationName = "收费标准-创建", serviceType = ServiceTypeConst.CHARGE_STANDARD)
     public IdmResDTO create(@RequestBody @Valid TbChargeStandard createDto) {
+
+        //一个收费项目，最多可添加20个收费标准
+        LambdaQueryWrapper<TbChargeStandard> query = new LambdaQueryWrapper<>();
+        query.eq(TbChargeStandard::getChargeProjectId, createDto.getChargeProjectId());
+        AssertUtil.isFalse(tbChargeStandardService.count(query) > 20, "一个收费项目，最多可添加20个收费标准");
+
         createDto.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         createDto.setStatus(EntityConstants.ENABLED);
         createDto.setId(IdWorker.getId());

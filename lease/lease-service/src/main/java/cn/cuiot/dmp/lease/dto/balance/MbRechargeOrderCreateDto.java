@@ -37,6 +37,7 @@ public class MbRechargeOrderCreateDto implements Serializable {
     /**
      * 小程序appid
      */
+    @NotBlank(message = "小程序appi不能为空")
     private String appId;
 
 
