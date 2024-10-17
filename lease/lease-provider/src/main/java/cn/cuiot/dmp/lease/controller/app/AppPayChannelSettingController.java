@@ -1,6 +1,5 @@
 package cn.cuiot.dmp.lease.controller.app;
 
-import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.pay.service.service.service.SysPayChannelSettingService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,6 @@ public class AppPayChannelSettingController {
      *
      * @return
      */
-    @RequiresPermissions
     @PostMapping("/queryHavePayInfo")
     public IdmResDTO<Boolean> queryAdminForDetail() {
         //如果有私钥 说明已经配置了支付信息
