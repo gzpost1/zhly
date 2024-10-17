@@ -188,10 +188,34 @@ public class RechargeOrderPayRule {
         updateToSql(updateOrder);
         order.setVersion(updateOrder.getVersion() + 1);
         Boolean flag = recharge(order);
+        //重试一次
         if (!flag) {
-            throw new  BusinessException(ResultCode.SERVER_BUSY, "充值失败");
+            rechargeRetryHandler(order.getOrderId());
         }
 
+    }
+
+
+    /**
+     * 重试充值
+     *
+     * @param orderId
+     */
+    public void rechargeRetryHandler(Long orderId) {
+        MbRechargeOrder order = orderService.getById(orderId);
+        if (null == order) {
+            log.warn("---重试充值-----订单【{}】不存在", orderId);
+            return;
+        }
+        if (MbRechargeOrderStatus.RECHARGING.getStatus() != order.getStatus().byteValue()) {
+            log.warn("---重试充值-----订单【{}】不在充值中状态，不再进行重试", orderId);
+            return;
+        }
+        //充值
+        Boolean flag = recharge(order);
+        if (!flag) {
+            throw new BusinessException(ResultCode.SERVER_BUSY, "充值重试失败");
+        }
     }
 
     /**
