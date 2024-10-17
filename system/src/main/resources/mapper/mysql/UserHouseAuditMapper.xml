@@ -54,7 +54,8 @@
             b.`name` as building_name,
             b.department_id as department_id,
             c.department_name as department_name,
-            d.`code` as house_code
+            d.`code` as house_code,
+            d.`name` as house_name,
         FROM
             user_house_audit AS a,
             tb_building_archives AS b,
