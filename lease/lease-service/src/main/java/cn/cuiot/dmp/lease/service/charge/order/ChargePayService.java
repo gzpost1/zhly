@@ -88,6 +88,7 @@ public class ChargePayService {
         createOrderReq.setTotalFee(totalAmount);
         createOrderReq.setSpbillCreateIp(IpUtil.getIp());
         createOrderReq.setOrgId(companyId);
+        createOrderReq.setAppId(queryDto.getAppId());
         createOrderReq.setBusinessType(
                 Objects.equals(queryDto.getDataType(), ChargePayDataTypeEnum.HOUSE_BILL.getCode()) ? PayBusinessTypeEnum.CHARGE.getCode() : PayBusinessTypeEnum.DEPOSIT.getCode());
         createOrderReq.setProductName(
