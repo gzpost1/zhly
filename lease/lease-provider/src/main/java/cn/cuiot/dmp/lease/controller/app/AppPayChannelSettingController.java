@@ -27,6 +27,7 @@ public class AppPayChannelSettingController {
     @Autowired
     private SysPayChannelSettingService settingService;
 
+    @Autowired
     private MbRechargeOrderService mbRechargeOrderService;
 
 
