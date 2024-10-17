@@ -89,7 +89,6 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
 
             List<TbOrderSettlement> insertPayComssion = new ArrayList<>();
             for (TbOrderSettlement tbSecuritydepositManager : tbSecuritydepositManagers) {
-                log.error("账单接受-----------------------》:{}--------------------->{}", tbSecuritydepositManager, chargeOrderPaySuccInsertDto);
                 int i = MathTool.percentCalculate(tbSecuritydepositManager.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate());
                 if (i > 0) {
                     TbOrderSettlement tbOrderSettlement = new TbOrderSettlement();
