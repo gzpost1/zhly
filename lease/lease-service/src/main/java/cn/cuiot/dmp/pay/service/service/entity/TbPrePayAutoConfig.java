@@ -31,6 +31,6 @@ public class TbPrePayAutoConfig {
     /**
      * 收费项目id
      */
-    @TableField(value = "charge_item_ids",typeHandler = JsonTypeHandler.class )
+    @TableField(value = "charge_item_ids",typeHandler = ListObjectJsonTypeHandler.class )
     private List<Long> chargeItemIds;
 }
