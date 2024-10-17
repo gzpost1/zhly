@@ -3,6 +3,7 @@ package cn.cuiot.dmp.externalapi.service.query.yfwaterelectricity;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.validator.ValidGroup;
 import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -40,6 +41,7 @@ public class YfElectricityMeterDTO extends PageQuery implements Serializable {
      */
     @NotNull(message = "设备名称不能为空",groups = {ValidGroup.Crud.Insert.class, ValidGroup.Crud.Update.class})
     @Size(min = 1, max = 30, message = "设备名称限30字符",groups = {ValidGroup.Crud.Insert.class, ValidGroup.Crud.Update.class})
+    @JsonAlias(value = {"name", "deviceName"})
     private String name;
 
     /**
@@ -52,7 +54,7 @@ public class YfElectricityMeterDTO extends PageQuery implements Serializable {
      * 设备序列号
      */
     @NotNull(message = "设备序列号不能为空",groups = {ValidGroup.Crud.Insert.class, ValidGroup.Crud.Update.class})
-    @Size(min = 1, max = 30, message = "设备序列号限50字符",groups = {ValidGroup.Crud.Insert.class, ValidGroup.Crud.Update.class})
+    @Size(min = 1, max = 50, message = "设备序列号限50字符",groups = {ValidGroup.Crud.Insert.class, ValidGroup.Crud.Update.class})
     private String deviceNo;
 
     /**

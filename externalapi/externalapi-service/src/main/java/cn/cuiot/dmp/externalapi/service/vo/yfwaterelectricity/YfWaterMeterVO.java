@@ -69,25 +69,24 @@ public class YfWaterMeterVO implements Serializable {
     /**
      * 抄表项，该设备采集哪些数据
      */
-    @Excel(name = "抄表项", orderNum = "5", width = 20)
+    @Excel(name = "抄表项", orderNum = "4", width = 20)
     private String items;
 
     /**
      * 表计类型，水表固定为"44"
      */
-    @Excel(name = "表计类型", orderNum = "6", width = 20)
+    @Excel(name = "表计类型", orderNum = "5", width = 20)
     private Integer meterTypeId;
 
     /**
      * 表计型号，水表固定为4
      */
-    @Excel(name = "表计型号", orderNum = "7", width = 20)
+    @Excel(name = "表计型号", orderNum = "6", width = 20)
     private Integer ptId;
 
     /**
      * 采集器编号，水表采集器编号和设备序列号一致
      */
-    @Excel(name = "采集器编号", orderNum = "4", width = 20)
     private String ip;
 
     /**
@@ -123,43 +122,43 @@ public class YfWaterMeterVO implements Serializable {
     /**
      * 倍率，固定为1.0
      */
-    @Excel(name = "倍率", orderNum = "8", width = 20)
+    @Excel(name = "倍率", orderNum = "7", width = 20)
     private BigDecimal beilv;
 
     /**
      * 单价，固定为1.2
      */
-    @Excel(name = "单价", orderNum = "9", width = 20)
+    @Excel(name = "单价", orderNum = "8", width = 20)
     private BigDecimal price;
 
     /**
      * 费率 1 单价，固定为1.2
      */
-    @Excel(name = "费率1单价", orderNum = "10", width = 20)
+    @Excel(name = "费率1单价", orderNum = "9", width = 20)
     private BigDecimal price1;
 
     /**
      * 费率 2 单价，固定为1.8
      */
-    @Excel(name = "费率2单价", orderNum = "11", width = 20)
+    @Excel(name = "费率2单价", orderNum = "10", width = 20)
     private BigDecimal price2;
 
     /**
      * 费率 3 单价，固定为1.8
      */
-    @Excel(name = "费率3单价", orderNum = "12", width = 20)
+    @Excel(name = "费率3单价", orderNum = "11", width = 20)
     private BigDecimal price3;
 
     /**
      * 费率 4 单价，固定为1.2
      */
-    @Excel(name = "费率4单价", orderNum = "13", width = 20)
+    @Excel(name = "费率4单价", orderNum = "12", width = 20)
     private BigDecimal price4;
 
     /**
      * 费率，固定为1
      */
-    @Excel(name = "费率", orderNum = "14", width = 20)
+    @Excel(name = "费率", orderNum = "13", width = 20)
     private Integer feilvType;
 
     /**
