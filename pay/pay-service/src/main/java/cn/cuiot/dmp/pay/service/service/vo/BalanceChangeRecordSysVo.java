@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.pay.service.service.vo;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -83,12 +84,16 @@ public class BalanceChangeRecordSysVo  {
     /**
      * 创建时间
      */
-    @Excel(name = "充值人", orderNum = "7", width = 20)
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
+    @Excel(name = "充值时间", orderNum = "7", width = 20)
+    private String createTimeFormat;
 
-
+    private String getCreateTimeFormat(){
+        return DateTimeUtil.dateToString(createTime,"yyyy-MM-dd HH:mm:ss");
+    }
 
 
 }
