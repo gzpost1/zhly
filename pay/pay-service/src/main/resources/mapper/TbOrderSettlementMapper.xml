@@ -81,8 +81,8 @@
 
     <select id="queryForStatics" resultType="cn.cuiot.dmp.pay.service.service.dto.OrderSettlementStatics">
         select
-            sum(if(income_type = 0,0,pay_amount)) as income_total,
-            sum(if(income_type = 1,0,pay_amount)) as expenditure_total
+            sum(if(income_type = 0,pay_amount,0)) as income_total,
+            sum(if(income_type = 1,pay_amount,0)) as expenditure_total
         from
             tb_order_settlement
         ${ew.customSqlSegment}
