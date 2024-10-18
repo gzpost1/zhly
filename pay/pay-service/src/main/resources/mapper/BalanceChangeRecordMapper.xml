@@ -12,13 +12,13 @@
 
     <where>
       <if test="param.receivedId != null">
-        and  b.id =#{param.receivedId}
+        and  b.id like concat('%', #{param.receivedId}}, '%')
       </if>
       <if test="param.houseId != null">
         and  b.house_id =#{param.houseId}
       </if>
       <if test="param.receivableId != null">
-        and  b.charge_id =#{param.receivableId}
+        and  b.charge_id like concat('%', #{param.receivableId}}, '%')
       </if>
       <if test="param.beginDate != null">
         and  a.create_time >= #{param.beginDate}
