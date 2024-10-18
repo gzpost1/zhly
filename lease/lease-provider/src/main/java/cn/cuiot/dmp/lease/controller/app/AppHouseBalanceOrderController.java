@@ -23,6 +23,7 @@ import cn.cuiot.dmp.pay.service.service.enums.BalanceChangeTypeEnum;
 import cn.cuiot.dmp.pay.service.service.service.BalanceRuleAtHandler;
 import cn.cuiot.dmp.pay.service.service.vo.BalanceChangeRecordVo;
 import cn.cuiot.dmp.pay.service.service.vo.BalanceCurrrentVo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -98,16 +99,11 @@ public class AppHouseBalanceOrderController {
         AssertUtil.isFalse(!houseIds.contains(balanceChangeRecord.getHouseId()),"您没有权限查看该用户信息");
         BalanceChangeRecordVo vo = BeanMapper.map(balanceChangeRecord, BalanceChangeRecordVo.class);
         if(Objects.equals(balanceChangeRecord.getDataType(),(byte)0)){
-            TbChargeReceived chargeReceived = chargeReceivedService.getById(vo.getId());
+
+            TbChargeReceived chargeReceived = chargeReceivedService.getOne(new LambdaQueryWrapper<TbChargeReceived>().eq(TbChargeReceived::getOrderId,vo.getOrderId()));
             if(Objects.nonNull(chargeReceived)){
                 vo.setReceivableId(chargeReceived.getChargeId());
                 vo.setReceivedId(chargeReceived.getId());
-            }
-        }else if(Objects.equals(balanceChangeRecord.getDataType(),(byte)1)){
-            TbSecuritydepositManager securitydepositManager = securitydepositManagerService.getById(vo.getId());
-            if(Objects.nonNull(securitydepositManager)){
-                vo.setReceivableId(securitydepositManager.getId());
-                vo.setReceivedId(securitydepositManager.getReceivedId());
             }
         }
         //当是平台充值和人工充值时  应收id就是记录id
