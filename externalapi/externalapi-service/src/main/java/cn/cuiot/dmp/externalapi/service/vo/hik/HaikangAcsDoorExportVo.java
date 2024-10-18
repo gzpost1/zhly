@@ -2,8 +2,11 @@ package cn.cuiot.dmp.externalapi.service.vo.hik;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.externalapi.service.entity.hik.HaikangAcsDoorEntity;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.io.Serializable;
+import java.util.Date;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * 门禁点信息
@@ -89,4 +92,19 @@ public class HaikangAcsDoorExportVo implements Serializable {
     @Excel(name = "读卡器2")
     private String readerOutId;
 
+    /**
+     * 创建时间
+     */
+    @Excel(name = "创建时间",exportFormat = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    @Excel(name = "更新时间",exportFormat = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date updateTime;
 }
