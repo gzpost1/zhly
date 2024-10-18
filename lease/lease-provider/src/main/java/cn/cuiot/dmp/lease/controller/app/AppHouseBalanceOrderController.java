@@ -19,6 +19,7 @@ import cn.cuiot.dmp.lease.service.charge.TbSecuritydepositManagerService;
 import cn.cuiot.dmp.lease.vo.balance.MbRechargeOrderCreateVo;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
+import cn.cuiot.dmp.pay.service.service.enums.BalanceChangeTypeEnum;
 import cn.cuiot.dmp.pay.service.service.service.BalanceRuleAtHandler;
 import cn.cuiot.dmp.pay.service.service.vo.BalanceChangeRecordVo;
 import cn.cuiot.dmp.pay.service.service.vo.BalanceCurrrentVo;
@@ -109,7 +110,10 @@ public class AppHouseBalanceOrderController {
                 vo.setReceivedId(securitydepositManager.getReceivedId());
             }
         }
-
+        //当是平台充值和人工充值时  应收id就是记录id
+        if(Objects.equals(vo.getChangeType(), BalanceChangeTypeEnum.BALANCE_RECHARGE.getType())||Objects.equals(vo.getChangeType(),BalanceChangeTypeEnum.BALANCE_CONSUMPTION.getType())){
+            vo.setReceivedId(vo.getId());
+        }
         return IdmResDTO.success(vo);
     }
 
