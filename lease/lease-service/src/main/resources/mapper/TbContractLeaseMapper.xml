@@ -47,7 +47,7 @@
                     select="cn.cuiot.dmp.lease.mapper.TbContractLeaseBackMapper.selectLeaseBack"
                     column="id">
         </collection>
-        <collection property="leaseChargeListRspDTO" ofType="cn.cuiot.dmp.lease.entity.TbContractChargeEntity"
+        <collection property="chargeList" ofType="cn.cuiot.dmp.lease.entity.TbContractChargeEntity"
                     select="cn.cuiot.dmp.lease.mapper.TbContractChargeMapper.selectCharge"
                     column="id">
         </collection>
