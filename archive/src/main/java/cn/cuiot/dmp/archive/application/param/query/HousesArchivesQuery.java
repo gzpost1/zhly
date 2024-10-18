@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author liujianyu
@@ -18,6 +19,11 @@ public class HousesArchivesQuery extends PageQuery {
      * 所属楼盘id
      */
     private Long loupanId;
+
+    /**
+     * 所属楼盘id
+     */
+    private List<Long> loupanIds;
 
     /**
      * 房屋编码, 产权单位

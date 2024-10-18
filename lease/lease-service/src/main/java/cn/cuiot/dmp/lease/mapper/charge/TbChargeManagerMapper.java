@@ -61,7 +61,7 @@ public interface TbChargeManagerMapper extends BaseMapper<TbChargeManager> {
 
     PrePayAmountAndHouseId queryNeedToPayAmount(Long chargeId);
 
-    int updateChargePayStatusToPaySuccessBYPrePay(@Param("chargeId") Long chargeId, @Param("needToPayAmount") Integer needToPayAmount);
+    int updateChargePayStatusToPaySuccessBYPrePay(@Param("chargeId") Long chargeId, @Param("needToPayAmount") Integer needToPayAmount,@Param("orderId") Long orderId);
 
     IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage);
 
