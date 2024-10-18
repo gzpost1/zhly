@@ -3,6 +3,7 @@ package cn.cuiot.dmp.lease.controller.app;
 
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.common.bean.OrderItemParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.lease.dto.charge.AppChargeManagerDto;
 import cn.cuiot.dmp.lease.dto.charge.AppChargemanagerQuery;
@@ -47,6 +48,9 @@ public class AppChargeManagerController {
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<AppChargeManagerDto>> appChargeManager(@RequestBody AppChargemanagerQuery query) {
 
+        if(CollectionUtils.isEmpty(query.getOrderByItems())){
+            query.setOrderByItems(Lists.newArrayList(OrderItemParam.desc("create_time")));
+        }
         IPage<AppChargeManagerDto> chargeManagerPageDtoIPage = tbChargeManagerService.appChargeManager(query);
 
         if (Objects.nonNull(chargeManagerPageDtoIPage) && CollectionUtils.isNotEmpty(chargeManagerPageDtoIPage.getRecords())) {
