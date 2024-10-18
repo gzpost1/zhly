@@ -20,6 +20,7 @@ import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorControlResp;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorStatesResp;
 import cn.cuiot.dmp.externalapi.service.vendor.hik.bean.resp.HikDoorStatesResp.AuthDoor;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo;
+import cn.cuiot.dmp.externalapi.service.vo.hik.HikDoorControlVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -154,7 +155,8 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
     /**
      * 门禁点反控
      */
-    public void doControlDoor(HaikangAcsDoorControlDto dto) {
+    public List<HikDoorControlVo> doControlDoor(HaikangAcsDoorControlDto dto) {
+        AssertUtil.isTrue(dto.getIndexCodes().size()<=10,"每次批量反控门禁点不能超过10个");
         LambdaQueryWrapper<HaikangAcsDoorEntity> lambdaedQuery = Wrappers.lambdaQuery();
         lambdaedQuery.eq(HaikangAcsDoorEntity::getOrgId, dto.getCompanyId());
         lambdaedQuery.in(HaikangAcsDoorEntity::getIndexCode, dto.getIndexCodes());
@@ -172,18 +174,30 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
 
         List<HikDoorControlResp> respList = hikApiFeignService.doorDoControl(req,
                 hikEntranceGuardBO);
+
+        AssertUtil.isTrue(CollectionUtils.isNotEmpty(respList), "操作失败");
+
+        List<HikDoorControlVo> resultList = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(respList)) {
-            List<HikDoorControlResp> failList = respList.stream()
-                    .filter(item -> !CONTROL_DOOR_SUCCESS.equals(item.getControlResultCode()))
-                    .collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(failList)) {
-                List<String> failMsgList = failList.stream()
-                        .map(item -> item.getDoorIndexCode() + "|" + item.getControlResultDesc())
-                        .collect(Collectors.toList());
-                throw new BusinessException(ResultCode.ERROR,
-                        "存在操控失败的门禁点，" + Joiner.on("，").join(failMsgList));
-            }
+            resultList = respList.stream().map(item->{
+                HikDoorControlVo vo = new HikDoorControlVo();
+                vo.setDoorIndexCode(item.getDoorIndexCode());
+                vo.setControlResultCode(item.getControlResultCode());
+                vo.setControlResultDesc(item.getControlResultDesc());
+                vo.setName(getDoorNameByIndexCode(selectList,item.getDoorIndexCode()));
+                return vo;
+            }).collect(Collectors.toList());
         }
+        return resultList;
+    }
+
+    private String getDoorNameByIndexCode(List<HaikangAcsDoorEntity> selectList, String indexCode) {
+        Optional<HaikangAcsDoorEntity> findOptional = selectList.stream()
+                .filter(item -> item.getIndexCode().equals(indexCode)).findFirst();
+        if(findOptional.isPresent()){
+            return findOptional.get().getName();
+        }
+        return null;
     }
 
     /**
