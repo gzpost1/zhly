@@ -126,19 +126,6 @@ public class UserFeedbackController {
      */
     @PostMapping("export")
     public IdmResDTO export(@RequestBody @Valid UserFeedbackQuery pageQuery) {
-        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
-        pageQuery.setCompanyId(currentOrgId);
-        Long deptId = pageQuery.getDeptId();
-        if (Objects.isNull(deptId) && CollectionUtils.isEmpty(pageQuery.getDeptIds())) {
-            deptId = LoginInfoHolder.getCurrentDeptId();
-        }
-        if (Objects.nonNull(deptId)) {
-            DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(deptId, null, null);
-            if (departmentDto != null) {
-                pageQuery.setDeptPath(departmentDto.getPath());
-            }
-        }
-        pageQuery.setDeptId(null);
         ExcelDownloadDto<UserFeedbackQuery> excelDownloadDto = ExcelDownloadDto.<UserFeedbackQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(pageQuery)
                 .title("图文列表").fileName("图文导出" + "(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd") + ")").sheetName("图文列表").build();
         excelExportService.excelExport(excelDownloadDto, UserFeedbackExportVo.class, this::executePageQuery);
