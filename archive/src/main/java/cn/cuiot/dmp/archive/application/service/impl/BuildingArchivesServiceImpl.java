@@ -308,7 +308,7 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
     @Override
     public List<BuildingArchive> lookupBuildingArchiveByDepartmentList(DepartmentReqDto reqDto) {
         DepartmentReqDto paraDto = new DepartmentReqDto();
-        paraDto.setDeptId(LoginInfoHolder.getCurrentDeptId());
+        paraDto.setDeptId(reqDto.getDeptId());
         if(Objects.isNull(LoginInfoHolder.getCurrentDeptId())){
             paraDto.setDeptId(reqDto.getDeptId());
         }

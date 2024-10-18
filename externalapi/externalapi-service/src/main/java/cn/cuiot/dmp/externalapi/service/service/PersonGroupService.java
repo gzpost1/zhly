@@ -126,6 +126,7 @@ public class PersonGroupService extends ServiceImpl<PersonGroupMapper, PersonGro
         List<PersonGroupEntity> entityList1 = list(
                 new LambdaQueryWrapper<PersonGroupEntity>()
                         .ne(PersonGroupEntity::getId, dto.getId())
+                        .eq(PersonGroupEntity::getCompanyId, companyId)
                         .eq(PersonGroupEntity::getName, dto.getName()));
         if (CollectionUtils.isNotEmpty(entityList1)) {
             throw new BusinessException(ResultCode.ERROR, "分组名称已存在，请重新输入");
