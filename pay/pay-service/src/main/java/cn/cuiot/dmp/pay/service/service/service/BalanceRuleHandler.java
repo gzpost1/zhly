@@ -227,7 +227,7 @@ public class BalanceRuleHandler {
         int updateBalance = param.getBalance();
         if (updateBalance < 0) {
             //如果扣减金额数量大于当前余额
-            if (param.getBalance() > old.getBalance()) {
+            if (0- updateBalance > old.getBalance()) {
                 new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "充值金额不可小于"+centToYuan(old.getBalance())+"元");
             }
         }

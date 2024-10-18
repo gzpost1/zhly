@@ -12,12 +12,10 @@ import cn.cuiot.dmp.lease.enums.ChargePayDataTypeEnum;
 import cn.cuiot.dmp.lease.enums.ChargePayStatusEnum;
 import cn.cuiot.dmp.lease.service.charge.TbChargeManagerService;
 import cn.cuiot.dmp.lease.service.charge.TbChargeReceivedService;
-import cn.hutool.core.map.MapUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import org.apache.commons.collections.CollectionUtils;
@@ -40,6 +38,7 @@ public class ChargePayImpl extends AbstrChargePay {
     private TbChargeManagerService chargeManager;
     @Autowired
     private TbChargeReceivedService tbChargeReceivedService;
+
     @Override
     public Byte getDataType() {
         return ChargePayDataTypeEnum.HOUSE_BILL.getCode();
@@ -75,7 +74,7 @@ public class ChargePayImpl extends AbstrChargePay {
     @Override
     protected int doPaySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
         //1 更新订单状态为已支付
-        int updateCount =  chargeManager.updateChargePayStatusToSuccsess(chargeOrderPaySuccInsertDto.getDataIds());
+        int updateCount = chargeManager.updateChargePayStatusToSuccsess(chargeOrderPaySuccInsertDto.getDataIds());
 
         chargeOrderPaySuccInsertDto.setTransactionMode(0L);
         chargeOrderPaySuccInsertDto.setRemark("微信支付");
@@ -116,23 +115,23 @@ public class ChargePayImpl extends AbstrChargePay {
         tbChargeReceivedService.insertList(receiveds);
 
         //3 插入账单
-        chargeManager.insertSettleMent(receiveds,EntityConstants.NO,EntityConstants.NO,chargeOrderPaySuccInsertDto.getOrderId(), null);
+        chargeManager.insertSettleMent(receiveds, EntityConstants.NO, EntityConstants.NO, chargeOrderPaySuccInsertDto.getOrderId(), null);
 
         //4 插入支付手续费记录
-        if(Objects.equals(chargeOrderPaySuccInsertDto.getTransactionMode(),EntityConstants.NO)){
+        if (Objects.equals(chargeOrderPaySuccInsertDto.getTransactionMode(), EntityConstants.NO)) {
             List<TbChargeReceived> platformCommissions = JSONObject.parseObject(JsonUtil.writeValueAsString(receiveds), new com.alibaba.fastjson.TypeReference<List<TbChargeReceived>>() {
             });
             List<TbChargeReceived> insertPayCOmissions = new ArrayList<>();
 
             for (TbChargeReceived received : platformCommissions) {
                 int platformCommission = MathTool.percentCalculate(received.getTotalReceived(), chargeOrderPaySuccInsertDto.getPayRate());
-                if(platformCommission > 0){
+                if (platformCommission > 0) {
                     received.setTotalReceived(platformCommission);
                     insertPayCOmissions.add(received);
                 }
             }
-            if(CollectionUtils.isNotEmpty(insertPayCOmissions)){
-                chargeManager.insertSettleMent(insertPayCOmissions,EntityConstants.YES,EntityConstants.NO,chargeOrderPaySuccInsertDto.getOrderId(), null);
+            if (CollectionUtils.isNotEmpty(insertPayCOmissions)) {
+                chargeManager.insertSettleMent(insertPayCOmissions, EntityConstants.YES, EntityConstants.NO, chargeOrderPaySuccInsertDto.getOrderId(), null);
             }
         }
 
@@ -156,10 +155,10 @@ public class ChargePayImpl extends AbstrChargePay {
     }
 
     @Override
-    public UpdateChargePayStatusToPaySuccessBYPrePayDto updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount,Long createUserId,Long orderId) {
+    public UpdateChargePayStatusToPaySuccessBYPrePayDto updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long createUserId, Long orderId) {
         UpdateChargePayStatusToPaySuccessBYPrePayDto prePayDto = new UpdateChargePayStatusToPaySuccessBYPrePayDto();
 
-        int updateNum = chargeManager.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount);
+        int updateNum = chargeManager.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount, orderId);
         prePayDto.setUpdateCount(updateNum);
         AssertUtil.isTrue(updateNum > 0, "锁定账单收款失败");
 
@@ -170,18 +169,19 @@ public class ChargePayImpl extends AbstrChargePay {
         chargeOrderPaySuccInsertDto.setTransactionMode(1L);
         chargeOrderPaySuccInsertDto.setRemark("用户微信调用预缴代扣");
         chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.NO);
+        chargeOrderPaySuccInsertDto.setOrderId(orderId);
 
-        TbChargeOrder order = new  TbChargeOrder();
+        TbChargeOrder order = new TbChargeOrder();
         order.setCreateTime(new Date());
         order.setCreateUser(createUserId);
         order.setDataType(getDataType());
         chargeOrderPaySuccInsertDto.setOrder(order);
 
         List<ChargePayToWechatDetailDto> orderDetail = Lists.newArrayList();
-        orderDetail.add(new ChargePayToWechatDetailDto(chargeId, needToPayAmount,null));
+        orderDetail.add(new ChargePayToWechatDetailDto(chargeId, needToPayAmount, null));
         order.setOrderDetail(orderDetail);
 
-        List<Long> receiptIds =  insertReceivedAndSettlement(chargeOrderPaySuccInsertDto);
+        List<Long> receiptIds = insertReceivedAndSettlement(chargeOrderPaySuccInsertDto);
         prePayDto.setChargeReceivedId(receiptIds.get(0));
         return prePayDto;
     }

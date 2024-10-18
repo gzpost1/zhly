@@ -79,7 +79,7 @@ public class OrderSettlementVo {
     private String paymentModeName;
 
 
-    public String getPaymentMode() {
+    public String getPaymentModeName() {
         if(Objects.equals(paymentMode,(byte)0)){
             return "平台";
         }else if(Objects.equals(paymentMode,(byte)1)){
