@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -100,7 +101,7 @@ public class MbBalanceChangeRecordService extends ServiceImpl<BalanceChangeRecor
     public Integer queryTotalBalanceRecharge(Long houseId){
         LambdaQueryWrapper<BalanceChangeRecord> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BalanceChangeRecord::getHouseId,houseId);
-        queryWrapper.eq(BalanceChangeRecord::getChangeType, BalanceChangeTypeEnum.BALANCE_RECHARGE.getType());
+        queryWrapper.in(BalanceChangeRecord::getChangeType, Lists.newArrayList(BalanceChangeTypeEnum.BALANCE_RECHARGE.getType(),BalanceChangeTypeEnum.BALANCE_CONSUMPTION.getType()));
         List<BalanceChangeRecord> records = baseMapper.selectList(queryWrapper);
         int sum = records.stream().mapToInt(BalanceChangeRecord::getBalance).sum();
         return sum;
