@@ -104,6 +104,8 @@ public class AppHouseBalanceOrderController {
             if(Objects.nonNull(chargeReceived)){
                 vo.setReceivableId(chargeReceived.getChargeId());
                 vo.setReceivedId(chargeReceived.getId());
+                vo.setOwnershipPeriodBegin(chargeReceived.getOwnershipPeriodBegin());
+                vo.setOwnershipPeriodEnd(chargeReceived.getOwnershipPeriodEnd());
             }
         }
         //当是平台充值和人工充值时  应收id就是记录id
