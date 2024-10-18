@@ -108,6 +108,9 @@ public class HousesArchivesController extends BaseController {
                     .collect(Collectors.toList());
             wrapper.in(CollectionUtils.isNotEmpty(buildingIdList), HousesArchivesEntity::getLoupanId, buildingIdList);
         }
+
+        wrapper.in(CollectionUtils.isNotEmpty(query.getLoupanIds()), HousesArchivesEntity::getLoupanId, query.getLoupanIds());
+
         wrapper.eq(Objects.nonNull(query.getLoupanId()), HousesArchivesEntity::getLoupanId, query.getLoupanId());
         wrapper.eq(Objects.nonNull(query.getHouseType()), HousesArchivesEntity::getHouseType, query.getHouseType());
         wrapper.eq(Objects.nonNull(query.getOrientation()), HousesArchivesEntity::getOrientation, query.getOrientation());

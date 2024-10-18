@@ -136,7 +136,7 @@ public class AppVerifyService {
     /**
      * 发送短信验证码
      */
-    public SmsCodeResDto sendPhoneSmsCode(String phoneNumber, Long userId,Long companyId) {
+    public SmsCodeResDto sendPhoneSmsCode(String phoneNumber, Long userId, Long companyId) {
         // 查看redis中是否已经存在短信验证码文本
         String expectedText = stringRedisTemplate.opsForValue()
                 .get(CacheConst.SMS_ALREADY_SEND_REDIS_KEY_P + phoneNumber);
@@ -149,7 +149,7 @@ public class AppVerifyService {
         String smsCode = RandomStringUtils.random(SendMessageConst.SMS_CODE_LENGTH, false, true);
         log.warn("sendPhoneSmsCode===smsCode:{}", smsCode);
         // 发送短信
-        boolean sendSucceed = sendSmsCode(smsCode, phoneNumber,companyId);
+        boolean sendSucceed = sendSmsCode(smsCode, phoneNumber, companyId);
         // 发送成功
         if (sendSucceed) {
             // 存入redis并设置过期时间
@@ -180,12 +180,12 @@ public class AppVerifyService {
             // 短信验证码过期
             throw new BusinessException(SMS_CODE_EXPIRED_ERROR);
         }
-        if (Boolean.TRUE.equals(needDeleteCache)) {
-            stringRedisTemplate.delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
-        }
         // 判断用户输入的验证码是否正确
         Boolean checkSucceed = expectedText.equals(phoneNumber + smsCode);
         if (checkSucceed) {
+            if (Boolean.TRUE.equals(needDeleteCache)) {
+                stringRedisTemplate.delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
+            }
             return new SmsCodeCheckResDto(checkSucceed, "校验成功");
         }
         return new SmsCodeCheckResDto(checkSucceed, "校验失败");
@@ -204,8 +204,8 @@ public class AppVerifyService {
             query.setCompanyId(companyId).setMobile(phoneNumber).setParams(Collections.singletonList(smsCode)).setStdTemplate(SmsStdTemplate.CLIENT_LOGIN);
             log.info("发送短信验证码：{}", JsonUtil.writeValueAsString(query));
             smsSendService.sendMsg(query);
-        }catch (Exception ex){
-            log.error("发送短信验证码失败",ex);
+        } catch (Exception ex) {
+            log.error("发送短信验证码失败", ex);
             return false;
         }
         return true;

@@ -175,18 +175,26 @@ public class HaikangAcsDoorService extends ServiceImpl<HaikangAcsDoorMapper, Hai
         List<HikDoorControlResp> respList = hikApiFeignService.doorDoControl(req,
                 hikEntranceGuardBO);
 
-        AssertUtil.isTrue(CollectionUtils.isNotEmpty(respList), "操作失败");
+        List<HikDoorControlVo> resultList = selectList.stream().map(item->{
+            HikDoorControlVo vo = new HikDoorControlVo();
+            vo.setDoorIndexCode(item.getIndexCode());
+            vo.setControlResultCode(-1);
+            vo.setControlResultDesc(null);
+            vo.setName(item.getName());
+            return vo;
+        }).collect(Collectors.toList());
 
-        List<HikDoorControlVo> resultList = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(respList)) {
-            resultList = respList.stream().map(item->{
-                HikDoorControlVo vo = new HikDoorControlVo();
-                vo.setDoorIndexCode(item.getDoorIndexCode());
-                vo.setControlResultCode(item.getControlResultCode());
-                vo.setControlResultDesc(item.getControlResultDesc());
-                vo.setName(getDoorNameByIndexCode(selectList,item.getDoorIndexCode()));
-                return vo;
-            }).collect(Collectors.toList());
+            resultList.forEach(item->{
+                Optional<HikDoorControlResp> findOptional = respList.stream()
+                        .filter(ite -> ite.getDoorIndexCode().equals(item.getDoorIndexCode()))
+                        .findFirst();
+                if(findOptional.isPresent()){
+                    HikDoorControlResp doorControlResp = findOptional.get();
+                    item.setControlResultCode(doorControlResp.getControlResultCode());
+                    item.setControlResultDesc(doorControlResp.getControlResultDesc());
+                }
+            });
         }
         return resultList;
     }

@@ -283,6 +283,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
             tbChargeReceived.setTotalReceived(e.getTotalReceived());
             //本金实收 = 实收合计- 违约金实收
             tbChargeReceived.setReceivableAmountReceived(tbChargeReceived.getTotalReceived() - tbChargeReceived.getLiquidatedDamagesReceived());
+            AssertUtil.isFalse(tbChargeReceived.getReceivableAmountReceived() < 0, "实收合计不能小于违约金应收");
             tbChargeReceived.setTotalOwe(e.getTotalOwe());
 
             TbChargeManager chargeManager = this.getById(e.getChargeId());
