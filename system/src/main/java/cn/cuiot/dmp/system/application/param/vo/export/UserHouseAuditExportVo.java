@@ -3,6 +3,7 @@ package cn.cuiot.dmp.system.application.param.vo.export;
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -48,7 +49,7 @@ public class UserHouseAuditExportVo {
      * 创建时间
      */
     @Excel(name = "提交时间", width = 20, orderNum = "6", exportFormat = "yyyy-MM-dd HH:mm:ss")
-    private Date auditTime;
+    private LocalDateTime createdOn;
 
     /**
      * 身份类型(1:户主,2:租户,3:家属)

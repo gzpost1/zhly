@@ -103,6 +103,7 @@ public class UserHouseAuditController {
      */
     @PostMapping("export")
     public IdmResDTO export(@RequestBody @Valid UserHouseAuditPageQueryDTO pageQuery) throws Exception {
+        pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         userHouseAuditService.export(pageQuery);
         return IdmResDTO.success();
     }
