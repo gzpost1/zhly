@@ -7,7 +7,7 @@ import java.util.Objects;
  * @create 2024/10/13 21:10
  */
 public enum ChannelEnum {
-    SYSTEM_MESSAGE("1", "系统消息"),
+    SYSTEM_MESSAGE("1", "微信"),
     SMS_MESSAGE("2", "短信");
 
     private String code;

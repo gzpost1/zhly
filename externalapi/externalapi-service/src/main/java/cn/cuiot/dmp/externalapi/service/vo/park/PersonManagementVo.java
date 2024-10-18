@@ -14,22 +14,22 @@ import java.util.Date;
 @Data
 public class PersonManagementVo {
 
-    @Excel(name = "人员ID", orderNum = "1", width = 20)
+    @Excel(name = "人员ID", orderNum = "0", width = 20)
     private Long id;
     /**
      * 手机号
      */
-    @Excel(name = "手机号", orderNum = "0", width = 20)
+    @Excel(name = "手机号", orderNum = "3", width = 20)
     private String phone;
 
     /**
      * url
      */
-    @Excel(name = "人员照片", orderNum = "2", width = 20)
+    @Excel(name = "人员照片", orderNum = "1", width = 20)
     private String url;
 
 
-    @Excel(name = "人员名称", orderNum = "3", width = 20)
+    @Excel(name = "人员名称", orderNum = "2", width = 20)
     private String name;
 
     /**

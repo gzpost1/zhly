@@ -126,7 +126,7 @@ public class ReceivableGenerationController {
      */
     @RequiresPermissions
     @PostMapping("/export")
-    public IdmResDTO export(TbChargeManagerQuery dto) throws Exception {
+    public IdmResDTO export(@RequestBody TbChargeManagerQuery dto) throws Exception {
 
         excelExportService.excelExport(ExcelDownloadDto.<TbChargeManagerQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(dto)
                 .title("应收生成导出").fileName("应收生成导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("应收生成导出")

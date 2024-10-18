@@ -54,6 +54,9 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
         DecimalFormat decimalFormat = new DecimalFormat("#.00"); //定义格式，小数点后两位
 
         String formattedAmount = decimalFormat.format(num);
+        if(formattedAmount.startsWith(".")){
+            return "0.00";
+        }
         return formattedAmount;
     }
     /**
@@ -73,13 +76,18 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
     private String liquidatedDamagesReceivedName;
 
     public String getLiquidatedDamagesReceivedName(){
-        Double num = liquidatedDamagesReceived / 100.0;
+        Double num = liquidatedDamagesReceived/ 100.0;
 
         DecimalFormat decimalFormat = new DecimalFormat("#.00"); //定义格式，小数点后两位
 
         String formattedAmount = decimalFormat.format(num);
+        if(formattedAmount.startsWith(".")){
+            return "0.00";
+        }
         return formattedAmount;
     }
+
+
 
     /**
      * 违约金税额
@@ -241,7 +249,7 @@ public class TbChargeReceived implements ChargeItemNameSet, TransactionModeNameS
      */
     private Byte paymentMode;
 
-    @Excel(name = "收费标准", width = 20, orderNum = "15", replace = {"人工_1", "平台_0"})
+    @Excel(name = "收费方式", width = 20, orderNum = "15", replace = {"人工_1", "平台_0"})
     @TableField(exist = false)
     private String paymentModeName;
 

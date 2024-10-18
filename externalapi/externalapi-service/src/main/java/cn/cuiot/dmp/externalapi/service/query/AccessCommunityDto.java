@@ -14,21 +14,21 @@ public class AccessCommunityDto {
     /**
      * 设备序列号
      */
-    @Excel(name = "设备序列号", orderNum = "3", width = 20)
+    @Excel(name = "设备序列号", orderNum = "0", width = 20)
     private String deviceNo;
 
 
     /**
      * 名字
      */
-    @Excel(name = "门禁名称", orderNum = "0", width = 20)
+    @Excel(name = "门禁名称", orderNum = "1", width = 20)
     private String name;
 
 
     /**
      * 设备状态,1:未绑定 2:已绑定 3:已禁用
      */
-    @Excel(name = "设备状态", orderNum = "4", width = 20 , replace = {"未绑定_1", "已绑定_2", "已禁用_3"})
+    @Excel(name = "设备状态", orderNum = "3", width = 20 , replace = {"未绑定_1", "已绑定_2", "已禁用_3"})
     private String state;
 
 
@@ -48,6 +48,6 @@ public class AccessCommunityDto {
     /**
      * 楼盘名称
      */
-    @Excel(name = "所属楼盘", orderNum = "1", width = 20)
+    @Excel(name = "所属楼盘", orderNum = "2", width = 20)
     private String communityName;
 }

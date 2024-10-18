@@ -59,7 +59,7 @@ public interface WorkOrderConstants {
     /**
      * 未生效
      */
-     String NOT_EFFECTIVE="未生效";
+     String NOT_EFFECTIVE="未开始";
 
     String EFFECTIVE ="进行中";
 
