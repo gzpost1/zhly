@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.pay.service.service.vo;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
@@ -69,18 +70,32 @@ public class BalanceChargeRecordVO  {
     /**
      * 账期
      */
-    @Excel(name = "账期开始时间", orderNum = "5", width = 20)
+
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date ownershipPeriodBegin;
 
+    @Excel(name = "账期开始时间", orderNum = "5", width = 20)
+    private String ownershipPeriodBeginStr;
+
+    private String getOwnershipPeriodBeginStr(){
+        return DateTimeUtil.dateToString(ownershipPeriodBegin,"yyyy-MM-dd");
+    }
+
     /**
      * 账期
      */
-    @Excel(name = "账期结束时间", orderNum = "6", width = 20)
+
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date ownershipPeriodEnd;
+
+    @Excel(name = "账期结束时间", orderNum = "6", width = 20)
+    private String ownershipPeriodEndStr;
+
+    private String getOwnershipPeriodEndStr(){
+        return DateTimeUtil.dateToString(ownershipPeriodEnd,"yyyy-MM-dd");
+    }
 
     /**
      * 扣缴金额
@@ -91,9 +106,16 @@ public class BalanceChargeRecordVO  {
     /**
      * 扣费时间
      */
-    @Excel(name = "扣费时间", orderNum = "8", width = 20)
+
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Integer createTime;
+    private Date createTime;
+
+    @Excel(name = "扣费时间", orderNum = "8", width = 20)
+    private String createTimeStr;
+
+    private String getCreateTimeStr(){
+        return DateTimeUtil.dateToString(createTime,"yyyy-MM-dd");
+    }
 
 }
