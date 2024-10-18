@@ -62,6 +62,9 @@ public class ChargeCollectionManageVo {
         DecimalFormat decimalFormat = new DecimalFormat("#.00"); //定义格式，小数点后两位
 
         String formattedAmount = decimalFormat.format(num);
+        if(formattedAmount.startsWith(".")){
+            return "0.00";
+        }
         return formattedAmount;
     }
 }

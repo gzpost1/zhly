@@ -131,6 +131,9 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
         DecimalFormat decimalFormat = new DecimalFormat("#.00"); //定义格式，小数点后两位
 
         String formattedAmount = decimalFormat.format(num);
+        if(formattedAmount.startsWith(".")){
+            return "0.00";
+        }
         return formattedAmount;
     }
 
@@ -152,7 +155,7 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
     /**
      * 交易方式名称
      */
-    @Excel(name = "交易方式", orderNum = "11", width = 20)
+    @Excel(name = "交易方式", orderNum = "12", width = 20)
     private String transactionModeName;
 
     /**
@@ -188,9 +191,13 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
      */
     private Byte paymentMode;
 
+    @Excel(name = "收款方式", orderNum = "11", width = 20,replace = {"人工_1", "平台_0"})
+    private String paymentModeName;
+
     /**
      * 交易单号
      */
+    @Excel(name = "交易单号", orderNum = "13", width = 20)
     private String transactionNo;
     public Integer getUnreturnedAmount() {
         if(Lists.newArrayList(SecurityDepositStatusEnum.UNPAID.getCode(),SecurityDepositStatusEnum.CANCELLED.getCode()).contains(status)){

@@ -20,6 +20,7 @@ import cn.cuiot.dmp.lease.entity.charge.ChargeCollectionPlanItemEntity;
 import cn.cuiot.dmp.lease.enums.ChannelEnum;
 import cn.cuiot.dmp.lease.enums.ChargeCollectionPlainCronTypeEnum;
 import cn.cuiot.dmp.lease.enums.ChargeCollectionTypeEnum;
+import cn.cuiot.dmp.lease.enums.WeekEnum;
 import cn.cuiot.dmp.lease.feign.SystemToFlowService;
 import cn.cuiot.dmp.lease.mapper.charge.ChargeCollectionPlanBuildingMapper;
 import cn.cuiot.dmp.lease.mapper.charge.ChargeCollectionPlanItemMapper;
@@ -37,7 +38,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.time.DayOfWeek;
+import java.util.Locale;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -122,11 +124,28 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
         IPage<ChargeCollectionPlanPageVo> data = this.queryForPage(pageQuery);
         data.getRecords().stream().forEach(item->{
 //            item.setChannelName(ChannelEnum.getDesc(item.getChannel()));
-            item.setCornTypeName(ChargeCollectionPlainCronTypeEnum.getByCode(item.getCronType()).getDesc());
+            item.setCornTypeName(ChargeCollectionPlainCronTypeEnum.getByCode(item.getCronType()).getDesc() +" "+getCornTypeName(item));
             item.setStatusName(Objects.equals(item.getStatus(), NumberConst.DATA_STATUS)? StatusConst.STOP: StatusConst.ENABLE);
         });
         return data;
     }
+
+    public String getCornTypeName(ChargeCollectionPlanPageVo vo){
+        switch (vo.getCronType()){
+            case 1 :
+                //每日
+                return "";
+            case 2 :
+                //周
+                return WeekEnum.getByCode( vo.getCronAppointWeek());
+
+            default:
+                return vo.getCronAppointDay() +"日";
+
+        }
+    }
+
+
     /**
      * 查询催缴计划列表
      * @param query

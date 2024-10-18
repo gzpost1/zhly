@@ -63,14 +63,24 @@ public class OperateLogEntity {
     /**
      * 操作者名称
      */
-    @Excel(name = "操作用户", orderNum = "5", width = 20)
     private String operationByName;
+
+    /**
+     * 操作用户
+     */
+    @Excel(name = "操作用户", orderNum = "5", width = 20)
+    private String operation;
 
     /**
      * 用户类型
      */
-    @Excel(name = "操作用户类型", orderNum = "4", width = 20)
     private Integer userType;
+
+    /**
+     * 用户类型
+     */
+    @Excel(name = "操作用户类型", orderNum = "4", width = 20,replace = {"管理人员_1", "C端用户_2"})
+    private String userTypeName;
 
 
     /**

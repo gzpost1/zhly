@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 【PC】系统日志
@@ -75,6 +76,11 @@ public class SysLogController {
     public IPage<OperateLogEntity> queryExport(ExcelDownloadDto<SysLogQuery> downloadDto){
         SysLogQuery pageQuery = downloadDto.getQuery();
         IPage<OperateLogEntity> data = this.queryForPage(pageQuery).getData();
+        List<OperateLogEntity> operateLogEntities = Optional.ofNullable(data.getRecords()).orElse(new ArrayList<>());
+        operateLogEntities.stream().forEach(item->{
+            item.setUserTypeName(String.valueOf(item.getUserType()));
+            item.setOperation(item.getOperationByName()+"("+item.getOperationById()+")");
+        });
         return data;
     }
 
