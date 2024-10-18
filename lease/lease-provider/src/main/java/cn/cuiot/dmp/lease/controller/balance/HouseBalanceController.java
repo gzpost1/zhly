@@ -123,7 +123,7 @@ public class HouseBalanceController extends BaseController {
         BaseUserReqDto baseUserReqDto = new BaseUserReqDto();
         baseUserReqDto.setUserIdList(userIds);
         List<BaseUserDto> baseUserDtoList = systemToFlowService.lookUpUserList(baseUserReqDto);
-        Map<Long, BaseUserDto> userMap = baseUserDtoList.stream().collect(Collectors.toMap(BaseUserDto::getId, vo->vo));
+        Map<Long, BaseUserDto> userMap = baseUserDtoList.stream().collect(Collectors.toMap(BaseUserDto::getId, vo->vo,(a,b)->a));
         for(BalanceChangeRecordSysVo vo:records){
             vo.setHouseName(houseMap.get(vo.getHouseId()));
             BaseUserDto user = userMap.get(vo.getCreateUser());
