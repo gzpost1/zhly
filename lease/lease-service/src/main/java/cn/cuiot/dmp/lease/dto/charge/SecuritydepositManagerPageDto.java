@@ -22,7 +22,7 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
     /**
      *  应收编码/实收编码
      */
-    @Excel(name = "押金实收编码", orderNum = "0", width = 20)
+
     private Long id;
 
     @Excel(name = "押金应收编码", orderNum = "1", width = 20)
@@ -184,6 +184,7 @@ public class SecuritydepositManagerPageDto implements ChargeItemNameSet,Transact
      * 实收编码
      *
      */
+    @Excel(name = "押金实收编码", orderNum = "0", width = 20)
     private Long receivedId;
 
     /**
