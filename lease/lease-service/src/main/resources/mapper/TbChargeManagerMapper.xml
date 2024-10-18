@@ -536,6 +536,7 @@
         set pay_status = 3,
             receivble_status = 2,
             receivable_amount_received =  receivable_amount_received + #{needToPayAmount},
+            order_id = #{orderId},
             last_pay_time = now()
         where deleted = 0 and receivble_status in (0,1) and pay_status != 0 and id = #{chargeId}
           and receivable_amount = receivable_amount_received + #{needToPayAmount}

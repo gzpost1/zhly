@@ -391,8 +391,8 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         return baseMapper.queryNeedToPayAmount(chargeId);
     }
 
-    public int updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount) {
-        return baseMapper.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount);
+    public int updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount,Long orderId) {
+        return baseMapper.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount,orderId);
     }
 
     /**
