@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 public interface TbChargeManagerMapper extends BaseMapper<TbChargeManager> {
@@ -63,7 +64,7 @@ public interface TbChargeManagerMapper extends BaseMapper<TbChargeManager> {
 
     int updateChargePayStatusToPaySuccessBYPrePay(@Param("chargeId") Long chargeId, @Param("needToPayAmount") Integer needToPayAmount,@Param("orderId") Long orderId);
 
-    IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage);
+    IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage,@Param("date") Date date);
 
     Long getCompanyIdByloupanId(Long loupanId);
 }

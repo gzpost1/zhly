@@ -219,7 +219,7 @@
           deleted = 0
         and status = 0
         and pay_status != 0
-        and date_format(now(),'%Y-%m-%d') = date_format(due_date,'%Y-%m-%d')
+        and date_format(#{date},'%Y-%m-%d') = date_format(due_date,'%Y-%m-%d')
        order by receivable_amount desc
     </select>
 </mapper>

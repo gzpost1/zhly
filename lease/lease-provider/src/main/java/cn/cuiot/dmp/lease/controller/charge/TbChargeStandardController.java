@@ -91,7 +91,7 @@ public class TbChargeStandardController {
         //一个收费项目，最多可添加20个收费标准
         LambdaQueryWrapper<TbChargeStandard> query = new LambdaQueryWrapper<>();
         query.eq(TbChargeStandard::getChargeProjectId, createDto.getChargeProjectId());
-        AssertUtil.isFalse(tbChargeStandardService.count(query) > 20, "一个收费项目，最多可添加20个收费标准");
+        AssertUtil.isFalse(tbChargeStandardService.count(query) >= 20, "一个收费项目，最多可添加20个收费标准");
 
         createDto.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         createDto.setStatus(EntityConstants.ENABLED);

@@ -432,8 +432,8 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         orderSettlementService.insertList(orderSettlements);
     }
 
-    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage) {
-        return baseMapper.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage);
+    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage,Date date) {
+        return baseMapper.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage,date);
     }
 
     public Long getCompanyIdByloupanId(Long loupanId) {
