@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.balance.MbRechargeOrderCreateDto;
 import cn.cuiot.dmp.lease.entity.balance.MbRechargeOrder;
 import cn.cuiot.dmp.lease.enums.MbRechargeOrderStatus;
@@ -243,6 +244,8 @@ public class RechargeOrderPayRule {
                     .orderName("小程序充值")
                     .houseId(order.getHouseId())
                     .payOrderId(order.getPayOrderId())
+                    //异步调用时 无法获得操作人id  这里手动传入
+                    .createUser(order.getCreateUser())
                     .build();
             orderService.updateOrder(updateOrder);
             // 2023/11/30 状态变更

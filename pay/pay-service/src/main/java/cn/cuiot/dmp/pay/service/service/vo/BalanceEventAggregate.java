@@ -1,5 +1,7 @@
 package cn.cuiot.dmp.pay.service.service.vo;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -83,4 +85,6 @@ public class BalanceEventAggregate implements Serializable {
      * 微信支付单号
      */
     private String payOrderId;
+
+    private Long createUser;
 }

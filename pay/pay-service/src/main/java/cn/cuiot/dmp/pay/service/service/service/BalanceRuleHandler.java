@@ -3,6 +3,7 @@ package cn.cuiot.dmp.pay.service.service.service;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeDto;
 import cn.cuiot.dmp.pay.service.service.dto.BalanceChangeRecordQuery;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceChangeRecord;
@@ -63,6 +64,8 @@ public class BalanceRuleHandler {
                 .changeUser(Objects.isNull(param.getChangeUser())?PLATFORM:param.getChangeUser())
                 .payOrderId(param.getPayOrderId())
                 .build();
+        //异步调用时 无法获得操作人id  这里手动传入
+        record.setCreateUser(Objects.isNull(LoginInfoHolder.getCurrentUserId())?param.getCreateUser():LoginInfoHolder.getCurrentUserId());
         switch (typeEnum) {
             case BALANCE_PAY:
                 pay(param, record);

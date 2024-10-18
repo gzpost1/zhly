@@ -19,6 +19,7 @@ import cn.cuiot.dmp.pay.service.service.entity.BalanceEntity;
 import cn.cuiot.dmp.pay.service.service.entity.TbOrderSettlement;
 import cn.cuiot.dmp.pay.service.service.service.BalanceService;
 import cn.cuiot.dmp.pay.service.service.service.TbOrderSettlementService;
+import cn.cuiot.dmp.pay.service.service.utils.PageHelper;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -363,7 +364,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
     }
 
     public IPage<AppChargeManagerDto> appChargeManager(AppChargemanagerQuery query) {
-        return baseMapper.appChargeManager(new Page(query.getPageNo(), query.getPageSize()), query);
+        return baseMapper.appChargeManager(PageHelper.queryToPage(query), query);
     }
 
     public int updateChargePayStatus(List<Long> chargeIds, Long orderId) {

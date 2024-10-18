@@ -80,6 +80,7 @@ public class MbBalanceChangeRecordService extends ServiceImpl<BalanceChangeRecor
         queryWrapper.eq(nonNull(query.getHouseId()), BalanceChangeRecord::getHouseId, query.getHouseId());
         queryWrapper.eq(nonNull(query.getOrderId()), BalanceChangeRecord::getOrderId, query.getOrderId());
         queryWrapper.eq(nonNull(query.getChangeType()), BalanceChangeRecord::getChangeType, query.getChangeType());
+        queryWrapper.in(CollectionUtils.isNotEmpty(query.getChangeTypes()), BalanceChangeRecord::getChangeType, query.getChangeTypes());
         queryWrapper.eq(StringUtils.isNotEmpty(query.getOutRefundNo()), BalanceChangeRecord::getOutRefundNo,
                 query.getOutRefundNo());
         if (StringUtils.isNotEmpty(query.getOrderName())) {

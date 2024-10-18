@@ -63,10 +63,12 @@ public class BalanceChangeRecordSysVo  {
     private String reason;
 
     /**
-     * 充值方式
+     * 操作方式
      */
-    @Excel(name = "充值方式", orderNum = "4", width = 20)
     private String orderName;
+
+    @Excel(name = "充值方式", orderNum = "4", width = 20)
+    private String changeUser;
 
     /**
      * 微信支付单号

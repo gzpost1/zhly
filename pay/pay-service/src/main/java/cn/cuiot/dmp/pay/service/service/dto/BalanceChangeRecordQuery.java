@@ -5,6 +5,7 @@ import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @author wuyongchong
@@ -37,6 +38,9 @@ public class BalanceChangeRecordQuery extends PageQuery {
      * 变更类型：1-余额支付、2-余额充值、3-兑换余额、4-消费余额、5-退款-退回余额
      */
     private Byte changeType;
+
+    private List<Byte> changeTypes;
+
     /**
      * 退款单号-退款时存在，跟订单号分开
      */
