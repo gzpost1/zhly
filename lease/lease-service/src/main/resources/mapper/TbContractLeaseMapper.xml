@@ -47,7 +47,7 @@
                     select="cn.cuiot.dmp.lease.mapper.TbContractLeaseBackMapper.selectLeaseBack"
                     column="id">
         </collection>
-        <collection property="chargeList" ofType="cn.cuiot.dmp.lease.entity.TbContractChargeEntity"
+        <collection property="leaseChargeListRspDTO" ofType="cn.cuiot.dmp.lease.entity.TbContractChargeEntity"
                     select="cn.cuiot.dmp.lease.mapper.TbContractChargeMapper.selectCharge"
                     column="id">
         </collection>
@@ -231,5 +231,42 @@
 
     <select id="statisticsContract" resultType="cn.cuiot.dmp.base.infrastructure.dto.BaseVO">
         select count(*) value,contract_status name from tb_contract_lease where deleted=0 group by contract_status
+    </select>
+
+    <select id="queryLeaseStatistic" resultType="java.lang.Long">
+        select count(1)  from
+            tb_contract_bind_info t1
+                -- 关联房屋
+                inner join tb_houses_archives t2 on t1.bind_id = t2.id
+                -- 关联楼盘
+                inner join tb_building_archives t3 on t2.loupan_id = t3.id
+                -- 关联意向合同
+                inner join tb_contract_lease t4 on t1.contract_id  = t4.id
+            where
+            t4.deleted = 0
+            <if test=" params.companyId != null">
+                and t3.company_id =  #{params.companyId}
+            </if>
+
+            <if test="params.loupanIds != null and params.loupanIds.size() > 0">
+                and t2.loupan_id in
+                <foreach collection="params.loupanIds" item="loupan" open="(" separator="," close=")">
+                    #{loupan}
+                </foreach>
+            </if>
+
+            <if test="params.departmentIds != null and params.departmentIds.size() > 0">
+                and t3.department_id in
+                <foreach collection="params.departmentIds" item="dep" open="(" separator="," close=")">
+                    #{dep}
+                </foreach>
+            </if>
+
+            <if test="params.contractStatus != null and params.contractStatus.size() > 0">
+                and t4.contract_status not in
+                <foreach collection="params.contractStatus" item="stau" open="(" separator="," close=")">
+                    #{stau}
+                </foreach>
+            </if>
     </select>
 </mapper>

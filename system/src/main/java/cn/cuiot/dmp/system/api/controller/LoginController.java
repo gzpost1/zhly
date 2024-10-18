@@ -129,15 +129,15 @@ public class LoginController extends BaseController {
             throw new BusinessException(ResultCode.PRIVACY_AGREEMENT_ERROR);
         }*/
         // 验证码ID参数校验
-        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getSid())) {
+        if (VERIFICATION_CODE_LOGIN.equals(loginReqDTO.getLoginType()) && StringUtils.isBlank(loginReqDTO.getSid())) {
             throw new BusinessException(ResultCode.ACCESS_ERROR, "验证码ID参数为空");
         }
         // 验证码参数校验
-        if (loginReqDTO == null || StringUtils.isBlank(loginReqDTO.getKaptchaText())) {
+        if (VERIFICATION_CODE_LOGIN.equals(loginReqDTO.getLoginType()) && StringUtils.isBlank(loginReqDTO.getKaptchaText())) {
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY, "请输入验证码");
         }
         //图形验证码校验
-        if (!verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid(), true)) {
+        if (VERIFICATION_CODE_LOGIN.equals(loginReqDTO.getLoginType()) && !verifyUnit.checkKaptchaText(loginReqDTO.getKaptchaText(), loginReqDTO.getSid(), true)) {
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_ERROR, "验证码错误");
         }
 
@@ -223,6 +223,10 @@ public class LoginController extends BaseController {
         if (smsReqDTO == null || StringUtils.isEmpty(smsReqDTO.getSid())) {
             // 图形验证码sid为空
             throw new BusinessException(ResultCode.ACCESS_ERROR);
+        }
+        //图形验证码校验
+        if (!verifyUnit.checkKaptchaText(smsReqDTO.getKaptchaText(), smsReqDTO.getSid(), false)) {
+            throw new BusinessException(ResultCode.KAPTCHA_TEXT_ERROR, "验证码错误");
         }
         // 加密后的用户名或邮箱或者手机号
         String safeAccount = Sm4.encryption(smsReqDTO.getUserAccount());

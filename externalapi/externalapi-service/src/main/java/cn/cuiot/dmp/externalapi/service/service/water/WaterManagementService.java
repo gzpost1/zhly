@@ -23,6 +23,7 @@ import cn.cuiot.dmp.externalapi.service.enums.WaterMeterEnums;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.mapper.water.WaterManagementMapper;
 import cn.cuiot.dmp.externalapi.service.query.AccessCommunityDto;
+import cn.cuiot.dmp.externalapi.service.query.StatisInfoReqDTO;
 import cn.cuiot.dmp.externalapi.service.service.park.PlatfromInfoService;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.bean.*;
 import cn.cuiot.dmp.externalapi.service.vendor.watermeter.constant.WaterMeterConstant;
@@ -277,6 +278,12 @@ public class WaterManagementService extends ServiceImpl<WaterManagementMapper, W
     }
 
 
+    /**
+     * 获取山东科德 水表 数量的统计
+     */
+    public Long queryWaterMeterCount(StatisInfoReqDTO  statisInfoReqDTO) {
+        return getBaseMapper().queryWaterMeterCount(statisInfoReqDTO);
+    }
 
 
 }

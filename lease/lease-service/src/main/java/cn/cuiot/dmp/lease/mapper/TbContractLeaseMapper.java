@@ -2,7 +2,9 @@ package cn.cuiot.dmp.lease.mapper;
 
 import cn.cuiot.dmp.base.application.mybatis.mapper.BaseMybatisMapper;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
+import cn.cuiot.dmp.lease.dto.contract.ContractLeaseStatisticParam;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -16,4 +18,6 @@ import java.util.List;
  */
 public interface TbContractLeaseMapper extends BaseMybatisMapper<TbContractLeaseEntity> {
     List<BaseVO> statisticsContract();
+
+    Long queryLeaseStatistic(@Param("params") ContractLeaseStatisticParam params);
 }

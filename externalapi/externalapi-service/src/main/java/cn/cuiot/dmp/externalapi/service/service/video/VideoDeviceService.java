@@ -19,6 +19,7 @@ import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.mapper.video.VideoDeviceMapper;
 import cn.cuiot.dmp.externalapi.service.query.video.VideoBatchSetBuildingIdQuery;
 import cn.cuiot.dmp.externalapi.service.query.video.VideoPageQuery;
+import cn.cuiot.dmp.externalapi.service.query.video.VideoStatisInfoReqDTO;
 import cn.cuiot.dmp.externalapi.service.query.video.VideoUpdateDTO;
 import cn.cuiot.dmp.externalapi.service.vendor.video.bean.resp.vsuap.VsuapDeviceListResp;
 import cn.cuiot.dmp.externalapi.service.vendor.video.enums.VsuapDeviceStateEnum;
@@ -277,5 +278,17 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         BuildingArchiveReq req = new BuildingArchiveReq();
         req.setIdList(buildingIds);
         return systemApiService.buildingArchiveQueryForList(req);
+    }
+
+    public IPage<VideoPageVo> queryForVideoPage(VideoStatisInfoReqDTO query) {
+        Page<VideoStatisInfoReqDTO> page = new Page<>(query.getPageNo(), query.getPageSize());
+        IPage<VideoPageVo> res =  getBaseMapper().queryVideoInfoPage(page, query);
+
+        for (VideoPageVo record : res.getRecords()) {
+            record.setStateName(VsuapDeviceStateEnum.queryDescByCode(record.getState()));
+            record.setDeviceTypeName(VsuapDeviceTypeEnum.queryDescByCode(record.getDeviceType()));
+        }
+
+        return res;
     }
 }

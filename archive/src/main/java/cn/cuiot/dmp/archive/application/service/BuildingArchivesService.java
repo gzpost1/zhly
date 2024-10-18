@@ -4,6 +4,7 @@ import cn.cuiot.dmp.archive.application.param.dto.BatchBuildingArchivesDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchiveImportDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesCreateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesUpdateDTO;
+import cn.cuiot.dmp.archive.application.param.vo.ArchivesStatisticVO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesExportVO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchives;
@@ -16,6 +17,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.PageResult;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -95,4 +97,10 @@ public interface BuildingArchivesService {
     List<BuildingArchive> lookupBuildingArchiveByDepartmentList(DepartmentReqDto reqDto);
 
     Long quertOrgIdByHouse(Long houseId);
+    /**
+     * 查询楼盘统计信息
+     * @param pageQuery pageQuery
+     * @return ArchivesStatisticVO
+     */
+    ArchivesStatisticVO queryArchiveBaseStatisticInfo(BuildingArchivesPageQuery pageQuery);
 }
