@@ -236,9 +236,9 @@ public class ChargeCollectionPlanService extends ServiceImpl<ChargeCollectionPla
      */
     private void dataCheck(ChargeCollectionPlanCreateDto dto) {
         List<Byte> msgTypes = Arrays.asList(InformTypeConstant.SMS, InformTypeConstant.SYS_MSG);
-        if (!msgTypes.contains(dto.getChannel())) {
-            throw new BusinessException(ResultCode.REQ_PARAM_ERROR, "通知渠道错误");
-        }
+//        if (!msgTypes.contains(dto.getChannel())) {
+//            throw new BusinessException(ResultCode.REQ_PARAM_ERROR, "通知渠道错误");
+//        }
         Byte cronType = dto.getCronType();
         ChargeCollectionPlainCronTypeEnum cronTypeEnum = ChargeCollectionPlainCronTypeEnum.getByCode(cronType);
         if (Objects.isNull(cronTypeEnum)) {
