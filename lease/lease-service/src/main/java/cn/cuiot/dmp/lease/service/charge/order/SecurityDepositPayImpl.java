@@ -16,7 +16,9 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
  * @Date 2024/10/10 20:31
  * @Created by libo
  */
+@Slf4j
 @Data
 @Service
 public class SecurityDepositPayImpl extends AbstrChargePay {
@@ -73,6 +76,9 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
     @Override
     protected int doPaySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
         //1 更新订单状态为已支付
+
+        Long receivedId = IdWorker.getId();
+        chargeOrderPaySuccInsertDto.setReceivedId(receivedId);
         int updateCount = securitydepositManagerService.updateChargePayStatusToSuccsess(chargeOrderPaySuccInsertDto);
 
         //3 插入账单
@@ -80,18 +86,25 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
         List<TbOrderSettlement> tbSecuritydepositManagers = securitydepositManagerService.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
         //4 插入微信支付手续费
         if (CollectionUtils.isNotEmpty(tbSecuritydepositManagers)) {
-            tbSecuritydepositManagers.stream().filter(e -> {
-                return MathTool.percentCalculate(e.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate()) > 0;
-            }).forEach(e -> {
-                e.setId(IdWorker.getId());
-                e.setIncomeType(EntityConstants.YES);
-                e.setPayAmount(MathTool.percentCalculate(e.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate()));
-            });
-            if (CollectionUtils.isNotEmpty(tbSecuritydepositManagers)) {
-                orderSettlementService.insertList(tbSecuritydepositManagers);
+
+            List<TbOrderSettlement> insertPayComssion = new ArrayList<>();
+            for (TbOrderSettlement tbSecuritydepositManager : tbSecuritydepositManagers) {
+                int i = MathTool.percentCalculate(tbSecuritydepositManager.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate());
+                if (i > 0) {
+                    TbOrderSettlement tbOrderSettlement = new TbOrderSettlement();
+                    BeanUtils.copyProperties(tbSecuritydepositManager, tbOrderSettlement);
+                    tbOrderSettlement.setId(IdWorker.getId());
+                    tbOrderSettlement.setIncomeType(EntityConstants.YES);
+                    tbOrderSettlement.setPayAmount(i);
+                    insertPayComssion.add(tbOrderSettlement);
+                }
+            }
+
+            if (CollectionUtils.isNotEmpty(insertPayComssion)) {
+                orderSettlementService.insertList(insertPayComssion);
             }
         }
-        
+
         return updateCount;
     }
 
@@ -136,7 +149,7 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
 
     @Override
     public List<Long> getCompanyIdByChargeIds(List<Long> chargeIds) {
-        return Optional.ofNullable(securitydepositManagerService.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbSecuritydepositManager::getCompanyId).collect(Collectors.toList());
+        return Optional.ofNullable(securitydepositManagerService.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbSecuritydepositManager::getCompanyId).distinct().collect(Collectors.toList());
     }
 
     @Override

@@ -1,10 +1,11 @@
 package cn.cuiot.dmp.pay.service.service.entity;
 
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import cn.cuiot.dmp.base.infrastructure.persistence.handler.ListObjectJsonTypeHandler;
 import lombok.Data;
 
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
  * 预缴代扣设置
  */
 @Data
-@TableName(value = "tb_pre_pay_auto_config", autoResultMap = true)
+@TableName(value = "tb_pre_pay_auto_config", autoResultMap = true,resultMap = "BaseResultMap")
 public class TbPrePayAutoConfig {
     /**
      * 企业id
@@ -30,6 +31,6 @@ public class TbPrePayAutoConfig {
     /**
      * 收费项目id
      */
-    @TableField(value = "charge_item_ids",typeHandler = JacksonTypeHandler.class )
-    private List<Long> chargeItemIds;
+    @TableField(value = "charge_item_ids",typeHandler = JsonTypeHandler.class )
+    private List<String> chargeItemIds;
 }

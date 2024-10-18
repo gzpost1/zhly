@@ -109,7 +109,6 @@ public class ChargePayImpl extends AbstrChargePay {
             k.setCreateUser(chargeOrderPaySuccInsertDto.getOrder().getCreateUser());
             k.setCustomerUserId(chargeOrderPaySuccInsertDto.getOrder().getCreateUser());
             k.setPaymentMode(EntityConstants.NO);
-            k.setTransactionMode(0L);
             k.setTransactionNo(chargeOrderPaySuccInsertDto.getTransactionNo());
             k.setOrderId(chargeOrderPaySuccInsertDto.getOrderId());
         });
@@ -179,7 +178,7 @@ public class ChargePayImpl extends AbstrChargePay {
         chargeOrderPaySuccInsertDto.setOrder(order);
 
         List<ChargePayToWechatDetailDto> orderDetail = Lists.newArrayList();
-        orderDetail.add(new ChargePayToWechatDetailDto(chargeId, needToPayAmount));
+        orderDetail.add(new ChargePayToWechatDetailDto(chargeId, needToPayAmount,null));
         order.setOrderDetail(orderDetail);
 
         List<Long> receiptIds =  insertReceivedAndSettlement(chargeOrderPaySuccInsertDto);
@@ -189,7 +188,7 @@ public class ChargePayImpl extends AbstrChargePay {
 
     @Override
     public List<Long> getCompanyIdByChargeIds(List<Long> chargeIds) {
-        return Optional.ofNullable(chargeManager.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbChargeManager::getCompanyId).collect(Collectors.toList());
+        return Optional.ofNullable(chargeManager.listByIds(chargeIds)).orElse(new ArrayList<>()).stream().map(TbChargeManager::getCompanyId).distinct().collect(Collectors.toList());
     }
 
     @Override
