@@ -15,6 +15,7 @@ import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorQuery;
 import cn.cuiot.dmp.externalapi.service.query.hik.HaikangAcsDoorStateQuery;
 import cn.cuiot.dmp.externalapi.service.service.hik.HaikangAcsDoorService;
 import cn.cuiot.dmp.externalapi.service.vo.hik.HaikangAcsDoorVo;
+import cn.cuiot.dmp.externalapi.service.vo.hik.HikDoorControlVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.List;
 import java.util.Optional;
@@ -74,11 +75,11 @@ public class AppHaikangAcsDoorController {
      */
     @RequiresPermissions
     @PostMapping("/doControlDoor")
-    public IdmResDTO doControlDoor(@RequestBody @Valid HaikangAcsDoorControlDto dto) {
+    public IdmResDTO<List<HikDoorControlVo>> doControlDoor(@RequestBody @Valid HaikangAcsDoorControlDto dto) {
         Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
         dto.setCompanyId(currentOrgId);
-        haikangAcsDoorService.doControlDoor(dto);
-        return IdmResDTO.success();
+        List<HikDoorControlVo> resultList =  haikangAcsDoorService.doControlDoor(dto);
+        return IdmResDTO.success(resultList);
     }
 
     /**
