@@ -12,7 +12,7 @@ public enum ChargeCollectionPlainCronTypeEnum {
     /**
      * 每日
      */
-    DAILY((byte) 1, "每日"),
+    DAILY((byte) 1, "每天"),
     /**
      * 每周
      */

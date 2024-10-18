@@ -107,7 +107,7 @@ public class ChargePlainController {
      */
     @RequiresPermissions
     @PostMapping("/export")
-    public void export(ChargePlainQuery dto) throws Exception {
+    public void export(@RequestBody ChargePlainQuery dto) throws Exception {
         excelExportService.excelExport(ExcelDownloadDto.<ChargePlainQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(dto)
                 .title("应收计划导出").fileName("应收计划导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("应收计划导出")
                 .build(), ChargePlainPageDto.class, this::queryExport);

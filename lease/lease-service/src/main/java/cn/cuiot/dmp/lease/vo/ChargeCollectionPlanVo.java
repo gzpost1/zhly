@@ -61,6 +61,8 @@ public class ChargeCollectionPlanVo {
     @Excel(name = "生产频率", orderNum = "5", width = 20)
     private String cornTypeName;
 
+
+
     /**
      * 执行频率-指定日期 1-31
      */

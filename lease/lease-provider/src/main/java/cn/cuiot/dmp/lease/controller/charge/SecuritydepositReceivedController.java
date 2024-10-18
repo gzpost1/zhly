@@ -153,6 +153,8 @@ public class SecuritydepositReceivedController {
             chargeInfoFillService.fillinfo(chargeManagerPageDtoIPage.getRecords(),SecuritydepositManagerPageDto.class);
 
         }
+        List<SecuritydepositManagerPageDto> records = Optional.ofNullable(chargeManagerPageDtoIPage.getRecords()).orElse(new ArrayList<>());
+        records.stream().forEach(item->item.setPaymentModeName(String.valueOf(item.getPaymentMode())));
         return chargeManagerPageDtoIPage;
     }
 }
