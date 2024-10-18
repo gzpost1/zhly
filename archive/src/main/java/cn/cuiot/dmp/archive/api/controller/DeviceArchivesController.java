@@ -87,7 +87,7 @@ public class DeviceArchivesController extends BaseController {
         if (Objects.isNull(query.getLoupanId())) {
             // 获取当前平台下的楼盘列表
             DepartmentReqDto dto = new DepartmentReqDto();
-            dto.setDeptId(LoginInfoHolder.getCurrentOrgId());
+            dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
             dto.setSelfReturn(true);
             List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
             if (CollectionUtils.isEmpty(buildingArchives)) {
