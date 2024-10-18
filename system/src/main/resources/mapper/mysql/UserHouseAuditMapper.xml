@@ -46,6 +46,7 @@
         <result column="department_id" property="departmentId" />
         <result column="department_name" property="departmentName" />
         <result column="house_code" property="houseCode" />
+        <result column="house_name" property="houseName" />
     </resultMap>
 
     <select id="queryForList" resultMap="DtoResultMap">
@@ -55,7 +56,7 @@
             b.department_id as department_id,
             c.department_name as department_name,
             d.`code` as house_code,
-            d.`name` as house_name,
+            d.`name` as house_name
         FROM
             user_house_audit AS a,
             tb_building_archives AS b,
