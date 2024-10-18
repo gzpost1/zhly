@@ -4,6 +4,8 @@ import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 /**
  * 监控后台-分页vo
  *
@@ -23,6 +25,11 @@ public class VideoPageQuery extends PageQuery {
      * 楼盘id
      */
     private Long buildingId;
+
+    /**
+     * 楼盘ids
+     */
+    private List<Long> buildingIds;
 
     /**
      * 设备状态

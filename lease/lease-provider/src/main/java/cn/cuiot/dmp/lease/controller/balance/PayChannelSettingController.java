@@ -1,7 +1,10 @@
 package cn.cuiot.dmp.lease.controller.balance;
 
+import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.pay.service.service.dto.PayChannelSettingDto;
 import cn.cuiot.dmp.pay.service.service.service.SysPayChannelSettingService;
 import cn.cuiot.dmp.pay.service.service.vo.SysPayChannelSettingDetailVo;
@@ -37,7 +40,7 @@ public class PayChannelSettingController {
     @RequiresPermissions
     @PostMapping("/queryAdminForDetail")
     public IdmResDTO<SysPayChannelSettingDetailVo> queryAdminForDetail() {
-        return IdmResDTO.success(settingService.queryAdminForDetail());
+        return IdmResDTO.success(settingService.queryAdminForDetail(LoginInfoHolder.getCurrentOrgId()));
     }
 
     /**
@@ -45,6 +48,7 @@ public class PayChannelSettingController {
      *
      * @param param
      */
+    @LogRecord(operationCode = "update", operationName = "新支付渠道", serviceType = ServiceTypeConst.CLUE_MANAGEMENT)
     @RequiresPermissions
     @PostMapping("/update")
     public IdmResDTO update(@Valid PayChannelSettingDto param) {

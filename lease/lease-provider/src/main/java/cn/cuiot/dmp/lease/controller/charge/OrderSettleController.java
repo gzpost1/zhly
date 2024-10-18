@@ -145,8 +145,8 @@ public class OrderSettleController extends BaseController {
         queryWrapper.in(CollectionUtils.isNotEmpty(query.getLoupanIds()), TbOrderSettlement::getLoupanId, query.getLoupanIds());
         queryWrapper.in(CollectionUtils.isNotEmpty(query.getHouseIds()), TbOrderSettlement::getHouseId, query.getHouseIds());
         queryWrapper.eq(Objects.nonNull(query.getCompanyId()), TbOrderSettlement::getCompanyId, query.getCompanyId());
-        queryWrapper.le(Objects.nonNull(query.getStartTime()), TbOrderSettlement::getSettlementTime, query.getStartTime());
-        queryWrapper.ge(Objects.nonNull(query.getEndTime()), TbOrderSettlement::getSettlementTime, query.getEndTime());
+        queryWrapper.ge(Objects.nonNull(query.getStartTime()), TbOrderSettlement::getSettlementTime, query.getStartTime());
+        queryWrapper.le(Objects.nonNull(query.getEndTime()), TbOrderSettlement::getSettlementTime, query.getEndTime());
         return queryWrapper;
     }
 

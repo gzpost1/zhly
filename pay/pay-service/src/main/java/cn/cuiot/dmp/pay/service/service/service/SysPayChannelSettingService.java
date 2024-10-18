@@ -55,15 +55,17 @@ public class SysPayChannelSettingService extends ServiceImpl<SysPayChannelSettin
      *
      * @return
      */
-    public SysPayChannelSettingDetailVo queryAdminForDetail() {
+    public SysPayChannelSettingDetailVo queryAdminForDetail(Long orgId) {
         //暂时只有微信普通商户，这里先直接取微信普通商户
         LambdaQueryWrapper<SysPayChannelSetting> queryWrapper = new LambdaQueryWrapper<SysPayChannelSetting>()
                 .eq(SysPayChannelSetting::getPayChannel, PayChannelEnum.WECHAT_NORMAL.getPayChannel())
                 .eq(SysPayChannelSetting::getMchType, PayChannelEnum.WECHAT_NORMAL.getMchType())
-                .eq(SysPayChannelSetting::getOrgId, LoginInfoHolder.getCurrentOrgId());
+                .eq(SysPayChannelSetting::getOrgId, orgId);
         SysPayChannelSetting channelSetting = this.getOne(queryWrapper);
         return SysPayChannelSettingDetailVo.toBuilder(Objects.isNull(channelSetting) ? null : channelSetting, PayChannelEnum.WECHAT_NORMAL.getPayChannel());
     }
+
+
 
     /**
      * 更新支付渠道参数

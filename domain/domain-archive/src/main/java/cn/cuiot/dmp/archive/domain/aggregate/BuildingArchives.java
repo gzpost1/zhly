@@ -44,6 +44,21 @@ public class BuildingArchives implements Serializable {
     private Long companyId;
 
     /**
+     * 详细位置
+     */
+    private String address;
+
+    /**
+     * 经度
+     */
+    private String longitude;
+
+    /**
+     * 纬度
+     */
+    private String latitude;
+
+    /**
      * 部门ID
      */
     private Long departmentId;

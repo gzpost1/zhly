@@ -5,6 +5,7 @@ import cn.cuiot.dmp.externalapi.service.entity.park.AccessControlEntity;
 
 import cn.cuiot.dmp.externalapi.service.query.AccessCommunityDto;
 import cn.cuiot.dmp.externalapi.service.query.QueryAccessCommunity;
+import cn.cuiot.dmp.externalapi.service.query.StatisInfoReqDTO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -25,4 +26,11 @@ public interface AccessControlMapper extends BaseMapper<AccessControlEntity> {
     public void insertOrUpdateBatch(@Param("accessList") List<AccessControlEntity> accessList);
 
     Page<AccessCommunityDto> queryForPage(Page<AccessCommunityDto> page, @Param("query") QueryAccessCommunity queryAccessCommunity);
+
+    /**
+     * 查询宇泛 门禁 设备统计
+     * @param params
+     * @return
+     */
+    Long queryAccessCommunityCount(@Param("params") StatisInfoReqDTO params);
 }

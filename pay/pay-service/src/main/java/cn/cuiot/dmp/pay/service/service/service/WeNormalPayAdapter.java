@@ -74,6 +74,7 @@ public class WeNormalPayAdapter implements IPayBaseInterface {
                 .payer(PayerInfoEntity.builder().openId(unifiedOrderRequestDto.getOpenId()).build())
                 .sceneInfo(SceneInfoEntity.builder().payerClientIp(unifiedOrderRequestDto.getSpbillCreateIp()).build())
                 .settleInfo(SettleInfoEntity.builder().profitSharing(Boolean.FALSE).build())
+                .attach(unifiedOrderRequestDto.getBusinessType().toString())
                 .build();
 
         UnifiedOrderResponseDto responseDto = normalPayHttpService.payOrder(request,paySetting, unifiedOrderRequestDto.getTradeType());

@@ -39,7 +39,7 @@ public class PayChannelSettingController {
      */
     @PostMapping("/queryAdminForDetail")
     public IdmResDTO<SysPayChannelSettingDetailVo> queryAdminForDetail() {
-        return IdmResDTO.success(settingService.queryAdminForDetail());
+        return IdmResDTO.success(settingService.queryAdminForDetail(LoginInfoHolder.getCurrentOrgId()));
     }
 
     /**

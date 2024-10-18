@@ -30,7 +30,9 @@ import cn.cuiot.dmp.content.param.dto.AuditResultDto;
 import cn.cuiot.dmp.content.param.dto.NoticeCreateDto;
 import cn.cuiot.dmp.content.param.dto.NoticeUpdateDto;
 import cn.cuiot.dmp.content.param.query.NoticPageQuery;
+import cn.cuiot.dmp.content.param.req.NoticeStatisInfoReqVo;
 import cn.cuiot.dmp.content.param.req.PublishReqVo;
+import cn.cuiot.dmp.content.param.vo.ContentNoticeVo;
 import cn.cuiot.dmp.content.param.vo.NoticeVo;
 import cn.cuiot.dmp.content.param.vo.export.NoticeExportVo;
 import cn.cuiot.dmp.content.service.ContentDataRelevanceService;
@@ -321,6 +323,17 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
                         .build());
             });
         }
+    }
+
+    @Override
+    public IPage<ContentNoticeVo> queryContentNoticeStatistic(NoticeStatisInfoReqVo dto) {
+        if(dto.getType().equals(ContentConstants.PublishSource.MANAGE.intValue())){
+            return this.baseMapper.queryContentAdminNoticeStatistic(new Page<>(dto.getPageNo(), dto.getPageSize()),dto);
+        }
+        if(dto.getType().equals(ContentConstants.PublishSource.APP.intValue())){
+            return this.baseMapper.queryContentAppNoticeStatistic(new Page<>(dto.getPageNo(), dto.getPageSize()),dto);
+        }
+        return new Page<>();
     }
 
     @Override

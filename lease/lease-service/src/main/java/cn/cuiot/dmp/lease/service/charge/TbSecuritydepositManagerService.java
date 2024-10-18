@@ -7,6 +7,7 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeAbrogate;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositManager;
 import cn.cuiot.dmp.lease.entity.charge.TbSecuritydepositRefund;
 import cn.cuiot.dmp.lease.enums.ChargeAbrogateTypeEnum;
+import cn.cuiot.dmp.lease.enums.ChargePayStatusEnum;
 import cn.cuiot.dmp.lease.enums.SecurityDepositStatusEnum;
 import cn.cuiot.dmp.lease.mapper.charge.TbSecuritydepositManagerMapper;
 import cn.cuiot.dmp.pay.service.service.entity.TbOrderSettlement;
@@ -121,6 +122,7 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
         entity.setStatus(SecurityDepositStatusEnum.UNPAID.getCode());
         entity.setReceivableAmountReceived(0);
         entity.setReturnedAmount(0);
+        entity.setPayStatus(ChargePayStatusEnum.PAY_SUCCESS.getCode());
         this.save(entity);
     }
 
@@ -163,7 +165,7 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
         for (TbSecuritydepositManager received : tbSecuritydepositManagers) {
             TbOrderSettlement tbOrderSettlement = new TbOrderSettlement();
             tbOrderSettlement.setId(IdWorker.getId());
-            tbOrderSettlement.setReceivableId(received.getId());
+            tbOrderSettlement.setReceivableId(chargeOrderPaySuccInsertDto.getReceivedId());
             tbOrderSettlement.setPaidUpId(received.getId());
             tbOrderSettlement.setCreateTime(new Date());
             tbOrderSettlement.setLoupanId(received.getLoupanId());

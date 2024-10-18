@@ -21,6 +21,7 @@
         <module>externalapi</module>
         <module>pay</module>
         <module>sms</module>
+        <module>largescreen</module>
     </modules>
 
     <parent>

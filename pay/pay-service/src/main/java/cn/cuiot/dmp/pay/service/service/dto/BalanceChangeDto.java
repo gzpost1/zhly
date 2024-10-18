@@ -8,7 +8,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -25,12 +28,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BalanceChangeDto implements Serializable {
-    /**
-     * 修改余额类型
-     * 0-增加，1-减少
-     */
-    @NotNull(message = "修改余额类型不能为空")
-    private Byte changeFlag;
+
 
     /**
      * 房屋id
@@ -40,21 +38,20 @@ public class BalanceChangeDto implements Serializable {
     /**
      * 金额
      */
+    @Max(value = 100000,message = "最大值为100000")
+    @Min(value = -100000,message = "最大值为-100000")
     @NotNull(message = "金额不能为空")
     private Integer balance;
+
     /**
-     * 用户手机号
+     * 原因
      */
-    @NotBlank(message = "手机号不能为空")
-    private String phone;
-    /**
-     * 验证码，减少金额时必传
-     */
-    private String smsCode;
+    @Length(max = 200,message = "最长不能超过200")
+    private String reason;
 
     public void valid() {
-        if (EntityConstants.YES.equals(this.changeFlag) && StringUtils.isEmpty(this.smsCode)) {
-            throw  new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "扣减用户余额时验证码必传");
+        if (0== balance) {
+            new BusinessException(ResultCode.PARAM_NOT_COMPLIANT, "余额充值或扣减金额不能为0");
         }
 
     }

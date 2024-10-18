@@ -643,4 +643,33 @@
         select IF(count(*)>0,0,1) from act_ru_task t1 left join tb_node_type t2 on t1.PROC_DEF_ID_ = t2.process_definition_id
         where t1.ASSIGNEE_ = #{userId} and t1.PROC_INST_ID_ = #{procInstId} and t1.TASK_DEF_KEY_=t2.node_id and t2.node_type=#{nodeType}
     </select>
+
+    <select id="queryTopWorkType" resultType="cn.cuiot.dmp.baseconfig.flow.vo.WorkTypeStatisticVO">
+        select
+            t2.name as workType ,
+            count(1) as count
+        from
+            tb_work_info t1
+            left join business_type t2 on
+            t1.business_type = t2.id
+        where
+        1 = 1
+        <if test=" params.companyId != null">
+            and t1.company_id =  #{params.companyId}
+        </if>
+
+        <if test="params.departmentIdList != null and params.departmentIdList.size() > 0">
+            and t1.org_id in
+            <foreach collection="params.departmentIdList" item="dep" open="(" separator="," close=")">
+                #{dep}
+            </foreach>
+        </if>
+        group by
+            t2.name
+        order by
+            count(1) desc
+            limit 5
+
+
+    </select>
 </mapper>

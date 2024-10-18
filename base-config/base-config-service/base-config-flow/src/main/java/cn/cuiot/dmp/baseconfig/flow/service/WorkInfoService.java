@@ -8,10 +8,7 @@ import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseUserDto;
 import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BaseUserReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.BusinessTypeReqDTO;
-import cn.cuiot.dmp.base.infrastructure.dto.req.CustomerUseReqDto;
-import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
+import cn.cuiot.dmp.base.infrastructure.dto.req.*;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.BusinessTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomerUserRspDto;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
@@ -39,6 +36,8 @@ import cn.cuiot.dmp.baseconfig.flow.enums.*;
 import cn.cuiot.dmp.baseconfig.flow.feign.SystemToFlowService;
 import cn.cuiot.dmp.baseconfig.flow.flowable.msg.MsgSendService;
 import cn.cuiot.dmp.baseconfig.flow.mapper.WorkInfoMapper;
+import cn.cuiot.dmp.baseconfig.flow.vo.WorkInfoStatisticVO;
+import cn.cuiot.dmp.baseconfig.flow.vo.WorkTypeStatisticVO;
 import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.MsgDataType;
@@ -60,6 +59,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -2402,6 +2402,58 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         CommitProcessEntity entity = CollectionUtils.isNotEmpty(processEntities)?processEntities.get(0):null;
         return IdmResDTO.success(entity);
 
+    }
+
+    /**
+     * 工单统计
+     * @param dto
+     * @return
+     */
+    public IdmResDTO<WorkInfoStatisticVO> queryWorkOrderStatistic(StatisInfoReqDTO dto) {
+
+        // 临时工单
+        LambdaQueryWrapper<WorkInfoEntity> tempWorkWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
+                .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
+                .ne(WorkInfoEntity::getWorkSouce, WorkSourceEnums.WORK_SOURCE_PLAN.getCode())
+                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
+        Long tempWorkCount = getBaseMapper().selectCount(tempWorkWrapper);
+
+        // 循环工单
+        LambdaQueryWrapper<WorkInfoEntity> circleWorkWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
+                .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
+                .eq(WorkInfoEntity::getWorkSouce, WorkSourceEnums.WORK_SOURCE_PLAN.getCode())
+                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
+
+        Long circleWorkCount = getBaseMapper().selectCount(circleWorkWrapper);
+
+        // 已完成情况
+        LambdaQueryWrapper<WorkInfoEntity> finishWorkWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
+                .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
+                .eq(WorkInfoEntity::getStatus,WorkOrderStatusEnums.completed.getStatus())
+                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
+
+        Long finishWorkCount = getBaseMapper().selectCount(finishWorkWrapper);
+
+
+        // 待完成情况
+        LambdaQueryWrapper<WorkInfoEntity> workingWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
+                .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
+                .in(WorkInfoEntity::getStatus,WorkOrderStatusEnums.progress.getStatus(),WorkOrderStatusEnums.Suspended.getStatus())
+                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
+
+        Long workingCount = getBaseMapper().selectCount(workingWrapper);
+
+
+        List<WorkTypeStatisticVO> topWorkType = getBaseMapper().queryTopWorkType(dto);
+
+        WorkInfoStatisticVO statisticResDTO = new WorkInfoStatisticVO();
+        statisticResDTO.setTempWork(Optional.ofNullable(tempWorkCount).orElse(0L));
+        statisticResDTO.setCircleWork(Optional.ofNullable(circleWorkCount).orElse(0L));
+        statisticResDTO.setFinishWork(Optional.ofNullable(finishWorkCount).orElse(0L));
+        statisticResDTO.setWorking(Optional.ofNullable(workingCount).orElse(0L));
+        statisticResDTO.setTopWorkType(Optional.ofNullable(topWorkType).orElse(new ArrayList<>()));
+
+        return IdmResDTO.success(statisticResDTO);
     }
 
 

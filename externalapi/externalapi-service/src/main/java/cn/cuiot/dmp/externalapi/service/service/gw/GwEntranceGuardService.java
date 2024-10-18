@@ -25,6 +25,8 @@ import cn.cuiot.dmp.externalapi.service.entity.gw.GwDeviceRelationEntity;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardOperationRecordEntity;
 import cn.cuiot.dmp.externalapi.service.enums.GwEntranceGuardEquipStatusEnums;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
+import cn.cuiot.dmp.externalapi.service.query.EntranceGuardRecordReqDTO;
+import cn.cuiot.dmp.externalapi.service.query.StatisInfoReqDTO;
 import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardCreateDto;
 import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardOperationDto;
 import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardPageQuery;
@@ -33,12 +35,14 @@ import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.DmpDeviceCreateReq;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.InvokeDeviceServiceReq;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDeviceResp;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.dmp.DmpDeviceRemoteService;
+import cn.cuiot.dmp.externalapi.service.vo.EntranceGuardRecordVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwEntranceGuardAppPageVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwEntranceGuardPageVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
@@ -455,5 +459,23 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
         CustomConfigDetailReqDTO dto = new CustomConfigDetailReqDTO();
         dto.setCustomConfigDetailIdList(customConfigDetailIds);
         return apiSystemService.batchQueryCustomConfigDetailsForMap(dto);
+    }
+
+
+    /**
+     * 获取 格物门禁 数量的统计
+     */
+    public Long queryEntranceGuardCount(StatisInfoReqDTO statisInfoReqDTO) {
+        LambdaQueryWrapper<GwEntranceGuardEntity> queryWrapper = Wrappers.<GwEntranceGuardEntity>lambdaQuery()
+                .eq(statisInfoReqDTO.getCompanyId() != null, GwEntranceGuardEntity::getCompanyId, statisInfoReqDTO.getCompanyId())
+                .in(CollectionUtils.isNotEmpty(statisInfoReqDTO.getDepartmentIdList()), GwEntranceGuardEntity::getDeptId, statisInfoReqDTO.getDepartmentIdList())
+                .in(CollectionUtils.isNotEmpty(statisInfoReqDTO.getLoupanIds()), GwEntranceGuardEntity::getBuildingId, statisInfoReqDTO.getLoupanIds());
+
+        return getBaseMapper().selectCount(queryWrapper);
+    }
+
+
+    public IPage<EntranceGuardRecordVo> entranceGuardQueryForPage(EntranceGuardRecordReqDTO query) {
+        return getBaseMapper().entranceGuardQueryForPage(new Page(query.getPageNo(), query.getPageSize()), query);
     }
 }
