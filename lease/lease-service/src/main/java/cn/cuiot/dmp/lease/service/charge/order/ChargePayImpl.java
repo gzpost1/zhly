@@ -109,7 +109,6 @@ public class ChargePayImpl extends AbstrChargePay {
             k.setCreateUser(chargeOrderPaySuccInsertDto.getOrder().getCreateUser());
             k.setCustomerUserId(chargeOrderPaySuccInsertDto.getOrder().getCreateUser());
             k.setPaymentMode(EntityConstants.NO);
-            k.setTransactionMode(0L);
             k.setTransactionNo(chargeOrderPaySuccInsertDto.getTransactionNo());
             k.setOrderId(chargeOrderPaySuccInsertDto.getOrderId());
         });

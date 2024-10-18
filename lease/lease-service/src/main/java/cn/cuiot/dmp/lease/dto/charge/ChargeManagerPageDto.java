@@ -1,7 +1,6 @@
 package cn.cuiot.dmp.lease.dto.charge;
 
 import cn.cuiot.dmp.base.infrastructure.utils.MathTool;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -9,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @Description 收费管理-收银台-缴费管理分页详情
@@ -16,7 +16,7 @@ import java.util.Objects;
  * @Created by libo
  */
 @Data
-public class ChargeManagerPageDto implements ChargeItemNameSet,ChargeStandardNameSet {
+public class ChargeManagerPageDto implements ChargeItemNameSet, ChargeStandardNameSet {
     /**
      * 应收编码
      */
@@ -173,7 +173,7 @@ public class ChargeManagerPageDto implements ChargeItemNameSet,ChargeStandardNam
     private String chargeStandardName;
 
     public Integer getTotalOwe() {
-        return receivableAmount - receivableAmountReceived;
+        return receivableAmount - receivableAmountReceived + Optional.ofNullable(getPageLiquidatedDamagesNeed()).orElse(0);
     }
 
     public void setTotalOwe(Integer totalOwe) {
@@ -181,7 +181,7 @@ public class ChargeManagerPageDto implements ChargeItemNameSet,ChargeStandardNam
     }
 
     public Integer getReceivableAmountTax() {
-        if(Objects.isNull(receivableAmountRate)){
+        if (Objects.isNull(receivableAmountRate)) {
             return 0;
         }
         return MathTool.percentCalculate(getReceivableAmount(), receivableAmountRate);

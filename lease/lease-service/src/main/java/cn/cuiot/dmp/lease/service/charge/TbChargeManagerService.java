@@ -15,7 +15,9 @@ import cn.cuiot.dmp.lease.mapper.charge.TbChargeManagerMapper;
 import cn.cuiot.dmp.lease.dto.charge.PrePayAmountAndHouseId;
 import cn.cuiot.dmp.lease.vo.ChargeCollectionManageVo;
 import cn.cuiot.dmp.lease.vo.ChargeManagerCustomerStatisticsVo;
+import cn.cuiot.dmp.pay.service.service.entity.BalanceEntity;
 import cn.cuiot.dmp.pay.service.service.entity.TbOrderSettlement;
+import cn.cuiot.dmp.pay.service.service.service.BalanceService;
 import cn.cuiot.dmp.pay.service.service.service.TbOrderSettlementService;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -46,6 +48,8 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
     private TbSecuritydepositManagerService securitydepositManagerService;
     @Autowired
     private TbOrderSettlementService orderSettlementService;
+    @Autowired
+    private BalanceService balanceService;
 
 
     /**
@@ -194,8 +198,9 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
 
         chargeHouseDetailDto.setDepositRefundable(securitydepositManagerService.getHouseReundableAmount(chargeHouseDetailDto.getHouseId()));
 
-        //todo 统计当前房屋的预缴余额，预缴余额=充值总金额-扣缴总金额
         chargeHouseDetailDto.setAdvanceBalance(0);
+        Integer balance = Optional.ofNullable(balanceService.getById(id)).orElse(new BalanceEntity()).getBalance();
+        chargeHouseDetailDto.setAdvanceBalance(Optional.ofNullable(balance).orElse(0));
         return chargeHouseDetailDto;
     }
 
@@ -289,6 +294,8 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
             return tbChargeReceived;
 
         }).collect(Collectors.toList());
+
+
         return receiveds;
     }
 
