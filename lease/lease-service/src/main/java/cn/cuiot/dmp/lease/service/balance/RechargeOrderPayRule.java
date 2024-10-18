@@ -170,6 +170,7 @@ public class RechargeOrderPayRule {
         }
         CloseOrderReq param = new CloseOrderReq();
         param.setOutOrderId(order.getOrderId().toString());
+        param.setOrgId(orderDto.getOrgId());
         log.error("关闭订单，订单详细：{}", order);
         orderPayAtHandler.closeOrder(param);
         payFailHandler(order, MbRechargeOrderStatus.CANCEL.getStatus());
