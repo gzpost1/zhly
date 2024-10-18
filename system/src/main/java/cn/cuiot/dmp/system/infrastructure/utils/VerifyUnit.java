@@ -16,9 +16,6 @@ import java.util.Collections;
 
 import static cn.cuiot.dmp.common.constant.ResultCode.*;
 
-import static cn.cuiot.dmp.common.constant.ResultCode.KAPTCHA_EXPIRED_ERROR;
-import static cn.cuiot.dmp.common.constant.ResultCode.SMS_CODE_EXPIRED_ERROR;
-
 
 /**
  * @author jiangze
@@ -100,9 +97,12 @@ public class VerifyUnit {
             // 短信验证码过期
             return false;
         }
-        stringRedisTemplate.delete(redisKey);
         // 判断用户输入的验证码是否正确
-        return expectedText.equals(checkedText);
+        boolean result = expectedText.equals(checkedText);
+        if (result) {
+            stringRedisTemplate.delete(redisKey);
+        }
+        return result;
     }
 
     /**
