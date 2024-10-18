@@ -11,6 +11,7 @@ import cn.cuiot.dmp.lease.dto.charge.ChargeNoticeCreateDto;
 import cn.cuiot.dmp.lease.dto.charge.ChargeNoticePageQuery;
 import cn.cuiot.dmp.lease.dto.charge.ChargeNoticeSendQuery;
 import cn.cuiot.dmp.lease.service.charge.ChargeNoticeService;
+import cn.cuiot.dmp.lease.task.ChargeOrderTask;
 import cn.cuiot.dmp.lease.vo.ChargeNoticePageVo;
 import cn.cuiot.dmp.lease.vo.ChargeNoticeVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -33,7 +34,8 @@ public class ChargeNoticeController {
 
     @Autowired
     private ChargeNoticeService chargeNoticeService;
-
+    @Autowired
+    private ChargeOrderTask chargeOrderTask;
     /**
      * 分页
      */
@@ -107,6 +109,15 @@ public class ChargeNoticeController {
     @LogRecord(operationCode = "sengMsg", operationName = "收费管理-通知单-发送通知", serviceType = ServiceTypeConst.CHARGE_NOTICE)
     public IdmResDTO<?> sengMsg(@RequestBody @Valid ChargeNoticeSendQuery query) {
         chargeNoticeService.sengMsg(query);
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 发送通知
+     */
+    @PostMapping("taskProcess")
+    public IdmResDTO<?> taskProcess(@RequestBody  ChargeNoticeSendQuery query) {
+        chargeOrderTask.prePayChargeId(null);
         return IdmResDTO.success();
     }
 }

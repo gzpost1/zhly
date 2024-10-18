@@ -214,7 +214,7 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
         this.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
     }
 
-    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage) {
-        return baseMapper.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage);
+    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage,Date date) {
+        return baseMapper.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage,date);
     }
 }

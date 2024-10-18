@@ -192,8 +192,8 @@ public class ChargePayImpl extends AbstrChargePay {
     }
 
     @Override
-    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage) {
-        return chargeManager.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage);
+    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage, Date date ) {
+        return chargeManager.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage,date);
     }
 
     private LambdaQueryWrapper<TbChargeManager> getNeedPayWrapper() {

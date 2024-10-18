@@ -79,5 +79,11 @@ public class OrderSettlementQuery extends PageQuery {
      * 企业ID
      */
     private Long companyId;
+
+    /**
+     * 收款方式 0平台 1人工
+     */
+    private Byte paymentMode;
+
 }
 

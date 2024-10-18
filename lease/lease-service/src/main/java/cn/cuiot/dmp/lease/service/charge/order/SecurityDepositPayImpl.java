@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -153,7 +154,7 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
     }
 
     @Override
-    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage) {
-        return securitydepositManagerService.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage);
+    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage, Date date) {
+        return securitydepositManagerService.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage,date);
     }
 }

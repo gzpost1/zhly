@@ -6,6 +6,7 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeOrder;
 import cn.cuiot.dmp.lease.service.charge.TbChargeOrderService;
 import cn.cuiot.dmp.lease.service.charge.order.AbstrChargePay;
 import cn.cuiot.dmp.lease.service.charge.order.ChargePayService;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
@@ -13,9 +14,11 @@ import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -104,7 +107,10 @@ public class ChargeOrderTask {
     public ReturnT<String> prePayChargeId(String param) {
         //1 首先查询订单状态为未支付状态的订单，然后关闭订单，并修改订单状态为已取消
         log.info("开始执行每天晚上一点预缴支付应收账单");
-
+        Date date = DateUtil.offsetDay(new Date(), -1);
+        if (StringUtils.isNotBlank(param)) {
+            date = DateUtil.parse(param);
+        }
         //押金不能使用预缴支付
         List<AbstrChargePay> needTOProcessMethodList = chargePayList.stream().filter(abstrChargePay -> !abstrChargePay.getDataType().equals(Byte.valueOf("1"))).collect(Collectors.toList());
         for (AbstrChargePay abstrChargePay : needTOProcessMethodList) {
@@ -115,7 +121,7 @@ public class ChargeOrderTask {
             long count = abstrChargePay.queryNeedPayCount();
             if (count > 0) {
                 while (totalProcess < count) {
-                    IPage<Chargeovertimeorderdto> checkCompanyIPage = abstrChargePay.queryOverTimeOrderAndClosePage(new Page<Chargeovertimeorderdto>(pageNo, PAGE_SIZE));
+                    IPage<Chargeovertimeorderdto> checkCompanyIPage = abstrChargePay.queryOverTimeOrderAndClosePage(new Page<Chargeovertimeorderdto>(pageNo, PAGE_SIZE), date);
                     if (checkCompanyIPage.getTotal() <= 0 || CollectionUtils.isEmpty(checkCompanyIPage.getRecords())) {
                         return ReturnT.SUCCESS;
                     } else {
@@ -123,7 +129,7 @@ public class ChargeOrderTask {
 
                         for (Chargeovertimeorderdto record : checkCompanyIPage.getRecords()) {
                             try {
-                                log.info("开始预缴账单，账单计划id为{}",record.getDataId());
+                                log.info("开始预缴账单，账单计划id为{}", record.getDataId());
 
                                 ChargePayDto chargePayDto = new ChargePayDto();
                                 chargePayDto.setChargeIds(Lists.newArrayList(record.getDataId()));
@@ -131,7 +137,7 @@ public class ChargeOrderTask {
                                 chargePayService.prePay(chargePayDto);
 
                             } catch (Exception e) {
-                                log.error("账单计划扣减错误，账单计划id为{},错误为{}",record.getDataId(),e);
+                                log.error("账单计划扣减错误，账单计划id为{},错误为{}", record.getDataId(), e);
                             }
                         }
                     }

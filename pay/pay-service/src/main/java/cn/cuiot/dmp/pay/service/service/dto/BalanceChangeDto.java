@@ -38,8 +38,8 @@ public class BalanceChangeDto implements Serializable {
     /**
      * 金额
      */
-    @Max(value = 100000,message = "最大值为100000")
-    @Min(value = -100000,message = "最大值为-100000")
+    @Max(value = 10000000,message = "最大值为100000")
+    @Min(value = -10000000,message = "最大值为-100000")
     @NotNull(message = "金额不能为空")
     private Integer balance;
 

@@ -553,7 +553,7 @@
         and b.charge_item_ids like concat('%',a.charge_item_id,'%')
         and a.receivble_status in (0,1)
         and a.pay_status != 0
-        and date_format(now(),'%Y-%m-%d') = date_format(due_date,'%Y-%m-%d')
+        and date_format(#{date},'%Y-%m-%d') = date_format(due_date,'%Y-%m-%d')
         and a.hang_up_status = 0
         and a.abrogate_status = 0
         order by (a.receivable_amount-a.receivable_amount_received) desc

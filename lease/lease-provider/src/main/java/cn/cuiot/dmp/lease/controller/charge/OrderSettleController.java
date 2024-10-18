@@ -139,6 +139,7 @@ public class OrderSettleController extends BaseController {
         queryWrapper.like(StringUtils.isNotBlank(query.getPaidUpId()), TbOrderSettlement::getPaidUpId, query.getPaidUpId());
         queryWrapper.like(StringUtils.isNotBlank(query.getTransactionNo()), TbOrderSettlement::getTransactionNo, query.getTransactionNo());
         queryWrapper.eq(Objects.nonNull(query.getIncomeType()), TbOrderSettlement::getIncomeType, query.getIncomeType());
+        queryWrapper.eq(Objects.nonNull(query.getPaymentMode()), TbOrderSettlement::getPaymentMode, query.getPaymentMode());
         queryWrapper.eq(Objects.nonNull(query.getChargeItemId()), TbOrderSettlement::getChargeItemId, query.getChargeItemId());
         queryWrapper.eq(Objects.nonNull(query.getTransactionMode()), TbOrderSettlement::getTransactionMode, query.getTransactionMode());
         queryWrapper.eq(Objects.nonNull(query.getExpenditureType()), TbOrderSettlement::getExpenditureType, query.getExpenditureType());

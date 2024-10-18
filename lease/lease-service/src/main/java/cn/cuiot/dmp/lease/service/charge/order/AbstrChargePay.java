@@ -5,6 +5,7 @@ import cn.cuiot.dmp.lease.dto.charge.*;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -76,5 +77,5 @@ public abstract class AbstrChargePay {
 
     public abstract List<Long> getCompanyIdByChargeIds(List<Long> chargeIds);
 
-    public abstract IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage);
+    public abstract IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage, Date date );
 }
