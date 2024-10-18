@@ -360,7 +360,6 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         return pageResult.convert(o -> {
             UserHouseAuditExportVo exportVo = new UserHouseAuditExportVo();
             BeanUtils.copyProperties(o, exportVo);
-            exportVo.setAuditTime(Date.from(o.getCreatedOn().atZone(ZoneId.systemDefault()).toInstant()));
             return exportVo;
         });
     }
