@@ -70,7 +70,7 @@ public class BalanceChangeRecord extends YjBaseEntity {
 
 
     /**
-     * 余额任务类型1-余额支付、2-用户充值、3-积分兑换、4-平台操作、5-退款-退回余额
+     * 余额任务类型1-订单消费、2-用户充值、3-积分兑换、4-平台操作、5-退款-退回余额
      */
     private Byte changeType;
 
