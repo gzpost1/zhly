@@ -1,8 +1,10 @@
 package cn.cuiot.dmp.externalapi.service.query.hik;
 
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 /**
  * 海康人员信息新增DTO
@@ -16,6 +18,7 @@ public class HikPersonInfoCreateDto {
      * 人员名称，1~32个字符；不能包含特殊字符
      */
     @NotBlank(message = "人员名称不能为空")
+    @Length(max = 32,message = "人员名称限32字")
     private String personName;
 
     /**
@@ -40,15 +43,20 @@ public class HikPersonInfoCreateDto {
      * 证件号码，1-20位数字字母
      */
     @NotBlank(message = "证件号码不能为空")
+    @Length(max = 20, message = "证件号码限20字")
+    @Pattern(regexp = "[a-zA-Z0-9]{1,20}$", message = "证件号码必须是数字或字母")
     private String certificateNo;
 
     /**
-     * 手机号，1-20位数字
+     * 手机号，11位数字
      */
+    @Length(max = 11,message = "手机号限11字")
     private String phoneNo;
 
     /**
      * 工号，1-32个字符
      */
+    @Length(max = 32,message = "工号限32字")
+    @Pattern(regexp = "[a-zA-Z0-9\\u4e00-\\u9fa5]{1,32}$", message = "工号不能输入特殊字符")
     private String jobNo;
 }
