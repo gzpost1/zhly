@@ -520,13 +520,11 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
     private void batchDeleteAuthorize(List<Long> personIds, HIKEntranceGuardBO bo) {
         // 远程调用删除授权
         HikAcpsAuthConfigDeleteReq deleteReq = new HikAcpsAuthConfigDeleteReq();
-        List<HikAcpsAuthConfigDeleteReq.PersonDataDTO> person = personIds.stream().map(item -> {
-            HikAcpsAuthConfigDeleteReq.PersonDataDTO personDataDTO = new HikAcpsAuthConfigDeleteReq.PersonDataDTO();
-            personDataDTO.setPersonDataType("person");
-            personDataDTO.setIndexCodes(Collections.singletonList(item + ""));
-            return personDataDTO;
-        }).collect(Collectors.toList());
-        deleteReq.setPersonDatas(person);
+
+        HikAcpsAuthConfigDeleteReq.PersonDataDTO personDataDTO = new HikAcpsAuthConfigDeleteReq.PersonDataDTO();
+        personDataDTO.setPersonDataType("person");
+        personDataDTO.setIndexCodes(personIds.stream().map(String::valueOf).collect(Collectors.toList()));
+        deleteReq.setPersonDatas(Collections.singletonList(personDataDTO));
 
         hikApiFeignService.acpsAuthConfigDelete(deleteReq, bo);
     }
@@ -564,13 +562,11 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
         HikAcpsAuthConfigAddReq req = new HikAcpsAuthConfigAddReq();
 
         // 设置用户列表信息
-        List<HikAcpsAuthConfigAddReq.PersonDataDTO> dtoList = dto.getIds().stream().map(personId -> {
-            HikAcpsAuthConfigAddReq.PersonDataDTO personDataDTO = new HikAcpsAuthConfigAddReq.PersonDataDTO();
-            personDataDTO.setIndexCodes(Collections.singletonList(personId + ""));
-            personDataDTO.setPersonDataType("person");
-            return personDataDTO;
-        }).collect(Collectors.toList());
-        req.setPersonDatas(dtoList);
+        HikAcpsAuthConfigAddReq.PersonDataDTO personDataDTO = new HikAcpsAuthConfigAddReq.PersonDataDTO();
+        personDataDTO.setIndexCodes(dto.getIds().stream().map(String::valueOf).collect(Collectors.toList()));
+        personDataDTO.setPersonDataType("person");
+
+        req.setPersonDatas(Collections.singletonList(personDataDTO));
 
         // 设置授权信息
         List<HikAcpsAuthConfigAddReq.ResourceInfoDTO> resourceInfoDtoList = dto.getThirdDoorIdList().stream().map(item -> {
