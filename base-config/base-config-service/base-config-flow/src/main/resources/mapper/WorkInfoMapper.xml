@@ -689,9 +689,9 @@
                 and t1.company_id = #{params.companyId}
             </if>
 
-            <if test="params.departmentIds != null and params.departmentIds.size() > 0">
+            <if test="params.departmentIdList != null and params.departmentIdList.size() > 0">
                 and t2.org_id in
-                <foreach collection="params.departmentIds" item="dep" open="(" separator="," close=")">
+                <foreach collection="params.departmentIdList" item="dep" open="(" separator="," close=")">
                     #{dep}
                 </foreach>
             </if>
