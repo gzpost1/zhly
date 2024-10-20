@@ -451,10 +451,10 @@
             and abrogate_status = 0
             and hang_up_status = 0
             <if test="query.receivableStatus != null and query.receivableStatus.toString() == '0'.toString() ">
-                order by due_date desc
+                order by ownership_period_begin desc, create_time desc
             </if>
             <if test="query.receivableStatus != null and query.receivableStatus.toString() == '1'.toString() ">
-                order by last_pay_time desc
+                order by last_pay_time desc , create_time desc
             </if>
         </where>
     </select>
