@@ -57,6 +57,6 @@ public class HikPersonInfoCreateDto {
      * 工号，1-32个字符
      */
     @Length(max = 32,message = "工号限32字")
-    @Pattern(regexp = "[a-zA-Z0-9\\u4e00-\\u9fa5]{1,32}$", message = "工号不能输入特殊字符")
+    @Pattern(regexp = "[a-zA-Z0-9\\u4e00-\\u9fa5]{0,32}$", message = "工号不能输入特殊字符")
     private String jobNo;
 }
