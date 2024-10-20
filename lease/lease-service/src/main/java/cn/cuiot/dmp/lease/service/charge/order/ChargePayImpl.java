@@ -118,7 +118,7 @@ public class ChargePayImpl extends AbstrChargePay {
         chargeManager.insertSettleMent(receiveds, EntityConstants.NO, EntityConstants.NO, chargeOrderPaySuccInsertDto.getOrderId(), null);
 
         //4 插入支付手续费记录
-        if (Objects.equals(chargeOrderPaySuccInsertDto.getTransactionMode(), EntityConstants.NO)) {
+        if (Objects.equals(chargeOrderPaySuccInsertDto.getTransactionMode(), Long.valueOf(0L))) {
             List<TbChargeReceived> platformCommissions = JSONObject.parseObject(JsonUtil.writeValueAsString(receiveds), new com.alibaba.fastjson.TypeReference<List<TbChargeReceived>>() {
             });
             List<TbChargeReceived> insertPayCOmissions = new ArrayList<>();
@@ -199,6 +199,6 @@ public class ChargePayImpl extends AbstrChargePay {
     private LambdaQueryWrapper<TbChargeManager> getNeedPayWrapper() {
         return new LambdaQueryWrapper<TbChargeManager>()
                 .in(TbChargeManager::getReceivbleStatus, Lists.newArrayList("0", "1"))
-                .eq(TbChargeManager::getPayStatus, ChargePayStatusEnum.WAIT_PAY.getCode());
+                .ne(TbChargeManager::getPayStatus, ChargePayStatusEnum.WAIT_PAY.getCode());
     }
 }
