@@ -149,7 +149,7 @@
         liquidated_damages_not_tax  = liquidated_damages_not_tax + #{received.liquidatedDamagesNotTax},
         receivable_amount_received  = receivable_amount_received + #{received.receivableAmountReceived},
         pay_status = 3,
-        last_pay_time = now()
+        last_pay_time = #{received.createTime}
         where id = #{received.chargeId}
           and hang_up_status = 0
           and receivble_status in (0, 1)
@@ -506,7 +506,7 @@
         set pay_status       = 3,
             receivble_status = 2,
             receivable_amount_received = receivable_amount,
-            last_pay_time    = now()
+            last_pay_time    = #{date}
         where receivble_status in (0, 1)
           and pay_status = 0
           and id in
