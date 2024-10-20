@@ -674,70 +674,44 @@
     </select>
 
     <select id="queryWorkOrderStatistic" resultType="java.lang.Long">
-
-        select
-            count(distinct tb_work_info.id)
-        from
-        tb_work_info
-        join (
-        select
-        a.N + b.N * 10 as idx
-        from
+        SELECT
+        sum( t3.a )
+        FROM
         (
-            select 0 as N union all
-            select 1 union all
-            select 2 union all
-            select 3 union all
-            select 4 union all
-            select 5 union all
-            select 6 union all
-            select 7 union all
-            select 8 union all
-            select 9
-        ) a
-        cross join (
-            select 0 as N union all
-            select 1 union all
-            select 2 union all
-            select 3 union all
-            select 4 union all
-            select 5 union all
-            select 6 union all
-            select 7 union all
-            select 8 union all
-            select 9
-        ) b
-            where
-        a.N + b.N * 10 &lt;= 100
-        -- ... 根据需要添加更多的数字
-        ) numbers on
-        CHAR_LENGTH(org_ids) - CHAR_LENGTH(replace(org_ids, ',', '')) >= numbers.idx
+        SELECT
+        count( distinct t1.id ) AS a
+        FROM
+        tb_work_info t1
+        LEFT JOIN tb_process_dept_rel t2 ON t1.process_definition_id = t2.process_definition_id
         <where>
+
             <if test="params.companyId != null">
-                and company_id = #{params.companyId}
+                and t1.company_id = #{params.companyId}
             </if>
 
             <if test="params.departmentIds != null and params.departmentIds.size() > 0">
-                and SUBSTRING_INDEX(SUBSTRING_INDEX(org_ids , ',', numbers.idx), ',', -1) in
+                and t2.org_id in
                 <foreach collection="params.departmentIds" item="dep" open="(" separator="," close=")">
                     #{dep}
                 </foreach>
             </if>
 
             <if test="params.workSourceList != null and params.workSourceList.size() > 0">
-                and work_souce in
+                and t1.work_souce in
                 <foreach collection="params.workSourceList" item="source" open="(" separator="," close=")">
                     #{source}
                 </foreach>
             </if>
 
             <if test="params.workStateList != null and params.workStateList.size() > 0">
-                and status in
+                and t1.status in
                 <foreach collection="params.workStateList" item="workState" open="(" separator="," close=")">
                     #{workState}
                 </foreach>
             </if>
-
         </where>
+            GROUP BY
+        t1.proc_inst_id
+        ) t3;
     </select>
 </mapper>
