@@ -99,8 +99,20 @@ public class OrderSettlementVo {
     /**
      * 支出项目 0支付手续费
      */
-    @Excel(name = "支出项目", orderNum = "9", width = 20)
     private Byte expenditureType;
+
+    /**
+     * 支出项目 0支付手续费
+     */
+    @Excel(name = "支出项目", orderNum = "9", width = 20)
+    private String expenditureTypeName;
+
+    public String getExpenditureTypeName(){
+        if(Objects.equals((byte)0,expenditureType)){
+            return "手续费";
+        }
+        return null;
+    }
 
     /**
      * 交易方式名称
