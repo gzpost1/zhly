@@ -1,10 +1,12 @@
 package cn.cuiot.dmp.pay.service.service.vo;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
@@ -109,17 +111,40 @@ public class OrderSettlementVo {
     /**
      * 金额
      */
-    @Excel(name = "金额", orderNum = "11", width = 20)
     private Integer payAmount;
+
+    /**
+     * 金额
+     */
+    @Excel(name = "金额", orderNum = "11", width = 20)
+    private double payAmountYuan;
+
+    private double getPayAmountYuan(){
+        if(Objects.isNull(payAmount)){
+            return 0;
+        }
+        return BigDecimal.valueOf(payAmount).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+    }
 
     /**
      * 结算时间
      */
-    @Excel(name = "结算时间", orderNum = "12", width = 20)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date settlementTime;
 
 
+    /**
+     * 结算时间
+     */
+    @Excel(name = "结算时间", orderNum = "12", width = 20)
+    private String settlementTimeStr;
+
+    public String getSettlementTimeStr(){
+        if(Objects.isNull(settlementTime)){
+            return null;
+        }
+        return DateTimeUtil.dateToString(settlementTime,"yyyy-MM-dd HH:mm:ss");
+    }
 
 }
