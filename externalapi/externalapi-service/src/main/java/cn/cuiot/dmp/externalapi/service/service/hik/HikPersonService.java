@@ -284,7 +284,7 @@ public class HikPersonService extends ServiceImpl<HikPersonMapper, HikPersonEnti
 
         LambdaQueryWrapper<HikPersonEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(HikPersonEntity::getCompanyId, companyId);
-        wrapper.eq(StringUtils.isNotBlank(query.getPersonName()), HikPersonEntity::getPersonName, query.getPersonName());
+        wrapper.like(StringUtils.isNotBlank(query.getPersonName()), HikPersonEntity::getPersonName, query.getPersonName());
         wrapper.eq(StringUtils.isNotBlank(query.getOrgIndexCode()), HikPersonEntity::getOrgIndexCode, query.getOrgIndexCode());
         wrapper.orderByDesc(HikPersonEntity::getCreateTime);
 
