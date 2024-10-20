@@ -81,6 +81,7 @@ public class HikAcsDoorEventsService extends ServiceImpl<HikAcsDoorEventsMapper,
         wrapper.like(StringUtils.isNotBlank(query.getDoorIndexCode()), HikAcsDoorEventsEntity::getDoorIndexCode, query.getDoorIndexCode());
         wrapper.like(StringUtils.isNotBlank(query.getDevIndexCode()), HikAcsDoorEventsEntity::getDevIndexCode, query.getDevIndexCode());
         wrapper.eq(StringUtils.isNotBlank(query.getDoorRegionIndexCode()), HikAcsDoorEventsEntity::getDoorRegionIndexCode, query.getDoorRegionIndexCode());
+        wrapper.eq(StringUtils.isNotBlank(query.getCardNo()), HikAcsDoorEventsEntity::getCardNo, query.getCardNo());
         wrapper.eq(Objects.nonNull(query.getEventType()), HikAcsDoorEventsEntity::getEventType, query.getEventType());
         wrapper.eq(Objects.nonNull(query.getInAndOutType()), HikAcsDoorEventsEntity::getInAndOutType, query.getInAndOutType());
         wrapper.eq(Objects.nonNull(query.getIsExistPicUri()), HikAcsDoorEventsEntity::getIsExistPicUri, query.getIsExistPicUri());
