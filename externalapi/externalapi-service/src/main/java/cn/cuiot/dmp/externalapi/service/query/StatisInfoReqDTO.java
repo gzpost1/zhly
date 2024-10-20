@@ -22,5 +22,7 @@ public class StatisInfoReqDTO extends PageQuery {
      */
     private List<Long> loupanIds;
 
+    private Byte state;
+
 
 }
