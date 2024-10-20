@@ -83,28 +83,28 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
         int updateCount = securitydepositManagerService.updateChargePayStatusToSuccsess(chargeOrderPaySuccInsertDto);
 
         //3 插入账单
-        chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.NO);
-        List<TbOrderSettlement> tbSecuritydepositManagers = securitydepositManagerService.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
-        //4 插入微信支付手续费
-        if (CollectionUtils.isNotEmpty(tbSecuritydepositManagers)) {
-
-            List<TbOrderSettlement> insertPayComssion = new ArrayList<>();
-            for (TbOrderSettlement tbSecuritydepositManager : tbSecuritydepositManagers) {
-                int i = MathTool.percentCalculate(tbSecuritydepositManager.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate());
-                if (i > 0) {
-                    TbOrderSettlement tbOrderSettlement = new TbOrderSettlement();
-                    BeanUtils.copyProperties(tbSecuritydepositManager, tbOrderSettlement);
-                    tbOrderSettlement.setId(IdWorker.getId());
-                    tbOrderSettlement.setIncomeType(EntityConstants.YES);
-                    tbOrderSettlement.setPayAmount(i);
-                    insertPayComssion.add(tbOrderSettlement);
-                }
-            }
-
-            if (CollectionUtils.isNotEmpty(insertPayComssion)) {
-                orderSettlementService.insertList(insertPayComssion);
-            }
-        }
+//        chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.NO);
+//        List<TbOrderSettlement> tbSecuritydepositManagers = securitydepositManagerService.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
+//        //4 插入微信支付手续费
+//        if (CollectionUtils.isNotEmpty(tbSecuritydepositManagers)) {
+//
+//            List<TbOrderSettlement> insertPayComssion = new ArrayList<>();
+//            for (TbOrderSettlement tbSecuritydepositManager : tbSecuritydepositManagers) {
+//                int i = MathTool.percentCalculate(tbSecuritydepositManager.getPayAmount(), chargeOrderPaySuccInsertDto.getPayRate());
+//                if (i > 0) {
+//                    TbOrderSettlement tbOrderSettlement = new TbOrderSettlement();
+//                    BeanUtils.copyProperties(tbSecuritydepositManager, tbOrderSettlement);
+//                    tbOrderSettlement.setId(IdWorker.getId());
+//                    tbOrderSettlement.setIncomeType(EntityConstants.YES);
+//                    tbOrderSettlement.setPayAmount(i);
+//                    insertPayComssion.add(tbOrderSettlement);
+//                }
+//            }
+//
+//            if (CollectionUtils.isNotEmpty(insertPayComssion)) {
+//                orderSettlementService.insertList(insertPayComssion);
+//            }
+//        }
 
         return updateCount;
     }
@@ -145,7 +145,7 @@ public class SecurityDepositPayImpl extends AbstrChargePay {
     private LambdaQueryWrapper<TbSecuritydepositManager> getNeedPayWrapper() {
         return new LambdaQueryWrapper<TbSecuritydepositManager>()
                 .eq(TbSecuritydepositManager::getStatus, EntityConstants.NO)
-                .eq(TbSecuritydepositManager::getPayStatus, ChargePayStatusEnum.WAIT_PAY.getCode());
+                .ne(TbSecuritydepositManager::getPayStatus, ChargePayStatusEnum.WAIT_PAY.getCode());
     }
 
     @Override

@@ -4,8 +4,11 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.application.service.ApiArchiveService;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CommonOptionSettingReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CommonOptionSettingRspDTO;
+import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
@@ -27,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,6 +60,8 @@ public class OrderSettleController extends BaseController {
     private ChargeHouseAndUserService chargeHouseAndUserService;
     @Autowired
     private SystemToFlowService systemToFlowService;
+    @Autowired
+    private ApiArchiveService apiArchiveService;
 
     /**
      * 获取分页
@@ -130,8 +134,7 @@ public class OrderSettleController extends BaseController {
         return IdmResDTO.success().body(orderSettlementService.queryForStatics(queryWrapper));
     }
 
-    @NotNull
-    private static LambdaQueryWrapper<TbOrderSettlement> getQueryWrapper(OrderSettlementQuery query) {
+    private LambdaQueryWrapper<TbOrderSettlement> getQueryWrapper(OrderSettlementQuery query) {
         query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
 
         LambdaQueryWrapper<TbOrderSettlement> queryWrapper = new LambdaQueryWrapper<>();
@@ -148,6 +151,17 @@ public class OrderSettleController extends BaseController {
         queryWrapper.eq(Objects.nonNull(query.getCompanyId()), TbOrderSettlement::getCompanyId, query.getCompanyId());
         queryWrapper.ge(Objects.nonNull(query.getStartTime()), TbOrderSettlement::getSettlementTime, query.getStartTime());
         queryWrapper.le(Objects.nonNull(query.getEndTime()), TbOrderSettlement::getSettlementTime, query.getEndTime());
+
+
+        //获取当前账号自己的组织及其下属组织的楼盘id
+        DepartmentReqDto dto = new DepartmentReqDto();
+        dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
+        dto.setSelfReturn(true);
+        List<BuildingArchive> archives = apiArchiveService.lookupBuildingArchiveByDepartmentList(dto);
+        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(archives)) {
+            List<Long> collect = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
+            queryWrapper.in(TbOrderSettlement::getLoupanId, collect);
+        }
         return queryWrapper;
     }
 
