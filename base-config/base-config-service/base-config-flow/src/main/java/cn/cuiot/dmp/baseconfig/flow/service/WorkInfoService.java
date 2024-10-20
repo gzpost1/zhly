@@ -38,6 +38,7 @@ import cn.cuiot.dmp.common.constant.MsgDataType;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
@@ -2030,45 +2031,38 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     public IdmResDTO<WorkInfoStatisticVO> queryWorkOrderStatistic(StatisInfoReqDTO dto) {
 
+
+
         // 临时工单
-        LambdaQueryWrapper<WorkInfoEntity> tempWorkWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
-                .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
-                .ne(WorkInfoEntity::getWorkSouce, WorkSourceEnums.WORK_SOURCE_PLAN.getCode())
-                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
-        Long tempWorkCount = getBaseMapper().selectCount(tempWorkWrapper);
+        WorkStatisInfoReqDTO tempWorkParam = BeanMapper.map(dto, WorkStatisInfoReqDTO.class);
+        tempWorkParam.setWorkSourceList(Arrays.asList(WorkSourceEnums.WORK_SOURCE_MAKE.getCode(),WorkSourceEnums.CUSTOMER_BILL_LADING.getCode(),WorkSourceEnums.PROXY_CUSTOMER_RECORD.getCode()));
+        Long tempCount = baseMapper.queryWorkOrderStatistic(tempWorkParam);
+
 
         // 循环工单
-        LambdaQueryWrapper<WorkInfoEntity> circleWorkWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
-                .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
-                .eq(WorkInfoEntity::getWorkSouce, WorkSourceEnums.WORK_SOURCE_PLAN.getCode())
-                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
+        WorkStatisInfoReqDTO circleWorkParam = BeanMapper.map(dto, WorkStatisInfoReqDTO.class);
+        tempWorkParam.setWorkSourceList(Arrays.asList(WorkSourceEnums.WORK_SOURCE_PLAN.getCode()));
+        Long circleCount = baseMapper.queryWorkOrderStatistic(circleWorkParam);
 
-        Long circleWorkCount = getBaseMapper().selectCount(circleWorkWrapper);
 
-        // 已完成情况
-        LambdaQueryWrapper<WorkInfoEntity> finishWorkWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
-                .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
-                .eq(WorkInfoEntity::getStatus,WorkOrderStatusEnums.completed.getStatus())
-                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
-
-        Long finishWorkCount = getBaseMapper().selectCount(finishWorkWrapper);
+        // 已完成
+        WorkStatisInfoReqDTO completeWorkParam = BeanMapper.map(dto, WorkStatisInfoReqDTO.class);
+        tempWorkParam.setWorkStateList(Arrays.asList(WorkOrderStatusEnums.completed.getStatus()));
+        Long completeCount = baseMapper.queryWorkOrderStatistic(completeWorkParam);
 
 
         // 待完成情况
-        LambdaQueryWrapper<WorkInfoEntity> workingWrapper = Wrappers.<WorkInfoEntity>lambdaQuery()
-                .eq(dto.getCompanyId()!=null,WorkInfoEntity::getCompanyId, dto.getCompanyId())
-                .in(WorkInfoEntity::getStatus,WorkOrderStatusEnums.progress.getStatus(),WorkOrderStatusEnums.Suspended.getStatus())
-                .in(CollectionUtils.isNotEmpty(dto.getDepartmentIdList()), WorkInfoEntity::getOrgId, dto.getDepartmentIdList());
-
-        Long workingCount = getBaseMapper().selectCount(workingWrapper);
+        WorkStatisInfoReqDTO workingWorkParam = BeanMapper.map(dto, WorkStatisInfoReqDTO.class);
+        workingWorkParam.setWorkStateList(Arrays.asList(WorkOrderStatusEnums.progress.getStatus(),WorkOrderStatusEnums.Suspended.getStatus()));
+        Long workingCount = baseMapper.queryWorkOrderStatistic(workingWorkParam);
 
 
         List<WorkTypeStatisticVO> topWorkType = getBaseMapper().queryTopWorkType(dto);
 
         WorkInfoStatisticVO statisticResDTO = new WorkInfoStatisticVO();
-        statisticResDTO.setTempWork(Optional.ofNullable(tempWorkCount).orElse(0L));
-        statisticResDTO.setCircleWork(Optional.ofNullable(circleWorkCount).orElse(0L));
-        statisticResDTO.setFinishWork(Optional.ofNullable(finishWorkCount).orElse(0L));
+        statisticResDTO.setTempWork(Optional.ofNullable(tempCount).orElse(0L));
+        statisticResDTO.setCircleWork(Optional.ofNullable(circleCount).orElse(0L));
+        statisticResDTO.setFinishWork(Optional.ofNullable(completeCount).orElse(0L));
         statisticResDTO.setWorking(Optional.ofNullable(workingCount).orElse(0L));
         statisticResDTO.setTopWorkType(Optional.ofNullable(topWorkType).orElse(new ArrayList<>()));
 

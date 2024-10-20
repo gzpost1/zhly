@@ -74,4 +74,11 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
      * @return WorkTypeStatisticResDTO
      */
     List<WorkTypeStatisticVO> queryTopWorkType(@Param("params") StatisInfoReqDTO params);
+
+    /**
+     * 查询工单统计
+     * @param workParam
+     * @return
+     */
+    Long queryWorkOrderStatistic(@Param("params") WorkStatisInfoReqDTO workParam);
 }
