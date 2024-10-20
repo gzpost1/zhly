@@ -646,31 +646,36 @@
 
     <select id="queryTopWorkType" resultType="cn.cuiot.dmp.baseconfig.flow.vo.WorkTypeStatisticVO">
         select
-            t2.name as workType ,
-            count(1) as count
-        from
+            count(t.a) as count,
+             t.workType as workType
+        from (
+            SELECT
+                count( distinct t1.id ) AS a ,
+                t3.name as workType
+            FROM
             tb_work_info t1
-            left join business_type t2 on
-            t1.business_type = t2.id
-        where
-        1 = 1
-        <if test=" params.companyId != null">
-            and t1.company_id =  #{params.companyId}
-        </if>
+                LEFT JOIN tb_process_dept_rel t2 ON t1.process_definition_id = t2.process_definition_id
+                left join business_type t3 on  t1.business_type = t3.id
+            <where>
+                <if test=" params.companyId != null">
+                    and t1.company_id =  #{params.companyId}
+                </if>
 
-        <if test="params.departmentIdList != null and params.departmentIdList.size() > 0">
-            and t1.org_id in
-            <foreach collection="params.departmentIdList" item="dep" open="(" separator="," close=")">
-                #{dep}
-            </foreach>
-        </if>
-        group by
-            t2.name
+            <if test="params.departmentIdList != null and params.departmentIdList.size() > 0">
+                and t1.org_id in
+                <foreach collection="params.departmentIdList" item="dep" open="(" separator="," close=")">
+                    #{dep}
+                </foreach>
+            </if>
+            </where>
+            )
+            GROUP BY
+            t1.proc_inst_id
+        ) t
+        group by workType
         order by
-            count(1) desc
-            limit 5
-
-
+        count desc
+        limit 5
     </select>
 
     <select id="queryWorkOrderStatistic" resultType="java.lang.Long">
