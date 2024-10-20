@@ -2411,8 +2411,6 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
      */
     public IdmResDTO<WorkInfoStatisticVO> queryWorkOrderStatistic(StatisInfoReqDTO dto) {
 
-
-
         // 临时工单
         WorkStatisInfoReqDTO tempWorkParam = BeanMapper.map(dto, WorkStatisInfoReqDTO.class);
         tempWorkParam.setWorkSourceList(Arrays.asList(WorkSourceEnums.WORK_SOURCE_MAKE.getCode(),WorkSourceEnums.CUSTOMER_BILL_LADING.getCode(),WorkSourceEnums.PROXY_CUSTOMER_RECORD.getCode()));
