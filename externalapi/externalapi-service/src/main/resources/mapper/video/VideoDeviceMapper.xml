@@ -16,7 +16,7 @@
                 left join tb_building_archives t2 on
                 t1.building_id = t2.id
                 left join tb_video_play t3 on
-                t1.device_id = t3.device_id
+                (t1.device_id = t3.device_id and t1.company_id = t3.company_id)
         <include refid="videCondition"/>
     </select>
 
