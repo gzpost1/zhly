@@ -160,8 +160,9 @@ public class ChargePayImpl extends AbstrChargePay {
     @Override
     public UpdateChargePayStatusToPaySuccessBYPrePayDto updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long createUserId, Long orderId) {
         UpdateChargePayStatusToPaySuccessBYPrePayDto prePayDto = new UpdateChargePayStatusToPaySuccessBYPrePayDto();
+        Date now = new Date();
 
-        int updateNum = chargeManager.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount, orderId);
+        int updateNum = chargeManager.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount, orderId,now);
         prePayDto.setUpdateCount(updateNum);
         AssertUtil.isTrue(updateNum > 0, "锁定账单收款失败");
 
@@ -173,6 +174,7 @@ public class ChargePayImpl extends AbstrChargePay {
         chargeOrderPaySuccInsertDto.setRemark("用户微信调用预缴代扣");
         chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.NO);
         chargeOrderPaySuccInsertDto.setOrderId(orderId);
+        chargeOrderPaySuccInsertDto.setPayTime(now);
 
         TbChargeOrder order = new TbChargeOrder();
         order.setCreateTime(new Date());
