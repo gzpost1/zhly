@@ -68,6 +68,7 @@ public class ArchivesScreenController {
     @PostMapping("/archive/query")
     public IdmResDTO<List<BuildingArchivesVO>> queryArchive(@RequestBody StatisInfoReqDTO statisInfoReqDTO) {
         BuildingArchivesPageQuery buildingArchivesPageQuery = buildStatisticPageReq(statisInfoReqDTO);
+        buildingArchivesPageQuery.setIdList(buildingArchivesPageQuery.getLoupanIds());
         return archiveApiFeignService.queryArchiveInfoList(buildingArchivesPageQuery);
     }
 
