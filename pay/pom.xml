@@ -13,7 +13,6 @@
     <artifactId>pay</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>pay-provider</module>
         <module>pay-service</module>
         <module>pay-base</module>
     </modules>
