@@ -4,7 +4,7 @@
 
     <select id="queryVideoInfoPage" resultType="cn.cuiot.dmp.externalapi.service.vo.video.VideoPageVo">
         select
-            t1.id as id ,
+            distinct t1.id as id ,
             t1.device_id as device_id ,
             t1.device_name as device_name,
             t1.device_type as device_type,
@@ -17,8 +17,25 @@
                 t1.building_id = t2.id
                 left join tb_video_play t3 on
                 t1.device_id = t3.device_id
-        <where>
+        <include refid="videCondition"/>
+    </select>
 
+    <select id="queryVideoInfoCount" resultType="java.lang.Long">
+        select
+            count(distinct t1.id)
+        from
+        tb_video_device t1
+        left join tb_building_archives t2 on
+        t1.building_id = t2.id
+        left join tb_video_play t3 on
+        t1.device_id = t3.device_id
+        <include refid="videCondition"/>
+
+    </select>
+
+    <sql id="videCondition">
+        <where>
+            t1.deleted = 0
             <if test="params.state !=null and params.state !=''">
                 and t1.state = #{params.state}
             </if>
@@ -44,6 +61,6 @@
             </if>
 
         </where>
-    </select>
+    </sql>
 
 </mapper>
