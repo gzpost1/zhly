@@ -12,7 +12,6 @@ import cn.cuiot.dmp.lease.entity.charge.TbChargeManager;
 import cn.cuiot.dmp.lease.entity.charge.TbChargeReceived;
 import cn.cuiot.dmp.lease.enums.*;
 import cn.cuiot.dmp.lease.mapper.charge.TbChargeManagerMapper;
-import cn.cuiot.dmp.lease.dto.charge.PrePayAmountAndHouseId;
 import cn.cuiot.dmp.lease.vo.ChargeCollectionManageVo;
 import cn.cuiot.dmp.lease.vo.ChargeManagerCustomerStatisticsVo;
 import cn.cuiot.dmp.pay.service.service.entity.BalanceEntity;
@@ -245,7 +244,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         //插入收款明细
         tbChargeReceivedService.insertList(receiveds);
         //3 插入账单
-        this.insertSettleMent(receiveds,EntityConstants.NO,EntityConstants.YES,null, null);
+        this.insertSettleMent(receiveds, EntityConstants.NO, EntityConstants.YES, null, null);
     }
 
     public List<TbChargeReceived> getTbChargeReceiveds(ChargeReceiptsReceivedDto dto) {
@@ -380,8 +379,8 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         return baseMapper.queryNeedPayPage(page);
     }
 
-    public int updateChargePayStatusToSuccsess(List<Long> chargeIds) {
-        return baseMapper.updateChargePayStatusToSuccsess(chargeIds);
+    public int updateChargePayStatusToSuccsess(List<Long> chargeIds, Date now) {
+        return baseMapper.updateChargePayStatusToSuccsess(chargeIds, now);
     }
 
     public int updateChargePayStatusToCancel(List<Long> chargeIds) {
@@ -392,18 +391,18 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
         return baseMapper.queryNeedToPayAmount(chargeId);
     }
 
-    public int updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount,Long orderId) {
-        return baseMapper.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount,orderId);
+    public int updateChargePayStatusToPaySuccessBYPrePay(Long chargeId, Integer needToPayAmount, Long orderId) {
+        return baseMapper.updateChargePayStatusToPaySuccessBYPrePay(chargeId, needToPayAmount, orderId);
     }
 
     /**
      * 插入结算报表
      *
-     * @param receiveds  收款记录
-     * @param incomeType   收支类型 0收入 1支出
-     * @param paymentMode  收款方式 0平台 1人工
-     * @param orderId   微信支付订单id
-     * @param charge  应收账款id
+     * @param receiveds   收款记录
+     * @param incomeType  收支类型 0收入 1支出
+     * @param paymentMode 收款方式 0平台 1人工
+     * @param orderId     微信支付订单id
+     * @param charge      应收账款id
      */
     public void insertSettleMent(List<TbChargeReceived> receiveds, Byte incomeType, Byte paymentMode, Long orderId, TbChargeManager charge) {
         List<TbOrderSettlement> orderSettlements = Lists.newArrayList();
@@ -415,7 +414,7 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
             tbOrderSettlement.setId(IdWorker.getId());
             tbOrderSettlement.setReceivableId(received.getChargeId());
             tbOrderSettlement.setPaidUpId(received.getId());
-            tbOrderSettlement.setCreateTime(new Date());
+            tbOrderSettlement.setCreateTime(received.getCreateTime());
             tbOrderSettlement.setLoupanId(charge.getLoupanId());
             tbOrderSettlement.setHouseId(received.getHouseId());
             tbOrderSettlement.setCompanyId(charge.getCompanyId());
@@ -427,13 +426,16 @@ public class TbChargeManagerService extends ServiceImpl<TbChargeManagerMapper, T
             tbOrderSettlement.setTransactionMode(received.getTransactionMode());
             tbOrderSettlement.setPayAmount(received.getTotalReceived());
             tbOrderSettlement.setSettlementTime(new Date());
+            if (Objects.equals(incomeType, EntityConstants.YES)) {
+                tbOrderSettlement.setExpenditureType(EntityConstants.NO);
+            }
             orderSettlements.add(tbOrderSettlement);
         }
         orderSettlementService.insertList(orderSettlements);
     }
 
-    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage,Date date) {
-        return baseMapper.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage,date);
+    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage, Date date) {
+        return baseMapper.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage, date);
     }
 
     public Long getCompanyIdByloupanId(Long loupanId) {

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -60,4 +61,9 @@ public class ChargeOrderPaySuccInsertDto {
      *
      */
     private Long receivedId;
+
+    /**
+     * 收费时间
+     */
+    private Date payTime;
 }

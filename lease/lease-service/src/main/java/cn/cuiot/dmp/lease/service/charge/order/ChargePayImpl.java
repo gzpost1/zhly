@@ -74,7 +74,9 @@ public class ChargePayImpl extends AbstrChargePay {
     @Override
     protected int doPaySuccess(ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto) {
         //1 更新订单状态为已支付
-        int updateCount = chargeManager.updateChargePayStatusToSuccsess(chargeOrderPaySuccInsertDto.getDataIds());
+        Date now = new Date();
+        chargeOrderPaySuccInsertDto.setPayTime(now);
+        int updateCount = chargeManager.updateChargePayStatusToSuccsess(chargeOrderPaySuccInsertDto.getDataIds(), now);
 
         chargeOrderPaySuccInsertDto.setTransactionMode(0L);
         chargeOrderPaySuccInsertDto.setRemark("微信支付");
@@ -110,6 +112,7 @@ public class ChargePayImpl extends AbstrChargePay {
             k.setPaymentMode(EntityConstants.NO);
             k.setTransactionNo(chargeOrderPaySuccInsertDto.getTransactionNo());
             k.setOrderId(chargeOrderPaySuccInsertDto.getOrderId());
+            k.setCreateTime(chargeOrderPaySuccInsertDto.getPayTime());
         });
 
         tbChargeReceivedService.insertList(receiveds);
@@ -192,8 +195,8 @@ public class ChargePayImpl extends AbstrChargePay {
     }
 
     @Override
-    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage, Date date ) {
-        return chargeManager.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage,date);
+    public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage, Date date) {
+        return chargeManager.queryOverTimeOrderAndClosePage(chargeovertimeorderdtoPage, date);
     }
 
     private LambdaQueryWrapper<TbChargeManager> getNeedPayWrapper() {
