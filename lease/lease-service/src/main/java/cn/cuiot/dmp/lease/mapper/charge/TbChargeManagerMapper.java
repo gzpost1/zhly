@@ -56,7 +56,7 @@ public interface TbChargeManagerMapper extends BaseMapper<TbChargeManager> {
 
     IPage<Chargeovertimeorderdto> queryNeedPayPage(Page<Chargeovertimeorderdto> page);
 
-    int updateChargePayStatusToSuccsess(@Param("chargeIds") List<Long> chargeIds);
+    int updateChargePayStatusToSuccsess(@Param("chargeIds") List<Long> chargeIds,@Param("date")Date now);
 
     int updateChargePayStatusToCancel(@Param("chargeIds") List<Long> chargeIds);
 
