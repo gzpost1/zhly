@@ -2039,13 +2039,13 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
         // 循环工单
         WorkStatisInfoReqDTO circleWorkParam = BeanMapper.map(dto, WorkStatisInfoReqDTO.class);
-        tempWorkParam.setWorkSourceList(Arrays.asList(WorkSourceEnums.WORK_SOURCE_PLAN.getCode()));
+        circleWorkParam.setWorkSourceList(Arrays.asList(WorkSourceEnums.WORK_SOURCE_PLAN.getCode()));
         Long circleCount = baseMapper.queryWorkOrderStatistic(circleWorkParam);
 
 
         // 已完成
         WorkStatisInfoReqDTO completeWorkParam = BeanMapper.map(dto, WorkStatisInfoReqDTO.class);
-        tempWorkParam.setWorkStateList(Arrays.asList(WorkOrderStatusEnums.completed.getStatus()));
+        completeWorkParam.setWorkStateList(Arrays.asList(WorkOrderStatusEnums.completed.getStatus()));
         Long completeCount = baseMapper.queryWorkOrderStatistic(completeWorkParam);
 
 
