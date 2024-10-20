@@ -208,10 +208,10 @@ public class TbSecuritydepositManagerService extends ServiceImpl<TbSecuritydepos
         AssertUtil.isTrue(count > 0, "账单正在支付中，请勿重复操作");
 
         //3 插入账单
-        ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto = new ChargeOrderPaySuccInsertDto();
-        chargeOrderPaySuccInsertDto.setDataIds(Lists.newArrayList(dto.getChargeId()));
-        chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.YES);
-        this.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
+//        ChargeOrderPaySuccInsertDto chargeOrderPaySuccInsertDto = new ChargeOrderPaySuccInsertDto();
+//        chargeOrderPaySuccInsertDto.setDataIds(Lists.newArrayList(dto.getChargeId()));
+//        chargeOrderPaySuccInsertDto.setPaymentMode(EntityConstants.YES);
+//        this.saveReceivedAndSettlement(chargeOrderPaySuccInsertDto);
     }
 
     public IPage<Chargeovertimeorderdto> queryOverTimeOrderAndClosePage(Page<Chargeovertimeorderdto> chargeovertimeorderdtoPage,Date date) {
