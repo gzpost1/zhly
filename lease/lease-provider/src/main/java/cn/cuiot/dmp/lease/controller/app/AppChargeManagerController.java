@@ -48,9 +48,6 @@ public class AppChargeManagerController {
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<AppChargeManagerDto>> appChargeManager(@RequestBody AppChargemanagerQuery query) {
 
-        if(CollectionUtils.isEmpty(query.getOrderByItems())){
-            query.setOrderByItems(Lists.newArrayList(OrderItemParam.desc("create_time")));
-        }
         IPage<AppChargeManagerDto> chargeManagerPageDtoIPage = tbChargeManagerService.appChargeManager(query);
 
         if (Objects.nonNull(chargeManagerPageDtoIPage) && CollectionUtils.isNotEmpty(chargeManagerPageDtoIPage.getRecords())) {
