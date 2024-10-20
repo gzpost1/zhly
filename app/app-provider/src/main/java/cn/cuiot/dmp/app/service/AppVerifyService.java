@@ -161,7 +161,7 @@ public class AppVerifyService {
 
             return new SmsCodeResDto(sendSucceed, "发送成功");
         }
-        return new SmsCodeResDto(sendSucceed, "发送失败");
+        return new SmsCodeResDto(sendSucceed, "短信功能未开通，请联系管理员");
     }
 
     /**
