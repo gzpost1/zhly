@@ -135,7 +135,9 @@ public class SecuritydepositManagerController {
         IPage<SecuritydepositManagerPageDto> data = this.queryForPage(pageQuery).getData();
         List<SecuritydepositManagerPageDto> pageList = Optional.ofNullable(data.getRecords()).orElse(new ArrayList<>());
         List<ExportSecuritydepositDto> resultList = Optional.ofNullable(BeanMapper.mapList(pageList, ExportSecuritydepositDto.class)).orElse(new ArrayList<>());
-
+        resultList.stream().forEach(item->{
+            item.setStatusName(SecurityDepositStatusEnum.getDesc(item.getStatus()));
+        });
         IPage<ExportSecuritydepositDto> page = new Page<>(data.getCurrent(), data.getPages(), data.getTotal());
         return page.setRecords(resultList);
 
