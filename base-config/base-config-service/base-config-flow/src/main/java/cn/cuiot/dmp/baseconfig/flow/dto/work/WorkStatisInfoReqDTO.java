@@ -15,7 +15,7 @@ public class WorkStatisInfoReqDTO extends PageQuery {
     private Long companyId;
 
 
-    private List<Long> departmentIds;
+    private List<Long> departmentIdList;
 
     /**
      * 楼盘id列表
