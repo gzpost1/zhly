@@ -4,6 +4,7 @@ import cn.cuiot.dmp.base.application.annotation.InternalApi;
 import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.utils.BeanMapper;
 import cn.cuiot.dmp.externalapi.service.query.EntranceGuardRecordReqDTO;
 import cn.cuiot.dmp.externalapi.service.query.StatisInfoReqDTO;
 import cn.cuiot.dmp.externalapi.service.query.video.VideoStatisInfoReqDTO;
@@ -100,8 +101,12 @@ public class ApiController {
         // 宇泛门禁
         Long yfAccessCount = accessControlService.queryAccessCommunityCount(reqDTO);
 
+         // 监控 数量
+        Long videoCount  = videoDeviceService.queryVideoCount(reqDTO);
+
         IOTStatisticVo iotStatisticVo = new IOTStatisticVo();
         iotStatisticVo.setWaterMeter(Optional.ofNullable(dekeWaterCount).orElse(0L));
+        iotStatisticVo.setVideoMeter(Optional.ofNullable(videoCount).orElse(0L));
         iotStatisticVo.setEntranceGuard(Optional.ofNullable(gwEntranceGuardCount).orElse(0L)
         + Optional.ofNullable(yfAccessCount).orElse(0L));
 

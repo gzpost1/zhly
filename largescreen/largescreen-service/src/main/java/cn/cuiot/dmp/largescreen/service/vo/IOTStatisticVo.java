@@ -26,5 +26,10 @@ public class IOTStatisticVo {
      */
     private Long electricityMeter;
 
+    /**
+     * 监控
+     */
+    private Long videoMeter;
+
 
 }

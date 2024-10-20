@@ -14,6 +14,7 @@ import cn.cuiot.dmp.externalapi.service.entity.video.VideoDeviceEntity;
 import cn.cuiot.dmp.externalapi.service.entity.video.VideoPlayEntity;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.mapper.video.VideoDeviceMapper;
+import cn.cuiot.dmp.externalapi.service.query.StatisInfoReqDTO;
 import cn.cuiot.dmp.externalapi.service.query.video.VideoBatchSetBuildingIdQuery;
 import cn.cuiot.dmp.externalapi.service.query.video.VideoPageQuery;
 import cn.cuiot.dmp.externalapi.service.query.video.VideoStatisInfoReqDTO;
@@ -266,5 +267,9 @@ public class VideoDeviceService extends ServiceImpl<VideoDeviceMapper, VideoDevi
         }
 
         return res;
+    }
+
+    public Long queryVideoCount(StatisInfoReqDTO reqDTO) {
+        return getBaseMapper().queryVideoInfoCount(reqDTO);
     }
 }
