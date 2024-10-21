@@ -41,7 +41,7 @@ public class ContractLeaseStatisticParam implements Serializable {
     /**
      * 部门ID
      */
-    private List<Long> departmentIds;
+    private List<Long> departmentIdList;
 
     private List<Integer> contractStatus;
 

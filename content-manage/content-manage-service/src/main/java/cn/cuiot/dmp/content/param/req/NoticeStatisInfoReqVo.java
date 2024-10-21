@@ -21,7 +21,7 @@ public class NoticeStatisInfoReqVo extends PageQuery {
     /**
      * 组织部门
      */
-    private List<Long> departmentIds;
+    private List<Long> departmentIdList;
 
     /**
      * 楼盘id列表
