@@ -328,6 +328,8 @@ public class NoticeServiceImpl extends ServiceImpl<ContentNoticeMapper, ContentN
     @Override
     public IPage<ContentNoticeVo> queryContentNoticeStatistic(NoticeStatisInfoReqVo dto) {
         if(dto.getType().equals(ContentConstants.PublishSource.MANAGE.intValue())){
+            // 管理端不根据楼盘查询信息
+            dto.setDepartmentIds(null);
             return this.baseMapper.queryContentAdminNoticeStatistic(new Page<>(dto.getPageNo(), dto.getPageSize()),dto);
         }
         if(dto.getType().equals(ContentConstants.PublishSource.APP.intValue())){
