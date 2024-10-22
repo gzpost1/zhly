@@ -225,6 +225,10 @@
             <if test=" params.usefullLease != null">
                 and ci.id not in (select ifnull(contract_lease_id,-1) from tb_contract_intention where deleted=0 and contract_lease_id is not null)
             </if>
+            <if test="params.orgId != null">
+                and ci.create_user in (select   pk_user_id
+                from user_org where pk_org_id = #{params.orgId})
+            </if>
             and ci.deleted=0
         </if>
     </sql>
