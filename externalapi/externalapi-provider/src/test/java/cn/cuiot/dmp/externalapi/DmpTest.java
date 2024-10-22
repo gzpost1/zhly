@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.externalapi;
 
-import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.externalapi.provider.ExternalapiApplication;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.DmpDeviceCreateReq;
@@ -29,7 +29,7 @@ public class DmpTest {
         req.setDeviceKey("ZYTB215F002L00700161");
         req.setProductKey("cukppp0rn2bk5xsc");
 
-        GWEntranceGuardBO bo = new GWEntranceGuardBO();
+        GWCurrencyBO bo = new GWCurrencyBO();
         bo.setAppId("jG4KsHbMFT");
         bo.setAppSecret("CUCNBMPmjuv8gDHlSKvI8h15H2YaDJ");
         bo.setProductKey("cu1fmdm1vngrxzhf");
@@ -45,7 +45,7 @@ public class DmpTest {
         req.setDeviceName("测试api创建设备");
         req.setDescription("测试数据");
 
-        GWEntranceGuardBO bo = new GWEntranceGuardBO();
+        GWCurrencyBO bo = new GWCurrencyBO();
         bo.setAppId("jG4KsHbMFT");
         bo.setAppSecret("CUCNBMPmjuv8gDHlSKvI8h15H2YaDJ");
         bo.setProductKey("cukppp0rn2bk5xsc");
@@ -58,7 +58,7 @@ public class DmpTest {
         req.setProductKey("cukppp0rn2bk5xsc");
         req.setDeviceKey("1834454175973978114");
 
-        GWEntranceGuardBO bo = new GWEntranceGuardBO();
+        GWCurrencyBO bo = new GWCurrencyBO();
         bo.setAppId("jG4KsHbMFT");
         bo.setAppSecret("CUCNBMPmjuv8gDHlSKvI8h15H2YaDJ");
         bo.setProductKey("cukppp0rn2bk5xsc");

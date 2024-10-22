@@ -1,15 +1,17 @@
 package cn.cuiot.dmp.common.bean.external;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
- * 门禁（格物）-对接系统参数
+ * 格物通用对接系统参数
  *
  * @Author: zc
  * @Date: 2024-09-04
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class GWEntranceGuardBO {
+public class GWCurrencyBO extends ExternalapiBaseStatusBO {
 
     /**
      * 应用appId

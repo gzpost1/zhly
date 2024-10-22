@@ -36,7 +36,7 @@ public enum FootPlateInfoEnum {
     /**
      * 门禁（格物）
      */
-    GW_ENTRANCE_GUARD(5L, GWEntranceGuardBO.class),
+    GW_ENTRANCE_GUARD(5L, GWCurrencyBO.class),
 
     /**
      * 停车场（科拓）
@@ -67,12 +67,12 @@ public enum FootPlateInfoEnum {
     /**
      * 水浸报警器（格物）
      */
-    GW_WATER_LEACH_ALARM(12L, GWEntranceGuardBO.class),
+    GW_WATER_LEACH_ALARM(12L, GWCurrencyBO.class),
 
     /**
      * 燃气报警器（格物）
      */
-    GW_GAS_ALARM(13L, GWEntranceGuardBO.class),
+    GW_GAS_ALARM(13L, GWCurrencyBO.class),
     ;
 
     private Long id;

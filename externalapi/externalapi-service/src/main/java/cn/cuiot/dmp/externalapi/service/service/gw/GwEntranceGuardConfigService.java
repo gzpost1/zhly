@@ -2,7 +2,7 @@ package cn.cuiot.dmp.externalapi.service.service.gw;
 
 import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
-import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -36,7 +36,7 @@ public class GwEntranceGuardConfigService {
      * @return productKey
      * @Param companyId 企业id
      */
-    public GWEntranceGuardBO getConfigInfo(Long companyId) {
+    public GWCurrencyBO getConfigInfo(Long companyId) {
         if (Objects.nonNull(companyId)) {
             // 平台id
             Long platformId = FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId();
@@ -50,7 +50,7 @@ public class GwEntranceGuardConfigService {
             if (CollectionUtils.isNotEmpty(list)) {
                 PlatfromInfoRespDTO respDTO = list.get(0);
                 if (StringUtils.isNotBlank(respDTO.getData())) {
-                    GWEntranceGuardBO bo = FootPlateInfoEnum.getObjectFromJsonById(platformId, respDTO.getData());
+                    GWCurrencyBO bo = FootPlateInfoEnum.getObjectFromJsonById(platformId, respDTO.getData());
                     bo.setCompanyId(companyId);
                     return bo;
                 }
@@ -59,7 +59,7 @@ public class GwEntranceGuardConfigService {
         return null;
     }
 
-    public List<GWEntranceGuardBO> getConfigInfo(List<Long> companyId) {
+    public List<GWCurrencyBO> getConfigInfo(List<Long> companyId) {
         // 平台id
         Long platformId = FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId();
 
@@ -74,10 +74,10 @@ public class GwEntranceGuardConfigService {
             throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数配置为空，请先配置后再创建数据");
         }
 
-        List<GWEntranceGuardBO> result = Lists.newArrayList();
+        List<GWCurrencyBO> result = Lists.newArrayList();
         for (PlatfromInfoRespDTO respDTO : list) {
             if (StringUtils.isNotBlank(respDTO.getData())) {
-                GWEntranceGuardBO bo = FootPlateInfoEnum.getObjectFromJsonById(platformId, respDTO.getData());
+                GWCurrencyBO bo = FootPlateInfoEnum.getObjectFromJsonById(platformId, respDTO.getData());
                 bo.setCompanyId(respDTO.getCompanyId());
             }
         }

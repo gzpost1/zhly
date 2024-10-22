@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.vendor.gw.dmp;
 
-import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.*;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,7 +23,7 @@ public class DmpDeviceRemoteService {
     /**
      * 查询指定设备基本信息
      */
-    public BaseDmpResp<DmpDeviceResp> getDevice(DmpDeviceReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<DmpDeviceResp> getDevice(DmpDeviceReq req, GWCurrencyBO bo) {
         String gateway = "api/getDevice/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceResp>>() {
         });
@@ -32,7 +32,7 @@ public class DmpDeviceRemoteService {
     /**
      * 查询设备列表
      */
-    public BaseDmpResp<DmpDeviceListResp> listDevices(DmpDevicePageReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<DmpDeviceListResp> listDevices(DmpDevicePageReq req, GWCurrencyBO bo) {
         String gateway = "api/listDevices/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceListResp>>() {
         });
@@ -41,7 +41,7 @@ public class DmpDeviceRemoteService {
     /**
      * 删除单个设备
      */
-    public BaseDmpResp<Object> deleteDevice(DmpDeviceReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<Object> deleteDevice(DmpDeviceReq req, GWCurrencyBO bo) {
         String gateway = "api/deleteDevice/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
         });
@@ -50,7 +50,7 @@ public class DmpDeviceRemoteService {
     /**
      * 批量删除设备（单次批量删除设备上限为200）
      */
-    public BaseDmpResp<Object> batchDeleteDevice(DmpDeviceBatchCreateReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<Object> batchDeleteDevice(DmpDeviceBatchCreateReq req, GWCurrencyBO bo) {
         String gateway = "api/batchDeleteDevice/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
         });
@@ -59,7 +59,7 @@ public class DmpDeviceRemoteService {
     /**
      * 禁用单个设备
      */
-    public BaseDmpResp<Object> disableDevice(DmpDeviceReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<Object> disableDevice(DmpDeviceReq req, GWCurrencyBO bo) {
         String gateway = "api/disableDevice/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
         });
@@ -68,7 +68,7 @@ public class DmpDeviceRemoteService {
     /**
      * 批量禁用设备（单次批量禁用设备上限为200）
      */
-    public BaseDmpResp<Object> batchDisableDevice(DmpDeviceBatchCreateReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<Object> batchDisableDevice(DmpDeviceBatchCreateReq req, GWCurrencyBO bo) {
         String gateway = "/api/batchDisableDevice/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
         });
@@ -77,7 +77,7 @@ public class DmpDeviceRemoteService {
     /**
      * 启用单个设备
      */
-    public BaseDmpResp<Object> enableDevice(DmpDeviceReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<Object> enableDevice(DmpDeviceReq req, GWCurrencyBO bo) {
         String gateway = "api/enableDevice/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
         });
@@ -86,7 +86,7 @@ public class DmpDeviceRemoteService {
     /**
      * 批量启用设备（单次批量启用设备上限为200）
      */
-    public BaseDmpResp<Object> batchEnableDevice(DmpDeviceBatchCreateReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<Object> batchEnableDevice(DmpDeviceBatchCreateReq req, GWCurrencyBO bo) {
         String gateway = "api/batchEnableDevice/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
         });
@@ -95,7 +95,7 @@ public class DmpDeviceRemoteService {
     /**
      * 查询单个设备状态
      */
-    public DmpDeviceResp getStatus(DmpDeviceReq req, GWEntranceGuardBO bo) {
+    public DmpDeviceResp getStatus(DmpDeviceReq req, GWCurrencyBO bo) {
         String gateway = "api/getStatus/V1/1Main/vV1.1";
         BaseDmpResp<DmpDeviceResp> resp = dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceResp>>() {
         });
@@ -105,7 +105,7 @@ public class DmpDeviceRemoteService {
     /**
      * 批量查询设备状态
      */
-    public BaseDmpResp<DmpDeviceResp> batchGetStatus(DmpDeviceBatchCreateReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<DmpDeviceResp> batchGetStatus(DmpDeviceBatchCreateReq req, GWCurrencyBO bo) {
         String gateway = "api/batchGetStatus/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceResp>>() {
         });
@@ -114,7 +114,7 @@ public class DmpDeviceRemoteService {
     /**
      * 创建单个设备
      */
-    public DmpDeviceResp createDevice(DmpDeviceCreateReq req, GWEntranceGuardBO bo) {
+    public DmpDeviceResp createDevice(DmpDeviceCreateReq req, GWCurrencyBO bo) {
         String gateway = "api/createDevice/V1/1Main/vV1.1";
         BaseDmpResp<DmpDeviceResp> resp = dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceResp>>() {
         });
@@ -124,7 +124,7 @@ public class DmpDeviceRemoteService {
     /**
      * 批量创建设备（异步创建）
      */
-    public BaseDmpResp<Object> batchCreateDevice(DmpDeviceBatchCreateReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<Object> batchCreateDevice(DmpDeviceBatchCreateReq req, GWCurrencyBO bo) {
         String gateway = "api/batchCreateDevice/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
         });
@@ -133,7 +133,7 @@ public class DmpDeviceRemoteService {
     /**
      * 查询设备属性最新值
      */
-    public DmpDevicePropertyListResp getPropertyLatestValues(DmpDeviceReq req, GWEntranceGuardBO bo) {
+    public DmpDevicePropertyListResp getPropertyLatestValues(DmpDeviceReq req, GWCurrencyBO bo) {
         String gateway = "api/getPropertyLatestValues/V1/1Main/vV1.1";
         BaseDmpResp<DmpDevicePropertyListResp> resp = dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDevicePropertyListResp>>() {
         });
@@ -143,7 +143,7 @@ public class DmpDeviceRemoteService {
     /**
      * 设置设备属性
      */
-    public BaseDmpResp<Object> setDeviceProperty(DmpDevicePropertyReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<Object> setDeviceProperty(DmpDevicePropertyReq req, GWCurrencyBO bo) {
         String gateway = "api/setDeviceProperty/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
         });
@@ -152,7 +152,7 @@ public class DmpDeviceRemoteService {
     /**
      * 调用设备服务
      */
-    public BaseDmpResp<InvokeDeviceServiceResp> invokeDeviceService(InvokeDeviceServiceReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<InvokeDeviceServiceResp> invokeDeviceService(InvokeDeviceServiceReq req, GWCurrencyBO bo) {
         String gateway = "api/invokeDeviceService/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<InvokeDeviceServiceResp>>() {
         });

@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.vendor.gw.dmp;
 
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
-import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -56,7 +56,7 @@ public class DmpApiService {
      * @Param: reference：返回类型
      * @return: BaseDmpResp<R>
      */
-    public <R, T> BaseDmpResp<R> postRequest(String gateway, T data, GWEntranceGuardBO bo,
+    public <R, T> BaseDmpResp<R> postRequest(String gateway, T data, GWCurrencyBO bo,
                                              TypeReference<BaseDmpResp<R>> reference) {
         // 数据校验
         check(bo);
@@ -119,7 +119,7 @@ public class DmpApiService {
      *
      * @Param bo 参数
      */
-    private void check(GWEntranceGuardBO bo) {
+    private void check(GWCurrencyBO bo) {
         // 检查返回的数据是否为空
         if (Objects.isNull(bo)) {
             throw new BusinessException(ResultCode.ERROR, "企业请求格物异常，对接参数配置为空");
@@ -138,7 +138,7 @@ public class DmpApiService {
         }
     }
 
-    private void setCacheKey(BaseDmpResp<?> resp, GWEntranceGuardBO bo) {
+    private void setCacheKey(BaseDmpResp<?> resp, GWCurrencyBO bo) {
         if (StringUtils.isBlank(bo.getDeviceKey())) {
             return;
         }
