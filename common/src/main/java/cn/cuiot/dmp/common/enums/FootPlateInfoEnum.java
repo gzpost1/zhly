@@ -64,6 +64,15 @@ public enum FootPlateInfoEnum {
      */
     YF_ELECTRICITY_METER(10L, YFElectricityMeterBO.class),
 
+    /**
+     * 水浸报警器（格物）
+     */
+    GW_WATER_LEACH_ALARM(12L, GWEntranceGuardBO.class),
+
+    /**
+     * 燃气报警器（格物）
+     */
+    GW_GAS_ALARM(13L, GWEntranceGuardBO.class),
     ;
 
     private Long id;

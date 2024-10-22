@@ -2,6 +2,7 @@ package cn.cuiot.dmp.externalapi.service.vendor.gw.dmp;
 
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.Const;
@@ -57,6 +58,9 @@ public class DmpApiService {
      */
     public <R, T> BaseDmpResp<R> postRequest(String gateway, T data, GWEntranceGuardBO bo,
                                              TypeReference<BaseDmpResp<R>> reference) {
+        // 数据校验
+        check(bo);
+
         String appId = bo.getAppId();
         String appSecret = bo.getAppSecret();
 
@@ -108,6 +112,30 @@ public class DmpApiService {
         }
         setCacheKey(baseDmpResp, bo);
         return baseDmpResp;
+    }
+
+    /**
+     * 数据校验
+     *
+     * @Param bo 参数
+     */
+    private void check(GWEntranceGuardBO bo) {
+        // 检查返回的数据是否为空
+        if (Objects.isNull(bo)) {
+            throw new BusinessException(ResultCode.ERROR, "企业请求格物异常，对接参数配置为空");
+        }
+        if (!Objects.equals(bo.getStatus(), EntityConstants.ENABLED)) {
+            throw new BusinessException(ResultCode.ERROR, "企业【" + bo.getCompanyId() + "】请求格物异常未启用配置");
+        }
+        if (StringUtils.isBlank(bo.getAppId())) {
+            throw new BusinessException(ResultCode.ERROR, "企业【" + bo.getCompanyId() + "】请求格物异常，对接参数【appId】配置为空");
+        }
+        if (StringUtils.isBlank(bo.getAppSecret())) {
+            throw new BusinessException(ResultCode.ERROR, "企业【" + bo.getCompanyId() + "】请求格物异常【appSecret】配置为空");
+        }
+        if (StringUtils.isBlank(bo.getProductKey())) {
+            throw new BusinessException(ResultCode.ERROR, "企业【" + bo.getCompanyId() + "】对接参数【productKey】配置为空");
+        }
     }
 
     private void setCacheKey(BaseDmpResp<?> resp, GWEntranceGuardBO bo) {

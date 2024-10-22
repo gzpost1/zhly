@@ -37,28 +37,36 @@ public class GwEntranceGuardConfigService {
      * @Param companyId 企业id
      */
     public GWEntranceGuardBO getConfigInfo(Long companyId) {
-        // 构建请求DTO
-        PlatfromInfoReqDTO dto = new PlatfromInfoReqDTO();
-        dto.setCompanyId(companyId);
-        dto.setPlatformId(FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId());
+        if (Objects.nonNull(companyId)) {
+            // 平台id
+            Long platformId = FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId();
 
-        // 查询平台信息
-        List<PlatfromInfoRespDTO> list = platfromInfoService.queryForList(dto);
-        if (CollectionUtils.isEmpty(list)) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数配置为空，请先配置后再创建数据");
+            // 构建请求DTO
+            PlatfromInfoReqDTO dto = new PlatfromInfoReqDTO();
+            dto.setCompanyId(companyId);
+            dto.setPlatformId(platformId);
+            List<PlatfromInfoRespDTO> list = platfromInfoService.queryForList(dto);
+
+            if (CollectionUtils.isNotEmpty(list)) {
+                PlatfromInfoRespDTO respDTO = list.get(0);
+                if (StringUtils.isNotBlank(respDTO.getData())) {
+                    GWEntranceGuardBO bo = FootPlateInfoEnum.getObjectFromJsonById(platformId, respDTO.getData());
+                    bo.setCompanyId(companyId);
+                    return bo;
+                }
+            }
         }
-
-        // 获取第一条记录
-        PlatfromInfoRespDTO respDTO = list.get(0);
-
-        return checkConfig(respDTO);
+        return null;
     }
 
     public List<GWEntranceGuardBO> getConfigInfo(List<Long> companyId) {
+        // 平台id
+        Long platformId = FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId();
+
         // 构建请求DTO
         PlatfromInfoReqDTO dto = new PlatfromInfoReqDTO();
         dto.setCompanyIds(companyId);
-        dto.setPlatformId(FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId());
+        dto.setPlatformId(platformId);
 
         // 查询平台信息
         List<PlatfromInfoRespDTO> list = platfromInfoService.queryForList(dto);
@@ -68,36 +76,11 @@ public class GwEntranceGuardConfigService {
 
         List<GWEntranceGuardBO> result = Lists.newArrayList();
         for (PlatfromInfoRespDTO respDTO : list) {
-            try {
-                GWEntranceGuardBO gwEntranceGuardBO = checkConfig(respDTO);
-                result.add(gwEntranceGuardBO);
-            } catch (Exception e) {
-                log.error("企业id【" + respDTO.getCompanyId() + "】配置为空");
+            if (StringUtils.isNotBlank(respDTO.getData())) {
+                GWEntranceGuardBO bo = FootPlateInfoEnum.getObjectFromJsonById(platformId, respDTO.getData());
+                bo.setCompanyId(respDTO.getCompanyId());
             }
         }
         return result;
-    }
-
-    private GWEntranceGuardBO checkConfig(PlatfromInfoRespDTO respDTO) {
-        // 检查返回的数据是否为空
-        if (StringUtils.isBlank(respDTO.getData())) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数配置为空，请先配置后再创建数据");
-        }
-        // 从JSON数据中解析出GWEntranceGuardBO对象
-        GWEntranceGuardBO gwEntranceGuardBO = FootPlateInfoEnum.getObjectFromJsonById(FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId(), respDTO.getData());
-        if (Objects.isNull(gwEntranceGuardBO)) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数配置为空，请先配置后再创建数据");
-        }
-        if (StringUtils.isBlank(gwEntranceGuardBO.getAppId())) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数【appId】配置为空，请先配置后再创建数据");
-        }
-        if (StringUtils.isBlank(gwEntranceGuardBO.getAppSecret())) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数【appSecret】配置为空，请先配置后再创建数据");
-        }
-        if (StringUtils.isBlank(gwEntranceGuardBO.getProductKey())) {
-            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数【productKey】配置为空，请先配置后再创建数据");
-        }
-        gwEntranceGuardBO.setCompanyId(respDTO.getCompanyId());
-        return gwEntranceGuardBO;
     }
 }

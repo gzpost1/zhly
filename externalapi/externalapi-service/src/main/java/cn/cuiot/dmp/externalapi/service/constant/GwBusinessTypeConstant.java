@@ -12,4 +12,14 @@ public class GwBusinessTypeConstant {
      * 门禁
      */
     public static final String ENTRANCE_GUARD = "entranceGuard";
+
+    /**
+     * 水浸报警器
+     */
+    public static final String WATER_LEACH_ALARM = "waterLeachAlarm";
+
+    /**
+     * 燃气报警器
+     */
+    public static final String GAS_ALARM = "gasAlarm";
 }
