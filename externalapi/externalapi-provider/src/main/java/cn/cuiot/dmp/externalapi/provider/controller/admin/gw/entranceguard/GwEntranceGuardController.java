@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.provider.controller.admin.gw;
+package cn.cuiot.dmp.externalapi.provider.controller.admin.gw.entranceguard;
 
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;

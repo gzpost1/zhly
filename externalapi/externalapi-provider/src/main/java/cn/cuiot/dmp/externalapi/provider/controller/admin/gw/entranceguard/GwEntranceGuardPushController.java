@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.provider.controller.admin.gw;
+package cn.cuiot.dmp.externalapi.provider.controller.admin.gw.entranceguard;
 
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.utils.JsonUtil;
