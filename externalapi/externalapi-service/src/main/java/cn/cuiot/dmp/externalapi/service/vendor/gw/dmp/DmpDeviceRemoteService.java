@@ -157,4 +157,40 @@ public class DmpDeviceRemoteService {
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<InvokeDeviceServiceResp>>() {
         });
     }
+
+    /**
+     * 编辑设备信息
+     */
+    public BaseDmpResp<Object> editDevice(DmpDeviceEditReq req, GWCurrencyBO bo) {
+        String gateway = "api/editDevice/V1/1Main/vV1.1";
+        return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
+        });
+    }
+
+    /**
+     * 批量设置设备属性（上限200个）
+     */
+    public BaseDmpResp<DmpDeviceBatchPropertyResp> batchSetDeviceProperty(DmpDeviceBatchPropertyReq req, GWCurrencyBO bo) {
+        String gateway = "api/batchSetDeviceProperty/V1/1Main/vV1.1";
+        return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceBatchPropertyResp>>() {
+        });
+    }
+
+    /**
+     * 批量启用设备（上限200个）
+     */
+    public BaseDmpResp<Object> batchEnableDevice(DmpDeviceBatchEnableReq req, GWCurrencyBO bo) {
+        String gateway = "api/batchEnableDevice/V1/1Main/vV1.1";
+        return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
+        });
+    }
+
+    /**
+     * 批量禁用设备（上限200个）
+     */
+    public BaseDmpResp<Object> batchDisableDevice(DmpDeviceBatchDisableReq req, GWCurrencyBO bo) {
+        String gateway = "api/batchDisableDevice/V1/1Main/vV1.1";
+        return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
+        });
+    }
 }
