@@ -170,10 +170,11 @@ public class DmpDeviceRemoteService {
     /**
      * 批量设置设备属性（上限200个）
      */
-    public BaseDmpResp<DmpDeviceBatchPropertyResp> batchSetDeviceProperty(DmpDeviceBatchPropertyReq req, GWCurrencyBO bo) {
+    public DmpDeviceBatchPropertyResp batchSetDeviceProperty(DmpDeviceBatchPropertyReq req, GWCurrencyBO bo) {
         String gateway = "api/batchSetDeviceProperty/V1/1Main/vV1.1";
-        return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceBatchPropertyResp>>() {
+        BaseDmpResp<DmpDeviceBatchPropertyResp> resp = dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceBatchPropertyResp>>() {
         });
+        return resp.getData();
     }
 
     /**
