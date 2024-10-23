@@ -17,7 +17,7 @@ import java.util.List;
  * @since 2024-06-19
  */
 public interface TbContractLeaseMapper extends BaseMybatisMapper<TbContractLeaseEntity> {
-    List<BaseVO> statisticsContract();
+    List<BaseVO> statisticsContract(@Param("orgId") Long orgId);
 
     Long queryLeaseStatistic(@Param("params") ContractLeaseStatisticParam params);
 }
