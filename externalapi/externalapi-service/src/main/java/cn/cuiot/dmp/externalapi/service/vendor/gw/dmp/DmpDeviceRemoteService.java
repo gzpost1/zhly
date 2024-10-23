@@ -50,7 +50,7 @@ public class DmpDeviceRemoteService {
     /**
      * 批量删除设备（单次批量删除设备上限为200）
      */
-    public BaseDmpResp<Object> batchDeleteDevice(DmpDeviceBatchCreateReq req, GWCurrencyBO bo) {
+    public BaseDmpResp<Object> batchDeleteDevice(DmpDeviceBatchDeleteReq req, GWCurrencyBO bo) {
         String gateway = "api/batchDeleteDevice/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
         });
