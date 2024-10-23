@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.service.gw;
 
-import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.JsonUtil;
@@ -71,7 +71,7 @@ public class GwEntranceGuardAuthorizeService extends ServiceImpl<GwEntranceGuard
         List<Long> entranceGuardIds = query.getEntranceGuardIds();
 
         // 根据企业ID获取对应的配置参数
-        GWEntranceGuardBO configInfo = configService.getConfigInfo(companyId);
+        GWCurrencyBO configInfo = configService.getConfigInfo(companyId);
 
         // 校验这些人员是否属于当前企业
         gwEntranceGuardPersonService.checkPerson(personIds, companyId);
@@ -129,7 +129,7 @@ public class GwEntranceGuardAuthorizeService extends ServiceImpl<GwEntranceGuard
      * @param configInfo          门禁配置参数
      * @param isSaveOperation     true表示新增授权，false表示取消授权
      */
-    private void processBatch(List<Long> entranceGuardIds, Long personId, Long companyId, GWEntranceGuardBO configInfo, boolean isSaveOperation) {
+    private void processBatch(List<Long> entranceGuardIds, Long personId, Long companyId, GWCurrencyBO configInfo, boolean isSaveOperation) {
         if (CollectionUtils.isNotEmpty(entranceGuardIds)) {
             // 获取门禁ID对应的门禁实体信息
             List<GwEntranceGuardEntity> gwEntranceGuardList = gwEntranceGuardService.listByIds(entranceGuardIds);

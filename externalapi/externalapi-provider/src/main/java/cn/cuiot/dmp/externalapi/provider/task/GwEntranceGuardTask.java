@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.externalapi.provider.task;
 
-import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
 import cn.cuiot.dmp.externalapi.service.constant.GwBusinessTypeConstant;
 import cn.cuiot.dmp.externalapi.service.constant.GwEntranceGuardServiceKeyConstant;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardEntity;
@@ -60,16 +60,16 @@ public class GwEntranceGuardTask {
                         .filter(Objects::nonNull).distinct().collect(Collectors.toList());
 
                 if (CollectionUtils.isNotEmpty(companyIds)) {
-                    List<GWEntranceGuardBO> configInfoList = configService.getConfigInfo(companyIds);
-                    Map<Long, GWEntranceGuardBO> map = configInfoList.stream()
-                            .collect(Collectors.toMap(GWEntranceGuardBO::getCompanyId, e -> e));
+                    List<GWCurrencyBO> configInfoList = configService.getConfigInfo(companyIds);
+                    Map<Long, GWCurrencyBO> map = configInfoList.stream()
+                            .collect(Collectors.toMap(GWCurrencyBO::getCompanyId, e -> e));
 
                     records.forEach(item -> {
                         try {
                             if (Objects.nonNull(item.getCompanyId()) && map.containsKey(item.getCompanyId())) {
                                 String serviceKey = GwEntranceGuardServiceKeyConstant.GET_PARAM;
 
-                                GWEntranceGuardBO bo = map.get(item.getCompanyId());
+                                GWCurrencyBO bo = map.get(item.getCompanyId());
                                 bo.setDeviceKey(item.getDeviceKey());
                                 bo.setRequestId(GwBusinessTypeConstant.ENTRANCE_GUARD + "-" + serviceKey + "-" + item.getId() + "-" + System.currentTimeMillis());
 
@@ -110,14 +110,14 @@ public class GwEntranceGuardTask {
                         .filter(Objects::nonNull).distinct().collect(Collectors.toList());
 
                 if (CollectionUtils.isNotEmpty(companyIds)) {
-                    List<GWEntranceGuardBO> configInfoList = configService.getConfigInfo(companyIds);
-                    Map<Long, GWEntranceGuardBO> map = configInfoList.stream()
-                            .collect(Collectors.toMap(GWEntranceGuardBO::getCompanyId, e -> e));
+                    List<GWCurrencyBO> configInfoList = configService.getConfigInfo(companyIds);
+                    Map<Long, GWCurrencyBO> map = configInfoList.stream()
+                            .collect(Collectors.toMap(GWCurrencyBO::getCompanyId, e -> e));
 
                     records.forEach(item -> {
                         try {
                             if (Objects.nonNull(item.getCompanyId()) && map.containsKey(item.getCompanyId())) {
-                                GWEntranceGuardBO bo = map.get(item.getCompanyId());
+                                GWCurrencyBO bo = map.get(item.getCompanyId());
 
                                 DmpDeviceReq req = new DmpDeviceReq();
                                 req.setIotId(item.getIotId());

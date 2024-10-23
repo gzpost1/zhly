@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.service.gw;
 
-import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.JsonUtil;
@@ -53,7 +53,7 @@ public class GwEntranceGuardParamService extends ServiceImpl<GwEntranceGuardPara
     public void updateParam(GwEntranceGuardParamDto dto) {
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
-        GWEntranceGuardBO bo = configService.getConfigInfo(companyId);
+        GWCurrencyBO bo = configService.getConfigInfo(companyId);
 
         //门禁数据
         GwEntranceGuardEntity entranceGuard = gwEntranceGuardService.getBaseMapper().queryForDetail(companyId, dto.getEntranceGuardId());

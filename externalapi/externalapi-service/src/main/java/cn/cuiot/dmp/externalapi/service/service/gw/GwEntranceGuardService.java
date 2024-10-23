@@ -9,7 +9,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParams;
 import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
-import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.NumberConst;
 import cn.cuiot.dmp.common.constant.ResultCode;
@@ -199,7 +199,7 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
         Long deptId = LoginInfoHolder.getCurrentDeptId();
 
         //校验对接参数是否已填,获取productKey
-        GWEntranceGuardBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId);
+        GWCurrencyBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId);
 
         long id = IdWorker.getId();
 
@@ -299,7 +299,7 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
         //校验对接参数是否已填,获取productKey
-        GWEntranceGuardBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId);
+        GWCurrencyBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId);
 
         GwEntranceGuardEntity entranceGuard = Optional.ofNullable(baseMapper.queryForDetail(companyId, dto.getId()))
                 .orElseThrow(() -> new BusinessException(ResultCode.ERROR, "数据不存在"));

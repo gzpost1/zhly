@@ -65,6 +65,11 @@ public enum FootPlateInfoEnum {
     YF_ELECTRICITY_METER(10L, YFElectricityMeterBO.class),
 
     /**
+     * 烟雾报警器（格物）
+     */
+    GW_SMOG_ALARM(11L, GWCurrencyBO.class),
+
+    /**
      * 水浸报警器（格物）
      */
     GW_WATER_LEACH_ALARM(12L, GWCurrencyBO.class),

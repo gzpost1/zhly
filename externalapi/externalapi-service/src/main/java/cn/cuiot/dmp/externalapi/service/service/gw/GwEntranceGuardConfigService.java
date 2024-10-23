@@ -79,6 +79,57 @@ public class GwEntranceGuardConfigService {
             if (StringUtils.isNotBlank(respDTO.getData())) {
                 GWCurrencyBO bo = FootPlateInfoEnum.getObjectFromJsonById(platformId, respDTO.getData());
                 bo.setCompanyId(respDTO.getCompanyId());
+                result.add(bo);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 获取对接配置
+     *
+     * @return productKey
+     * @Param companyId 企业id
+     */
+    public GWCurrencyBO getConfigInfo(Long companyId,Long platformId) {
+        if (Objects.nonNull(companyId) && Objects.nonNull(platformId) ) {
+
+            // 构建请求DTO
+            PlatfromInfoReqDTO dto = new PlatfromInfoReqDTO();
+            dto.setCompanyId(companyId);
+            dto.setPlatformId(platformId);
+            List<PlatfromInfoRespDTO> list = platfromInfoService.queryForList(dto);
+
+            if (CollectionUtils.isNotEmpty(list)) {
+                PlatfromInfoRespDTO respDTO = list.get(0);
+                if (StringUtils.isNotBlank(respDTO.getData())) {
+                    GWCurrencyBO bo = FootPlateInfoEnum.getObjectFromJsonById(platformId, respDTO.getData());
+                    bo.setCompanyId(companyId);
+                    return bo;
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<GWCurrencyBO> getConfigInfoByPlatformId(Long platformId) {
+
+        // 构建请求DTO
+        PlatfromInfoReqDTO dto = new PlatfromInfoReqDTO();
+        dto.setPlatformId(platformId);
+
+        // 查询平台信息
+        List<PlatfromInfoRespDTO> list = platfromInfoService.queryForList(dto);
+        if (CollectionUtils.isEmpty(list)) {
+            throw new BusinessException(ResultCode.ERROR, "【格物门禁】对接参数配置为空，请先配置后再创建数据");
+        }
+
+        List<GWCurrencyBO> result = Lists.newArrayList();
+        for (PlatfromInfoRespDTO respDTO : list) {
+            if (StringUtils.isNotBlank(respDTO.getData())) {
+                GWCurrencyBO bo = FootPlateInfoEnum.getObjectFromJsonById(platformId, respDTO.getData());
+                bo.setCompanyId(respDTO.getCompanyId());
+                result.add(bo);
             }
         }
         return result;

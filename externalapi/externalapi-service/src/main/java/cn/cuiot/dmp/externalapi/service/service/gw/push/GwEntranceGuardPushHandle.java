@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.service.gw.push;
 
-import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
@@ -173,7 +173,7 @@ public class GwEntranceGuardPushHandle implements GwBusinessStrategy {
         GwEntranceGuardEntity entity = Optional.ofNullable(entranceGuardService.getById(dataId))
                 .orElseThrow(() -> new BusinessException(ResultCode.ERROR, "格物门禁【" + dataId + "】数据不存在"));
 
-        GWEntranceGuardBO configInfo = entranceGuardConfigService.getConfigInfo(entity.getCompanyId());
+        GWCurrencyBO configInfo = entranceGuardConfigService.getConfigInfo(entity.getCompanyId());
 
         //获取最新的设备参数
         InvokeDeviceServiceReq req = new InvokeDeviceServiceReq();
