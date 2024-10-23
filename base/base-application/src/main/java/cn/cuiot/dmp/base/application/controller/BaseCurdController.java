@@ -137,6 +137,7 @@ public abstract class BaseCurdController<S extends BaseService<T>, T, P extends 
      * @param params
      * @return
      */
+    @RequiresPermissions
     @PostMapping("/list")
     public List<T> list(
             @RequestBody T params) {
