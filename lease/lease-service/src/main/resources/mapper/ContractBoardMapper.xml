@@ -12,7 +12,7 @@
     <select id="queryHouseNum" resultType="int">
         select count(*)
         from tb_building_archives a
-                     left join tb_houses_archives h on a.id = h.loupan_id
+                     inner join tb_houses_archives h on a.id = h.loupan_id
         where a.status = 1
           and a.deleted = 0
           and h.deleted = 0
@@ -22,9 +22,9 @@
     <select id="queryLeaseHouseNum" resultType="int">
         select count(*)
         from tb_contract_lease l
-                     left join tb_contract_bind_info b on l.id = b.contract_id
-                     left join tb_houses_archives h on b.bind_id = h.id
-                     left join tb_building_archives a
+                     inner join tb_contract_bind_info b on l.id = b.contract_id
+                     inner join tb_houses_archives h on b.bind_id = h.id
+                     inner join tb_building_archives a
                 on a.id = h.loupan_id
         where l.contract_status in (13, 14, 28)
           and a.company_id = #{companyId}
@@ -33,9 +33,9 @@
     <select id="queryUnLeaseHouseNum" resultType="int">
         select count(*)
         from tb_contract_lease l
-                     left join tb_contract_bind_info b on l.id = b.contract_id
-                     left join tb_houses_archives h on b.bind_id = h.id
-                     left join tb_building_archives a
+                     inner  join tb_contract_bind_info b on l.id = b.contract_id
+                     inner  join tb_houses_archives h on b.bind_id = h.id
+                     inner  join tb_building_archives a
                 on a.id = h.loupan_id
         where l.contract_status not in (13, 14, 28)
           and a.company_id = #{companyId}
