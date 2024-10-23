@@ -12,6 +12,7 @@ import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.contract.*;
 import cn.cuiot.dmp.lease.entity.TbContractCancelEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseBackEntity;
@@ -283,6 +284,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     @PostMapping("/pageNoSigned")
     public PageResult<TbContractLeaseEntity> pageNoSigned(
             @RequestBody TbContractLeaseParam params) {
+        params.setOrgId(LoginInfoHolder.getCurrentOrgId());
         return service.pageNoSigned(params);
     }
     /**

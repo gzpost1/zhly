@@ -194,6 +194,12 @@ public class BaseContractEntity extends Model {
     @TableField(exist = false)
     private Boolean usefullLease ;
 
+    /**
+     * 所属组织
+     */
+    @TableField(exist = false)
+    private Long orgId;
+
 
 
 
