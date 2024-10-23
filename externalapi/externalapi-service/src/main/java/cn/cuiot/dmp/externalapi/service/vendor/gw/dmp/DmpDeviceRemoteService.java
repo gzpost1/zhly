@@ -84,15 +84,6 @@ public class DmpDeviceRemoteService {
     }
 
     /**
-     * 批量启用设备（单次批量启用设备上限为200）
-     */
-    public BaseDmpResp<Object> batchEnableDevice(DmpDeviceBatchCreateReq req, GWCurrencyBO bo) {
-        String gateway = "api/batchEnableDevice/V1/1Main/vV1.1";
-        return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
-        });
-    }
-
-    /**
      * 查询单个设备状态
      */
     public DmpDeviceResp getStatus(DmpDeviceReq req, GWCurrencyBO bo) {
