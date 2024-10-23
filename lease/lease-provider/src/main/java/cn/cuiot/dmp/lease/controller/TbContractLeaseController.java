@@ -66,6 +66,20 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     @Autowired
     TbContractLeaseRelateService leaseRelateService;
 
+    @RequiresPermissions
+    @Override
+    public PageResult<TbContractLeaseEntity> queryForPage(@RequestBody  TbContractLeaseParam params) {
+        params.setOrgId(LoginInfoHolder.getCurrentOrgId());
+        return super.queryForPage(params);
+    }
+
+    @RequiresPermissions
+    @Override
+    public List<TbContractLeaseEntity> list(@RequestBody TbContractLeaseEntity params) {
+        params.setOrgId(LoginInfoHolder.getCurrentOrgId());
+        return super.list(params);
+    }
+
     /**
      * 保存草稿
      *

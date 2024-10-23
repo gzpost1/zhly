@@ -168,6 +168,10 @@
             <if test="params.auditStatus != null">
                 and ci.audit_status = #{params.auditStatus}
             </if>
+            <if test="params.orgId != null">
+                and ci.create_user in (select   pk_user_id
+                from user_org where pk_org_id = #{params.orgId})
+            </if>
             and ci.deleted = 0
         </if>
     </sql>

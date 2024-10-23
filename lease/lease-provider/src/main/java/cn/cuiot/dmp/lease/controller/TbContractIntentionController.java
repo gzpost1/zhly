@@ -9,8 +9,10 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.CustomConfigDetailReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.CustomConfigDetailRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.contract.*;
 import cn.cuiot.dmp.lease.entity.TbContractCancelEntity;
 import cn.cuiot.dmp.lease.entity.TbContractIntentionEntity;
@@ -64,6 +66,19 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
     TbContractLeaseRelateService leaseRelateService;
     @Autowired
     SystemApiFeignService systemApiFeignService;
+
+    @RequiresPermissions
+    @Override
+    public PageResult<TbContractIntentionEntity> queryForPage(@RequestBody TbContractIntentionParam params) {
+        params.setOrgId(LoginInfoHolder.getCurrentOrgId());
+        return super.queryForPage(params);
+    }
+
+    @RequiresPermissions
+    @Override
+    public List<TbContractIntentionEntity> list(@RequestBody TbContractIntentionEntity params) {
+        return super.list(params);
+    }
 
     /**
      * 保存草稿

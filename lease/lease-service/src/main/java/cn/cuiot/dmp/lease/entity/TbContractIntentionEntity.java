@@ -94,6 +94,12 @@ public class TbContractIntentionEntity extends BaseContractEntity {
     @TableField(fill = FieldFill.INSERT)
     private Byte deleted = EntityConstants.NOT_DELETED;
 
+    /**
+     * 所属组织
+     */
+    @TableField(exist = false)
+    private Long orgId;
+
 
 
     @Override

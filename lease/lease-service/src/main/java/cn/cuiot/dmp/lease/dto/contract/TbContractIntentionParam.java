@@ -160,5 +160,9 @@ public class TbContractIntentionParam extends PageQuery implements Serializable 
 
     private Integer templateId;
 
+    /**
+     * 所属组织
+     */
+    private Long orgId;
 
 }
