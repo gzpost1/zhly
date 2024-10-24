@@ -2,10 +2,10 @@ package cn.cuiot.dmp.externalapi.provider.controller.app.gw;
 
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
-import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardOperationDto;
-import cn.cuiot.dmp.externalapi.service.query.gw.GwEntranceGuardPageQuery;
-import cn.cuiot.dmp.externalapi.service.service.gw.GwEntranceGuardService;
-import cn.cuiot.dmp.externalapi.service.vo.gw.GwEntranceGuardAppPageVo;
+import cn.cuiot.dmp.externalapi.service.query.gw.entranceguard.GwEntranceGuardOperationDto;
+import cn.cuiot.dmp.externalapi.service.query.gw.entranceguard.GwEntranceGuardPageQuery;
+import cn.cuiot.dmp.externalapi.service.service.gw.entranceguard.GwEntranceGuardService;
+import cn.cuiot.dmp.externalapi.service.vo.gw.entranceguard.GwEntranceGuardAppPageVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;

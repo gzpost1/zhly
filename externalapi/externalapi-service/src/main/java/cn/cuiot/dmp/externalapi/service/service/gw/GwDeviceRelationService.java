@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import cn.cuiot.dmp.externalapi.service.mapper.gw.GwDeviceRelationMapper;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwDeviceRelationEntity;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -48,6 +49,22 @@ public class GwDeviceRelationService extends ServiceImpl<GwDeviceRelationMapper,
         remove(new LambdaQueryWrapper<GwDeviceRelationEntity>()
                 .eq(GwDeviceRelationEntity::getProductKey, entity.getProductKey())
                 .eq(GwDeviceRelationEntity::getDeviceKey, entity.getDeviceKey()));
+    }
+
+    /**
+     * 根据数据id删除数据
+     */
+    public void deleteByDataId(Long dataId) {
+        remove(new LambdaQueryWrapper<GwDeviceRelationEntity>()
+                .eq(GwDeviceRelationEntity::getDataId, dataId));
+    }
+
+    /**
+     * 根据数据id列表批量删除数据
+     */
+    public void batchDeleteByDataIds(List<Long> dataIds) {
+        remove(new LambdaQueryWrapper<GwDeviceRelationEntity>()
+                .in(GwDeviceRelationEntity::getDataId, dataIds));
     }
 
     /**
