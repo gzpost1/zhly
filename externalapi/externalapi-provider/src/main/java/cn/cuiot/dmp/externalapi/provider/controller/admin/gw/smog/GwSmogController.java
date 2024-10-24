@@ -47,7 +47,7 @@ public class GwSmogController {
     }
 
     /**
-     * 格物-门禁导出
+     * 格物-烟雾报警器导出
      * @param query
      * @return
      */

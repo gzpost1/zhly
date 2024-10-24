@@ -3,6 +3,7 @@ package cn.cuiot.dmp.externalapi.service.mapper.gw;
 
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogDataEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -14,4 +15,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface GwSmogDataMapper extends BaseMapper<GwSmogDataEntity> {
 
+    /**
+     * 查询最新的属性数据
+     * @return
+     */
+    GwSmogDataEntity queryLatestData(@Param("deviceId")Long deviceId);
 }

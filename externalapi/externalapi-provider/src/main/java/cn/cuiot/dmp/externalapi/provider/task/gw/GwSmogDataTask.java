@@ -43,7 +43,7 @@ public class GwSmogDataTask {
     @Autowired
     private GwSmogDataService gwSmogDataService;
 
-    public ReturnT<String>  GetCarInoutInfo(String param){
+    public ReturnT<String>  syncSmogPropertyLatestValues(String param){
         log.info("同步格物烟雾报警器拉取最新的设备信息开始");
         List<GwSmogEntity> list = gwSmogService.list();
         if(CollectionUtils.isEmpty(list)){

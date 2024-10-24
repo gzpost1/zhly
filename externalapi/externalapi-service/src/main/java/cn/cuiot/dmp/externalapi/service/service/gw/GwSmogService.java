@@ -22,18 +22,16 @@ import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.constant.GwBusinessTypeConstant;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwDeviceRelationEntity;
-import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardEntity;
+import cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogDataEntity;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogEntity;
 import cn.cuiot.dmp.externalapi.service.enums.GwEntranceGuardEquipStatusEnums;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.mapper.gw.GwSmogMapper;
 import cn.cuiot.dmp.externalapi.service.query.gw.*;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.*;
-import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.BaseDmpResp;
-import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDeviceBatchPropertyResp;
+import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDevicePropertyResp;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDeviceResp;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.dmp.DmpDeviceRemoteService;
-import cn.cuiot.dmp.externalapi.service.vo.gw.GwEntranceGuardPageVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwSmogDetailVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwSmogPageVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -79,6 +77,8 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
     private ApiSystemService apiSystemService;
     @Autowired
     private ExcelExportService excelExportService;
+    @Autowired
+    private GwSmogDataService gwSmogDataService;
     /**
      * 分页
      */
@@ -101,14 +101,14 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         List<Long> buildingIds = records.stream().map(vo -> vo.getBuildingId()).distinct().collect(Collectors.toList());
         Map<Long, String> buildingMap = Optional.ofNullable(queryBuildingInfo(buildingIds)).orElse(Lists.newArrayList())
                 .stream().collect(Collectors.toMap(BuildingArchive::getId, BuildingArchive::getName));
-        //转译楼盘
+        //转译部门
         List<Long> deptIds = records.stream().map(vo -> vo.getDeptId()).distinct().collect(Collectors.toList());
         Map<Long, String> deptMap = Optional.ofNullable(queryDeptList(deptIds)).orElse(Lists.newArrayList())
                 .stream().collect(Collectors.toMap(DepartmentDto::getId, DepartmentDto::getName));
 
         for(GwSmogPageVo vo : records){
             vo.setBuildingName(buildingMap.get(vo.getBuildingId()));
-            vo.setDeptPathName(deptMap.get(vo.getDeptPathName()));
+            vo.setDeptName(deptMap.get(vo.getDeptId()));
             vo.setStatusName(Objects.equals(vo.getStatus(), NumberConst.DATA_STATUS)? StatusConst.STOP: StatusConst.ENABLE);
             vo.setEquipStatusName(GwEntranceGuardEquipStatusEnums.queryNameByCode(vo.getEquipStatus()));
         }
@@ -145,7 +145,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
     }
 
     /**
-     * 门禁导出
+     * 烟雾报警器设备导出
      * @param query
      */
     public void export(GwSmogQuery query){
@@ -157,7 +157,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
     }
 
     /**
-     * 门禁列表导出
+     * 设备列表导出
      * @param downloadDto
      * @return
      */
@@ -177,8 +177,26 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         queryWrapper.eq(GwSmogEntity::getCompanyId,companyId);
         GwSmogEntity gwSmogEntity = baseMapper.selectOne(queryWrapper);
         GwSmogDetailVo vo = BeanMapper.map(gwSmogEntity, GwSmogDetailVo.class);
-        //todo 烟雾报警器属性
-
+        //烟雾报警器属性
+        GwSmogDataEntity gwSmogDataEntity = gwSmogDataService.queryLatestData(id);
+        if(Objects.nonNull(gwSmogDataEntity) && CollectionUtils.isNotEmpty(gwSmogDataEntity.getDeviceData())){
+            Map<String, DmpDevicePropertyResp> propertyMap = gwSmogDataEntity.getDeviceData().stream().collect(Collectors.toMap(v -> v.getKey(), v -> v));
+            //灵敏度
+            Object sensitivity = propertyMap.get("sensitivity").getValue();
+            vo.setSensitivity(Objects.isNull(sensitivity)?null:String.valueOf(sensitivity));
+            //省电模式
+            Object powerSavingMode = propertyMap.get("powerSavingMode").getValue();
+            vo.setPowerSavingMode(Objects.isNull(powerSavingMode)?null:String.valueOf(powerSavingMode));
+            //温度报警阈值
+            Object tempLimit = propertyMap.get("tempLimit").getValue();
+            vo.setTempLimit(Objects.isNull(powerSavingMode)?null:Double.valueOf(tempLimit.toString()));
+            //温度报警阈值
+            Object dbmLimit = propertyMap.get("dbmLimit").getValue();
+            vo.setDbmLimit(Objects.isNull(dbmLimit)?null:Double.valueOf(dbmLimit.toString()));
+            //烟雾传感器污染度
+            Object smokeDirt = propertyMap.get("smokeDirt").getValue();
+            vo.setSmokeDirt(Objects.isNull(smokeDirt)?null:Double.valueOf(smokeDirt.toString()));
+        }
         return vo;
     }
 

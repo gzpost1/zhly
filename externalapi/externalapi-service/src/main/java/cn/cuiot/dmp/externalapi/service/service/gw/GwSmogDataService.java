@@ -16,4 +16,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class GwSmogDataService extends ServiceImpl<GwSmogDataMapper, GwSmogDataEntity> {
 
+    /**
+     * 查询最新的属性数据
+     * @return
+     */
+    public GwSmogDataEntity queryLatestData(Long deviceId){
+        return baseMapper.queryLatestData(deviceId);
+    }
 }

@@ -29,7 +29,7 @@ public class GwSmogPageVo {
      * 所属组织
      */
     @Excel(name = "所属组织", orderNum = "1", width = 20)
-    private String deptPathName;
+    private String deptName;
 
     /**
      * 企业ID

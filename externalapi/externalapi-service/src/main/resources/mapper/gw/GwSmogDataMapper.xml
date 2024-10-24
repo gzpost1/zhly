@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.gw.GwSmogDataMapper">
+
+    <select id="queryLatestData" resultType="cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogDataEntity">
+        SELECT
+            *
+        FROM
+            tb_gw_smog_data
+        WHERE
+            id ( SELECT Max( id ) FROM tb_gw_smog_data where device_id =#{deviceId})
+    </select>
+
+</mapper>

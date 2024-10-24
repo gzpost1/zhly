@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.gw.GwSmogEventMapper">
+
+    <select id="queryForPage" resultType="cn.cuiot.dmp.externalapi.service.vo.gw.GwSmogEventPageVo"
+    parameterType="cn.cuiot.dmp.externalapi.service.query.gw.GwSmogEventQuery">
+        SELECT
+            NAME,
+            dept_id,
+            building_id,
+            imei,
+            alarm_code,
+            alarm_data,
+            a.create_time
+        FROM
+        tb_gw_smog_event a
+        tb_gw_smog  b ON a.device_id = b.id
+        <where>
+            <if test="param.name !=null and param.name.trim() !=''">
+                and b.name like CONCAT('%','${param.name}','%' )
+            </if>
+            <if test="param.imei !=null and param.imei.trim() !=''">
+                and b.imei like CONCAT('%','${param.imei}','%' )
+            </if>
+            <if test="param.buildingId !=null ">
+                and b.building_id =#{param.buildingId}
+            </if>
+            <if test="param.alarmCode !=null ">
+                and a.alarm_code =#{alarmCode}
+            </if>
+            <if test="param.beginTime !=null">
+                and a.create_time >= #{param.beginTime}
+            </if>
+            <if test="param.endTime !=null">
+                and a.create_time <![CDATA[<=]]> #{param.endTime}
+            </if>
+        </where>
+    </select>
+
+</mapper>
