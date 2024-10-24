@@ -96,10 +96,11 @@ public class DmpDeviceRemoteService {
     /**
      * 批量查询设备状态
      */
-    public BaseDmpResp<DmpDeviceStatusBatchResp> batchGetStatus(DmpDeviceBatchStatusReq req, GWCurrencyBO bo) {
+    public DmpDeviceStatusBatchResp batchGetStatus(DmpDeviceBatchStatusReq req, GWCurrencyBO bo) {
         String gateway = "api/batchGetStatus/V1/1Main/vV1.1";
-        return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceStatusBatchResp>>() {
+        BaseDmpResp<DmpDeviceStatusBatchResp> resp = dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceStatusBatchResp>>() {
         });
+        return resp.getData();
     }
 
     /**
