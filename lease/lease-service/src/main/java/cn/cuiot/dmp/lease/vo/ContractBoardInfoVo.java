@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.lease.vo;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -10,6 +11,7 @@ import java.io.Serializable;
  * @Author by Mujun~
  */
 @Data
+@Builder
 public class ContractBoardInfoVo implements Serializable {
     /**
      * 楼盘名称

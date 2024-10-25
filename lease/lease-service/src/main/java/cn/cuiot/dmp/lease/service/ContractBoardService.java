@@ -5,11 +5,13 @@ import cn.cuiot.dmp.lease.mapper.ContractBoardMapper;
 import cn.cuiot.dmp.lease.vo.ContractBoardInfoVo;
 import cn.cuiot.dmp.lease.vo.ContractBoardInfoVoResult;
 import cn.cuiot.dmp.lease.vo.ContractBoardVo;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,7 +60,7 @@ public class ContractBoardService {
         Integer loupanNum = queryArchiveNum(currentOrgId);
         Integer houseNum = queryHouseNum(currentOrgId);
         Integer leaseHouseNum = queryLeaseHouseNum(currentOrgId);
-        Integer unLeaseHouseNum = queryUnLeaseHouseNum(currentOrgId);
+        Integer unLeaseHouseNum = houseNum-leaseHouseNum;
         Integer leaseContractNum = queryLeaseContractNum(currentOrgId);
         Integer intentionContractNum = queryIntentionContractNum(currentOrgId);
         ContractBoardVo contractBoardVo = new ContractBoardVo();

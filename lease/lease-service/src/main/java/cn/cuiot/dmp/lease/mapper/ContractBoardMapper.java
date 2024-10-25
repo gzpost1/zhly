@@ -17,6 +17,8 @@ import java.util.List;
 public interface ContractBoardMapper {
     Integer queryArchiveNum(@Param("companyId") Long companyId);
 
+    List<String> queryArchiveName(@Param("companyId") Long companyId);
+
     Integer queryHouseNum(@Param("companyId") Long companyId);
 
     Integer queryLeaseHouseNum(@Param("companyId") Long companyId);
