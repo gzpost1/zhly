@@ -1,7 +1,10 @@
 package cn.cuiot.dmp.lease.service;
 
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
+import cn.cuiot.dmp.base.application.service.ApiSystemService;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.req.AuditConfigTypeReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigRspDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.AuditConfigTypeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.SystemApiFeignService;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static cn.cuiot.dmp.common.constant.AuditContractConstant.*;
 
@@ -48,8 +52,24 @@ public class BaseContractService {
     TbContractLeaseRelateService leaseRelateService;
     @Autowired
     TbContractLeaseMapper contractLeaseMapper;
+    @Autowired
+    ApiSystemService apiSystemService;
 
 
+    public List<Long> getLoginDeptIds() {
+        Long currentDeptId = LoginInfoHolder.getCurrentDeptId();
+        if(Objects.nonNull(currentDeptId)){
+            DepartmentReqDto paraDto = new DepartmentReqDto();
+            paraDto.setDeptId(currentDeptId);
+            paraDto.setSelfReturn(true);
+            List<DepartmentDto> departmentDtoList = apiSystemService.lookUpDepartmentChildList(paraDto);
+            List<Long> departmentIdList = departmentDtoList.stream()
+                    .map(DepartmentDto::getId)
+                    .collect(Collectors.toList());
+            return departmentIdList;
+        }
+        return null;
+    }
 
     /**
      * 填充房屋信息

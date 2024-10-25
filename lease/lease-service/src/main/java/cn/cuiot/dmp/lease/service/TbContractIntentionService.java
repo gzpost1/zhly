@@ -128,7 +128,7 @@ public class TbContractIntentionService extends BaseMybatisServiceImpl<TbContrac
     }
 
     public List<BaseVO> statisticsContract() {
-        return baseMapper.statisticsContract(LoginInfoHolder.getCurrentOrgId());
+        return baseMapper.statisticsContract(baseContractService.getLoginDeptIds());
     }
 
     /**

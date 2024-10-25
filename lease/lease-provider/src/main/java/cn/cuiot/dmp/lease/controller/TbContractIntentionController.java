@@ -70,13 +70,14 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
     @RequiresPermissions
     @Override
     public PageResult<TbContractIntentionEntity> queryForPage(@RequestBody TbContractIntentionParam params) {
-        params.setOrgId(LoginInfoHolder.getCurrentOrgId());
+        params.setDepartmentIdList(baseContractService.getLoginDeptIds());
         return super.queryForPage(params);
     }
 
     @RequiresPermissions
     @Override
     public List<TbContractIntentionEntity> list(@RequestBody TbContractIntentionEntity params) {
+        params.setDepartmentIdList(baseContractService.getLoginDeptIds());
         return super.list(params);
     }
 
@@ -305,6 +306,7 @@ public class TbContractIntentionController extends BaseCurdController<TbContract
      */
     @PostMapping("export")
     public IdmResDTO export(@RequestBody @Valid TbContractIntentionParam pageQuery) throws Exception {
+        pageQuery.setDepartmentIdList(baseContractService.getLoginDeptIds());
         service.export(pageQuery);
         return IdmResDTO.success();
     }

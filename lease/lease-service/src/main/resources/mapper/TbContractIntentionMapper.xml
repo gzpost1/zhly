@@ -173,9 +173,17 @@
             <if test="params.auditStatus != null">
                 and ci.audit_status = #{params.auditStatus}
             </if>
-            <if test="params.orgId != null">
+<!--            <if test="params.orgId != null">-->
+<!--                and ci.create_user in (select pk_user_id-->
+<!--                from user_org where pk_org_id = #{params.orgId})-->
+<!--            </if>-->
+            <if test="params.departmentIdList != null and params.departmentIdList.size()>0">
                 and ci.create_user in (select pk_user_id
-                from user_org where pk_org_id = #{params.orgId})
+                from user_org where pk_dept_id in
+                <foreach collection="params.departmentIdList" item="deptId" separator="," open="(" close=")">
+                    #{deptId}
+                </foreach>
+                )
             </if>
             and ci.deleted = 0
         </if>
@@ -185,9 +193,12 @@
         select count(*) value, contract_status name
         from tb_contract_intention
         where deleted = 0
-          and create_user in (select pk_user_id
-                              from user_org
-                              where pk_org_id = #{orgId})
+        and create_user in (select pk_user_id
+        from user_org where pk_dept_id in
+        <foreach collection="depotIds" item="deptId" separator="," open="(" close=")">
+            #{deptId}
+        </foreach>
+        )
         group by contract_status
     </select>
 

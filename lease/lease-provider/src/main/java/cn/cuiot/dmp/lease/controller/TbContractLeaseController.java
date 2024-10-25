@@ -5,8 +5,11 @@ import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseCurdController;
 import cn.cuiot.dmp.base.application.enums.BeanValidationGroup;
 import cn.cuiot.dmp.base.application.enums.ContractEnum;
+import cn.cuiot.dmp.base.application.service.ApiSystemService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
+import cn.cuiot.dmp.base.infrastructure.dto.DepartmentDto;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -34,6 +37,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static cn.cuiot.dmp.common.constant.AuditContractConstant.*;
 import static cn.cuiot.dmp.common.constant.AuditContractConstant.CONTRACT_LEASE_TYPE;
@@ -65,18 +69,20 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     TbContractLeaseBackService leaseBackService;
     @Autowired
     TbContractLeaseRelateService leaseRelateService;
+    @Autowired
+    ApiSystemService apiSystemService;
 
     @RequiresPermissions
     @Override
     public PageResult<TbContractLeaseEntity> queryForPage(@RequestBody  TbContractLeaseParam params) {
-        params.setOrgId(LoginInfoHolder.getCurrentOrgId());
+        params.setDepartmentIdList(baseContractService.getLoginDeptIds());
         return super.queryForPage(params);
     }
 
     @RequiresPermissions
     @Override
     public List<TbContractLeaseEntity> list(@RequestBody TbContractLeaseEntity params) {
-        params.setOrgId(LoginInfoHolder.getCurrentOrgId());
+        params.setDepartmentIdList(baseContractService.getLoginDeptIds());
         return super.list(params);
     }
 
@@ -172,6 +178,9 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
         TbContractLeaseEntity queryEntity = getContract(id);
         TbContractLeaseEntity contractLeaseReletEntity = getContractLeaseEntity(param);
         service.saveOrUpdate(contractLeaseReletEntity);
+        String operNewMsg = "通过【续租】操作生成本合同"+ System.lineSeparator() + "原合同的合同编码:"+queryEntity.getContractNo();
+        contractLogService.saveLog(contractLeaseReletEntity.getId(), OPERATE_NEW, CONTRACT_LEASE_TYPE, operNewMsg,
+                String.valueOf(queryEntity.getContractNo()), contractLeaseReletEntity.getReletPath());
 
         //记录被续租合同的和续租合同关联关系
         leaseRelateService.saveLeaseRelated(contractLeaseReletEntity, RELATE_NEW_LEASE_TYPE, queryEntity.getId());
@@ -298,9 +307,10 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
     @PostMapping("/pageNoSigned")
     public PageResult<TbContractLeaseEntity> pageNoSigned(
             @RequestBody TbContractLeaseParam params) {
-        params.setOrgId(LoginInfoHolder.getCurrentOrgId());
+        params.setDepartmentIdList(baseContractService.getLoginDeptIds());
         return service.pageNoSigned(params);
     }
+
     /**
      * 生成新的续租合同
      *
@@ -335,6 +345,7 @@ public class TbContractLeaseController extends BaseCurdController<TbContractLeas
      */
     @PostMapping("export")
     public IdmResDTO export(@RequestBody @Valid TbContractLeaseParam pageQuery) throws Exception {
+        pageQuery.setDepartmentIdList(baseContractService.getLoginDeptIds());
         service.export(pageQuery);
         return IdmResDTO.success();
     }

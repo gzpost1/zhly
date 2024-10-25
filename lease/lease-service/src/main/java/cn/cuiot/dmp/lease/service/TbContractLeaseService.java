@@ -132,7 +132,7 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
 
 
     public List<BaseVO> statisticsContract() {
-        return baseMapper.statisticsContract(LoginInfoHolder.getCurrentOrgId());
+        return baseMapper.statisticsContract(baseContractService.getLoginDeptIds());
     }
 
 

@@ -200,6 +200,9 @@ public class BaseContractEntity extends Model {
     @TableField(exist = false)
     private Long orgId;
 
+    @TableField(exist = false)
+    private List<Long> departmentIdList;
+
 
 
 

@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
+import static cn.cuiot.dmp.base.application.enums.ContractEnum.AUDIT_WAITING_COMMIT;
+
 /**
  * @author hantingyao
  * @Description
@@ -72,6 +74,10 @@ public class ContractLeaseExportVo {
     private String auditStatusName;
 
     public String getAuditStatusName() {
+        if(auditStatus.equals(AUDIT_WAITING_COMMIT.getCode())){
+            this.auditStatusName="待提交";
+            return "待提交";
+        }
         return auditStatus.toString();
     }
 

@@ -10,7 +10,7 @@
     </select>
 
     <select id="queryHouseNum" resultType="int">
-        select count(*)
+        select count(distinct h.id)
         from tb_building_archives a
                      inner join tb_houses_archives h on a.id = h.loupan_id
         where a.status = 1
@@ -20,7 +20,7 @@
     </select>
 
     <select id="queryLeaseHouseNum" resultType="int">
-        select count(*)
+        select count(distinct h.id)
         from tb_contract_lease l
                      inner join tb_contract_bind_info b on l.id = b.contract_id
                      inner join tb_houses_archives h on b.bind_id = h.id
@@ -31,7 +31,7 @@
     </select>
 
     <select id="queryUnLeaseHouseNum" resultType="int">
-        select count(*)
+        select count(distinct h.id)
         from tb_contract_lease l
                      inner  join tb_contract_bind_info b on l.id = b.contract_id
                      inner  join tb_houses_archives h on b.bind_id = h.id
@@ -70,7 +70,9 @@
                                   left join tb_houses_archives h on b.bind_id = h.id
                                   left join tb_building_archives a
                              on a.id = h.loupan_id
-                     where l.deleted=0 and h.deleted=0 and h.deleted=0 and a.deleted=0 and a.company_id = #{companyId}) a
+                     where l.deleted=0 and h.deleted=0 and h.deleted=0 and a.deleted=0 and a.company_id = #{companyId}
+                    group by h.id
+                     ) a
         group by a.loupanName
     </select>
 </mapper>
