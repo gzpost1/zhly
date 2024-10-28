@@ -106,9 +106,9 @@ public class DmpDeviceRemoteService {
     /**
      * 创建单个设备
      */
-    public DmpDeviceResp createDevice(DmpDeviceCreateReq req, GWCurrencyBO bo) {
+    public DmpDeviceCreateResp createDevice(DmpDeviceCreateReq req, GWCurrencyBO bo) {
         String gateway = "api/createDevice/V1/1Main/vV1.1";
-        BaseDmpResp<DmpDeviceResp> resp = dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceResp>>() {
+        BaseDmpResp<DmpDeviceCreateResp> resp = dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<DmpDeviceCreateResp>>() {
         });
         return resp.getData();
     }

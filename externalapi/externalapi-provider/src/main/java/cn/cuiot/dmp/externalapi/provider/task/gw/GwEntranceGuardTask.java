@@ -1,6 +1,7 @@
-package cn.cuiot.dmp.externalapi.provider.task;
+package cn.cuiot.dmp.externalapi.provider.task.gw;
 
 import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
+import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.externalapi.service.constant.GwBusinessTypeConstant;
 import cn.cuiot.dmp.externalapi.service.constant.GwEntranceGuardServiceKeyConstant;
 import cn.cuiot.dmp.externalapi.service.entity.gw.entranceguard.GwEntranceGuardEntity;
@@ -60,7 +61,7 @@ public class GwEntranceGuardTask {
                         .filter(Objects::nonNull).distinct().collect(Collectors.toList());
 
                 if (CollectionUtils.isNotEmpty(companyIds)) {
-                    List<GWCurrencyBO> configInfoList = configService.getConfigInfo(companyIds);
+                    List<GWCurrencyBO> configInfoList = configService.getConfigInfo(companyIds, FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId());
                     Map<Long, GWCurrencyBO> map = configInfoList.stream()
                             .collect(Collectors.toMap(GWCurrencyBO::getCompanyId, e -> e));
 
@@ -110,7 +111,7 @@ public class GwEntranceGuardTask {
                         .filter(Objects::nonNull).distinct().collect(Collectors.toList());
 
                 if (CollectionUtils.isNotEmpty(companyIds)) {
-                    List<GWCurrencyBO> configInfoList = configService.getConfigInfo(companyIds);
+                    List<GWCurrencyBO> configInfoList = configService.getConfigInfo(companyIds, FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId());
                     Map<Long, GWCurrencyBO> map = configInfoList.stream()
                             .collect(Collectors.toMap(GWCurrencyBO::getCompanyId, e -> e));
 

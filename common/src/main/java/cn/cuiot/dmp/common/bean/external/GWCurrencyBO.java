@@ -28,13 +28,15 @@ public class GWCurrencyBO extends ExternalapiBaseStatusBO {
      */
     private String productKey;
 
+    /**-----------------------------------------以下为业务需要传参-------------------------------------------------------*/
+
     /**
      * 产品deviceKey（如果需要dmp的转发数据就必传）
      */
     private String deviceKey;
 
     /**
-     * 请求id
+     * 请求id（只负责业务传参）
      */
     private String requestId;
 

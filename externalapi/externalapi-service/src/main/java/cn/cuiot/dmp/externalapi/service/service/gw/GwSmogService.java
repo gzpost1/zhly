@@ -29,8 +29,8 @@ import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.mapper.gw.GwSmogMapper;
 import cn.cuiot.dmp.externalapi.service.query.gw.*;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.*;
+import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDeviceCreateResp;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDevicePropertyResp;
-import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDeviceResp;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.dmp.DmpDeviceRemoteService;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwSmogDetailVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwSmogPageVo;
@@ -222,7 +222,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         deviceReq.setImei(dto.getImei());
         deviceReq.setDeviceName(dto.getName());
         deviceReq.setDescription(deviceReq.getDescription());
- /*       DmpDeviceResp device = dmpDeviceRemoteService.createDevice(deviceReq, bo);
+ /*       DmpDeviceCreateResp device = dmpDeviceRemoteService.createDevice(deviceReq, bo);;
 
         if (Objects.nonNull(device)) {
             //保存设备关联信息
