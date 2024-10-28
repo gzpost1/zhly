@@ -5,6 +5,7 @@ import cn.cuiot.dmp.base.application.enums.ContractEnum;
 import cn.cuiot.dmp.base.application.mybatis.service.BaseMybatisServiceImpl;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.dto.BaseVO;
+import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
 import cn.cuiot.dmp.common.bean.PageQuery;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.utils.AssertUtil;
@@ -13,6 +14,7 @@ import cn.cuiot.dmp.common.utils.SnowflakeIdWorkerUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.lease.dto.contract.ContractLeaseStatisticParam;
 import cn.cuiot.dmp.lease.dto.contract.TbContractLeaseParam;
+import cn.cuiot.dmp.lease.entity.ContractTemplateEntity;
 import cn.cuiot.dmp.lease.entity.TbContractLeaseEntity;
 import cn.cuiot.dmp.lease.mapper.TbContractIntentionMapper;
 import cn.cuiot.dmp.lease.mapper.TbContractLeaseMapper;
@@ -33,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 租赁合同 服务实现类
@@ -50,6 +53,8 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
     BaseContractService baseContractService;
     @Autowired
     private ExcelExportService excelExportService;
+    @Autowired
+    private ContractTemplateService contractTemplateService;
 
     @Override
     public boolean save(TbContractLeaseEntity o) {
@@ -155,6 +160,15 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
         pageResult.getList().forEach(o -> {
             ContractLeaseExportVo exportVo = new ContractLeaseExportVo();
             BeanUtil.copyProperties(o, exportVo);
+            List<HousesArchivesVo> houseList = o.getHouseList();
+            if(CollectionUtil.isNotEmpty(houseList)){
+                List<String> roomNums = houseList.stream().map(HousesArchivesVo::getRoomNum).collect(Collectors.toList());
+                String rooms = String.join(",", roomNums);
+                exportVo.setRoomNum(rooms);
+            }
+            Long templateId = o.getTemplateId();
+            ContractTemplateEntity template = contractTemplateService.getById(templateId);
+            exportVo.setTempLateName(template.getName());
             exportDataList.add(exportVo);
         });
         Page<ContractLeaseExportVo> page = new Page<>(pageResult.getCurrentPage(), pageResult.getPageSize(), pageResult.getTotal());

@@ -64,13 +64,19 @@ public class ContractLeaseExportVo {
         return beginDate.toString() + "至" + endDate.toString();
     }
 
+
+    @Excel(name = "合同标的", width = 15, orderNum = "3")
+    private String roomNum;
+
+    @Excel(name = "合同模板", width = 15, orderNum = "4")
+    private String tempLateName;
     /**
      * 审核状态
      * 1:审核中待审核 2:审核通过 3:未通过
      */
     private Integer auditStatus;
 
-    @Excel(name = "审核状态", orderNum = "3", replace = {"审核中_1", "审核通过_2", "未通过_3"})
+    @Excel(name = "审核状态", orderNum = "5", replace = {"审核中_1", "审核通过_2", "未通过_3"})
     private String auditStatusName;
 
     public String getAuditStatusName() {
@@ -81,24 +87,28 @@ public class ContractLeaseExportVo {
         return auditStatus.toString();
     }
 
-    @Excel(name = "跟进人",width = 10,orderNum = "4")
+    @Excel(name = "跟进人",width = 10,orderNum = "6")
     private String followUpName;
 
     /**
      * 签订日期
      */
-    @Excel(name = "签订日期",width = 10,orderNum = "5",exportFormat = "yyyy-MM-dd")
+    @Excel(name = "签订日期",width = 10,orderNum = "7",exportFormat = "yyyy-MM-dd")
     private LocalDate cantractDate;
 
-    @Excel(name = "创建人",width = 10,orderNum = "6")
+    @Excel(name = "创建人",width = 10,orderNum = "8")
     private String createUserName;
 
-    @Excel(name = "创建时间",width = 15,orderNum = "7",exportFormat = "yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "创建时间",width = 15,orderNum = "9",exportFormat = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
-    @Excel(name = "更新人",width = 10,orderNum = "8")
+    @Excel(name = "更新人",width = 10,orderNum = "10")
     private String updateUserName;
 
-    @Excel(name = "跟新时间",width = 15,orderNum = "9",exportFormat = "yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "跟新时间",width = 15,orderNum = "11",exportFormat = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
+
+
+
+
 }
