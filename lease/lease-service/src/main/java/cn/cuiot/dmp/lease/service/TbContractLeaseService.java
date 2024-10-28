@@ -156,6 +156,9 @@ public class TbContractLeaseService extends BaseMybatisServiceImpl<TbContractLea
             pageQuery.setQueryIds(queryIds);
         }
         PageResult<TbContractLeaseEntity> pageResult = super.page(pageQuery);
+        pageResult.getRecords().forEach(c -> {
+            baseContractService.fillBindHouseInfo(c);
+        });
         List<ContractLeaseExportVo> exportDataList = new ArrayList<>();
         pageResult.getList().forEach(o -> {
             ContractLeaseExportVo exportVo = new ContractLeaseExportVo();
