@@ -35,7 +35,7 @@ import cn.cuiot.dmp.externalapi.service.service.gw.GwDeviceRelationService;
 import cn.cuiot.dmp.externalapi.service.service.gw.GwEntranceGuardConfigService;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.DmpDeviceCreateReq;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.InvokeDeviceServiceReq;
-import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDeviceResp;
+import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDeviceCreateResp;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.dmp.DmpDeviceRemoteService;
 import cn.cuiot.dmp.externalapi.service.vo.EntranceGuardRecordVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.entranceguard.GwEntranceGuardAppPageVo;
@@ -134,7 +134,7 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
 
     /**
      * 门禁导出
-     * @param query
+     * @param query 参数
      */
     public void export(GwEntranceGuardPageQuery query){
         excelExportService.excelExport(ExcelDownloadDto.<GwEntranceGuardPageQuery>builder().loginInfo(LoginInfoHolder
@@ -145,8 +145,8 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
 
     /**
      * 门禁列表导出
-     * @param downloadDto
-     * @return
+     * @param downloadDto 参数
+     * @return IPage
      */
     public IPage<GwEntranceGuardPageVo> queryExport(ExcelDownloadDto<GwEntranceGuardPageQuery> downloadDto){
         GwEntranceGuardPageQuery pageQuery = downloadDto.getQuery();
@@ -212,7 +212,7 @@ public class GwEntranceGuardService extends ServiceImpl<GwEntranceGuardMapper, G
         deviceReq.setImei(dto.getSn());
         deviceReq.setDeviceName(dto.getName());
         deviceReq.setDescription(deviceReq.getDescription());
-        DmpDeviceResp device = dmpDeviceRemoteService.createDevice(deviceReq, bo);
+        DmpDeviceCreateResp device = dmpDeviceRemoteService.createDevice(deviceReq, bo);
 
         if (Objects.nonNull(device)) {
             //保存设备关联信息

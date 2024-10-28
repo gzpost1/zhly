@@ -125,7 +125,7 @@ public class DmpApiService {
             throw new BusinessException(ResultCode.ERROR, "企业请求格物异常，对接参数配置为空");
         }
         if (!Objects.equals(bo.getStatus(), EntityConstants.ENABLED)) {
-            throw new BusinessException(ResultCode.ERROR, "企业【" + bo.getCompanyId() + "】请求格物异常未启用配置");
+            throw new BusinessException(ResultCode.ERROR, "企业【" + bo.getCompanyId() + "】请求格物异常,未启用配置");
         }
         if (StringUtils.isBlank(bo.getAppId())) {
             throw new BusinessException(ResultCode.ERROR, "企业【" + bo.getCompanyId() + "】请求格物异常，对接参数【appId】配置为空");

@@ -59,9 +59,7 @@ public class GwEntranceGuardConfigService {
         return null;
     }
 
-    public List<GWCurrencyBO> getConfigInfo(List<Long> companyId) {
-        // 平台id
-        Long platformId = FootPlateInfoEnum.GW_ENTRANCE_GUARD.getId();
+    public List<GWCurrencyBO> getConfigInfo(List<Long> companyId, Long platformId) {
 
         // 构建请求DTO
         PlatfromInfoReqDTO dto = new PlatfromInfoReqDTO();

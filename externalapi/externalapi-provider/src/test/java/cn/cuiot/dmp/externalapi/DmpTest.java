@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi;
 
 import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.externalapi.provider.ExternalapiApplication;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.DmpDeviceCreateReq;
@@ -56,9 +57,11 @@ public class DmpTest {
     public void deleteDevice() {
         DmpDeviceReq req = new DmpDeviceReq();
         req.setProductKey("cukppp0rn2bk5xsc");
-        req.setDeviceKey("1834454175973978114");
+        req.setDeviceKey("1849651362246340610");
 
         GWCurrencyBO bo = new GWCurrencyBO();
+//        bo.setCompanyId(1808338903186845698L);
+        bo.setStatus(EntityConstants.ENABLED);
         bo.setAppId("jG4KsHbMFT");
         bo.setAppSecret("CUCNBMPmjuv8gDHlSKvI8h15H2YaDJ");
         bo.setProductKey("cukppp0rn2bk5xsc");

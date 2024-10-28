@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.entity.gw.entranceguard;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
-import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDeviceResp;
+import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDeviceCreateResp;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -141,7 +141,7 @@ public class GwEntranceGuardEntity extends YjBaseEntity {
     /**
      * 构建外部设备信息
      */
-    public void buildExternalDeviceInfo(GwEntranceGuardEntity entity, DmpDeviceResp device) {
+    public void buildExternalDeviceInfo(GwEntranceGuardEntity entity, DmpDeviceCreateResp device) {
         //第三方设备信息
         entity.setProductKey(device.getProductKey());
         entity.setDeviceKey(device.getDeviceKey());
