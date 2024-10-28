@@ -8,7 +8,7 @@
         FROM
             tb_gw_smog_data
         WHERE
-            id ( SELECT Max( id ) FROM tb_gw_smog_data where device_id =#{deviceId})
+            id =( SELECT Max( id ) FROM tb_gw_smog_data where device_id =#{deviceId})
     </select>
 
 </mapper>

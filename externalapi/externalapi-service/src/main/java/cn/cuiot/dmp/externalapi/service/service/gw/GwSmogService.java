@@ -222,7 +222,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         deviceReq.setImei(dto.getImei());
         deviceReq.setDeviceName(dto.getName());
         deviceReq.setDescription(deviceReq.getDescription());
-        DmpDeviceResp device = dmpDeviceRemoteService.createDevice(deviceReq, bo);
+ /*       DmpDeviceResp device = dmpDeviceRemoteService.createDevice(deviceReq, bo);
 
         if (Objects.nonNull(device)) {
             //保存设备关联信息
@@ -245,7 +245,25 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
             entity.buildExternalDeviceInfo(entity, device);
 
             save(entity);
-        }
+        }*/
+
+        GwDeviceRelationEntity relation = new GwDeviceRelationEntity();
+        relation.setDataId(id);
+        relation.setDeviceKey("1");
+        relation.setProductKey("1");
+        relation.setBusinessType(GwBusinessTypeConstant.SMOG_ALARM);
+        gwDeviceRelationService.create(relation);
+
+        GwSmogEntity entity = new GwSmogEntity();
+        BeanUtils.copyProperties(dto, entity);
+        entity.setId(id);
+        entity.setCompanyId(companyId);
+        entity.setDeptId(deptId);
+        entity.setStatus(EntityConstants.ENABLED);
+        entity.setEquipStatus(GwEntranceGuardEquipStatusEnums.NOT_ACTIVE.getCode());
+        //构建外部设备信息
+
+        save(entity);
     }
 
 
@@ -256,7 +274,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        GwSmogEntity entity = Optional.ofNullable(queryForDetail(companyId, dto.getId()))
+        GwSmogEntity entity = Optional.ofNullable(queryForDetail(dto.getId(),companyId))
                 .orElseThrow(() -> new BusinessException(ResultCode.ERROR, "数据不存在"));
 
         //更新数据库
@@ -286,7 +304,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         itemMap.put("dbmLimit",dto.getDbmLimit());
         itemMap.put("smokeDirt",dto.getSmokeDirt());
         deviceReq.setItems(JsonUtil.writeValueAsString(itemMap));
-        dmpDeviceRemoteService.setDeviceProperty(deviceReq, bo);
+        //dmpDeviceRemoteService.setDeviceProperty(deviceReq, bo);
     }
 
 
@@ -347,7 +365,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
             itemMap.put("smokeDirt",dto.getSmokeDirt());
         }
         deviceReq.setItems(JsonUtil.writeValueAsString(itemMap));
-        dmpDeviceRemoteService.batchSetDeviceProperty(deviceReq, bo);
+        //dmpDeviceRemoteService.batchSetDeviceProperty(deviceReq, bo);
     }
 
 
@@ -378,13 +396,13 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
             deviceReq.setProductKey(bo.getProductKey());
             deviceReq.setDeviceKey(gwSmogEntities.stream().map(vo->vo.getDeviceKey()).collect(Collectors.toList()));
             deviceReq.setIotId(gwSmogEntities.stream().map(vo->vo.getIotId()).collect(Collectors.toList()));
-            dmpDeviceRemoteService.batchEnableDevice(deviceReq, bo);
+            //dmpDeviceRemoteService.batchEnableDevice(deviceReq, bo);
         }else {
             DmpDeviceBatchDisableReq deviceReq = new DmpDeviceBatchDisableReq();
             deviceReq.setProductKey(bo.getProductKey());
             deviceReq.setDeviceKey(gwSmogEntities.stream().map(vo->vo.getDeviceKey()).collect(Collectors.toList()));
             deviceReq.setIotId(gwSmogEntities.stream().map(vo->vo.getIotId()).collect(Collectors.toList()));
-            dmpDeviceRemoteService.batchDisableDevice(deviceReq, bo);
+            //dmpDeviceRemoteService.batchDisableDevice(deviceReq, bo);
         }
     }
 
@@ -411,7 +429,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         deviceReq.setProductKey(bo.getProductKey());
         deviceReq.setDeviceKey(gwSmogEntities.stream().map(vo->vo.getDeviceKey()).collect(Collectors.toList()));
         deviceReq.setIotId(gwSmogEntities.stream().map(vo->vo.getIotId()).collect(Collectors.toList()));
-        dmpDeviceRemoteService.batchDeleteDevice(deviceReq, bo);
+        //dmpDeviceRemoteService.batchDeleteDevice(deviceReq, bo);
     }
 
 }
