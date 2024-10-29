@@ -29,7 +29,7 @@ public class GwSmogEventController {
     /**
      * 分页查询
      */
-    @RequiresPermissions
+    //@RequiresPermissions
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<GwSmogEventPageVo>> queryForPage(@RequestBody GwSmogEventQuery query) {
         return IdmResDTO.success(gwSmogEventService.queryForPage(query));

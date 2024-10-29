@@ -19,4 +19,10 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface GwSmogEventMapper extends BaseMapper<GwSmogEventEntity> {
     IPage<GwSmogEventPageVo> queryForPage(Page page, @Param("param") GwSmogEventQuery query);
+
+    /**
+     * 查询最新的事件数据
+     * @return
+     */
+    GwSmogEventEntity queryLatestData(@Param("deviceId")Long deviceId);
 }

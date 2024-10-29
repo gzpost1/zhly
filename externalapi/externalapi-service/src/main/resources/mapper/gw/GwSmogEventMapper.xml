@@ -2,6 +2,22 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.gw.GwSmogEventMapper">
 
+
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogEventEntity">
+        <id column="id" property="id"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_user" property="createUser"/>
+        <result column="deleted" property="deleted"/>
+        <result column="device_id" property="deviceId"/>
+        <result column="alarm_code" property="alarmCode"/>
+        <result column="alarm_data" property="alarmData"/>
+        <result column="battery" property="battery" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+        <result column="connectivity" property="connectivity" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+        <result column="deviceInfo" property="deviceInfo" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler"/>
+    </resultMap>
+
     <select id="queryForPage" resultType="cn.cuiot.dmp.externalapi.service.vo.gw.GwSmogEventPageVo"
     parameterType="cn.cuiot.dmp.externalapi.service.query.gw.GwSmogEventQuery">
         SELECT
@@ -13,7 +29,7 @@
             alarm_data,
             a.create_time
         FROM
-        tb_gw_smog_event a
+        tb_gw_smog_event a inner join
         tb_gw_smog  b ON a.device_id = b.id
         <where>
             <if test="param.name !=null and param.name.trim() !=''">
@@ -37,4 +53,12 @@
         </where>
     </select>
 
+    <select id="queryLatestData" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            tb_gw_smog_event
+        WHERE
+            id =( SELECT Max( id ) FROM tb_gw_smog_event where device_id =#{deviceId})
+    </select>
 </mapper>

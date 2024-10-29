@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.service.gw;
 
 import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
+import cn.cuiot.dmp.base.application.service.ApiArchiveService;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
 import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
@@ -24,14 +25,20 @@ import cn.cuiot.dmp.externalapi.service.constant.GwBusinessTypeConstant;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwDeviceRelationEntity;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogDataEntity;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogEntity;
+import cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogEventEntity;
 import cn.cuiot.dmp.externalapi.service.enums.GwEntranceGuardEquipStatusEnums;
+import cn.cuiot.dmp.externalapi.service.enums.GwSmogPropertyEnums;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.mapper.gw.GwSmogMapper;
-import cn.cuiot.dmp.externalapi.service.query.gw.*;
+import cn.cuiot.dmp.externalapi.service.query.gw.GwSmogBatchUpdateDto;
+import cn.cuiot.dmp.externalapi.service.query.gw.GwSmogCreateDto;
+import cn.cuiot.dmp.externalapi.service.query.gw.GwSmogQuery;
+import cn.cuiot.dmp.externalapi.service.query.gw.GwSmogUpdateDto;
+import cn.cuiot.dmp.externalapi.service.query.gw.push.DeviceEventSmogParams;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.*;
-import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDeviceCreateResp;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDevicePropertyResp;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.dmp.DmpDeviceRemoteService;
+import cn.cuiot.dmp.externalapi.service.vo.gw.GwCommonPropertyVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwSmogDetailVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwSmogPageVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -48,6 +55,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,6 +87,11 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
     private ExcelExportService excelExportService;
     @Autowired
     private GwSmogDataService gwSmogDataService;
+    @Autowired
+    private ApiArchiveService apiArchiveService;
+
+    @Autowired
+    private GwSmogEventService gwSmogEventService;
     /**
      * 分页
      */
@@ -86,6 +99,20 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
+        List<Long> buildingIdsQuery = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(query.getBuildingIds())) {
+            buildingIdsQuery.addAll(query.getBuildingIds());
+        } else {
+            DepartmentReqDto dto = new DepartmentReqDto();
+            dto.setDeptId(Objects.nonNull(query.getDeptId()) ? query.getDeptId() : LoginInfoHolder.getCurrentDeptId());
+            dto.setSelfReturn(true);
+            List<BuildingArchive> archives = apiArchiveService.lookupBuildingArchiveByDepartmentList(dto);
+            if (CollectionUtils.isNotEmpty(archives)) {
+                List<Long> collect = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
+                buildingIdsQuery.addAll(collect);
+            }
+        }
+        query.setBuildingIds(buildingIdsQuery);
         LambdaQueryWrapper<GwSmogEntity> wrapper = buildWrapper(query, companyId);
 
         IPage<GwSmogPageVo> page = page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper).convert(item -> {
@@ -122,6 +149,8 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         wrapper.eq(StringUtils.isNotBlank(query.getImei()), GwSmogEntity::getImei, query.getImei());
         wrapper.eq(Objects.nonNull(query.getStatus()), GwSmogEntity::getStatus, query.getStatus());
         wrapper.eq(StringUtils.isNotBlank(query.getEquipStatus()), GwSmogEntity::getEquipStatus, query.getEquipStatus());
+        //查询所属组织下的楼盘以及未设置楼盘的数据
+        wrapper.in(CollectionUtils.isNotEmpty(query.getBuildingIds()), GwSmogEntity::getBuildingId, query.getBuildingIds());
         wrapper.orderByDesc(GwSmogEntity::getCreateTime);
         return wrapper;
     }
@@ -182,19 +211,19 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         if(Objects.nonNull(gwSmogDataEntity) && CollectionUtils.isNotEmpty(gwSmogDataEntity.getDeviceData())){
             Map<String, DmpDevicePropertyResp> propertyMap = gwSmogDataEntity.getDeviceData().stream().collect(Collectors.toMap(v -> v.getKey(), v -> v));
             //灵敏度
-            Object sensitivity = propertyMap.get("sensitivity").getValue();
+            Object sensitivity = propertyMap.get(GwSmogPropertyEnums.SENSITIVITY.getValue()).getValue();
             vo.setSensitivity(Objects.isNull(sensitivity)?null:String.valueOf(sensitivity));
             //省电模式
-            Object powerSavingMode = propertyMap.get("powerSavingMode").getValue();
+            Object powerSavingMode = propertyMap.get(GwSmogPropertyEnums.POWER_SAVING_MODE.getValue()).getValue();
             vo.setPowerSavingMode(Objects.isNull(powerSavingMode)?null:String.valueOf(powerSavingMode));
             //温度报警阈值
-            Object tempLimit = propertyMap.get("tempLimit").getValue();
+            Object tempLimit = propertyMap.get(GwSmogPropertyEnums.TEMP_LIMIT.getValue()).getValue();
             vo.setTempLimit(Objects.isNull(powerSavingMode)?null:Double.valueOf(tempLimit.toString()));
             //温度报警阈值
-            Object dbmLimit = propertyMap.get("dbmLimit").getValue();
+            Object dbmLimit = propertyMap.get(GwSmogPropertyEnums.DBM_LIMIT.getValue()).getValue();
             vo.setDbmLimit(Objects.isNull(dbmLimit)?null:Double.valueOf(dbmLimit.toString()));
             //烟雾传感器污染度
-            Object smokeDirt = propertyMap.get("smokeDirt").getValue();
+            Object smokeDirt = propertyMap.get(GwSmogPropertyEnums.SMOKE_DIRT.getValue()).getValue();
             vo.setSmokeDirt(Objects.isNull(smokeDirt)?null:Double.valueOf(smokeDirt.toString()));
         }
         return vo;
@@ -430,6 +459,110 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         deviceReq.setDeviceKey(gwSmogEntities.stream().map(vo->vo.getDeviceKey()).collect(Collectors.toList()));
         deviceReq.setIotId(gwSmogEntities.stream().map(vo->vo.getIotId()).collect(Collectors.toList()));
         //dmpDeviceRemoteService.batchDeleteDevice(deviceReq, bo);
+    }
+
+    public List<List<GwCommonPropertyVo>> queryForDeviceDetailLaster(Long deviceId, Long companyId){
+        LambdaQueryWrapper<GwSmogEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(GwSmogEntity::getId,deviceId);
+        queryWrapper.eq(GwSmogEntity::getCompanyId,companyId);
+        GwSmogEntity gwSmogEntity = this.getOne(queryWrapper);
+        AssertUtil.isFalse(Objects.isNull(gwSmogEntity),"该企业下不存在该设备");
+
+        ArrayList<List<GwCommonPropertyVo>> result = Lists.newArrayList();
+        //设备数据
+        GwSmogDataEntity gwSmogDataEntity = gwSmogDataService.queryLatestData(deviceId);
+        List<DmpDevicePropertyResp> dmpDevicePropertyResps = Optional.ofNullable(gwSmogDataEntity)
+                .map(vo -> vo.getDeviceData()).orElse(Lists.newArrayList());
+        List<GwCommonPropertyVo> gwSmogropertyVos = BeanMapper.mapList(dmpDevicePropertyResps, GwCommonPropertyVo.class);
+        for(GwCommonPropertyVo vo: gwSmogropertyVos){
+            vo.setKeyName(GwSmogPropertyEnums.queryNameByValue(vo.getKey()));
+
+            GwSmogPropertyEnums gwSmogPropertyEnums = GwSmogPropertyEnums.queryEnumByValue(vo.getKey());
+            if(Objects.nonNull(gwSmogPropertyEnums)){
+                Class enumsClzz = gwSmogPropertyEnums.getEnumsClzz();
+                try {
+                    Method method = enumsClzz.getMethod("queryNameByValue", String.class);
+                    Object invoke = method.invoke(null, String.valueOf(vo.getValue()));
+                    vo.setValue(invoke);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        result.add(gwSmogropertyVos);
+
+        //事件数据  包括电池电量 连接服务
+        GwSmogEventEntity gwSmogEventEntity = Optional.ofNullable(gwSmogEventService.getBaseMapper().queryLatestData(deviceId))
+                .orElse(new GwSmogEventEntity());
+
+        long time = Optional.ofNullable(gwSmogEventEntity.getCreateTime()).orElse(new Date()).getTime();
+        ArrayList<GwCommonPropertyVo> batteryList = Lists.newArrayList();
+        if(Objects.nonNull(gwSmogEventEntity.getBattery())){
+            //电池电量
+            DeviceEventSmogParams.BatteryInfo batteryInfo = gwSmogEventEntity.getBattery();
+            GwCommonPropertyVo gwCommonPropertyVo = new GwCommonPropertyVo();
+            gwCommonPropertyVo.setKeyName("电池电量");
+            gwCommonPropertyVo.setKey("batteryLevel");
+            gwCommonPropertyVo.setValue(batteryInfo.getBatteryLevel());
+            gwCommonPropertyVo.setUnit("%");
+            gwCommonPropertyVo.setTs(time);
+            batteryList.add(gwCommonPropertyVo);
+
+            //电池电压
+            GwCommonPropertyVo gwCommonPropertyVo2 = new GwCommonPropertyVo();
+            gwCommonPropertyVo2.setKeyName("电池电压");
+            gwCommonPropertyVo2.setKey("batteryVoltage");
+            gwCommonPropertyVo2.setValue(batteryInfo.getBatteryVoltage());
+            gwCommonPropertyVo2.setUnit("V");
+            gwCommonPropertyVo2.setTs(time);
+            batteryList.add(gwCommonPropertyVo2);
+        }
+        result.add(batteryList);
+
+
+        //连接服务上报
+        ArrayList<GwCommonPropertyVo> connectivityList = Lists.newArrayList();
+        if(Objects.nonNull(gwSmogEventEntity.getConnectivity())){
+            //信号强度
+            DeviceEventSmogParams.ConnectivityInfo connectivityInfo = gwSmogEventEntity.getConnectivity();
+            GwCommonPropertyVo gwCommonPropertyVo = new GwCommonPropertyVo();
+            gwCommonPropertyVo.setKeyName("信号强度");
+            gwCommonPropertyVo.setKey("signalStrength");
+            gwCommonPropertyVo.setValue(connectivityInfo.getSignalStrength());
+            gwCommonPropertyVo.setUnit("dBm");
+            gwCommonPropertyVo.setTs(time);
+            connectivityList.add(gwCommonPropertyVo);
+
+            //信号覆盖等级
+            GwCommonPropertyVo gwCommonPropertyVo2 = new GwCommonPropertyVo();
+            gwCommonPropertyVo2.setKeyName("信号覆盖等级");
+            gwCommonPropertyVo2.setKey("signalECL");
+            gwCommonPropertyVo2.setValue(connectivityInfo.getSignalECL());
+            gwCommonPropertyVo2.setUnit("");
+            gwCommonPropertyVo2.setTs(time);
+            connectivityList.add(gwCommonPropertyVo2);
+
+            //信噪比
+            GwCommonPropertyVo gwCommonPropertyVo3 = new GwCommonPropertyVo();
+            gwCommonPropertyVo3.setKeyName("信噪比");
+            gwCommonPropertyVo3.setKey("signalSNR");
+            gwCommonPropertyVo3.setValue(connectivityInfo.getSignalSNR());
+            gwCommonPropertyVo3.setUnit("dB");
+            gwCommonPropertyVo3.setTs(time);
+            connectivityList.add(gwCommonPropertyVo3);
+
+            //连接质量
+            GwCommonPropertyVo gwCommonPropertyVo4 = new GwCommonPropertyVo();
+            gwCommonPropertyVo4.setKeyName("连接质量");
+            gwCommonPropertyVo4.setKey("signalSNR");
+            gwCommonPropertyVo4.setValue(connectivityInfo.getLinkQuality());
+            gwCommonPropertyVo4.setUnit("dB");
+            gwCommonPropertyVo4.setTs(time);
+            connectivityList.add(gwCommonPropertyVo3);
+
+        }
+        result.add(connectivityList);
+        return result;
     }
 
 }

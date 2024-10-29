@@ -23,4 +23,7 @@ public class GwSmogDataService extends ServiceImpl<GwSmogDataMapper, GwSmogDataE
     public GwSmogDataEntity queryLatestData(Long deviceId){
         return baseMapper.queryLatestData(deviceId);
     }
+
+
+
 }

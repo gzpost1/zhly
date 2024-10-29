@@ -11,7 +11,10 @@ import cn.cuiot.dmp.externalapi.service.query.gw.GwSmogBatchUpdateDto;
 import cn.cuiot.dmp.externalapi.service.query.gw.GwSmogCreateDto;
 import cn.cuiot.dmp.externalapi.service.query.gw.GwSmogQuery;
 import cn.cuiot.dmp.externalapi.service.query.gw.GwSmogUpdateDto;
+import cn.cuiot.dmp.externalapi.service.service.gw.GwSmogDataService;
+import cn.cuiot.dmp.externalapi.service.service.gw.GwSmogEventService;
 import cn.cuiot.dmp.externalapi.service.service.gw.GwSmogService;
+import cn.cuiot.dmp.externalapi.service.vo.gw.GwCommonPropertyVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwSmogDetailVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.GwSmogPageVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 后台-格物烟雾报警器
@@ -36,6 +40,12 @@ public class GwSmogController {
 
     @Autowired
     private GwSmogService gwSmogService;
+
+    @Autowired
+    private GwSmogEventService gwSmogEventService;
+
+    @Autowired
+    private GwSmogDataService gwSmogDataService;
 
     /**
      * 分页查询
@@ -66,6 +76,16 @@ public class GwSmogController {
         //企业id(只能查该企业数据)
         Long companyId = LoginInfoHolder.getCurrentOrgId();
         return IdmResDTO.success(gwSmogService.queryForDetail(param.getId(),companyId));
+    }
+    /**
+     * 设备数据
+     */
+    @RequiresPermissions
+    @PostMapping("/queryForDeviceDetailLaster")
+    public IdmResDTO<List<List<GwCommonPropertyVo>>> queryForDeviceDetailLaster(@RequestBody IdParam param) {
+        //企业id(只能查该企业数据)
+        Long companyId = LoginInfoHolder.getCurrentOrgId();
+        return IdmResDTO.success(gwSmogService.queryForDeviceDetailLaster(param.getId(),companyId));
     }
     /**
      * 创建

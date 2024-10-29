@@ -55,7 +55,7 @@ public enum GwSmogPowerSavingModeEnums {
     public static String queryNameByValue(String value){
         for(GwSmogPowerSavingModeEnums statusEnums : GwSmogPowerSavingModeEnums.values()){
             if(statusEnums.getValue().equals(value)){
-                return statusEnums.name();
+                return statusEnums.getName();
             }
         }
         return null;

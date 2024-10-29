@@ -50,7 +50,7 @@ public enum GwSmogSensitivityEnums {
     public static String queryNameByValue(String value){
         for(GwSmogSensitivityEnums statusEnums : GwSmogSensitivityEnums.values()){
             if(statusEnums.getValue().equals(value)){
-                return statusEnums.name();
+                return statusEnums.getName();
             }
         }
         return null;

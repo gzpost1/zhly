@@ -2,6 +2,7 @@ package cn.cuiot.dmp.externalapi.service.query.gw;
 
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import cn.cuiot.dmp.common.bean.PageQuery;
 import lombok.Getter;
@@ -36,4 +37,13 @@ public class GwSmogQuery extends PageQuery {
     */
     private String equipStatus;
 
+    /**
+     * 楼盘id
+     */
+    private List<Long> buildingIds;
+
+    /**
+     * 部门id
+     */
+    private Long deptId;
 }
