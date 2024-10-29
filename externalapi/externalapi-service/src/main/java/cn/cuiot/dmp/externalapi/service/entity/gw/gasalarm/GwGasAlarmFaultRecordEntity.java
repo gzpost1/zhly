@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.service.entity.gw.waterleachalarm;
+package cn.cuiot.dmp.externalapi.service.entity.gw.gasalarm;
 
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -8,15 +8,15 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 格物水浸报警器故障记录
+ * 格物燃气报警器故障记录
  *
  * @Author: zc
  * @Date: 2024-10-23
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("tb_gw_water_leach_alarm_fault_record")
-public class GwWaterLeachAlarmFaultRecordEntity extends YjBaseEntity {
+@TableName("tb_gw_gas_alarm_fault_record")
+public class GwGasAlarmFaultRecordEntity extends YjBaseEntity {
 
     /**
      * id

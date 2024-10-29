@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.service.vo.gw.waterleachalarm;
+package cn.cuiot.dmp.externalapi.service.vo.gw.gasalarm;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -8,13 +8,13 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 
 /**
- * 格物-水浸报警器分页VO
+ * 格物-燃气报警器分页VO
  *
  * @Author: zc
  * @Date: 2024-10-24
  */
 @Data
-public class GwWaterLeachAlarmFaultRecordVO {
+public class GwGasAlarmFaultRecordVO {
 
     /**
      * 部门id

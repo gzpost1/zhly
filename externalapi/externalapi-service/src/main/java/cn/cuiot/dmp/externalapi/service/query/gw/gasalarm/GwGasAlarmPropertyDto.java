@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.service.query.gw.waterleachalarm;
+package cn.cuiot.dmp.externalapi.service.query.gw.gasalarm;
 
 import lombok.Data;
 
@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
  * @Date: 2024-10-23
  */
 @Data
-public class GwWaterLeachAlarmPropertyDto {
+public class GwGasAlarmPropertyDto {
 
     /**
      * 楼盘id
@@ -25,4 +25,15 @@ public class GwWaterLeachAlarmPropertyDto {
      */
     @NotBlank(message = "省电模式不能为空")
     private String powerSavingMode;
+
+    /**
+     * 消音时长设置
+     */
+    @NotNull(message = "消音时长设置不能为空")
+    private Integer muteTimeSet;
+    /**
+     * 消音
+     */
+    @NotBlank(message = "消音不能为空")
+    private String mute;
 }

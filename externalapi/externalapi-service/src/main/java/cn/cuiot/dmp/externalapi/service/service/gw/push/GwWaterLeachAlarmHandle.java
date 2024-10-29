@@ -42,7 +42,7 @@ public class GwWaterLeachAlarmHandle implements GwBusinessStrategy{
         if (Objects.nonNull(body)) {
             GwWaterLeachAlarmFaultRecordEntity recordEntity = new GwWaterLeachAlarmFaultRecordEntity();
             recordEntity.setErrorCode(body.getErrorCode());
-            recordEntity.setGwWaterLeachAlarmId(dataId);
+            recordEntity.setDeviceId(dataId);
 
             waterLeachAlarmFaultRecordService.save(recordEntity);
         }
