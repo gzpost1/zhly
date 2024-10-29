@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  * @Date: 2024-10-22
  */
 @Data
-public class WaterLeachAlarmCreateDto {
+public class GwWaterLeachAlarmCreateDto {
 
     /**
      * 楼盘id
@@ -53,5 +53,6 @@ public class WaterLeachAlarmCreateDto {
     /**
      * 备注
      */
+    @Length(max = 128, message = "备注限128字")
     private String remark;
 }

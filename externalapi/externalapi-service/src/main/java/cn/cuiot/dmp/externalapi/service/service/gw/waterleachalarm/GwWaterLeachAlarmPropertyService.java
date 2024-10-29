@@ -4,7 +4,6 @@ import cn.cuiot.dmp.externalapi.service.entity.gw.waterleachalarm.GwWaterLeachAl
 import cn.cuiot.dmp.externalapi.service.mapper.gw.waterleachalarm.GwWaterLeachAlarmPropertyMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,9 +23,9 @@ public class GwWaterLeachAlarmPropertyService extends ServiceImpl<GwWaterLeachAl
     public void createOrUpdate(GwWaterLeachAlarmPropertyEntity property) {
         GwWaterLeachAlarmPropertyEntity entity = getOne(
                 new LambdaQueryWrapper<GwWaterLeachAlarmPropertyEntity>()
-                        .eq(GwWaterLeachAlarmPropertyEntity::getGwWaterLeachAlarmId, property.getGwWaterLeachAlarmId())
+                        .eq(GwWaterLeachAlarmPropertyEntity::getDeviceId, property.getDeviceId())
                         .last(" LIMIT 1 "));
-        BeanUtils.copyProperties(property, entity);
+        entity.setDeviceData(property.getDeviceData());
 
         saveOrUpdate(entity);
     }

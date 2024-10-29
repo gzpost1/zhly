@@ -1,4 +1,4 @@
-package cn.cuiot.dmp.externalapi.service.vo.gw.waterleachalarm;
+package cn.cuiot.dmp.externalapi.service.vo.gw.gasalarm;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -8,13 +8,17 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 
 /**
- * 格物-水浸报警器分页VO
+ * 格物-烟雾报警器分页vo
  *
  * @Author: zc
- * @Date: 2024-10-24
+ * @Date: 2024-10-23
  */
 @Data
-public class GwWaterLeachAlarmFaultRecordVO {
+public class GwGasAlarmPageVO {
+    /**
+     * id
+     */
+    private Long id;
 
     /**
      * 部门id
@@ -51,21 +55,19 @@ public class GwWaterLeachAlarmFaultRecordVO {
     private String imei;
 
     /**
-     * 告警类型
+     * 状态 1-启用 0-停用
      */
-    private String errorCode;
+    @Excel(name = "设备状态", orderNum = "4", replace = {"停用_0", "启用_1"}, width = 20)
+    private Byte status;
 
     /**
-     * 告警类型名称
+     * 设备状态 (0: 在线，1: 离线，2: 未激活）接口返回
      */
-    @Excel(name = "设备IMEI", orderNum = "4", width = 20)
-    private String errorCodeName;
+    @Excel(name = "照片状态", orderNum = "5", replace = {"在线_0", "离线_1", "未激活_2"}, width = 10)
+    private String equipStatus;
 
-    /**
-     * 故障时间
-     */
-    @Excel(name = "故障时间", orderNum = "5", exportFormat = "yyyy-MM-dd HH:mm:ss", width = 20)
+    @Excel(name = "创建时间", orderNum = "6", exportFormat = "yyyy-MM-dd HH:mm:ss", width = 20)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date faultDate;
+    private Date createTime;
 }

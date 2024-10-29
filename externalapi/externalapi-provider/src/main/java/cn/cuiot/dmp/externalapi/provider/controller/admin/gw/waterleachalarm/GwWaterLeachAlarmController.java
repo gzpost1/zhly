@@ -12,12 +12,12 @@ import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.query.gw.waterleachalarm.GwWaterLeachAlarmPageQuery;
 import cn.cuiot.dmp.externalapi.service.query.gw.waterleachalarm.GwWaterLeachAlarmPropertyDto;
-import cn.cuiot.dmp.externalapi.service.query.gw.waterleachalarm.WaterLeachAlarmCreateDto;
-import cn.cuiot.dmp.externalapi.service.query.gw.waterleachalarm.WaterLeachAlarmUpdateDto;
+import cn.cuiot.dmp.externalapi.service.query.gw.waterleachalarm.GwWaterLeachAlarmCreateDto;
+import cn.cuiot.dmp.externalapi.service.query.gw.waterleachalarm.GwWaterLeachAlarmUpdateDto;
 import cn.cuiot.dmp.externalapi.service.service.gw.waterleachalarm.GwWaterLeachAlarmService;
+import cn.cuiot.dmp.externalapi.service.vo.gw.GwCommonPropertyVo;
 import cn.cuiot.dmp.externalapi.service.vo.gw.waterleachalarm.GwWaterLeachAlarmDetailVO;
 import cn.cuiot.dmp.externalapi.service.vo.gw.waterleachalarm.GwWaterLeachAlarmPageVO;
-import cn.cuiot.dmp.externalapi.service.vo.gw.waterleachalarm.GwWaterLeachAlarmPropertyVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 后台-格物水浸报警器
@@ -63,7 +64,7 @@ public class GwWaterLeachAlarmController {
     @RequiresPermissions
     @LogRecord(operationCode = "create", operationName = "创建", serviceType = "gwWaterLeachAlarm", serviceTypeName = "格物水浸报警器")
     @PostMapping("create")
-    public IdmResDTO<?> create(@RequestBody @Valid WaterLeachAlarmCreateDto dto) {
+    public IdmResDTO<?> create(@RequestBody @Valid GwWaterLeachAlarmCreateDto dto) {
         gwWaterLeachAlarmService.create(dto);
         return IdmResDTO.success();
     }
@@ -76,7 +77,7 @@ public class GwWaterLeachAlarmController {
     @RequiresPermissions
     @LogRecord(operationCode = "update", operationName = "设置", serviceType = "gwWaterLeachAlarm", serviceTypeName = "格物水浸报警器")
     @PostMapping("update")
-    public IdmResDTO<?> update(@RequestBody @Valid WaterLeachAlarmUpdateDto dto) {
+    public IdmResDTO<?> update(@RequestBody @Valid GwWaterLeachAlarmUpdateDto dto) {
         gwWaterLeachAlarmService.update(dto);
         return IdmResDTO.success();
     }
@@ -101,7 +102,7 @@ public class GwWaterLeachAlarmController {
      */
     @RequiresPermissions
     @PostMapping("getProperty")
-    public IdmResDTO<GwWaterLeachAlarmPropertyVO> getProperty(@RequestBody @Valid IdParam param) {
+    public IdmResDTO<List<GwCommonPropertyVo>> getProperty(@RequestBody @Valid IdParam param) {
         return IdmResDTO.success(gwWaterLeachAlarmService.getProperty(param.getId()));
     }
 
