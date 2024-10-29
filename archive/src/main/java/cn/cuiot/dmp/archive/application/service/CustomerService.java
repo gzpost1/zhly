@@ -534,9 +534,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
             List<CustomerHouseDto> houseList = Lists.newArrayList();
             int houseStartColIndex = CustomerConstants.IDX_CREDIT_LEVEL + 1;
             while (true) {
-                if ((houseStartColIndex + 4) >= colSize) {
-                    break;
-                }
+
                 CustomerHouseDto houseDto = new CustomerHouseDto();
                 //房屋ID
                 Long houseId = NumberUtil
@@ -592,6 +590,9 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 }
 
                 houseStartColIndex = houseStartColIndex + 4;
+                if (houseStartColIndex >= colSize) {
+                    break;
+                }
             }
             AssertUtil.notEmpty(houseList,"导入失败，第" + row + "行，必须填写一个关联房屋信息");
             //根据房屋ID去重
