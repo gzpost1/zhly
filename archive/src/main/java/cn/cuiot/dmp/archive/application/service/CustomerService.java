@@ -399,7 +399,8 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
     public List<CustomerDto> analysisImportData(Long currentOrgId, List<String> headers,
             List<List<Object>> dataList) {
 
-        int colSize = headers.size();
+        //模版误操作可能会造成有很多空标题
+        int colSize = headers.stream().filter(vo ->StringUtils.isNotBlank(vo)).collect(Collectors.toList()).size();
 
         List<CustomerDto> resultList = Lists.newArrayList();
 
@@ -546,7 +547,11 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 String moveInDateStr = StrUtil.toStringOrNull(data.get(houseStartColIndex + 2));
 
                 //迁出日期
-                String moveOutDateStr = StrUtil.toStringOrNull(data.get(houseStartColIndex + 3));
+                String moveOutDateStr =null;
+                //最后一个值非必填 可能为空会造成数组越界
+                if(houseStartColIndex + 3 <data.size()){
+                    moveOutDateStr = StrUtil.toStringOrNull(data.get(houseStartColIndex + 3));
+                }
 
                 if(StringUtils.isNotBlank(identityTypeName)||StringUtils.isNotBlank(moveInDateStr)||StringUtils.isNotBlank(moveOutDateStr)){
                     AssertUtil.notNull(houseId,"导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 1) + "为空");
