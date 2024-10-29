@@ -67,20 +67,43 @@
     </select>
 
     <select id="queryLoupanBoardInfo" resultType="cn.cuiot.dmp.lease.vo.ContractBoardInfoVo">
-        select loupanName, sum(leaseNum) leaseNum, sum(unleaseNum) unleaseNum
+        select loupanName, leaseNum, case when leaseNum > 0 then 0 else unleaseNum end unleaseNum
         from (
-                     select a.name                                                            loupanName,
-                            case when l.contract_status in (13, 14, 28) then 1 when contract_status is null then 0 else 0 end     leaseNum,
-                            case when l.contract_status not in (13, 14, 28) then 1
-                                 when h.name is null then 0 when contract_status is null then 1
-                                 else 0 end unleaseNum
-                     from tb_building_archives a
-                                  left join tb_houses_archives h on a.id = h.loupan_id
-                                  left join tb_contract_bind_info b on b.bind_id = h.id and b.type = 2
-                                  left join tb_contract_lease l on l.id = b.contract_id
-                     where a.company_id = #{companyId}
-                     group by h.id
-                     ) a
-        group by a.loupanName
+                     select loupanName, sum(leaseNum) leaseNum, sum(unleaseNum) unleaseNum, houseName
+                     from (
+                                  select a.name             loupanName,
+                                         case
+                                                 when l.contract_status in (13, 14, 28) then 1
+                                                 when contract_status is null then 0
+                                                 else 0 end leaseNum,
+                                         0                  unleaseNum
+                                          ,
+                                         h.name             houseName
+                                  from tb_building_archives a
+                                               left join tb_houses_archives h on a.id = h.loupan_id
+                                               left join tb_contract_bind_info b on b.bind_id = h.id and b.type = 2
+                                               left join tb_contract_lease l on l.id = b.contract_id
+                                  where a.company_id = #{companyId}
+                                    and l.contract_status in (13, 14, 28)
+                                  group by h.id, h.name
+                                  union all
+                                  select a.name             loupanName,
+                                         0                  leaseNum,
+                                         case
+                                                 when l.contract_status not in (13, 14, 28) then 1
+                                                 when h.name is null then 0
+                                                 when contract_status is null then 1
+                                                 else 0 end unleaseNum
+                                          ,
+                                         h.name             houseName
+                                  from tb_building_archives a
+                                               left join tb_houses_archives h on a.id = h.loupan_id
+                                               left join tb_contract_bind_info b on b.bind_id = h.id and b.type = 2
+                                               left join tb_contract_lease l on l.id = b.contract_id
+                                  where a.company_id = #{companyId}
+                                    and (l.contract_status not in (13, 14, 28)
+                                          or h.name is null or contract_status is null)
+                                  group by h.id, h.name) a
+                     group by a.loupanName) b
     </select>
 </mapper>
