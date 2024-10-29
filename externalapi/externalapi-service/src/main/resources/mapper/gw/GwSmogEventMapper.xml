@@ -42,7 +42,7 @@
                 and b.building_id =#{param.buildingId}
             </if>
             <if test="param.alarmCode !=null ">
-                and a.alarm_code =#{alarmCode}
+                and a.alarm_code =#{param.alarmCode}
             </if>
             <if test="param.beginTime !=null">
                 and a.create_time >= #{param.beginTime}

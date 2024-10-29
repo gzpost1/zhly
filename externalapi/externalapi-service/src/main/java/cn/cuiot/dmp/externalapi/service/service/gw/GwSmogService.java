@@ -27,6 +27,8 @@ import cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogDataEntity;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogEntity;
 import cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogEventEntity;
 import cn.cuiot.dmp.externalapi.service.enums.GwEntranceGuardEquipStatusEnums;
+import cn.cuiot.dmp.externalapi.service.enums.GwSmogBatteryEnums;
+import cn.cuiot.dmp.externalapi.service.enums.GwSmogConnectivityEnums;
 import cn.cuiot.dmp.externalapi.service.enums.GwSmogPropertyEnums;
 import cn.cuiot.dmp.externalapi.service.feign.SystemApiService;
 import cn.cuiot.dmp.externalapi.service.mapper.gw.GwSmogMapper;
@@ -55,6 +57,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -211,19 +214,19 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         if(Objects.nonNull(gwSmogDataEntity) && CollectionUtils.isNotEmpty(gwSmogDataEntity.getDeviceData())){
             Map<String, DmpDevicePropertyResp> propertyMap = gwSmogDataEntity.getDeviceData().stream().collect(Collectors.toMap(v -> v.getKey(), v -> v));
             //灵敏度
-            Object sensitivity = propertyMap.get(GwSmogPropertyEnums.SENSITIVITY.getValue()).getValue();
+            Object sensitivity = propertyMap.get(GwSmogPropertyEnums.SENSITIVITY.getKey()).getValue();
             vo.setSensitivity(Objects.isNull(sensitivity)?null:String.valueOf(sensitivity));
             //省电模式
-            Object powerSavingMode = propertyMap.get(GwSmogPropertyEnums.POWER_SAVING_MODE.getValue()).getValue();
+            Object powerSavingMode = propertyMap.get(GwSmogPropertyEnums.POWER_SAVING_MODE.getKey()).getValue();
             vo.setPowerSavingMode(Objects.isNull(powerSavingMode)?null:String.valueOf(powerSavingMode));
             //温度报警阈值
-            Object tempLimit = propertyMap.get(GwSmogPropertyEnums.TEMP_LIMIT.getValue()).getValue();
+            Object tempLimit = propertyMap.get(GwSmogPropertyEnums.TEMP_LIMIT.getKey()).getValue();
             vo.setTempLimit(Objects.isNull(powerSavingMode)?null:Double.valueOf(tempLimit.toString()));
             //温度报警阈值
-            Object dbmLimit = propertyMap.get(GwSmogPropertyEnums.DBM_LIMIT.getValue()).getValue();
+            Object dbmLimit = propertyMap.get(GwSmogPropertyEnums.DBM_LIMIT.getKey()).getValue();
             vo.setDbmLimit(Objects.isNull(dbmLimit)?null:Double.valueOf(dbmLimit.toString()));
             //烟雾传感器污染度
-            Object smokeDirt = propertyMap.get(GwSmogPropertyEnums.SMOKE_DIRT.getValue()).getValue();
+            Object smokeDirt = propertyMap.get(GwSmogPropertyEnums.SMOKE_DIRT.getKey()).getValue();
             vo.setSmokeDirt(Objects.isNull(smokeDirt)?null:Double.valueOf(smokeDirt.toString()));
         }
         return vo;
@@ -461,6 +464,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         //dmpDeviceRemoteService.batchDeleteDevice(deviceReq, bo);
     }
 
+
     public List<List<GwCommonPropertyVo>> queryForDeviceDetailLaster(Long deviceId, Long companyId){
         LambdaQueryWrapper<GwSmogEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(GwSmogEntity::getId,deviceId);
@@ -468,99 +472,89 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         GwSmogEntity gwSmogEntity = this.getOne(queryWrapper);
         AssertUtil.isFalse(Objects.isNull(gwSmogEntity),"该企业下不存在该设备");
 
+
         ArrayList<List<GwCommonPropertyVo>> result = Lists.newArrayList();
+
         //设备数据
+        ArrayList<GwCommonPropertyVo> properList = Lists.newArrayList();
         GwSmogDataEntity gwSmogDataEntity = gwSmogDataService.queryLatestData(deviceId);
         List<DmpDevicePropertyResp> dmpDevicePropertyResps = Optional.ofNullable(gwSmogDataEntity)
                 .map(vo -> vo.getDeviceData()).orElse(Lists.newArrayList());
         List<GwCommonPropertyVo> gwSmogropertyVos = BeanMapper.mapList(dmpDevicePropertyResps, GwCommonPropertyVo.class);
-        for(GwCommonPropertyVo vo: gwSmogropertyVos){
-            vo.setKeyName(GwSmogPropertyEnums.queryNameByValue(vo.getKey()));
+        Map<String, GwCommonPropertyVo> properMap = gwSmogropertyVos.stream().collect(Collectors.toMap(GwCommonPropertyVo::getKey, vo -> vo));
 
-            GwSmogPropertyEnums gwSmogPropertyEnums = GwSmogPropertyEnums.queryEnumByValue(vo.getKey());
-            if(Objects.nonNull(gwSmogPropertyEnums)){
-                Class enumsClzz = gwSmogPropertyEnums.getEnumsClzz();
-                try {
-                    Method method = enumsClzz.getMethod("queryNameByValue", String.class);
-                    Object invoke = method.invoke(null, String.valueOf(vo.getValue()));
-                    vo.setValue(invoke);
-                } catch (Exception e) {
-                    e.printStackTrace();
+        for(GwSmogPropertyEnums statusEnums : GwSmogPropertyEnums.values()){
+            GwCommonPropertyVo vo = properMap.get(statusEnums.getKey());
+            if(Objects.nonNull(vo)){
+                vo.setKeyName(statusEnums.getName());
+                if(Objects.nonNull(statusEnums)){
+                    Class enumsClzz = statusEnums.getEnumsClzz();
+                    try {
+                        Method method = enumsClzz.getMethod("queryNameByKey", String.class);
+                        Object invoke = method.invoke(null, String.valueOf(vo.getValue()));
+                        vo.setValue(invoke);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
+            }else {
+                vo = new GwCommonPropertyVo(statusEnums.getKey(),statusEnums.getName());
             }
+            properList.add(vo);
         }
-        result.add(gwSmogropertyVos);
+        result.add(properList);
 
         //事件数据  包括电池电量 连接服务
         GwSmogEventEntity gwSmogEventEntity = Optional.ofNullable(gwSmogEventService.getBaseMapper().queryLatestData(deviceId))
                 .orElse(new GwSmogEventEntity());
 
         long time = Optional.ofNullable(gwSmogEventEntity.getCreateTime()).orElse(new Date()).getTime();
+
+        DeviceEventSmogParams.BatteryInfo batteryInfo = Optional.ofNullable(gwSmogEventEntity.getBattery()).orElse(new DeviceEventSmogParams.BatteryInfo());
         ArrayList<GwCommonPropertyVo> batteryList = Lists.newArrayList();
-        if(Objects.nonNull(gwSmogEventEntity.getBattery())){
-            //电池电量
-            DeviceEventSmogParams.BatteryInfo batteryInfo = gwSmogEventEntity.getBattery();
+        for(GwSmogBatteryEnums statusEnums : GwSmogBatteryEnums.values()){
+            Object value =null;
+            try {
+                Class<? extends DeviceEventSmogParams.BatteryInfo> clazz = batteryInfo.getClass();
+                Field field = clazz.getDeclaredField(statusEnums.getKey());
+                field.setAccessible(true);
+                value = field.get(batteryInfo);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
             GwCommonPropertyVo gwCommonPropertyVo = new GwCommonPropertyVo();
-            gwCommonPropertyVo.setKeyName("电池电量");
-            gwCommonPropertyVo.setKey("batteryLevel");
-            gwCommonPropertyVo.setValue(batteryInfo.getBatteryLevel());
-            gwCommonPropertyVo.setUnit("%");
+            gwCommonPropertyVo.setKeyName(statusEnums.getName());
+            gwCommonPropertyVo.setKey(statusEnums.getKey());
+            gwCommonPropertyVo.setValue(value);
+            gwCommonPropertyVo.setUnit(statusEnums.getUnit());
             gwCommonPropertyVo.setTs(time);
             batteryList.add(gwCommonPropertyVo);
-
-            //电池电压
-            GwCommonPropertyVo gwCommonPropertyVo2 = new GwCommonPropertyVo();
-            gwCommonPropertyVo2.setKeyName("电池电压");
-            gwCommonPropertyVo2.setKey("batteryVoltage");
-            gwCommonPropertyVo2.setValue(batteryInfo.getBatteryVoltage());
-            gwCommonPropertyVo2.setUnit("V");
-            gwCommonPropertyVo2.setTs(time);
-            batteryList.add(gwCommonPropertyVo2);
         }
         result.add(batteryList);
 
 
         //连接服务上报
+        DeviceEventSmogParams.ConnectivityInfo connectivityInfo = Optional.ofNullable(gwSmogEventEntity.getConnectivity()).orElse(new DeviceEventSmogParams.ConnectivityInfo());
         ArrayList<GwCommonPropertyVo> connectivityList = Lists.newArrayList();
-        if(Objects.nonNull(gwSmogEventEntity.getConnectivity())){
-            //信号强度
-            DeviceEventSmogParams.ConnectivityInfo connectivityInfo = gwSmogEventEntity.getConnectivity();
+        for(GwSmogConnectivityEnums statusEnums : GwSmogConnectivityEnums.values()){
+            Object value =null;
+            try {
+                Class<? extends DeviceEventSmogParams.ConnectivityInfo> clazz = connectivityInfo.getClass();
+                Field field = clazz.getDeclaredField(statusEnums.getKey());
+                field.setAccessible(true);
+                value = field.get(connectivityInfo);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
             GwCommonPropertyVo gwCommonPropertyVo = new GwCommonPropertyVo();
-            gwCommonPropertyVo.setKeyName("信号强度");
-            gwCommonPropertyVo.setKey("signalStrength");
-            gwCommonPropertyVo.setValue(connectivityInfo.getSignalStrength());
-            gwCommonPropertyVo.setUnit("dBm");
+            gwCommonPropertyVo.setKeyName(statusEnums.getName());
+            gwCommonPropertyVo.setKey(statusEnums.getKey());
+            gwCommonPropertyVo.setValue(value);
+            gwCommonPropertyVo.setUnit(statusEnums.getUnit());
             gwCommonPropertyVo.setTs(time);
             connectivityList.add(gwCommonPropertyVo);
-
-            //信号覆盖等级
-            GwCommonPropertyVo gwCommonPropertyVo2 = new GwCommonPropertyVo();
-            gwCommonPropertyVo2.setKeyName("信号覆盖等级");
-            gwCommonPropertyVo2.setKey("signalECL");
-            gwCommonPropertyVo2.setValue(connectivityInfo.getSignalECL());
-            gwCommonPropertyVo2.setUnit("");
-            gwCommonPropertyVo2.setTs(time);
-            connectivityList.add(gwCommonPropertyVo2);
-
-            //信噪比
-            GwCommonPropertyVo gwCommonPropertyVo3 = new GwCommonPropertyVo();
-            gwCommonPropertyVo3.setKeyName("信噪比");
-            gwCommonPropertyVo3.setKey("signalSNR");
-            gwCommonPropertyVo3.setValue(connectivityInfo.getSignalSNR());
-            gwCommonPropertyVo3.setUnit("dB");
-            gwCommonPropertyVo3.setTs(time);
-            connectivityList.add(gwCommonPropertyVo3);
-
-            //连接质量
-            GwCommonPropertyVo gwCommonPropertyVo4 = new GwCommonPropertyVo();
-            gwCommonPropertyVo4.setKeyName("连接质量");
-            gwCommonPropertyVo4.setKey("signalSNR");
-            gwCommonPropertyVo4.setValue(connectivityInfo.getLinkQuality());
-            gwCommonPropertyVo4.setUnit("dB");
-            gwCommonPropertyVo4.setTs(time);
-            connectivityList.add(gwCommonPropertyVo3);
-
         }
+
         result.add(connectivityList);
         return result;
     }

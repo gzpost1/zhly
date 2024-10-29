@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.enums;
 
 /**
- * 烟雾报警器-省电模式
+ * 烟雾报警器-属性
  *
  * @Author: zc
  * @Date: 2024-09-12
@@ -33,17 +33,17 @@ public enum GwSmogPropertyEnums {
     REPORT_TIME("reportTime", "上报周期",null),
     ;
 
-    private String value;
+    private String key;
 
     private String name;
     private Class enumsClzz;
 
-    public String getValue() {
-        return value;
+    public String getKey() {
+        return key;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setSensitivity(String key) {
+        this.key = key;
     }
 
     public String getName() {
@@ -62,24 +62,24 @@ public enum GwSmogPropertyEnums {
         this.enumsClzz = enumsClzz;
     }
 
-    GwSmogPropertyEnums(String value, String name, Class enumsClzz) {
-        this.value = value;
+    GwSmogPropertyEnums(String key, String name, Class enumsClzz) {
+        this.key = key;
         this.name = name;
         this.enumsClzz = enumsClzz;
     }
 
-    public static String queryNameByValue(String value){
+    public static String queryNameByKey(String key){
         for(GwSmogPropertyEnums statusEnums : GwSmogPropertyEnums.values()){
-            if(statusEnums.getValue().equals(value)){
+            if(statusEnums.getKey().equals(key)){
                 return statusEnums.getName();
             }
         }
         return null;
     }
 
-    public static GwSmogPropertyEnums queryEnumByValue(String value){
+    public static GwSmogPropertyEnums queryEnumByKey(String key){
         for(GwSmogPropertyEnums statusEnums : GwSmogPropertyEnums.values()){
-            if(statusEnums.getValue().equals(value)){
+            if(statusEnums.getKey().equals(key)){
                 return statusEnums;
             }
         }
