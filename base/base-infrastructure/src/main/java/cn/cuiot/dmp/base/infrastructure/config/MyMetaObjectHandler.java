@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.Objects;
+import java.util.Optional;
 
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
@@ -116,7 +118,8 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         if (metaObject.hasSetter(UPDATED_BY_FIELD)) {
             Object updateUser = getFieldValByName(UPDATED_BY_FIELD, metaObject);
             if (updateUser == null) {
-                setFieldValByName(UPDATED_BY_FIELD, String.valueOf(LoginInfoHolder.getCurrentUserId()), metaObject);
+               String updateUserId = Objects.isNull(LoginInfoHolder.getCurrentUserId())?null:LoginInfoHolder.getCurrentUserId().toString();
+                setFieldValByName(UPDATED_BY_FIELD, updateUserId, metaObject);
             }
         }
     }
@@ -137,7 +140,8 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
             setFieldValByName(UPDATEUSER_FIELD, LoginInfoHolder.getCurrentUserId(), metaObject);
         }
         if (metaObject.hasSetter(UPDATED_BY_FIELD)) {
-            setFieldValByName(UPDATED_BY_FIELD, String.valueOf(LoginInfoHolder.getCurrentUserId()), metaObject);
+            String currLoginUserId = Objects.isNull(LoginInfoHolder.getCurrentUserId())?null:LoginInfoHolder.getCurrentUserId().toString();
+            setFieldValByName(UPDATED_BY_FIELD, currLoginUserId, metaObject);
         }
     }
 

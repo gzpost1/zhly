@@ -354,8 +354,9 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
             if (StringUtils.isNotBlank(o.getCreatedBy())) {
                 userIdList.add(Long.valueOf(o.getCreatedBy()));
             }
-            if (StringUtils.isNotBlank(o.getUpdatedBy())) {
-                userIdList.add(Long.valueOf(o.getUpdatedBy()));
+            String updatedBy = o.getUpdatedBy();
+            if (StringUtils.isNotBlank(updatedBy) && !Objects.equals("null", updatedBy)) {
+                userIdList.add(Long.valueOf(updatedBy));
             }
             if (Objects.nonNull(o.getPriceUserId())) {
                 userIdList.add(o.getPriceUserId());
@@ -369,7 +370,7 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
             if (StringUtils.isNotBlank(o.getCreatedBy()) && userMap.containsKey(Long.valueOf(o.getCreatedBy()))) {
                 o.setCreatedName(userMap.get(Long.valueOf(o.getCreatedBy())));
             }
-            if (StringUtils.isNotBlank(o.getUpdatedBy()) && userMap.containsKey(Long.valueOf(o.getUpdatedBy()))) {
+            if ((StringUtils.isNotBlank(o.getUpdatedBy())&&!Objects.equals("null",o.getUpdatedBy())) && userMap.containsKey(Long.valueOf(o.getUpdatedBy()))) {
                 o.setUpdatedName(userMap.get(Long.valueOf(o.getUpdatedBy())));
             }
             if (Objects.nonNull(o.getPriceUserId()) && userMap.containsKey(o.getPriceUserId())) {
