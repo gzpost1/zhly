@@ -83,8 +83,11 @@ public class GwSmogDataTask {
                 gwSmogDataEntity.setDeviceId(entity.getId());
                 gwSmogDataService.save(gwSmogDataEntity);
             }
+            //每个设备只保留500条数据
+            gwSmogDataService.getBaseMapper().deleteSmogDataByLimit(entity.getId());
         }
         log.info("同步格物烟雾报警器拉取最新的设备信息完成");
+
         return ReturnT.SUCCESS;
     }
 

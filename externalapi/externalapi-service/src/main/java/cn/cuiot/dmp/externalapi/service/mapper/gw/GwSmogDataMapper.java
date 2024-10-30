@@ -20,4 +20,11 @@ public interface GwSmogDataMapper extends BaseMapper<GwSmogDataEntity> {
      * @return
      */
     GwSmogDataEntity queryLatestData(@Param("deviceId")Long deviceId);
+
+    /**
+     * 只保留一部分属性数据
+     * @param deviceId
+     * @return
+     */
+    Integer deleteSmogDataByLimit(@Param("deviceId")Long deviceId);
 }
