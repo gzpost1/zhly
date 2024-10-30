@@ -294,8 +294,11 @@ public class PriceManageService extends ServiceImpl<PriceManageMapper, PriceMana
     public List<PriceManageCountDTO> queryCountByStatus() {
         Long companyId = LoginInfoHolder.getCurrentOrgId();
         AssertUtil.notNull(companyId, "企业id不能为空");
-        List<PriceManageEntity> priceManageEntityList = list();
+        LambdaQueryWrapper<PriceManageEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PriceManageEntity::getCompanyId,companyId);
+        List<PriceManageEntity> priceManageEntityList = list(queryWrapper);
         if (CollectionUtils.isEmpty(priceManageEntityList)) {
+
             return PriceManageConstant.Price_Manage_Status.stream()
                     .map(o -> {
                         PriceManageCountDTO priceManageCountDTO = new PriceManageCountDTO();
