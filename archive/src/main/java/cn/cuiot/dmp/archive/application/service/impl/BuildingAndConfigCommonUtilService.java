@@ -35,20 +35,22 @@ public class BuildingAndConfigCommonUtilService {
 
     /**
      * 使用楼盘id列表查询出，对应的名称关系
+     *
      * @param loupanIds
      * @return
      */
-    public Map<Long, String> getLoupanIdNameMap(Set<Long> loupanIds){
+    public Map<Long, String> getLoupanIdNameMap(Set<Long> loupanIds) {
         List<BuildingArchivesEntity> list = buildingArchivesMapper.selectBatchIds(loupanIds);
         return list.stream().collect(Collectors.toMap(BuildingArchivesEntity::getId, BuildingArchivesEntity::getName));
     }
 
     /**
      * 使用楼盘名称查询出，对应的id关系
+     *
      * @param names
      * @return
      */
-    public Map<String, Long> getLoupanNameIdMap(Set<String> names){
+    public Map<String, Long> getLoupanNameIdMap(Set<String> names) {
         LambdaQueryWrapper<BuildingArchivesEntity> wp = new LambdaQueryWrapper<>();
         wp.in(BuildingArchivesEntity::getName, names);
         List<BuildingArchivesEntity> list = buildingArchivesMapper.selectList(wp);
@@ -57,10 +59,14 @@ public class BuildingAndConfigCommonUtilService {
 
     /**
      * 使用配置id列表查询出，对应的名称关系
+     *
      * @param configIds
      * @return
      */
-    public Map<Long, String> getConfigIdNameMap(Set<Long> configIds){
+    public Map<Long, String> getConfigIdNameMap(Set<Long> configIds) {
+        if (CollectionUtils.isEmpty(configIds)) {
+            return new HashMap<>();
+        }
         CustomConfigDetailReqDTO customConfigDetailReqDTO = new CustomConfigDetailReqDTO();
         customConfigDetailReqDTO.setCustomConfigDetailIdList(new ArrayList<>(configIds));
         IdmResDTO<List<CustomConfigDetailRspDTO>> res = systemApiFeignService.batchQueryCustomConfigDetails(customConfigDetailReqDTO);
@@ -69,9 +75,10 @@ public class BuildingAndConfigCommonUtilService {
 
     /**
      * 使用配置名称查询出，对应的id关系
+     *
      * @return
      */
-    public Map<String, Map<String, Long>> getConfigNameIdMap(Long companyId, Byte type){
+    public Map<String, Map<String, Long>> getConfigNameIdMap(Long companyId, Byte type) {
         CustomConfigReqDTO customConfigReqDTO = new CustomConfigReqDTO();
         customConfigReqDTO.setCompanyId(companyId);
         customConfigReqDTO.setSystemOptionType(type);
@@ -95,7 +102,7 @@ public class BuildingAndConfigCommonUtilService {
                                 }
                             }
                     ));
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("获取自定义配置失败", e);
         }
         return map;

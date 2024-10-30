@@ -76,6 +76,8 @@ public class AppAuthController {
 
     public final static Long PLATFORM_COMPANY_ID = 1L;
 
+    public final static String APP_SOURCE = "app";
+
     /**
      * 获取微信openId
      */
@@ -285,9 +287,9 @@ public class AppAuthController {
                 throw new BusinessException(USER_ACCOUNT_LOCKED_ERROR);
             }
             Long orgId = appUserService.getOrgId(userDto.getId());
-            res = appVerifyService.sendPhoneSmsCode(dto.getPhoneNumber(), null, orgId);
+            res = appVerifyService.sendPhoneSmsCode(dto.getPhoneNumber(), APP_SOURCE, orgId);
         } else {
-            res = appVerifyService.sendPhoneSmsCode(dto.getPhoneNumber(), null, PLATFORM_COMPANY_ID);
+            res = appVerifyService.sendPhoneSmsCode(dto.getPhoneNumber(), APP_SOURCE, PLATFORM_COMPANY_ID);
         }
         return IdmResDTO.success(res);
     }
@@ -308,7 +310,7 @@ public class AppAuthController {
             throw new BusinessException(ResultCode.KAPTCHA_TEXT_IS_EMPTY, "短信验证码不能为空");
         }
         SmsCodeCheckResDto res = appVerifyService
-                .checkPhoneSmsCode(dto.getPhoneNumber(), dto.getUserId(), smsCode, false);
+                .checkPhoneSmsCode(dto.getPhoneNumber(), APP_SOURCE , smsCode, false);
         return IdmResDTO.success(res);
     }
 

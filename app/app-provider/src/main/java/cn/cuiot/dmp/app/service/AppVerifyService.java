@@ -136,10 +136,10 @@ public class AppVerifyService {
     /**
      * 发送短信验证码
      */
-    public SmsCodeResDto sendPhoneSmsCode(String phoneNumber, Long userId, Long companyId) {
+    public SmsCodeResDto sendPhoneSmsCode(String phoneNumber, String source, Long companyId) {
         // 查看redis中是否已经存在短信验证码文本
         String expectedText = stringRedisTemplate.opsForValue()
-                .get(CacheConst.SMS_ALREADY_SEND_REDIS_KEY_P + phoneNumber);
+                .get(CacheConst.SMS_ALREADY_SEND_REDIS_KEY_P + source + phoneNumber);
         // 短时间内重复获取
         if (!org.apache.commons.lang.StringUtils.isEmpty(expectedText)) {
             // 短时间内重复提交
@@ -154,12 +154,12 @@ public class AppVerifyService {
         if (sendSucceed) {
             // 存入redis并设置过期时间
             stringRedisTemplate.opsForValue()
-                    .set(CacheConst.SMS_ALREADY_SEND_REDIS_KEY_P + phoneNumber,
+                    .set(CacheConst.SMS_ALREADY_SEND_REDIS_KEY_P + source + phoneNumber,
                             phoneNumber + smsCode,
                             SecurityConst.SMS_CODE_FORBIDDEN_TIME, TimeUnit.MINUTES);
             // 短信验证码以登录用户的标记存入redis
             stringRedisTemplate.opsForValue()
-                    .set(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber,
+                    .set(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + source + phoneNumber,
                             phoneNumber + smsCode,
                             SecurityConst.SMS_CODE_EXPIRED_TIME, TimeUnit.MINUTES);
 
@@ -171,10 +171,11 @@ public class AppVerifyService {
     /**
      * 校验短信验证码
      */
-    public SmsCodeCheckResDto checkPhoneSmsCode(String phoneNumber, Long userId, String smsCode, Boolean needDeleteCache) {
+    public SmsCodeCheckResDto checkPhoneSmsCode(String phoneNumber, String source, String smsCode, Boolean needDeleteCache) {
         // 获取redis中的短信验证码文本
         String expectedText = stringRedisTemplate.opsForValue()
-                .get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
+                .get(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + source + phoneNumber);
+        log.info("cn.cuiot.dmp.app.service.AppAuthService.changePhone===expectedText:{}", expectedText);
         // 判断是否过期
         if (StringUtils.isEmpty(expectedText)) {
             // 短信验证码过期
@@ -184,7 +185,7 @@ public class AppVerifyService {
         Boolean checkSucceed = expectedText.equals(phoneNumber + smsCode);
         if (checkSucceed) {
             if (Boolean.TRUE.equals(needDeleteCache)) {
-                stringRedisTemplate.delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + userId + phoneNumber);
+                stringRedisTemplate.delete(CacheConst.SMS_CODE_TEXT_REDIS_KEY_P + source + phoneNumber);
             }
             return new SmsCodeCheckResDto(checkSucceed, "校验成功");
         }
