@@ -85,7 +85,7 @@
                                                left join tb_contract_lease l on l.id = b.contract_id
                                   where a.company_id = #{companyId}
                                     and l.contract_status in (13, 14, 28)
-                                  group by h.id, h.name
+                                  group by h.id, h.name,a.name
                                   union all
                                   select a.name             loupanName,
                                          0                  leaseNum,
@@ -103,7 +103,7 @@
                                   where a.company_id = #{companyId}
                                     and (l.contract_status not in (13, 14, 28)
                                           or h.name is null or contract_status is null)
-                                  group by h.id, h.name) a
+                                  group by h.id, h.name,a.name) a
                      group by a.loupanName) b
     </select>
 </mapper>
