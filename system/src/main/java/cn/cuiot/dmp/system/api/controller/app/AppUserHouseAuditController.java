@@ -4,7 +4,9 @@ import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.constant.PermissionContants;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
+import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.constant.ServiceTypeConst;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditCreateDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditDTO;
@@ -12,6 +14,7 @@ import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditPageQueryDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseAuditUpdateDTO;
 import cn.cuiot.dmp.system.application.param.dto.UserHouseBuildingDTO;
 import cn.cuiot.dmp.system.application.service.UserHouseAuditService;
+import cn.hutool.core.util.PhoneUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import java.util.List;
 import javax.validation.Valid;
@@ -77,6 +80,9 @@ public class AppUserHouseAuditController {
     @LogRecord(operationCode = "saveUserHouseAudit", operationName = "添加房屋", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/save")
     public boolean saveUserHouseAudit(@RequestBody @Valid UserHouseAuditCreateDTO createDTO) {
+        if (!PhoneUtil.isPhone(createDTO.getPhoneNumber())) {
+            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_NOT_VALID, "请输入正确的11位手机号");
+        }
         Long userId = LoginInfoHolder.getCurrentUserId();
         createDTO.setUserId(userId);
         return userHouseAuditService.saveUserHouseAudit(createDTO);
@@ -89,6 +95,9 @@ public class AppUserHouseAuditController {
     @LogRecord(operationCode = "updateUserHouseAudit", operationName = "更新房屋", serviceType = ServiceTypeConst.SYSTEM_MANAGEMENT)
     @PostMapping("/update")
     public boolean updateUserHouseAudit(@RequestBody @Valid UserHouseAuditUpdateDTO updateDTO) {
+        if (!PhoneUtil.isPhone(updateDTO.getPhoneNumber())) {
+            throw new BusinessException(ResultCode.PHONE_NUMBER_IS_NOT_VALID, "请输入正确的11位手机号");
+        }
         Long userId = LoginInfoHolder.getCurrentUserId();
         updateDTO.setUserId(userId);
         return userHouseAuditService.updateUserHouseAudit(updateDTO);
