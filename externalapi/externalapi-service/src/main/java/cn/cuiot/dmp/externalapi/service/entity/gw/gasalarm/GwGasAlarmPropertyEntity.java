@@ -56,7 +56,7 @@ public class GwGasAlarmPropertyEntity extends YjBaseEntity {
     public static final String MANUFACTURER = "manufacturer";
     public static final String DATE = "date";
     public static final String HEARTBEAT_TIME = "heartbeat_time";
-    public static final String CONN_MODE = "conn_mode";
+    public static final String CONN_MODE = "CONN_MODE";
     public static final String RSRP = "rsrp";
     public static final String SENSOR1 = "sensor1";
     public static final String SENSOR2 = "sensor2";
@@ -73,19 +73,23 @@ public class GwGasAlarmPropertyEntity extends YjBaseEntity {
     public static final String LONGITUDE = "longitude";
     public static final String LATITUDE = "latitude";
     public static final String ALTITUDE = "altitude";
-    public static final String POWER_SAVING_MODE = "power_saving_mode";
+    public static final String POWER_SAVING_MODE = "powerSavingMode";
     public static final String SINR = "sinr";
     public static final String PCI = "pci";
     public static final String CELL_ID = "cell_id";
-    public static final String ALARM_LIMIT = "alarm_limit";
-    public static final String NB_VERSION = "nb_version";
+    public static final String ALARM_LIMIT = "AlarmLimit";
+    public static final String NB_VERSION = "nbVersion";
     public static final String CONTROL_STATE = "control_state";
     public static final String HANDONOFF = "handonoff";
-    public static final String MUTE_TIME_SET = "mute_time_set";
+    public static final String MUTE_TIME_SET = "MuteTimeSet";
     public static final String MUTE = "mute";
     public static final String CHECK = "check";
     public static final String RESTART = "restart";
     public static final String GAS_VALUE = "gas_value";
+
+    public static void main(String[] args) {
+        System.out.println(JsonUtil.writeValueAsString(buildGwCommonPropertyVo(null)));
+    }
 
     /**
      * 构建属性VO
