@@ -18,7 +18,7 @@ import java.util.List;
  */
 public interface TbContractIntentionMapper extends BaseMybatisMapper<TbContractIntentionEntity> {
 
-      List<BaseVO> statisticsContract();
+      List<BaseVO> statisticsContract(@Param("depotIds") List<Long> depotIds);
 
       Long queryIntentionStatistic(@Param("params") ContractLeaseStatisticParam params);
 }

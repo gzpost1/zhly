@@ -43,7 +43,7 @@ public class PriceManageExportVo {
      */
     private Byte status;
 
-    @Excel(name = "定价单状态", orderNum = "4")
+    @Excel(name = "定价单状态", orderNum = "4",replace = {"草稿_1", "审核中_2", "审核通过_3", "审核不通过_4", "已执行_5", "已作废_6"})
     private String statusName;
 
     public String getStatusName() {
@@ -84,7 +84,7 @@ public class PriceManageExportVo {
      * 更新者。取值：{userKey}：Portal用户更新的；{appKey}：API更新的。
      */
     @Excel(name = "更新人", orderNum = "10")
-    private String updatedBy;
+    private String updatedName;
 
     /**
      * 更新时间

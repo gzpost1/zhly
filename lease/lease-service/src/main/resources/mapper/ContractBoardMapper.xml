@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.lease.mapper.ContractBoardMapper">
+    <select id="queryArchiveNum" resultType="int">
+        select count(*)
+        from tb_building_archives
+        where deleted = 0
+          and status = 1
+          and company_id = #{companyId}
+    </select>
+    <select id="queryArchiveName" resultType="String">
+        select count(*)
+        from tb_building_archives
+        where deleted = 0
+          and status = 1
+          and company_id = #{companyId}
+    </select>
+
+    <select id="queryHouseNum" resultType="int">
+        select count(distinct h.id)
+        from tb_building_archives a
+                     inner join tb_houses_archives h on a.id = h.loupan_id
+        where a.status = 1
+          and a.deleted = 0
+          and h.deleted = 0
+          and a.company_id = #{companyId}
+    </select>
+
+    <select id="queryLeaseHouseNum" resultType="int">
+        select count(distinct h.id)
+        from tb_contract_lease l
+                     inner join tb_contract_bind_info b on l.id = b.contract_id
+                     inner join tb_houses_archives h on b.bind_id = h.id
+                     inner join tb_building_archives a
+                on a.id = h.loupan_id
+        where l.contract_status in (13, 14, 28)
+          and a.company_id = #{companyId}
+    </select>
+
+    <select id="queryUnLeaseHouseNum" resultType="int">
+        select count(distinct h.id)
+        from tb_contract_lease l
+                     inner join tb_contract_bind_info b on l.id = b.contract_id
+                     inner join tb_houses_archives h on b.bind_id = h.id
+                     inner join tb_building_archives a
+                on a.id = h.loupan_id
+        where l.contract_status not in (13, 14, 28)
+          and a.company_id = #{companyId}
+    </select>
+
+    <select id="queryLeaseContractNum" resultType="int">
+        select count(*)
+        from tb_contract_lease
+        where deleted = 0
+          and create_user in (select pk_user_id
+                              from user_org
+                              where pk_org_id = #{companyId})
+    </select>
+
+    <select id="queryIntentionContractNum" resultType="int">
+        select count(*)
+        from tb_contract_intention
+        where deleted = 0
+          and create_user in (select pk_user_id
+                              from user_org
+                              where pk_org_id = #{companyId})
+    </select>
+
+    <select id="queryLoupanBoardInfo" resultType="cn.cuiot.dmp.lease.vo.ContractBoardInfoVo">
+        select loupanName, leaseNum, case when leaseNum > 0 then 0 else unleaseNum end unleaseNum
+        from (
+                     select loupanName, sum(leaseNum) leaseNum, sum(unleaseNum) unleaseNum, houseName
+                     from (
+                                  select a.name             loupanName,
+                                         case
+                                                 when l.contract_status in (13, 14, 28) then 1
+                                                 when contract_status is null then 0
+                                                 else 0 end leaseNum,
+                                         0                  unleaseNum
+                                          ,
+                                         h.name             houseName
+                                  from tb_building_archives a
+                                               left join tb_houses_archives h on a.id = h.loupan_id
+                                               left join tb_contract_bind_info b on b.bind_id = h.id and b.type = 2
+                                               left join tb_contract_lease l on l.id = b.contract_id
+                                  where a.company_id = #{companyId}
+                                    and l.contract_status in (13, 14, 28)
+                                  group by h.id, h.name
+                                  union all
+                                  select a.name             loupanName,
+                                         0                  leaseNum,
+                                         case
+                                                 when l.contract_status not in (13, 14, 28) then 1
+                                                 when h.name is null then 0
+                                                 when contract_status is null then 1
+                                                 else 0 end unleaseNum
+                                          ,
+                                         h.name             houseName
+                                  from tb_building_archives a
+                                               left join tb_houses_archives h on a.id = h.loupan_id
+                                               left join tb_contract_bind_info b on b.bind_id = h.id and b.type = 2
+                                               left join tb_contract_lease l on l.id = b.contract_id
+                                  where a.company_id = #{companyId}
+                                    and (l.contract_status not in (13, 14, 28)
+                                          or h.name is null or contract_status is null)
+                                  group by h.id, h.name) a
+                     group by a.loupanName) b
+    </select>
+</mapper>

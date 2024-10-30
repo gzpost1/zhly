@@ -28,8 +28,8 @@
       </list>
     </option>
     <option name="hostTagId" value="0" />
-    <option name="location" value="/home/app/community-externalapi" />
-    <option name="pathOrUrl" value="D:\community-server-parent\externalapi\externalapi-provider\target\externalapi-provider-1.0-SNAPSHOT.jar" />
+    <option name="location" value="/home/app/community-lease" />
+    <option name="pathOrUrl" value="E:\company project\community-server-parent\zhihuilouyuan\lease\lease-provider\target\lease-provider-1.0-SNAPSHOT.jar" />
     <option name="tagId" value="0" />
     <option name="terminalCommand" />
     <option name="type" value="HOST" />

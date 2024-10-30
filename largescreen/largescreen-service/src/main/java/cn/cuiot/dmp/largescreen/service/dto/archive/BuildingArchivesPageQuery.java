@@ -51,6 +51,12 @@ public class BuildingArchivesPageQuery extends PageQuery {
      */
     private List<Long> loupanIds;
 
+
+    /**
+     * 楼盘id列表
+     */
+    private List<Long> idList;
+
     /**
      * 区域编码
      */

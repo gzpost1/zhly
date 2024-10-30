@@ -232,4 +232,10 @@ public class TbContractLeaseParam extends PageQuery implements Serializable {
 
     private Boolean usefullLease ;
 
+    /**
+     * 所属组织
+     */
+    private Long orgId;
+    private List<Long> departmentIdList;
+
 }
