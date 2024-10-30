@@ -56,6 +56,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -199,11 +200,20 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         return data;
     }
 
-
     /**
      * 详情
      */
-    public GwSmogDetailVo queryForDetail(Long id,Long companyId) {
+    public GwSmogEntity queryForDetail(Long id,Long companyId) {
+        LambdaQueryWrapper<GwSmogEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(GwSmogEntity::getId, id);
+        queryWrapper.eq(GwSmogEntity::getCompanyId, companyId);
+        GwSmogEntity gwSmogEntity = baseMapper.selectOne(queryWrapper);
+        return gwSmogEntity;
+    }
+    /**
+     * 详情(包含可修改属性)
+     */
+    public GwSmogDetailVo queryForPropertyDetail(Long id, Long companyId) {
         LambdaQueryWrapper<GwSmogEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(GwSmogEntity::getId,id);
         queryWrapper.eq(GwSmogEntity::getCompanyId,companyId);
@@ -302,6 +312,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
     /**
      * 更新
      */
+    @Transactional(rollbackFor = Exception.class)
     public void update(GwSmogUpdateDto dto) {
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
@@ -317,6 +328,8 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         entity.setLongitude(dto.getLongitude());
         entity.setRemark(dto.getRemark());
         updateById(entity);
+        //更新属性表
+        gwSmogDataService.updateProperty(dto);
 
         //更新格物平台设备属性
         GWCurrencyBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId, FootPlateInfoEnum.GW_SMOG_ALARM.getId());
@@ -330,11 +343,11 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         deviceReq.setPriorityCommand(Boolean.FALSE);
         //需要修改的属性
         HashMap<String, Object> itemMap = Maps.newHashMap();
-        itemMap.put("sensitivity",dto.getSensitivity());
-        itemMap.put("powerSavingMode",dto.getPowerSavingMode());
-        itemMap.put("tempLimit",dto.getTempLimit());
-        itemMap.put("dbmLimit",dto.getDbmLimit());
-        itemMap.put("smokeDirt",dto.getSmokeDirt());
+        itemMap.put(GwSmogPropertyEnums.SENSITIVITY.getKey(), dto.getSensitivity());
+        itemMap.put(GwSmogPropertyEnums.POWER_SAVING_MODE.getKey(),dto.getPowerSavingMode());
+        itemMap.put(GwSmogPropertyEnums.TEMP_LIMIT.getKey(),dto.getTempLimit());
+        itemMap.put(GwSmogPropertyEnums.DBM_LIMIT.getKey(),dto.getDbmLimit());
+        itemMap.put(GwSmogPropertyEnums.SMOKE_DIRT.getKey(),dto.getSmokeDirt());
         deviceReq.setItems(JsonUtil.writeValueAsString(itemMap));
         //dmpDeviceRemoteService.setDeviceProperty(deviceReq, bo);
     }
@@ -343,6 +356,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
     /**
      * 批量更新
      */
+    @Transactional(rollbackFor = Exception.class)
     public void batchUpdate(GwSmogBatchUpdateDto dto) {
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
@@ -359,6 +373,8 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
             updateWrapper.set(GwSmogEntity::getBuildingId,dto.getBuildingId());
             updateWrapper.in(GwSmogEntity::getId,dto.getId());
             baseMapper.update(new GwSmogEntity(),updateWrapper);
+            //更新属性表
+            gwSmogDataService.batchUpdateProperty(dto);
         }
 
         //更新格物平台设备属性
@@ -380,21 +396,21 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         //需要修改的属性
         HashMap<String, Object> itemMap = Maps.newHashMap();
         if(StringUtils.isNotBlank(dto.getSensitivity())){
-            itemMap.put("sensitivity",dto.getSensitivity());
+            itemMap.put(GwSmogPropertyEnums.SENSITIVITY.getKey(),dto.getSensitivity());
         }
         if(StringUtils.isNotBlank(dto.getPowerSavingMode())){
-            itemMap.put("powerSavingMode",dto.getPowerSavingMode());
+            itemMap.put(GwSmogPropertyEnums.POWER_SAVING_MODE.getKey(),dto.getPowerSavingMode());
         }
         if(Objects.nonNull(dto.getTempLimit())){
-            itemMap.put("tempLimit",dto.getTempLimit());
+            itemMap.put(GwSmogPropertyEnums.TEMP_LIMIT.getKey(),dto.getTempLimit());
         }
 
         if(Objects.nonNull(dto.getDbmLimit())){
-            itemMap.put("dbmLimit",dto.getDbmLimit());
+            itemMap.put(GwSmogPropertyEnums.DBM_LIMIT.getKey(),dto.getDbmLimit());
         }
 
         if(Objects.nonNull(dto.getSmokeDirt())){
-            itemMap.put("smokeDirt",dto.getSmokeDirt());
+            itemMap.put(GwSmogPropertyEnums.SMOKE_DIRT.getKey(),dto.getSmokeDirt());
         }
         deviceReq.setItems(JsonUtil.writeValueAsString(itemMap));
         //dmpDeviceRemoteService.batchSetDeviceProperty(deviceReq, bo);

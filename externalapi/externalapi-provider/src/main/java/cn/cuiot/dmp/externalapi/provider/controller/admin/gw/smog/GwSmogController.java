@@ -75,7 +75,7 @@ public class GwSmogController {
     public IdmResDTO<GwSmogDetailVo> queryForDetail(@RequestBody IdParam param) {
         //企业id(只能查该企业数据)
         Long companyId = LoginInfoHolder.getCurrentOrgId();
-        return IdmResDTO.success(gwSmogService.queryForDetail(param.getId(),companyId));
+        return IdmResDTO.success(gwSmogService.queryForPropertyDetail(param.getId(),companyId));
     }
     /**
      * 设备数据
