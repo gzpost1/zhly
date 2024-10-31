@@ -245,6 +245,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
     /**
      * 创建
      */
+    @Transactional(rollbackFor = Exception.class)
     public void create(GwSmogCreateDto dto) {
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
@@ -420,6 +421,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
     /**
      * 批量启停用
      */
+    @Transactional(rollbackFor = Exception.class)
     public void updateStatus(UpdateStatusParams param) {
         ///企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
@@ -457,6 +459,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
     /**
      * 删除设备
      */
+    @Transactional(rollbackFor = Exception.class)
     public void batchDelete(List<Long> ids) {
         ///企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
