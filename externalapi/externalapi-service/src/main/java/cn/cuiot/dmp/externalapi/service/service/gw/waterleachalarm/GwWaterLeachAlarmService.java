@@ -119,7 +119,7 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
         wrapper.like(StringUtils.isNotBlank(query.getDeviceName()), GwWaterLeachAlarmEntity::getDeviceName, query.getDeviceName());
         wrapper.like(StringUtils.isNotBlank(query.getImei()), GwWaterLeachAlarmEntity::getImei, query.getImei());
         wrapper.eq(Objects.nonNull(query.getStatus()), GwWaterLeachAlarmEntity::getStatus, query.getStatus());
-        wrapper.eq(Objects.nonNull(query.getEquipStatus()), GwWaterLeachAlarmEntity::getEquipStatus, query.getEquipStatus());
+        wrapper.eq(StringUtils.isNotBlank(query.getEquipStatus()), GwWaterLeachAlarmEntity::getEquipStatus, query.getEquipStatus());
         //查询所属组织下的楼盘以及未设置楼盘的数据
         wrapper.in(CollectionUtils.isNotEmpty(buildingIds), GwWaterLeachAlarmEntity::getBuildingId, buildingIds);
         //排序
@@ -226,7 +226,7 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
             req.setDeviceKey(bo.getDeviceKey());
 
             Map<String, Object> map = Maps.newHashMap();
-            map.put("powerSavingMode", dto.getPowerSavingMode());
+            map.put(GwWaterLeachAlarmPropertyEntity.POWER_SAVING_MODE, dto.getPowerSavingMode());
             req.setItems(JsonUtil.writeValueAsString(map));
             dmpDeviceRemoteService.setDeviceProperty(req, bo);
         }
@@ -287,51 +287,65 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
      * @Param dto 参数
      */
     public void batchSetProperty(GwWaterLeachAlarmPropertyDto dto) {
+        if (dto.getIds().size() > BATCH_MAX_NUM) {
+            throw new BusinessException(ResultCode.ERROR, "设备数超过限制");
+        }
+
+        if (Objects.isNull(dto.getBuildingId()) && StringUtils.isBlank(dto.getPowerSavingMode())) {
+            return;
+        }
+
         // 获取当前企业ID
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        // 根据企业ID和建筑ID获取警报实体列表
+        // 根据企业ID和数据id列表获取警报实体列表
         List<GwWaterLeachAlarmEntity> entities = list(new LambdaQueryWrapper<GwWaterLeachAlarmEntity>()
                 .eq(GwWaterLeachAlarmEntity::getCompanyId, companyId)
-                .eq(GwWaterLeachAlarmEntity::getBuildingId, dto.getBuilding()));
+                .in(GwWaterLeachAlarmEntity::getId, dto.getIds()));
 
         // 如果没有找到任何数据，抛出异常
         if (CollectionUtils.isEmpty(entities)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
 
-        // 提取唯一的设备ID
-        List<String> iotIds = entities.stream()
-                .map(GwWaterLeachAlarmEntity::getIotId)
-                .distinct()
-                .collect(Collectors.toList());
-
-        // 验证设备ID是否有效
-        if (CollectionUtils.isEmpty(iotIds)) {
-            throw new BusinessException(ResultCode.ERROR, "设备唯一识别码不存在");
-        }
-        if (iotIds.size() > BATCH_MAX_NUM) {
-            throw new BusinessException(ResultCode.ERROR, "设备数超过限制");
+        // 批量修改楼盘
+        if (Objects.nonNull(dto.getBuildingId())) {
+            entities.forEach(item -> item.setBuildingId(dto.getBuildingId()));
+            updateBatchById(entities);
         }
 
-        // 获取企业的配置
-        GWCurrencyBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId, FootPlateInfoEnum.GW_WATER_LEACH_ALARM.getId());
+        // 批量修改属性
+        if (StringUtils.isNotBlank(dto.getPowerSavingMode())) {
+            // 提取唯一的设备ID
+            List<String> iotIds = entities.stream()
+                    .map(GwWaterLeachAlarmEntity::getIotId)
+                    .distinct()
+                    .collect(Collectors.toList());
 
-        // 准备批量请求的参数
-        Map<String, Object> map = Maps.newHashMap();
-        map.put(POWER_SAVING_MODE, dto.getPowerSavingMode());
+            // 验证设备ID是否有效
+            if (CollectionUtils.isEmpty(iotIds)) {
+                throw new BusinessException(ResultCode.ERROR, "设备唯一识别码不存在");
+            }
 
-        // 创建请求对象并发送请求
-        DmpDeviceBatchPropertyReq req = new DmpDeviceBatchPropertyReq();
-        req.setItems(JsonUtil.writeValueAsString(map));
-        req.setIotId(iotIds);
-        DmpDeviceBatchPropertyResp resp = dmpDeviceRemoteService.batchSetDeviceProperty(req, bo);
+            // 获取企业的配置
+            GWCurrencyBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId, FootPlateInfoEnum.GW_WATER_LEACH_ALARM.getId());
 
-        // 处理成功的数据
-        handleSuccess(resp.getSuccessList(), companyId, dto.getPowerSavingMode());
+            // 准备批量请求的参数
+            Map<String, Object> map = Maps.newHashMap();
+            map.put(POWER_SAVING_MODE, dto.getPowerSavingMode());
 
-        // 处理失败的数据
-        handleFail(resp.getFailList(), companyId);
+            // 创建请求对象并发送请求
+            DmpDeviceBatchPropertyReq req = new DmpDeviceBatchPropertyReq();
+            req.setItems(JsonUtil.writeValueAsString(map));
+            req.setIotId(iotIds);
+            DmpDeviceBatchPropertyResp resp = dmpDeviceRemoteService.batchSetDeviceProperty(req, bo);
+
+            // 处理成功的数据
+            handleSuccess(resp.getSuccessList(), companyId);
+
+            // 处理失败的数据
+            handleFail(resp.getFailList(), entities);
+        }
     }
 
     /**
@@ -341,7 +355,7 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
      * @Param companyId 企业id
      * @Param powerSavingMode 省电模式
      */
-    private void handleSuccess(List<DmpDeviceBatchPropertyResp.SuccessDataItem> successList, Long companyId, String powerSavingMode) {
+    private void handleSuccess(List<DmpDeviceBatchPropertyResp.SuccessDataItem> successList, Long companyId) {
 
         if (CollectionUtils.isEmpty(successList)) {
             return;
@@ -353,30 +367,10 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
 
         // 更新数据库中成功的设备属性
         if (CollectionUtils.isNotEmpty(successIotIds)) {
-            List<GwWaterLeachAlarmEntity> waterLeachAlarmEntities = list(new LambdaQueryWrapper<GwWaterLeachAlarmEntity>()
-                    .eq(GwWaterLeachAlarmEntity::getCompanyId, companyId)
-                    .in(GwWaterLeachAlarmEntity::getIotId, successIotIds));
-
-            // 批量更新设备的省电模式
-            if (CollectionUtils.isNotEmpty(waterLeachAlarmEntities)) {
-                waterLeachAlarmEntities.forEach(item -> {
-                    GwWaterLeachAlarmPropertyEntity propertyEntity = getPropertyEntity(item.getId());
-                    if (Objects.nonNull(propertyEntity) && StringUtils.isNotBlank(propertyEntity.getDeviceData())) {
-                        List<DmpDevicePropertyResp> resp = JsonUtil.readValue(propertyEntity.getDeviceData(),
-                                new TypeReference<List<DmpDevicePropertyResp>>() {
-                                });
-                        if (CollectionUtils.isNotEmpty(resp)) {
-                            resp.forEach(e -> {
-                                if (Objects.equals(e.getKey(), GwGasAlarmPropertyEntity.POWER_SAVING_MODE)) {
-                                    e.setValue(powerSavingMode);
-                                }
-                            });
-                            propertyEntity.setDeviceData(JsonUtil.writeValueAsString(resp));
-                            gwWaterLeachAlarmPropertyMapper.updateById(propertyEntity);
-                        }
-                    }
-                });
-            }
+            GwWaterLeachAlarmSyncQuery query = new GwWaterLeachAlarmSyncQuery();
+            query.setCompanyId(companyId);
+            query.setIotId(successIotIds);
+            gwWaterLeachAlarmTaskHandle.syncGwWaterLeachAlarmPropertyHandle(JsonUtil.writeValueAsString(query));
         }
     }
 
@@ -387,7 +381,7 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
      * @Param companyId 企业id
      * @Param powerSavingMode 省电模式
      */
-    private void handleFail(List<DmpDeviceBatchPropertyResp.FailDataItem> failList, Long companyId) {
+    private void handleFail(List<DmpDeviceBatchPropertyResp.FailDataItem> failList, List<GwWaterLeachAlarmEntity> entities) {
 
         if (CollectionUtils.isEmpty(failList)) {
             return;
@@ -400,16 +394,18 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
 
         // 如果有设备更新失败，抛出异常并包含设备名称
         if (CollectionUtils.isNotEmpty(failIotIds)) {
-            List<GwWaterLeachAlarmEntity> failedEntities = list(new LambdaQueryWrapper<GwWaterLeachAlarmEntity>()
-                    .eq(GwWaterLeachAlarmEntity::getCompanyId, companyId)
-                    .in(GwWaterLeachAlarmEntity::getIotId, failIotIds));
+
+            Map<String, GwWaterLeachAlarmEntity> entityMap = entities.stream().collect(Collectors.toMap(GwWaterLeachAlarmEntity::getIotId, e -> e));
+
+            List<String> failDeviceNames = failIotIds.stream()
+                    .filter(entityMap::containsKey)
+                    .map(e -> entityMap.get(e).getDeviceName())
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
 
             // 如果找到了失败的设备，收集设备名称并抛出异常
-            if (CollectionUtils.isNotEmpty(failedEntities)) {
-                List<String> deviceNames = failedEntities.stream()
-                        .map(GwWaterLeachAlarmEntity::getDeviceName)
-                        .collect(Collectors.toList());
-                throw new BusinessException(ResultCode.ERROR, "设备【" + String.join(",", deviceNames) + "】修改属性失败");
+            if (CollectionUtils.isNotEmpty(failDeviceNames)) {
+                throw new BusinessException(ResultCode.ERROR, "设备【" + String.join(",", failDeviceNames) + "】修改属性失败");
             }
         }
     }

@@ -2,8 +2,9 @@ package cn.cuiot.dmp.externalapi.service.query.gw.gasalarm;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+import java.util.List;
 
 /**
  * 修改属性DTO
@@ -17,23 +18,26 @@ public class GwGasAlarmPropertyDto {
     /**
      * 楼盘id
      */
-    @NotNull(message = "所属楼盘不能为空")
-    private Long building;
+    @NotEmpty(message = "id不能为空")
+    @Size(min = 1)
+    private List<Long> ids;
+
+    /**
+     * 楼盘id
+     */
+    private Long buildingId;
 
     /**
      * 省电模式（0:PSM，1:DXR，2:eDRX，20:未开通）
      */
-    @NotBlank(message = "省电模式不能为空")
     private String powerSavingMode;
 
     /**
      * 消音时长设置
      */
-    @NotNull(message = "消音时长设置不能为空")
     private Integer muteTimeSet;
     /**
      * 消音
      */
-    @NotBlank(message = "消音不能为空")
     private String mute;
 }

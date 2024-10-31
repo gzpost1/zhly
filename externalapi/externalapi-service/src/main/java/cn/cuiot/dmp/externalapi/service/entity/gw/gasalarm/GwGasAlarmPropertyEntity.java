@@ -87,10 +87,6 @@ public class GwGasAlarmPropertyEntity extends YjBaseEntity {
     public static final String RESTART = "restart";
     public static final String GAS_VALUE = "gas_value";
 
-    public static void main(String[] args) {
-        System.out.println(JsonUtil.writeValueAsString(buildGwCommonPropertyVo(null)));
-    }
-
     /**
      * 构建属性VO
      *
@@ -158,8 +154,6 @@ public class GwGasAlarmPropertyEntity extends YjBaseEntity {
 
     /**
      * 更新属性值的方法
-     *
-     * @return List
      */
     private static void updatePropertyValue(GwCommonPropertyVo item, Map<String, GwCommonPropertyVo> map) {
         // 如果映射中包含当前属性的键
@@ -216,7 +210,7 @@ public class GwGasAlarmPropertyEntity extends YjBaseEntity {
             GwCommonPropertyVo propertyVo = map.get(sensorKey);
             if (Objects.nonNull(propertyVo.getValue())) {
                 // 解析传感器数据
-                LinkedList<GwCommonPropertyVo> vos = JsonUtil.readValue(propertyVo.getValue() + "",
+                LinkedList<GwCommonPropertyVo> vos = JsonUtil.readValue(JsonUtil.writeValueAsString(propertyVo.getValue()),
                         new TypeReference<LinkedList<GwCommonPropertyVo>>() {
                         });
 
