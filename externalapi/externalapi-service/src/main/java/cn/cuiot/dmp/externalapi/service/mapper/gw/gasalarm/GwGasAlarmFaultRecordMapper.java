@@ -5,6 +5,7 @@ import cn.cuiot.dmp.externalapi.service.query.gw.gasalarm.GwGasAlarmFaultRecordQ
 import cn.cuiot.dmp.externalapi.service.vo.gw.gasalarm.GwGasAlarmFaultRecordVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -21,5 +22,5 @@ public interface GwGasAlarmFaultRecordMapper extends BaseMapper<GwGasAlarmFaultR
      * @return IPage
      * @Param query 参数
      */
-    IPage<GwGasAlarmFaultRecordVO> queryRecordForPage(@Param("params") GwGasAlarmFaultRecordQuery query);
+    IPage<GwGasAlarmFaultRecordVO> queryRecordForPage(Page page, @Param("params") GwGasAlarmFaultRecordQuery query);
 }
