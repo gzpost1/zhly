@@ -95,7 +95,7 @@ public enum GwWaterLeachAlarmPropertyEnums {
 
         public static String getNameByCode(String code) {
             if (StringUtils.isNotBlank(code)) {
-                for (GwGasAlarmPropertyEnums.ErrorCode e : GwGasAlarmPropertyEnums.ErrorCode.values()) {
+                for (GwWaterLeachAlarmPropertyEnums.ErrorCode e : GwWaterLeachAlarmPropertyEnums.ErrorCode.values()) {
                     if (StringUtils.equals(e.getCode(), code)) {
                         return e.getDesc();
                     }
@@ -128,7 +128,7 @@ public enum GwWaterLeachAlarmPropertyEnums {
 
         public static String getNameByCode(String code) {
             if (StringUtils.isNotBlank(code)) {
-                for (GwGasAlarmPropertyEnums.PropertyTitle e : GwGasAlarmPropertyEnums.PropertyTitle.values()) {
+                for (GwWaterLeachAlarmPropertyEnums.PropertyTitle e : GwWaterLeachAlarmPropertyEnums.PropertyTitle.values()) {
                     if (StringUtils.equals(e.getCode(), code)) {
                         return e.getDesc();
                     }

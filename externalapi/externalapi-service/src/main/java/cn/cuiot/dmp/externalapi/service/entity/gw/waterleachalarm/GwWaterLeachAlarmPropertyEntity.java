@@ -49,7 +49,7 @@ public class GwWaterLeachAlarmPropertyEntity extends YjBaseEntity {
     @TableField(value = "device_data")
     private String deviceData;
 
-    public static final String BATTERY_LEVEL = "battery_level";
+    public static final String BATTERY_LEVEL = "batteryLevel";
     public static final String WATER_LEACH_STATE = "waterLeachState";
     public static final String POWER_SAVING_MODE = "powerSavingMode";
     public static final String CSQ = "CSQ";

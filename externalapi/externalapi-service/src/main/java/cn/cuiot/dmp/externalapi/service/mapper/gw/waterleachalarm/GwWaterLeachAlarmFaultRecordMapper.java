@@ -5,6 +5,7 @@ import cn.cuiot.dmp.externalapi.service.query.gw.waterleachalarm.GwWaterLeachAla
 import cn.cuiot.dmp.externalapi.service.vo.gw.waterleachalarm.GwWaterLeachAlarmFaultRecordVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -21,5 +22,5 @@ public interface GwWaterLeachAlarmFaultRecordMapper extends BaseMapper<GwWaterLe
      * @return IPage
      * @Param query 参数
      */
-    IPage<GwWaterLeachAlarmFaultRecordVO> queryRecordForPage(@Param("params") GwWaterLeachAlarmFaultRecordQuery query);
+    IPage<GwWaterLeachAlarmFaultRecordVO> queryRecordForPage(Page<?> page, @Param("params") GwWaterLeachAlarmFaultRecordQuery query);
 }

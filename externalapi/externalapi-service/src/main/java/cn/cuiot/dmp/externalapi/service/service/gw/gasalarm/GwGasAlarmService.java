@@ -111,7 +111,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
         wrapper.like(StringUtils.isNotBlank(query.getDeviceName()), GwGasAlarmEntity::getDeviceName, query.getDeviceName());
         wrapper.like(StringUtils.isNotBlank(query.getImei()), GwGasAlarmEntity::getImei, query.getImei());
         wrapper.eq(Objects.nonNull(query.getStatus()), GwGasAlarmEntity::getStatus, query.getStatus());
-        wrapper.eq(Objects.nonNull(query.getEquipStatus()), GwGasAlarmEntity::getEquipStatus, query.getEquipStatus());
+        wrapper.eq(StringUtils.isNotBlank(query.getEquipStatus()), GwGasAlarmEntity::getEquipStatus, query.getEquipStatus());
         //查询所属组织下的楼盘以及未设置楼盘的数据
         wrapper.in(CollectionUtils.isNotEmpty(buildingIds), GwGasAlarmEntity::getBuildingId, buildingIds);
         //排序
@@ -292,53 +292,75 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
      * @Param dto 参数
      */
     public void batchSetProperty(GwGasAlarmPropertyDto dto) {
+
+        if (dto.getIds().size() > BATCH_MAX_NUM) {
+            throw new BusinessException(ResultCode.ERROR, "设备数超过限制");
+        }
+
+        if (Objects.isNull(dto.getBuildingId()) && StringUtils.isBlank(dto.getPowerSavingMode())) {
+            return;
+        }
+
         // 获取当前企业ID
         Long companyId = LoginInfoHolder.getCurrentOrgId();
 
-        // 根据企业ID和建筑ID获取警报实体列表
+        // 根据企业ID和数据id列表获取警报实体列表
         List<GwGasAlarmEntity> entities = list(new LambdaQueryWrapper<GwGasAlarmEntity>()
                 .eq(GwGasAlarmEntity::getCompanyId, companyId)
-                .eq(GwGasAlarmEntity::getBuildingId, dto.getBuilding()));
+                .in(GwGasAlarmEntity::getId, dto.getIds()));
 
         // 如果没有找到任何数据，抛出异常
         if (CollectionUtils.isEmpty(entities)) {
             throw new BusinessException(ResultCode.ERROR, "数据不存在");
         }
 
-        // 提取唯一的设备ID
-        List<String> iotIds = entities.stream()
-                .map(GwGasAlarmEntity::getIotId)
-                .distinct()
-                .collect(Collectors.toList());
-
-        // 验证设备ID是否有效
-        if (CollectionUtils.isEmpty(iotIds)) {
-            throw new BusinessException(ResultCode.ERROR, "设备唯一识别码不存在");
-        }
-        if (iotIds.size() > BATCH_MAX_NUM) {
-            throw new BusinessException(ResultCode.ERROR, "设备数超过限制");
+        // 批量修改楼盘
+        if (Objects.nonNull(dto.getBuildingId())) {
+            entities.forEach(item -> item.setBuildingId(dto.getBuildingId()));
+            updateBatchById(entities);
         }
 
-        // 获取企业的配置
-        GWCurrencyBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId, FootPlateInfoEnum.GW_GAS_ALARM.getId());
+        // 批量修改属性
+        if (StringUtils.isNotBlank(dto.getPowerSavingMode()) || StringUtils.isNotBlank(dto.getMute()) || Objects.nonNull(dto.getMuteTimeSet())) {
 
-        // 准备批量请求的参数
-        Map<String, Object> map = Maps.newHashMap();
-        map.put(GwGasAlarmPropertyEntity.POWER_SAVING_MODE, dto.getPowerSavingMode());
-        map.put(GwGasAlarmPropertyEntity.MUTE, dto.getMute());
-        map.put(GwGasAlarmPropertyEntity.MUTE_TIME_SET, dto.getMuteTimeSet());
+            // 提取唯一的设备ID
+            List<String> iotIds = entities.stream()
+                    .map(GwGasAlarmEntity::getIotId)
+                    .distinct()
+                    .collect(Collectors.toList());
 
-        // 创建请求对象并发送请求
-        DmpDeviceBatchPropertyReq req = new DmpDeviceBatchPropertyReq();
-        req.setItems(JsonUtil.writeValueAsString(map));
-        req.setIotId(iotIds);
-        DmpDeviceBatchPropertyResp resp = dmpDeviceRemoteService.batchSetDeviceProperty(req, bo);
+            // 验证设备ID是否有效
+            if (CollectionUtils.isEmpty(iotIds)) {
+                throw new BusinessException(ResultCode.ERROR, "设备唯一识别码不存在");
+            }
 
-        // 处理成功的数据
-        handleSuccess(resp.getSuccessList(), companyId, dto.getPowerSavingMode(), dto.getMute(), dto.getMuteTimeSet());
+            // 获取企业的配置
+            GWCurrencyBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId, FootPlateInfoEnum.GW_GAS_ALARM.getId());
 
-        // 处理失败的数据
-        handleFail(resp.getFailList(), companyId);
+            // 准备批量请求的参数
+            Map<String, Object> map = Maps.newHashMap();
+            if (StringUtils.isNotBlank(dto.getPowerSavingMode())) {
+                map.put(GwGasAlarmPropertyEntity.POWER_SAVING_MODE, dto.getPowerSavingMode());
+            }
+            if (StringUtils.isNotBlank(dto.getMute())) {
+                map.put(GwGasAlarmPropertyEntity.MUTE, dto.getMute());
+            }
+            if (Objects.nonNull(dto.getMuteTimeSet())) {
+                map.put(GwGasAlarmPropertyEntity.MUTE_TIME_SET, dto.getMuteTimeSet());
+            }
+
+            // 创建请求对象并发送请求
+            DmpDeviceBatchPropertyReq req = new DmpDeviceBatchPropertyReq();
+            req.setItems(JsonUtil.writeValueAsString(map));
+            req.setIotId(iotIds);
+            DmpDeviceBatchPropertyResp resp = dmpDeviceRemoteService.batchSetDeviceProperty(req, bo);
+
+            // 处理成功的数据
+            handleSuccess(resp.getSuccessList(), companyId);
+
+            // 处理失败的数据
+            handleFail(resp.getFailList(), entities);
+        }
     }
 
     /**
@@ -350,7 +372,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
      * @Param mute 消音
      * @Param muteTimeSet 消音音设置
      */
-    private void handleSuccess(List<DmpDeviceBatchPropertyResp.SuccessDataItem> successList, Long companyId, String powerSavingMode, String mute, Integer muteTimeSet) {
+    private void handleSuccess(List<DmpDeviceBatchPropertyResp.SuccessDataItem> successList, Long companyId) {
 
         if (CollectionUtils.isEmpty(successList)) {
             return;
@@ -362,36 +384,10 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
 
         // 更新数据库中成功的设备属性
         if (CollectionUtils.isNotEmpty(successIotIds)) {
-            List<GwGasAlarmEntity> gasAlarmEntities = list(new LambdaQueryWrapper<GwGasAlarmEntity>()
-                    .eq(GwGasAlarmEntity::getCompanyId, companyId)
-                    .in(GwGasAlarmEntity::getIotId, successIotIds));
-
-            // 批量更新设备的省电模式
-            if (CollectionUtils.isNotEmpty(gasAlarmEntities)) {
-                gasAlarmEntities.forEach(item -> {
-                    GwGasAlarmPropertyEntity propertyEntity = getPropertyEntity(item.getId());
-                    if (Objects.nonNull(propertyEntity) && StringUtils.isNotBlank(propertyEntity.getDeviceData())) {
-                        List<DmpDevicePropertyResp> resp = JsonUtil.readValue(propertyEntity.getDeviceData(),
-                                new TypeReference<List<DmpDevicePropertyResp>>() {
-                                });
-                        if (CollectionUtils.isNotEmpty(resp)) {
-                            resp.forEach(e -> {
-                                if (Objects.equals(e.getKey(), GwGasAlarmPropertyEntity.POWER_SAVING_MODE)) {
-                                    e.setValue(powerSavingMode);
-                                }
-                                if (Objects.equals(e.getKey(), GwGasAlarmPropertyEntity.MUTE)) {
-                                    e.setValue(mute);
-                                }
-                                if (Objects.equals(e.getKey(), GwGasAlarmPropertyEntity.MUTE_TIME_SET)) {
-                                    e.setValue(muteTimeSet);
-                                }
-                            });
-                            propertyEntity.setDeviceData(JsonUtil.writeValueAsString(resp));
-                            gwGasAlarmPropertyMapper.updateById(propertyEntity);
-                        }
-                    }
-                });
-            }
+            GwGasAlarmSyncQuery query = new GwGasAlarmSyncQuery();
+            query.setCompanyId(companyId);
+            query.setIotId(successIotIds);
+            gwGasAlarmTaskHandle.syncGwGasAlarmPropertyHandle(JsonUtil.writeValueAsString(query));
         }
     }
 
@@ -402,7 +398,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
      * @Param companyId 企业id
      * @Param powerSavingMode 省电模式
      */
-    private void handleFail(List<DmpDeviceBatchPropertyResp.FailDataItem> failList, Long companyId) {
+    private void handleFail(List<DmpDeviceBatchPropertyResp.FailDataItem> failList, List<GwGasAlarmEntity> entities) {
 
         if (CollectionUtils.isEmpty(failList)) {
             return;
@@ -415,16 +411,18 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
 
         // 如果有设备更新失败，抛出异常并包含设备名称
         if (CollectionUtils.isNotEmpty(failIotIds)) {
-            List<GwGasAlarmEntity> failedEntities = list(new LambdaQueryWrapper<GwGasAlarmEntity>()
-                    .eq(GwGasAlarmEntity::getCompanyId, companyId)
-                    .in(GwGasAlarmEntity::getIotId, failIotIds));
+
+            Map<String, GwGasAlarmEntity> entityMap = entities.stream().collect(Collectors.toMap(GwGasAlarmEntity::getIotId, e -> e));
+
+            List<String> failDeviceNames = failIotIds.stream()
+                    .filter(entityMap::containsKey)
+                    .map(e -> entityMap.get(e).getDeviceName())
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
 
             // 如果找到了失败的设备，收集设备名称并抛出异常
-            if (CollectionUtils.isNotEmpty(failedEntities)) {
-                List<String> deviceNames = failedEntities.stream()
-                        .map(GwGasAlarmEntity::getDeviceName)
-                        .collect(Collectors.toList());
-                throw new BusinessException(ResultCode.ERROR, "设备【" + String.join(",", deviceNames) + "】修改属性失败");
+            if (CollectionUtils.isNotEmpty(failDeviceNames)) {
+                throw new BusinessException(ResultCode.ERROR, "设备【" + String.join(",", failDeviceNames) + "】修改属性失败");
             }
         }
     }

@@ -15,6 +15,7 @@ import cn.cuiot.dmp.externalapi.service.query.gw.waterleachalarm.GwWaterLeachAla
 import cn.cuiot.dmp.externalapi.service.vo.gw.waterleachalarm.GwWaterLeachAlarmFaultRecordVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class GwWaterLeachAlarmFaultRecordService extends ServiceImpl<GwWaterLeac
             }
         }
 
-        IPage<GwWaterLeachAlarmFaultRecordVO> iPage = baseMapper.queryRecordForPage(query);
+        IPage<GwWaterLeachAlarmFaultRecordVO> iPage = baseMapper.queryRecordForPage(new Page(query.getPageNo(), query.getPageSize()), query);
         if (Objects.nonNull(iPage) && CollectionUtils.isNotEmpty(iPage.getRecords())) {
             iPage.getRecords().forEach(item ->{
                 item.setErrorCodeName(GwWaterLeachAlarmPropertyEnums.ErrorCode.getNameByCode(item.getErrorCode()));
