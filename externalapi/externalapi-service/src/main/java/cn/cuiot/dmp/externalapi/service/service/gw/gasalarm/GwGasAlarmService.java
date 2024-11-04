@@ -59,8 +59,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmEntity> {
-    @Autowired
-    private DmpDeviceRemoteService dmpDeviceRemoteService;
+//    @Autowired
+//    private DmpDeviceRemoteService dmpDeviceRemoteService;
     @Autowired
     private GwEntranceGuardConfigService gwEntranceGuardConfigService;
     @Autowired
@@ -173,7 +173,11 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
         deviceReq.setImei(dto.getImei());
         deviceReq.setDeviceName(dto.getDeviceName());
         deviceReq.setDescription(dto.getRemark());
-        DmpDeviceCreateResp device = dmpDeviceRemoteService.createDevice(deviceReq, bo);
+//        DmpDeviceCreateResp device = dmpDeviceRemoteService.createDevice(deviceReq, bo);
+
+        DmpDeviceCreateResp device = new DmpDeviceCreateResp();
+        device.setProductKey("cukppp0rn2bk5xsc");
+        device.setDeviceKey(id + "");
 
         if (Objects.nonNull(device)) {
             //保存设备关联信息
@@ -229,7 +233,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
             req.setProductKey(bo.getProductKey());
             req.setDeviceKey(bo.getDeviceKey());
             req.setDeviceName(dto.getDeviceName());
-            dmpDeviceRemoteService.editDevice(req, bo);
+//            dmpDeviceRemoteService.editDevice(req, bo);
         }
 
         // 修改设备属性
@@ -243,7 +247,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
             map.put(GwGasAlarmPropertyEntity.MUTE, dto.getMute());
             map.put(GwGasAlarmPropertyEntity.MUTE_TIME_SET, dto.getMuteTimeSet());
             req.setItems(JsonUtil.writeValueAsString(map));
-            dmpDeviceRemoteService.setDeviceProperty(req, bo);
+//            dmpDeviceRemoteService.setDeviceProperty(req, bo);
         }
 
         // 修改设备信息
@@ -371,13 +375,13 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
             DmpDeviceBatchPropertyReq req = new DmpDeviceBatchPropertyReq();
             req.setItems(JsonUtil.writeValueAsString(map));
             req.setIotId(iotIds);
-            DmpDeviceBatchPropertyResp resp = dmpDeviceRemoteService.batchSetDeviceProperty(req, bo);
+//            DmpDeviceBatchPropertyResp resp = dmpDeviceRemoteService.batchSetDeviceProperty(req, bo);
 
             // 处理成功的数据
-            handleSuccess(resp.getSuccessList(), companyId);
+//            handleSuccess(resp.getSuccessList(), companyId);
 
             // 处理失败的数据
-            handleFail(resp.getFailList(), entities);
+//            handleFail(resp.getFailList(), entities);
         }
     }
 
@@ -542,7 +546,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
                 // 批量启用设备
                 DmpDeviceBatchEnableReq req = new DmpDeviceBatchEnableReq();
                 req.setIotId(iotIds);
-                dmpDeviceRemoteService.batchEnableDevice(req, bo);
+//                dmpDeviceRemoteService.batchEnableDevice(req, bo);
 
                 // 同步设备信息
                 syncDeviceInfo(companyId, iotIds);
@@ -551,7 +555,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
                 // 批量禁用设备
                 DmpDeviceBatchDisableReq req = new DmpDeviceBatchDisableReq();
                 req.setIotId(iotIds);
-                dmpDeviceRemoteService.batchDisableDevice(req, bo);
+//                dmpDeviceRemoteService.batchDisableDevice(req, bo);
 
                 // 同步设备信息
                 syncDeviceInfo(companyId, iotIds);
@@ -560,7 +564,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
                 // 批量删除设备
                 DmpDeviceBatchDeleteReq req = new DmpDeviceBatchDeleteReq();
                 req.setIotId(iotIds);
-                dmpDeviceRemoteService.batchDeleteDevice(req, bo);
+//                dmpDeviceRemoteService.batchDeleteDevice(req, bo);
 
             } else if (Objects.equals(status, DEVICE_RESTART)) {
                 // 重启设备
@@ -570,7 +574,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
                 map.put(GwGasAlarmPropertyEntity.RESTART, "1");
                 req.setItems(JsonUtil.writeValueAsString(map));
 
-                dmpDeviceRemoteService.setDeviceProperty(req, bo);
+//                dmpDeviceRemoteService.setDeviceProperty(req, bo);
 
                 // 同步设备信息
                 syncDeviceInfo(companyId, iotIds);
