@@ -1,19 +1,20 @@
 package cn.cuiot.dmp.externalapi.service.service.gw.push;
 
-import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.externalapi.service.constant.GwBusinessTypeConstant;
 import cn.cuiot.dmp.externalapi.service.constant.GwEntranceGuardServiceKeyConstant;
-import cn.cuiot.dmp.externalapi.service.entity.gw.*;
+import cn.cuiot.dmp.externalapi.service.entity.gw.entranceguard.*;
 import cn.cuiot.dmp.externalapi.service.query.gw.push.DeviceEventParams;
 import cn.cuiot.dmp.externalapi.service.query.gw.push.DeviceParametersParams;
 import cn.cuiot.dmp.externalapi.service.query.gw.push.base.DataItem;
 import cn.cuiot.dmp.externalapi.service.query.gw.push.base.DeviceServiceOutParams;
 import cn.cuiot.dmp.externalapi.service.query.gw.push.base.GwHead;
 import cn.cuiot.dmp.externalapi.service.service.gw.*;
+import cn.cuiot.dmp.externalapi.service.service.gw.entranceguard.*;
 import cn.cuiot.dmp.externalapi.service.utils.GwPushUtil;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.InvokeDeviceServiceReq;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.dmp.DmpDeviceRemoteService;
@@ -173,7 +174,7 @@ public class GwEntranceGuardPushHandle implements GwBusinessStrategy {
         GwEntranceGuardEntity entity = Optional.ofNullable(entranceGuardService.getById(dataId))
                 .orElseThrow(() -> new BusinessException(ResultCode.ERROR, "格物门禁【" + dataId + "】数据不存在"));
 
-        GWEntranceGuardBO configInfo = entranceGuardConfigService.getConfigInfo(entity.getCompanyId());
+        GWCurrencyBO configInfo = entranceGuardConfigService.getConfigInfo(entity.getCompanyId());
 
         //获取最新的设备参数
         InvokeDeviceServiceReq req = new InvokeDeviceServiceReq();

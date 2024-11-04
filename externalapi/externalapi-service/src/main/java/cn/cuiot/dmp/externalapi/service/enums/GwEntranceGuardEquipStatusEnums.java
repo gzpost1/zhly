@@ -1,7 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.enums;
 
 /**
- * 门禁设备状态
+ * 烟雾报警器-灵敏度
  *
  * @Author: zc
  * @Date: 2024-09-12
@@ -45,5 +45,14 @@ public enum GwEntranceGuardEquipStatusEnums {
     GwEntranceGuardEquipStatusEnums(String code, String name) {
         this.code = code;
         this.name = name;
+    }
+
+    public static String queryNameByCode(String code){
+        for(GwEntranceGuardEquipStatusEnums statusEnums :GwEntranceGuardEquipStatusEnums.values()){
+            if(statusEnums.getCode().equals(code)){
+                return statusEnums.name();
+            }
+        }
+        return null;
     }
 }

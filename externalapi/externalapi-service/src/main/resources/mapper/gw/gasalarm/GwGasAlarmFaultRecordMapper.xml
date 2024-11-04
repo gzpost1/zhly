@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.gw.gasalarm.GwGasAlarmFaultRecordMapper">
+
+    <select id="queryRecordForPage" parameterType="cn.cuiot.dmp.externalapi.service.query.gw.gasalarm.GwGasAlarmFaultRecordQuery"
+            resultType="cn.cuiot.dmp.externalapi.service.vo.gw.gasalarm.GwGasAlarmFaultRecordVO">
+        SELECT
+            b.device_name deviceName,
+            b.dept_id deptId,
+            b.building_id buildingId,
+            b.imei,
+            a.error_code errorCode,
+            a.create_time faultDate
+        FROM
+            tb_gw_gas_alarm_fault_record a
+                LEFT JOIN tb_gw_gas_alarm b ON a.device_id = b.id
+        WHERE
+            b.deleted = 0
+            AND a.deleted = 0
+            <if test="params.deviceName != null and params.deviceName != ''">
+                AND b.device_name = #{params.deviceName}
+            </if>
+            <if test="params.imei != null and params.imei != ''">
+                AND b.imei = #{params.imei}
+            </if>
+            <if test="params.errorCode != null and params.errorCode != ''">
+                AND a.error_code = #{params.errorCode}
+            </if>
+            <if test="params.faultBeginDate != null and params.faultEndDate != null">
+                AND (a.create_time <![CDATA[>=]]> #{params.faultBeginDate} AND a.create_time <![CDATA[<=]]> #{params.faultEndDate})
+            </if>
+            <if test="params.buildingIds != null and params.buildingIds.size() > 0">
+                AND b.building_id IN
+                <foreach collection="params.buildingIds" index="index" item="buildingId" open="(" separator="," close=")">
+                    #{buildingId}
+                </foreach>
+            </if>
+        ORDER BY
+            a.create_time DESC
+    </select>
+</mapper>

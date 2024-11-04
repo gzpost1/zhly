@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.gw.gasalarm.GwGasAlarmMapper">
+  <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.gw.gasalarm.GwGasAlarmEntity">
+    <!--@mbg.generated-->
+    <!--@Table tb_gw_gas_alarm-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="company_id" jdbcType="BIGINT" property="companyId" />
+    <result column="dept_id" jdbcType="BIGINT" property="deptId" />
+    <result column="building_id" jdbcType="BIGINT" property="buildingId" />
+    <result column="device_name" jdbcType="VARCHAR" property="deviceName" />
+    <result column="imei" jdbcType="VARCHAR" property="imei" />
+    <result column="auth_code" jdbcType="VARCHAR" property="authCode" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="latitude" jdbcType="DECIMAL" property="latitude" />
+    <result column="longitude" jdbcType="DECIMAL" property="longitude" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+    <result column="equip_status" jdbcType="VARCHAR" property="equipStatus" />
+    <result column="product_key" jdbcType="VARCHAR" property="productKey" />
+    <result column="device_key" jdbcType="VARCHAR" property="deviceKey" />
+    <result column="iot_id" jdbcType="VARCHAR" property="iotId" />
+    <result column="device_secret" jdbcType="VARCHAR" property="deviceSecret" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="update_user" jdbcType="BIGINT" property="updateUser" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_user" jdbcType="BIGINT" property="createUser" />
+    <result column="deleted" jdbcType="BOOLEAN" property="deleted" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, company_id, dept_id, building_id, device_name, imei, auth_code, address, latitude, 
+    longitude, remark, `status`, equip_status, product_key, device_key, iot_id, device_secret, 
+    update_time, update_user, create_time, create_user, deleted
+  </sql>
+
+    <update id="syncUpdateStatus" parameterType="cn.cuiot.dmp.externalapi.service.entity.gw.gasalarm.GwGasAlarmEntity">
+        UPDATE tb_gw_gas_alarm
+        SET status = #{params.status}, equip_status = #{params.equipStatus}
+        WHERE company_id = #{params.companyId} AND iot_id = #{params.iotId}
+    </update>
+</mapper>
