@@ -61,8 +61,8 @@ import java.util.stream.Collectors;
 @Service
 public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMapper, GwWaterLeachAlarmEntity> {
 
-    @Autowired
-    private DmpDeviceRemoteService dmpDeviceRemoteService;
+//    @Autowired
+//    private DmpDeviceRemoteService dmpDeviceRemoteService;
     @Autowired
     private GwEntranceGuardConfigService gwEntranceGuardConfigService;
     @Autowired
@@ -163,7 +163,11 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
         deviceReq.setImei(dto.getImei());
         deviceReq.setDeviceName(dto.getDeviceName());
         deviceReq.setDescription(dto.getRemark());
-        DmpDeviceCreateResp device = dmpDeviceRemoteService.createDevice(deviceReq, bo);
+//        DmpDeviceCreateResp device = dmpDeviceRemoteService.createDevice(deviceReq, bo);
+
+        DmpDeviceCreateResp device = new DmpDeviceCreateResp();
+        device.setProductKey("cukppp0rn2bk5xsc");
+        device.setDeviceKey(id + "");
 
         if (Objects.nonNull(device)) {
             //保存设备关联信息
@@ -216,7 +220,7 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
             req.setProductKey(bo.getProductKey());
             req.setDeviceKey(bo.getDeviceKey());
             req.setDeviceName(dto.getDeviceName());
-            dmpDeviceRemoteService.editDevice(req, bo);
+//            dmpDeviceRemoteService.editDevice(req, bo);
         }
 
         // 修改设备属性
@@ -228,7 +232,7 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
             Map<String, Object> map = Maps.newHashMap();
             map.put(GwWaterLeachAlarmPropertyEntity.POWER_SAVING_MODE, dto.getPowerSavingMode());
             req.setItems(JsonUtil.writeValueAsString(map));
-            dmpDeviceRemoteService.setDeviceProperty(req, bo);
+//            dmpDeviceRemoteService.setDeviceProperty(req, bo);
         }
 
         // 修改设备信息
@@ -338,13 +342,13 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
             DmpDeviceBatchPropertyReq req = new DmpDeviceBatchPropertyReq();
             req.setItems(JsonUtil.writeValueAsString(map));
             req.setIotId(iotIds);
-            DmpDeviceBatchPropertyResp resp = dmpDeviceRemoteService.batchSetDeviceProperty(req, bo);
+//            DmpDeviceBatchPropertyResp resp = dmpDeviceRemoteService.batchSetDeviceProperty(req, bo);
 
             // 处理成功的数据
-            handleSuccess(resp.getSuccessList(), companyId);
+//            handleSuccess(resp.getSuccessList(), companyId);
 
             // 处理失败的数据
-            handleFail(resp.getFailList(), entities);
+//            handleFail(resp.getFailList(), entities);
         }
     }
 
@@ -498,7 +502,7 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
                 // 批量启用设备
                 DmpDeviceBatchEnableReq req = new DmpDeviceBatchEnableReq();
                 req.setIotId(iotIds);
-                dmpDeviceRemoteService.batchEnableDevice(req, bo);
+//                dmpDeviceRemoteService.batchEnableDevice(req, bo);
 
                 // 同步设备信息
                 syncDeviceInfo(companyId, iotIds);
@@ -507,7 +511,7 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
                 // 批量禁用设备
                 DmpDeviceBatchDisableReq req = new DmpDeviceBatchDisableReq();
                 req.setIotId(iotIds);
-                dmpDeviceRemoteService.batchDisableDevice(req, bo);
+//                dmpDeviceRemoteService.batchDisableDevice(req, bo);
 
                 // 同步设备信息
                 syncDeviceInfo(companyId, iotIds);
@@ -516,7 +520,7 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
                 // 批量删除设备
                 DmpDeviceBatchDeleteReq req = new DmpDeviceBatchDeleteReq();
                 req.setIotId(iotIds);
-                dmpDeviceRemoteService.batchDeleteDevice(req, bo);
+//                dmpDeviceRemoteService.batchDeleteDevice(req, bo);
             }
         }
     }
