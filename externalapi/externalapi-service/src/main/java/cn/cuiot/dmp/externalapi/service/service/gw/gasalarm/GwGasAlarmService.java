@@ -82,6 +82,24 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
     public static final Integer BATCH_MAX_NUM = 200;
 
     /**
+     * 启用
+     */
+    public static final Byte DEVICE_ENABLED = Byte.parseByte("0");
+    /**
+     * 停用
+     */
+    public static final Byte DEVICE_DISABLED = Byte.parseByte("1");
+
+    /**
+     * 删除
+     */
+    public static final Byte DEVICE_DELETE = Byte.parseByte("1");
+    /**
+     * 重启
+     */
+    public static final Byte DEVICE_RESTART = Byte.parseByte("3");
+
+    /**
      * 分页
      *
      * @return IPage
@@ -196,10 +214,10 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
 
         GwGasAlarmEntity entity = queryEntity(dto.getId(), companyId);
 
-        if (!Objects.equals(dto.getImei(), entity.getImei())) {
+        if (!StringUtils.equals(dto.getImei(), entity.getImei())) {
             throw new BusinessException(ResultCode.ERROR, "设备IMEI不可编辑");
         }
-        if (!Objects.equals(dto.getAuthCode(), entity.getAuthCode())) {
+        if (!StringUtils.equals(dto.getAuthCode(), entity.getAuthCode())) {
             throw new BusinessException(ResultCode.ERROR, "鉴权码不可编辑");
         }
 
@@ -258,14 +276,14 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
 
             if (CollectionUtils.isNotEmpty(propertyResp)) {
                 propertyResp.forEach(item -> {
-                    if (Objects.equals(item.getKey(), GwGasAlarmPropertyEntity.POWER_SAVING_MODE)) {
+                    if (StringUtils.equals(item.getKey(), GwGasAlarmPropertyEntity.POWER_SAVING_MODE)) {
                         vo.setPowerSavingMode(GwGasAlarmPropertyEnums.PowerSavingMode.getNameByCode(item.getKey()));
 
                     }
-                    if (Objects.equals(item.getKey(), GwGasAlarmPropertyEntity.MUTE)) {
+                    if (StringUtils.equals(item.getKey(), GwGasAlarmPropertyEntity.MUTE)) {
                         vo.setMute(GwGasAlarmPropertyEnums.Mute.getNameByCode(item.getKey()));
                     }
-                    if (Objects.equals(item.getKey(), GwGasAlarmPropertyEntity.MUTE_TIME_SET) && Objects.nonNull(item.getValue())) {
+                    if (StringUtils.equals(item.getKey(), GwGasAlarmPropertyEntity.MUTE_TIME_SET) && Objects.nonNull(item.getValue())) {
                         vo.setMuteTimeSet(Integer.parseInt(item.getValue() + ""));
                     }
                 });
@@ -434,7 +452,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
      * @Param ids 数据id列表
      */
     public void batchDelete(List<Long> ids) {
-        batchHandle(ids, EntityConstants.EXPIRE);
+        batchHandle(ids, DEVICE_DELETE);
 
         // 批量删除平台设备
         removeByIds(ids);
@@ -449,7 +467,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
      * @Param ids 数据id列表
      */
     public void batchEnable(List<Long> ids) {
-        batchHandle(ids, EntityConstants.ENABLED);
+        batchHandle(ids, DEVICE_ENABLED);
     }
 
     /**
@@ -458,7 +476,16 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
      * @Param ids 数据id列表
      */
     public void batchDisable(List<Long> ids) {
-        batchHandle(ids, EntityConstants.DISABLED);
+        batchHandle(ids, DEVICE_DISABLED);
+    }
+
+    /**
+     * 重启
+     *
+     * @Param id 数据id
+     */
+    public void restart(Long id) {
+        batchHandle(Collections.singletonList(id), DEVICE_RESTART);
     }
 
     /**
@@ -511,7 +538,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
             GWCurrencyBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId, FootPlateInfoEnum.GW_GAS_ALARM.getId());
 
             // 根据状态执行不同的批处理请求
-            if (Objects.equals(status, EntityConstants.ENABLED)) {
+            if (Objects.equals(status, DEVICE_ENABLED)) {
                 // 批量启用设备
                 DmpDeviceBatchEnableReq req = new DmpDeviceBatchEnableReq();
                 req.setIotId(iotIds);
@@ -520,7 +547,7 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
                 // 同步设备信息
                 syncDeviceInfo(companyId, iotIds);
 
-            } else if (Objects.equals(status, EntityConstants.DISABLED)) {
+            } else if (Objects.equals(status, DEVICE_DISABLED)) {
                 // 批量禁用设备
                 DmpDeviceBatchDisableReq req = new DmpDeviceBatchDisableReq();
                 req.setIotId(iotIds);
@@ -529,11 +556,24 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
                 // 同步设备信息
                 syncDeviceInfo(companyId, iotIds);
 
-            } else if (Objects.equals(status, EntityConstants.EXPIRE)) {
+            } else if (Objects.equals(status, DEVICE_DELETE)) {
                 // 批量删除设备
                 DmpDeviceBatchDeleteReq req = new DmpDeviceBatchDeleteReq();
                 req.setIotId(iotIds);
                 dmpDeviceRemoteService.batchDeleteDevice(req, bo);
+
+            } else if (Objects.equals(status, DEVICE_RESTART)) {
+                // 重启设备
+                DmpDevicePropertyReq req = new DmpDevicePropertyReq();
+
+                HashMap<Object, Object> map = Maps.newHashMap();
+                map.put(GwGasAlarmPropertyEntity.RESTART, "1");
+                req.setItems(JsonUtil.writeValueAsString(map));
+
+                dmpDeviceRemoteService.setDeviceProperty(req, bo);
+
+                // 同步设备信息
+                syncDeviceInfo(companyId, iotIds);
             }
         }
     }

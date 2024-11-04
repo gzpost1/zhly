@@ -159,6 +159,19 @@ public class GwGasAlarmController {
     }
 
     /**
+     * 重启
+     *
+     * @Param ids 数据id列表
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "restart", operationName = "重启", serviceType = "gwGasAlarm", serviceTypeName = "格物燃气报警器")
+    @PostMapping("restart")
+    public IdmResDTO<?> restart(@RequestBody @Valid IdParam param) {
+        gwGasAlarmService.restart(param.getId());
+        return IdmResDTO.success();
+    }
+
+    /**
      * 导出
      *
      * @Param query 参数

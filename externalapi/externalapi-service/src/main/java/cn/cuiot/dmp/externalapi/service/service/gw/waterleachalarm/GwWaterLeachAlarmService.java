@@ -204,7 +204,7 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
 
         GwWaterLeachAlarmEntity entity = queryEntity(dto.getId(), companyId);
 
-        if (!Objects.equals(dto.getImei(), entity.getImei())) {
+        if (!StringUtils.equals(dto.getImei(), entity.getImei())) {
             throw new BusinessException(ResultCode.ERROR, "设备IMEI不可编辑");
         }
 
@@ -261,7 +261,7 @@ public class GwWaterLeachAlarmService extends ServiceImpl<GwWaterLeachAlarmMappe
 
             if (CollectionUtils.isNotEmpty(propertyResp)) {
                 propertyResp.forEach(item -> {
-                    if (Objects.equals(item.getKey(), GwGasAlarmPropertyEntity.POWER_SAVING_MODE)) {
+                    if (StringUtils.equals(item.getKey(), GwGasAlarmPropertyEntity.POWER_SAVING_MODE)) {
                         vo.setPowerSavingMode(GwGasAlarmPropertyEnums.PowerSavingMode.getNameByCode(item.getKey()));
                     }
                 });

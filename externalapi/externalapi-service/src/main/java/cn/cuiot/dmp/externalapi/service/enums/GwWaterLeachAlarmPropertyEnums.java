@@ -47,11 +47,11 @@ public enum GwWaterLeachAlarmPropertyEnums {
      * 省电模式
      */
     public enum PowerSavingMode {
-        PSM("0", "正常"),
-        DXR("1", "水浸"),
-        E_DRX("2", "水浸"),
-        NOT_OPENED("20", "未开通");
-
+        PSM("0", "PSM"),
+        DRX("1", "DRX"),
+        EDRX("2", "eDRX"),
+        NOT_ACTIVATED("20", "未开通"),
+        ;
 
         @Getter
         private String code;

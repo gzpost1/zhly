@@ -79,18 +79,18 @@ public class GwWaterLeachAlarmPropertyEntity extends YjBaseEntity {
                         GwCommonPropertyVo propertyVo = map.get(item.getKey());
                         String code = propertyVo.getValue() + "";
 
-                        if (Objects.equals(item.getKey(), WATER_LEACH_STATE)) {
-                            // 设置水浸状态值
-                            item.setValue(GwWaterLeachAlarmPropertyEnums.WaterLeachState.getNameByCode(code));
-                        }
-                        if (Objects.equals(item.getKey(), POWER_SAVING_MODE)) {
-                            // 设置省电模式值
-                            item.setValue(GwWaterLeachAlarmPropertyEnums.PowerSavingMode.getNameByCode(code));
-                        }
-
                         item.setTs(propertyVo.getTs());
                         item.setUnit(propertyVo.getUnit());
                         item.setValue(propertyVo.getValue());
+
+                        if (StringUtils.equals(item.getKey(), WATER_LEACH_STATE)) {
+                            // 设置水浸状态值
+                            item.setValue(GwWaterLeachAlarmPropertyEnums.WaterLeachState.getNameByCode(code));
+                        }
+                        if (StringUtils.equals(item.getKey(), POWER_SAVING_MODE)) {
+                            // 设置省电模式值
+                            item.setValue(GwWaterLeachAlarmPropertyEnums.PowerSavingMode.getNameByCode(code));
+                        }
                     }
                 });
             }

@@ -44,6 +44,11 @@ public class GwGasAlarmDetailVO {
     private String imei;
 
     /**
+     * 鉴权码
+     */
+    private String authCode;
+
+    /**
      * 详细地址
      */
     private String address;
