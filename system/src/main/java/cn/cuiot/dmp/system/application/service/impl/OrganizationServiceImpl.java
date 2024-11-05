@@ -52,10 +52,12 @@ import cn.cuiot.dmp.system.infrastructure.entity.OrganizationEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.UserDataEntity;
 import cn.cuiot.dmp.system.infrastructure.entity.bo.UserBo;
 import cn.cuiot.dmp.system.infrastructure.entity.dto.*;
+import cn.cuiot.dmp.system.infrastructure.entity.vo.CompanyTemplateVO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.GetOrganizationVO;
 import cn.cuiot.dmp.system.infrastructure.entity.vo.ListOrganizationVO;
 import cn.cuiot.dmp.system.infrastructure.messaging.spring.SystemEventSendAdapter;
 import cn.cuiot.dmp.system.infrastructure.persistence.dao.*;
+import cn.cuiot.dmp.system.infrastructure.persistence.mapper.CompanyTemplateMapper;
 import cn.cuiot.dmp.system.infrastructure.utils.DepartmentUtil;
 import cn.cuiot.dmp.system.infrastructure.utils.DeptTreePathUtils;
 import cn.cuiot.dmp.system.infrastructure.utils.OrgRedisUtil;
@@ -166,6 +168,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private CustomConfigDetailRepository customConfigDetailRepository;
+    @Autowired
+    private CompanyTemplateMapper companyTemplateMapper;
 
     /**
      * 根据用户类型返回
@@ -805,6 +809,12 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (communityCount > NumberConst.ZERO) {
             throw new BusinessException(ResultCode.ACCOUNT_HAS_COMMUNITY);
         }*/
+
+        // 校验是否已关联企业模板
+        CompanyTemplateVO template = companyTemplateMapper.queryLastTemplate();
+        if (Objects.nonNull(template) && Objects.equals(template.getCompanyId(), Long.valueOf(orgId))) {
+            throw new BusinessException(ResultCode.ERROR, "当前企业已关联企业模板，不可删除");
+        }
 
         OrganizationEntity toDTO = null;
         try {
