@@ -93,4 +93,6 @@ public class WorkBusinessTypeInfoEntity implements Serializable {
      */
     @TableField(exist = false)
     private String deliverName;
+
+
 }

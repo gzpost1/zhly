@@ -80,6 +80,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1384,6 +1386,17 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 String deliverNames = getDeliverNames(item.getDeliver());
                 item.setDeliverName(deliverNames);
             }
+            //处理评论节点
+//            if(Objects.equals(item.getBusinessType(), BusinessInfoEnums.BUSINESS_COMMENT.getCode())){
+//                CommentTimeDto commentTime = getBaseMapper().queryCommentTime(procinstId, nodeId);
+//                Duration duration = null;
+//                if(Objects.nonNull(commentTime.getEndTime())){
+//                     duration = Duration.between(commentTime.getStartTime(), commentTime.getEndTime());
+//                }else {
+//                     duration = Duration.between(commentTime.getStartTime(), LocalDateTime.now());
+//                }
+//                long diffInMinutes = duration.toMinutes();
+//            }
         });
         return list;
     }
