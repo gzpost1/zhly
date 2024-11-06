@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.externalapi.provider.controller.admin.hik;
 
+import cn.cuiot.dmp.base.application.annotation.IgnoreAuth;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.dto.ExcelDownloadCallable;
 import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
