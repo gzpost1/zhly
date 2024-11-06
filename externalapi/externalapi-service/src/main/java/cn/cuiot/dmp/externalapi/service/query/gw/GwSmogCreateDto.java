@@ -21,7 +21,7 @@ public class GwSmogCreateDto implements Serializable {
     * 设备名称
     */
     @NotBlank(message = "设备名称不能为空")
-    @Length(max = 30,message = "设备名称长度必须小于30位")
+    @Length(max = 32,message = "设备名称长度必须小于32位")
     private String name;
 
     /**

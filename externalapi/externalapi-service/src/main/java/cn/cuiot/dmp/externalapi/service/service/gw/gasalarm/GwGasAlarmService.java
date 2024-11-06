@@ -121,6 +121,8 @@ public class GwGasAlarmService extends ServiceImpl<GwGasAlarmMapper, GwGasAlarmE
             if (CollectionUtils.isNotEmpty(archives)) {
                 List<Long> collect = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
                 buildingIds.addAll(collect);
+            }else {
+                buildingIds.add(-999L);
             }
         }
 
