@@ -36,9 +36,8 @@ public class EventCallBacksController {
 
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<IdentificationRecordEntity>> queryForPage(@RequestBody IdentificationRecordQuery query) {
-        LambdaQueryWrapper<IdentificationRecordEntity> queryWrapper = new LambdaQueryWrapper<>();
 
-        IPage<IdentificationRecordEntity> pageResult = identificationRecordService.page(new Page<>(query.getPageNo(), query.getPageSize()),queryWrapper);
+        IPage<IdentificationRecordEntity> pageResult = identificationRecordService.queryForPage(query);
         return IdmResDTO.success(pageResult);
     }
 }

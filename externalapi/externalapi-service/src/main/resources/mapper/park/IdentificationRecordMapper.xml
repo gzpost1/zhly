@@ -35,4 +35,50 @@
         event_guid, device_ip, device_no, admit_guid, rec_mode, file_path, show_time, alive_type, rec_score, device_version, source, type, card_no, device_name, rec_type, permission_time_type, pass_time_type, rec_mode_type, storage_id, timestamp, admit_name, company_id, community_id, create_time
     </sql>
 
+
+    <select id="queryForPage" resultMap="BaseResultMap">
+        select
+            <include refid="Base_Column_List"/> from  tb_identification_record
+            <where>
+                <if test="query.deviceName !=null and query.deviceName !=''">
+                    and device_name like concat('%' ,#{query.deviceName},'%')
+                </if>
+                <if test="query.admitName !=null and query.admitName !=''">
+                    and admit_name like concat('%' ,#{query.admitName},'%')
+                </if>
+                <if test="query.cardNo !=null and query.cardNo !=''">
+                    and card_no like concat('%' ,#{query.cardNo},'%')
+                </if>
+                <if test="query.communityIds !=null and query.communityIds.size() >0">
+                    and community_id in
+                    <foreach collection="query.communityIds" item="item" open="("  separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="query.startTime !=null">
+                    and show_date >= #{query.startTime} and show_date <![CDATA[<=]]> #{query.endTime}
+                </if>
+            </where>
+        <if test="query.communityIdType==0">
+            union all
+            select
+            <include refid="Base_Column_List"/> from  tb_identification_record
+            <where>
+                <if test="query.deviceName !=null and query.deviceName !=''">
+                    and device_name like concat('%' ,#{query.deviceName},'%')
+                </if>
+                <if test="query.admitName !=null and query.admitName !=''">
+                    and admit_name like concat('%' ,#{query.admitName},'%')
+                </if>
+                <if test="query.cardNo !=null and query.cardNo !=''">
+                    and card_no like concat('%' ,#{query.cardNo},'%')
+                </if>
+                <if test="query.startTime !=null">
+                    and show_date >= #{query.startTime} and show_date <![CDATA[<=]]> #{query.endTime}
+                </if>
+                    and   community_id is null
+            </where>
+
+        </if>
+    </select>
 </mapper>

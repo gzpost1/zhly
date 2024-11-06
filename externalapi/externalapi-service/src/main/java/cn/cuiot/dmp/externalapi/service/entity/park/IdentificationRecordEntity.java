@@ -169,6 +169,10 @@ public class IdentificationRecordEntity implements Serializable {
      */
     private Date createTime;
 
-
+    /**
+     * 楼盘名称
+     */
+    @TableField(exist = false)
+    private  String communityName;
 
 }

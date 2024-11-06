@@ -9,8 +9,4 @@ import lombok.Data;
 @Data
 public class RecognitionRecordVO  extends IdentificationRecordEntity {
 
-    /**
-     * 楼盘名称
-     */
-    private  String communityName;
 }
