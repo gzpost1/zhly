@@ -1,33 +1,18 @@
 package cn.cuiot.dmp.externalapi.service.service.gw.push;
 
-import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
-import cn.cuiot.dmp.common.constant.EntityConstants;
-import cn.cuiot.dmp.common.constant.ResultCode;
-import cn.cuiot.dmp.common.exception.BusinessException;
-import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.externalapi.service.constant.GwBusinessTypeConstant;
-import cn.cuiot.dmp.externalapi.service.constant.GwEntranceGuardServiceKeyConstant;
-import cn.cuiot.dmp.externalapi.service.entity.gw.*;
-import cn.cuiot.dmp.externalapi.service.query.gw.push.DeviceEventParams;
+import cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogEventEntity;
 import cn.cuiot.dmp.externalapi.service.query.gw.push.DeviceEventSmogParams;
-import cn.cuiot.dmp.externalapi.service.query.gw.push.DeviceParametersParams;
 import cn.cuiot.dmp.externalapi.service.query.gw.push.base.DataItem;
 import cn.cuiot.dmp.externalapi.service.query.gw.push.base.DeviceServiceOutParams;
 import cn.cuiot.dmp.externalapi.service.query.gw.push.base.GwHead;
-import cn.cuiot.dmp.externalapi.service.service.gw.*;
+import cn.cuiot.dmp.externalapi.service.service.gw.GwSmogEventService;
 import cn.cuiot.dmp.externalapi.service.utils.GwPushUtil;
-import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.InvokeDeviceServiceReq;
-import cn.cuiot.dmp.externalapi.service.vendor.gw.dmp.DmpDeviceRemoteService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**

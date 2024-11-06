@@ -514,12 +514,14 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
                 vo.setKeyName(statusEnums.getName());
                 if(Objects.nonNull(statusEnums)){
                     Class enumsClzz = statusEnums.getEnumsClzz();
-                    try {
-                        Method method = enumsClzz.getMethod("queryNameByKey", String.class);
-                        Object invoke = method.invoke(null, String.valueOf(vo.getValue()));
-                        vo.setValue(invoke);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if(Objects.nonNull(enumsClzz)){
+                        try {
+                            Method method = enumsClzz.getMethod("queryNameByValue", String.class);
+                            Object invoke = method.invoke(null, String.valueOf(vo.getValue()));
+                            vo.setValue(invoke);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }else {
