@@ -1150,10 +1150,25 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //判断是否可以重新提交
         workInfoDto.setResubmit(resubmit(workInfoDto.getProcInstId()));
 
+        //组装按钮信息与taskId
+        queryButtonInfo(workInfoDto);
         //获取我提交的信息
         workInfoDto.setCommitProcess(queryCommitProcess(Long.parseLong(dto.getProcInstId()),WorkOrderConstants.USER_ROOT,null));
         return IdmResDTO.success(workInfoDto);
     }
+
+    public void queryButtonInfo(WorkInfoDto dto){
+
+        //未完成就可以撤回
+        Task task = taskService.createTaskQuery().processInstanceId(dto.getProcInstId()).taskAssignee(String.valueOf(LoginInfoHolder.getCurrentUserId())).singleResult();
+        if(Objects.nonNull(task)){
+            ChildNode childNode = getChildNodeByNodeId(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+            List<NodeButton> buttons = childNode.getProps().getButtons();
+            dto.setButtons(buttons);
+            dto.setTaskId(Long.parseLong(task.getId()));
+        }
+    }
+
 
     /**
      * 判断是不是root节点
