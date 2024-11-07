@@ -1213,7 +1213,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO<HandleDataVO> instanceInfo(HandleDataDTO HandleDataDTO) {
         String processInstanceId = HandleDataDTO.getProcessInstanceId();
         //校验权限信息
-        checkWorkOrder(processInstanceId);
+//        checkWorkOrder(processInstanceId);
 
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
                 .includeProcessVariables().singleResult();
