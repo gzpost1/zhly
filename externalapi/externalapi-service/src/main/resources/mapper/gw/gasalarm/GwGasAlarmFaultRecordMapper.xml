@@ -18,10 +18,10 @@
             b.deleted = 0
             AND a.deleted = 0
             <if test="params.deviceName != null and params.deviceName != ''">
-                AND b.device_name = CONCAT('%', #{params.deviceName}, '%')
+                AND b.device_name LIKE CONCAT('%', #{params.deviceName}, '%')
             </if>
             <if test="params.imei != null and params.imei != ''">
-                AND b.imei = CONCAT('%',#{params.imei}, '%')
+                AND b.imei LIKE CONCAT('%',#{params.imei}, '%')
             </if>
             <if test="params.errorCode != null and params.errorCode != ''">
                 AND a.error_code = #{params.errorCode}
