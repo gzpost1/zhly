@@ -2,6 +2,7 @@ package cn.cuiot.dmp.externalapi.service.vo.gw;
 
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
@@ -69,9 +70,14 @@ public class GwSmogEventPageVo  {
     /**
      * 告警时间
      */
-    @Excel(name = "告警时间", orderNum = "6", width = 20)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime createTime;
 
+    @Excel(name = "告警时间",orderNum = "6",  width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
+    private String createTimeStr;
+
+    public String getCreateTimeStr() {
+        return DateTimeUtil.localDateTimeToString(createTime,"yyyy-MM-dd HH:mm:ss");
+    }
 }
