@@ -57,7 +57,7 @@ public class GwWaterLeachAlarmPageVO {
     /**
      * 状态 1-启用 0-停用
      */
-    @Excel(name = "设备状态", orderNum = "4", replace = {"停用_0", "启用_1"}, width = 20)
+    @Excel(name = "启用状态", orderNum = "4", replace = {"停用_0", "启用_1"}, width = 20)
     private Byte status;
 
     /**
