@@ -4,15 +4,18 @@ import cn.cuiot.dmp.base.infrastructure.constants.SendMsgRedisKeyConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.req.PlatfromInfoReqDTO;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.PlatfromInfoRespDTO;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
+import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.externalapi.service.entity.park.PlatfromInfoEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.park.PlatfromInfoMapper;
+import cn.cuiot.dmp.externalapi.service.query.FootPlateCompanyDto;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -20,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -76,5 +80,32 @@ public class PlatfromInfoService extends ServiceImpl<PlatfromInfoMapper, Platfro
             return respDTO;
         }
         return null;
+    }
+
+    public Boolean isAuth(FootPlateCompanyDto queryDto) {
+        // 状态
+        String statusKey = "status";
+
+        List<PlatfromInfoEntity> list = list(new LambdaQueryWrapper<PlatfromInfoEntity>()
+                .eq(PlatfromInfoEntity::getCompanyId, queryDto.getCompanyId())
+                .eq(PlatfromInfoEntity::getPlatformId, queryDto.getPlatformId()));
+
+        if (CollectionUtils.isNotEmpty(list)) {
+            PlatfromInfoEntity platfromInfo = list.get(0);
+            Map<String, Objects> map = JsonUtil.readValue(platfromInfo.getData(),
+                    new TypeReference<Map<String, Objects>>() {
+                    });
+            if (Objects.nonNull(map)) {
+                if (map.containsKey(statusKey)) {
+                    byte parseByte = Byte.parseByte(map.get(statusKey) + "");
+                    if (Objects.equals(parseByte, EntityConstants.YES)) {
+                        return true;
+                    }
+                }else {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

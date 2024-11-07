@@ -3,8 +3,11 @@ package cn.cuiot.dmp.externalapi.provider.controller.admin.park;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
+import cn.cuiot.dmp.common.constant.ResultCode;
+import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.externalapi.service.entity.park.PortraitInputEntity;
 import cn.cuiot.dmp.externalapi.service.query.*;
+import cn.cuiot.dmp.externalapi.service.service.park.PlatfromInfoService;
 import cn.cuiot.dmp.externalapi.service.service.park.PortraitInputService;
 import cn.cuiot.dmp.externalapi.service.vo.park.PortraitInputVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 管理后台-人像录入
@@ -30,6 +34,8 @@ public class CallThirdPartyController {
 
     @Autowired
     private PortraitInputService portraitInputService;
+    @Autowired
+    private PlatfromInfoService platfromInfoService;
 
 
     /**
@@ -157,5 +163,19 @@ public class CallThirdPartyController {
     @RequiresPermissions
     public IdmResDTO<PortraitInputEntity>  queryPortraitInputDetail(@RequestBody @Valid IdParam idParam){
         return portraitInputService.queryPortraitInputDetail(idParam);
+    }
+
+    /**
+     * 判断是否开通功能
+     * @Param queryDto 参数
+     * @return Boolean
+     */
+    @PostMapping(value = "/isAuth")
+    @RequiresPermissions
+    public IdmResDTO<Boolean> isAuth(@RequestBody FootPlateCompanyDto queryDto) {
+        if (Objects.isNull(queryDto.getPlatformId())) {
+            throw new BusinessException(ResultCode.ERROR, "平台id不能为空");
+        }
+        return IdmResDTO.success(platfromInfoService.isAuth(queryDto));
     }
  }
