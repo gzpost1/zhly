@@ -80,5 +80,6 @@
             </where>
 
         </if>
+        order by show_date desc
     </select>
 </mapper>
