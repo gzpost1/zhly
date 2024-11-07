@@ -171,7 +171,7 @@ public class CallThirdPartyController {
      * @return Boolean
      */
     @PostMapping(value = "/isAuth")
-    @RequiresPermissions
+//    @RequiresPermissions
     public IdmResDTO<Boolean> isAuth(@RequestBody FootPlateCompanyDto queryDto) {
         if (Objects.isNull(queryDto.getPlatformId())) {
             throw new BusinessException(ResultCode.ERROR, "平台id不能为空");

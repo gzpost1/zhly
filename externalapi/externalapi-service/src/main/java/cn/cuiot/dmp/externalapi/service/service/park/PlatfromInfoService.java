@@ -9,6 +9,7 @@ import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.FootPlateInfoEnum;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.JsonUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.entity.park.PlatfromInfoEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.park.PlatfromInfoMapper;
 import cn.cuiot.dmp.externalapi.service.query.FootPlateCompanyDto;
@@ -87,17 +88,17 @@ public class PlatfromInfoService extends ServiceImpl<PlatfromInfoMapper, Platfro
         String statusKey = "status";
 
         List<PlatfromInfoEntity> list = list(new LambdaQueryWrapper<PlatfromInfoEntity>()
-                .eq(PlatfromInfoEntity::getCompanyId, queryDto.getCompanyId())
+                .eq(PlatfromInfoEntity::getCompanyId, LoginInfoHolder.getCurrentOrgId())
                 .eq(PlatfromInfoEntity::getPlatformId, queryDto.getPlatformId()));
 
         if (CollectionUtils.isNotEmpty(list)) {
             PlatfromInfoEntity platfromInfo = list.get(0);
-            Map<String, Objects> map = JsonUtil.readValue(platfromInfo.getData(),
-                    new TypeReference<Map<String, Objects>>() {
+            Map<String, Object> map = JsonUtil.readValue(platfromInfo.getData(),
+                    new TypeReference<Map<String, Object>>() {
                     });
             if (Objects.nonNull(map)) {
                 if (map.containsKey(statusKey)) {
-                    Objects objValue = map.get(statusKey);
+                    Object objValue = map.get(statusKey);
                     if (Objects.nonNull(objValue)) {
                         byte parseByte = Byte.parseByte(objValue + "");
                         if (Objects.equals(parseByte, EntityConstants.YES)) {
