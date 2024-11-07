@@ -64,7 +64,7 @@ public class GwWaterLeachAlarmFaultRecordVO {
     /**
      * 故障时间
      */
-    @Excel(name = "故障时间", orderNum = "5", exportFormat = "yyyy-MM-dd HH:mm:ss", width = 20)
+    @Excel(name = "告警时间", orderNum = "5", exportFormat = "yyyy-MM-dd HH:mm:ss", width = 20)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date faultDate;
