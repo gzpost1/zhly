@@ -102,6 +102,8 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
     public IPage<GwSmogPageVo> queryForPage(GwSmogQuery query) {
         //企业id
         Long companyId = LoginInfoHolder.getCurrentOrgId();
+        GWCurrencyBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId, FootPlateInfoEnum.GW_SMOG_ALARM.getId());
+        AssertUtil.isFalse(!Objects.equals(bo.getStatus(),EntityConstants.ENABLED),"功能未开通，请联系管理员");
 
         List<Long> buildingIdsQuery = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(query.getBuildingIds())) {
@@ -114,6 +116,8 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
             if (CollectionUtils.isNotEmpty(archives)) {
                 List<Long> collect = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
                 buildingIdsQuery.addAll(collect);
+            }else {
+                buildingIdsQuery.add(-999L);
             }
         }
         query.setBuildingIds(buildingIdsQuery);
@@ -150,7 +154,7 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         LambdaQueryWrapper<GwSmogEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(GwSmogEntity::getCompanyId, companyId);
         wrapper.like(StringUtils.isNotBlank(query.getName()), GwSmogEntity::getName, query.getName());
-        wrapper.eq(StringUtils.isNotBlank(query.getImei()), GwSmogEntity::getImei, query.getImei());
+        wrapper.like(StringUtils.isNotBlank(query.getImei()), GwSmogEntity::getImei, query.getImei());
         wrapper.eq(Objects.nonNull(query.getStatus()), GwSmogEntity::getStatus, query.getStatus());
         wrapper.eq(StringUtils.isNotBlank(query.getEquipStatus()), GwSmogEntity::getEquipStatus, query.getEquipStatus());
         //查询所属组织下的楼盘以及未设置楼盘的数据
@@ -255,6 +259,8 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
         //校验对接参数是否已填,获取productKey
         GWCurrencyBO bo = gwEntranceGuardConfigService.getConfigInfo(companyId, FootPlateInfoEnum.GW_SMOG_ALARM.getId());
         AssertUtil.isFalse(Objects.isNull(bo),"对接配置为空");
+        long count = this.count(new LambdaQueryWrapper<GwSmogEntity>().eq(GwSmogEntity::getImei, dto.getImei()));
+        AssertUtil.isFalse(count>1,"设备IMEI已被使用");
 
         long id = IdWorker.getId();
 
@@ -508,12 +514,14 @@ public class GwSmogService extends ServiceImpl<GwSmogMapper, GwSmogEntity> {
                 vo.setKeyName(statusEnums.getName());
                 if(Objects.nonNull(statusEnums)){
                     Class enumsClzz = statusEnums.getEnumsClzz();
-                    try {
-                        Method method = enumsClzz.getMethod("queryNameByKey", String.class);
-                        Object invoke = method.invoke(null, String.valueOf(vo.getValue()));
-                        vo.setValue(invoke);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if(Objects.nonNull(enumsClzz)){
+                        try {
+                            Method method = enumsClzz.getMethod("queryNameByValue", String.class);
+                            Object invoke = method.invoke(null, String.valueOf(vo.getValue()));
+                            vo.setValue(invoke);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }else {

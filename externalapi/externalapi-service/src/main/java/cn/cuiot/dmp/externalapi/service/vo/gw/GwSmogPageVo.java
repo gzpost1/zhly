@@ -98,7 +98,7 @@ public class GwSmogPageVo {
     /**
      * 设备状态 (0: 在线，1: 离线，2: 未激活）接口返回
      */
-    @Excel(name = "门禁状态", orderNum = "5", width = 20)
+    @Excel(name = "设备状态", orderNum = "5", width = 20)
     private String equipStatusName;
     /**
      * 创建时间

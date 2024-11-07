@@ -58,7 +58,7 @@ public class GwWaterLeachAlarmFaultRecordVO {
     /**
      * 告警类型名称
      */
-    @Excel(name = "设备IMEI", orderNum = "4", width = 20)
+    @Excel(name = "告警类型", orderNum = "4", width = 20)
     private String errorCodeName;
 
     /**

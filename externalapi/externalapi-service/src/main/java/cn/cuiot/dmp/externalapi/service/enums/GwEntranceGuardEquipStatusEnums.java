@@ -50,7 +50,7 @@ public enum GwEntranceGuardEquipStatusEnums {
     public static String queryNameByCode(String code){
         for(GwEntranceGuardEquipStatusEnums statusEnums :GwEntranceGuardEquipStatusEnums.values()){
             if(statusEnums.getCode().equals(code)){
-                return statusEnums.name();
+                return statusEnums.getName();
             }
         }
         return null;
