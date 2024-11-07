@@ -14,6 +14,7 @@ import cn.cuiot.dmp.baseconfig.flow.dto.app.query.WorkOrderSuperQuery;
 import cn.cuiot.dmp.baseconfig.flow.dto.approval.QueryMyApprovalDto;
 import cn.cuiot.dmp.baseconfig.flow.dto.vo.HandleDataVO;
 import cn.cuiot.dmp.baseconfig.flow.dto.work.*;
+import cn.cuiot.dmp.baseconfig.flow.entity.WorkBusinessTypeInfoEntity;
 import cn.cuiot.dmp.baseconfig.flow.enums.WorkSourceEnums;
 import cn.cuiot.dmp.baseconfig.flow.service.AppWorkInfoService;
 import cn.cuiot.dmp.baseconfig.flow.service.WorkInfoService;
@@ -158,8 +159,9 @@ public class AppWorkOrderController {
         return appWorkInfoService.workOrderSuper(processBusinessDto);
     }
 
+
     /**
-     * 小程序 - 3.6.3我提交的
+     * 小程序-3.6.3我提交的
      * @param dto
      * @return
      */
@@ -167,7 +169,6 @@ public class AppWorkOrderController {
     public IdmResDTO<IPage<AppWorkInfoDto>> queryAppMySubmitWorkInfo(@RequestBody QueryMyApprovalDto dto){
         return appWorkInfoService.queryAppMySubmitWorkInfo(dto);
     }
-
     /**
      * 小程序-3.6.3我提交的基本信息
      * @param dto
@@ -191,7 +192,7 @@ public class AppWorkOrderController {
     }
 
     /**
-     * 小程序 - 3.6.5 我处理的-查询节点类型
+     * 小程序-3.6.5我处理的-查询节点类型
      * @param
      * @return
      */
@@ -401,6 +402,17 @@ public class AppWorkOrderController {
         return appWorkInfoService.queryRepairReportDetail(dto);
     }
 
+
+    /**
+     * 工单详情-撤回详情
+     * @param dto
+     * @return
+     */
+    @RequiresPermissions(allowUserType = PermissionContants.USER_CLIENT)
+    @PostMapping("queryWithDrawReason")
+    public IdmResDTO<List<WorkBusinessTypeInfoDto>> queryWithDrawReason(@RequestBody @Valid ProcessBusinessDto dto){
+        return appWorkInfoService.queryWithDrawReason(dto);
+    }
     /**
      * 3.11.5-评价
      * @param taskDto

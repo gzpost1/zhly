@@ -49,4 +49,8 @@ public class CodeArchivesPageQuery extends PageQuery {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endTime;
 
+    /**
+     * 企业id
+     */
+    private Long companyId;
 }

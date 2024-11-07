@@ -72,7 +72,8 @@ public class TbFlowTaskInfoService extends ServiceImpl<TbFlowTaskInfoMapper, TbF
         if (!existIds.isEmpty()) {
             List<Long> ids = existIds.stream().map(FlowTaskInfoUpdateDto::getId).collect(Collectors.toList());
             LambdaUpdateWrapper<TbFlowTaskInfo> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.in(TbFlowTaskInfo::getId, ids);
+//            updateWrapper.in(TbFlowTaskInfo::getId, ids);
+            updateWrapper.eq(TbFlowTaskInfo::getTaskConfigId,id);
             this.remove(updateWrapper);
         }
         //插入数据

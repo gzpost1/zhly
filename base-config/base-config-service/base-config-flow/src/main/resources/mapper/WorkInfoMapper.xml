@@ -402,6 +402,10 @@
         GROUP BY t2.process_node_type
     </select>
 
+
+    <select id="queryCommentTime" resultType="cn.cuiot.dmp.baseconfig.flow.dto.work.CommentTimeDto">
+        select START_TIME_ as starTime ,  END_TIME_ as endTime  from  act_hi_taskinst where PROC_INST_ID_ = #{procInstId} and TASK_DEF_KEY_ =#{nodeId}
+    </select>
     <sql id="queryMyHandleInfoSql">
         t1.work_name,t1.create_user,t1.create_time,t1.work_time_out as outTime,t3.node_id,t1.proc_inst_id,t2.ID_ as taskId
     </sql>

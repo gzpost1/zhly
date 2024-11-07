@@ -4,6 +4,7 @@ import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.system.domain.aggregate.CodeArchives;
 import cn.cuiot.dmp.system.domain.aggregate.CodeArchivesPageQuery;
 import cn.cuiot.dmp.system.domain.repository.CodeArchivesRepository;
@@ -41,7 +42,11 @@ public class CodeArchivesRepositoryImpl implements CodeArchivesRepository {
 
     @Override
     public PageResult<CodeArchives> queryForPage(CodeArchivesPageQuery pageQuery) {
+        if (Objects.isNull(pageQuery.getCompanyId())) {
+            pageQuery.setCompanyId(LoginInfoHolder.getCurrentOrgId());
+        }
         LambdaQueryWrapper<CodeArchivesEntity> queryWrapper = new LambdaQueryWrapper<CodeArchivesEntity>()
+                .eq(CodeArchivesEntity::getCompanyId, pageQuery.getCompanyId())
                 .eq(Objects.nonNull(pageQuery.getId()), CodeArchivesEntity::getId, pageQuery.getId())
                 .eq(Objects.nonNull(pageQuery.getArchiveType()), CodeArchivesEntity::getArchiveType, pageQuery.getArchiveType())
                 .eq(Objects.nonNull(pageQuery.getCodeType()), CodeArchivesEntity::getCodeType, pageQuery.getCodeType())
