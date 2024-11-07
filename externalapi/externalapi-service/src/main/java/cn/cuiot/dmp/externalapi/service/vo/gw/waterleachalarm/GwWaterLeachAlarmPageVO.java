@@ -63,7 +63,7 @@ public class GwWaterLeachAlarmPageVO {
     /**
      * 设备状态 (0: 在线，1: 离线，2: 未激活）接口返回
      */
-    @Excel(name = "照片状态", orderNum = "5", replace = {"在线_0", "离线_1", "未激活_2"}, width = 10)
+    @Excel(name = "设备状态", orderNum = "5", replace = {"在线_0", "离线_1", "未激活_2"}, width = 10)
     private String equipStatus;
 
     @Excel(name = "创建时间", orderNum = "6", exportFormat = "yyyy-MM-dd HH:mm:ss", width = 20)
