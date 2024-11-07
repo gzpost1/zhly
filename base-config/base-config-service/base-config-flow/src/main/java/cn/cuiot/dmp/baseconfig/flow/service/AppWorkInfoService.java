@@ -2079,8 +2079,8 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO evaluate(CompleteTaskDto taskDto) {
         Task task = taskService.createTaskQuery().taskId(String.valueOf(taskDto.getTaskId())).singleResult();
-        if(Objects.nonNull(task)){
-            throw new RuntimeException("任务已结束");
+        if(Objects.isNull(task)){
+           return IdmResDTO.error(ErrorCode.TASK_COMPLETE.getCode(),ErrorCode.TASK_COMPLETE.getMessage());
         }
         //保存操作记录
         HandleDataDTO dto = new HandleDataDTO();
