@@ -57,13 +57,13 @@ public class GwWaterLeachAlarmPageVO {
     /**
      * 状态 1-启用 0-停用
      */
-    @Excel(name = "设备状态", orderNum = "4", replace = {"停用_0", "启用_1"}, width = 20)
+    @Excel(name = "启用状态", orderNum = "4", replace = {"停用_0", "启用_1"}, width = 20)
     private Byte status;
 
     /**
      * 设备状态 (0: 在线，1: 离线，2: 未激活）接口返回
      */
-    @Excel(name = "照片状态", orderNum = "5", replace = {"在线_0", "离线_1", "未激活_2"}, width = 10)
+    @Excel(name = "设备状态", orderNum = "5", replace = {"在线_0", "离线_1", "未激活_2"}, width = 10)
     private String equipStatus;
 
     @Excel(name = "创建时间", orderNum = "6", exportFormat = "yyyy-MM-dd HH:mm:ss", width = 20)
