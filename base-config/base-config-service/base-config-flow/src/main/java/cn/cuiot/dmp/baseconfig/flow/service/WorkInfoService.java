@@ -1345,8 +1345,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                         HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(procInstId)
                                 .taskAssignee(userInfos.get(0).getId()).taskDefinitionKey(children.getId()).singleResult();
                         if(Objects.nonNull(taskInstance)){
-                            children.getProps().setNodeProcessType(Byte.parseByte("1"));
-
+                            children.getProps().setFlag(Byte.parseByte("1"));
                         }
                     }
                 }
