@@ -81,7 +81,7 @@ public class IdentificationRecordService extends ServiceImpl<IdentificationRecor
      * @param query
      * @return
      */
-    public IdmResDTO<IPage<IdentificationRecordEntity>> queryForPage( IdentificationRecordQuery query) {
+    public IPage<IdentificationRecordEntity> queryForPage( IdentificationRecordQuery query) {
         if(CollectionUtil.isEmpty(query.getCommunityIds())){
             query.setQueryType(PortraitInputConstant.COMMUNITY_TYPE);
             DepartmentReqDto dto = new DepartmentReqDto();
@@ -101,7 +101,7 @@ public class IdentificationRecordService extends ServiceImpl<IdentificationRecor
             records.stream().filter(it->Objects.nonNull(it.getCommunityId())).forEach(item->{
                 item.setCommunityName(propertyMap.get(item.getCommunityId()));
             });
-        return IdmResDTO.success(recordEntityIPage);
+        return recordEntityIPage;
     }
 
 
