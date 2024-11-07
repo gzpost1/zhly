@@ -2,7 +2,7 @@ package cn.cuiot.dmp.externalapi.service.query.gw.push.base;
 
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
-import cn.cuiot.dmp.externalapi.service.entity.gw.GwEntranceGuardPersonEntity;
+import cn.cuiot.dmp.externalapi.service.entity.gw.entranceguard.GwEntranceGuardPersonEntity;
 import com.google.common.base.Objects;
 import lombok.Data;
 

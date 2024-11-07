@@ -15,8 +15,8 @@ public class DmpDeviceStatusBatchResp implements Serializable {
     private static final long serialVersionUID = -6153287581148513892L;
 
     /**
-     * 设备列表
+     * 列表
      */
-    private List<DmpDeviceResp> deviceStatusList;
+    private List<DmpDeviceStatusResp> deviceStatusList;
 
 }

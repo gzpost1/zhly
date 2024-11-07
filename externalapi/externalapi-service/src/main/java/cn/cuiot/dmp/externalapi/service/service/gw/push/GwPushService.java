@@ -78,7 +78,7 @@ public class GwPushService {
             throw new BusinessException(ResultCode.ERROR, "数据格物转发数据异常,无关联设备数据.....productKey：{}，deviceKey{}", productKey, deviceKey);
         }
 
-        GwBusinessHandlerFactory.getInstance().eventHandle(list, deviceRelation.getBusinessType(), deviceRelation.getId());
+        GwBusinessHandlerFactory.getInstance().eventHandle(list, deviceRelation.getBusinessType(), deviceRelation.getDataId());
     }
 
     /**
