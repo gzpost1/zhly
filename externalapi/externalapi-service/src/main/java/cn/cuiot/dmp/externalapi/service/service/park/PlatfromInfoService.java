@@ -97,9 +97,12 @@ public class PlatfromInfoService extends ServiceImpl<PlatfromInfoMapper, Platfro
                     });
             if (Objects.nonNull(map)) {
                 if (map.containsKey(statusKey)) {
-                    byte parseByte = Byte.parseByte(map.get(statusKey) + "");
-                    if (Objects.equals(parseByte, EntityConstants.YES)) {
-                        return true;
+                    Objects objValue = map.get(statusKey);
+                    if (Objects.nonNull(objValue)) {
+                        byte parseByte = Byte.parseByte(objValue + "");
+                        if (Objects.equals(parseByte, EntityConstants.YES)) {
+                            return true;
+                        }
                     }
                 }else {
                     return true;
