@@ -75,6 +75,7 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceBuilder;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
+import org.flowable.task.service.HistoricTaskService;
 import org.flowable.variable.api.history.HistoricVariableInstanceQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -104,6 +105,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     @Autowired
     private TaskService taskService;
+
+
     @Autowired
     private TbFlowConfigService flowConfigService;
 
@@ -1330,6 +1333,24 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
         while (true){
             if(StringUtils.isEmpty(children.getId())){
                 break;
+            }
+
+            if(StringUtils.equals("TASK",children.getType())){
+                Map<String, Object> nobody = children.getProps().getNobody();
+                Object object = nobody.get("assignedUser");
+                if(Objects.nonNull(object)){
+                    List<UserInfo> userInfos = JSONObject.parseObject(JsonUtil.writeValueAsString(object), new TypeReference<List<UserInfo>>() {
+                    });
+                    if(CollectionUtils.isNotEmpty(userInfos)){
+                        HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(procInstId)
+                                .taskAssignee(userInfos.get(0).getId()).taskDefinitionKey(children.getId()).singleResult();
+                        if(Objects.nonNull(taskInstance)){
+                            children.getProps().setNodeProcessType(Byte.parseByte("1"));
+
+                        }
+                    }
+                }
+
             }
             if(StringUtils.equals("CC",children.getType())){
                 CCInfo ccInfo = children.getProps().getCcInfo();
