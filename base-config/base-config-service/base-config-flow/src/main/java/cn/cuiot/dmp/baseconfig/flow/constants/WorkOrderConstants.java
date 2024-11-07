@@ -64,4 +64,9 @@ public interface WorkOrderConstants {
     String EFFECTIVE ="进行中";
 
     String END = "已结束";
+
+    /**
+     * 撤回
+     */
+    Byte  REVOKE = 11;
 }

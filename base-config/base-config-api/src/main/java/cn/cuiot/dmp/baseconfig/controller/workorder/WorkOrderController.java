@@ -107,7 +107,7 @@ public class WorkOrderController extends BaseController {
      * @param HandleDataDTO
      * @return
      */
-    @RequiresPermissions
+//    @RequiresPermissions
     @PostMapping("instanceInfo")
     public IdmResDTO<HandleDataVO>  instanceInfo(@RequestBody HandleDataDTO HandleDataDTO){
 

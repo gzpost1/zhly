@@ -751,9 +751,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public HistoricTaskInstance getHisTaskInfo(HandleDataDTO handleDataDTO){
         String taskId = handleDataDTO.getTaskId();
         HistoricTaskInstance task = null;
-        log.info("taskId"+taskId);
         if(StringUtils.isEmpty(taskId)){
-            log.info("taskId1"+taskId);
             //通过流程实例id找最新的taskId
             List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
                     .processInstanceId(handleDataDTO.getProcessInstanceId()).orderByTaskId().desc().list();
@@ -762,7 +760,6 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             }
             handleDataDTO.setTaskId(task.getId());
         }else {
-            log.info("taskId2"+taskId);
             task = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
             handleDataDTO.setProcessInstanceId(task.getProcessInstanceId());
         }
@@ -2086,5 +2083,22 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
         taskService.complete(String.valueOf(taskDto.getTaskId()));
         return IdmResDTO.success();
+    }
+
+    /**
+     * 查询撤回信息
+     * @param dto
+     * @return
+     */
+    public IdmResDTO<List<WorkBusinessTypeInfoDto>> queryWithDrawReason(ProcessBusinessDto dto) {
+
+        LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkBusinessTypeInfoEntity::getProcInstId,dto.getProcessInstanceId())
+                .eq(WorkBusinessTypeInfoEntity::getBusinessType, WorkOrderConstants.REVOKE).
+                orderByDesc(WorkBusinessTypeInfoEntity::getStartTime);
+
+        List<WorkBusinessTypeInfoEntity> list = workBusinessTypeInfoService.list(lw);
+        List<WorkBusinessTypeInfoDto> workBusinessTypeInfoDtos = BeanMapper.mapList(list, WorkBusinessTypeInfoDto.class);
+        return IdmResDTO.success(workBusinessTypeInfoDtos);
     }
 }
