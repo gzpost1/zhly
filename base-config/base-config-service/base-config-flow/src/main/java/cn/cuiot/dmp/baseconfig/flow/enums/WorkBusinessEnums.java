@@ -12,6 +12,8 @@ public enum WorkBusinessEnums {
     CLOSE((byte) 4, "终止","审批超时，系统自动终止"),
 
     BUSINESS_AGREE((byte)10,"审批同意","审批超时，系统自动通过"),
+
+    AUTOMATIC_PASS((byte)12,"审批人为空","审批人为空,自动通过"),
     ;
 
     private Byte code;

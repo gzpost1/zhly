@@ -150,6 +150,7 @@ public class TbFlowTaskInfoController {
         //判断任务名称是否重复
         LambdaQueryWrapper<TbFlowTaskConfig> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TbFlowTaskConfig::getName, name);
+        queryWrapper.eq(TbFlowTaskConfig::getCompanyId,LoginInfoHolder.getCurrentOrgId());
         if(Objects.nonNull(id)){
             queryWrapper.ne(TbFlowTaskConfig::getId, id);
         }

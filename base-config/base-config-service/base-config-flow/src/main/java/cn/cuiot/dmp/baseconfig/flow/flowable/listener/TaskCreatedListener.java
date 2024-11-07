@@ -40,6 +40,14 @@ public class TaskCreatedListener implements TaskListener {
                 if(autoRefuse==null){
                     taskService.addComment(delegateTask.getId(),delegateTask.getProcessInstanceId(),OPINION_COMMENT,"审批人为空,自动通过");
                     taskService.complete(delegateTask.getId());
+
+                    UserTask userTask = new UserTask();
+                    userTask.setId(delegateTask.getTaskDefinitionKey());
+
+                    TaskEntityImpl taskEntity = new TaskEntityImpl();
+                    taskEntity.setId(delegateTask.getId());
+                    taskEntity.setProcessInstanceId(delegateTask.getProcessInstanceId());
+                    workBusinessTypeInfoService.saveBusinessInfo(taskEntity, userTask, WorkBusinessEnums.AUTOMATIC_PASS,"审批人为空,自动通过");
                 }
                 else{
                     taskService.addComment(delegateTask.getId(),delegateTask.getProcessInstanceId(),OPINION_COMMENT,"审批人为空,自动驳回");

@@ -159,8 +159,9 @@ public class AppWorkOrderController {
         return appWorkInfoService.workOrderSuper(processBusinessDto);
     }
 
+
     /**
-     * 小程序 - 3.6.3我提交的
+     * 小程序-3.6.3我提交的
      * @param dto
      * @return
      */
@@ -168,7 +169,6 @@ public class AppWorkOrderController {
     public IdmResDTO<IPage<AppWorkInfoDto>> queryAppMySubmitWorkInfo(@RequestBody QueryMyApprovalDto dto){
         return appWorkInfoService.queryAppMySubmitWorkInfo(dto);
     }
-
     /**
      * 小程序-3.6.3我提交的基本信息
      * @param dto
@@ -192,7 +192,7 @@ public class AppWorkOrderController {
     }
 
     /**
-     * 小程序 - 3.6.5 我处理的-查询节点类型
+     * 小程序-3.6.5我处理的-查询节点类型
      * @param
      * @return
      */
