@@ -67,6 +67,7 @@ public class RecognitionRecordVO   {
     /**
      * 识别时间
      */
+    @Excel(name = "识别时间",orderNum = "12",  width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
     private Date showDate;
 
     /**
@@ -107,6 +108,7 @@ public class RecognitionRecordVO   {
     /**
      * 识别卡号
      */
+    @Excel(name = "识别卡号", orderNum = "8", width = 20)
     private String cardNo;
 
 
@@ -122,11 +124,25 @@ public class RecognitionRecordVO   {
      */
     private Byte recType;
 
+    @Excel(name = "比对模式", orderNum = "9", width = 20, replace = {"云端识别_2", "本地识别_1"})
+    private String recTypeName;
+
+    public String getRecTypeName(){
+        return Objects.nonNull(recType)?String.valueOf(recType):"";
+    }
+
 
     /**
      * 有效日期判断 1:有效期内 2:有效期外 3:未进行有效期判断
      */
     private Byte permissionTimeType;
+
+    @Excel(name = "有效日期判断", orderNum = "10", width = 20, replace = {"未进行有效期判断_3", "有效期外_2", "有效期内_1"})
+    private String permissionTimeTypeName;
+
+    public String getPermissionTimeTypeName(){
+        return Objects.nonNull(permissionTimeType)?String.valueOf(permissionTimeType):"";
+    }
 
 
     /**
@@ -134,6 +150,13 @@ public class RecognitionRecordVO   {
      */
     private Byte passTimeType;
 
+    @Excel(name = "有效时间段判断", orderNum = "11", width = 20, replace = {"未进行时间段判断_3", "时间段外_2", "时间段内_1"})
+
+    private String passTimeTypeName;
+
+    public String getPassTimeTypeName(){
+        return Objects.nonNull(passTimeType)?String.valueOf(passTimeType):"";
+    }
 
     /**
      * 识别模式判断 1. 模式正确 2.模式不正确
@@ -168,6 +191,7 @@ public class RecognitionRecordVO   {
     /**
      * 识别主体姓名
      */
+    @Excel(name = "识别人员姓名", orderNum = "7", width = 20)
     private String admitName;
 
 

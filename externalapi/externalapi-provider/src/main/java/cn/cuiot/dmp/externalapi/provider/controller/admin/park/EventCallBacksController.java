@@ -34,9 +34,25 @@ public class EventCallBacksController {
         return identificationRecordService.identificationRecordReport(params);
     }
 
+    /**
+     * 分页查询
+     * @param query
+     * @return
+     */
     @PostMapping("/queryForPage")
     public IdmResDTO<IPage<IdentificationRecordEntity>> queryForPage(@RequestBody IdentificationRecordQuery query) {
 
         return IdmResDTO.success(identificationRecordService.queryForPage(query));
+    }
+
+    /**
+     * 导出
+     * @param query
+     * @return
+     */
+    @PostMapping("/export")
+    public IdmResDTO export(@RequestBody IdentificationRecordQuery query){
+        identificationRecordService.export(query);
+        return IdmResDTO.success();
     }
 }

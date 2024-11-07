@@ -1,7 +1,9 @@
 package cn.cuiot.dmp.externalapi.service.service.park;
 
 
+import cn.cuiot.dmp.base.application.dto.ExcelDownloadDto;
 import cn.cuiot.dmp.base.application.service.ApiArchiveService;
+import cn.cuiot.dmp.base.application.service.ExcelExportService;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.BuildingArchiveReq;
 import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.feign.ArchiveFeignService;
@@ -9,6 +11,8 @@ import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
 import cn.cuiot.dmp.common.constant.ErrorCode;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.BeanMapper;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.JsonUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.cuiot.dmp.externalapi.service.constant.PortraitInputConstant;
@@ -17,6 +21,8 @@ import cn.cuiot.dmp.externalapi.service.entity.park.IdentificationRecordEntity;
 import cn.cuiot.dmp.externalapi.service.mapper.park.IdentificationRecordMapper;
 import cn.cuiot.dmp.externalapi.service.query.AccessCommunityDto;
 import cn.cuiot.dmp.externalapi.service.query.IdentificationRecordQuery;
+import cn.cuiot.dmp.externalapi.service.query.QueryAccessCommunity;
+import cn.cuiot.dmp.externalapi.service.vo.park.RecognitionRecordVO;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -47,6 +53,9 @@ public class IdentificationRecordService extends ServiceImpl<IdentificationRecor
 
     @Autowired
     private ArchiveFeignService archiveFeignService;
+
+    @Autowired
+    private ExcelExportService excelExportService;
     /**
      * 识别记录上报
      * @param params
@@ -103,7 +112,27 @@ public class IdentificationRecordService extends ServiceImpl<IdentificationRecor
             });
         return recordEntityIPage;
     }
+    /**
+     * 导出
+     * @param query
+     */
+    public void export(IdentificationRecordQuery query) {
+        excelExportService.excelExport(ExcelDownloadDto.<IdentificationRecordQuery>builder().loginInfo(LoginInfoHolder.getCurrentLoginInfo()).query(query)
+                .title("宇泛门禁通行记录导出").fileName("宇泛门禁通行记录导出(" + DateTimeUtil.dateToString(new Date(), "yyyyMMdd")+")").sheetName("宇泛门禁通行记录导出")
+                .build(), RecognitionRecordVO.class, this::queryExportPage);
+    }
 
+    public  IPage<RecognitionRecordVO> queryExportPage(ExcelDownloadDto<IdentificationRecordQuery> downloadDto){
+        IdentificationRecordQuery query = downloadDto.getQuery();
+        IPage<IdentificationRecordEntity> recordEntityIPage = queryForPage(query);
+        List<IdentificationRecordEntity> records = recordEntityIPage.getRecords();
+        List<RecognitionRecordVO> resultList = new ArrayList<>();
+        if(CollectionUtil.isNotEmpty(records)){
+            resultList = BeanMapper.mapList(records,RecognitionRecordVO.class);
+        }
+        Page<RecognitionRecordVO> page = new Page<>(recordEntityIPage.getCurrent(), recordEntityIPage.getPages(), recordEntityIPage.getTotal());
+        return page.setRecords(resultList);
+    }
 
     /**
      * 根据楼盘id获取楼盘信息
@@ -118,4 +147,8 @@ public class IdentificationRecordService extends ServiceImpl<IdentificationRecor
                 ErrorCode.NOT_FOUND.getMessage()));
         return archiveList.stream().collect(Collectors.toMap(BuildingArchive::getId,BuildingArchive::getName));
     }
+
+
+
+
 }
