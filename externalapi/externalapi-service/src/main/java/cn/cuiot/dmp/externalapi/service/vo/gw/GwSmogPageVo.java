@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.vo.gw;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -103,6 +104,13 @@ public class GwSmogPageVo {
     /**
      * 创建时间
      */
-    @Excel(name = "创建时间",orderNum = "6",  width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
+
     private Date createTime;
+
+    @Excel(name = "创建时间",orderNum = "6",  width = 20,exportFormat = "yyyy-MM-dd HH:mm:ss")
+    private String createTimeStr;
+
+    public String getCreateTimeStr() {
+        return DateTimeUtil.dateToString(createTime,"yyyy-MM-dd HH:mm:ss");
+    }
 }
