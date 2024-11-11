@@ -99,7 +99,7 @@ public class RecognitionRecordVO   {
      */
     private Byte type;
 
-    @Excel(name = "人员比对结果", orderNum = "6", width = 20)
+    @Excel(name = "人员比对结果", orderNum = "6", width = 20, replace = {"比对失败_2", "比对成功_1"})
     private String typeName;
     public String getTypeName(){
         return Objects.nonNull(type)?String.valueOf(type):"";

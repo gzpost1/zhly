@@ -49,6 +49,9 @@
                 <if test="query.cardNo !=null and query.cardNo !=''">
                     and card_no like concat('%' ,#{query.cardNo},'%')
                 </if>
+                <if test="query.recMode !=null">
+                    and rec_mode = #{query.recMode}
+                </if>
                 <if test="query.communityIds !=null and query.communityIds.size() >0">
                     and community_id in
                     <foreach collection="query.communityIds" item="item" open="("  separator="," close=")">
@@ -69,6 +72,9 @@
                 </if>
                 <if test="query.admitName !=null and query.admitName !=''">
                     and admit_name like concat('%' ,#{query.admitName},'%')
+                </if>
+                <if test="query.recMode !=null">
+                    and rec_mode = #{query.recMode}
                 </if>
                 <if test="query.cardNo !=null and query.cardNo !=''">
                     and card_no like concat('%' ,#{query.cardNo},'%')
