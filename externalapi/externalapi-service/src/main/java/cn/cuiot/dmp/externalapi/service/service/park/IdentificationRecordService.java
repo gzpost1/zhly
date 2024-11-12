@@ -28,6 +28,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
  * @since 2024-11-06
  */
 @Service
+@Slf4j
 public class IdentificationRecordService extends ServiceImpl<IdentificationRecordMapper, IdentificationRecordEntity>{
 
 
@@ -62,6 +64,7 @@ public class IdentificationRecordService extends ServiceImpl<IdentificationRecor
      * @return
      */
     public IdmResDTO identificationRecordReport(Map<String, String> params) {
+        log.info("同步通行记录");
         String eventCode = params.get("eventCode");
         String eventGuid = params.get("eventGuid");
         String eventMsg = params.get("eventMsg");
@@ -69,17 +72,22 @@ public class IdentificationRecordService extends ServiceImpl<IdentificationRecor
             throw new RuntimeException("接口编码错误"+eventCode);
         }
         IdentificationRecordEntity identificationRecordEntity = JsonUtil.readValue(eventMsg, IdentificationRecordEntity.class);
+        if(StringUtils.isBlank(identificationRecordEntity.getDeviceNo())){
+            return IdmResDTO.success();
+        }
+        LambdaQueryWrapper<AccessControlEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(AccessControlEntity::getDeviceNo,identificationRecordEntity.getDeviceNo());
+        List<AccessControlEntity> list = accessControlService.list(lw);
+        if(CollectionUtil.isEmpty(list)){
+            log.info("设备未同步"+identificationRecordEntity.getDeviceNo());
+            return IdmResDTO.success();
+        }
         identificationRecordEntity.setCreateTime(new Date());
         identificationRecordEntity.setShowDate(new Date(Long.parseLong(identificationRecordEntity.getShowTime())));
         identificationRecordEntity.setEventGuid(eventGuid);
         //根据设备编码查询所属楼盘信息与公司信息
-        LambdaQueryWrapper<AccessControlEntity> lw = new LambdaQueryWrapper<>();
-        lw.eq(AccessControlEntity::getDeviceNo,identificationRecordEntity.getDeviceNo());
-        List<AccessControlEntity> list = accessControlService.list(lw);
-        if(CollectionUtil.isNotEmpty(list)){
-            identificationRecordEntity.setCompanyId(list.get(0).getCompanyId());
-            identificationRecordEntity.setCommunityId(list.get(0).getCommunityId());
-        }
+        identificationRecordEntity.setCompanyId(list.get(0).getCompanyId());
+        identificationRecordEntity.setCommunityId(list.get(0).getCommunityId());
         this.saveOrUpdate(identificationRecordEntity);
         return IdmResDTO.success();
     }
@@ -101,6 +109,7 @@ public class IdentificationRecordService extends ServiceImpl<IdentificationRecor
             List<Long> ids = archives.stream().map(BuildingArchive::getId).collect(Collectors.toList());
             query.setCommunityIds(ids);
         }
+        query.setCompanyId(LoginInfoHolder.getCurrentOrgId());
         IPage<IdentificationRecordEntity> recordEntityIPage =  getBaseMapper().queryForPage(new Page<IdentificationRecordEntity>(query.getPageNo(), query.getPageSize()),query);
         List<IdentificationRecordEntity> records = Optional.ofNullable(recordEntityIPage.getRecords()).orElse(new ArrayList<>());
         List<Long> communityIds = records.stream().filter(it -> Objects.nonNull(it.getCommunityId())).
