@@ -52,6 +52,9 @@
                 <if test="query.recMode !=null">
                     and rec_mode = #{query.recMode}
                 </if>
+                <if test="query.companyId !=null">
+                    and company_id =  #{query.companyId}
+                </if>
                 <if test="query.communityIds !=null and query.communityIds.size() >0">
                     and community_id in
                     <foreach collection="query.communityIds" item="item" open="("  separator="," close=")">
@@ -78,6 +81,9 @@
                 </if>
                 <if test="query.cardNo !=null and query.cardNo !=''">
                     and card_no like concat('%' ,#{query.cardNo},'%')
+                </if>
+                <if test="query.companyId !=null">
+                    and company_id =  #{query.companyId}
                 </if>
                 <if test="query.startTime !=null">
                     and show_date >= #{query.startTime} and show_date <![CDATA[<=]]> #{query.endTime}

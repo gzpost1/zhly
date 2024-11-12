@@ -63,5 +63,8 @@ public class IdentificationRecordQuery extends PageQuery {
      */
     private String queryType;
 
-
+    /**
+     * 企业id
+     */
+    private Long companyId;
 }
