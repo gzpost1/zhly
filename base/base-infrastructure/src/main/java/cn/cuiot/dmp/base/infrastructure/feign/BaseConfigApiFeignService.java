@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @Date: 2024-11-11
  */
 @Component
-@FeignClient(value = "community-baseconfig")
+@FeignClient(value = "community-config")
 public interface BaseConfigApiFeignService {
 
     /**
