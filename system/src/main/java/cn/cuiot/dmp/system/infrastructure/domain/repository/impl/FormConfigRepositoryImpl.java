@@ -268,6 +268,14 @@ public class FormConfigRepositoryImpl implements FormConfigRepository {
         formConfigMapper.batchSaveFormConfig(formConfigEntityList);
     }
 
+    @Override
+    public void batchDelFormMongoBD(List<Long> idList) {
+        FormConfigDetailQueryDTO formConfigDetailQueryDTO = new FormConfigDetailQueryDTO();
+        formConfigDetailQueryDTO.setIdList(idList);
+        Query query = getQuery(formConfigDetailQueryDTO);
+        mongoTemplate.remove(query, FormConfigConstant.FORM_CONFIG_COLLECTION);
+    }
+
     private Query getQuery(FormConfigDetailQueryDTO formConfigDetailQueryDTO) {
         Query query = new Query();
         Criteria criteria = new Criteria();

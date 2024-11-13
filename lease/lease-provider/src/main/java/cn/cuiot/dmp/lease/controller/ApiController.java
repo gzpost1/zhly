@@ -3,8 +3,10 @@ package cn.cuiot.dmp.lease.controller;//	模板
 import cn.cuiot.dmp.base.application.annotation.InternalApi;
 import cn.cuiot.dmp.base.infrastructure.domain.pojo.IdsReq;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
+import cn.cuiot.dmp.base.infrastructure.dto.companyinit.SyncCompanyDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.lease.dto.contract.ContractLeaseStatisticParam;
+import cn.cuiot.dmp.lease.service.ChargeStandardSyncService;
 import cn.cuiot.dmp.lease.service.PriceManageDetailService;
 import cn.cuiot.dmp.lease.service.TbContractBindInfoService;
 import cn.cuiot.dmp.lease.service.TbContractLeaseService;
@@ -39,6 +41,8 @@ public class ApiController {
 
     @Autowired
     private TbContractLeaseService contractLeaseService;
+    @Autowired
+    private ChargeStandardSyncService chargeStandardSyncService;
 
     /**
      * 根据房屋id获取意向合同和租赁合同信息
@@ -65,6 +69,11 @@ public class ApiController {
         return contractLeaseService.contractLeaseArchiveStatistic(idsReq);
     }
 
-
-
+    /**
+     * 用于企业初始化同步收费标准数据
+     */
+    @PostMapping(value = "/syncChargeStandard", produces = MediaType.APPLICATION_JSON_VALUE)
+    void syncChargeStandard(@RequestBody @Valid SyncCompanyDTO dto) {
+        chargeStandardSyncService.syncData(dto);
+    }
 }

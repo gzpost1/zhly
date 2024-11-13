@@ -1,11 +1,12 @@
-package cn.cuiot.dmp.system.application.feign;//	模板
+package cn.cuiot.dmp.base.infrastructure.feign;//	模板
 
+import cn.cuiot.dmp.base.infrastructure.dto.companyinit.SyncCompanyDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * @author hantingyao
@@ -16,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(value = "community-content")
 public interface ContentApiFeignService {
 
-    @PostMapping(value = "/api/initModule", produces = MediaType.APPLICATION_JSON_VALUE)
-    IdmResDTO<Boolean> initModule(@RequestParam("orgId") Long orgId);
+    /**
+     * 企业初始化-同步小程序配置
+     */
+    @PostMapping(value = "/api/syncData", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<?> syncData(@RequestBody SyncCompanyDTO dto);
 }
