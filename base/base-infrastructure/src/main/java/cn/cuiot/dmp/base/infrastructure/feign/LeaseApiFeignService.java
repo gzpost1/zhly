@@ -15,8 +15,7 @@ import javax.validation.Valid;
  * @Date: 2024-11-11
  */
 @Component
-//@FeignClient(value = "community-lease")
-@FeignClient(value = "community-lease",url = "http://127.0.0.1:8082")
+@FeignClient(value = "community-lease")
 public interface LeaseApiFeignService {
 
     /**

@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @data 2024/6/19 14:12
  */
 @Component
-//@FeignClient(value = "community-content")
-@FeignClient(value = "community-content", url = "http://127.0.0.1:8090")
+@FeignClient(value = "community-content")
 public interface ContentApiFeignService {
 
     /**
