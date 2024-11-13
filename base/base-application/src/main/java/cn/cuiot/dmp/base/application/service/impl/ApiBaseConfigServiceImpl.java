@@ -41,7 +41,7 @@ public class ApiBaseConfigServiceImpl implements ApiBaseConfigService {
             throw new RuntimeException(message);
         } catch (Exception ex) {
             log.info("ApiBaseConfigServiceImpl==syncFlowTaskConfig==fail", ex);
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            throw new BusinessException(ResultCode.ERROR);
         }
     }
 
@@ -61,7 +61,47 @@ public class ApiBaseConfigServiceImpl implements ApiBaseConfigService {
             throw new RuntimeException(message);
         } catch (Exception ex) {
             log.info("ApiBaseConfigServiceImpl==syncFlowConfig==fail", ex);
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            throw new BusinessException(ResultCode.ERROR);
+        }
+    }
+
+    @Override
+    public void cleanSyncFlowTaskConfigData(SyncCompanyDTO dto) {
+        log.info("cleanSyncFlowTaskConfigData: {}", JsonUtil.writeValueAsString(dto));
+        try {
+            IdmResDTO<?> idmResDTO = baseConfigApiFeignService.cleanSyncFlowTaskConfigData(dto);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return;
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiBaseConfigServiceImpl==cleanSyncFlowTaskConfigData==fail", ex);
+            throw new BusinessException(ResultCode.ERROR);
+        }
+    }
+
+    @Override
+    public void cleanSyncFlowConfigData(SyncCompanyDTO dto) {
+        log.info("cleanSyncFlowConfigData: {}", JsonUtil.writeValueAsString(dto));
+        try {
+            IdmResDTO<?> idmResDTO = baseConfigApiFeignService.cleanSyncFlowConfigData(dto);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return;
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiBaseConfigServiceImpl==cleanSyncFlowConfigData==fail", ex);
+            throw new BusinessException(ResultCode.ERROR);
         }
     }
 }

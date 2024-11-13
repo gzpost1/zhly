@@ -27,4 +27,16 @@ public interface BaseConfigApiFeignService {
      */
     @PostMapping(value = "/api/syncFlowConfig", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<Boolean> syncFlowConfig(@RequestBody SyncCompanyDTO dto);
+
+    /**
+     * 清空初始化企业同步任务配置
+     */
+    @PostMapping(value = "/api/cleanSyncFlowTaskConfigData", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<?> cleanSyncFlowTaskConfigData(SyncCompanyDTO dto);
+
+    /**
+     * 清空初始化企业同步任务配置
+     */
+    @PostMapping(value = "/api/cleanSyncFlowConfigData", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<?> cleanSyncFlowConfigData(SyncCompanyDTO dto);
 }

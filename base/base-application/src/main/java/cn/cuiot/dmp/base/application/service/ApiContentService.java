@@ -14,4 +14,9 @@ public interface ApiContentService {
      * 初始化企业同步小程序配置
      */
     void syncData(SyncCompanyDTO dto);
+
+    /**
+     * 清空同步数据
+     */
+    void cleanSyncData(SyncCompanyDTO dto);
 }

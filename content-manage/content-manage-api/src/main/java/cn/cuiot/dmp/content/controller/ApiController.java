@@ -82,7 +82,17 @@ public class ApiController {
      * 用于企业初始化同步小程序配置
      */
     @PostMapping(value = "/syncData", produces = MediaType.APPLICATION_JSON_VALUE)
-    void syncData(@RequestBody @Valid SyncCompanyDTO dto) {
+    public IdmResDTO<?> syncData(@RequestBody @Valid SyncCompanyDTO dto) {
         contentModuleSyncService.syncData(dto);
+        return IdmResDTO.success();
+    }
+
+    /**
+     * 用于清空企业初始化同步小程序配置
+     */
+    @PostMapping(value = "/cleanSyncData", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IdmResDTO<?> cleanSyncData(@RequestBody @Valid SyncCompanyDTO dto) {
+        contentModuleSyncService.cleanSyncData(dto);
+        return IdmResDTO.success();
     }
 }

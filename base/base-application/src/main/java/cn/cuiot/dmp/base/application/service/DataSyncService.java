@@ -55,4 +55,9 @@ public abstract class DataSyncService<T> {
      * 同步与主数据关联的其他数据（例如角色的菜单授权）
      */
     public abstract void syncAssociatedData(List<SyncCompanyRelationDTO<T>> targetData, SyncCompanyDTO dto);
+
+    /**
+     * 情况同步数据（初始化非system服务报错时，执行此方法情况数据）
+     */
+    public void cleanSyncData(SyncCompanyDTO dto){};
 }

@@ -1135,9 +1135,6 @@ public class OrganizationServiceImpl implements OrganizationService {
             log.info("初始化企业，同步【审核】");
             auditConfigSyncService.syncData(dto);
 
-            log.info("初始化企业，同步【小程序配置】");
-            apiContentService.syncData(dto);
-
             log.info("初始化企业，同步【常用选项（自定义选项、交易方式、收费项目）】");
             commonOptionSyncService.syncData(dto);
 
@@ -1149,6 +1146,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
             log.info("初始化企业，同步【表单配置】");
             formConfigSyncService.syncData(dto);
+
+            log.info("初始化企业，同步【小程序配置】");
+            apiContentService.syncData(dto);
 
             log.info("初始化企业，同步【任务配置】");
             apiBaseConfigService.syncFlowTaskConfig(dto);
@@ -1165,6 +1165,12 @@ public class OrganizationServiceImpl implements OrganizationService {
             log.error("初始化企业【" + targetCompanyId + "】异常", e);
             // 删除表单mongoDB的数据
             delFormConfigDetail(targetCompanyId);
+            // 清空小程序数据
+            apiContentService.cleanSyncData(dto);
+            // 清空任务配置数据
+            apiBaseConfigService.cleanSyncFlowTaskConfigData(dto);
+            // 清空流程配置
+            apiBaseConfigService.cleanSyncFlowConfigData(dto);
 
             throw new BusinessException(ResultCode.ERROR);
         }finally {

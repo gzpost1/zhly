@@ -42,7 +42,7 @@ public class ApiLeaseServiceImpl implements ApiLeaseService {
             throw new RuntimeException(message);
         } catch (Exception ex) {
             log.info("ApiLeaseServiceImpl==syncChargeStandard==fail", ex);
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            throw new BusinessException(ResultCode.ERROR);
         }
     }
 }

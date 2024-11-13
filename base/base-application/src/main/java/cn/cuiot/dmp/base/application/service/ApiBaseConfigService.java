@@ -19,4 +19,14 @@ public interface ApiBaseConfigService {
      * 初始化企业同步流程配置
      */
     void syncFlowConfig(SyncCompanyDTO dto);
+
+    /**
+     * 清空初始化企业同步任务配置
+     */
+    void cleanSyncFlowTaskConfigData(SyncCompanyDTO dto);
+
+    /**
+     * 清空初始化企业同步任务配置
+     */
+    void cleanSyncFlowConfigData(SyncCompanyDTO dto);
 }

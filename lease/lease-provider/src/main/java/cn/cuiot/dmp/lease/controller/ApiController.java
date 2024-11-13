@@ -73,7 +73,8 @@ public class ApiController {
      * 用于企业初始化同步收费标准数据
      */
     @PostMapping(value = "/syncChargeStandard", produces = MediaType.APPLICATION_JSON_VALUE)
-    void syncChargeStandard(@RequestBody @Valid SyncCompanyDTO dto) {
+    public IdmResDTO<?> syncChargeStandard(@RequestBody @Valid SyncCompanyDTO dto) {
         chargeStandardSyncService.syncData(dto);
+        return IdmResDTO.success();
     }
 }
