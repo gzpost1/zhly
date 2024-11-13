@@ -1,10 +1,16 @@
 package cn.cuiot.dmp.system.application.service.impl;
 
+import cn.cuiot.dmp.base.infrastructure.dto.companyinit.SyncCompanyDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.companyinit.SyncCompanyRelationDTO;
 import cn.cuiot.dmp.base.application.enums.OrgStatusEnum;
+import cn.cuiot.dmp.base.application.service.ApiBaseConfigService;
+import cn.cuiot.dmp.base.application.service.ApiContentService;
+import cn.cuiot.dmp.base.application.service.ApiLeaseService;
 import cn.cuiot.dmp.base.application.utils.CommonCsvUtil;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgBindingNameConstants;
 import cn.cuiot.dmp.base.infrastructure.constants.MsgTagConstants;
 import cn.cuiot.dmp.base.infrastructure.dto.UpdateStatusParam;
+import cn.cuiot.dmp.base.infrastructure.dto.companyinit.FormConfigDetailSyncDTO;
 import cn.cuiot.dmp.base.infrastructure.stream.StreamMessageSender;
 import cn.cuiot.dmp.base.infrastructure.stream.messaging.SimpleMsg;
 import cn.cuiot.dmp.base.infrastructure.syslog.LogContextHolder;
@@ -28,20 +34,18 @@ import cn.cuiot.dmp.domain.types.id.UserId;
 import cn.cuiot.dmp.system.application.enums.DepartmentGroupEnum;
 import cn.cuiot.dmp.system.application.enums.ResetPasswordEnum;
 import cn.cuiot.dmp.system.application.enums.UserSourceTypeEnum;
-import cn.cuiot.dmp.system.application.feign.ContentApiFeignService;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2EntityAssembler;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2GetOrganizationVoAssembler;
 import cn.cuiot.dmp.system.application.param.assembler.Organization2OrganizationResDTOAssembler;
 import cn.cuiot.dmp.system.application.param.event.OrganizationActionEvent;
-import cn.cuiot.dmp.system.application.service.AuditConfigService;
 import cn.cuiot.dmp.system.application.service.DepartmentService;
 import cn.cuiot.dmp.system.application.service.OrganizationService;
 import cn.cuiot.dmp.system.application.service.UserService;
+import cn.cuiot.dmp.system.application.service.initialize.*;
 import cn.cuiot.dmp.system.domain.entity.Organization;
 import cn.cuiot.dmp.system.domain.entity.User;
 import cn.cuiot.dmp.system.domain.query.OrganizationCommonQuery;
-import cn.cuiot.dmp.system.domain.repository.CustomConfigDetailRepository;
-import cn.cuiot.dmp.system.domain.repository.FormConfigTypeRepository;
+import cn.cuiot.dmp.system.domain.repository.FormConfigRepository;
 import cn.cuiot.dmp.system.domain.repository.OrganizationRepository;
 import cn.cuiot.dmp.system.domain.repository.UserRepository;
 import cn.cuiot.dmp.system.domain.service.UserPhoneNumberDomainService;
@@ -65,6 +69,7 @@ import cn.cuiot.dmp.system.infrastructure.utils.RandomPwUtils;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import com.google.common.collect.Lists;
@@ -72,6 +77,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -84,6 +90,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static cn.cuiot.dmp.base.infrastructure.dto.companyinit.SyncCompanyCacheConstant.COMPANY_INITIALIZE;
+import static cn.cuiot.dmp.base.infrastructure.dto.companyinit.SyncCompanyCacheConstant.FORM_CONFIG_DETAIL;
 import static cn.cuiot.dmp.common.constant.ResultCode.PHONE_NUMBER_ALREADY_EXIST;
 
 /**
@@ -158,18 +166,29 @@ public class OrganizationServiceImpl implements OrganizationService {
     private DeptTreePathUtils deptTreePathUtils;
 
     @Autowired
-    private FormConfigTypeRepository formConfigTypeRepository;
-
-    @Autowired
-    private AuditConfigService auditConfigService;
-
-    @Autowired
-    private ContentApiFeignService contentApiFeignService;
-
-    @Autowired
-    private CustomConfigDetailRepository customConfigDetailRepository;
-    @Autowired
     private CompanyTemplateMapper companyTemplateMapper;
+    @Autowired
+    private RoleSyncService roleSyncService;
+    @Autowired
+    private BusinessTypeSyncService businessTypeSyncService;
+    @Autowired
+    private AuditConfigSyncService auditConfigSyncService;
+    @Autowired
+    private ApiContentService apiContentService;
+    @Autowired
+    private CommonOptionSyncService commonOptionSyncService;
+    @Autowired
+    private CustomConfigDetailSyncService customConfigDetailSyncService;
+    @Autowired
+    private FormConfigSyncService formConfigSyncService;
+    @Autowired
+    private ApiBaseConfigService apiBaseConfigService;
+    @Autowired
+    private ApiLeaseService apiLeaseService;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+    @Autowired
+    private FormConfigRepository formConfigRepository;
 
     /**
      * 根据用户类型返回
@@ -1066,18 +1085,113 @@ public class OrganizationServiceImpl implements OrganizationService {
         return organizationChangeDto;
     }
 
+//    该功能在3.8.1停止使用
+//    @Override
+//    @Transactional(rollbackFor = Exception.class)
+//    public int updateInitFlag(Long companyId) {
+//        AssertUtil.notNull(companyId, "企业id不能为空");
+//        contentApiFeignService.initModule(companyId);
+//        // 初始化表单配置
+//        formConfigTypeRepository.queryByCompany(companyId, EntityConstants.ENABLED);
+//        // 初始化审核配置
+//        auditConfigService.queryByCompany(companyId);
+//        // 初始化合同相关的系统选项值
+//        customConfigDetailRepository.initCustomConfigDetail(companyId);
+//        return organizationRepository.updateInitFlag(companyId, EntityConstants.ENABLED);
+//    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int updateInitFlag(Long companyId) {
-        AssertUtil.notNull(companyId, "企业id不能为空");
-        contentApiFeignService.initModule(companyId);
-        // 初始化表单配置
-        formConfigTypeRepository.queryByCompany(companyId, EntityConstants.ENABLED);
-        // 初始化审核配置
-        auditConfigService.queryByCompany(companyId);
-        // 初始化合同相关的系统选项值
-        customConfigDetailRepository.initCustomConfigDetail(companyId);
-        return organizationRepository.updateInitFlag(companyId, EntityConstants.ENABLED);
+    public int updateInitFlag(Long targetCompanyId) {
+        AssertUtil.notNull(targetCompanyId, "企业id不能为空");
+        // 查询企业模板
+        CompanyTemplateVO template = companyTemplateMapper.queryLastTemplate();
+        if (Objects.isNull(template) || Objects.isNull(template.getCompanyId())) {
+            throw new BusinessException(ResultCode.ERROR, "初始化失败，未配置企业模板");
+        }
+
+        log.info("开始初始化企业【" + targetCompanyId + "】");
+
+        SyncCompanyDTO dto = new SyncCompanyDTO();
+        dto.setSourceCompanyId(template.getCompanyId());
+        dto.setTargetCompanyId(targetCompanyId);
+
+        // 执行顺序（同级别无顺序，不能跨级别）
+        // *******角色、业务、审核、小程序、常用选项,收费标准*****
+        //                     ↓
+        // *******************表单*************************
+        //                     ↓
+        // *****************任务配置************************
+        //                     ↓
+        // *****************任务流程************************
+
+        try {
+            log.info("初始化企业，同步【角色】");
+            roleSyncService.syncData(dto);
+
+            log.info("初始化企业，同步【业务类型】");
+            businessTypeSyncService.syncData(dto);
+
+            log.info("初始化企业，同步【审核】");
+            auditConfigSyncService.syncData(dto);
+
+            log.info("初始化企业，同步【小程序配置】");
+            apiContentService.syncData(dto);
+
+            log.info("初始化企业，同步【常用选项（自定义选项、交易方式、收费项目）】");
+            commonOptionSyncService.syncData(dto);
+
+            log.info("初始化企业，同步【常用选项（系统选项）】");
+            customConfigDetailSyncService.syncData(dto);
+
+            log.info("初始化企业，同步【收费标准】");
+            apiLeaseService.syncChargeStandard(dto);
+
+            log.info("初始化企业，同步【表单配置】");
+            formConfigSyncService.syncData(dto);
+
+            log.info("初始化企业，同步【任务配置】");
+            apiBaseConfigService.syncFlowTaskConfig(dto);
+
+            log.info("初始化企业，同步【流程配置】");
+            apiBaseConfigService.syncFlowConfig(dto);
+
+            int flag = organizationRepository.updateInitFlag(targetCompanyId, EntityConstants.ENABLED);
+
+            log.info("结束初始化企业【" + targetCompanyId + "】");
+            return flag;
+            
+        } catch (Exception e) {
+            log.error("初始化企业【" + targetCompanyId + "】异常", e);
+            // 删除表单mongoDB的数据
+            delFormConfigDetail(targetCompanyId);
+
+            throw new BusinessException(ResultCode.ERROR);
+        }finally {
+            // 删除缓存
+            Set<String> keys = redisTemplate.keys(COMPANY_INITIALIZE + targetCompanyId + ":*");
+            if (keys != null && !keys.isEmpty()) {
+                // 批量删除匹配的键
+                redisTemplate.delete(keys);
+            }
+        }
     }
 
+    /**
+     * 删除表单mongodb数据
+     * @Param targetCompanyId 目标id
+     */
+    private void delFormConfigDetail(Long targetCompanyId) {
+        String redisJson = redisUtil.get(COMPANY_INITIALIZE + targetCompanyId + ":" + FORM_CONFIG_DETAIL);
+
+        if (StringUtils.isNotBlank(redisJson)) {
+            List<SyncCompanyRelationDTO<FormConfigDetailSyncDTO>> beans = JsonUtil.readValue(redisJson,
+                    new TypeReference<List<SyncCompanyRelationDTO<FormConfigDetailSyncDTO>>>() {
+                    });
+            if (CollectionUtils.isNotEmpty(beans)) {
+                List<Long> collect = beans.stream().map(e -> e.getEntity().getId()).collect(Collectors.toList());
+                formConfigRepository.batchDelFormMongoBD(collect);
+            }
+        }
+    }
 }
