@@ -430,4 +430,18 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
         }
         return Maps.newHashMap();
     }
+
+    @Override
+    public void cleanSyncData(SyncCompanyDTO dto) {
+        List<TbFlowConfig> flowConfigList = flowConfigMapper.selectList(
+                new LambdaQueryWrapper<TbFlowConfig>()
+                        .eq(TbFlowConfig::getCompanyId, dto.getTargetCompanyId()));
+        if (CollectionUtils.isNotEmpty(flowConfigList)) {
+            List<Long> ids = flowConfigList.stream().map(TbFlowConfig::getId).collect(Collectors.toList());
+            // 删除配置关联数据
+            flowConfigOrgMapper.batchDeleteByFlowConfigIds(ids);
+            // 删除流程配置
+            flowConfigMapper.batchDeleteByIds(ids);
+        }
+    }
 }

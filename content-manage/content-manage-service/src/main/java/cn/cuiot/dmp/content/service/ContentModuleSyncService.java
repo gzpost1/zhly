@@ -61,4 +61,12 @@ public class ContentModuleSyncService extends DataSyncService<ContentModule> {
     public void syncAssociatedData(List<SyncCompanyRelationDTO<ContentModule>> targetData, SyncCompanyDTO dto) {
 
     }
+
+    @Override
+    public void cleanSyncData(SyncCompanyDTO dto) {
+        contentModuleMapper.delete(
+                new LambdaQueryWrapper<ContentModule>()
+                .eq(ContentModule::getCompanyId, dto.getTargetCompanyId()));
+    }
+
 }

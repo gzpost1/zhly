@@ -60,4 +60,11 @@
     </where>
     order by create_time desc
   </select>
+
+    <delete id="batchDeleteByIds" parameterType="integer">
+        DELETE FROM tb_flow_config WHERE id IN
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
 </mapper>

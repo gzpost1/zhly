@@ -22,4 +22,10 @@ public interface ContentApiFeignService {
      */
     @PostMapping(value = "/api/syncData", produces = MediaType.APPLICATION_JSON_VALUE)
     IdmResDTO<?> syncData(@RequestBody SyncCompanyDTO dto);
+
+    /**
+     * 情况企业初始化同步数据
+     */
+    @PostMapping(value = "/api/cleanSyncData", produces = MediaType.APPLICATION_JSON_VALUE)
+    IdmResDTO<?> cleanSyncData(@RequestBody SyncCompanyDTO dto);
 }

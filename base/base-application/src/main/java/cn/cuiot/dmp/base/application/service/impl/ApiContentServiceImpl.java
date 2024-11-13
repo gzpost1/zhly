@@ -42,7 +42,27 @@ public class ApiContentServiceImpl implements ApiContentService {
             throw new RuntimeException(message);
         } catch (Exception ex) {
             log.info("ApiContentServiceImpl==syncData==fail", ex);
-            throw new BusinessException(ResultCode.NO_OPERATION_PERMISSION);
+            throw new BusinessException(ResultCode.ERROR);
+        }
+    }
+
+    @Override
+    public void cleanSyncData(SyncCompanyDTO dto) {
+        log.info("cleanSyncData: {}", JsonUtil.writeValueAsString(dto));
+        try {
+            IdmResDTO<?> idmResDTO = contentApiFeignService.cleanSyncData(dto);
+            if (Objects.nonNull(idmResDTO) && ResultCode.SUCCESS.getCode()
+                    .equals(idmResDTO.getCode())) {
+                return;
+            }
+            String message = null;
+            if (Objects.nonNull(idmResDTO)) {
+                message = idmResDTO.getMessage();
+            }
+            throw new RuntimeException(message);
+        } catch (Exception ex) {
+            log.info("ApiContentServiceImpl==cleanSyncDate==fail", ex);
+            throw new BusinessException(ResultCode.ERROR);
         }
     }
 }

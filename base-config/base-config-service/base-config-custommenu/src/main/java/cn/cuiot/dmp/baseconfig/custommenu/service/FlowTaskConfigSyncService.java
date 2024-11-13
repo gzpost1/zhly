@@ -190,4 +190,23 @@ public class FlowTaskConfigSyncService extends DataSyncService<TbFlowTaskConfig>
         }
         return Maps.newHashMap();
     }
+
+    @Override
+    public void cleanSyncData(SyncCompanyDTO dto){
+        List<TbFlowTaskConfig> taskConfigList = flowTaskConfigMapper.selectList(
+                new LambdaQueryWrapper<TbFlowTaskConfig>()
+                        .eq(TbFlowTaskConfig::getCompanyId, dto.getTargetCompanyId()));
+        if (CollectionUtils.isNotEmpty(taskConfigList)) {
+            List<Long> ids = taskConfigList.stream().map(TbFlowTaskConfig::getId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(ids)) {
+                // 删除任务详情
+                flowTaskInfoMapper.batchDeleteByTaskConfigIds(ids);
+                // 删除关联表
+                flowTaskOrgMapper.batchDeleteByTaskConfigIds(ids);
+            }
+            // 删除任务配置
+            flowTaskConfigMapper.batchDeleteByIds(ids);
+        }
+    }
+
 }
