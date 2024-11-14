@@ -65,7 +65,7 @@ public class CommonOptionSyncService extends DataSyncService<CommonOptionTypeEnt
 
         Map<Long, FormConfigTypeTreeNodeVO> map = buildFormMap(data);
 
-        return data.stream().map(item -> {
+        List<SyncCompanyRelationDTO<CommonOptionTypeEntity>> collect = data.stream().map(item -> {
             FormConfigTypeTreeNodeVO nodeVO = map.get(item.getId());
             CommonOptionTypeEntity entity = new CommonOptionTypeEntity();
             entity.setId(Long.parseLong(nodeVO.getId()));
@@ -79,6 +79,12 @@ public class CommonOptionSyncService extends DataSyncService<CommonOptionTypeEnt
 
             return new SyncCompanyRelationDTO<>(entity, item.getId());
         }).collect(Collectors.toList());
+
+        if (CollectionUtils.isNotEmpty(collect)) {
+            redisUtil.set(COMPANY_INITIALIZE + targetCompanyId + ":" + COMMON_OPTION_TYPE, JsonUtil.writeValueAsString(collect), Const.ONE_DAY_SECOND);
+        }
+
+        return collect;
     }
 
     @Override
