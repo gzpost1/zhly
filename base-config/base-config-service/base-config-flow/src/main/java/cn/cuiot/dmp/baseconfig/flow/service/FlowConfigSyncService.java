@@ -90,8 +90,14 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
             TbFlowConfig entity = new TbFlowConfig();
             entity.setId(IdWorker.getId());
             entity.setName(item.getName());
-            if (Objects.nonNull(item.getBusinessTypeId()) && businessTypeMap.containsKey(item.getBusinessTypeId())) {
-                entity.setBusinessTypeId(businessTypeMap.get(item.getBusinessTypeId()).getId());
+            // 设置业务类型id
+            Long businessTypeId = item.getBusinessTypeId();
+            if (Objects.nonNull(businessTypeId)) {
+                entity.setBusinessTypeId(
+                        Optional.ofNullable(businessTypeMap.get(businessTypeId))
+                                .map(BusinessTypeSyncDTO::getId)
+                                .orElse(null)
+                );
             }
             entity.setProcess(processJson(item.getProcess(), dto));
             entity.setLogo(item.getLogo());
@@ -154,7 +160,7 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
         DepartmentDto departmentInfo = dto.getDepartmentInfo();
         Map<Long, FlowTaskInfoSyncDTO> taskInfoMap = dto.getTaskInfoMap();
         Map<Long, FormConfigDetailSyncDTO> formConfigDetailMap = dto.getFormConfigDetailMap();
-        Map<Long, Long> taskConfigMap = dto.getTaskConfigMap();
+        Map<Long, FlowTaskConfigSyncDTO> taskConfigMap = dto.getTaskConfigMap();
         Map<Long, CustomConfigDetailSyncDTO> customConfigMap = dto.getCustomConfigMap();
         Map<Long, FormConfigSyncDTO> formConfigMap = dto.getFormConfigMap();
 
@@ -207,10 +213,14 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
     /**
      * 公共方法用于处理 formTaskId
      */
-    private void processFormTaskId(Properties props, Map<Long, Long> taskConfigMap) {
+    private void processFormTaskId(Properties props, Map<Long, FlowTaskConfigSyncDTO> taskConfigMap) {
         Long formTaskId = props.getFormTaskId();
         if (Objects.nonNull(formTaskId)) {
-            props.setFormTaskId(taskConfigMap.getOrDefault(formTaskId, null));
+            props.setFormTaskId(
+                    Optional.ofNullable(taskConfigMap.get(formTaskId))
+                            .map(FlowTaskConfigSyncDTO::getId)
+                            .orElse(null)
+            );
         }
     }
 
@@ -221,7 +231,9 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
         List<Long> formIds = props.getFormIds();
         if (CollectionUtils.isNotEmpty(formIds)) {
             List<Long> collect = formIds.stream()
-                    .map(item -> formConfigMap.containsKey(item) ? formConfigMap.get(item).getId() : null)
+                    .map(item -> Optional.ofNullable(formConfigMap.get(item))
+                            .map(FormConfigSyncDTO::getId)
+                            .orElse(null))
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
             props.setFormIds(collect);
@@ -236,8 +248,14 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
         if (CollectionUtils.isNotEmpty(formOperates)) {
             formOperates.forEach(item -> {
                 item.setCompanyId(targetCompanyId);
-                if (StringUtils.isNotBlank(item.getFormConfigDetail()) && formConfigDetailMap.containsKey(item.getId())) {
-                    item.setFormConfigDetail(formConfigDetailMap.get(item.getId()).getFormConfigDetail());
+
+                String formConfigDetail = item.getFormConfigDetail();
+                if (StringUtils.isNotBlank(formConfigDetail)) {
+                    item.setFormConfigDetail(
+                            Optional.ofNullable(formConfigDetailMap.get(item.getId()))
+                                    .map(FormConfigDetailSyncDTO::getFormConfigDetail)
+                                    .orElse(null)
+                    );
                 }
             });
             props.setFormPerms(formOperates);
@@ -247,11 +265,19 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
     /**
      * 公共方法用于处理 taskConfig
      */
-    private void processTaskConfig(Properties props, Map<Long, Long> taskConfigMap, DepartmentDto departmentInfo,
+    private void processTaskConfig(Properties props, Map<Long, FlowTaskConfigSyncDTO> taskConfigMap, DepartmentDto departmentInfo,
                                    Map<Long, FlowTaskInfoSyncDTO> taskInfoMap, Map<Long, FormConfigSyncDTO> formConfigMap) {
         FlowTaskConfigVo taskConfig = props.getTaskConfig();
+
         if (Objects.nonNull(taskConfig)) {
-            taskConfig.setId(taskConfigMap.getOrDefault(taskConfig.getId(), null));
+            Long taskConfigId = taskConfig.getId();
+            if (Objects.nonNull(taskConfigId)) {
+                taskConfig.setId(
+                        Optional.ofNullable(taskConfigMap.get(taskConfigId))
+                                .map(FlowTaskConfigSyncDTO::getId)
+                                .orElse(null)
+                );
+            }
             taskConfig.setOrgId(Collections.singletonList(departmentInfo.getId()));
             taskConfig.setBusinessTypeId(taskConfig.getBusinessTypeId());
 
@@ -271,9 +297,12 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
         // 有缓存则替换，无则设置null
         FlowTaskInfoSyncDTO taskDetail = new FlowTaskInfoSyncDTO();
         if (Objects.nonNull(taskInfo.getId()) && taskInfoMap.containsKey(taskInfo.getId())) {
-            taskDetail = taskInfoMap.get(taskInfo.getId());
-            // 设置taskInfoFormIds
-            taskInfoFormIds.add(taskDetail.getFormId());
+            FlowTaskInfoSyncDTO dto = taskInfoMap.get(taskInfo.getId());
+            if (Objects.nonNull(dto)) {
+                taskDetail = dto;
+                // 设置taskInfoFormIds
+                taskInfoFormIds.add(taskDetail.getFormId());
+            }
         }
         taskInfo.setId(taskDetail.getId());
         taskInfo.setFormId(taskDetail.getFormId());
@@ -285,9 +314,13 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
             taskInfo.setFormOperates(null);
         } else {
             FormConfigSyncDTO formConfig = formConfigMap.get(formOperates.getId());
-            formOperates.setId(formConfig.getId());
-            formOperates.setCompanyId(formConfig.getCompanyId());
-            formOperates.setTypeId(formConfig.getTypeId());
+            if (Objects.isNull(formConfig)) {
+                taskInfo.setFormOperates(null);
+            }else {
+                formOperates.setId(formConfig.getId());
+                formOperates.setCompanyId(formConfig.getCompanyId());
+                formOperates.setTypeId(formConfig.getTypeId());
+            }
         }
     }
 
@@ -297,7 +330,11 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
     private void processTaskInfo(Properties props, Map<Long, CustomConfigDetailSyncDTO> customConfig) {
         String processNodeType = props.getProcessNodeType();
         if (StringUtils.isNotBlank(processNodeType)) {
-            props.setProcessNodeType(customConfig.get(Long.parseLong(processNodeType)).getId() + "");
+            String aLong = Optional.ofNullable(customConfig.get(Long.parseLong(processNodeType)))
+                    .map(CustomConfigDetailSyncDTO::getId)
+                    .map(String::valueOf)
+                    .orElse("");
+            props.setProcessNodeType(aLong);
         }
     }
 
@@ -357,7 +394,7 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
      * @return Map
      * @Param targetCompanyId 企业id
      */
-    private Map<Long, Long> getTaskConfig(Long targetCompanyId) {
+    private Map<Long, FlowTaskConfigSyncDTO> getTaskConfig(Long targetCompanyId) {
         String redisJson = redisUtil.get(COMPANY_INITIALIZE + targetCompanyId + ":" + TASK_CONFIG);
 
         if (StringUtils.isNotBlank(redisJson)) {
@@ -365,7 +402,7 @@ public class FlowConfigSyncService extends DataSyncService<TbFlowConfig> {
                     new TypeReference<List<SyncCompanyRelationDTO<FlowTaskConfigSyncDTO>>>() {
                     });
             if (CollectionUtils.isNotEmpty(beans)) {
-                return beans.stream().collect(Collectors.toMap(SyncCompanyRelationDTO::getOldId, e -> e.getEntity().getId()));
+                return beans.stream().collect(Collectors.toMap(SyncCompanyRelationDTO::getOldId, SyncCompanyRelationDTO::getEntity));
             }
         }
         return Maps.newHashMap();

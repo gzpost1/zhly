@@ -1,8 +1,11 @@
 package cn.cuiot.dmp.system.application.service.initialize;
 
+import cn.cuiot.dmp.base.application.service.ApiSystemService;
 import cn.cuiot.dmp.base.infrastructure.dto.companyinit.SyncCompanyDTO;
 import cn.cuiot.dmp.base.application.service.DataSyncService;
 import cn.cuiot.dmp.base.infrastructure.dto.companyinit.SyncCompanyRelationDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.req.OrganizationReqDTO;
+import cn.cuiot.dmp.base.infrastructure.dto.rsp.OrganizationRespDTO;
 import cn.cuiot.dmp.base.infrastructure.utils.RedisUtil;
 import cn.cuiot.dmp.common.utils.Const;
 import cn.cuiot.dmp.common.utils.JsonUtil;
@@ -14,11 +17,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,6 +46,8 @@ public class BusinessTypeSyncService extends DataSyncService<BusinessTypeEntity>
     private BusinessTypeMapper businessTypeMapper;
     @Resource
     private RedisUtil redisUtil;
+    @Autowired
+    private ApiSystemService apiSystemService;
 
     @Override
     public List<BusinessTypeEntity> fetchData(Long sourceCompanyId) {
@@ -54,6 +62,8 @@ public class BusinessTypeSyncService extends DataSyncService<BusinessTypeEntity>
 
     @Override
     public List<SyncCompanyRelationDTO<BusinessTypeEntity>> preprocessData(List<BusinessTypeEntity> data, Long targetCompanyId) {
+        // 企业名称
+        String companyName = getCompanyNameById(targetCompanyId);
 
         Map<Long, FormConfigTypeTreeNodeVO> map = buildFormMap(data);
 
@@ -62,7 +72,7 @@ public class BusinessTypeSyncService extends DataSyncService<BusinessTypeEntity>
             BusinessTypeEntity entity = new BusinessTypeEntity();
             entity.setId(Long.parseLong(nodeVO.getId()));
             entity.setParentId(Long.parseLong(nodeVO.getParentId()));
-            entity.setName(item.getName());
+            entity.setName(Objects.equal(item.getParentId(), -1L) ? companyName : item.getName());
             entity.setLevelType(item.getLevelType());
             entity.setCompanyId(targetCompanyId);
             entity.setPathName(item.getPathName());
@@ -124,5 +134,17 @@ public class BusinessTypeSyncService extends DataSyncService<BusinessTypeEntity>
                 updateIds(node.getChildren(), newId, map);
             }
         }
+    }
+
+    /**
+     * 获取企业名称
+     * @Param targetCompanyId 参数
+     * @return 企业名称
+     */
+    private String getCompanyNameById(Long targetCompanyId) {
+        OrganizationReqDTO dto = new OrganizationReqDTO();
+        dto.setIdList(Collections.singletonList(targetCompanyId));
+        List<OrganizationRespDTO> list = apiSystemService.queryOrganizationList(dto);
+        return CollectionUtils.isNotEmpty(list) ? list.get(0).getCompanyName() : null;
     }
 }

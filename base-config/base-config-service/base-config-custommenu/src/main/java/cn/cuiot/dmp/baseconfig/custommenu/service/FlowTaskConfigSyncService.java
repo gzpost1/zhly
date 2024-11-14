@@ -32,6 +32,7 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static cn.cuiot.dmp.base.infrastructure.dto.companyinit.SyncCompanyCacheConstant.*;
@@ -76,9 +77,17 @@ public class FlowTaskConfigSyncService extends DataSyncService<TbFlowTaskConfig>
             TbFlowTaskConfig entity = new TbFlowTaskConfig();
             entity.setId(IdWorker.getId());
             entity.setName(item.getName());
-            if (Objects.nonNull(item.getBusinessTypeId()) && businessTypeMap.containsKey(item.getBusinessTypeId())) {
-                entity.setBusinessTypeId(businessTypeMap.get(item.getBusinessTypeId()).getId());
+
+            // 设置业务类型
+            Long businessTypeId = item.getBusinessTypeId();
+            if (Objects.nonNull(businessTypeId)) {
+                entity.setBusinessTypeId(
+                        Optional.ofNullable(businessTypeMap.get(businessTypeId))
+                                .map(BusinessTypeSyncDTO::getId)
+                                .orElse(null)
+                );
             }
+
             entity.setRemark(item.getRemark());
             entity.setStatus(item.getStatus());
             entity.setCompanyId(targetCompanyId);
@@ -119,7 +128,7 @@ public class FlowTaskConfigSyncService extends DataSyncService<TbFlowTaskConfig>
         List<SyncCompanyRelationDTO<TbFlowTaskInfo>> flowTaskInfoList = Lists.newArrayList();
 
         // 缓存获取表单数据
-        Map<Long, Long> formConfigMap = getFormConfig(targetCompanyId);
+        Map<Long, FormConfigSyncDTO> formConfigMap = getFormConfig(targetCompanyId);
         // 保存
         targetData.forEach(item -> {
             List<FlowTaskInfoVo> list = flowTaskInfoMapper.queryByTaskConfigId(item.getOldId());
@@ -131,7 +140,16 @@ public class FlowTaskConfigSyncService extends DataSyncService<TbFlowTaskConfig>
                     entity.setId(IdWorker.getId());
                     entity.setName(e.getName());
                     entity.setEquipmentType(e.getEquipmentType());
-                    entity.setFormId(formConfigMap.getOrDefault(e.getFormId(), null));
+
+                    // 设置表单id
+                    Long formId = e.getFormId();
+                    if (Objects.nonNull(formId)) {
+                        entity.setFormId(
+                                Optional.ofNullable(formConfigMap.get(formId))
+                                        .map(FormConfigSyncDTO::getId)
+                                        .orElse(null));
+                    }
+
                     entity.setTaskConfigId(item.getEntity().getId());
                     entity.setTaskId(e.getTaskId());
                     entity.setSort(e.getSort());
@@ -157,7 +175,7 @@ public class FlowTaskConfigSyncService extends DataSyncService<TbFlowTaskConfig>
      * @return Map
      * @Param targetCompanyId 企业id
      */
-    private Map<Long, Long> getFormConfig(Long targetCompanyId) {
+    private Map<Long, FormConfigSyncDTO> getFormConfig(Long targetCompanyId) {
         String redisJson = redisUtil.get(COMPANY_INITIALIZE + targetCompanyId + ":" + FORM_CONFIG);
 
         if (StringUtils.isNotBlank(redisJson)) {
@@ -165,7 +183,7 @@ public class FlowTaskConfigSyncService extends DataSyncService<TbFlowTaskConfig>
                     new TypeReference<List<SyncCompanyRelationDTO<FormConfigSyncDTO>>>() {
                     });
             if (CollectionUtils.isNotEmpty(syncCompanyRelationDtos)) {
-                return syncCompanyRelationDtos.stream().collect(Collectors.toMap(SyncCompanyRelationDTO::getOldId, e -> e.getEntity().getId()));
+                return syncCompanyRelationDtos.stream().collect(Collectors.toMap(SyncCompanyRelationDTO::getOldId, SyncCompanyRelationDTO::getEntity));
             }
         }
         return Maps.newHashMap();

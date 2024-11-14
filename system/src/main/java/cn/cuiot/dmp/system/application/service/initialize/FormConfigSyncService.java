@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
@@ -208,10 +207,8 @@ public class FormConfigSyncService extends DataSyncService<FormConfigTypeEntity>
         if (Objects.nonNull(root)) {
             Map<Long, CommonOptionSettingSyncDTO> optionSettingMap = getCommonOptionSettingMap(targetCompanyId);
             Map<Long, CommonOptionSyncDTO> optionMap = getCommonOptionMap(targetCompanyId);
-            if (MapUtils.isNotEmpty(optionSettingMap) && MapUtils.isNotEmpty(optionMap)) {
-                // 修改 options 中的 id
-                modifyOptionsIdsByName(root, targetNames, optionSettingMap, optionMap);
-            }
+            // 修改 options 中的 id
+            modifyOptionsIdsByName(root, targetNames, optionSettingMap, optionMap);
         }
 
         // 将修改后的 JSON 转回字符串
@@ -256,37 +253,57 @@ public class FormConfigSyncService extends DataSyncService<FormConfigTypeEntity>
     private static void modifyTypeId(ObjectNode propsObject, Map<Long, CommonOptionSyncDTO> optionMap) {
         if (propsObject.has("typeId")) {
             long typeId = propsObject.get("typeId").asLong();
-            if (optionMap.containsKey(typeId)) {
-                propsObject.put("typeId", optionMap.get(typeId).getId() + "");
-            }
+
+            String value = Optional.ofNullable(optionMap.get(typeId))
+                    .map(CommonOptionSyncDTO::getId)
+                    .map(String::valueOf)
+                    .orElse("");
+            propsObject.put("typeId", value);
         }
     }
 
     private static void modifyOptions(ObjectNode propsObject, Map<Long, CommonOptionSettingSyncDTO> optionSettingMap) {
         if (propsObject.has("options") && propsObject.get("options").isArray()) {
             ArrayNode optionsArray = (ArrayNode) propsObject.get("options");
+            // 创建新的 ArrayNode，用于存储修改后的非空选项
+            ArrayNode filteredArray = optionsArray.arrayNode();
             for (JsonNode option : optionsArray) {
                 if (option.has("id") && option.isObject()) {
-                    long id = option.get("id").asLong();
+                    ObjectNode optionObject = (ObjectNode) option;
+                    long id = optionObject.get("id").asLong();
+                    // 检查 id 是否在 optionSettingMap 中
                     if (optionSettingMap.containsKey(id)) {
-                        CommonOptionSettingSyncDTO settingEntity = optionSettingMap.get(id);
-                        // 修改 id 值为新的值
-                        ((ObjectNode) option).put("id", settingEntity.getId() + "");
+                        CommonOptionSettingSyncDTO dto = optionSettingMap.get(id);
+                        if (dto != null) {
+                            optionObject.put("id", dto.getId() + "");
+                        }
                     }
+                    // 将更新后的 option 添加到过滤后的数组中
+                    filteredArray.add(optionObject);
                 }
             }
+            // 将过滤后的数组设置回 propsObject 的 options 字段
+            propsObject.set("options", filteredArray);
         }
     }
+
 
     private static void modifyAnswers(ObjectNode propsObject, Map<Long, CommonOptionSettingSyncDTO> optionSettingMap) {
         if (propsObject.has("answer") && propsObject.get("answer").isArray()) {
             ArrayNode answerArray = (ArrayNode) propsObject.get("answer");
+            // 新建一个 ArrayNode 用于存储非空字符串的元素
+            ArrayNode filteredArray = answerArray.arrayNode();
             for (int i = 0; i < answerArray.size(); i++) {
                 long answer = answerArray.get(i).asLong();
                 if (optionSettingMap.containsKey(answer)) {
-                    answerArray.set(i, optionSettingMap.get(answer).getId());
+                    CommonOptionSettingSyncDTO dto = optionSettingMap.get(answer);
+                    if (Objects.nonNull(dto)) {
+                        filteredArray.set(i,  dto.getId() + "");
+                    }
                 }
             }
+            // 将非空元素的 filteredArray 设置回 propsObject 的 answer 字段
+            propsObject.set("answer", filteredArray);
         }
     }
 

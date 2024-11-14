@@ -14,7 +14,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,10 +63,7 @@ public class RoleSyncService extends DataSyncService<RoleEntity> {
     @Override
     public void syncAssociatedData(List<SyncCompanyRelationDTO<RoleEntity>> targetData, SyncCompanyDTO dto) {
 
-        Long sourceCompanyId = dto.getSourceCompanyId();
         Long targetCompanyId = dto.getTargetCompanyId();
-
-        LocalDateTime now = LocalDateTime.now();
         Long currentUserId = LoginInfoHolder.getCurrentUserId();
 
         // 新增组织角色关联表数据
