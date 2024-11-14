@@ -88,7 +88,7 @@
                 <if test="query.startTime !=null">
                     and show_date >= #{query.startTime} and show_date <![CDATA[<=]]> #{query.endTime}
                 </if>
-                    and   community_id is null
+                    and   community_id = 1
             </where>
 
         </if>

@@ -113,7 +113,7 @@ public class IdentificationRecordService extends ServiceImpl<IdentificationRecor
         IPage<IdentificationRecordEntity> recordEntityIPage =  getBaseMapper().queryForPage(new Page<IdentificationRecordEntity>(query.getPageNo(), query.getPageSize()),query);
         List<IdentificationRecordEntity> records = Optional.ofNullable(recordEntityIPage.getRecords()).orElse(new ArrayList<>());
         List<Long> communityIds = records.stream().filter(it -> Objects.nonNull(it.getCommunityId())).
-                map(IdentificationRecordEntity::getCommunityId).collect(Collectors.toList());
+                map(IdentificationRecordEntity::getCommunityId).distinct().collect(Collectors.toList());
 
             Map<Long, String> propertyMap = Optional.ofNullable(getPropertyMap(communityIds)).orElse(new HashMap<>());
             records.stream().filter(it->Objects.nonNull(it.getCommunityId())).forEach(item->{
@@ -139,7 +139,7 @@ public class IdentificationRecordService extends ServiceImpl<IdentificationRecor
         if(CollectionUtil.isNotEmpty(records)){
             resultList = BeanMapper.mapList(records,RecognitionRecordVO.class);
         }
-        Page<RecognitionRecordVO> page = new Page<>(recordEntityIPage.getCurrent(), recordEntityIPage.getPages(), recordEntityIPage.getTotal());
+        Page<RecognitionRecordVO> page = new Page<>(recordEntityIPage.getCurrent(), recordEntityIPage.getSize(), recordEntityIPage.getTotal());
         return page.setRecords(resultList);
     }
 
