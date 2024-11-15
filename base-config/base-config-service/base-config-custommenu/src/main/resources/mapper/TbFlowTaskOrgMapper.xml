@@ -40,4 +40,11 @@
     </foreach>
     group by flow_task_id
   </select>
+
+    <delete id="batchDeleteByTaskConfigIds" parameterType="integer">
+        DELETE FROM tb_flow_task_org WHERE flow_task_id IN
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
 </mapper>
