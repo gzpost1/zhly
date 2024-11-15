@@ -12,4 +12,6 @@ public interface TbFlowConfigOrgMapper extends BaseMapper<TbFlowConfigOrg> {
 
 
     List<FlowConfigOrgDto> queryOrgNameByFlowConfigIds(@Param("list") List<Long> dataIds);
+
+    void batchDeleteByFlowConfigIds(@Param("list") List<Long> list);
 }
