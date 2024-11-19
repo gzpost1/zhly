@@ -16,6 +16,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -85,4 +86,6 @@ public interface WorkInfoMapper extends BaseMapper<WorkInfoEntity> {
      * @return
      */
     Long queryWorkOrderStatistic(@Param("params") WorkStatisInfoReqDTO workParam);
+
+    CommentTimeDto queryCommentTime(@Param("procInstId") String procInstId , @Param("nodeId") String nodeId);
 }

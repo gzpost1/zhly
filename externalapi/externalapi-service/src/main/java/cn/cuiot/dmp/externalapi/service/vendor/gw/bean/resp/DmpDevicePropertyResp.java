@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -9,6 +10,7 @@ import java.io.Serializable;
  * @Date: 2024-09-06
  */
 @Data
+@NoArgsConstructor
 public class DmpDevicePropertyResp implements Serializable {
 
     private static final long serialVersionUID = 3272708880148264348L;
@@ -33,4 +35,14 @@ public class DmpDevicePropertyResp implements Serializable {
      */
     private Long ts;
 
+    public DmpDevicePropertyResp(String key, String unit, Object value, Long ts) {
+        this.key = key;
+        this.unit = unit;
+        this.value = value;
+        this.ts = ts;
+    }
+
+    public DmpDevicePropertyResp(String key) {
+        this.key = key;
+    }
 }

@@ -5,6 +5,7 @@ import cn.cuiot.dmp.baseconfig.custommenu.dto.FlowTaskInfoUpdateDto;
 import cn.cuiot.dmp.baseconfig.custommenu.entity.TbFlowTaskInfo;
 import cn.cuiot.dmp.baseconfig.custommenu.mapper.TbFlowTaskInfoMapper;
 import cn.cuiot.dmp.baseconfig.custommenu.vo.FlowTaskInfoVo;
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -68,12 +69,14 @@ public class TbFlowTaskInfoService extends ServiceImpl<TbFlowTaskInfoMapper, TbF
         }
 
         //首先删除数据
-        List<FlowTaskInfoUpdateDto> existIds = taskInfoList.stream().filter(e -> Objects.nonNull(e.getId())).collect(Collectors.toList());
-        if (!existIds.isEmpty()) {
-            List<Long> ids = existIds.stream().map(FlowTaskInfoUpdateDto::getId).collect(Collectors.toList());
+//        List<FlowTaskInfoUpdateDto> existIds = taskInfoList.stream().filter(e -> Objects.nonNull(e.getId())).collect(Collectors.toList());
+
             LambdaUpdateWrapper<TbFlowTaskInfo> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.in(TbFlowTaskInfo::getId, ids);
+//            updateWrapper.in(TbFlowTaskInfo::getId, ids);
+            updateWrapper.eq(TbFlowTaskInfo::getTaskConfigId,id);
             this.remove(updateWrapper);
+        if(CollectionUtil.isEmpty(taskInfoList)){
+            return;
         }
         //插入数据
         List<TbFlowTaskInfo> insertList = taskInfoList.stream().map(taskInfo -> {

@@ -19,9 +19,9 @@ public class DmpDeviceStatusResp implements Serializable {
     private String deviceKey;
 
     /**
-     * 设备名称。（新建设备时填写）
+     * 物联网平台为该设备颁发的id，作为该设备的唯一标识符。若请求体中输入的有iotId，则显示该字段。
      */
-    private String deviceName;
+    private String iotId;
 
     /**
      * 落地的产品id
@@ -36,6 +36,6 @@ public class DmpDeviceStatusResp implements Serializable {
     /**
      * 状态(0:禁用,1:正常)
      */
-    private Byte enabled;
+    private Boolean enabled;
 
 }

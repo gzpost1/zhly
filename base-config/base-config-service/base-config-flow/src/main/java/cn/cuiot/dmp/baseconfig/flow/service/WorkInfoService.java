@@ -75,11 +75,14 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceBuilder;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
+import org.flowable.task.service.HistoricTaskService;
 import org.flowable.variable.api.history.HistoricVariableInstanceQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -102,6 +105,8 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
 
     @Autowired
     private TaskService taskService;
+
+
     @Autowired
     private TbFlowConfigService flowConfigService;
 
@@ -1211,7 +1216,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
     public IdmResDTO<HandleDataVO> instanceInfo(HandleDataDTO HandleDataDTO) {
         String processInstanceId = HandleDataDTO.getProcessInstanceId();
         //校验权限信息
-        checkWorkOrder(processInstanceId);
+//        checkWorkOrder(processInstanceId);
 
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
                 .includeProcessVariables().singleResult();
@@ -1329,6 +1334,23 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
             if(StringUtils.isEmpty(children.getId())){
                 break;
             }
+
+            if(StringUtils.equals("TASK",children.getType())){
+                Map<String, Object> nobody = children.getProps().getNobody();
+                Object object = nobody.get("assignedUser");
+                if(Objects.nonNull(object)){
+                    List<UserInfo> userInfos = JSONObject.parseObject(JsonUtil.writeValueAsString(object), new TypeReference<List<UserInfo>>() {
+                    });
+                    if(CollectionUtils.isNotEmpty(userInfos)){
+                        HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(procInstId)
+                                .taskAssignee(userInfos.get(0).getId()).taskDefinitionKey(children.getId()).singleResult();
+                        if(Objects.nonNull(taskInstance)){
+                            children.getProps().setFlag(Byte.parseByte("1"));
+                        }
+                    }
+                }
+
+            }
             if(StringUtils.equals("CC",children.getType())){
                 CCInfo ccInfo = children.getProps().getCcInfo();
                 List<Long> ccUserIds = new ArrayList<>();
@@ -1384,6 +1406,17 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 String deliverNames = getDeliverNames(item.getDeliver());
                 item.setDeliverName(deliverNames);
             }
+            //处理评论节点
+//            if(Objects.equals(item.getBusinessType(), BusinessInfoEnums.BUSINESS_COMMENT.getCode())){
+//                CommentTimeDto commentTime = getBaseMapper().queryCommentTime(procinstId, nodeId);
+//                Duration duration = null;
+//                if(Objects.nonNull(commentTime.getEndTime())){
+//                     duration = Duration.between(commentTime.getStartTime(), commentTime.getEndTime());
+//                }else {
+//                     duration = Duration.between(commentTime.getStartTime(), LocalDateTime.now());
+//                }
+//                long diffInMinutes = duration.toMinutes();
+//            }
         });
         return list;
     }

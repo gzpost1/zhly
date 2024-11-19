@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.gw.GwSmogDataMapper">
+
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.gw.GwSmogDataEntity">
+        <id column="id" property="id"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_user" property="createUser"/>
+        <result column="deleted" property="deleted"/>
+        <result column="device_id" property="deviceId"/>
+        <result column="device_data" property="deviceData" typeHandler="cn.cuiot.dmp.base.infrastructure.persistence.handler.ListObjectJsonTypeHandler"
+                javaType="cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.DmpDevicePropertyResp"/>
+    </resultMap>
+
+    <select id="queryLatestData" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            tb_gw_smog_data
+        WHERE
+            id =( SELECT Max( id ) FROM tb_gw_smog_data where device_id =#{deviceId})
+    </select>
+
+
+    <delete id="deleteSmogDataByLimit">
+        DELETE t1 FROM tb_gw_smog_data t1
+        JOIN (
+        select min(id) id from (SELECT  id FROM tb_gw_smog_data
+        where device_id = #{deviceId}
+        ORDER BY id desc
+        LIMIT 500) t3
+        ) t2 ON t1.id <![CDATA[<]]> t2.id where device_id = #{deviceId};
+    </delete>
+
+</mapper>

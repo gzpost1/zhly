@@ -63,6 +63,9 @@ public class Properties {
   private Integer modeRate;
 
   private Boolean sign;
+
+
+  private Byte flag;
   //审批超时
   private TimeLimit timeLimit;
 

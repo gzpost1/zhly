@@ -191,7 +191,7 @@ public class TbFlowConfigService extends ServiceImpl<TbFlowConfigMapper, TbFlowC
                 List<FormConfigRspDTO> formConfigRspDTOS = systemToFlowService.batchQueryFormConfig(formConfigReqDTO);
                 AssertUtil.isTrue(CollectionUtils.isNotEmpty(formConfigRspDTOS) && formConfigRspDTOS.size() == formIds.size(), "表单配置为空");
 
-                if (Objects.nonNull(flowTaskConfigVo)) {
+                if (Objects.nonNull(flowTaskConfigVo)&& Objects.equals(childNode.getProps().getNodeProcessType(),Byte.parseByte("1")) ) {
                     //填充任务中的每个对象的表单信息
                     flowTaskConfigVo.getTaskInfoList().stream().forEach(e -> {
                         FormConfigRspDTO formConfigRspDTO = formConfigRspDTOS.stream().filter(f -> Objects.equals(f.getId(), e.getFormId())).findFirst().orElseThrow(

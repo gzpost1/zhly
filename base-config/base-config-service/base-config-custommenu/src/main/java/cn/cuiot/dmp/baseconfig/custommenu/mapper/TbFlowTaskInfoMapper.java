@@ -11,4 +11,6 @@ public interface TbFlowTaskInfoMapper extends BaseMapper<TbFlowTaskInfo> {
 
 
     List<FlowTaskInfoVo> queryByTaskConfigId(Long id);
+
+    void batchDeleteByTaskConfigIds(@Param("list") List<Long> list);
 }

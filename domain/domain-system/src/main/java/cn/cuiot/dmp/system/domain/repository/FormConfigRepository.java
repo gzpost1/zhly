@@ -86,4 +86,9 @@ public interface FormConfigRepository {
      */
     void initSystemFormConfig(Long companyId, Map<String, Long> systemFormConfigTypeMap);
 
+    /**
+     * 批量删除表单mongodb数据，仅用于企业初始化
+     */
+    void batchDelFormMongoBD(List<Long> idList);
+
 }

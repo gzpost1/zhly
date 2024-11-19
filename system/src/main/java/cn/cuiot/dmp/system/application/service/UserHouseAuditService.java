@@ -129,21 +129,24 @@ public class UserHouseAuditService extends ServiceImpl<UserHouseAuditMapper, Use
         Set<Long> buildingIdList = userHouseAuditEntityList.stream()
                 .map(UserHouseAuditEntity::getBuildingId)
                 .collect(Collectors.toSet());
-        return buildingIdList.stream()
-                .map(o -> {
-                    UserHouseBuildingDTO userHouseBuildingDTO = new UserHouseBuildingDTO();
-                    IdParam idParam = new IdParam();
-                    idParam.setId(o);
-                    BuildingArchive buildingArchive = archiveFeignService
-                            .lookupBuildingArchiveInfo(idParam).getData();
-                    userHouseBuildingDTO.setUserId(userId);
-                    userHouseBuildingDTO.setBuildingId(o);
-                    userHouseBuildingDTO.setBuildingName(buildingArchive.getName());
-                    userHouseBuildingDTO.setCompanyId(buildingArchive.getCompanyId());
-                    userHouseBuildingDTO.setDepartmentId(buildingArchive.getDepartmentId());
-                    return userHouseBuildingDTO;
-                })
-                .collect(Collectors.toList());
+
+        List<UserHouseBuildingDTO> resultList = Lists.newArrayList();
+        for(Long buildingId:buildingIdList){
+            IdParam idParam = new IdParam();
+            idParam.setId(buildingId);
+            BuildingArchive buildingArchive = archiveFeignService
+                    .lookupBuildingArchiveInfo(idParam).getData();
+            if(Objects.nonNull(buildingArchive)){
+                UserHouseBuildingDTO userHouseBuildingDTO = new UserHouseBuildingDTO();
+                userHouseBuildingDTO.setUserId(userId);
+                userHouseBuildingDTO.setBuildingId(buildingId);
+                userHouseBuildingDTO.setBuildingName(buildingArchive.getName());
+                userHouseBuildingDTO.setCompanyId(buildingArchive.getCompanyId());
+                userHouseBuildingDTO.setDepartmentId(buildingArchive.getDepartmentId());
+                resultList.add(userHouseBuildingDTO);
+            }
+        }
+        return resultList;
     }
 
     /**

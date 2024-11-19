@@ -105,4 +105,9 @@ public class PortraitInputConstant {
      * 楼盘为空
      */
     public static final String COMMUNITY_TYPE ="0";
+
+    /**
+     * 识别记录上报
+     */
+    public static final String RECORD_EVENT_CODE = "101004";
 }

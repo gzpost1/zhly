@@ -1,6 +1,6 @@
 package cn.cuiot.dmp.externalapi.service.vendor.gw.dmp;
 
-import cn.cuiot.dmp.common.bean.external.GWEntranceGuardBO;
+import cn.cuiot.dmp.common.bean.external.GWCurrencyBO;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.req.*;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.BaseDmpResp;
 import cn.cuiot.dmp.externalapi.service.vendor.gw.bean.resp.ProductInfoResp;
@@ -24,7 +24,7 @@ public class DmpProductRemoteService {
     /**
      * 查询产品列表
      */
-    public BaseDmpResp<ProductInfoResp> listProducts(@RequestBody BaseDmpPageReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<ProductInfoResp> listProducts(@RequestBody BaseDmpPageReq req, GWCurrencyBO bo) {
         String gateway = "api/listProducts/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<ProductInfoResp>>() {
         });
@@ -33,7 +33,7 @@ public class DmpProductRemoteService {
     /**
      * 查询指定产品详细信息
      */
-    public BaseDmpResp<ProductInfoResp> getProduct(@RequestBody GetProductReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<ProductInfoResp> getProduct(@RequestBody GetProductReq req, GWCurrencyBO bo) {
         String gateway = "api/getProduct/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<ProductInfoResp>>() {
         });
@@ -42,7 +42,7 @@ public class DmpProductRemoteService {
     /**
      * 查询产品标签的产品列表
      */
-    public BaseDmpResp<ProductInfoResp> listProductsByTag(@RequestBody ListProductsByTagReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<ProductInfoResp> listProductsByTag(@RequestBody ListProductsByTagReq req, GWCurrencyBO bo) {
         String gateway = "api/listProductsByTag/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<ProductInfoResp>>() {
         });
@@ -51,7 +51,7 @@ public class DmpProductRemoteService {
     /**
      * 新建产品
      */
-    public BaseDmpResp<ProductInfoResp> createProduct(@RequestBody CreateProductReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<ProductInfoResp> createProduct(@RequestBody CreateProductReq req, GWCurrencyBO bo) {
         String gateway = "api/createProduct/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<ProductInfoResp>>() {
         });
@@ -60,7 +60,7 @@ public class DmpProductRemoteService {
     /**
      * 修改产品信息
      */
-    public BaseDmpResp<Object> updateProduct(@RequestBody UpdateProductReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<Object> updateProduct(@RequestBody UpdateProductReq req, GWCurrencyBO bo) {
         String gateway = "api/updateProduct/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<Object>>() {
         });
@@ -69,7 +69,7 @@ public class DmpProductRemoteService {
     /**
      * 删除产品
      */
-    public BaseDmpResp<ProductInfoResp> deleteProduct(@RequestBody GetProductReq req, GWEntranceGuardBO bo) {
+    public BaseDmpResp<ProductInfoResp> deleteProduct(@RequestBody GetProductReq req, GWCurrencyBO bo) {
         String gateway = "api/deleteProduct/V1/1Main/vV1.1";
         return dmpApiService.postRequest(gateway, req, bo, new TypeReference<BaseDmpResp<ProductInfoResp>>() {
         });

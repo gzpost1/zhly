@@ -751,9 +751,7 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     public HistoricTaskInstance getHisTaskInfo(HandleDataDTO handleDataDTO){
         String taskId = handleDataDTO.getTaskId();
         HistoricTaskInstance task = null;
-        log.info("taskId"+taskId);
         if(StringUtils.isEmpty(taskId)){
-            log.info("taskId1"+taskId);
             //通过流程实例id找最新的taskId
             List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
                     .processInstanceId(handleDataDTO.getProcessInstanceId()).orderByTaskId().desc().list();
@@ -762,7 +760,6 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
             }
             handleDataDTO.setTaskId(task.getId());
         }else {
-            log.info("taskId2"+taskId);
             task = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
             handleDataDTO.setProcessInstanceId(task.getProcessInstanceId());
         }
@@ -779,7 +776,8 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
         ChildNode childNodeByNodeId = getChildNodeByNodeId(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
         //设置的比例信息
-        Integer rate = childNodeByNodeId.getProps().getFormTaskAccessRate()*100;
+        Integer rate = (Objects.nonNull(childNodeByNodeId.getProps().getFormTaskAccessRate())?childNodeByNodeId.getProps()
+                .getFormTaskAccessRate():1)*100;
         //实际比例
         Integer ratio = (int) (Double.parseDouble(taskDto.getCompletionRatio())*100);
         if(rate>ratio){
@@ -1153,10 +1151,25 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
         //判断是否可以重新提交
         workInfoDto.setResubmit(resubmit(workInfoDto.getProcInstId()));
 
+        //组装按钮信息与taskId
+        queryButtonInfo(workInfoDto);
         //获取我提交的信息
         workInfoDto.setCommitProcess(queryCommitProcess(Long.parseLong(dto.getProcInstId()),WorkOrderConstants.USER_ROOT,null));
         return IdmResDTO.success(workInfoDto);
     }
+
+    public void queryButtonInfo(WorkInfoDto dto){
+
+        //未完成就可以撤回
+        Task task = taskService.createTaskQuery().processInstanceId(dto.getProcInstId()).taskAssignee(String.valueOf(LoginInfoHolder.getCurrentUserId())).singleResult();
+        if(Objects.nonNull(task)){
+            ChildNode childNode = getChildNodeByNodeId(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+            List<NodeButton> buttons = childNode.getProps().getButtons();
+            dto.setButtons(buttons);
+            dto.setTaskId(Long.parseLong(task.getId()));
+        }
+    }
+
 
     /**
      * 判断是不是root节点
@@ -2067,6 +2080,9 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
     @Transactional(rollbackFor = Exception.class)
     public IdmResDTO evaluate(CompleteTaskDto taskDto) {
         Task task = taskService.createTaskQuery().taskId(String.valueOf(taskDto.getTaskId())).singleResult();
+        if(Objects.isNull(task)){
+           return IdmResDTO.error(ErrorCode.TASK_COMPLETE.getCode(),ErrorCode.TASK_COMPLETE.getMessage());
+        }
         //保存操作记录
         HandleDataDTO dto = new HandleDataDTO();
         dto.setTaskId(String.valueOf(taskDto.getTaskId()));
@@ -2086,5 +2102,22 @@ public class AppWorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEnti
 
         taskService.complete(String.valueOf(taskDto.getTaskId()));
         return IdmResDTO.success();
+    }
+
+    /**
+     * 查询撤回信息
+     * @param dto
+     * @return
+     */
+    public IdmResDTO<List<WorkBusinessTypeInfoDto>> queryWithDrawReason(ProcessBusinessDto dto) {
+
+        LambdaQueryWrapper<WorkBusinessTypeInfoEntity> lw = new LambdaQueryWrapper<>();
+        lw.eq(WorkBusinessTypeInfoEntity::getProcInstId,dto.getProcessInstanceId())
+                .eq(WorkBusinessTypeInfoEntity::getBusinessType, WorkOrderConstants.REVOKE).
+                orderByDesc(WorkBusinessTypeInfoEntity::getStartTime);
+
+        List<WorkBusinessTypeInfoEntity> list = workBusinessTypeInfoService.list(lw);
+        List<WorkBusinessTypeInfoDto> workBusinessTypeInfoDtos = BeanMapper.mapList(list, WorkBusinessTypeInfoDto.class);
+        return IdmResDTO.success(workBusinessTypeInfoDtos);
     }
 }

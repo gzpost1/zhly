@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cuiot.dmp.externalapi.service.mapper.park.IdentificationRecordMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.cuiot.dmp.externalapi.service.entity.park.IdentificationRecordEntity">
+        <id column="event_guid" property="eventGuid" />
+        <result column="device_ip" property="deviceIp" />
+        <result column="device_no" property="deviceNo" />
+        <result column="admit_guid" property="admitGuid" />
+        <result column="rec_mode" property="recMode" />
+        <result column="file_path" property="filePath" />
+        <result column="show_date" property="showDate" />
+        <result column="alive_type" property="aliveType" />
+        <result column="rec_score" property="recScore" />
+        <result column="device_version" property="deviceVersion" />
+        <result column="source" property="source" />
+        <result column="type" property="type" />
+        <result column="card_no" property="cardNo" />
+        <result column="device_name" property="deviceName" />
+        <result column="rec_type" property="recType" />
+        <result column="permission_time_type" property="permissionTimeType" />
+        <result column="pass_time_type" property="passTimeType" />
+        <result column="rec_mode_type" property="recModeType" />
+        <result column="storage_id" property="storageId" />
+        <result column="timestamp" property="timestamp" />
+        <result column="admit_name" property="admitName" />
+        <result column="company_id" property="companyId" />
+        <result column="community_id" property="communityId" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        event_guid, device_ip, device_no, admit_guid, rec_mode, file_path, show_date, alive_type, rec_score, device_version, source, type, card_no, device_name, rec_type, permission_time_type, pass_time_type, rec_mode_type, storage_id, timestamp, admit_name, company_id, community_id, create_time
+    </sql>
+
+
+    <select id="queryForPage" resultMap="BaseResultMap">
+        select
+            <include refid="Base_Column_List"/> from  tb_identification_record
+            <where>
+                <if test="query.deviceName !=null and query.deviceName !=''">
+                    and device_name like concat('%' ,#{query.deviceName},'%')
+                </if>
+                <if test="query.admitName !=null and query.admitName !=''">
+                    and admit_name like concat('%' ,#{query.admitName},'%')
+                </if>
+                <if test="query.cardNo !=null and query.cardNo !=''">
+                    and card_no like concat('%' ,#{query.cardNo},'%')
+                </if>
+                <if test="query.recMode !=null">
+                    and rec_mode = #{query.recMode}
+                </if>
+                <if test="query.companyId !=null">
+                    and company_id =  #{query.companyId}
+                </if>
+                <if test="query.communityIds !=null and query.communityIds.size() >0">
+                    and community_id in
+                    <foreach collection="query.communityIds" item="item" open="("  separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="query.startTime !=null">
+                    and show_date >= #{query.startTime} and show_date <![CDATA[<=]]> #{query.endTime}
+                </if>
+            </where>
+        <if test="query.queryType==0">
+            union all
+            select
+            <include refid="Base_Column_List"/> from  tb_identification_record
+            <where>
+                <if test="query.deviceName !=null and query.deviceName !=''">
+                    and device_name like concat('%' ,#{query.deviceName},'%')
+                </if>
+                <if test="query.admitName !=null and query.admitName !=''">
+                    and admit_name like concat('%' ,#{query.admitName},'%')
+                </if>
+                <if test="query.recMode !=null">
+                    and rec_mode = #{query.recMode}
+                </if>
+                <if test="query.cardNo !=null and query.cardNo !=''">
+                    and card_no like concat('%' ,#{query.cardNo},'%')
+                </if>
+                <if test="query.companyId !=null">
+                    and company_id =  #{query.companyId}
+                </if>
+                <if test="query.startTime !=null">
+                    and show_date >= #{query.startTime} and show_date <![CDATA[<=]]> #{query.endTime}
+                </if>
+                    and   community_id is null
+            </where>
+
+        </if>
+        order by show_date desc
+    </select>
+</mapper>

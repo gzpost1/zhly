@@ -1,7 +1,5 @@
 package cn.cuiot.dmp.externalapi.service.enums;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Objects;
 
 /**
