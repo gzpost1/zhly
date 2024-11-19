@@ -39,10 +39,10 @@
                 and contract_id = #{params.contractId}
             </if>
             <if test=" params.operation != null and params.operation.trim() != ''">
-                and operation like CONCAT('%','${params.operation}','%' )
+                and operation like CONCAT('%',#{params.operation},'%' )
             </if>
             <if test=" params.operator != null and params.operator.trim() != ''">
-                and operator like CONCAT('%','${params.operator}','%' )
+                and operator like CONCAT('%',#{params.operator},'%' )
             </if>
             <if test=" params.operationType != null and params.operationType.trim() != ''">
                 and operation_type=#{params.operationType}
