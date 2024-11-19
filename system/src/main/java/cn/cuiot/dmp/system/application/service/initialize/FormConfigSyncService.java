@@ -253,7 +253,7 @@ public class FormConfigSyncService extends DataSyncService<FormConfigTypeEntity>
     private static void modifyTypeId(ObjectNode propsObject, Map<Long, CommonOptionSyncDTO> optionMap) {
         if (propsObject.has("typeId")) {
             long typeId = propsObject.get("typeId").asLong();
-
+            // 通过 Optional 处理空值，并将结果设置回 typeId
             String value = Optional.ofNullable(optionMap.get(typeId))
                     .map(CommonOptionSyncDTO::getId)
                     .map(String::valueOf)
@@ -265,8 +265,9 @@ public class FormConfigSyncService extends DataSyncService<FormConfigTypeEntity>
     private static void modifyOptions(ObjectNode propsObject, Map<Long, CommonOptionSettingSyncDTO> optionSettingMap) {
         if (propsObject.has("options") && propsObject.get("options").isArray()) {
             ArrayNode optionsArray = (ArrayNode) propsObject.get("options");
-            // 创建新的 ArrayNode，用于存储修改后的非空选项
+            // 创建新的 ArrayNode，用于存储修改后的选项
             ArrayNode filteredArray = optionsArray.arrayNode();
+
             for (JsonNode option : optionsArray) {
                 if (option.has("id") && option.isObject()) {
                     ObjectNode optionObject = (ObjectNode) option;
@@ -275,18 +276,18 @@ public class FormConfigSyncService extends DataSyncService<FormConfigTypeEntity>
                     if (optionSettingMap.containsKey(id)) {
                         CommonOptionSettingSyncDTO dto = optionSettingMap.get(id);
                         if (dto != null) {
-                            optionObject.put("id", dto.getId() + "");
+                            // 替换 id 值
+                            optionObject.put("id", String.valueOf(dto.getId()));
                         }
                     }
-                    // 将更新后的 option 添加到过滤后的数组中
-                    filteredArray.add(optionObject);
+                    // 将修改后的 option 添加到过滤后的数组中
+                    filteredArray.add(optionObject.deepCopy());  // 使用 deepCopy 以确保不影响原始数组
                 }
             }
             // 将过滤后的数组设置回 propsObject 的 options 字段
             propsObject.set("options", filteredArray);
         }
     }
-
 
     private static void modifyAnswers(ObjectNode propsObject, Map<Long, CommonOptionSettingSyncDTO> optionSettingMap) {
         if (propsObject.has("answer") && propsObject.get("answer").isArray()) {
@@ -298,7 +299,7 @@ public class FormConfigSyncService extends DataSyncService<FormConfigTypeEntity>
                 if (optionSettingMap.containsKey(answer)) {
                     CommonOptionSettingSyncDTO dto = optionSettingMap.get(answer);
                     if (Objects.nonNull(dto)) {
-                        filteredArray.set(i,  dto.getId() + "");
+                        filteredArray.add(dto.getId() + "");
                     }
                 }
             }
