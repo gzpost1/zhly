@@ -76,9 +76,6 @@
         <if test="status!=null">
             and uol.status_code = #{status}
         </if>
-        <if test="searchType == 3 and searchContent != null and searchContent != ''">
-            and ${searchContent}
-        </if>
         <if test="operationName!=null and operationName!= ''">
             and uol.operation_name like  concat('%',#{operationName},'%')
         </if>
