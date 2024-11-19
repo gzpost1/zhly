@@ -42,10 +42,10 @@
                 and contract_id = #{params.contractId}
             </if>
             <if test="params.project != null and params.project.trim() != ''">
-                and project like CONCAT('%','${params.project}','%' )
+                and project like CONCAT('%',#{params.project},'%' )
             </if>
             <if test="params.bid != null and params.bid.trim() != ''">
-                and bid like CONCAT('%','${params.bid}','%' )
+                and bid like CONCAT('%',#{params.bid},'%' )
             </if>
             <if test="params.amount != null">
                 and amount = #{params.amount}

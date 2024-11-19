@@ -47,10 +47,10 @@
              and  contract_id = #{params.contractId}
     </if>
     <if test=" params.name != null and params.name.trim() != ''" >
-             and name like CONCAT('%','${params.name}','%' )
+             and name like CONCAT('%',#{params.name},'%' )
     </if>
     <if test=" params.reason != null and params.reason.trim() != ''" >
-             and reason like CONCAT('%','${params.reason}','%' )
+             and reason like CONCAT('%',#{params.reason},'%' )
     </if>
     <if test=" params.datetime != null" >
             <!--  and  datetime between #{params.beginDate} and #{params.endDate}  -->
@@ -60,7 +60,7 @@
              and  operator_id = #{params.operatorId}
     </if>
     <if test=" params.operator != null and params.operator.trim() != ''" >
-             and operator like CONCAT('%','${params.operator}','%' )
+             and operator like CONCAT('%',#{params.operator},'%' )
     </if>
     <if test=" params.type != null" >
              and  type = #{params.type}
