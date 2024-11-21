@@ -536,6 +536,10 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
             int houseStartColIndex = CustomerConstants.IDX_CREDIT_LEVEL + 1;
             while (true) {
 
+                if (houseStartColIndex + 3 > colSize) {
+                    break;
+                }
+
                 CustomerHouseDto houseDto = new CustomerHouseDto();
                 //房屋ID
                 Long houseId = NumberUtil
