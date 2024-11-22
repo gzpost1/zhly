@@ -243,7 +243,7 @@ public class CustomerController {
             return item.getHouseList().size();
         }).max(Integer::compareTo).get();
 
-        List<ArchiveOptionItemVo> optionItems = customerService.getCustomerOptionItems();
+        List<ArchiveOptionItemVo> optionItems = customerService.getCustomerOptionItems(currentOrgId);
 
         List<CustomerExportVo> dataExportList= customerService.buildExportData(dataList,optionItems);
 
