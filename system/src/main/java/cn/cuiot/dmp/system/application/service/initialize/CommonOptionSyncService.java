@@ -24,6 +24,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static cn.cuiot.dmp.base.infrastructure.dto.companyinit.SyncCompanyCacheConstant.*;
@@ -63,7 +65,7 @@ public class CommonOptionSyncService extends DataSyncService<CommonOptionTypeEnt
 
         Map<Long, FormConfigTypeTreeNodeVO> map = buildFormMap(data);
 
-        return data.stream().map(item -> {
+        List<SyncCompanyRelationDTO<CommonOptionTypeEntity>> collect = data.stream().map(item -> {
             FormConfigTypeTreeNodeVO nodeVO = map.get(item.getId());
             CommonOptionTypeEntity entity = new CommonOptionTypeEntity();
             entity.setId(Long.parseLong(nodeVO.getId()));
@@ -77,6 +79,12 @@ public class CommonOptionSyncService extends DataSyncService<CommonOptionTypeEnt
 
             return new SyncCompanyRelationDTO<>(entity, item.getId());
         }).collect(Collectors.toList());
+
+        if (CollectionUtils.isNotEmpty(collect)) {
+            redisUtil.set(COMPANY_INITIALIZE + targetCompanyId + ":" + COMMON_OPTION_TYPE, JsonUtil.writeValueAsString(collect), Const.ONE_DAY_SECOND);
+        }
+
+        return collect;
     }
 
     @Override
@@ -137,7 +145,8 @@ public class CommonOptionSyncService extends DataSyncService<CommonOptionTypeEnt
             List<SyncCompanyRelationDTO<CommonOptionEntity>> companyBeans = Lists.newArrayList();
             List<SyncCompanyRelationDTO<CommonOptionSettingEntity>> settingCompanyBeans = Lists.newArrayList();
 
-            Map<Long, CommonOptionTypeEntity> map = targetData.stream().collect(Collectors.toMap(SyncCompanyRelationDTO::getOldId, SyncCompanyRelationDTO::getEntity));
+            Map<Long, CommonOptionTypeEntity> map = targetData.stream()
+                    .collect(Collectors.toMap(SyncCompanyRelationDTO::getOldId, SyncCompanyRelationDTO::getEntity));
 
             formConfigEntities.forEach(item -> {
                 Long oldId = item.getId();
@@ -147,7 +156,15 @@ public class CommonOptionSyncService extends DataSyncService<CommonOptionTypeEnt
                 entity.setCompanyId(targetCompanyId);
                 entity.setTypeCategory(item.getTypeCategory());
                 entity.setStatus(item.getStatus());
-                entity.setTypeId(map.get(item.getTypeId()).getId());
+                // 设置类型id
+                Long typeId = item.getTypeId();
+                if (Objects.nonNull(typeId)) {
+                    entity.setTypeId(
+                            Optional.ofNullable(map.get(typeId))
+                                    .map(CommonOptionTypeEntity::getId)
+                                    .orElse(null)
+                    );
+                }
                 entity.setDeletedFlag(item.getDeletedFlag());
 
                 // 保存表单配置-常用选项表

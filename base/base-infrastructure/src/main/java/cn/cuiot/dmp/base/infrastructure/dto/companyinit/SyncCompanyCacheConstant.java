@@ -32,6 +32,10 @@ public class SyncCompanyCacheConstant {
      */
     public static final String FORM_CONFIG_DETAIL = "FORM_CONFIG_DETAIL";
     /**
+     * 常用选项类型
+     */
+    public static final String COMMON_OPTION_TYPE = "COMMON_OPTION_TYPE";
+    /**
      * 常用选项
      */
     public static final String COMMON_OPTION = "COMMON_OPTION";

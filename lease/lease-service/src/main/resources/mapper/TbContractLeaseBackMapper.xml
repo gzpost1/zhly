@@ -42,10 +42,10 @@
              and  end_date = #{params.endDate}
     </if>
     <if test=" params.type != null and params.type.trim() != ''" >
-             and type like CONCAT('%','${params.type}','%' )
+             and type like CONCAT('%',#{params.type},'%' )
     </if>
     <if test=" params.reason != null and params.reason.trim() != ''" >
-             and reason like CONCAT('%','${params.reason}','%' )
+             and reason like CONCAT('%',#{params.reason},'%' )
     </if>
     <if test=" params.handoverDate != null" >
             <!--  and  handover_date between #{params.beginDate} and #{params.endDate}  -->
@@ -55,7 +55,7 @@
              and  remark = #{params.remark}
     </if>
     <if test=" params.path != null and params.path.trim() != ''" >
-             and path like CONCAT('%','${params.path}','%' )
+             and path like CONCAT('%',#{params.path},'%' )
     </if>
     </if>
 </sql>

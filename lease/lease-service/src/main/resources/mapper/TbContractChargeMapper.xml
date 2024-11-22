@@ -39,13 +39,13 @@
              and  id = #{params.id}
     </if>
     <if test=" params.contractId != null and params.contractId.trim() != ''" >
-             and contract_id like CONCAT('%','${params.contractId}','%' )
+             and contract_id like CONCAT('%',#{params.contractId},'%' )
     </if>
     <if test=" params.project != null and params.project.trim() != ''" >
-             and project like CONCAT('%','${params.project}','%' )
+             and project like CONCAT('%',#{params.project},'%' )
     </if>
     <if test=" params.house != null and params.house.trim() != ''" >
-             and house like CONCAT('%','${params.house}','%' )
+             and house like CONCAT('%',#{params.house},'%' )
     </if>
     <if test=" params.firstDate != null" >
             <!--  and  first_date between #{params.beginDate} and #{params.endDate}  -->
@@ -55,10 +55,10 @@
              and  amount = #{params.amount}
     </if>
     <if test=" params.payee != null and params.payee.trim() != ''" >
-             and payee like CONCAT('%','${params.payee}','%' )
+             and payee like CONCAT('%',#{params.payee},'%' )
     </if>
     <if test=" params.payer != null and params.payer.trim() != ''" >
-             and payer like CONCAT('%','${params.payer}','%' )
+             and payer like CONCAT('%',#{params.payer},'%' )
     </if>
     <if test=" params.createTime != null" >
             <!--  and  create_time between #{params.beginDate} and #{params.endDate}  -->

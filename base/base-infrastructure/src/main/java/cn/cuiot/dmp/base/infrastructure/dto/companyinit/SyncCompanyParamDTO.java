@@ -33,7 +33,7 @@ public class SyncCompanyParamDTO implements Serializable {
     /**
      * 任务配置
      */
-    private Map<Long, Long> taskConfigMap;
+    private Map<Long, FlowTaskConfigSyncDTO> taskConfigMap;
 
     /**
      * 任务信息详情
