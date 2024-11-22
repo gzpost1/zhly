@@ -23,8 +23,8 @@ public class ArchiveOptionService {
     /**
      * 获得系统配置选项列表
      */
-    public List<ArchiveOptionItemVo> getArchiveOptionItems(Byte systemOptionType) {
-        return archiveOptionMapper.selectArchiveOptionItems(systemOptionType);
+    public List<ArchiveOptionItemVo> getArchiveOptionItems(Byte systemOptionType, Long companyId) {
+        return archiveOptionMapper.selectArchiveOptionItems(systemOptionType, companyId);
     }
 
     /**
