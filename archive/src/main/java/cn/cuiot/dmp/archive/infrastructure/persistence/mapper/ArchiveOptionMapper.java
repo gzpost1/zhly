@@ -10,6 +10,6 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface ArchiveOptionMapper {
 
-    List<ArchiveOptionItemVo> selectArchiveOptionItems(@Param("systemOptionType") Byte systemOptionType);
+    List<ArchiveOptionItemVo> selectArchiveOptionItems(@Param("systemOptionType") Byte systemOptionType, @Param("companyId") Long companyId);
 
 }

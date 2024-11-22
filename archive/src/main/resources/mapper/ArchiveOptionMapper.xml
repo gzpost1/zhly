@@ -14,6 +14,9 @@
         <if test="systemOptionType != null">
             and a.system_option_type=#{systemOptionType}
         </if>
+        <if test="companyId != null">
+            and b.company_id = #{companyId}
+        </if>
         and a.deleted_flag=0
         and b.deleted_flag=0
         order by a.system_option_type,a.id,b.sort,b.id

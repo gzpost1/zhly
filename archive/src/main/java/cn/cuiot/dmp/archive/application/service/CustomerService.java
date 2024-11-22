@@ -39,6 +39,7 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.common.utils.Sm4;
+import cn.cuiot.dmp.domain.types.LoginInfoHolder;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -405,7 +406,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         List<CustomerDto> resultList = Lists.newArrayList();
 
         List<ArchiveOptionItemVo> optionItems = archiveOptionService
-                .getArchiveOptionItems(SystemOptionTypeEnum.CUSTOMER_INFO.getCode());
+                .getArchiveOptionItems(SystemOptionTypeEnum.CUSTOMER_INFO.getCode(), currentOrgId);
 
         int row = 3;
         for (List<Object> data : dataList) {
@@ -643,7 +644,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
      */
     public List<ArchiveOptionItemVo> getCustomerOptionItems(){
         List<ArchiveOptionItemVo> optionItems = archiveOptionService
-                .getArchiveOptionItems(SystemOptionTypeEnum.CUSTOMER_INFO.getCode());
+                .getArchiveOptionItems(SystemOptionTypeEnum.CUSTOMER_INFO.getCode(), LoginInfoHolder.getCurrentOrgId());
         return optionItems;
     }
 
