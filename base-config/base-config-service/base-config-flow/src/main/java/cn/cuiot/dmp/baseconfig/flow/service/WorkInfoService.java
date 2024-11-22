@@ -1222,7 +1222,7 @@ public class WorkInfoService extends ServiceImpl<WorkInfoMapper, WorkInfoEntity>
                 .includeProcessVariables().singleResult();
         String processDefinitionKey = historicProcessInstance.getProcessDefinitionKey();
 
-        TbFlowConfig flowConfig = flowConfigService.getById(processDefinitionKey.replace(PROCESS_PREFIX, ""));
+        TbFlowConfig flowConfig = Optional.ofNullable(flowConfigService.getById(processDefinitionKey.replace(PROCESS_PREFIX, ""))).orElse(new TbFlowConfig());
 
         Process mainProcess = repositoryService.getBpmnModel(historicProcessInstance.getProcessDefinitionId()).getMainProcess();
 
