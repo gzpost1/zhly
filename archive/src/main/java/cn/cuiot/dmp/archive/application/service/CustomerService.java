@@ -642,9 +642,9 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
      * 获得客户信息选项列表
      * @return
      */
-    public List<ArchiveOptionItemVo> getCustomerOptionItems(){
+    public List<ArchiveOptionItemVo> getCustomerOptionItems(Long companyId){
         List<ArchiveOptionItemVo> optionItems = archiveOptionService
-                .getArchiveOptionItems(SystemOptionTypeEnum.CUSTOMER_INFO.getCode(), LoginInfoHolder.getCurrentOrgId());
+                .getArchiveOptionItems(SystemOptionTypeEnum.CUSTOMER_INFO.getCode(), companyId);
         return optionItems;
     }
 
