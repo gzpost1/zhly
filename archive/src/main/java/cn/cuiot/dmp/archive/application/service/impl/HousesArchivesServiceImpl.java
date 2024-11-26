@@ -158,6 +158,7 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         // 构造导出列表
         list.forEach(entity -> {
             HousesArchiveExportVo vo = new HousesArchiveExportVo();
+            vo.setId(entity.getId());
             vo.setCode(entity.getCode());
             vo.setLoupanName(loupanIdNameMap.getOrDefault(entity.getLoupanId(), ""));
             vo.setRoomNum(entity.getRoomNum());
