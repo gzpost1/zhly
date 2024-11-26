@@ -33,63 +33,66 @@ public class HousesArchiveExportVo implements Serializable {
     @Excel(name = "房号", orderNum = "2", width = 20)
     private String roomNum;
 
+    @Excel(name = "房屋ID", orderNum = "3", width = 20)
+    private Long id;
+
     /**
      * 建筑面积（支持4位小数，最长可输入15位）
      */
-    @Excel(name = "建筑面积", orderNum = "3", width = 20)
+    @Excel(name = "建筑面积", orderNum = "4", width = 20)
     private String buildingArea;
 
     /**
      * 使用面积（支持4位小数，最长可输入15位）
      */
-    @Excel(name = "使用面积", orderNum = "4", width = 20)
+    @Excel(name = "使用面积", orderNum = "5", width = 20)
     private String usableArea;
 
     /**
      * 收费面积（支持4位小数，最长可输入15位）
      */
-    @Excel(name = "收费面积", orderNum = "5", width = 20)
+    @Excel(name = "收费面积", orderNum = "6", width = 20)
     private String chargeArea;
 
     /**
      * 状态-需从id转换
      */
-    @Excel(name = "状态", orderNum = "6", width = 20)
+    @Excel(name = "状态", orderNum = "7", width = 20)
     private String statusName;
 
     /**
      * 房屋户型-需从id转换
      */
-    @Excel(name = "房屋户型", orderNum = "7", width = 20)
+    @Excel(name = "房屋户型", orderNum = "8", width = 20)
     private String houseTypeName;
 
     /**
      * 容量
      */
-    @Excel(name = "容量", orderNum = "8", width = 20)
+    @Excel(name = "容量", orderNum = "9", width = 20)
     private String capacity;
 
     /**
      * 期别
      */
-    @Excel(name = "期别", orderNum = "9", width = 20)
+    @Excel(name = "期别", orderNum = "10", width = 20)
     private String qibie;
 
     /**
      * 房屋楼层
      */
-    @Excel(name = "房屋楼层", orderNum = "10", width = 20)
+    @Excel(name = "房屋楼层", orderNum = "11", width = 20)
     private String floorName;
 
     /**
      * 楼层别名
      */
-    @Excel(name = "楼层别名", orderNum = "11", width = 20)
+    @Excel(name = "楼层别名", orderNum = "12", width = 20)
     private String floorAlias;
 
     /**
      * 物业业态-需从id转换
      */
-    @Excel(name = "物业业态", orderNum = "12", width = 20)
+    @Excel(name = "物业业态", orderNum = "13", width = 20)
     private String propertyTypeName;
 }
