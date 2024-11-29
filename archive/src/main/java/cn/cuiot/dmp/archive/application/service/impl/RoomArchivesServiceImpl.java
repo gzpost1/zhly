@@ -91,7 +91,7 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
 
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 查询楼盘信息-用于楼盘id转换为楼盘名称-汇总成Map
-        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(list.stream().map(RoomArchivesEntity::getLoupanId).collect(Collectors.toSet()));
+//        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(list.stream().map(RoomArchivesEntity::getLoupanId).collect(Collectors.toSet()));
         // 查询配置信息-用于配置id转换为配置名称-汇总成Map
         Set<Long> configIdList = new HashSet<>();
         list.forEach(entity -> {

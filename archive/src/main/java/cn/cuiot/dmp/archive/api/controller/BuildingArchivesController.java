@@ -26,7 +26,7 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.FileCopyUtils;
@@ -211,8 +211,7 @@ public class BuildingArchivesController extends BaseController {
     public IdmResDTO<Object> exportBuildingArchives(@RequestBody @Valid BuildingArchivesPageQuery pageQuery) throws IOException {
         pageQuery.setPageSize(QUERY_MAX_SIZE + 1);
         PageResult<BuildingArchivesVO> pageResult = queryForPage(pageQuery);
-        List<BuildingArchivesVO> dataList = pageResult.getRecords();
-        AssertUtil.isFalse(CollectionUtils.isEmpty(dataList),"无数据");
+        List<BuildingArchivesVO> dataList = Optional.ofNullable(pageResult.getRecords()).orElse(Lists.newArrayList());
         AssertUtil.isFalse(dataList.size() > QUERY_MAX_SIZE, "一次最多可导出1万条数据，请筛选条件分多次导出！");
         List<BuildingArchivesExportVO> exportVos = buildingArchivesService.buildExportData(dataList);
         List<Map<String, Object>> sheetsList = new ArrayList<>();

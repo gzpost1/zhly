@@ -42,6 +42,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,7 +135,7 @@ public class HousesArchivesController extends BaseController {
             return IdmResDTO.success(res);
         }
         List<HousesArchivesEntity> records = res.getRecords();
-        records.forEach(r->{
+        records.forEach(r -> {
             BuildingArchivesVO buildingArchivesVO = buildingArchivesService.queryForDetail(r.getLoupanId());
             r.setBuildingArchivesVO(buildingArchivesVO);
         });
@@ -223,8 +224,7 @@ public class HousesArchivesController extends BaseController {
     public void export(@RequestBody HousesArchivesQuery param) throws IOException {
         param.setPageSize(QUERY_MAX_SIZE + 1);
         IdmResDTO<IPage<HousesArchivesEntity>> pageResult = queryForPage(param);
-        List<HousesArchivesEntity> dataList = pageResult.getData().getRecords();
-        AssertUtil.isFalse(CollectionUtils.isEmpty(dataList),"无数据");
+        List<HousesArchivesEntity> dataList = Optional.ofNullable(pageResult.getData().getRecords()).orElse(Lists.newArrayList());
         AssertUtil.isFalse(dataList.size() > QUERY_MAX_SIZE, "一次最多可导出1万条数据，请筛选条件分多次导出！");
         List<HousesArchiveExportVo> exportVos = housesArchivesService.buildExportData(dataList);
         List<Map<String, Object>> sheetsList = new ArrayList<>();

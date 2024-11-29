@@ -35,6 +35,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,14 +101,14 @@ public class ParkingArchivesController extends BaseController {
             wrapper.in(CollectionUtils.isNotEmpty(buildingIdList), ParkingArchivesEntity::getLoupanId, buildingIdList);
         }
         wrapper.eq(Objects.nonNull(query.getLoupanId()), ParkingArchivesEntity::getLoupanId, query.getLoupanId());
-        wrapper.eq(StringUtils.isNotBlank(query.getCode()),ParkingArchivesEntity::getCode, query.getCode());
+        wrapper.eq(StringUtils.isNotBlank(query.getCode()), ParkingArchivesEntity::getCode, query.getCode());
         wrapper.eq(Objects.nonNull(query.getStatus()), ParkingArchivesEntity::getStatus, query.getStatus());
         wrapper.eq(Objects.nonNull(query.getUsageStatus()), ParkingArchivesEntity::getUsageStatus, query.getUsageStatus());
         wrapper.eq(Objects.nonNull(query.getParkingType()), ParkingArchivesEntity::getParkingType, query.getParkingType());
         wrapper.orderByDesc(ParkingArchivesEntity::getCreateTime);
         IPage<ParkingArchivesEntity> res = parkingArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
         List<ParkingArchivesEntity> records = res.getRecords();
-        records.forEach(r->{
+        records.forEach(r -> {
             BuildingArchivesVO buildingArchivesVO = buildingArchivesService.queryForDetail(r.getLoupanId());
             r.setBuildingArchivesVO(buildingArchivesVO);
         });
@@ -165,6 +166,7 @@ public class ParkingArchivesController extends BaseController {
         parkingArchivesService.update(entity, wrapper);
         return IdmResDTO.success();
     }
+
     /**
      * 批量删除
      */
@@ -184,8 +186,7 @@ public class ParkingArchivesController extends BaseController {
     public void export(@RequestBody ParkingArchivesQuery param) throws IOException {
         param.setPageSize(QUERY_MAX_SIZE + 1);
         IdmResDTO<IPage<ParkingArchivesEntity>> pageResult = queryForPage(param);
-        List<ParkingArchivesEntity> dataList = pageResult.getData().getRecords();
-        AssertUtil.isFalse(CollectionUtils.isEmpty(dataList),"无数据");
+        List<ParkingArchivesEntity> dataList = Optional.ofNullable(pageResult.getData().getRecords()).orElse(Lists.newArrayList());
         AssertUtil.isFalse(dataList.size() > QUERY_MAX_SIZE, "一次最多可导出1万条数据，请筛选条件分多次导出！");
         List<ParkingArchivesExportVo> exportVos = parkingArchivesService.buildExportData(dataList);
         List<Map<String, Object>> sheetsList = new ArrayList<>();
@@ -216,12 +217,12 @@ public class ParkingArchivesController extends BaseController {
         List<ParkingArchivesImportDto> importDtoList = ExcelImportUtil
                 .importExcel(file.getInputStream(), ParkingArchivesImportDto.class, params);
 
-        if(CollectionUtils.isEmpty(importDtoList)){
+        if (CollectionUtils.isEmpty(importDtoList)) {
             throw new BusinessException(ResultCode.REQUEST_FORMAT_ERROR, "excel解析失败");
         }
         AssertUtil.isFalse(importDtoList.size() > ArchivesApiConstant.ARCHIVES_IMPORT_MAX_NUM,
                 "数据量超过5000条，导入失败");
-        for (ParkingArchivesImportDto dto : importDtoList){
+        for (ParkingArchivesImportDto dto : importDtoList) {
             parkingArchivesService.checkParamsImport(dto);
         }
 

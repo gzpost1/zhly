@@ -37,6 +37,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,8 +193,7 @@ public class DeviceArchivesController extends BaseController {
     public void export(@RequestBody DeviceArchivesQuery param) throws IOException {
         param.setPageSize(QUERY_MAX_SIZE + 1);
         IdmResDTO<IPage<DeviceArchivesEntity>> pageResult = queryForPage(param);
-        List<DeviceArchivesEntity> dataList = pageResult.getData().getRecords();
-        AssertUtil.isFalse(CollectionUtils.isEmpty(dataList),"无数据");
+        List<DeviceArchivesEntity> dataList =  Optional.ofNullable(pageResult.getData().getRecords()).orElse(Lists.newArrayList());;
         AssertUtil.isFalse(dataList.size() > QUERY_MAX_SIZE, "一次最多可导出1万条数据，请筛选条件分多次导出！");
         List<DeviceArchivesExportVo> exportVos = deviceArchivesService.buildExportData(dataList);
         List<Map<String, Object>> sheetsList = new ArrayList<>();
