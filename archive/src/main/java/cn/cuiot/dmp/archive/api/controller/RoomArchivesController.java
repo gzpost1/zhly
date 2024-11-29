@@ -8,9 +8,12 @@ import cn.cuiot.dmp.archive.application.constant.ArchivesApiConstant;
 import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.RoomArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.query.RoomArchivesQuery;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.param.vo.RoomArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.RoomArchivesService;
+import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
+import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
@@ -47,8 +50,11 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static cn.cuiot.dmp.common.constant.NumberConst.QUERY_MAX_SIZE;
 
 /**
  * @author liujianyu
@@ -85,10 +91,7 @@ public class RoomArchivesController extends BaseController {
         LambdaQueryWrapper<RoomArchivesEntity> wrapper = new LambdaQueryWrapper<>();
         if (Objects.isNull(query.getLoupanId())) {
             // 获取当前平台下的楼盘列表
-            DepartmentReqDto dto = new DepartmentReqDto();
-            dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
-            dto.setSelfReturn(true);
-            List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
+            List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(query.getDepartmentId());
             if (CollectionUtils.isEmpty(buildingArchives)) {
                 return IdmResDTO.success(new Page<>());
             }
@@ -109,6 +112,11 @@ public class RoomArchivesController extends BaseController {
         wrapper.eq(Objects.nonNull(query.getOwnershipAttribute()), RoomArchivesEntity::getOwnershipAttribute, query.getOwnershipAttribute());
         wrapper.orderByDesc(RoomArchivesEntity::getCreateTime);
         IPage<RoomArchivesEntity> res = roomArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
+        List<RoomArchivesEntity> records = res.getRecords();
+        records.forEach(r->{
+            BuildingArchivesVO buildingArchivesVO = buildingArchivesService.queryForDetail(r.getLoupanId());
+            r.setBuildingArchivesVO(buildingArchivesVO);
+        });
         return IdmResDTO.success(res);
     }
 
@@ -180,18 +188,21 @@ public class RoomArchivesController extends BaseController {
      */
     @RequiresPermissions
     @PostMapping(value = "/export", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void export(@RequestBody IdsParam param) throws IOException {
-        List<RoomArchivesExportVo> dataList = roomArchivesService.buildExportData(param);
+    public void export(@RequestBody RoomArchivesQuery param) throws IOException {
+        param.setPageSize(QUERY_MAX_SIZE + 1);
+        IdmResDTO<IPage<RoomArchivesEntity>> pageResult = queryForPage(param);
+        List<RoomArchivesEntity> dataList = pageResult.getData().getRecords();
+        AssertUtil.isFalse(CollectionUtils.isEmpty(dataList),"无数据");
+        AssertUtil.isFalse(dataList.size() > QUERY_MAX_SIZE, "一次最多可导出1万条数据，请筛选条件分多次导出！");
+        List<RoomArchivesExportVo> exportVos = roomArchivesService.buildExportData(dataList);
         List<Map<String, Object>> sheetsList = new ArrayList<>();
         Map<String, Object> sheet1 = ExcelUtils
-                .createSheet("空间档案", dataList, RoomArchivesExportVo.class);
-
+                .createSheet("空间档案", exportVos, RoomArchivesExportVo.class);
         sheetsList.add(sheet1);
-
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
-
+        String fileName = "空间导出(" + DateTimeUtil.localDateToString(LocalDate.now(), "yyyyMMdd") + ")";
         ExcelUtils.downLoadExcel(
-                "room-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                fileName,
                 response,
                 workbook);
     }

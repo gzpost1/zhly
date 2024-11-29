@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
 import cn.cuiot.dmp.archive.application.param.dto.DeviceArchivesImportDto;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.param.vo.DeviceArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.DeviceArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
@@ -103,9 +104,8 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
     }
 
     @Override
-    public List<DeviceArchivesExportVo> buildExportData(IdsParam param) {
+    public List<DeviceArchivesExportVo> buildExportData(List<DeviceArchivesEntity> list) {
         // 查询列表信息
-        List<DeviceArchivesEntity> list = this.listByIds(param.getIds());
         List<DeviceArchivesExportVo> res = new ArrayList<>(list.size());
 
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
@@ -128,6 +128,13 @@ public class DeviceArchivesServiceImpl extends ServiceImpl<DeviceArchivesMapper,
             vo.setDeviceProfessional(entity.getDeviceProfessional());
             vo.setInstallationLocation(entity.getInstallationLocation());
             vo.setDeviceStatusString(configIdNameMap.getOrDefault(entity.getDeviceStatus(), ""));
+
+            BuildingArchivesVO buildingArchivesVO = entity.getBuildingArchivesVO();
+            String loupanName = buildingArchivesVO.getName();
+            String deptName = buildingArchivesVO.getDeptName();
+            vo.setLoupanName(loupanName);
+            vo.setDeptName(deptName);
+
             res.add(vo);
         });
 

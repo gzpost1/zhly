@@ -37,4 +37,10 @@ public class ParkingArchivesQuery extends PageQuery {
      * 车位类型（下拉选择自定义配置中数据）
      */
     private Long parkingType;
+
+    /**
+     * 部门id
+     */
+    private Long departmentId;
+
 }

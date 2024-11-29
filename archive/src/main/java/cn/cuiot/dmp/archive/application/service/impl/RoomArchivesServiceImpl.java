@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
 import cn.cuiot.dmp.archive.application.param.dto.RoomArchivesImportDto;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.param.vo.RoomArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.RoomArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity;
@@ -84,9 +85,8 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
     }
 
     @Override
-    public List<RoomArchivesExportVo> buildExportData(IdsParam param) {
+    public List<RoomArchivesExportVo> buildExportData(List<RoomArchivesEntity> list) {
         // 查询列表信息
-        List<RoomArchivesEntity> list = this.listByIds(param.getIds());
         List<RoomArchivesExportVo> res = new ArrayList<>(list.size());
 
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
@@ -112,6 +112,12 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
             vo.setResourceTypeName(configIdNameMap.getOrDefault(entity.getResourceType(), ""));
             vo.setLocationMethodName(configIdNameMap.getOrDefault(entity.getLocationMethod(), ""));
             vo.setStatusName(getStatusName(entity.getStatus()));
+
+            BuildingArchivesVO buildingArchivesVO = entity.getBuildingArchivesVO();
+            String loupanName = buildingArchivesVO.getName();
+            String deptName = buildingArchivesVO.getDeptName();
+            vo.setLoupanName(loupanName);
+            vo.setDeptName(deptName);
             res.add(vo);
         });
 

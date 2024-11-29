@@ -2,10 +2,12 @@ package cn.cuiot.dmp.archive.application.param.dto;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.alibaba.fastjson.annotation.JSONField;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -18,13 +20,60 @@ import java.time.LocalDate;
 public class HousesArchiveImportDto implements Serializable {
 
     @Excel(name = "房屋名称", orderNum = "0")
+    @NotNull
     private String name;
 
     @Excel(name = "房号", orderNum = "1")
+    @NotNull
     private String roomNum;
 
     @Excel(name = "房屋编码", orderNum = "2")
+    @NotNull
     private String code;
+
+    /**
+     * 建筑面积（支持4位小数，最长可输入15位）
+     */
+    @Excel(name = "建筑面积", orderNum = "3")
+    private Double buildingArea;
+
+    /**
+     * 收费面积（支持4位小数，最长可输入15位）
+     */
+    @Excel(name = "收费面积", orderNum = "4")
+    private Double chargeArea;
+    /**
+     * 使用面积（支持4位小数，最长可输入15位）
+     */
+    @Excel(name = "使用面积", orderNum = "5")
+    private Double usableArea;
+
+    /**
+     * 状态
+     */
+    @Excel(name = "状态", orderNum = "6")
+    private Long status;
+
+    /**
+     * 公摊面积（支持4位小数，最长可输入15位）
+     */
+    @Excel(name = "公摊面积", orderNum = "7")
+    private Double sharedArea;
+
+    /**
+     * 房屋户型
+     */
+    @Excel(name = "房屋户型", orderNum = "8")
+    private Long houseType;
+
+
+    /**
+     * 物业业态
+     */
+    @Excel(name = "物业业态", orderNum = "9")
+    private Long propertyType;
+
+
 //
 //    /**
 //     * 房屋楼层

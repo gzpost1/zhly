@@ -86,5 +86,9 @@ public class BuildingArchivesCreateDTO implements Serializable {
      * 网格员联系方式
      */
     private String staffPhone;
+    /**
+     * 楼盘类型
+     */
+    private String type;
 
 }

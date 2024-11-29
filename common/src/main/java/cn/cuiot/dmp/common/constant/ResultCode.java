@@ -267,6 +267,11 @@ public enum ResultCode {
     WECHAT_PAY_INTERFACE_ERROR("42007", "接口调用错误"),
     WECHAT_PAY_PROFIT_ERROR("42008", "添加分账失败"),
     WECHAT_UNSETTLED_ORDER_ERROR("42009", "该商户存在未完结订单"),
+
+    /**
+     * excel 导出错误
+     */
+    EXCELL_IMPORT_ERROR("50001", "数据校验错误"),
     ;
 
 

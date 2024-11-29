@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
 import cn.cuiot.dmp.archive.application.param.dto.ParkingArchivesImportDto;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.param.vo.ParkingArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.ParkingArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.ParkingArchivesEntity;
@@ -90,9 +91,8 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
     }
 
     @Override
-    public List<ParkingArchivesExportVo> buildExportData(IdsParam param) {
+    public List<ParkingArchivesExportVo> buildExportData(List<ParkingArchivesEntity> list) {
         // 查询列表信息
-        List<ParkingArchivesEntity> list = this.listByIds(param.getIds());
         List<ParkingArchivesExportVo> res = new ArrayList<>(list.size());
 
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
@@ -114,6 +114,12 @@ public class ParkingArchivesServiceImpl extends ServiceImpl<ParkingArchivesMappe
             vo.setStatusName(getStatusName(entity.getStatus()));
             vo.setUsageStatusName(configIdNameMap.getOrDefault(entity.getUsageStatus(), ""));
             vo.setRemarks(entity.getRemarks());
+
+            BuildingArchivesVO buildingArchivesVO = entity.getBuildingArchivesVO();
+            String loupanName = buildingArchivesVO.getName();
+            String deptName = buildingArchivesVO.getDeptName();
+            vo.setLoupanName(loupanName);
+            vo.setDeptName(deptName);
             res.add(vo);
         });
 

@@ -32,10 +32,7 @@ import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -78,14 +75,15 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
                 null, null);
         AssertUtil.notNull(departmentDto, "部门不存在");
         buildingArchivesVO.setDepartmentName(departmentDto.getPathName());
+        buildingArchivesVO.setDeptName(departmentDto.getName());
         return buildingArchivesVO;
     }
 
     @Override
     public List<BuildingArchivesVO> queryForList(BuildingArchivesPageQuery pageQuery) {
 
-        if(CollectionUtils.isEmpty(pageQuery.getDepartmentIdList())){
-            if(Objects.nonNull(pageQuery.getDepartmentId())){
+        if (CollectionUtils.isEmpty(pageQuery.getDepartmentIdList())) {
+            if (Objects.nonNull(pageQuery.getDepartmentId())) {
                 DepartmentReqDto paraDto = new DepartmentReqDto();
                 paraDto.setDeptId(pageQuery.getDepartmentId());
                 paraDto.setSelfReturn(true);
@@ -144,20 +142,53 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
     }
 
     @Override
+    public List<BuildingArchivesExportVO> buildExportData(List<BuildingArchivesVO> list) {
+        List<BuildingArchivesExportVO> exportVos = list.stream()
+                .map(o -> {
+                    BuildingArchivesExportVO buildingArchivesExportVO = new BuildingArchivesExportVO();
+                    buildingArchivesExportVO.setId(o.getId().toString());
+                    buildingArchivesExportVO.setName(o.getName());
+                    buildingArchivesExportVO.setAreaName(o.getAreaName() + o.getAreaDetail());
+                    buildingArchivesExportVO.setDepartmentName(o.getDepartmentName());
+                    buildingArchivesExportVO.setBuildingNum(o.getBuildingNum());
+                    if (Objects.nonNull(o.getHouseNum())) {
+                        buildingArchivesExportVO.setHouseNum(o.getHouseNum());
+                    }
+                    if (Objects.nonNull(o.getParkNum())) {
+                        buildingArchivesExportVO.setParkNum(o.getParkNum());
+                    }
+                    if (Objects.nonNull(o.getStaffPhone())) {
+                        buildingArchivesExportVO.setStaffPhone(o.getStaffPhone());
+                    }
+                    return buildingArchivesExportVO;
+                })
+                .collect(Collectors.toList());
+        return exportVos;
+    }
+
+    @Override
     public PageResult<BuildingArchivesVO> queryForPage(BuildingArchivesPageQuery pageQuery) {
+        PageResult<BuildingArchivesVO> buildingArchivesVOPageResult = new PageResult<>();
+//        DepartmentDto departmentReqDto = apiSystemService.lookUpDepartmentInfo(pageQuery.getDepartmentId(), null, null);
+        DepartmentReqDto departmentReqDto = new DepartmentReqDto();
+        departmentReqDto.setSelfReturn(true);
+        Long deptId = Optional.ofNullable(pageQuery.getDepartmentId()).orElse(LoginInfoHolder.getCurrentDeptId());
+        departmentReqDto.setDeptId(deptId);
+        List<DepartmentDto> departmentDtos = apiSystemService.lookUpDepartmentChildList(departmentReqDto);
+        AssertUtil.notEmpty(departmentDtos, "部门不存在");
+        List<Long> departIds = departmentDtos.stream().map(DepartmentDto::getId).collect(Collectors.toList());
+        Map<Long, String> depotPathNamesMap = departmentDtos.stream().collect(Collectors.toMap(DepartmentDto::getId, DepartmentDto::getPathName));
+        pageQuery.setDepartmentIdList(departIds);
         PageResult<BuildingArchives> buildingArchivesPageResult = buildingArchivesRepository.queryForPage(pageQuery);
         if (CollectionUtils.isEmpty(buildingArchivesPageResult.getList())) {
             return new PageResult<>();
         }
-        PageResult<BuildingArchivesVO> buildingArchivesVOPageResult = new PageResult<>();
-        DepartmentDto departmentDto = apiSystemService.lookUpDepartmentInfo(pageQuery.getDepartmentId(), null, null);
-        AssertUtil.notNull(departmentDto, "部门不存在");
-        String departmentName = departmentDto.getPathName();
+
         List<BuildingArchivesVO> buildingArchivesVOS = buildingArchivesPageResult.getList().stream()
                 .map(o -> {
                     BuildingArchivesVO buildingArchivesVO = new BuildingArchivesVO();
                     BeanUtils.copyProperties(o, buildingArchivesVO);
-                    buildingArchivesVO.setDepartmentName(departmentName);
+                    buildingArchivesVO.setDepartmentName(depotPathNamesMap.get(o.getDepartmentId()));
                     return buildingArchivesVO;
                 })
                 .collect(Collectors.toList());
@@ -219,7 +250,7 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
     }
 
     @Override
-    public List<DepartmentTreeRspDTO> getDepartmentBuildingTree(Long orgId, Long userId,String keyWords) {
+    public List<DepartmentTreeRspDTO> getDepartmentBuildingTree(Long orgId, Long userId, String keyWords) {
         AssertUtil.notNull(orgId, "企业id不能为空");
         AssertUtil.notNull(userId, "用户id不能为空");
         List<DepartmentTreeRspDTO> departmentTreeRspList = apiSystemService.lookUpDepartmentTree(orgId, userId);
@@ -306,12 +337,13 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
     }
 
     @Override
-    public List<BuildingArchive> lookupBuildingArchiveByDepartmentList(DepartmentReqDto reqDto) {
+    public List<BuildingArchive> lookupBuildingArchiveByDepartmentList(Long depotId) {
         DepartmentReqDto paraDto = new DepartmentReqDto();
-        paraDto.setDeptId(reqDto.getDeptId());
-        if(Objects.isNull(LoginInfoHolder.getCurrentDeptId())){
-            paraDto.setDeptId(reqDto.getDeptId());
-        }
+        Long deptId = Optional.ofNullable(depotId).orElse(LoginInfoHolder.getCurrentDeptId());
+        paraDto.setDeptId(deptId);
+//        if(Objects.isNull(LoginInfoHolder.getCurrentDeptId())){
+//            paraDto.setDeptId(reqDto.getDeptId());
+//        }
 
         paraDto.setSelfReturn(true);
         List<DepartmentDto> departmentDtoList = apiSystemService.lookUpDepartmentChildList(paraDto);
@@ -354,7 +386,7 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
     }
 
     @Override
-    public Long quertOrgIdByHouse(Long houseId){
+    public Long quertOrgIdByHouse(Long houseId) {
         return buildingArchivesRepository.quertOrgIdByHouse(houseId);
     }
 }

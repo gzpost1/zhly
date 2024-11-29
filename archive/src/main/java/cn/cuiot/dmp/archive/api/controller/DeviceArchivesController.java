@@ -8,10 +8,14 @@ import cn.cuiot.dmp.archive.application.constant.ArchivesApiConstant;
 import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.DeviceArchivesImportDto;
 import cn.cuiot.dmp.archive.application.param.query.DeviceArchivesQuery;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.param.vo.DeviceArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.DeviceArchivesService;
+import cn.cuiot.dmp.archive.application.service.impl.BuildingAndConfigCommonUtilService;
+import cn.cuiot.dmp.archive.application.service.impl.DeviceArchivesServiceImpl;
 import cn.cuiot.dmp.archive.infrastructure.entity.DeviceArchivesEntity;
+import cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
 import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
@@ -47,8 +51,11 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static cn.cuiot.dmp.common.constant.NumberConst.QUERY_MAX_SIZE;
 
 /**
  * @author liujianyu
@@ -66,6 +73,8 @@ public class DeviceArchivesController extends BaseController {
 
     @Autowired
     private BuildingArchivesService buildingArchivesService;
+    @Autowired
+    private BuildingAndConfigCommonUtilService buildingAndConfigCommonUtilService;
 
     /**
      * 根据id获取详情
@@ -86,10 +95,7 @@ public class DeviceArchivesController extends BaseController {
         LambdaQueryWrapper<DeviceArchivesEntity> wrapper = new LambdaQueryWrapper<>();
         if (Objects.isNull(query.getLoupanId())) {
             // 获取当前平台下的楼盘列表
-            DepartmentReqDto dto = new DepartmentReqDto();
-            dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
-            dto.setSelfReturn(true);
-            List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
+            List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(query.getDepartmentId());
             if (CollectionUtils.isEmpty(buildingArchives)) {
                 return IdmResDTO.success(new Page<>());
             }
@@ -107,6 +113,11 @@ public class DeviceArchivesController extends BaseController {
         wrapper.eq(Objects.nonNull(query.getDeviceCategory()), DeviceArchivesEntity::getDeviceCategory, query.getDeviceCategory());
         wrapper.orderByDesc(DeviceArchivesEntity::getCreateTime);
         IPage<DeviceArchivesEntity> res = deviceArchivesService.page(new Page<>(query.getPageNo(), query.getPageSize()), wrapper);
+        List<DeviceArchivesEntity> records = res.getRecords();
+        records.forEach(r->{
+            BuildingArchivesVO buildingArchivesVO = buildingArchivesService.queryForDetail(r.getLoupanId());
+            r.setBuildingArchivesVO(buildingArchivesVO);
+        });
         return IdmResDTO.success(res);
     }
 
@@ -178,20 +189,35 @@ public class DeviceArchivesController extends BaseController {
      */
     @RequiresPermissions
     @PostMapping(value = "/export", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void export(@RequestBody IdsParam param) throws IOException {
-        List<DeviceArchivesExportVo> dataList = deviceArchivesService.buildExportData(param);
+    public void export(@RequestBody DeviceArchivesQuery param) throws IOException {
+        param.setPageSize(QUERY_MAX_SIZE + 1);
+        IdmResDTO<IPage<DeviceArchivesEntity>> pageResult = queryForPage(param);
+        List<DeviceArchivesEntity> dataList = pageResult.getData().getRecords();
+        AssertUtil.isFalse(CollectionUtils.isEmpty(dataList),"无数据");
+        AssertUtil.isFalse(dataList.size() > QUERY_MAX_SIZE, "一次最多可导出1万条数据，请筛选条件分多次导出！");
+        List<DeviceArchivesExportVo> exportVos = deviceArchivesService.buildExportData(dataList);
         List<Map<String, Object>> sheetsList = new ArrayList<>();
         Map<String, Object> sheet1 = ExcelUtils
-                .createSheet("空间档案", dataList, DeviceArchivesExportVo.class);
-
+                .createSheet("设备档案", exportVos, DeviceArchivesExportVo.class);
         sheetsList.add(sheet1);
-
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
-
+        String fileName = "设备导出(" + DateTimeUtil.localDateToString(LocalDate.now(), "yyyyMMdd") + ")";
         ExcelUtils.downLoadExcel(
-                "room-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                fileName,
                 response,
                 workbook);
+    }
+
+    private void addListCanNull(Set<Long> configIdList, Long configId){
+        if (Objects.nonNull(configId)){
+            configIdList.add(configId);
+        }
+    }
+
+    private void getConfigIdFromEntity(DeviceArchivesEntity entity, Set<Long> configIdList){
+        addListCanNull(configIdList, entity.getDeviceCategory());
+        addListCanNull(configIdList, entity.getDeviceStatus());
+        addListCanNull(configIdList, entity.getPropertyServiceLevel());
     }
 
     /**

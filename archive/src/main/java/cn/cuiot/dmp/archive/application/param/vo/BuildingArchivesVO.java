@@ -108,4 +108,11 @@ public class BuildingArchivesVO implements Serializable {
      */
     private Long qrCodeId;
 
+    /**
+     * 楼盘类型
+     */
+    private String type;
+
+    private String deptName;
+
 }

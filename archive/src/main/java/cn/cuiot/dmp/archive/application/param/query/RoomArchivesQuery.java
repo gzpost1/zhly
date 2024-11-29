@@ -62,4 +62,10 @@ public class RoomArchivesQuery extends PageQuery {
      * 产权属性（下拉选择自定义配置中数据）
      */
     private Long ownershipAttribute;
+
+    /**
+     * 部门id
+     */
+    private Long departmentId;
+
 }

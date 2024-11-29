@@ -40,7 +40,7 @@ public interface HousesArchivesService extends IService<HousesArchivesEntity> {
     /**
      * 按照id列表查询并且构造出导出用的列表
      */
-    List<HousesArchiveExportVo> buildExportData(IdsParam param);
+    List<HousesArchiveExportVo> buildExportData(List<HousesArchivesEntity> list);
 
     /**
      * 导入数据

@@ -81,7 +81,7 @@ public class ApiController {
      */
     @PostMapping("/lookupBuildingArchiveByDepartmentList")
     public List<BuildingArchive> lookupBuildingArchiveByDepartmentList(@RequestBody @Valid DepartmentReqDto reqDto){
-        return buildingArchivesService.lookupBuildingArchiveByDepartmentList(reqDto);
+        return buildingArchivesService.lookupBuildingArchiveByDepartmentList(reqDto.getDeptId());
     }
 
 
