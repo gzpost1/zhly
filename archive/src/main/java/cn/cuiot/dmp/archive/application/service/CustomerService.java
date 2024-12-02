@@ -48,11 +48,13 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -106,11 +108,12 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 .status(query.getStatus())
                 .houseId(query.getHouseId())
                 .loupanId(query.getLoupanId())
+                .customerType(query.getCustomerType()).companyIndustry(query.getCompanyIndustry()).companyNature(query.getCompanyNature())
                 .build();
-        if(StringUtils.isNotBlank(query.getKeyword())){
+        if (StringUtils.isNotBlank(query.getKeyword())) {
             criteriaQuery.setKeywordPhone(Sm4.encryption(query.getKeyword()));
         }
-        if(StringUtils.isNotBlank(query.getContactPhone())){
+        if (StringUtils.isNotBlank(query.getContactPhone())) {
             criteriaQuery.setContactPhone(Sm4.encryption(query.getContactPhone()));
         }
         IPage<CustomerVo> page = customerMapper
@@ -120,14 +123,19 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 .orElse(Lists.newArrayList())
                 .stream().map(ite -> ite.getId()).collect(
                         Collectors.toList());
+        Long currentOrgId = LoginInfoHolder.getCurrentOrgId();
+        List<ArchiveOptionItemVo> optionItems = getCustomerOptionItems(currentOrgId);
         if (CollectionUtils.isNotEmpty(customerIdList)) {
             for (CustomerVo customerVo : page.getRecords()) {
-                if(StringUtils.isNotBlank(customerVo.getContactPhone())){
+                if (StringUtils.isNotBlank(customerVo.getContactPhone())) {
                     customerVo.setContactPhone(Sm4.decrypt(customerVo.getContactPhone()));
                 }
-                if(StringUtils.isNotBlank(customerVo.getCertificateCdoe())){
+                if (StringUtils.isNotBlank(customerVo.getCertificateCdoe())) {
                     customerVo.setCertificateCdoe(Sm4.decrypt(customerVo.getCertificateCdoe()));
                 }
+                customerVo.setCustomerTypeName(getItemName(optionItems, parseLong(customerVo.getCustomerType())));
+                customerVo.setCompanyNatureName(getItemName(optionItems, parseLong(customerVo.getCompanyNature())));
+                customerVo.setCompanyIndustryName(getItemName(optionItems, parseLong(customerVo.getCompanyIndustry())));
             }
             List<CustomerHouseVo> houseList = customerHouseService
                     .selectByCustomerId(customerIdList);
@@ -141,14 +149,14 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         }
 
         //下拉回显
-        if(Objects.nonNull(query.getIncludeId())){
+        if (Objects.nonNull(query.getIncludeId())) {
             CustomerQuery ncludeQuery = new CustomerQuery();
             ncludeQuery.setId(query.getIncludeId());
             List<CustomerVo> dataList = queryForList(query);
-            if(CollectionUtils.isNotEmpty(dataList)){
+            if (CollectionUtils.isNotEmpty(dataList)) {
                 CustomerVo customerVo = dataList.get(0);
-                if(!page.getRecords().stream().filter(item->item.getId().equals(customerVo.getId())).findFirst().isPresent()){
-                    page.getRecords().add(0,customerVo);
+                if (!page.getRecords().stream().filter(item -> item.getId().equals(customerVo.getId())).findFirst().isPresent()) {
+                    page.getRecords().add(0, customerVo);
                 }
             }
         }
@@ -171,10 +179,10 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 .houseId(query.getHouseId())
                 .loupanId(query.getLoupanId())
                 .build();
-        if(StringUtils.isNotBlank(query.getKeyword())){
+        if (StringUtils.isNotBlank(query.getKeyword())) {
             criteriaQuery.setKeywordPhone(Sm4.encryption(query.getKeyword()));
         }
-        if(StringUtils.isNotBlank(query.getContactPhone())){
+        if (StringUtils.isNotBlank(query.getContactPhone())) {
             criteriaQuery.setContactPhone(Sm4.encryption(query.getContactPhone()));
         }
 
@@ -186,10 +194,10 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                         Collectors.toList());
         if (CollectionUtils.isNotEmpty(customerIdList)) {
             for (CustomerVo customerVo : selectList) {
-                if(StringUtils.isNotBlank(customerVo.getContactPhone())){
+                if (StringUtils.isNotBlank(customerVo.getContactPhone())) {
                     customerVo.setContactPhone(Sm4.decrypt(customerVo.getContactPhone()));
                 }
-                if(StringUtils.isNotBlank(customerVo.getCertificateCdoe())){
+                if (StringUtils.isNotBlank(customerVo.getCertificateCdoe())) {
                     customerVo.setCertificateCdoe(Sm4.decrypt(customerVo.getCertificateCdoe()));
                 }
             }
@@ -218,10 +226,10 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
             CustomerVo customerVo = new CustomerVo();
             BeanUtils.copyProperties(entity, customerVo);
 
-            if(StringUtils.isNotBlank(customerVo.getContactPhone())){
+            if (StringUtils.isNotBlank(customerVo.getContactPhone())) {
                 customerVo.setContactPhone(Sm4.decrypt(customerVo.getContactPhone()));
             }
-            if(StringUtils.isNotBlank(customerVo.getCertificateCdoe())){
+            if (StringUtils.isNotBlank(customerVo.getCertificateCdoe())) {
                 customerVo.setCertificateCdoe(Sm4.decrypt(customerVo.getCertificateCdoe()));
             }
 
@@ -292,8 +300,8 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
         List<CustomerHouseDto> houseList = dto.getHouseList();
         if (CollectionUtils.isNotEmpty(houseList)) {
 
-            if(houseList.size()!=houseList.stream().filter(distinctByKey(CustomerHouseDto::getHouseId))
-                    .collect(Collectors.toList()).size()){
+            if (houseList.size() != houseList.stream().filter(distinctByKey(CustomerHouseDto::getHouseId))
+                    .collect(Collectors.toList()).size()) {
                 throw new BusinessException(ResultCode.PARAM_NOT_COMPLIANT,
                         "操作失败，一套房屋仅可被一个客户绑定一次");
             }
@@ -344,16 +352,17 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
 
     /**
      * 获得房屋楼盘的对应
+     *
      * @param houseIdList
      * @return
      */
-    private Map<String,Long> getHouseMap(List<Long> houseIdList){
+    private Map<String, Long> getHouseMap(List<Long> houseIdList) {
         List<HousesArchivesEntity> selectList = housesArchivesMapper.selectList(
                 Wrappers.<HousesArchivesEntity>lambdaQuery()
                         .in(HousesArchivesEntity::getId, houseIdList));
-        Map<String,Long> map = Optional.ofNullable(selectList).orElse(Lists.newArrayList())
+        Map<String, Long> map = Optional.ofNullable(selectList).orElse(Lists.newArrayList())
                 .stream().collect(Collectors
-                        .toMap(item->item.getId().toString(), HousesArchivesEntity::getLoupanId));
+                        .toMap(item -> item.getId().toString(), HousesArchivesEntity::getLoupanId));
         return map;
     }
 
@@ -398,10 +407,10 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
      * 解析上传数据
      */
     public List<CustomerDto> analysisImportData(Long currentOrgId, List<String> headers,
-            List<List<Object>> dataList) {
+                                                List<List<Object>> dataList) {
 
         //模版误操作可能会造成有很多空标题
-        int colSize = headers.stream().filter(vo ->StringUtils.isNotBlank(vo)).collect(Collectors.toList()).size();
+        int colSize = headers.stream().filter(vo -> StringUtils.isNotBlank(vo)).collect(Collectors.toList()).size();
 
         List<CustomerDto> resultList = Lists.newArrayList();
 
@@ -552,17 +561,17 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                 String moveInDateStr = StrUtil.toStringOrNull(data.get(houseStartColIndex + 2));
 
                 //迁出日期
-                String moveOutDateStr =null;
+                String moveOutDateStr = null;
                 //最后一个值非必填 可能为空会造成数组越界
-                if(houseStartColIndex + 3 <data.size()){
+                if (houseStartColIndex + 3 < data.size()) {
                     moveOutDateStr = StrUtil.toStringOrNull(data.get(houseStartColIndex + 3));
                 }
 
-                if(StringUtils.isNotBlank(identityTypeName)||StringUtils.isNotBlank(moveInDateStr)||StringUtils.isNotBlank(moveOutDateStr)){
-                    AssertUtil.notNull(houseId,"导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 1) + "为空");
+                if (StringUtils.isNotBlank(identityTypeName) || StringUtils.isNotBlank(moveInDateStr) || StringUtils.isNotBlank(moveOutDateStr)) {
+                    AssertUtil.notNull(houseId, "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex + 1) + "为空");
                 }
 
-                if(Objects.nonNull(houseId)){
+                if (Objects.nonNull(houseId)) {
                     HousesArchivesEntity entity = housesArchivesMapper.selectById(houseId);
                     AssertUtil.notNull(entity,
                             "导入失败，第" + row + "行，填写的" + headers.get(houseStartColIndex) + "不存在");
@@ -604,7 +613,7 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
                     break;
                 }
             }
-            AssertUtil.notEmpty(houseList,"导入失败，第" + row + "行，必须填写一个关联房屋信息");
+            AssertUtil.notEmpty(houseList, "导入失败，第" + row + "行，必须填写一个关联房屋信息");
             //根据房屋ID去重
             houseList = houseList.stream().filter(distinctByKey(CustomerHouseDto::getHouseId))
                     .collect(Collectors.toList());
@@ -640,9 +649,10 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
 
     /**
      * 获得客户信息选项列表
+     *
      * @return
      */
-    public List<ArchiveOptionItemVo> getCustomerOptionItems(Long companyId){
+    public List<ArchiveOptionItemVo> getCustomerOptionItems(Long companyId) {
         List<ArchiveOptionItemVo> optionItems = archiveOptionService
                 .getArchiveOptionItems(SystemOptionTypeEnum.CUSTOMER_INFO.getCode(), companyId);
         return optionItems;
@@ -650,27 +660,28 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
 
     /**
      * 构建导出数据
+     *
      * @param dataList
      * @return
      */
-    public List<CustomerExportVo> buildExportData(List<CustomerVo> dataList,List<ArchiveOptionItemVo> optionItems) {
+    public List<CustomerExportVo> buildExportData(List<CustomerVo> dataList, List<ArchiveOptionItemVo> optionItems) {
         List<CustomerExportVo> resultList = Lists.newArrayList();
-        for(CustomerVo vo:dataList){
+        for (CustomerVo vo : dataList) {
             CustomerExportVo exportVo = new CustomerExportVo();
             exportVo.setCustomerName(vo.getCustomerName());
             exportVo.setCustomerId(vo.getId().toString());
-            exportVo.setCustomerTypeName(getItemName(optionItems,parseLong(vo.getCustomerType())));
-            exportVo.setCompanyNatureName(getItemName(optionItems,parseLong(vo.getCompanyNature())));
-            exportVo.setCompanyIndustryName(getItemName(optionItems,parseLong(vo.getCompanyIndustry())));
-            exportVo.setCertificateTypeName(getItemName(optionItems,parseLong(vo.getCertificateType())));
+            exportVo.setCustomerTypeName(getItemName(optionItems, parseLong(vo.getCustomerType())));
+            exportVo.setCompanyNatureName(getItemName(optionItems, parseLong(vo.getCompanyNature())));
+            exportVo.setCompanyIndustryName(getItemName(optionItems, parseLong(vo.getCompanyIndustry())));
+            exportVo.setCertificateTypeName(getItemName(optionItems, parseLong(vo.getCertificateType())));
             exportVo.setCertificateCdoe(vo.getCertificateCdoe());
             exportVo.setContactName(vo.getContactName());
             exportVo.setContactPhone(vo.getContactPhone());
             exportVo.setEmail(vo.getEmail());
-            exportVo.setSexName(getItemName(optionItems,parseLong(vo.getSex())));
-            exportVo.setCustomerCateName(getItemName(optionItems,parseLong(vo.getCustomerCate())));
-            exportVo.setCustomerLevelName(getItemName(optionItems,parseLong(vo.getCustomerLevel())));
-            exportVo.setCreditLevelName(getItemName(optionItems,parseLong(vo.getCreditLevel())));
+            exportVo.setSexName(getItemName(optionItems, parseLong(vo.getSex())));
+            exportVo.setCustomerCateName(getItemName(optionItems, parseLong(vo.getCustomerCate())));
+            exportVo.setCustomerLevelName(getItemName(optionItems, parseLong(vo.getCustomerLevel())));
+            exportVo.setCreditLevelName(getItemName(optionItems, parseLong(vo.getCreditLevel())));
             resultList.add(exportVo);
         }
         return resultList;
@@ -679,8 +690,8 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
     /**
      * 转换为Long类型
      */
-    private Long parseLong(String idStr){
-        if(StringUtils.isBlank(idStr)){
+    private Long parseLong(String idStr) {
+        if (StringUtils.isBlank(idStr)) {
             return null;
         }
         return Long.valueOf(idStr);
@@ -703,26 +714,27 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
 
     /**
      * 构建导出数据
+     *
      * @param houseList
      * @return
      */
-    public List<CustomerHouseExportVo> buildHouseExportData(List<CustomerHouseVo> houseList,List<ArchiveOptionItemVo> optionItems) {
+    public List<CustomerHouseExportVo> buildHouseExportData(List<CustomerHouseVo> houseList, List<ArchiveOptionItemVo> optionItems) {
         List<CustomerHouseExportVo> resultList = Lists.newArrayList();
-        for(CustomerHouseVo vo:houseList){
+        for (CustomerHouseVo vo : houseList) {
             CustomerHouseExportVo exportVo = new CustomerHouseExportVo();
             exportVo.setHouseId(vo.getHouseId());
-            if(StringUtils.isNotBlank(vo.getIdentityType())){
+            if (StringUtils.isNotBlank(vo.getIdentityType())) {
                 CustomerIdentityTypeEnum identityTypeEnum = CustomerIdentityTypeEnum
                         .parseByCode(vo.getIdentityType());
-                if(Objects.nonNull(identityTypeEnum)){
+                if (Objects.nonNull(identityTypeEnum)) {
                     exportVo.setIdentityTypeName(identityTypeEnum.getName());
                 }
             }
-            if(Objects.nonNull(vo.getMoveInDate())){
-                exportVo.setMoveInDateStr(DateTimeUtil.dateToString(vo.getMoveInDate(),DEFAULT_DATE_FORMAT));
+            if (Objects.nonNull(vo.getMoveInDate())) {
+                exportVo.setMoveInDateStr(DateTimeUtil.dateToString(vo.getMoveInDate(), DEFAULT_DATE_FORMAT));
             }
-            if(Objects.nonNull(vo.getMoveOutDate())){
-                exportVo.setMoveOutDateStr(DateTimeUtil.dateToString(vo.getMoveOutDate(),DEFAULT_DATE_FORMAT));
+            if (Objects.nonNull(vo.getMoveOutDate())) {
+                exportVo.setMoveOutDateStr(DateTimeUtil.dateToString(vo.getMoveOutDate(), DEFAULT_DATE_FORMAT));
             }
             resultList.add(exportVo);
         }
@@ -735,8 +747,8 @@ public class CustomerService extends ServiceImpl<CustomerMapper, CustomerEntity>
     public List<CustomerUserRspDto> lookupCustomerUsers(CustomerUseReqDto reqDto) {
         List<CustomerUserRspDto> list = customerMapper.lookupCustomerUsers(reqDto);
         if (CollectionUtils.isNotEmpty(list)) {
-            for(CustomerUserRspDto dto:list){
-                if(StringUtils.isNotBlank(dto.getContactPhone())){
+            for (CustomerUserRspDto dto : list) {
+                if (StringUtils.isNotBlank(dto.getContactPhone())) {
                     dto.setContactPhone(Sm4.decrypt(dto.getContactPhone()));
                 }
             }

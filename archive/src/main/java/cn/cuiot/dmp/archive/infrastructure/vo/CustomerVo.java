@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.archive.infrastructure.vo;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.cuiot.dmp.archive.infrastructure.entity.CustomerEntity;
 import java.util.List;
 import lombok.Data;
@@ -26,4 +27,19 @@ public class CustomerVo extends CustomerEntity {
      * 车辆列表
      */
     private List<CustomerVehicleVo> vehicleList;
+
+    /**
+     * 客户类型
+     */
+    private String customerTypeName;
+
+    /**
+     * 公司性质
+     */
+    private String companyNatureName;
+
+    /**
+     * 所属行业
+     */
+    private String companyIndustryName;
 }

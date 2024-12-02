@@ -112,6 +112,15 @@
             <if test="param.contactPhone != null and param.contactPhone != ''">
                 and a.contact_phone=#{param.contactPhone}
             </if>
+            <if test="param.customerType != null and param.customerType != ''">
+                and a.customer_type=#{param.customerType}
+            </if>
+            <if test="param.companyIndustry != null and param.companyIndustry != ''">
+                and a.company_industry=#{param.companyIndustry}
+            </if>
+            <if test="param.companyNature != null and param.companyNature != ''">
+                and a.company_nature=#{param.companyNature}
+            </if>
             <if test="param.status != null">
                 and a.`status`=#{param.status}
             </if>

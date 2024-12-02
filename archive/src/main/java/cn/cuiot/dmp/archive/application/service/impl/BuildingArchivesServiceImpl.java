@@ -223,6 +223,12 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
         return buildingArchivesRepository.batchUpdateBuildingArchives(batchBuildingArchivesDTO.getDepartmentId(),
                 batchBuildingArchivesDTO.getIdList());
     }
+    @Override
+    public int batchUpdateBuildingArchivesType(BatchBuildingArchivesDTO batchBuildingArchivesDTO) {
+        AssertUtil.notNull(batchBuildingArchivesDTO.getType(), "类型不能为空");
+        return buildingArchivesRepository.batchUpdateBuildingArchivesType(batchBuildingArchivesDTO.getType(),
+                batchBuildingArchivesDTO.getIdList());
+    }
 
     @Override
     public int batchDeleteBuildingArchives(List<Long> idList) {

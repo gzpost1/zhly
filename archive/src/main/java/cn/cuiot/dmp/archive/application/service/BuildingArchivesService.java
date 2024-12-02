@@ -67,6 +67,8 @@ public interface BuildingArchivesService {
      */
     int batchUpdateBuildingArchives(BatchBuildingArchivesDTO batchBuildingArchivesDTO);
 
+    int batchUpdateBuildingArchivesType(BatchBuildingArchivesDTO batchBuildingArchivesDTO);
+
     /**
      * 批量删除
      */

@@ -131,6 +131,10 @@ public class BuildingArchivesRepositoryImpl implements BuildingArchivesRepositor
     public int batchUpdateBuildingArchives(Long departmentId, List<Long> idList) {
         return buildingArchivesMapper.batchUpdateBuildingArchives(departmentId, idList);
     }
+    @Override
+    public int batchUpdateBuildingArchivesType(String type, List<Long> idList) {
+        return buildingArchivesMapper.batchUpdateBuildingArchivesType(type, idList);
+    }
 
     @Override
     public int batchDeleteBuildingArchives(List<Long> idList) {

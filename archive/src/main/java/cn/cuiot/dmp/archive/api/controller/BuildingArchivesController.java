@@ -138,6 +138,15 @@ public class BuildingArchivesController extends BaseController {
     public int batchUpdateBuildingArchives(@RequestBody @Valid BatchBuildingArchivesDTO batchBuildingArchivesDTO) {
         return buildingArchivesService.batchUpdateBuildingArchives(batchBuildingArchivesDTO);
     }
+    /**
+     * 批量更新楼盘类型
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "batchUpdateBuildingArchivesType", operationName = "批量更新楼盘类型", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
+    @PostMapping("/batchUpdateType")
+    public int batchUpdateType(@RequestBody @Valid BatchBuildingArchivesDTO batchBuildingArchivesDTO) {
+        return buildingArchivesService.batchUpdateBuildingArchivesType(batchBuildingArchivesDTO);
+    }
 
     /**
      * 批量删除
@@ -181,9 +190,9 @@ public class BuildingArchivesController extends BaseController {
      */
     @PostMapping("/import")
     public IdmResDTO<Object> importBuildingArchives(@RequestParam("file") MultipartFile file,
-                                                    @RequestParam("departmentId") Long departmentId) throws Exception {
+                                                    @RequestParam("departmentId") Long departmentId, @RequestParam("orgId") String orgId) throws Exception {
         AssertUtil.notNull(departmentId, "部门id不能为空");
-        String orgId = getOrgId();
+//        String orgId = Optional.ofNullable(getOrgId()).orElse(getOrgId());
         AssertUtil.notBlank(orgId, "组织id不能为空");
         String userId = getUserId();
         AssertUtil.notBlank(userId, "用户id不能为空");
