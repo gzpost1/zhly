@@ -16,6 +16,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ContractFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
+import cn.cuiot.dmp.common.constant.CustomConfigConstant;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
@@ -199,7 +200,13 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
             HousesArchivesEntity entity = new HousesArchivesEntity();
             BeanUtils.copyProperties(data,entity);
             entity.setLoupanId(loupanId);
-//            entity.setRoomNum(data.getRoomNum());
+            Long propertyType  = nameConfigIdMap.get(CustomConfigConstant.HOUSES_ARCHIVES_INIT.get(2)).get(data.getPropertyTypeName());
+            Long status = nameConfigIdMap.get(CustomConfigConstant.HOUSES_ARCHIVES_INIT.get(3)).get(data.getStatusName());
+            Long houseType = nameConfigIdMap.get(CustomConfigConstant.HOUSES_ARCHIVES_INIT.get(0)).get(data.getHouseTypeName());
+            entity.setPropertyType(propertyType);
+            entity.setStatus(status);
+            entity.setHouseType(houseType);
+            //            entity.setRoomNum(data.getRoomNum());
 //            entity.setName(data.getName());
 //            entity.setCode(data.getCode());
             // TODO: 2024/5/16 这里还需要基于不同的一级类目去查询配置

@@ -31,6 +31,8 @@ public class HousesArchiveImportDto implements Serializable {
     @NotNull
     private String code;
 
+
+
     /**
      * 建筑面积（支持4位小数，最长可输入15位）
      */
@@ -63,15 +65,24 @@ public class HousesArchiveImportDto implements Serializable {
     /**
      * 房屋户型
      */
-    @Excel(name = "房屋户型", orderNum = "8")
     private Long houseType;
+    @Excel(name = "房屋户型", orderNum = "8")
+    private String houseTypeName;
 
 
     /**
      * 物业业态
      */
-    @Excel(name = "物业业态", orderNum = "9")
     private Long propertyType;
+
+    /**
+     * 物业业态
+     */
+    @Excel(name = "物业业态", orderNum = "9")
+    private String propertyTypeName;
+
+    @Excel(name = "状态", orderNum = "10")
+    private String statusName;
 
 
 //
