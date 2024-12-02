@@ -112,6 +112,7 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
             vo.setResourceTypeName(configIdNameMap.getOrDefault(entity.getResourceType(), ""));
             vo.setLocationMethodName(configIdNameMap.getOrDefault(entity.getLocationMethod(), ""));
             vo.setStatusName(getStatusName(entity.getStatus()));
+            vo.setProfessionalPurposeName(configIdNameMap.getOrDefault(entity.getProfessionalPurpose(),""));
 
             BuildingArchivesVO buildingArchivesVO = entity.getBuildingArchivesVO();
             String loupanName = buildingArchivesVO.getName();
