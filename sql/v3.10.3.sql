@@ -28,3 +28,9 @@ VALUES (1312087424469303296, '人员管理（宇泛）', '1', '1',
         null, 1, '/app/pages/managementPKG/personManageYuFan/main', 1253422200053039104, 24, 1, null, 0, 1,
         '2024-11-29 16:06:59', '1', '2024-11-29 17:18:26', '1');
 
+INSERT INTO db_smart_park.custom_config (id, name, system_option_type, status, created_on, created_by, created_by_type,
+                                         updated_on, updated_by, updated_by_type, deleted_flag, deleted_on, deleted_by,
+                                         delete_by_type)
+VALUES (1722210915354824715, '楼盘类型', 1, 1, '2024-05-22 17:22:54', '1', null, '2024-12-03 10:56:27',
+        '1792452525714616322', null, 0, null, null, null);
+
