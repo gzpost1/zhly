@@ -29,7 +29,7 @@ public class BuildingArchiveImportDTO extends BaseExcelModel implements Serializ
      */
     @Excel(name = "楼盘类型")
     @NotBlank
-    private String type;
+    private String typeName;
 
     /**
      * 详细地址

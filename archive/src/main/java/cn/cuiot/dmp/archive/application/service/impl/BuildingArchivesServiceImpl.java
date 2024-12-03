@@ -13,6 +13,7 @@ import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchives;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchivesPageQuery;
 import cn.cuiot.dmp.archive.domain.repository.BuildingArchivesRepository;
 import cn.cuiot.dmp.archive.infrastructure.entity.BuildingArchivesEntity;
+import cn.cuiot.dmp.archive.infrastructure.entity.HousesArchivesEntity;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.ArchivesApiMapper;
 import cn.cuiot.dmp.archive.infrastructure.persistence.mapper.BuildingArchivesMapper;
 import cn.cuiot.dmp.base.application.service.ApiSystemService;
@@ -23,6 +24,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.req.DepartmentReqDto;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ContractFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.BuildingArchive;
+import cn.cuiot.dmp.common.constant.CustomConfigConstant;
 import cn.cuiot.dmp.common.constant.EntityConstants;
 import cn.cuiot.dmp.common.constant.PageResult;
 import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
@@ -62,6 +64,8 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
 
     @Autowired
     private ContractFeignService contractFeignService;
+    @Autowired
+    private BuildingAndConfigCommonUtilService buildingAndConfigCommonUtilService;
 
     @Override
     public BuildingArchivesVO queryForDetail(Long id) {
@@ -141,8 +145,25 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
                 .collect(Collectors.toList());
     }
 
+    private void addListCanNull(Set<Long> configIdList, Long configId) {
+        if (Objects.nonNull(configId)) {
+            configIdList.add(configId);
+        }
+    }
+
+    private void getConfigIdFromEntity(BuildingArchivesVO entity, Set<Long> configIdList) {
+        addListCanNull(configIdList, entity.getType());
+    }
+
     @Override
     public List<BuildingArchivesExportVO> buildExportData(List<BuildingArchivesVO> list) {
+        // 查询配置信息-用于配置id转换为配置名称-汇总成Map
+        Set<Long> configIdList = new HashSet<>();
+        list.forEach(entity -> {
+            getConfigIdFromEntity(entity, configIdList);
+        });
+        // 查询指定配置的数据，如果有配置，查询生成map-nameConfigIdMap
+        Map<Long, String> configIdNameMap = buildingAndConfigCommonUtilService.getConfigIdNameMap(configIdList);
         List<BuildingArchivesExportVO> exportVos = list.stream()
                 .map(o -> {
                     BuildingArchivesExportVO buildingArchivesExportVO = new BuildingArchivesExportVO();
@@ -151,6 +172,7 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
                     buildingArchivesExportVO.setAreaName(o.getAreaName() + o.getAreaDetail());
                     buildingArchivesExportVO.setDepartmentName(o.getDepartmentName());
                     buildingArchivesExportVO.setBuildingNum(o.getBuildingNum());
+                    buildingArchivesExportVO.setTypeName(configIdNameMap.getOrDefault(o.getType(), ""));
                     if (Objects.nonNull(o.getHouseNum())) {
                         buildingArchivesExportVO.setHouseNum(o.getHouseNum());
                     }
@@ -240,6 +262,7 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
                                        Long departmentId, Long userId) {
         AssertUtil.notNull(companyId, "企业ID不能为空");
         AssertUtil.notNull(departmentId, "部门ID不能为空");
+        Map<String, Map<String, Long>> nameConfigIdMap = buildingAndConfigCommonUtilService.getConfigNameIdMap(companyId, SystemOptionTypeEnum.BUILDING_ARCHIVE.getCode());
         List<BuildingArchives> buildingArchivesList = buildingArchiveImportDTOList.stream()
                 .map(o -> {
                     BuildingArchives buildingArchives = new BuildingArchives();
@@ -249,6 +272,9 @@ public class BuildingArchivesServiceImpl implements BuildingArchivesService {
                     buildingArchives.setAreaName("北京市市辖区朝阳区");
                     buildingArchives.setCompanyId(companyId);
                     buildingArchives.setDepartmentId(departmentId);
+                    Long type = nameConfigIdMap.get(CustomConfigConstant.BUIDING_ARCHIVES_INIT.get(0)).get(o.getTypeName());
+                    buildingArchives.setType(type);
+
                     return buildingArchives;
                 })
                 .collect(Collectors.toList());

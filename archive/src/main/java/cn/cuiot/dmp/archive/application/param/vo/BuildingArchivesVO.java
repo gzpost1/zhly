@@ -111,7 +111,8 @@ public class BuildingArchivesVO implements Serializable {
     /**
      * 楼盘类型
      */
-    private String type;
+    private Long type;
+    private String typeName;
 
     private String deptName;
 

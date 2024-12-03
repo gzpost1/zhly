@@ -91,6 +91,6 @@ public class BuildingArchives implements Serializable {
     /**
      * 楼盘类型
      */
-    private String type;
+    private Long type;
 
 }
