@@ -1,8 +1,6 @@
 alter table db_smart_park.tb_building_archives
     add type varchar(50) null comment '楼盘类型';
 
-INSERT INTO db_smart_park.system_option_type (id, name, system_option_type, deleted_flag) VALUES (16, '楼盘类型', 16, 0);
-
 
 INSERT INTO db_smart_park.menu (id, menu_name, menu_url, component_uri, api_url, icon, menu_type, permission_code,
                                 parent_id, sort, hidden, description, external_link, status, created_on, created_by,

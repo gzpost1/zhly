@@ -190,10 +190,10 @@ public class BuildingArchivesController extends BaseController {
      */
     @PostMapping("/import")
     public IdmResDTO<Object> importBuildingArchives(@RequestParam("file") MultipartFile file,
-                                                    @RequestParam("departmentId") Long departmentId, @RequestParam("orgId") String orgId) throws Exception {
+                                                    @RequestParam("departmentId") Long departmentId) throws Exception {
         AssertUtil.notNull(departmentId, "部门id不能为空");
-//        String orgId = Optional.ofNullable(getOrgId()).orElse(getOrgId());
-        AssertUtil.notBlank(orgId, "组织id不能为空");
+        String orgId = getOrgId();
+        AssertUtil.notBlank(getOrgId(), "组织id不能为空");
         String userId = getUserId();
         AssertUtil.notBlank(userId, "用户id不能为空");
         ImportParams params = new ImportParams();
