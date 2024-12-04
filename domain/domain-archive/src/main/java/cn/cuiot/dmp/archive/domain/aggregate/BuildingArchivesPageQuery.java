@@ -58,6 +58,6 @@ public class BuildingArchivesPageQuery extends PageQuery {
     /**
      * 楼盘类型
      */
-    private String type;
+    private Long type;
 
 }
