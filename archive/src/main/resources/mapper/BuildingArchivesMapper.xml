@@ -32,6 +32,7 @@
         (
         id,
         name,
+        type,
         area_code,
         area_name,
         area_detail,
@@ -49,6 +50,7 @@
             (
             #{item.id},
             #{item.name},
+            #{item.type},
             #{item.areaCode},
             #{item.areaName},
             #{item.areaDetail},
