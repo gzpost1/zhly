@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.archive.application.service.impl;
 
 import cn.cuiot.dmp.archive.application.param.dto.RoomArchivesImportDto;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.param.vo.RoomArchivesExportVo;
 import cn.cuiot.dmp.archive.application.service.RoomArchivesService;
 import cn.cuiot.dmp.archive.infrastructure.entity.RoomArchivesEntity;
@@ -84,14 +85,13 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
     }
 
     @Override
-    public List<RoomArchivesExportVo> buildExportData(IdsParam param) {
+    public List<RoomArchivesExportVo> buildExportData(List<RoomArchivesEntity> list) {
         // 查询列表信息
-        List<RoomArchivesEntity> list = this.listByIds(param.getIds());
         List<RoomArchivesExportVo> res = new ArrayList<>(list.size());
 
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 查询楼盘信息-用于楼盘id转换为楼盘名称-汇总成Map
-        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(list.stream().map(RoomArchivesEntity::getLoupanId).collect(Collectors.toSet()));
+//        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(list.stream().map(RoomArchivesEntity::getLoupanId).collect(Collectors.toSet()));
         // 查询配置信息-用于配置id转换为配置名称-汇总成Map
         Set<Long> configIdList = new HashSet<>();
         list.forEach(entity -> {
@@ -112,6 +112,13 @@ public class RoomArchivesServiceImpl extends ServiceImpl<RoomArchivesMapper, Roo
             vo.setResourceTypeName(configIdNameMap.getOrDefault(entity.getResourceType(), ""));
             vo.setLocationMethodName(configIdNameMap.getOrDefault(entity.getLocationMethod(), ""));
             vo.setStatusName(getStatusName(entity.getStatus()));
+            vo.setProfessionalPurposeName(configIdNameMap.getOrDefault(entity.getProfessionalPurpose(),""));
+
+            BuildingArchivesVO buildingArchivesVO = entity.getBuildingArchivesVO();
+            String loupanName = buildingArchivesVO.getName();
+            String deptName = buildingArchivesVO.getDeptName();
+            vo.setLoupanName(loupanName);
+            vo.setDeptName(deptName);
             res.add(vo);
         });
 

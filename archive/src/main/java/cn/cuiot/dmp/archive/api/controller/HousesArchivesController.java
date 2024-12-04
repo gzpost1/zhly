@@ -9,6 +9,8 @@ import cn.cuiot.dmp.archive.application.param.dto.ArchiveBatchUpdateDTO;
 import cn.cuiot.dmp.archive.application.param.dto.HouseTreeQueryDto;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
 import cn.cuiot.dmp.archive.application.param.query.HousesArchivesQuery;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesExportVO;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
@@ -40,6 +42,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,8 +57,12 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static cn.cuiot.dmp.common.constant.NumberConst.QUERY_MAX_SIZE;
 
 /**
  * 房屋档案
@@ -96,10 +103,7 @@ public class HousesArchivesController extends BaseController {
         LambdaQueryWrapper<HousesArchivesEntity> wrapper = new LambdaQueryWrapper<>();
         if (Objects.isNull(query.getLoupanId())) {
             // 获取当前平台下的楼盘列表
-            DepartmentReqDto dto = new DepartmentReqDto();
-            dto.setDeptId(LoginInfoHolder.getCurrentDeptId());
-            dto.setSelfReturn(true);
-            List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(dto);
+            List<BuildingArchive> buildingArchives = buildingArchivesService.lookupBuildingArchiveByDepartmentList(query.getDepartmentId());
             if (CollectionUtils.isEmpty(buildingArchives)) {
                 return IdmResDTO.success(new Page<>());
             }
@@ -118,7 +122,7 @@ public class HousesArchivesController extends BaseController {
         wrapper.eq(Objects.nonNull(query.getStatus()), HousesArchivesEntity::getStatus, query.getStatus());
         wrapper.eq(Objects.nonNull(query.getOwnershipAttribute()), HousesArchivesEntity::getOwnershipAttribute, query.getOwnershipAttribute());
         wrapper.eq(Objects.nonNull(query.getRoomNum()), HousesArchivesEntity::getRoomNum, query.getRoomNum());
-        wrapper.and(StringUtils.isNotEmpty(query.getCode()),t->t.like(HousesArchivesEntity::getCode, query.getCode()).or().like( HousesArchivesEntity::getRoomNum, query.getCode()));
+        wrapper.and(StringUtils.isNotEmpty(query.getCode()), t -> t.like(HousesArchivesEntity::getCode, query.getCode()).or().like(HousesArchivesEntity::getRoomNum, query.getCode()));
         if (StringUtils.isNotBlank(query.getCodeAndOwnershipUnit())) {
             wrapper.like(HousesArchivesEntity::getCode, query.getCodeAndOwnershipUnit()).or().like(HousesArchivesEntity::getOwnershipUnit, query.getCodeAndOwnershipUnit());
         }
@@ -131,6 +135,10 @@ public class HousesArchivesController extends BaseController {
             return IdmResDTO.success(res);
         }
         List<HousesArchivesEntity> records = res.getRecords();
+        records.forEach(r -> {
+            BuildingArchivesVO buildingArchivesVO = buildingArchivesService.queryForDetail(r.getLoupanId());
+            r.setBuildingArchivesVO(buildingArchivesVO);
+        });
         housesArchivesService.fillBuildingName(records);
         housesArchivesService.fullContractInfo(records);
         return IdmResDTO.success(res);
@@ -209,22 +217,24 @@ public class HousesArchivesController extends BaseController {
     }
 
     /**
-     * 导出,按照id列表
+     * 导出
      */
     @RequiresPermissions
     @PostMapping(value = "/export", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void export(@RequestBody IdsParam param) throws IOException {
-        List<HousesArchiveExportVo> dataList = housesArchivesService.buildExportData(param);
+    public void export(@RequestBody HousesArchivesQuery param) throws IOException {
+        param.setPageSize(QUERY_MAX_SIZE + 1);
+        IdmResDTO<IPage<HousesArchivesEntity>> pageResult = queryForPage(param);
+        List<HousesArchivesEntity> dataList = Optional.ofNullable(pageResult.getData().getRecords()).orElse(Lists.newArrayList());
+        AssertUtil.isFalse(dataList.size() > QUERY_MAX_SIZE, "一次最多可导出1万条数据，请筛选条件分多次导出！");
+        List<HousesArchiveExportVo> exportVos = housesArchivesService.buildExportData(dataList);
         List<Map<String, Object>> sheetsList = new ArrayList<>();
         Map<String, Object> sheet1 = ExcelUtils
-                .createSheet("房屋档案", dataList, HousesArchiveExportVo.class);
-
+                .createSheet("房屋档案", exportVos, HousesArchiveExportVo.class);
         sheetsList.add(sheet1);
-
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
-
+        String fileName = "房屋导出(" + DateTimeUtil.localDateToString(LocalDate.now(), "yyyyMMdd") + ")";
         ExcelUtils.downLoadExcel(
-                "houses-" + DateTimeUtil.dateToString(new Date(), "yyyyMMddHHmmss"),
+                fileName,
                 response,
                 workbook);
     }
@@ -241,6 +251,7 @@ public class HousesArchivesController extends BaseController {
 
         ImportParams params = new ImportParams();
         params.setHeadRows(1);
+        params.setTitleRows(1);
 
         List<HousesArchiveImportDto> importDtoList = ExcelImportUtil
                 .importExcel(file.getInputStream(), HousesArchiveImportDto.class, params);

@@ -32,9 +32,9 @@ public interface ParkingArchivesService extends IService<ParkingArchivesEntity> 
     void checkParamsImport(ParkingArchivesImportDto entity);
 
     /**
-     * 按照id列表查询并且构造出导出用的列表
+     *  构造出导出用的列表
      */
-    List<ParkingArchivesExportVo> buildExportData(IdsParam param);
+    List<ParkingArchivesExportVo> buildExportData(List<ParkingArchivesEntity> list);
 
     /**
      * 导入数据

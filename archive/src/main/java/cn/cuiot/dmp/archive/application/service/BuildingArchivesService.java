@@ -40,6 +40,7 @@ public interface BuildingArchivesService {
      * 根据条件获取楼盘档案导出详情列表
      */
     List<BuildingArchivesExportVO> queryForExportList(BuildingArchivesPageQuery pageQuery);
+    List<BuildingArchivesExportVO> buildExportData(List<BuildingArchivesVO> list);
 
     /**
      * 根据条件获取楼盘档案详情分页列表
@@ -65,6 +66,8 @@ public interface BuildingArchivesService {
      * 批量更新
      */
     int batchUpdateBuildingArchives(BatchBuildingArchivesDTO batchBuildingArchivesDTO);
+
+    int batchUpdateBuildingArchivesType(BatchBuildingArchivesDTO batchBuildingArchivesDTO);
 
     /**
      * 批量删除
@@ -94,7 +97,7 @@ public interface BuildingArchivesService {
     /**
      * 查询当前组织及下级组织下的楼盘列表
      */
-    List<BuildingArchive> lookupBuildingArchiveByDepartmentList(DepartmentReqDto reqDto);
+    List<BuildingArchive> lookupBuildingArchiveByDepartmentList(Long depotId);
 
     Long quertOrgIdByHouse(Long houseId);
     /**

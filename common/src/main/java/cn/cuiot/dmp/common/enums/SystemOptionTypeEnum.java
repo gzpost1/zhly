@@ -30,7 +30,8 @@ public enum SystemOptionTypeEnum {
     CONTRACT_INTENTION((byte) 11, "意向合同"),
     CONTRACT_LEASE((byte) 12, "租赁合同"),
     CONTRACT_TEMPLATE((byte) 13, "合同模板"),
-    PRICE_MANAGE((byte) 14, "定价管理");
+    PRICE_MANAGE((byte) 14, "定价管理"),
+    BUILDING_TYPE((byte) 16, "楼盘类型");
 
     private final Byte code;
     private final String message;

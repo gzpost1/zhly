@@ -25,6 +25,8 @@ public class BuildingArchivesExportVO implements Serializable {
      */
     @Excel(name = "楼盘名称", orderNum = "1", width = 20)
     private String name;
+    @Excel(name = "楼盘类型", orderNum = "1", width = 20)
+    private String typeName;
 
     /**
      * 楼盘地址
