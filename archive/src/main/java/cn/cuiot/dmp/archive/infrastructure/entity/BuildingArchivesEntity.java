@@ -96,6 +96,6 @@ public class BuildingArchivesEntity extends YjBaseEntity {
     /**
      * 楼盘类型
      */
-    private String type;
+    private Long type;
 
 }

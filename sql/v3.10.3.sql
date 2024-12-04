@@ -1,5 +1,5 @@
 alter table db_smart_park.tb_building_archives
-    add type varchar(50) null comment '楼盘类型';
+    add type bigint null comment '楼盘类型';
 
 
 INSERT INTO db_smart_park.menu (id, menu_name, menu_url, component_uri, api_url, icon, menu_type, permission_code,
@@ -33,4 +33,10 @@ INSERT INTO db_smart_park.custom_config (id, name, system_option_type, status, c
                                          delete_by_type)
 VALUES (1722210915354824715, '楼盘类型', 1, 1, '2024-05-22 17:22:54', '1', null, '2024-12-03 10:56:27',
         '1792452525714616322', null, 0, null, null, null);
+
+INSERT INTO db_smart_park.menu (id, menu_name, menu_url, component_uri, api_url, icon, menu_type, permission_code,
+                                parent_id, sort, hidden, description, external_link, status, created_on, created_by,
+                                updated_on, updated_by)
+VALUES (1313462367207555072, '创建工单', '1', '1', null, null, 2, 'approvalCenter:myIndex:create', 1243172545025277952, 1,
+        0, null, 0, 1, '2024-12-03 11:10:31', '1', '2024-12-03 11:10:31', '1');
 
