@@ -47,4 +47,10 @@ public class DeviceArchivesQuery extends PageQuery {
      * 设备专业（支持输入汉字、英文、符号、数字，长度支持30字符）
      */
     private String deviceProfessional;
+
+
+    /**
+     * 部门id
+     */
+    private Long departmentId;
 }

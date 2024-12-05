@@ -67,5 +67,9 @@ public class HousesArchivesQuery extends PageQuery {
      * 房屋名称
      */
     private String name;
+    /**
+     * 部门id
+     */
+    private Long departmentId;
 
 }

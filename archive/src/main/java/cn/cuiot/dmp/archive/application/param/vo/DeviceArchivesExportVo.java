@@ -14,6 +14,17 @@ import java.io.Serializable;
 public class DeviceArchivesExportVo implements Serializable {
 
     private static final long serialVersionUID = -1L;
+    /**
+     * 所属组织
+     */
+    @Excel(name = "所属组织", orderNum = "0", width = 20)
+    private String deptName;
+
+    /**
+     * 所属楼盘名称-需从id转换
+     */
+    @Excel(name = "所属楼盘", orderNum = "0", width = 20)
+    private String loupanName;
 
     /**
      * id就是设备编码

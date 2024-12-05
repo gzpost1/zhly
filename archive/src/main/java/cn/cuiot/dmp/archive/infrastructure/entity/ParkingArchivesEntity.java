@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.archive.infrastructure.entity;
 
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -104,4 +105,7 @@ public class ParkingArchivesEntity extends YjBaseEntity implements Serializable 
      */
     @TableField(exist = false)
     private List<String> imageList;
+
+    @TableField(exist = false)
+    public BuildingArchivesVO buildingArchivesVO;
 }

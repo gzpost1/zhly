@@ -1,6 +1,7 @@
 package cn.cuiot.dmp.archive.application.param.dto;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import cn.cuiot.dmp.base.application.dto.BaseExcelModel;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -12,7 +13,7 @@ import java.io.Serializable;
  * @date 2024/5/21
  */
 @Data
-public class BuildingArchiveImportDTO implements Serializable {
+public class BuildingArchiveImportDTO extends BaseExcelModel implements Serializable {
 
     private static final long serialVersionUID = -1323217558185448570L;
 
@@ -24,17 +25,24 @@ public class BuildingArchiveImportDTO implements Serializable {
     private String name;
 
     /**
+     * 楼盘类型
+     */
+    @Excel(name = "楼盘类型")
+    @NotBlank
+    private String typeName;
+
+    /**
      * 详细地址
      */
     @Excel(name = "楼盘详细地址", orderNum = "1")
-    @NotBlank(message = "楼盘详细地址不能为空")
+    @NotBlank
     private String areaDetail;
 
     /**
      * 楼栋数
      */
     @Excel(name = "楼栋数", orderNum = "2")
-    @NotNull(message = "楼栋数不能为空")
+    @NotNull(message = "不能为空")
     private Integer buildingNum;
 
     /**

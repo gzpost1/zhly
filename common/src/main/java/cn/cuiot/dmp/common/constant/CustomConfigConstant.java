@@ -16,6 +16,7 @@ public class CustomConfigConstant {
     /**
      * 自定义配置相关
      */
+    public static final List<String> BUIDING_ARCHIVES_INIT = Lists.newArrayList("楼盘类型");
     public static final List<String> HOUSES_ARCHIVES_INIT = Lists.newArrayList("房屋户型", "房屋朝向", "房屋物业业态",
             "房屋状态", "房屋用途", "房屋经营性质", "房屋资源类型", "房屋产权属性", "房屋停车区域", "房屋基础服务");
     public static final List<String> ROOM_ARCHIVES_INIT = Lists.newArrayList("空间分类", "空间专业用途", "空间经营性质",

@@ -34,7 +34,7 @@ public interface DeviceArchivesService extends IService<DeviceArchivesEntity> {
     /**
      * 按照id列表查询并且构造出导出用的列表
      */
-    List<DeviceArchivesExportVo> buildExportData(IdsParam param);
+    List<DeviceArchivesExportVo> buildExportData(List<DeviceArchivesEntity> list);
 
     /**
      * 导入数据

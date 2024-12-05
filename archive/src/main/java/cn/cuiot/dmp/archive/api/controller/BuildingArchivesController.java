@@ -4,21 +4,19 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
+import cn.afterturn.easypoi.excel.entity.result.ExcelImportResult;
 import cn.cuiot.dmp.archive.application.constant.ArchivesApiConstant;
-import cn.cuiot.dmp.archive.application.param.dto.BatchBuildingArchivesDTO;
-import cn.cuiot.dmp.archive.application.param.dto.BuildingArchiveImportDTO;
-import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesCreateDTO;
-import cn.cuiot.dmp.archive.application.param.dto.BuildingArchivesUpdateDTO;
+import cn.cuiot.dmp.archive.application.param.dto.*;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesExportVO;
 import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.domain.aggregate.BuildingArchivesPageQuery;
-import cn.cuiot.dmp.archive.utils.ExcelUtils;
 import cn.cuiot.dmp.base.application.annotation.LogRecord;
 import cn.cuiot.dmp.base.application.annotation.RequiresPermissions;
 import cn.cuiot.dmp.base.application.controller.BaseController;
+import cn.cuiot.dmp.base.application.dto.BaseExcelModel;
+import cn.cuiot.dmp.base.application.utils.ExcelUtils;
 import cn.cuiot.dmp.base.infrastructure.dto.IdParam;
-import cn.cuiot.dmp.base.infrastructure.dto.IdsParam;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.PageResult;
@@ -28,10 +26,9 @@ import cn.cuiot.dmp.common.exception.BusinessException;
 import cn.cuiot.dmp.common.utils.AssertUtil;
 import cn.cuiot.dmp.common.utils.DateTimeUtil;
 import cn.cuiot.dmp.domain.types.LoginInfoHolder;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,12 +39,11 @@ import javax.validation.Valid;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
+
+import static cn.cuiot.dmp.common.constant.NumberConst.QUERY_MAX_SIZE;
 
 /**
  * 档案中心-楼盘档案
@@ -98,7 +94,7 @@ public class BuildingArchivesController extends BaseController {
     public List<DepartmentTreeRspDTO> getDepartmentBuildingTree() {
         String orgId = getOrgId();
         String userId = getUserId();
-        return buildingArchivesService.getDepartmentBuildingTree(Long.valueOf(orgId), Long.valueOf(userId),null);
+        return buildingArchivesService.getDepartmentBuildingTree(Long.valueOf(orgId), Long.valueOf(userId), null);
     }
 
     /**
@@ -141,6 +137,15 @@ public class BuildingArchivesController extends BaseController {
     @PostMapping("/batchUpdate")
     public int batchUpdateBuildingArchives(@RequestBody @Valid BatchBuildingArchivesDTO batchBuildingArchivesDTO) {
         return buildingArchivesService.batchUpdateBuildingArchives(batchBuildingArchivesDTO);
+    }
+    /**
+     * 批量更新楼盘类型
+     */
+    @RequiresPermissions
+    @LogRecord(operationCode = "batchUpdateBuildingArchivesType", operationName = "批量更新楼盘类型", serviceType = ServiceTypeConst.ARCHIVE_CENTER)
+    @PostMapping("/batchUpdateType")
+    public int batchUpdateType(@RequestBody @Valid BatchBuildingArchivesDTO batchBuildingArchivesDTO) {
+        return buildingArchivesService.batchUpdateBuildingArchivesType(batchBuildingArchivesDTO);
     }
 
     /**
@@ -188,15 +193,17 @@ public class BuildingArchivesController extends BaseController {
                                                     @RequestParam("departmentId") Long departmentId) throws Exception {
         AssertUtil.notNull(departmentId, "部门id不能为空");
         String orgId = getOrgId();
-        AssertUtil.notBlank(orgId, "组织id不能为空");
+        AssertUtil.notBlank(getOrgId(), "组织id不能为空");
         String userId = getUserId();
         AssertUtil.notBlank(userId, "用户id不能为空");
         ImportParams params = new ImportParams();
-        params.setTitleRows(0);
         params.setHeadRows(1);
+        params.setTitleRows(1);
         params.setNeedVerify(true);
-        List<BuildingArchiveImportDTO> buildingArchiveImportDTOList = ExcelImportUtil.importExcel(file.getInputStream(),
+        ExcelImportResult<BuildingArchiveImportDTO> result = ExcelImportUtil.importExcelMore(file.getInputStream(),
                 BuildingArchiveImportDTO.class, params);
+        ExcelUtils.checkExcel(result);
+        List<BuildingArchiveImportDTO> buildingArchiveImportDTOList = result.getList();
         AssertUtil.notEmpty(buildingArchiveImportDTOList, "导入数据为空");
         AssertUtil.isFalse(buildingArchiveImportDTOList.size() > ArchivesApiConstant.ARCHIVES_IMPORT_MAX_NUM,
                 "数据量超过5000条，导入失败");
@@ -205,20 +212,23 @@ public class BuildingArchivesController extends BaseController {
         return IdmResDTO.success();
     }
 
+
     /**
      * 导出
      */
     @PostMapping(value = "/export")
-    public IdmResDTO<Object> exportBuildingArchives(@RequestBody @Valid IdsParam param) throws IOException {
-        BuildingArchivesPageQuery pageQuery = new BuildingArchivesPageQuery();
-        pageQuery.setIdList(param.getIds());
-        List<BuildingArchivesExportVO> buildingArchivesExportVOList = buildingArchivesService.queryForExportList(pageQuery);
+    public IdmResDTO<Object> exportBuildingArchives(@RequestBody @Valid BuildingArchivesPageQuery pageQuery) throws IOException {
+        pageQuery.setPageSize(QUERY_MAX_SIZE + 1);
+        PageResult<BuildingArchivesVO> pageResult = queryForPage(pageQuery);
+        List<BuildingArchivesVO> dataList = Optional.ofNullable(pageResult.getRecords()).orElse(Lists.newArrayList());
+        AssertUtil.isFalse(dataList.size() > QUERY_MAX_SIZE, "一次最多可导出1万条数据，请筛选条件分多次导出！");
+        List<BuildingArchivesExportVO> exportVos = buildingArchivesService.buildExportData(dataList);
         List<Map<String, Object>> sheetsList = new ArrayList<>();
-        Map<String, Object> sheet1 = ExcelUtils.createSheet("楼盘档案", buildingArchivesExportVOList, BuildingArchivesExportVO.class);
+        Map<String, Object> sheet1 = ExcelUtils.createSheet("楼盘档案", exportVos, BuildingArchivesExportVO.class);
         sheetsList.add(sheet1);
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsList, ExcelType.XSSF);
-        ExcelUtils.downLoadExcel("exportBuildingArchives-" + DateTimeUtil.dateToString(new Date(),
-                "yyyyMMddHHmmss"), response, workbook);
+        String fileName = "楼盘导出(" + DateTimeUtil.localDateToString(LocalDate.now(), "yyyyMMdd") + ")";
+        ExcelUtils.downLoadExcel(fileName, response, workbook);
         return IdmResDTO.success();
     }
 

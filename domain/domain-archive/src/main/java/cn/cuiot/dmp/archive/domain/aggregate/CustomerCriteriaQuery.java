@@ -72,4 +72,16 @@ public class CustomerCriteriaQuery extends PageQuery {
      * 企业ID
      */
     private Long companyId;
+    /**
+     * 客户类型
+     */
+    private String customerType;
+    /**
+     * 公司性质
+     */
+    private String companyNature;
+    /**
+     * 所属行业
+     */
+    private String companyIndustry;
 }

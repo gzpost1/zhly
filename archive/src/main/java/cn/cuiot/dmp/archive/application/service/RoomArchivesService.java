@@ -29,9 +29,9 @@ public interface RoomArchivesService extends IService<RoomArchivesEntity> {
     void checkParamsImport(RoomArchivesImportDto entity);
 
     /**
-     * 按照id列表查询并且构造出导出用的列表
+     * 构造出导出用的列表
      */
-    List<RoomArchivesExportVo> buildExportData(IdsParam param);
+    List<RoomArchivesExportVo> buildExportData(List<RoomArchivesEntity> list);
 
     /**
      * 导入数据

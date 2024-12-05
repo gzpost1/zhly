@@ -1,5 +1,6 @@
 package cn.cuiot.dmp.archive.infrastructure.entity;
 
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatus;
 import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
@@ -317,5 +318,8 @@ public class HousesArchivesEntity extends YjBaseEntity implements Serializable {
      */
     @TableField(exist = false)
     public List<ContractStatus> leaseStatuses;
+
+    @TableField(exist = false)
+    public BuildingArchivesVO buildingArchivesVO;
 
 }

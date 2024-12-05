@@ -55,5 +55,9 @@ public class BuildingArchivesPageQuery extends PageQuery {
      * 区域编码
      */
     private String areaCode;
+    /**
+     * 楼盘类型
+     */
+    private Long type;
 
 }

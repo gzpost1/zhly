@@ -14,12 +14,25 @@
             #{item}
         </foreach>
     </update>
+    <update id="batchUpdateBuildingArchivesType" parameterType="java.util.List">
+        update tb_building_archives
+        <set>
+            <if test="type !=null">
+                type = #{type}
+            </if>
+        </set>
+        where id in
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
 
     <insert id="batchSaveBuildingArchives" parameterType="java.util.List">
         INSERT INTO tb_building_archives
         (
         id,
         name,
+        type,
         area_code,
         area_name,
         area_detail,
@@ -37,6 +50,7 @@
             (
             #{item.id},
             #{item.name},
+            #{item.type},
             #{item.areaCode},
             #{item.areaName},
             #{item.areaDetail},

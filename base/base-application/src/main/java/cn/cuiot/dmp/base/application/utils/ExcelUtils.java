@@ -5,6 +5,10 @@ import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
+import cn.afterturn.easypoi.excel.entity.result.ExcelImportResult;
+import cn.cuiot.dmp.base.application.dto.BaseExcelModel;
+import cn.cuiot.dmp.common.exception.BusinessException;
+import cn.cuiot.dmp.common.utils.AssertUtil;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -19,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import static cn.cuiot.dmp.common.constant.ResultCode.EXCELL_IMPORT_ERROR;
+
 /**
  * @author: wuyongchong
  * @date: 2020/6/4 11:26
@@ -28,15 +34,15 @@ public class ExcelUtils {
     /**
      * excel 导出
      *
-     * @param list 数据
-     * @param title 标题
-     * @param sheetName sheet名称
-     * @param pojoClass pojo类型
-     * @param fileName 文件名称
+     * @param list           数据
+     * @param title          标题
+     * @param sheetName      sheet名称
+     * @param pojoClass      pojo类型
+     * @param fileName       文件名称
      * @param isCreateHeader 是否创建表头
      */
     public static void exportExcel(List<?> list, String title, String sheetName, Class<?> pojoClass,
-            String fileName, boolean isCreateHeader, HttpServletResponse response)
+                                   String fileName, boolean isCreateHeader, HttpServletResponse response)
             throws IOException {
         ExportParams exportParams = new ExportParams(title, sheetName, ExcelType.XSSF);
         exportParams.setCreateHeadRows(isCreateHeader);
@@ -46,14 +52,14 @@ public class ExcelUtils {
     /**
      * excel 导出
      *
-     * @param list 数据
-     * @param title 标题
+     * @param list      数据
+     * @param title     标题
      * @param sheetName sheet名称
      * @param pojoClass pojo类型
-     * @param fileName 文件名称
+     * @param fileName  文件名称
      */
     public static void exportExcel(List<?> list, String title, String sheetName, Class<?> pojoClass,
-            String fileName, HttpServletResponse response) throws IOException {
+                                   String fileName, HttpServletResponse response) throws IOException {
         defaultExport(list, pojoClass, fileName, response,
                 new ExportParams(title, sheetName, ExcelType.XSSF));
     }
@@ -61,37 +67,37 @@ public class ExcelUtils {
     /**
      * excel 导出
      *
-     * @param list 数据
-     * @param pojoClass pojo类型
-     * @param fileName 文件名称
+     * @param list         数据
+     * @param pojoClass    pojo类型
+     * @param fileName     文件名称
      * @param exportParams 导出参数
      */
     public static void exportExcel(List<?> list, Class<?> pojoClass, String fileName,
-            ExportParams exportParams, HttpServletResponse response) throws IOException {
+                                   ExportParams exportParams, HttpServletResponse response) throws IOException {
         defaultExport(list, pojoClass, fileName, response, exportParams);
     }
 
     /**
      * excel 导出
      *
-     * @param list 数据
+     * @param list     数据
      * @param fileName 文件名称
      */
     public static void exportExcel(List<Map<String, Object>> list, String fileName,
-            HttpServletResponse response) throws IOException {
+                                   HttpServletResponse response) throws IOException {
         defaultExport(list, fileName, response);
     }
 
     /**
      * 默认的 excel 导出
      *
-     * @param list 数据
-     * @param pojoClass pojo类型
-     * @param fileName 文件名称
+     * @param list         数据
+     * @param pojoClass    pojo类型
+     * @param fileName     文件名称
      * @param exportParams 导出参数
      */
     private static void defaultExport(List<?> list, Class<?> pojoClass, String fileName,
-            HttpServletResponse response, ExportParams exportParams) throws IOException {
+                                      HttpServletResponse response, ExportParams exportParams) throws IOException {
         Workbook workbook = ExcelExportUtil.exportExcel(exportParams, pojoClass, list);
         downLoadExcel(fileName, response, workbook);
     }
@@ -99,11 +105,11 @@ public class ExcelUtils {
     /**
      * 默认的 excel 导出
      *
-     * @param list 数据
+     * @param list     数据
      * @param fileName 文件名称
      */
     private static void defaultExport(List<Map<String, Object>> list, String fileName,
-            HttpServletResponse response) throws IOException {
+                                      HttpServletResponse response) throws IOException {
         Workbook workbook = ExcelExportUtil.exportExcel(list, ExcelType.HSSF);
         downLoadExcel(fileName, response, workbook);
     }
@@ -115,7 +121,7 @@ public class ExcelUtils {
      * @param workbook excel数据
      */
     public static void downLoadExcel(String fileName, HttpServletResponse response,
-            Workbook workbook) throws IOException {
+                                     Workbook workbook) throws IOException {
         try {
             response.setCharacterEncoding("UTF-8");
             response.setHeader("content-Type", "application/vnd.ms-excel");
@@ -130,13 +136,13 @@ public class ExcelUtils {
     /**
      * excel 导入
      *
-     * @param filePath excel文件路径
-     * @param titleRows 标题行
+     * @param filePath   excel文件路径
+     * @param titleRows  标题行
      * @param headerRows 表头行
-     * @param pojoClass pojo类型
+     * @param pojoClass  pojo类型
      */
     public static <T> List<T> importExcel(String filePath, Integer titleRows, Integer headerRows,
-            Class<T> pojoClass) throws IOException {
+                                          Class<T> pojoClass) throws IOException {
         if (StringUtils.isBlank(filePath)) {
             return null;
         }
@@ -157,7 +163,7 @@ public class ExcelUtils {
     /**
      * excel 导入
      *
-     * @param file excel文件
+     * @param file      excel文件
      * @param pojoClass pojo类型
      */
     public static <T> List<T> importExcel(MultipartFile file, Class<T> pojoClass)
@@ -168,27 +174,27 @@ public class ExcelUtils {
     /**
      * excel 导入
      *
-     * @param file excel文件
-     * @param titleRows 标题行
+     * @param file       excel文件
+     * @param titleRows  标题行
      * @param headerRows 表头行
-     * @param pojoClass pojo类型
+     * @param pojoClass  pojo类型
      */
     public static <T> List<T> importExcel(MultipartFile file, Integer titleRows, Integer headerRows,
-            Class<T> pojoClass) throws IOException {
+                                          Class<T> pojoClass) throws IOException {
         return importExcel(file, titleRows, headerRows, false, pojoClass);
     }
 
     /**
      * excel 导入
      *
-     * @param file 上传的文件
-     * @param titleRows 标题行
+     * @param file       上传的文件
+     * @param titleRows  标题行
      * @param headerRows 表头行
      * @param needVerfiy 是否检验excel内容
-     * @param pojoClass pojo类型
+     * @param pojoClass  pojo类型
      */
     public static <T> List<T> importExcel(MultipartFile file, Integer titleRows, Integer headerRows,
-            boolean needVerfiy, Class<T> pojoClass) throws IOException {
+                                          boolean needVerfiy, Class<T> pojoClass) throws IOException {
         if (file == null) {
             return null;
         }
@@ -203,13 +209,13 @@ public class ExcelUtils {
      * excel 导入
      *
      * @param inputStream 文件输入流
-     * @param titleRows 标题行
-     * @param headerRows 表头行
-     * @param needVerfiy 是否检验excel内容
-     * @param pojoClass pojo类型
+     * @param titleRows   标题行
+     * @param headerRows  表头行
+     * @param needVerfiy  是否检验excel内容
+     * @param pojoClass   pojo类型
      */
     public static <T> List<T> importExcel(InputStream inputStream, Integer titleRows,
-            Integer headerRows, boolean needVerfiy, Class<T> pojoClass) throws IOException {
+                                          Integer headerRows, boolean needVerfiy, Class<T> pojoClass) throws IOException {
         if (inputStream == null) {
             return null;
         }
@@ -259,4 +265,17 @@ public class ExcelUtils {
         }
     }
 
+    public static <T extends BaseExcelModel> void checkExcel(ExcelImportResult<T> result) {
+        boolean verifyFail = result.isVerifyFail();
+        List<T> failList = result.getFailList();
+        if (verifyFail) {
+            StringBuffer errorBuff = new StringBuffer();
+            errorBuff.append("数据校验失败").append(System.lineSeparator());
+            failList.forEach(f -> {
+                errorBuff.append("第(" + f.getRowNum() + "行)" + f.getErrorMsg()).append(System.lineSeparator());
+            });
+            String errMsg = errorBuff.toString();
+            throw new BusinessException(EXCELL_IMPORT_ERROR, errMsg);
+        }
+    }
 }

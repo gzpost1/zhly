@@ -93,5 +93,9 @@ public class BuildingArchivesEntity extends YjBaseEntity {
      * 停启用状态（0停用，1启用）
      */
     private Byte status;
+    /**
+     * 楼盘类型
+     */
+    private Long type;
 
 }

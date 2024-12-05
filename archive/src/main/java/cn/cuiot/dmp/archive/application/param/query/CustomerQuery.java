@@ -5,6 +5,7 @@ import lombok.Data;
 
 /**
  * 客户查询参数
+ *
  * @author: wuyongchong
  * @date: 2024/6/12 11:18
  */
@@ -67,4 +68,17 @@ public class CustomerQuery extends PageQuery {
      * 企业ID-前端不用管
      */
     private Long companyId;
+
+    /**
+     * 客户类型
+     */
+    private String customerType;
+    /**
+     * 公司性质
+     */
+    private String companyNature;
+    /**
+     * 所属行业
+     */
+    private String companyIndustry;
 }

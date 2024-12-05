@@ -19,6 +19,10 @@ public class BatchBuildingArchivesDTO implements Serializable {
      * 所属部门
      */
     private Long departmentId;
+    /**
+     * 类型
+     */
+    private String type;
 
     /**
      * 楼盘档案ID列表

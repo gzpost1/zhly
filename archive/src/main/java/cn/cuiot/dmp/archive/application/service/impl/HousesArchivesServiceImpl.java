@@ -3,6 +3,7 @@ package cn.cuiot.dmp.archive.application.service.impl;
 import cn.cuiot.dmp.archive.application.constant.BuildingArchivesConstant;
 import cn.cuiot.dmp.archive.application.param.dto.HouseTreeQueryDto;
 import cn.cuiot.dmp.archive.application.param.dto.HousesArchiveImportDto;
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.archive.application.param.vo.HousesArchiveExportVo;
 import cn.cuiot.dmp.archive.application.service.BuildingArchivesService;
 import cn.cuiot.dmp.archive.application.service.HousesArchivesService;
@@ -15,6 +16,7 @@ import cn.cuiot.dmp.base.infrastructure.dto.contract.ContractStatusVo;
 import cn.cuiot.dmp.base.infrastructure.dto.rsp.DepartmentTreeRspDTO;
 import cn.cuiot.dmp.base.infrastructure.feign.ContractFeignService;
 import cn.cuiot.dmp.base.infrastructure.model.HousesArchivesVo;
+import cn.cuiot.dmp.common.constant.CustomConfigConstant;
 import cn.cuiot.dmp.common.constant.IdmResDTO;
 import cn.cuiot.dmp.common.constant.ResultCode;
 import cn.cuiot.dmp.common.enums.SystemOptionTypeEnum;
@@ -27,6 +29,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -140,14 +143,13 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
     }
 
     @Override
-    public List<HousesArchiveExportVo> buildExportData(IdsParam param) {
+    public List<HousesArchiveExportVo> buildExportData(List<HousesArchivesEntity> list) {
         // 查询列表信息
-        List<HousesArchivesEntity> list = this.listByIds(param.getIds());
         List<HousesArchiveExportVo> res = new ArrayList<>(list.size());
 
         // TODO: 2024/5/16 等曹睿接口出来，就可以查询楼盘和配置
         // 查询楼盘信息-用于楼盘id转换为楼盘名称-汇总成Map
-        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(list.stream().map(HousesArchivesEntity::getLoupanId).collect(Collectors.toSet()));
+//        Map<Long, String> loupanIdNameMap = buildingAndConfigCommonUtilService.getLoupanIdNameMap(list.stream().map(HousesArchivesEntity::getLoupanId).collect(Collectors.toSet()));
         // 查询配置信息-用于配置id转换为配置名称-汇总成Map
         Set<Long> configIdList = new HashSet<>();
         list.forEach(entity -> {
@@ -158,8 +160,8 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         // 构造导出列表
         list.forEach(entity -> {
             HousesArchiveExportVo vo = new HousesArchiveExportVo();
+            vo.setId(entity.getId());
             vo.setCode(entity.getCode());
-            vo.setLoupanName(loupanIdNameMap.getOrDefault(entity.getLoupanId(), ""));
             vo.setRoomNum(entity.getRoomNum());
             vo.setBuildingArea(getFiledForExport(entity.getBuildingArea()));
             vo.setUsableArea(getFiledForExport(entity.getUsableArea()));
@@ -171,6 +173,13 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
             vo.setFloorName(entity.getFloorName());
             vo.setFloorAlias(entity.getFloorAlias());
             vo.setPropertyTypeName(configIdNameMap.getOrDefault(entity.getPropertyType(), ""));
+
+            BuildingArchivesVO buildingArchivesVO = entity.getBuildingArchivesVO();
+            String loupanName = buildingArchivesVO.getName();
+            String deptName = buildingArchivesVO.getDeptName();
+            vo.setLoupanName(loupanName);
+            vo.setDeptName(deptName);
+
             res.add(vo);
         });
 
@@ -189,10 +198,17 @@ public class HousesArchivesServiceImpl extends ServiceImpl<HousesArchivesMapper,
         List<HousesArchivesEntity> list = new ArrayList<>();
         dataList.forEach(data -> {
             HousesArchivesEntity entity = new HousesArchivesEntity();
+            BeanUtils.copyProperties(data,entity);
             entity.setLoupanId(loupanId);
-            entity.setRoomNum(data.getRoomNum());
-            entity.setName(data.getName());
-            entity.setCode(data.getCode());
+            Long propertyType  = nameConfigIdMap.get(CustomConfigConstant.HOUSES_ARCHIVES_INIT.get(2)).get(data.getPropertyTypeName());
+            Long status = nameConfigIdMap.get(CustomConfigConstant.HOUSES_ARCHIVES_INIT.get(3)).get(data.getStatusName());
+            Long houseType = nameConfigIdMap.get(CustomConfigConstant.HOUSES_ARCHIVES_INIT.get(0)).get(data.getHouseTypeName());
+            entity.setPropertyType(propertyType);
+            entity.setStatus(status);
+            entity.setHouseType(houseType);
+            //            entity.setRoomNum(data.getRoomNum());
+//            entity.setName(data.getName());
+//            entity.setCode(data.getCode());
             // TODO: 2024/5/16 这里还需要基于不同的一级类目去查询配置
             list.add(entity);
         });

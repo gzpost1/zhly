@@ -2,6 +2,7 @@ package cn.cuiot.dmp.archive.infrastructure.entity;
 
 import java.math.BigDecimal;
 
+import cn.cuiot.dmp.archive.application.param.vo.BuildingArchivesVO;
 import cn.cuiot.dmp.base.infrastructure.dto.YjBaseEntity;
 import cn.cuiot.dmp.base.infrastructure.persistence.handler.JsonTypeHandler;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -177,4 +178,7 @@ public class RoomArchivesEntity extends YjBaseEntity implements Serializable {
      */
     @TableField(exist = false)
     private Long qrCodeId;
+
+    @TableField(exist = false)
+    public BuildingArchivesVO buildingArchivesVO;
 }
